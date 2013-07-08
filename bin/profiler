@@ -1,0 +1,319 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
+import sys
+sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
+
+import argparse
+import numpy as np
+from matplotlib import use
+use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+
+# own modules
+from deeptools import parserCommon
+from deeptools import heatmapper
+
+debug = 1
+plt.ioff()
+
+
+def parseArguments(args=None):
+    parser = argparse.ArgumentParser(
+        parents=[parserCommon.heatmapperMatrixArgs(),
+                 parserCommon.heatmapperOutputArgs(),
+                 parserCommon.heatmapperOptionalArgs()],
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='This tool creates a heatmap for a '
+        'score associated to genomic regions. '
+        'Typically, these regions are genes, but '
+        'any other regions defined in a BED or GFF '
+        'format will work. A preprocessed matrix generated '
+        'by the tool computeMatrix is required.',
+        epilog='An example usage is: %(prog)s -m <matrix file>')
+
+    args = parser.parse_args(args)
+
+    # Because of galaxy, the value of this variables is normally
+    # set to ''. Therefore this check is needed
+    for attr in ['zMin', 'zMax', 'yMax', 'yMin']:
+        try:
+            args.__setattr__(attr, float(args.__getattribute__(attr)))
+#       except ValueError, TypeError:
+        except:
+            args.__setattr__(attr, None)
+
+    args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and \
+        args.heatmapHeight <= 100 else 10
+
+    if args.regionsLabel != 'genes':
+        args.regionsLabel = \
+            [x.strip() for x in args.regionsLabel.split(',')]
+
+        if len(set(args.regionsLabel)) != len(args.regionsLabel):
+            print "The group labels given contain repeated names. Please "
+            "give a unique name to each value. The values given are "
+            "{}\n".format(args.regionsLabel)
+            exit(1)
+    else:
+        args.regionsLabel = []
+
+    return(args)
+
+
+def plot_profile(ax, ma, average_type, color, label,
+                 plot_type='simple'):
+
+    sumry = np.__getattribute__(average_type)(ma, axis=0)
+    # only plot the average profiles without error regions
+    if plot_type != 'overlapped_lines':
+        ax.plot(sumry, color=color, label=label, alpha=0.6)
+        x = np.arange(len(sumry))
+
+    if plot_type == 'fill':
+        ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
+
+    elif plot_type == 'std':
+        std = np.std(ma, axis=0)
+        ax.fill_between(x, sumry, sumry + std, facecolor=color, alpha=0.2)
+        ax.fill_between(x, sumry, sumry - std, facecolor=color, alpha=0.2)
+
+    elif plot_type == 'overlapped_lines':
+        ax.patch.set_facecolor('black')
+        for row in ma:
+            ax.plot(row, 'yellow', alpha=0.1)
+
+
+def plotProfile(hm, outFileName, outFileFormat='png',
+                colorMap='binary',
+                plotTitle='',
+                xAxisLabel='', yAxisLabel='',
+                yMin=None, yMax=None,
+                averageType='median',
+                referencePointLabel='TSS',
+                startLabel='TSS', endLabel="TES",
+                plotHeight=15,
+                plotWidth=18,
+                onePlotPerGroup=False,
+                plotType='simple'):
+
+    tickPlotAdj = 0.5
+    plotHeight=5
+    plotWidth=8
+
+    plt.rcParams['font.size'] = 10.0
+#    rcParams['font.size'] = 9.0
+
+    # the heatmapHeight value is given in cm
+    plotHeightInches = float(plotHeight) / 2.54
+    figWidth = float(plotWidth) / 2.54
+
+    # measures are in inches
+    topBorder = 0.36
+    bottomBorder = 0.2
+    spacer = 1
+
+    numGroups = len(hm.matrixDict)
+
+    if numGroups == 1:
+        # when the number of regions is just one, is better
+        # to use the defaults for one plot per group, because
+        # it does not tries to plot a legend below the plot,
+        # which for one region is unecesary
+        onePlotPerGroup = True
+
+    # plotHeightInches  height of plot plus bottom spacing
+    if onePlotPerGroup:
+        # decide the figure size based on the number of groups defined
+        # Each summary plot occupies 1 x 1.3 inches plus 0.4 inches for
+        # spacing. The plot occupies plotHeightInches inches
+        figHeight = topBorder + bottomBorder + numGroups * \
+            plotHeightInches
+
+        figHeight = topBorder + bottomBorder + numGroups * \
+            (plotHeightInches + spacer)
+    else:
+        figHeight = topBorder + bottomBorder + (numGroups / 2) * \
+            spacer + plotHeightInches
+
+    sumFracHeight = float(plotHeightInches) / figHeight
+    # fraction of the height for summary plots
+
+    topBorderFrac = topBorder / figHeight
+
+    if debug:
+        print (figWidth, figHeight)
+    # figsize: w,h tuple in inches
+    fig = plt.figure(figsize=(figWidth, figHeight), dpi=360)
+
+    b = hm.parameters['upstream']
+    a = hm.parameters['downstream']
+    m = hm.parameters['body']
+    w = hm.parameters['bin size']
+
+    if b < 1e5:
+        quotient = 1000
+        symbol = 'Kb'
+    if b >= 1e5:
+        quotient = 1e6
+        symbol = 'Mb'
+
+    if m == 0:
+        xTicks = [int(k / float(w)) - tickPlotAdj for k in [0, b, b  + a]]
+        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
+                       referencePointLabel,
+                       '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+    else:
+        xTicks = [int(k / float(w)) - tickPlotAdj
+                  for k in [0, b, b + m, b + m + a]]
+        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
+                       startLabel, endLabel,
+                       '{0:.1f}kb'.format(float(a) / quotient, symbol)]
+
+    fig.suptitle(plotTitle, y=1 - (0.06 / figHeight))
+
+    cmap_plot = plt.get_cmap('jet')
+
+    # add_axes( rect ) where rect is [left, bottom, width, height] and
+    # all quantities are in fractions of figure width and height.
+    # summary plot
+    # each group needs its axe
+    left = 0.45 / figWidth
+    width = 0.7
+
+    # i.e if multipleLines in one plot:
+    if not onePlotPerGroup:
+        bottom = 1 - (topBorderFrac + sumFracHeight)
+        if debug:
+            print ([left, bottom, width, sumFracHeight, figHeight])
+        ax = fig.add_axes([left, bottom, width, sumFracHeight])
+
+    index = -1
+    for label, ma in hm.matrixDict.iteritems():
+        index += 1
+        if onePlotPerGroup:
+            # create an axis for each sub plot
+            bottom = 1 - topBorderFrac - (index + 1) * sumFracHeight
+            ax = fig.add_axes([left, bottom, width, sumFracHeight])
+            plot_profile(ax, ma, averageType,
+                         cmap_plot(1. * index / numGroups), label,
+                         plot_type=plotType)
+            ax.set_ylim(yMin, yMax)
+            ax.axes.set_xticks(xTicks)
+            ax.axes.set_xticklabels(xTicksLabel)
+            # reduce the number of yticks by half
+            if index == 0:
+                #ax.axes.set_title(plotTitle, weight='bold');
+                numTicks = len(ax.get_yticks())
+                yTicks = [ax.get_yticks()[i]
+                          for i in range(1, numTicks, 2)]
+            ax.set_yticks(yTicks)
+            ax.axes.set_ylabel(yAxisLabel)
+
+        else:
+            # add new lines to existing plot
+            plot_profile(ax, ma, averageType,
+                         cmap_plot(1. * index / numGroups), label,
+                         plot_type=plotType)
+
+    # i.e if multipleLines in one plot:
+    if not onePlotPerGroup:
+        # in the case of one box with all plots the
+        #font of the legend and the positions
+        # are changed.
+        ax.set_ylim(yMin, yMax)
+        ax.axes.set_xticks(xTicks)
+        ax.axes.set_xticklabels(xTicksLabel)
+        #ax.axes.set_title(plotTitle, weight='bold');
+        fontP = FontProperties()
+        fontP.set_size('small')
+        # the legend shows in a box below the plot
+        ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
+                  loc='upper center',
+                  ncol=2, mode="expand", prop=fontP,
+                  frameon=False, markerscale=0.5)
+
+        # reduce the number of yticks by half
+        numTicks = len(ax.get_yticks())
+        yTicks = [ax.get_yticks()[i] for i in range(1, numTicks, 2)]
+        ax.set_yticks(yTicks)
+
+        ax.axes.set_ylabel(yAxisLabel)
+
+    # for some reason if the bbox_inches is used
+    # then the legend for the summary plot is omited
+    plt.savefig(outFileName, format=outFileFormat,
+                bbox_inches='tight', pdd_inches=0, dpi=200)
+
+
+def flattenMatrix(matrixDict):
+    """
+    concat and flatten
+    """
+    matrixFlatten = np.concatenate([x for x in matrixDict.values()]).flatten()
+    return matrixFlatten
+
+
+def main(args):
+    r"""
+    >>> import filecmp
+    >>> import os
+    >>> args = parseArguments(
+    ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
+    ... --outFileName /tmp/_test.png".split())
+    >>> main(args)
+    >>> filecmp.cmp(
+    ... '../deeptools/test/test_heatmapper/master.png', '/tmp/_test.png')
+    True
+    >>> args = parseArguments(
+    ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
+    ... --outFileName /tmp/_test.png --regionsLabel uno,dos --plotType std".split())
+    >>> main(args)
+    >>> filecmp.cmp(
+    ... '../deeptools/test/test_heatmapper/master_relabeled.png',
+    ... '/tmp/_test.png')
+    True
+    >>> #os.remove('/tmp/_test.png')
+
+    """
+
+    hm = heatmapper.heatmapper()
+    matrix_file = args.matrixFile.name
+    args.matrixFile.close()
+    hm.readMatrixFile(matrix_file,
+                      default_group_name=args.regionsLabel)
+
+    if len(args.regionsLabel):
+        hm.reLabelGroups(args.regionsLabel)
+    if args.sortRegions != 'no':
+        hm.sortMatrix(sort_using=args.sortUsing,
+                      sort_method=args.sortRegions)
+
+    if args.outFileNameMatrix:
+        hm.saveMatrixValues(args.outFileNameMatrix)
+
+    if args.outFileNameData:
+        hm.saveTabulatedValues(args.outFileNameData)
+
+    if args.outFileSortedRegions:
+        hm.saveBED(args.outFileSortedRegions)
+
+    plotProfile(hm,
+                args.outFileName, args.outFileFormat,
+                args.colorMap, args.plotTitle,
+                args.xAxisLabel, args.yAxisLabel,
+                args.yMin, args.yMax,
+                args.averageTypeSummaryPlot,
+                args.refPointLabel,
+                args.startLabel,
+                args.endLabel,
+                args.heatmapHeight,
+                args.heatmapWidth,
+                args.onePlotPerGroup,
+                plotType=args.plotType)
+
+
+if __name__ == "__main__":
+    args = parseArguments()
+    main(args)
