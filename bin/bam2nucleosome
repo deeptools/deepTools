@@ -3,14 +3,14 @@
 
 
 import sys
-sys.path.append('/data/projects/ramirez/tools/IETools/')
+sys.path.append('/data/projects/ramirez/tools/deepTools/')
 
 import numpy as np
 # own tools
 import argparse
-from ietools import writeBedGraph
-from ietools import parserCommon
-from ietools import bamHandler
+from deeptools import writeBedGraph
+from deeptools import parserCommon
+from deeptools import bamHandler
 
 debug = 0
 

@@ -2,13 +2,13 @@
 #-*- coding: utf-8 -*-
 
 import sys
-sys.path.append('/data/projects/ramirez/tools/IETools/')
+sys.path.append('/data/projects/ramirez/tools/deepTools/')
 
 import argparse # to parse command line arguments
 import numpy as np
 
-import ietools.countReadsPerBin as countR
-from ietools import parserCommon
+import deeptools.countReadsPerBin as countR
+from deeptools import parserCommon
 from scipy.stats import pearsonr, spearmanr
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()

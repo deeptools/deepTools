@@ -20,10 +20,10 @@ def parseArguments(args=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two bigwig files based on the number '
         'of mapped reads. To compare the bigwig files the genome is '
-        'partitined into equal size bins, then the number of reads found in '
-        'each BAM file are counted for such bins and finally a summarizing '
+        'partitioned into bins of equal size, then the number of reads found '
+        'in each BAM file are counted for such bins and finally a summarizing '
         'value is reported. This vaule can be the ratio of the number of reads'
-        'per bin, the log2 of the ratio or the difference.')
+        'per bin, the log2 of the ratio, the sum or the difference.')
 
     # define the arguments
     parser.add_argument('--bigwig1', '-b1',
@@ -48,17 +48,20 @@ def parseArguments(args=None):
                         required=False)
 
     parser.add_argument('--pseudocount',
-                        help='small number to avoid log2(x/0)',
+                        help='small number to avoid dividing by zero.',
                         default=1,
                         type=float,
                         required=False)
 
     parser.add_argument('--ratio',
-                        help='The default output the log2ratio between the '
-                        'two samples. The reciprocal ratio returns the '
+                        help='The default is to compute the log2(ratio) '
+                        'between the two samples. The reciprocal '
+                        'ratio returns the '
                         'the negative of the inverse of the ratio '
                         'if the ratio is less than 0. The resulting '
-                        'values are interpreted as negative fold changes. ',
+                        'values are interpreted as negative fold changes. '
+                        'Other possible operations are : simple ratio, '
+                        'subtraction, sum',
                         default='log2',
                         choices=['log2', 'ratio', 'subtract', 'add',
                                  'reciprocal_ratio'],
@@ -68,11 +71,20 @@ def parseArguments(args=None):
                         default="yes",
                         choices=["yes", "no"],
                         help='Default is "yes". This parameter determines if '
-                        'missing data should be treated as zeros. If set '
-                        'to "no", missing data will be ignored and not '
-                        'included in the output file. Missing data is defined '
-                        'as those regions for which *any* of the bigwig files '
-                        'does not have any value.')
+                        'missing data should be replaced with a zero. If set '
+                        'to "no", missing data will be ignored and will not '
+                        'be included in the output file at all. Missing data '
+                        'is defined as those regions for which no value exists'
+                        ' in *any* of the bigwig files.'
+                        'The decision to include or exclude missing data '
+                        'depends on the interpretation of the data. Missing '
+                        'data in a bigwig file may mean that there is no '
+                        'information available for certain regions, for '
+                        'example a repetitive region that is not being '
+                        'considered. In the same file regions with low '
+                        'coverage may get zero read counts. If missing data '
+                        'is replaced by zero, this would convert the excluded '
+                        'repetitive regions into regions of low coverage.')
 
     args = parser.parse_args(args)
     args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
@@ -82,8 +94,6 @@ def parseArguments(args=None):
 
 ########################################
 # MAIN
-
-
 def main(args):
 
     ################# compute log2ratio ##################

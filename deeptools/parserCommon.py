@@ -5,16 +5,15 @@ def output(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
     group.add_argument('--outFileName', '-o',
-                        help = 'Output file name.',
-                        metavar = 'FILENAME',
-                        type=writableFile,
-                        required = True)
+                       help='Output file name.',
+                       metavar='FILENAME',
+                       type=writableFile,
+                       required=True)
 
-    
     group.add_argument('--outFileFormat', '-of',
-                        help = 'Output file type. Either "bigwig" or "bedgraph"',
-                        choices = ['bigwig', 'bedgraph'],
-                        default = 'bigwig')
+                       help='Output file type. Either "bigwig" or "bedgraph"',
+                       choices=['bigwig', 'bedgraph'],
+                       default='bigwig')
 
     return parser
 
@@ -24,74 +23,97 @@ def bam(args=None):
     common bam processing options
     """
     parser = argparse.ArgumentParser(add_help=False)
-    group = parser.add_argument_group('Bam to begraph/bigwig processing options')
+    group = parser.add_argument_group('Bam to bedgraph/bigwig processing '
+                                      'options')
 
     group.add_argument('--fragmentLength', '-f',
-                        help = 'Length of the average fragment size. Reads will be extended to match this length unless they are paired-end, in which case they will extended to match the fragment lenght. If this value is set equal to the read length or smaller, then the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see --normalizeUsingSequencingDepth). The formula to normalize using the sequencing depth is genomeSize/(# of mapped reads * fragmentLength). ',
-                        type = int,
-                        metavar = "INT bp",
-                        required=True)
+                       help='Length of the average fragment size. Reads will '
+                       'be extended to match this length unless they are '
+                       'paired-end, in which case they will be extended to '
+                       'match the fragment length. If this value is set to '
+                       'the read length or smaller, the read will not be '
+                       'extended. *Warning* the fragment length affects the '
+                       'normalization to 1x '
+                       '(see --normalizeUsingSequencingDepth). The formula '
+                       'to normalize using the sequencing depth is '
+                       'genomeSize/(number of mapped reads * fragmentLength). '
+                       '*NOTE*: If the BAM files contain mated and unmated '
+                       'paired-end reads, unmated reads will be extended to '
+                       'match the --fragmentLength.',
+                       type=int,
+                       metavar="INT bp",
+                       required=True)
 
     parser.add_argument('--smoothLength',
-                        metavar = "INT bp",
-                        help = 'If this option is set, a window of the given length  would be considered to average the number of reads for each tile. In other words, the smooth length defines a window, larger than the binSize, to average the number of reads reads. For example, if the --binSize is set to 20bp and the --smoothLength is set to 60, then, for each binSize the avereage of it and its left and right neighbors is consideres. Any value smaller than the --binSize will be ignored and no smooth will be aplied.',
-                        type = int,
+                        metavar="INT bp",
+                        help='The smooth length defines a window, larger than '
+                        'the binSize, to average the number of reads. For '
+                        'example, if the --binSize is set to 20 bp and the '
+                        '--smoothLength is set to 60 bp, then, for each '
+                        'binSize the average of it and its left and right '
+                        'neighbors is considered. Any value smaller than the '
+                        '--binSize will be ignored and no smoothing will be '
+                        'applied.',
+                        type=int,
                         required=False)
 
-
     group.add_argument('--doNotExtendPairedEnds',
-                        help = 'If set, then reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the --fragmentLength. Default is to extend the reads". *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the --fragmentLength.',
-                        action = 'store_true')
-
+                       help='If set, reads are not extended to match the '
+                       'fragment length reported in the BAM file, instead '
+                       'they will be extended to match the --fragmentLength. '
+                       'Default is to extend the reads if paired end '
+                       'information is available.',
+                       action='store_true')
 
     group.add_argument('--ignoreDuplicates',
-                        help = 'If set, reads that have the same orientation '
-                               'and start position will be considered only '
-                               'once. If reads are paired, the mate position '
-                               'also has to coincide to ignore a read.',
-                        action = 'store_true'
-                        )
+                       help='If set, reads that have the same orientation '
+                       'and start position will be considered only '
+                       'once. If reads are paired, the mate position '
+                       'also has to coincide to ignore a read.',
+                       action='store_true'
+                       )
 
     group.add_argument('--minMappingQuality',
-                        metavar = 'INT',
-                        help = 'If set, only reads that have a mapping '
-                               'quality score higher than minMappingQuality are '
-                               'considered',
-                        type = int,
-                        )
-
+                       metavar='INT',
+                       help='If set, only reads that have a mapping '
+                       'quality score higher than --minMappingQuality are '
+                       'considered',
+                       type=int,
+                       )
 
     return parser
 
 
 def getParentArgParse(args=None):
     parser = argparse.ArgumentParser(add_help=False)
-
     parser.add_argument('--binSize', '-bs',
-                        help = 'Size of the bins or tiles, in bp for the ouput of the bigwig/bedgraph file containg the log2ratio',
-                        metavar = "INT bp",
-                        type = int,
-                        default = 50)
-
+                        help='Size of the bins in bp for the ouput '
+                        'of the bigwig/bedgraph file',
+                        metavar="INT bp",
+                        type=int,
+                        default=50)
 
     parser.add_argument('--region', '-r',
-                        help = 'Region of the genome to limit the operation. The format is chr:start:end. Also valid is just to specify a chromosome, for example --region chr10',
-                        metavar = "CHR:START:END",
-                        required = False,
-                        type=genomicRegion
-                        )
+                        help='Region of the genome to limit the operation '
+                        'to - this is useful when testing parameters to '
+                        'reduce the computing time. The format is '
+                        'chr:start:end, for example --region chr10 or '
+                        '--region chr10:456700:891000',
+                        metavar="CHR:START:END",
+                        required=False,
+                        type=genomicRegion)
 
     parser.add_argument('--numberOfProcessors', '-p',
-                        help = 'Number of processors to use. The default is to use half the maximun number of processors.',
-                        metavar = "INT",
-                        type = numberOfProcessors,
-                        default = "max/2",
-                        required = False)
-
+                        help='Number of processors to use. The default is to '
+                        'use half of the max. available number of processors.',
+                        metavar="INT",
+                        type=numberOfProcessors,
+                        default="max/2",
+                        required=False)
 
     parser.add_argument('--verbose', '-v',
-                        help = 'Set to see processing messages',
-                        action = 'store_true')
+                        help='Set to see processing messages.',
+                        action='store_true')
 
     return parser
 
@@ -474,18 +496,20 @@ def heatmapperOptionalArgs():
                           'will be colored in black by default. Using this '
                           'parameter a different color can be set. A value '
                           'between 0 and 1 will be used for a gray scale '
-                          '(black is 0). For a list of possible color names see: '
-                          'http://packages.python.org/ete2/reference/reference_svgcolors.html. '
+                          '(black is 0). For a list of possible color '
+                          'names see: http://packages.python.org/ete2/'
+                          'reference/reference_svgcolors.html. '
                           'Other colors can be specified using the #rrggbb '
                           'notation.')
 
     optional.add_argument('--averageTypeSummaryPlot',
                           default='mean',
-                          choices=["mean", "median", "min", "max", "std", "sum"],
+                          choices=["mean", "median", "min",
+                                   "max", "std", "sum"],
                           help='Define the type of statistic that should be '
-                          'plotted in the summary image above the heatmap. The '
-                          'options are: "mean", "median", "min", "max" and '
-                          '"std".')
+                          'plotted in the summary image above the heatmap. '
+                          'The options are: "mean", "median", "min", "max" '
+                          'and "std".')
 
     optional.add_argument('--xAxisLabel', '-x',
                           default='gene distance (bp)',
@@ -511,12 +535,13 @@ def heatmapperOptionalArgs():
                           default='RdYlBu',
                           help='Color map to use for the heatmap. Available '
                           'values can be seen here: '
-                          'http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/',
+                          'http://www.astro.lsa.umich.edu/~msshin/science/'
+                          'code/matplotlib_cm/',
                           choices=[m for m in matplotlib.cm.datad])
 
     optional.add_argument('--onePlotPerGroup',
-                          help='When the region file contains groups separated '
-                          'by "#", the default is to plot the averages for '
+                          help='When the region file contains groups separated'
+                          ' by "#", the default is to plot the averages for '
                           'the distinct plots in one plot. If this option is '
                           'set, each group will get its own plot, stacked on '
                           'top of each other.',
@@ -554,14 +579,15 @@ def heatmapperOptionalArgs():
                           type=float,
                           default=7.5)
     optional.add_argument('--whatToShow',
-                          help='The default is to include a summary or profile '
-                          'plot on top of the heatmap and a heatmap colorbar. '
-                          'Other options are: "plot only", "plot and heatmap", '
+                          help='The default is to include a summary or '
+                          'profile plot on top of the heatmap and a '
+                          'heatmap colorbar. Other options '
+                          'are: "plot only", "plot and heatmap", '
                           '"heatmap only", "colorbar only", "heatmap and '
                           'colorbar", and the default "plot, heatmap and '
                           'colorbar" ',
                           choices=["plot only", "plot, heatmap and colorbar",
-                                    "plot and heatmap", "heatmap only",
-                                    "colorbar only", "heatmap and colorbar"],
+                                   "plot and heatmap", "heatmap only",
+                                   "colorbar only", "heatmap and colorbar"],
                           default='plot, heatmap and colorbar')
     return parser

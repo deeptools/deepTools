@@ -3,15 +3,15 @@
 
 
 import sys
-sys.path.insert(1,'/data/projects/ramirez/tools/IETools/')
+sys.path.insert(1,'/data/projects/ramirez/tools/deepTools/')
 
 import argparse # to parse command line arguments
 
 # NGS packages
 import pysam
 
-from ietools.SES_scaleFactor import estimateScaleFactor
-from ietools.parserCommon import numberOfProcessors
+from deeptools.SES_scaleFactor import estimateScaleFactor
+from deeptools.parserCommon import numberOfProcessors
 
 debug = 0
 

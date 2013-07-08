@@ -2,17 +2,17 @@
 #-*- coding: utf-8 -*-
 
 import sys
-sys.path.insert(1, '/data/projects/ramirez/tools/IETools/')
+sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
 
 import argparse  # to parse command line arguments
 import numpy as np
 
 # my packages
-from ietools import writeBedGraph
-from ietools.SES_scaleFactor import estimateScaleFactor
-from ietools import parserCommon
-from ietools import bamHandler
-from ietools.getRatio import getRatio
+from deeptools import writeBedGraph
+from deeptools.SES_scaleFactor import estimateScaleFactor
+from deeptools import parserCommon
+from deeptools import bamHandler
+from deeptools.getRatio import getRatio
 
 debug = 0
 
@@ -26,7 +26,7 @@ def parseArguments(args=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two BAM files based on the number of '
         'mapped reads. To compare the BAM files the genome is partitioned '
-        'into equal size bins, then the number of reads found in each BAM '
+        'into bins of equal size, then the number of reads found in each BAM '
         'file are counted for such bins and finally a summarizing value is '
         'reported. This vaule can be the ratio of the number of reads per '
         'bin, the log2 of the ratio or the difference. This tool can '

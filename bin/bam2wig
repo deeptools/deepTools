@@ -1,69 +1,93 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys;
-#sys.path.insert(1,'/data/projects/ramirez/tools/IETools/')
+import sys
+sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
 
 # own tools
 import argparse
-from ietools import writeBedGraph
-from ietools import parserCommon
-from ietools import bamHandler
+from deeptools import writeBedGraph
+from deeptools import parserCommon
+from deeptools import bamHandler
 
 debug = 0
 
-def parseArguments(args=None):
 
+def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()
     bamParser = parserCommon.bam()
     outputParser = parserCommon.output()
     parser = \
         argparse.ArgumentParser(
-        parents=[parentParser, bamParser, outputParser],
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description = 'Given a BAM file, generates a coverage bigwig file. The way the method works is by first calculating all the number of  reads (either extended or not) that overlap each tile (or bin) in the genome.  Tiles with counts equal to zero are skipped, i.e. not added to the output file.\nThe resulting read counts can be normalized using a given scaling factor, using the RPKM formula or normalizing to get a 1x depth of coverage.\n')
+            parents=[parentParser, bamParser, outputParser],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            description='Given a BAM file, this tool generates a bigWig or '
+            'bedGraph file of fragment or read coverages. The way the method '
+            'works is by first calculating all the number of  reads (either '
+            'extended to match the fragment length or not) that overlap each '
+            'bin in the genome. Bins with zero counts are skipped, i.e. not '
+            'added to the output file.\nThe resulting read counts can be '
+            'normalized using either a given scaling factor, the RPKM formula '
+            'or to get a 1x depth of coverage (RPGC).\n',
+            epilog='Example usage: %(prog)s -b test.bam')
 
     # define the arguments
     parser.add_argument('--bam', '-b',
-                        help = 'Bam file to process',
-                        metavar = 'bam file',
-                        required = True)
+                        help='Bam file to process',
+                        metavar='bam file',
+                        required=True)
 
     parser.add_argument('--bamIndex', '-bai',
-                        help = 'Index for the bam file. Default is to consider a the path of the bam file adding the .bai suffix.',
-                        metavar = 'bam file index')
-
+                        help='Index for the bam file. Default is to consider '
+                        'the path of the bam file adding the .bai suffix.',
+                        metavar='bam file index')
 
     parser.add_argument('--scaleFactor',
-                        help = "Scale factor to multiply all values. This option overwrites the --normalizeUsingSequencingDepth option.",
-                        default = 1,
-                        type = float,
-                        required = False)
+                        help='Indicate a number that you would like to use '
+                        'as a fixed scaling factor instead of the scaling '
+                        'factor calculated by the '
+                        '--normalizeUsingSequencingDepth option.',
+                        default=1,
+                        type=float,
+                        required=False)
 
     parser.add_argument('--normalizeTo1x',
-                        help = "Report normalized coverage to 1x sequencing depth. Sequencing depth is defined as the total number of mapped reads * fragment length / effective genome size. To use this option, the effective genome size has to be given. Common values are: mm9: 2150570000, hg19:2451960000, dm3:121400000 and ce10:93260000. The default is not to use any normalization. ",
-                        default = None,
-                        type = int,
-                        required = False)
+                        help='Report read coverage normalized to 1x '
+                        'sequencing depth (also known as Reads Per Genomic '
+                        'Content (RPGC)). Sequencing depth is defined as: '
+                        '(total number of mapped reads * fragment length) / '
+                        'effective genome size.\nTo use this option, the '
+                        'effective genome size has to be indicated after the '
+                        'command. Common values are: mm9: 2150570000, '
+                        'hg19:2451960000, dm3:121400000 and ce10:93260000.',
+                        default=None,
+                        type=int,
+                        required=False)
 
     parser.add_argument('--normalizeUsingRPKM',
-                        help = "Use RPKM to normalize the number of reads per bin. The formula is: RPKM (per bin) = #reads per bin / ( # of mapped reads (millions) * bin length (KB) )",
-                        action = 'store_true',
-                        required = False)
+                        help='Use Reads Per Kilobase per Million reads to '
+                        'normalize the number of reads per bin. The formula '
+                        'is: RPKM (per bin) =  number of reads per bin / '
+                        '( number of mapped reads ( in millions) * bin length '
+                        '(kp) )',
+                        action='store_true',
+                        required=False)
 
     args = parser.parse_args(args)
 
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
-    
-    if args.scaleFactor != 1: args.normalizeTo1x = None 
+    if args.scaleFactor != 1: args.normalizeTo1x = None
     return(args)
+
 
 def scaleFactor(string):
     try:
         scaleFactor1, scaleFactor2 = string.split(":")
-        scaleFactors = ( float(scaleFactor1), float(scaleFactor2) )
+        scaleFactors = (float(scaleFactor1), float(scaleFactor2))
     except:
-        raise argparse.ArgumentTypeError("Format of scaleFactors is factor1:factor2. The value given ( {} ) is not valid".format(string))
+        raise argparse.ArgumentTypeError(
+            "Format of scaleFactors is factor1:factor2. "
+            "The value given ( {} ) is not valid".format(string))
     return scaleFactors
 
 #######################################33333
@@ -71,12 +95,10 @@ def scaleFactor(string):
 
 
 def main(args):
-    bamFile = args.bam
     bamHandle = bamHandler.openBam(args.bam, args.bamIndex)
     tileSize = args.binSize if args.binSize > 0 else 50
-    fragmentLength = args.fragmentLength if args.fragmentLength >0 else 300
-
-    chunkSize = int(50e6)
+    fragmentLength = \
+        args.fragmentLength if args.fragmentLength > 0 else 300
 
     global debug
     if args.verbose:
@@ -85,7 +107,8 @@ def main(args):
         debug = 0
 
     if args.normalizeTo1x:
-        current_coverage = float(bamHandle.mapped * fragmentLength) / args.normalizeTo1x
+        current_coverage = \
+            float(bamHandle.mapped * fragmentLength) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
         args.scaleFactor = 1.0 / current_coverage
         if debug:
@@ -93,26 +116,29 @@ def main(args):
             print "Scaling factor {}".format(args.scaleFactor)
 
     elif args.normalizeUsingRPKM:
-        # the RPKM is the # reads per tile / ( total reads (in millions) * tile length in Kb)
+        # the RPKM is the # reads per tile / \
+        #    ( total reads (in millions) * tile length in Kb)
         millionReadsMapped = float(bamHandle.mapped)  / 1e6
         tileLengthInKb = float(args.binSize) / 1000
-        args.scaleFactor =  1.0 / (millionReadsMapped * tileLengthInKb )
+        args.scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
         if debug:
             print "scale factor using RPKM is {0}".format(args.scaleFactor)
 
     funcArgs = {'scaleFactor': args.scaleFactor}
 
-    writeBedGraph.writeBedGraph( [bamHandle.filename], args.outFileName, 
-                                 fragmentLength, writeBedGraph.scaleCoverage, 
-                                 funcArgs, tileSize=tileSize, region=args.region,
-                                 numberOfProcessors=args.numberOfProcessors,
-                                 format=args.outFileFormat,
-                                 extendPairedEnds=args.extendPairedEnds,
-                                 zerosToNans=True, smoothLength=args.smoothLength,
-                                 minMappingQuality=args.minMappingQuality,
-                                 ignoreDuplicates=args.ignoreDuplicates)
+    writeBedGraph.writeBedGraph([bamHandle.filename], args.outFileName,
+                                fragmentLength, writeBedGraph.scaleCoverage,
+                                funcArgs, tileSize=tileSize,
+                                region=args.region,
+                                numberOfProcessors=args.numberOfProcessors,
+                                format=args.outFileFormat,
+                                extendPairedEnds=args.extendPairedEnds,
+                                zerosToNans=True,
+                                smoothLength=args.smoothLength,
+                                minMappingQuality=args.minMappingQuality,
+                                ignoreDuplicates=args.ignoreDuplicates)
 
-    
+
 if __name__ == "__main__":
     args = parseArguments()
     main(args)

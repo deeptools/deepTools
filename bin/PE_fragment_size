@@ -4,11 +4,11 @@
 import argparse
 
 import sys
-sys.path.append('/data/projects/ramirez/tools/IETools/')
+sys.path.append('/data/projects/ramirez/tools/deepTools/')
 
 # own tools
-from ietools.PE_fragment_size import peFragmentSize
-#from ietools import PE_fragment_size
+from deeptools.PE_fragment_size import peFragmentSize
+#from deeptools import PE_fragment_size
 
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(description = 'Given a BAM file it '
