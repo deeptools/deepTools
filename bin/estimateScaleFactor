@@ -1,0 +1,110 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
+
+import sys
+sys.path.insert(1,'/data/projects/ramirez/tools/IETools/')
+
+import argparse # to parse command line arguments
+
+# NGS packages
+import pysam
+
+from ietools.SES_scaleFactor import estimateScaleFactor
+from ietools.parserCommon import numberOfProcessors
+
+debug = 0
+
+def fileType(string):
+     try:
+         open( string, 'r').close()
+     except IOError as detail:
+         print detail
+         exit()
+     return string
+
+def parseArguments(args=None):
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                     description = 'Given two BAM files estimates scaling factors (bigger to smaller) using different methods.')
+
+    # define the arguments
+    parser.add_argument('--bamfiles', '-b',
+                        metavar = 'list of bam files',
+                        help = 'List of indexed bam files separated by space',
+                        nargs = '+',
+                        type=fileType,
+                        required = True)
+    
+    parser.add_argument('--fragmentLength', '-f',
+                        help = 'Length of the average fragment size',
+                        type = int,
+                        required = True)
+
+    parser.add_argument('--ignoreForNormalization', '-ignore',
+                        help = 'A list of chromosome names '
+                        'separated by comma and limited by quotes, '
+                        'containing those '
+                        'chromosomes that want to be excluded '
+                        'for computing the normalization. For example, '
+                        ' --ignoreForNormalization "chrX, chrM" ') 
+
+    parser.add_argument('--sampleWindowLength', '-l',
+                        help = 'Length in base pairs for a window used to sample the genome and compute the size or scaling factors when comparing the bam files',
+                        default = 1000,
+                        type = int)
+
+    parser.add_argument('--numberOfSamples', '-n',
+                        help = 'Number of samplings taken from the genome to compute the scaling factors',
+                        default = 100000,
+                        type = int)
+
+
+    parser.add_argument('--normalizationLength', '-nl',
+                        help = 'By default, data is normalized to 1 fragment per 100 bp. The expected value is an integer. For example, if the normalizationLength given is 1000 bp, then the resulting scaling factor will cause the average coverage of the bam file to have on  average 1 fragment every 1000 bp',
+                        type = int,
+                        default = 10)
+
+    parser.add_argument('--skipZeros',
+                        help = 'If set, then zero counts that happen for *all* bam files given are ignored. This will result in a reduced number of read counts than the the specified in --numberOfSamples',
+                        action = 'store_true',
+                        required = False)
+
+    parser.add_argument('--numberOfProcessors', '-p',
+                        help = 'Number of processors to use. The default is to use half the maximun number of processors.',
+                        metavar = "INT",
+                        type = numberOfProcessors,
+                        default = "max/2",
+                        required = False)
+
+    args = parser.parse_args(args)
+    if args.ignoreForNormalization:
+         args.ignoreForNormalization = [x.strip() for x in args.ignoreForNormalization.split(',')]
+    else:
+         args.ignoreForNormalization = []
+    return(args)
+
+def main(args):
+    """
+    The algorithm samples the genome a number of times as specified 
+    by the --numberOfSamples parameter to estimate scaling factors of
+    betweeen to samples  
+
+    """
+    if len(args.bamfiles) > 2:
+        print "SES method to stimate scale factors only works for two samples"
+        exit(0)
+
+    sizeFactorsDict = estimateScaleFactor(args.bamfiles, args.sampleWindowLength, 
+                                          args.numberOfSamples, args.fragmentLength,
+                                          args.normalizationLength,
+                                          numberOfProcessors=args.numberOfProcessors,
+                                          chrsToSkip=args.ignoreForNormalization,
+                                          verbose=True )
+
+    for k,v in sizeFactorsDict.iteritems():
+         print "{}: {}".format(k,v)
+
+
+if __name__ == "__main__":
+    args = parseArguments()
+    main(args)

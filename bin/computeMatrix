@@ -1,0 +1,609 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
+import sys
+sys.path.insert(1, '/data/projects/ramirez/tools/IETools/')
+import argparse
+from collections import OrderedDict
+import numpy as np
+import multiprocessing
+import gzip
+
+# NGS packages
+import pysam
+from bx.intervals.io import GenomicIntervalReader
+# ouwn tools
+from ietools import parserCommon
+
+
+def parseArguments(args=None):
+    parser = \
+        argparse.ArgumentParser(
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            description='This tool summarizes and prepares an intermediary '
+            'file that can be used afterwards to plot a or a profile. Such '
+            'file is based on a score associated to genomic regions. '
+            'Typically, these regions are genes, but '
+            'any other regions defined in a BED or GFF '
+            'format can be used. This tool can also be used to '
+            'filter and sort regions according to their score',
+            epilog='An example usage is:\n %(prog)s reference-point -S '
+            '<biwig file> -R <bed file> -b 1000\n\n')
+
+    subparsers = parser.add_subparsers(
+        help="%(prog)s has two main output options: 'scale-regions', "
+        "and 'reference-point.",
+        dest='command')
+
+    # binning mode options
+    binning = subparsers.add_parser(
+        'scale-regions',
+        parents=[parserCommon.compareMatrixRequiredArgs(),
+                 parserCommon.computeMatrixOutputArgs(),
+                 parserCommon.computeMatrixOptArgs(case='scale-regions')],
+        help="In the scale-regions mode, all regions in the BED/GFF file are "
+        "stretched or shrunk to fit into a common length.")
+
+    # reference point arguments
+    refpoint = subparsers.add_parser(
+        'reference-point',
+        parents=[parserCommon.compareMatrixRequiredArgs(),
+                 parserCommon.computeMatrixOutputArgs(),
+                 parserCommon.computeMatrixOptArgs(case='reference-point')],
+        help="Reference-point refers to a position within the BED/GFF regions "
+        "(e.g start of region). In the reference-point mode only those "
+        "genomic positions before (downstream) or after (upstream) the "
+        "reference point will be plotted.")
+
+    args = parser.parse_args(args)
+
+    return(args)
+
+
+class intervalWrapper():
+   # class to create a simple object that can be pickled and send to workers
+    def __init__(self, genomicInterval):
+        self.chrom = genomicInterval.chrom
+        self.start = genomicInterval.start
+        self.end  = genomicInterval.end
+        self.strand = genomicInterval.strand
+        try:
+            self.name = genomicInterval.fields[3]
+        except IndexError:
+            self.name = "No name"
+
+
+def getRegionsAndGroups(regions_file_handle, onlyMultiplesOf=1, verbose=None):
+    # reads a bed file containing the position
+    # of genomic intervals
+    # In case is hash sign '#' is found in the
+    # file, this is considered as a delimiter
+    # to split the heatmap into groups
+
+    regions = []
+    regionsDict = OrderedDict()
+    regionGroups = [(0, '')]
+
+    prevInterval = None
+    duplicates = 0
+    totalIntervals = 0
+    includedIntervals = 0
+
+    for ginterval in GenomicIntervalReader(regions_file_handle.readlines()):
+        totalIntervals += 1
+        if ginterval.__str__()[0] == '#':
+            if includedIntervals > 1 and  \
+                    includedIntervals - regionGroups[-1][0] > 1:
+                label = ginterval.__str__()[1:]
+                newLabel = label
+                if label in regionsDict.keys():
+                   # loop to find a unique label name
+                    i = 0
+                    while True:
+                        i += 1
+                        newLabel = label + "_r" + str(i)
+                        if newLabel not in regionsDict.keys():
+                            break
+
+                regionsDict[newLabel] = np.array(regions[:])
+                regions = []
+            continue
+        # if the list of regions is to big, only
+        # consider a fraction of the data
+        if totalIntervals % onlyMultiplesOf != 0:
+            continue
+        # skip regions that have the same position as the previous.
+        # This assumes that the regions file given is sorted
+        if prevInterval and prevInterval.chrom == ginterval.chrom and \
+                prevInterval.start == ginterval.start and \
+                prevInterval.end == ginterval.end:
+            if args.verbose:
+                print "Gene in same region already included:  "
+                "{} {}:{}-{}. Skipping...".format(
+                    ginterval.fields[3],
+                    ginterval.chrom, ginterval.start,
+                    ginterval.end)
+            duplicates += 1
+            continue
+        else:
+            prevInterval = ginterval
+
+        regions.append(intervalWrapper(ginterval))
+        includedIntervals += 1
+
+    if len(regions):
+        regionsDict[args.regionsLabel] = np.array(regions)
+
+    if verbose:
+        print "%d (%.2f) regions covering the exact same interval "
+        "were found" % \
+            (duplicates,
+             float(duplicates) * 100 / totalIntervals)
+
+    return regionsDict
+
+
+def myAverage(valuesArray, avgType='mean'):
+    """
+    computes the mean, median, etc but only for those values that are not Nan
+    """
+    valuesArray = np.ma.masked_invalid(valuesArray)
+    avg = np.__getattribute__(avgType)(valuesArray)
+    if isinstance(avg, np.ma.core.MaskedConstant):
+        return np.nan
+    else:
+        return avg
+
+
+def matrixAvg(matrix, avgType='mean'):
+    matrix = np.ma.masked_invalid(matrix)
+    return np.__getattribute__(avgType)(matrix, axis=0)
+
+
+def coverageFromArray(valuesArray, zones, binSize, avgType):
+    try:
+        valuesArray[0]
+    except IndexError:
+        print "values array %s, zones %s" % (valuesArray, zones)
+
+    cvgList = []
+    start = zones[0][0]
+    for zone in zones:
+        # the linspace is to get equally spaced positions along the range
+        # If the gene is short the sampling regions could overlap,
+        # if it is long, the sampling regions would be spaced
+        countsList = []
+        try:
+            (posArray, stepSize) = np.linspace(zone[0], zone[1], zone[2],
+                                               endpoint=False,
+                                               retstep=True)
+            for pos in np.ceil(posArray):
+                indexStart = int(pos - start)
+                indexEnd   = int(indexStart + binSize)
+                countsList.append(myAverage(valuesArray[indexStart:indexEnd],
+                                            avgType))
+            cvgList.append(np.array(countsList))
+        except ValueError:
+            pass
+
+    return np.concatenate(cvgList)
+
+
+def coverageFromBam(bamfile, chrom, zones, binSize, avgType):
+    start = zones[0][0]
+    end = zones[-1][1]
+    try:
+        valuesArray = np.zeros(end - start)
+        for read in bamfile.fetch(chrom, min(0, start), end):
+            indexStart = max(read.pos - start, 0)
+            indexEnd = min(read.pos - start + read.qlen, end - start)
+            valuesArray[indexStart:indexEnd] += 1
+    except ValueError:
+        sys.stderr.write(
+            "Value out of range for region %s %s %s\n" % (chrom, start, end ))
+        return np.array([0])  # return something inocuous
+
+    return coverageFromArray(valuesArray, zones, binSize, avgType)
+
+
+def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType,
+                       nansAsZeros=False):
+    if zones[0][0] < 0:
+        valuesArray = np.zeros(zones[-1][1] - zones[0][0])
+        valuesArray[:] = np.nan
+        valuesArray[abs(zones[0][0]):] = \
+            bigwig.get_as_array(chrom, 0, zones[-1][1])
+    else:
+        valuesArray = bigwig.get_as_array(chrom, zones[0][0], zones[-1][1])
+    try:
+        valuesArray[0]
+    except TypeError:
+        # this error happens when bigwig returns nothing,
+        # For example when a chromosome
+        # is not nown.
+        return None
+    except OverflowError as detail:
+        print detail
+        return None
+
+    # replaces nans for zeros
+    if nansAsZeros:
+        valuesArray[np.isnan(valuesArray)] = 0
+
+    return coverageFromArray(valuesArray, zones, binSize, avgType)
+
+
+def computeSubMatrix((regions, matrixCols, args)):
+    # read BAM or scores file
+    if args.scoreFileName.endswith(".bam"):
+        bamfile = pysam.Samfile(file=args.scoreFileName.name)
+
+    else:
+        from bx.bbi.bigwig_file import BigWigFile
+        bigwig = BigWigFile(file=open(args.scoreFileName, 'r') )
+    # create an empty to store the matrix values
+    subMatrix = np.zeros((len(regions), matrixCols))
+    subMatrix[:] = np.NAN
+
+    j = 0
+    subRegions = []
+
+    for feature in regions:
+       # print some information
+        if args.regionBodyLength > 0 and \
+                feature.end - feature.start < args.binSize:
+            if args.verbose:
+                print "Region shorter than window width "
+                "({}) {} {}:{}:{}. Skipping...".format(
+                    (feature.end - feature.start),
+                    feature.name, feature.chrom,
+                    feature.start, feature.end)
+            continue
+
+        if feature.strand == '-':
+            a = args.beforeRegionStartLength / args.binSize
+            b = args.afterRegionStartLength  / args.binSize
+            start = feature.end
+            end = feature.start
+        else:
+            b = args.beforeRegionStartLength / args.binSize
+            a = args.afterRegionStartLength / args.binSize
+            start = feature.start
+            end = feature.end
+       # build zones (zone0: region before the region start,
+       # zone1, the body of the region (not always present)
+       # and zone2 the region from the end of the region downstream
+        if args.regionBodyLength > 0:
+            zones = [(feature.start - b * args.binSize, feature.start, b ),
+                     (feature.start,
+                      feature.end - args.regionBodyLength / args.binSize,
+                      args.regionBodyLength / args.binSize),
+                     (feature.end, feature.end + a * args.binSize, a)]
+        elif args.referencePoint == 'TES':  # around TES
+            zones = [(end - b * args.binSize, end, b ),
+                     (end, end + a * args.binSize, a )]
+        elif args.referencePoint == 'center':  # at the region center
+            middlePoint = feature.start + (feature.end - feature.start) / 2
+            zones = [(middlePoint - b * args.binSize, middlePoint, b),
+                     (middlePoint, middlePoint + a * args.binSize, a)]
+        else:  # around TSS
+            zones = [(start - b * args.binSize, start, b ),
+                     (start, start + a * args.binSize, a )]
+
+        if feature.start - b * args.binSize < 0:
+            if args.verbose:
+                print "region too close to chromosome start "
+                "for {} {}:{}:{}. ".format(feature.name,
+                                           feature.chrom,
+                                           feature.start,
+                                           feature.end)
+        coverage = None
+        if args.scoreFileName.endswith(".bam"):
+            if feature.chrom not in bamfile.references:
+                if args.verbose:
+                    sys.stderr.write(
+                        "Skipping region located at unknown chromosome for "
+                        "{} {}:{}-{}.\n".format(feature.name,
+                                                feature.chrom,
+                                                feature.start,
+                                                feature.end))
+                continue
+            coverage = coverageFromBam(bamfile, feature.chrom, zones,
+                                       args.binSize,
+                                       args.averageTypeBins)
+
+        else:
+            coverage = coverageFromBigWig(bigwig, feature.chrom, zones,
+                                          args.binSize, args.averageTypeBins,
+                                          args.missingDataAsZero)
+            if coverage is None:
+                if args.verbose:
+                    sys.stderr.write(
+                        "No scores defined for region "
+                        "{} {}:{}-{}. Skipping...\n".format(feature.name,
+                                                            feature.chrom,
+                                                            feature.start,
+                                                            feature.end))
+                coverage = np.zeros(matrixCols)
+                if not args.missingDataAsZero:
+                    coverage[:] = np.nan
+                continue
+        try:
+            temp = coverage.copy()
+            temp[np.isnan(temp)] = 0
+            totalScore = np.sum(temp)
+        except:
+            if args.verbose:
+                sys.stderr.write(
+                    "No scores defined for region "
+                    "{} {}:{}-{}. Skipping...\n".format(feature.name,
+                                                        feature.chrom,
+                                                        feature.start,
+                                                        feature.end))
+            coverage = np.zeros(matrixCols)
+            if not args.missingDataAsZero:
+                coverage[:] = np.nan
+            # to induce skipping if zero regions are omited this
+            # variable is set to zero
+            totalScore = 0
+
+        if totalScore == 0:
+            if args.skipZeros:
+                if args.verbose:
+                    sys.stderr.write(
+                        "Skipping region with all scores equal to zero "
+                        "for {} {}:{}-{}.\n".format(feature.name,
+                                                    feature.chrom,
+                                                    feature.start,
+                                                    feature.end))
+                continue
+            elif args.verbose:
+                sys.stderr.write(
+                    "Warning: All values are zero for "
+                    "{} {}:{}-{}.\n".format(feature.name,
+                                            feature.chrom,
+                                            feature.start,
+                                            feature.end))
+                sys.stderr.write("add --skipZeros to exclude such regions\n")
+
+        if args.minThreshold and coverage.min() <= args.minThreshold:
+            continue
+        if args.maxThreshold and coverage.max() >= args.maxThreshold:
+            continue
+        if args.scale != 1:
+            coverage = args.scale * coverage
+
+        if feature.strand == "-":
+            subMatrix[j, :] = coverage[::-1]
+        else:
+            subMatrix[j, :] = coverage
+
+        if args.nanAfterEnd and args.regionBodyLength == 0 \
+                and args.referencePoint == 'TSS':
+            # convert the gene length to bin length
+            region_length_in_bins = \
+                (feature.end - feature.start) / args.binSize
+            b = args.beforeRegionStartLength / args.binSize
+            # convert to nan any region after the end of the region
+            subMatrix[j, b + region_length_in_bins:] = np.nan
+
+        subRegions.append(feature)
+        j += 1
+
+    # remove empty rows
+    subMatrix = subMatrix[0:j, :]
+    if len(subRegions) != len(subMatrix[:, 0]):
+        print "regions lengths do not match"
+    return (subMatrix, subRegions)
+
+
+def computeMatrix(args):
+    """
+    Separates the given regions into groups (if any),
+    by searching for a hash. Then splits into
+    multiple cores the computation of the scores
+    per bin for each reagion.
+    """
+    fname = args.scoreFileName.name
+    args.scoreFileName.close()
+    args.scoreFileName = fname
+    if args.regionBodyLength > 0 and args.regionBodyLength % args.binSize > 0:
+        print "Length of body to print has to be a multiple of --binSize"
+        exit()
+
+    # the beforeRegionStartLength is extended such that
+    # length is a multiple of binSize
+    if args.afterRegionStartLength % args.binSize > 0:
+        print "Length of region after the body has to be a multiple of "
+        "--binSize. Current value {}".format(args.afterRegionStartLength)
+        exit()
+
+    if args.beforeRegionStartLength % args.binSize > 0:
+        print "Length of region before the body has to be a multiple of "
+        "--binSize . Current value {}".format(args.beforeRegionStartLength)
+        exit()
+
+    # determine the number of matrix columns based on the lengths
+    # given by the user
+    matrixCols = ((args.afterRegionStartLength +
+                   args.beforeRegionStartLength + args.regionBodyLength) /
+                  args.binSize)
+
+    regionsDict = getRegionsAndGroups(
+        args.regionsFileName, verbose=args.verbose)
+
+    heatmapMatrixDict = OrderedDict()
+
+    for label, regions in regionsDict.iteritems():
+        # args to pass to the multiprocessing workers
+        mp_args = []
+
+        # prepare groups of 400 regions to send to workers.
+        for index in range(0, len(regions), 400):
+            index_end = min(len(regions), index + 400 )
+            mp_args.append((regions[index:index_end], matrixCols, args))
+
+        if len(mp_args) > 1 and args.numberOfProcessors > 1:
+            if args.verbose:
+                print "'{}' total workers: {}, using {} "
+                "processors ".format(label, len(mp_args),
+                                     args.numberOfProcessors)
+            pool = multiprocessing.Pool(args.numberOfProcessors)
+            res = pool.map_async(computeSubMatrix, mp_args).get(9999999)
+        else:
+            res = map(computeSubMatrix, mp_args)
+
+        # each worker in the pools returns a tuple containing
+        # the submatrix data and the regions that correspond to the
+        # submatrix
+
+        # merge all the submatrices into heatmapMatrix
+        heatmapMatrix = np.concatenate([r[0] for r in res], axis=0)
+        # mask invalid (nan) values
+        heatmapMatrix = np.ma.masked_invalid(heatmapMatrix)
+        # merge all valid regions
+        regionList = np.concatenate([r[1] for r in res], axis=0)
+        if len(regionList) == 0:
+            print "Error: could not compute values for any of the regions"
+            exit()
+
+        heatmapMatrixDict[label] = heatmapMatrix
+        regionsDict[label] = regionList
+
+    return (heatmapMatrixDict, regionsDict)
+
+
+def main(args):
+    r"""
+    >>> import filecmp
+    >>> import os
+    >>> args = parseArguments("reference-point \
+    ... -R ../ietools/test/test_heatmapper/test2.bed \
+    ... -S ../ietools/test/test_heatmapper/test.bw \
+    ... -b 100 -a 100 --outFileName /tmp/_test.mat.gz \
+    ... -bs 1 -p 1".split())
+    >>> main(args)
+    >>> os.system('gunzip -f /tmp/_test.mat.gz')
+    0
+    >>> filecmp.cmp('../ietools/test/test_heatmapper/master.mat',
+    ... '/tmp/_test.mat')
+    True
+    >>> os.remove('/tmp/_test.mat')
+    """
+
+    heatmapMatrixDict, regionsDict = computeMatrix(args)
+    beforeRegionStartLength = args.beforeRegionStartLength
+    afterRegionStartLength = args.afterRegionStartLength
+    regionBodyLength = args.regionBodyLength
+    binSize = args.binSize
+
+    regionEnds = OrderedDict()
+    # sort the matrix using the average of values per row
+    matrixAvgsDict = OrderedDict()
+    for label in heatmapMatrixDict.keys():
+        if args.sortUsing == 'region_length':
+            matrixAvgs = np.array([x.end - x.start
+                                   for x in regionsDict[label]])
+            b = beforeRegionStartLength / binSize
+            regionEnds[label] = b + (matrixAvgs / binSize)
+        else:
+            matrixAvgs = np.__getattribute__(args.sortUsing)(
+                heatmapMatrixDict[label], axis=1)
+        if args.sortRegions == 'no':
+            SS = np.arange(len(matrixAvgs))
+        else:
+            SS = matrixAvgs.argsort()
+        if args.sortRegions == 'descend':
+            SS = SS[::-1]
+        heatmapMatrixDict[label] = heatmapMatrixDict[label][SS, :]
+        regionsDict[label] = regionsDict[label][SS]
+        matrixAvgsDict[label] = matrixAvgs[SS]
+        try:
+            regionEnds[label] = regionEnds[label][SS]
+        except:
+            regionEnds[label] = None
+
+    # save the file
+    # print a header containing the basic type of
+    # of matrix (scale-regions, reference-point)
+    fh = gzip.open(args.outFileName, 'wb')
+    fh.write("@upstream:{}\tdownstream:{}\tbody:{}\tbin size:{}\n".format(
+        beforeRegionStartLength,
+        afterRegionStartLength,
+        regionBodyLength,
+        binSize))
+
+    for label, regions in regionsDict.iteritems():
+        j = 0
+        for region in regions:
+            # this method to join np_array values
+            # keeps nans
+            matrix_values = "\t".join(
+                np.char.mod('%f', heatmapMatrixDict[label][j]))
+            fh.write(
+                '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(region.chrom,
+                                                      region.start,
+                                                      region.end,
+                                                      region.name,
+                                                      matrixAvgsDict[label][j],
+                                                      region.strand,
+                                                      matrix_values))
+            j += 1
+        fh.write('#{}\n'.format(label))
+    fh.close()
+
+    if args.outFileNameMatrix:
+        # merge all group matrices
+        print len(heatmapMatrixDict.values())
+        fh.close()
+        fh = open(args.outFileNameMatrix, 'a')
+        for key in heatmapMatrixDict:
+            np.savetxt(fh, heatmapMatrixDict[key], fmt="%.3g")
+        fh.close()
+
+##
+    if args.outFileNameMatrix:
+        # merge all group matrices
+        print len(heatmapMatrixDict.values())
+        # print a header telling the group names and their length
+        fh = open(args.outFileNameMatrix, 'w')
+        info = []
+        for label, regions in regionsDict.iteritems():
+            info.append("{}:{}".format(label, len(regions)))
+        fh.write("#{}\n".format("\t".join(info)))
+        # add to header the x axis values
+        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
+            beforeRegionStartLength,
+            afterRegionStartLength,
+            regionBodyLength,
+            binSize))
+
+        fh.write
+        fh.close()
+        fh = open(args.outFileNameMatrix, 'a')
+        for key in heatmapMatrixDict:
+            np.savetxt(fh, heatmapMatrixDict[key], fmt="%.3g")
+        fh.close()
+
+    if args.outFileNameData:
+        saveTabulatedValues(heatmapMatrixDict, regionsDict, args)
+
+    if args.outFileSortedRegions:
+        for label, regions in regionsDict.iteritems():
+            j = 0
+            for region in regions:
+                args.outFileSortedRegions.write(
+                    '{}\t{}\t{}\t{}\t{}\t{}\n'.format(region.chrom,
+                                                      region.start,
+                                                      region.end,
+                                                      region.name,
+                                                      matrixAvgsDict[label][j],
+                                                      region.strand))
+                j += 1
+            args.outFileSortedRegions.write('#{}\n'.format(label))
+        args.outFileSortedRegions.close()
+
+
+if __name__ == "__main__":
+    args = parseArguments()
+    main(args)

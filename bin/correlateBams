@@ -1,0 +1,198 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
+import sys
+sys.path.append('/data/projects/ramirez/tools/IETools/')
+
+import argparse # to parse command line arguments
+import numpy as np
+
+import ietools.countReadsPerBin as countR
+from ietools import parserCommon
+from scipy.stats import pearsonr, spearmanr
+def parseArguments(args=None):
+    parentParser = parserCommon.getParentArgParse()
+    bamParser = parserCommon.bam()
+
+    parser = \
+        argparse.ArgumentParser(
+        description = 'Genomes are split into bins of given '
+        'length. For each bin the number of reads found for each of the bam '
+        'files is counted. A correlation is computed for all pairs of bam '
+        'files.',
+        parents=[parentParser, bamParser],
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        conflict_handler='resolve')
+
+    # define the arguments
+    parser.add_argument('--bamfiles', '-b',
+                        metavar = 'list of bam files',
+                        help = 'List of indexed bam files separated by space',
+                        nargs = '+',
+                        required = True)
+
+    parser.add_argument('--labels', '-l',
+                        metavar = 'list of labels files',
+                        help = 'List of labels to use in the output. '
+                        'If not given the file names will be used instead. '
+                        'Separate the labels by space.',
+                        nargs = '+')
+    
+    parser.add_argument('--binSize', '-bs',
+                        help = 'Length in base pairs for a window used to sample the genome.',
+                        default = 10000,
+                        type = int)
+
+    parser.add_argument('--numberOfSamples', '-n',
+                        help = 'Number of samples taken from the genome to compute the scaling factors',
+                        default = 1e5,
+                        type = int)
+
+
+    parser.add_argument('--corMethod',
+                        help = 'correlation method to use',
+                        choices = ['pearson', 'spearman'],
+                        required=True)
+
+    parser.add_argument('--includeZeros',
+                        help = 'If set, then zero counts that happen for '
+                        '*all* bam files given are included. The default '
+                        'behavior is to ignore those cases ',
+                        action = 'store_true',
+                        required = False)
+
+    group = parser.add_argument_group('Output')
+
+    group.add_argument('--plotFile', '-plot',
+                       help = 'File name to save the .png file containing a plot '
+                       'of the correlation.',
+                       metavar = 'FILE',
+                       type=argparse.FileType('w'),
+                       required=True)
+
+    group.add_argument('--outFileCorMatrix', '-o',
+                        help = 'Output file name for the correlation matrix.',
+                        metavar = 'FILENAME',
+                        type=argparse.FileType('w'))
+
+    group.add_argument('--outRawCounts',
+                        help = 'Output file name to save the bin counts',
+                        metavar = 'FILENAME',
+                        type=argparse.FileType('w'))
+
+    args = parser.parse_args(args)
+    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
+    
+    
+    if args.labels and len(args.bamfiles) != len(args.labels):
+        print "The number of does not match the number of bam files."
+        exit(0)
+    if not args.labels:
+        args.labels = args.bamfiles
+    return(args)
+
+
+def plotCorrelation(corr_matrix, labels, plotFileName):
+    from  matplotlib import use as mplt_use
+    mplt_use('Agg')
+    import matplotlib.pyplot as plt
+    import scipy.cluster.hierarchy as sch
+    M = corr_matrix.shape[0]
+    # Compute and plot dendrogram.
+    fig = plt.figure(figsize=(12,9))
+    axdendro = fig.add_axes([0.02,0.1,0.10,0.8])
+    axdendro.set_axis_off()
+    Y = sch.linkage(corr_matrix, method='centroid')
+    Z = sch.dendrogram(Y, orientation='right')
+    axdendro.set_xticks([])
+    axdendro.set_yticks([])
+    cmap = plt.get_cmap('Reds') 
+    # Plot distance matrix.
+    axmatrix = fig.add_axes([0.13,0.1,0.6,0.8])
+    index = Z['leaves']
+    corr_matrix = corr_matrix[index,:]
+    corr_matrix = corr_matrix[:,index]
+    im = axmatrix.matshow(corr_matrix, aspect='equal', origin='lower', 
+                          cmap=cmap, extent=(0, M, 0, M))
+    axmatrix.yaxis.tick_right()
+    axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
+    axmatrix.set_yticklabels(np.array(labels).astype('str')[index], fontsize='small')
+
+    axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
+    axmatrix.set_xticklabels(np.array(labels).astype('str')[index], fontsize='small', 
+                             rotation='vertical')
+#    axmatrix.set_xticks([])
+    # Plot colorbar.
+    axcolor = fig.add_axes([0.13,0.065,0.6, 0.02])
+    plt.colorbar(im, cax=axcolor,  orientation='horizontal')
+    for row in range(M):
+        for col in range(M):
+            axmatrix.text(row+0.5, col+0.5, "{:.2f}".format(corr_matrix[row,col]),
+                          ha='center', va='center')
+    # Display and save figure.
+    fig.savefig(plotFileName)
+
+
+def main(args):
+    """
+    1. get read counts at different positions all of same length
+    
+    2. compute  correlation
+
+    """
+    if len(args.bamfiles) < 2:
+        print "Please input at least two bam files to compare"
+        exit(1)
+
+    if args.includeZeros:
+        skipZeros = False
+    else:
+        skipZeros = True
+
+    num_reads_per_bin = countR.getNumReadsPerBin(args.bamfiles, 
+                                                 args.binSize, args.numberOfSamples, 
+                                                 args.fragmentLength, 
+                                                 numberOfProcessors=args.numberOfProcessors, 
+                                                 skipZeros=skipZeros,
+                                                 verbose=args.verbose,
+                                                 region=args.region)
+
+
+    if args.outRawCounts:
+        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
+        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
+        for row in num_reads_per_bin:
+            args.outRawCounts.write(fmt % tuple(row))
+
+    # num_reads_per_bin: rows <- bins, cols <- samples
+    M = len(args.bamfiles)
+    #initialize correlation matrix
+    corr_matrix = np.zeros( (M,M), dtype='float')
+    options = {'spearman': spearmanr,
+               'pearson': pearsonr}
+    # do an all vs all correlation using the
+    # indices of the upper triangle
+    rows, cols = np.triu_indices(M)
+    for index in xrange(len(rows)):
+        row = rows[index]
+        col = cols[index]
+        corr_matrix[row, col] = options[args.corMethod](num_reads_per_bin[:,row],
+                                                        num_reads_per_bin[:,col])[0]
+    # make the matrix symetric
+    corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
+    
+    if args.outFileCorMatrix:
+        args.outFileCorMatrix.write("\t'"+ "'\t'".join(args.labels) + "'\n" )
+        fmt = "\t".join(np.repeat('%.4f', num_reads_per_bin.shape[1])) + "\n"
+        i = 0
+        for row in corr_matrix:
+            args.outFileCorMatrix.write("'%s'\t" % args.labels[i] + fmt % tuple(row))
+            i += 1    
+
+    plotFileName = args.plotFile.name
+    args.plotFile.close()
+    plotCorrelation(corr_matrix, args.labels, plotFileName)
+
+if __name__ == "__main__":
+    args = parseArguments()
+    main(args)
