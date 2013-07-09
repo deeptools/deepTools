@@ -172,16 +172,6 @@ Arguments used by heatmapper and profiler
 """
 
 
-def heatmapperMatrixArgs(args=None):
-    parser = argparse.ArgumentParser(add_help=False)
-    required = parser.add_argument_group('Required arguments')
-    required.add_argument('--matrixFile', '-m',
-                          help='Matrix file from the computeMatrix tool',
-                          type=argparse.FileType('r'),
-                          )
-    return parser
-
-
 def compareMatrixRequiredArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
@@ -202,42 +192,6 @@ def compareMatrixRequiredArgs(args=None):
     return parser
 
 
-def heatmapperOutputArgs(args=None):
-    parser = argparse.ArgumentParser(add_help=False)
-    output = parser.add_argument_group('Output options')
-    output.add_argument('--outFileName', '-out',
-                        help='File name to save the image, '
-                        'e.g. MyHeatmap.png ',
-                        type=writableFile,
-                        required=True)
-    output.add_argument('--outFileFormat', '-O',
-                        help='Output format for the image. Options '
-                        'are "png", "emf", "eps", "pdf", "svg".',
-                        default="png",
-                        choices=["png", "emf", "eps", "pdf", "svg"])
-    output.add_argument('--outFileNameData',
-                        help='File name to save the data '
-                        'underlying data for the average profile, e.g. '
-                        'myProfile.tab',
-                        type=argparse.FileType('w'))
-    output.add_argument('--outFileNameMatrix',
-                        help='If this option is given, then the matrix '
-                        'of values underlying the heatmap will be saved '
-                        'using this name, e.g. MyMatrix.tab.',
-                        metavar='FILE',
-                        type=writableFile)
-    output.add_argument('--outFileSortedRegions',
-                        help='File name in which the regions are saved '
-                        'after skiping zeros or min/max threshold values. The '
-                        'order of the regions in the file follows the sorting '
-                        'order selected. This is useful, for example, to '
-                        'generate other heatmaps keeping the sorting of the '
-                        'first heatmap. Example: Heatmap1sortedRegions.bed',
-                        metavar='FILE',
-                        type=argparse.FileType('w'))
-    return parser
-
-
 def computeMatrixOutputArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
@@ -248,7 +202,9 @@ def computeMatrixOutputArgs(args=None):
                         required=True)
     output.add_argument('--outFileNameData',
                         help='File name to save the data underlying '
-                        'data for the average profile, e.g. myProfile.tab',
+                        'data the averages per matrix column. This '
+                        'corresponds to the underlying data used to '
+                        'plot a profile. Example: myProfile.tab',
                         type=argparse.FileType('w'))
 
     output.add_argument('--outFileNameMatrix',
@@ -432,84 +388,220 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
     return parser
 
 
-def heatmapperOptionalArgs():
+def heatmapperMatrixArgs(args=None):
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+    required.add_argument('--matrixFile', '-m',
+                          help='Matrix file from the computeMatrix tool.',
+                          type=argparse.FileType('r'),
+                          )
+    return parser
+
+
+def heatmapperOutputArgs(args=None,
+                         mode=['heatmap', 'profile'][0]):
+    parser = argparse.ArgumentParser(add_help=False)
+    output = parser.add_argument_group('Output options')
+    output.add_argument('--outFileName', '-out',
+                        help='File name to save the image, '
+                        'e.g. MyHeatmap.png ',
+                        type=writableFile,
+                        required=True)
+    output.add_argument('--outFileFormat', '-O',
+                        help='Output format for the image. Options '
+                        'are "png", "emf", "eps", "pdf", "svg".',
+                        default="png",
+                        choices=["png", "emf", "eps", "pdf", "svg"])
+    output.add_argument('--outFileNameData',
+                        help='File name to save the data '
+                        'underlying data for the average profile, e.g. '
+                        'myProfile.tab',
+                        type=argparse.FileType('w'))
+    if mode == 'heatmap':
+        output.add_argument('--outFileNameMatrix',
+                            help='If this option is given, then the matrix '
+                            'of values underlying the heatmap will be saved '
+                            'using this name, e.g. MyMatrix.tab.',
+                            metavar='FILE',
+                            type=writableFile)
+        output.add_argument(
+            '--outFileSortedRegions',
+            help='File name in which the regions are saved '
+            'after skiping zeros or min/max threshold values. The '
+            'order of the regions in the file follows the sorting '
+            'order selected. This is useful, for example, to '
+            'generate other heatmaps keeping the sorting of the '
+            'first heatmap. Example: Heatmap1sortedRegions.bed',
+            metavar='FILE',
+            type=argparse.FileType('w'))
+    return parser
+
+
+def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     import matplotlib
 
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
 
-    optional.add_argument('--startLabel',
-                          default='TSS',
-                          help='[only for scale-regions mode] Label shown in '
-                          'the plot for the start of '
-                          'the region. Default is TSS (transcription '
-                          'start site), but could be changed to anything, '
-                          'e.g. "peak start".'
-                          'Same for the --endLabel option. See below.')
-    optional.add_argument('--endLabel',
-                          default='TES',
-                          help='[only for scale-regions mode] Label '
-                          'shown in the plot for the region '
-                          'end. Default is TES (transcription end site).')
-    optional.add_argument('--nanAfterEnd',
-                          help=argparse.SUPPRESS,
-                          default=False)
+    if mode == 'profile':
+        optional.add_argument('--startLabel',
+                              default='TSS',
+                              help='[only for scale-regions mode] Label shown '
+                              'in the plot for the start of '
+                              'the region. Default is TSS (transcription '
+                              'start site), but could be changed to anything, '
+                              'e.g. "peak start".'
+                              'Same for the --endLabel option. See below.')
+        optional.add_argument('--endLabel',
+                              default='TES',
+                              help='[only for scale-regions mode] Label '
+                              'shown in the plot for the region '
+                              'end. Default is TES (transcription end site).')
+        optional.add_argument('--nanAfterEnd',
+                              help=argparse.SUPPRESS,
+                              default=False)
 
-    optional.add_argument('--refPointLabel',
-                          help='[only for scale-regions mode] Label '
-                          'shown in the plot for the '
-                          'reference-point. Default '
-                          'is the same as the reference point selected '
-                          '(e.g. TSS), but could be anything, e.g. '
-                          '"peak start" etc.',
-                          default='TSS')
+        optional.add_argument('--refPointLabel',
+                              help='[only for scale-regions mode] Label '
+                              'shown in the plot for the '
+                              'reference-point. Default '
+                              'is the same as the reference point selected '
+                              '(e.g. TSS), but could be anything, e.g. '
+                              '"peak start" etc.',
+                              default='TSS')
+
+        optional.add_argument(
+            '--averageType',
+            default='mean',
+            choices=["mean", "median", "min",
+                     "max", "std", "sum"],
+            help='Define the type of statistic that should be used for the '
+            'profile. The options are: "mean", "median", "min", "max" and '
+            '"std".')
+
+        optional.add_argument('--plotHeight',
+                              help='height in cm. The default for the plot '
+                              'height is 5 centimeters. The minimum value is '
+                              '3 cm.',
+                              type=float,
+                              default=5)
+
+        optional.add_argument('--plotWidth',
+                              help='Width in cm. The default value is 8 '
+                              'centimeters. The minimum value is 1 cm.',
+                              type=float,
+                              default=8)
+
+        optional.add_argument(
+            '--plotType',
+            help='For the summary plot (profile) only. The '
+            '"lines" option will plot the profile line based '
+            'on the average type selected. The "fill" option '
+            'fills the region between zero and the profile '
+            'curve. The fill in color is semi transparent to '
+            'distinguish different profiles. The "std" option '
+            'colors the region between the profile and the '
+            'standard deviation of the data. As in the case of '
+            'fill, a semi-transparent color is used. The option '
+            '"overlapped_lines" plots each region values, one on '
+            'top of the other; this option only works if '
+            '--onePlotPerGroup is set.',
+            choices=['lines', 'fill', 'std', 'overlapped_lines'],
+            default='lines')
+
+    elif mode == 'heatmap':
+        optional.add_argument('--sortRegions',
+                              help='Whether the heatmap should present '
+                              'the regions sorted. The default is '
+                              'to sort in descending order based on '
+                              'the mean value per region.',
+                              choices=["descend", "ascend", "no"],
+                              default='descend')
+
+        optional.add_argument('--sortUsing',
+                              help='Indicate which method should be used for '
+                              'sorting. For each row the '
+                              'method is computed.',
+                              choices=["mean", "median", "max", "min", "sum",
+                                       "region_length"],
+                              default='mean')
+
+        optional.add_argument(
+            '--averageTypeSummaryPlot',
+            default='mean',
+            choices=["mean", "median", "min",
+                     "max", "std", "sum"],
+            help='Define the type of statistic that should be plotted in the '
+            'summary image above the heatmap. The options are: "mean", '
+            '"median", "min", "max" and "std".')
+
+        optional.add_argument(
+            '--missingDataColor',
+            default='black',
+            help='If --missingDataAsZero is not set, such cases '
+            'will be colored in black by default. Using this '
+            'parameter a different color can be set. A value '
+            'between 0 and 1 will be used for a gray scale '
+            '(black is 0). For a list of possible color '
+            'names see: http://packages.python.org/ete2/'
+            'reference/reference_svgcolors.html. '
+            'Other colors can be specified using the #rrggbb '
+            'notation.')
+
+        optional.add_argument(
+            '--colorMap', default='RdYlBu',
+            help='Color map to use for the heatmap. Available values can be '
+            'seen here: '
+            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
+            'matplotlib_cm/',
+            choices=[m for m in matplotlib.cm.datad])
+        optional.add_argument('--zMin', '-min',
+                              default=None,
+                              help='Minimum value for the heatmap intensities')
+        optional.add_argument('--zMax', '-max',
+                              default=None,
+                              help='Maximum value for the heatmap intensities')
+        optional.add_argument('--heatmapHeight',
+                              help='height in cm. The default for the heatmap '
+                              'height is 25 centimeters. The minimum value is '
+                              '3 cm and the maximum is 100.',
+                              type=float,
+                              default=25)
+
+        optional.add_argument('--heatmapWidth',
+                              help='Width in cm. The default value is 7.5 '
+                              'centimeters. The minimum value is 1cm  and the '
+                              'maximum is 100.',
+                              type=float,
+                              default=7.5)
+        optional.add_argument(
+            '--whatToShow',
+            help='The default is to include a summary or profile plot on top '
+            'of the heatmap and a heatmap colorbar. Other options are: '
+            '"plot and heatmap", '
+            '"heatmap only", "colorbar only", "heatmap and '
+            'colorbar", and the default "plot, heatmap and '
+            'colorbar" ',
+            choices=["plot, heatmap and colorbar",
+                     "plot and heatmap", "heatmap only",
+                     "colorbar only", "heatmap and colorbar"],
+            default='plot, heatmap and colorbar')
+    ## end elif
 
     optional.add_argument('--regionsLabel', '-z',
                           default='genes',
-                          help='Label for the regions plotted in the '
-                          'heatmap. This label will be overridden if labels '
-                          'are found in the regions file. Default is "genes"')
+                          help='Labels for the regions plotted in the '
+                          'heatmap. If more than one region is being '
+                          'plotted a list of lables '
+                          'separated by comma and limited by quotes, '
+                          'is requires. For example, '
+                          ' --regionsLabel "label1, label2" '
+                          'Default is "genes".')
+
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
                           'the generated image. Leave blank for no title',
                           default='')
-
-    optional.add_argument('--sortRegions',
-                          help='Whether the heatmap should present '
-                          'the regions sorted. The default is '
-                          'to sort in descending order based on '
-                          'the mean value per region.',
-                          choices=["descend", "ascend", "no"],
-                          default='descend')
-
-    optional.add_argument('--sortUsing',
-                          help='Indicate which method should be used for '
-                          'sorting. For each row the '
-                          'method is computed.',
-                          choices=["mean", "median", "max", "min", "sum",
-                                   "region_length"],
-                          default='mean')
-
-    optional.add_argument('--missingDataColor',
-                          default='black',
-                          help='If --missingDataAsZero is not set, such cases '
-                          'will be colored in black by default. Using this '
-                          'parameter a different color can be set. A value '
-                          'between 0 and 1 will be used for a gray scale '
-                          '(black is 0). For a list of possible color '
-                          'names see: http://packages.python.org/ete2/'
-                          'reference/reference_svgcolors.html. '
-                          'Other colors can be specified using the #rrggbb '
-                          'notation.')
-
-    optional.add_argument('--averageTypeSummaryPlot',
-                          default='mean',
-                          choices=["mean", "median", "min",
-                                   "max", "std", "sum"],
-                          help='Define the type of statistic that should be '
-                          'plotted in the summary image above the heatmap. '
-                          'The options are: "mean", "median", "min", "max" '
-                          'and "std".')
 
     optional.add_argument('--xAxisLabel', '-x',
                           default='gene distance (bp)',
@@ -519,25 +611,12 @@ def heatmapperOptionalArgs():
                           help='Description for the y-axis label for the '
                           'top panel')
 
-    optional.add_argument('--zMin', '-min',
-                          default=None,
-                          help='Minimum value for the heatmap intensities')
-    optional.add_argument('--zMax', '-max',
-                          default=None,
-                          help='Maximum value for the heatmap intensities')
     optional.add_argument('--yMin',
                           default=None,
                           help='Minimum value for the Y-axis')
     optional.add_argument('--yMax',
                           default=None,
                           help='Maximum value for the Y-axis')
-    optional.add_argument('--colorMap',
-                          default='RdYlBu',
-                          help='Color map to use for the heatmap. Available '
-                          'values can be seen here: '
-                          'http://www.astro.lsa.umich.edu/~msshin/science/'
-                          'code/matplotlib_cm/',
-                          choices=[m for m in matplotlib.cm.datad])
 
     optional.add_argument('--onePlotPerGroup',
                           help='When the region file contains groups separated'
@@ -546,48 +625,8 @@ def heatmapperOptionalArgs():
                           'set, each group will get its own plot, stacked on '
                           'top of each other.',
                           action='store_true')
-    optional.add_argument('--plotType',
-                          help='For the summary plot (profile) only. The '
-                          '"lines" option will plot the profile line based '
-                          'on the average type selected. The "area" option '
-                          'fills the region between zero and the profile '
-                          'curve. The fill in color is semi transparent to '
-                          'distinguish different profiles. The "std" option '
-                          'colors the region between the profile and the '
-                          'standard deviation of the data. As in the case of '
-                          'fill, a semi-transparent color is used. The option '
-                          '"overlapped_lines" plots each region values one on '
-                          'top of the other; this option only works if '
-                          '--onePlotPerGroup is set.',
-                          choices=['lines', 'fill', 'std', 'overlapped_lines'],
-                          default='lines')
     optional.add_argument('--verbose',
                           help='set to yes, to see Warning messages and '
                           'other information',
                           action='store_true')
-    optional.add_argument('--heatmapHeight',
-                          help='height in cm. The default for the heatmap '
-                          'height is 25 centimeters. The minimum value is '
-                          '3 cm and the maximum is 100.',
-                          type=float,
-                          default=25)
-
-    optional.add_argument('--heatmapWidth',
-                          help='Width in cm. The default value is 7.5 '
-                          'centimeters. The minimum value is 1cm  and the '
-                          'maximum is 100.',
-                          type=float,
-                          default=7.5)
-    optional.add_argument('--whatToShow',
-                          help='The default is to include a summary or '
-                          'profile plot on top of the heatmap and a '
-                          'heatmap colorbar. Other options '
-                          'are: "plot only", "plot and heatmap", '
-                          '"heatmap only", "colorbar only", "heatmap and '
-                          'colorbar", and the default "plot, heatmap and '
-                          'colorbar" ',
-                          choices=["plot only", "plot, heatmap and colorbar",
-                                   "plot and heatmap", "heatmap only",
-                                   "colorbar only", "heatmap and colorbar"],
-                          default='plot, heatmap and colorbar')
     return parser

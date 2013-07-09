@@ -23,9 +23,9 @@ def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
                  parserCommon.heatmapperOutputArgs(),
-                 parserCommon.heatmapperOptionalArgs()],
+                 parserCommon.heatmapperOptionalArgs(mode='profile')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='This tool creates a heatmap for a '
+        description='This tool creates a profile plot for a '
         'score associated to genomic regions. '
         'Typically, these regions are genes, but '
         'any other regions defined in a BED or GFF '
@@ -37,15 +37,15 @@ def parseArguments(args=None):
 
     # Because of galaxy, the value of this variables is normally
     # set to ''. Therefore this check is needed
-    for attr in ['zMin', 'zMax', 'yMax', 'yMin']:
+    for attr in ['yMax', 'yMin']:
         try:
             args.__setattr__(attr, float(args.__getattribute__(attr)))
 #       except ValueError, TypeError:
         except:
             args.__setattr__(attr, None)
 
-    args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and \
-        args.heatmapHeight <= 100 else 10
+    args.plotHeight = args.plotHeight if args.plotHeight > 3 and \
+        args.plotHeight <= 100 else 10
 
     if args.regionsLabel != 'genes':
         args.regionsLabel = \
@@ -86,22 +86,18 @@ def plot_profile(ax, ma, average_type, color, label,
 
 
 def plotProfile(hm, outFileName, outFileFormat='png',
-                colorMap='binary',
                 plotTitle='',
                 xAxisLabel='', yAxisLabel='',
                 yMin=None, yMax=None,
                 averageType='median',
                 referencePointLabel='TSS',
                 startLabel='TSS', endLabel="TES",
-                plotHeight=15,
-                plotWidth=18,
+                plotHeight=5,
+                plotWidth=8,
                 onePlotPerGroup=False,
                 plotType='simple'):
 
     tickPlotAdj = 0.5
-    plotHeight=5
-    plotWidth=8
-
     plt.rcParams['font.size'] = 10.0
 #    rcParams['font.size'] = 9.0
 
@@ -247,14 +243,6 @@ def plotProfile(hm, outFileName, outFileFormat='png',
                 bbox_inches='tight', pdd_inches=0, dpi=200)
 
 
-def flattenMatrix(matrixDict):
-    """
-    concat and flatten
-    """
-    matrixFlatten = np.concatenate([x for x in matrixDict.values()]).flatten()
-    return matrixFlatten
-
-
 def main(args):
     r"""
     >>> import filecmp
@@ -286,12 +274,6 @@ def main(args):
 
     if len(args.regionsLabel):
         hm.reLabelGroups(args.regionsLabel)
-    if args.sortRegions != 'no':
-        hm.sortMatrix(sort_using=args.sortUsing,
-                      sort_method=args.sortRegions)
-
-    if args.outFileNameMatrix:
-        hm.saveMatrixValues(args.outFileNameMatrix)
 
     if args.outFileNameData:
         hm.saveTabulatedValues(args.outFileNameData)
@@ -301,15 +283,15 @@ def main(args):
 
     plotProfile(hm,
                 args.outFileName, args.outFileFormat,
-                args.colorMap, args.plotTitle,
+                args.plotTitle,
                 args.xAxisLabel, args.yAxisLabel,
                 args.yMin, args.yMax,
-                args.averageTypeSummaryPlot,
+                args.averageType,
                 args.refPointLabel,
                 args.startLabel,
                 args.endLabel,
-                args.heatmapHeight,
-                args.heatmapWidth,
+                args.plotHeight,
+                args.plotWidth,
                 args.onePlotPerGroup,
                 plotType=args.plotType)
 
