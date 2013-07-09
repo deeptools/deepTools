@@ -4,9 +4,6 @@
 import sys
 sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
 import argparse
-from collections import OrderedDict
-import numpy as np
-import multiprocessing
 
 # own tools
 from deeptools import parserCommon
@@ -89,6 +86,7 @@ def main(args):
                   'skip zeros': args.skipZeros,
                   'verbose': args.verbose,
                   'nan after end': args.nanAfterEnd,
+                  'proc number': args.numberOfProcessors
                   }
 
     hm = heatmapper.heatmapper()

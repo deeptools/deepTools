@@ -512,11 +512,6 @@ class heatmapper:
             fh.write('#{}\n'.format(label))
         fh.close()
 
-    @staticmethod
-    def matrixAvg(matrix, avgType='mean'):
-        matrix = np.ma.masked_invalid(matrix)
-        return np.__getattribute__(avgType)(matrix, axis=0)
-
     def saveTabulatedValues(self, file_handle):
         bin = range(self.parameters['upstream'] * -1,
                     self.parameters['body'] + self.parameters['downstream'],
@@ -540,6 +535,90 @@ class heatmapper:
             file_handle.write('\n')
 
         file_handle.close()
+
+    def reLabelGroups(self, group_labels):
+        """
+        changes the labels of the groups
+        """
+        if len(group_labels) != len(self.matrixDict):
+            sys.stderr.write(
+                "The number of groups does not match the number of labels "
+                "given. Please define {} different labels.\nThe labels "
+                "given were: {}\n.".format(len(self.matrixDict), group_labels))
+            exit(1)
+        elif len(set(group_labels)) != len(group_labels):
+            print "The group labels given contain repeated names. Please "
+            "give a unique name to each value. The values given are "
+            "{} ".format(group_labels)
+            exit(1)
+
+        matrixDict = OrderedDict()
+        regionsDict = OrderedDict()
+        lengthDict = OrderedDict()
+        matrixAvgsDict = OrderedDict()
+        old_labels = self.matrixDict.keys()
+        for index in range(len(group_labels)):
+            matrixDict[group_labels[index]] = \
+                self.matrixDict[old_labels[index]]
+            regionsDict[group_labels[index]] = \
+                self.regionsDict[old_labels[index]]
+            try:
+                lengthDict[group_labels[index]] = \
+                    self.lengthDict[old_labels[index]]
+            except KeyError:
+                pass
+            try:
+                matrixAvgsDict[group_labels[index]] = \
+                    self.matrixAvgsDict[old_labels[index]]
+            except KeyError:
+                pass
+
+        self.matrixDict = matrixDict
+        self.regionsDict = regionsDict
+        self.lengthDict = lengthDict
+        self.matrixAvgsDict = matrixAvgsDict
+
+    def saveMatrixValues(self, file_name):
+        # print a header telling the group names and their length
+        fh = open(file_name, 'w')
+        info = []
+        for label, regions in self.regionsDict.iteritems():
+            info.append("{}:{}".format(label, len(regions)))
+        fh.write("#{}\n".format("\t".join(info)))
+        # add to header the x axis values
+        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
+                 self.parameters['downstream'],
+                 self.parameters['upstream'],
+                 self.parameters['body'],
+                 self.parameters['bin size']))
+
+        fh.close()
+        # reopen again using append mode
+        fh = open(file_name, 'a')
+        for key in self.matrixDict:
+            np.savetxt(fh, self.matrixDict[key], fmt="%.3g")
+        fh.close()
+
+    def saveBED(self, file_handle):
+        for label, regions in self.regionsDict.iteritems():
+            j = 0
+            for region in regions:
+                file_handle.write(
+                    '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                        region['chrom'],
+                        region['start'],
+                        region['end'],
+                        region['name'],
+                        self.matrixAvgsDict[label][j],
+                        region['strand']))
+                j += 1
+            file_handle.write('#{}\n'.format(label))
+        file_handle.close()
+
+    @staticmethod
+    def matrixAvg(matrix, avgType='mean'):
+        matrix = np.ma.masked_invalid(matrix)
+        return np.__getattribute__(avgType)(matrix, axis=0)
 
     @staticmethod
     def getRegionsAndGroups(regions_file, onlyMultiplesOf=1,
@@ -615,48 +694,6 @@ class heatmapper:
 
         return regionsDict
 
-    def reLabelGroups(self, group_labels):
-        """
-        changes the labels of the groups
-        """
-        if len(group_labels) != len(self.matrixDict):
-            sys.stderr.write(
-                "The number of groups does not match the number of labels "
-                "given. Please define {} different labels.\nThe labels "
-                "given were: {}\n.".format(len(self.matrixDict), group_labels))
-            exit(1)
-        elif len(set(group_labels)) != len(group_labels):
-            print "The group labels given contain repeated names. Please "
-            "give a unique name to each value. The values given are "
-            "{} ".format(group_labels)
-            exit(1)
-
-        matrixDict = OrderedDict()
-        regionsDict = OrderedDict()
-        lengthDict = OrderedDict()
-        matrixAvgsDict = OrderedDict()
-        old_labels = self.matrixDict.keys()
-        for index in range(len(group_labels)):
-            matrixDict[group_labels[index]] = \
-                self.matrixDict[old_labels[index]]
-            regionsDict[group_labels[index]] = \
-                self.regionsDict[old_labels[index]]
-            try:
-                lengthDict[group_labels[index]] = \
-                    self.lengthDict[old_labels[index]]
-            except KeyError:
-                pass
-            try:
-                matrixAvgsDict[group_labels[index]] = \
-                    self.matrixAvgsDict[old_labels[index]]
-            except KeyError:
-                pass
-
-        self.matrixDict = matrixDict
-        self.regionsDict = regionsDict
-        self.lengthDict = lengthDict
-        self.matrixAvgsDict = matrixAvgsDict
-
     @staticmethod
     def ginterval2dict(genomicInterval):
         """
@@ -672,40 +709,3 @@ class heatmapper:
         except IndexError:
             region['name'] = "No name"
         return region
-
-    def saveMatrixValues(self, file_name):
-        # print a header telling the group names and their length
-        fh = open(file_name, 'w')
-        info = []
-        for label, regions in self.regionsDict.iteritems():
-            info.append("{}:{}".format(label, len(regions)))
-        fh.write("#{}\n".format("\t".join(info)))
-        # add to header the x axis values
-        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
-                 self.parameters['downstream'],
-                 self.parameters['upstream'],
-                 self.parameters['body'],
-                 self.parameters['bin size']))
-
-        fh.close()
-        # reopen again using append mode
-        fh = open(file_name, 'a')
-        for key in self.matrixDict:
-            np.savetxt(fh, self.matrixDict[key], fmt="%.3g")
-        fh.close()
-
-    def saveBED(self, file_handle):
-        for label, regions in self.regionsDict.iteritems():
-            j = 0
-            for region in regions:
-                file_handle.write(
-                    '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                        region['chrom'],
-                        region['start'],
-                        region['end'],
-                        region['name'],
-                        self.matrixAvgsDict[label][j],
-                        region['strand']))
-                j += 1
-            file_handle.write('#{}\n'.format(label))
-        file_handle.close()
