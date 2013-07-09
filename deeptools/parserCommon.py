@@ -1,4 +1,5 @@
 import argparse
+import config as cfg
 
 
 def output(args=None):
@@ -104,11 +105,13 @@ def getParentArgParse(args=None):
                         type=genomicRegion)
 
     parser.add_argument('--numberOfProcessors', '-p',
-                        help='Number of processors to use. The default is to '
-                        'use half of the max. available number of processors.',
+                        help='Number of processors to use. Type "max/2" to '
+                        'use half the maximun number of processors or "max" '
+                        'to use all available processors.',
                         metavar="INT",
                         type=numberOfProcessors,
-                        default="max/2",
+                        default=cfg.config.get('general',
+                                               'default_proc_number'),
                         required=False)
 
     parser.add_argument('--verbose', '-v',
@@ -125,6 +128,9 @@ def numberOfProcessors(string):
     if string == "max/2":  # default case
         # by default half of the available processors are used
         numberOfProcessors = int(availProc * 0.5)
+    elif string == "max":
+        # use all available processors
+        numberOfProcessors = availProc
     else:
         try:
             numberOfProcessors = int(string)
@@ -380,10 +386,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           type=float,
                           default=1)
     optional.add_argument('--numberOfProcessors', '-p',
-                          help='Number of processors to use. The default '
-                          'is to use half the maximun number of procesors',
+                          help='Number of processors to use. Type "max/2" to '
+                          'use half the maximun number of processors or "max" '
+                          'to use all available processors.',
+                          metavar="INT",
                           type=numberOfProcessors,
-                          default="max/2",
+                          default=cfg.config.get('general',
+                                                 'default_proc_number'),
                           required=False)
     return parser
 
@@ -444,32 +453,6 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     optional = parser.add_argument_group('Optional arguments')
 
     if mode == 'profile':
-        optional.add_argument('--startLabel',
-                              default='TSS',
-                              help='[only for scale-regions mode] Label shown '
-                              'in the plot for the start of '
-                              'the region. Default is TSS (transcription '
-                              'start site), but could be changed to anything, '
-                              'e.g. "peak start".'
-                              'Same for the --endLabel option. See below.')
-        optional.add_argument('--endLabel',
-                              default='TES',
-                              help='[only for scale-regions mode] Label '
-                              'shown in the plot for the region '
-                              'end. Default is TES (transcription end site).')
-        optional.add_argument('--nanAfterEnd',
-                              help=argparse.SUPPRESS,
-                              default=False)
-
-        optional.add_argument('--refPointLabel',
-                              help='[only for scale-regions mode] Label '
-                              'shown in the plot for the '
-                              'reference-point. Default '
-                              'is the same as the reference point selected '
-                              '(e.g. TSS), but could be anything, e.g. '
-                              '"peak start" etc.',
-                              default='TSS')
-
         optional.add_argument(
             '--averageType',
             default='mean',
@@ -586,7 +569,32 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "plot and heatmap", "heatmap only",
                      "colorbar only", "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
+
     ## end elif
+    optional.add_argument('--startLabel',
+                          default='TSS',
+                          help='[only for scale-regions mode] Label shown '
+                          'in the plot for the start of '
+                          'the region. Default is TSS (transcription '
+                          'start site), but could be changed to anything, '
+                          'e.g. "peak start".'
+                          'Same for the --endLabel option. See below.')
+    optional.add_argument('--endLabel',
+                          default='TES',
+                          help='[only for scale-regions mode] Label '
+                          'shown in the plot for the region '
+                          'end. Default is TES (transcription end site).')
+    optional.add_argument('--refPointLabel',
+                          help='[only for scale-regions mode] Label '
+                          'shown in the plot for the '
+                          'reference-point. Default '
+                          'is the same as the reference point selected '
+                          '(e.g. TSS), but could be anything, e.g. '
+                          '"peak start" etc.',
+                          default='TSS')
+    optional.add_argument('--nanAfterEnd',
+                          help=argparse.SUPPRESS,
+                          default=False)
 
     optional.add_argument('--regionsLabel', '-z',
                           default='genes',

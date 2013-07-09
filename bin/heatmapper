@@ -25,7 +25,7 @@ def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
                  parserCommon.heatmapperOutputArgs(),
-                 parserCommon.heatmapperOptionalArgs()],
+                 parserCommon.heatmapperOptionalArgs(mode='heatmap')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool creates a heatmap for a '
         'score associated to genomic regions. '

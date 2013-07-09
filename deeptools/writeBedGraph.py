@@ -1,6 +1,5 @@
 import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
-sys.path.append('/galaxy/local_tools/mpi-ie/')
+sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
 import os
 import shutil
 import tempfile
@@ -10,6 +9,7 @@ import numpy as np
 import mapReduce
 from utilities import getCommonChrNames
 from countReadsPerBin import getCoverageOfRegion, getSmoothRange
+import config as cfg
 import bamHandler
 
 debug = 0
@@ -186,15 +186,17 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     chrSizesFileName = _file2.name
 
     if sort:
+        sort_cmd = cfg.config.get('external_tools', 'sort')
         # temporary file to store sorted bedgraph file
         _file = NamedTemporaryFile(delete=False)
         tempFileName1 = _file.name
-        system("sort -k1,1 -k2,2n %s > %s" % (bedGraphPath, tempFileName1))
+        system("{} -k1,1 -k2,2n {} > {}".format(sort_cmd,
+                                                bedGraphPath, tempFileName1))
         bedGraphPath = tempFileName1
 
-    system(
-        "/package/UCSCtools/bedGraphToBigWig "
-        "{} {} {}".format(bedGraphPath, chrSizesFileName, bigWigPath))
+    bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
+    system("{} {} {} {}".format(bedgraph_to_bigwig,
+                                bedGraphPath, chrSizesFileName, bigWigPath))
 
     if sort:
         remove(tempFileName1)

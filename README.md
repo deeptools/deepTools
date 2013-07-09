@@ -1,4 +1,7 @@
-deepTools
-=========
+========
+deep tools
+========
 
-Tools to process and analyze deep sequencing data.
+deep Tools provides useful routines to deal with mapped reads.
+This includes converting them to bigwig files, run a 
+GC correction and plot heatmaps and profiles.

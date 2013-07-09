@@ -10,8 +10,9 @@ from bx.bbi.bigwig_file import BigWigFile
 
 # own module
 import mapReduce
-from deeptools.utilities import getCommonChrNames
-from deeptools.writeBedGraph import *
+from utilities import getCommonChrNames
+from writeBedGraph import *
+import config as cfg
 
 
 def getCoverageFromBam(bamHandle, chrom, start, end, tileSize,
@@ -222,6 +223,7 @@ def writeBedGraph(
 
     """
 
+    bigwig_info = cfg.config.get('external_tools', 'bigwig_info')
     bamHandlers = [openBam(indexedFile) for
                    indexedFile,
                    fileFormat in bamOrBwFileList if fileFormat == 'bam']
@@ -239,8 +241,7 @@ def writeBedGraph(
         for bw in bigwigs:
             inBlock = False
             for line in os.popen(
-                    "/package/UCSCtools/bigWigInfo "
-                    "-chroms {}".format(bw)).readlines():
+                    "{} -chroms {}".format(bigwig_info, bw)).readlines():
 
                 if line[0:10] == "chromCount":
                     inBlock = True
@@ -260,7 +261,7 @@ def writeBedGraph(
                                 "{} for {}.\n\nThe smallest " \
                                 "length will be used".format(
                                 chromName, chromNamesAndSize[chromName],
-                                bigwigs[0], size,  bigwigs[1])
+                                bigwigs[0], size, bigwigs[1])
                             chromNamesAndSize[chromName] = min(
                                 chromNamesAndSize[chromName], size)
                     else:
