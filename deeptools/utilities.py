@@ -1,22 +1,24 @@
 import sys
 
 debug = 0
-def getGC_content( dnaString, as_fraction=True ):
-   if len(dnaString) == 0:
-      return None 
-   if dnaString.count('N') > len(dnaString)/2:
-      raise Exception("too many NNNs in assembly sequence")
-      return None
 
-   gc = 0
-   gc += dnaString.count('G')
-   gc += dnaString.count('g')
-   gc += dnaString.count('C')
-   gc += dnaString.count('c')
-   if as_fraction: 
-       return( float (gc) /len(dnaString) )
-   else:
-       return gc
+
+def getGC_content(dnaString, as_fraction=True):
+    if len(dnaString) == 0:
+        return None
+    if dnaString.count('N') > len(dnaString) / 2:
+        raise Exception("too many NNNs in assembly sequence")
+        return None
+
+    gc = 0
+    gc += dnaString.count('G')
+    gc += dnaString.count('g')
+    gc += dnaString.count('C')
+    gc += dnaString.count('c')
+    if as_fraction:
+        return(float(gc) /len(dnaString))
+    else:
+        return gc
 
 
 def tbitToBamChrName(tbitNames, bamNames):
@@ -26,35 +28,47 @@ def tbitToBamChrName(tbitNames, bamNames):
         tbitNames and bamNames should be lists
     """
 
-    chrNameBitToBam = dict((x,x) for x in tbitNames)
+    chrNameBitToBam = dict((x, x) for x in tbitNames)
     if set(bamNames) != set(tbitNames):
         if debug:
-           print "Index and reference do not have matching chromosome names"
-        if set([ "chr" + x if x != 'dmel_mitochondrion_genome' else 'chrM' for x in bamNames ]) ==  set(tbitNames):
-           if debug:
-              print "Adding chr seems to solve the problem, this means we are dealing with Drosophila  data. Continuing ..."
-           chrNameBitToBam = dict([ ("chr" + x if x != 'dmel_mitochondrion_genome' else 'chrM', x) for x in bamNames ])
-        elif set([x for x in tbitNames if x.count('random') == 0 and x.count('chrM') == 0]) == set(bamNames):
-           if debug:
-              print "Removing random and mitochondrial chromosomes fixes the problem"
-           chrNameBitToBam = dict([(x,x)  for x in tbitNames if x.count('random') == 0 and x.count('chrM') == 0 ])
+            print "Index and reference do not have matching chromosome names"
+        if set(["chr" + x if x != 'dmel_mitochondrion_genome'
+                else 'chrM' for x in bamNames]) == set(tbitNames):
+            if debug:
+                print "Adding chr seems to solve the problem, this means we "
+                "are dealing with Drosophila  data. Continuing ..."
+            chrNameBitToBam = dict([("chr" + x
+                                     if x != 'dmel_mitochondrion_genome'
+                                     else 'chrM', x) for x in bamNames ])
+        elif set([x for x in tbitNames if x.count('random') == 0
+                  and x.count('chrM') == 0]) == set(bamNames):
+            if debug:
+                print "Removing random and mitochondrial chromosomes"
+                "fixes the problem"
+            chrNameBitToBam = dict([(x, x) for x in tbitNames
+                                    if x.count('random') == 0 and
+                                    x.count('chrM') == 0])
         elif len(set(bamNames).intersection(set(tbitNames)) ) > 0:
-           if debug:
-              print "Using only common chromosomes between between index and reference:"
-              print set(bamNames).intersection(set(tbitNames))
-           chrNameBitToBam = dict([(x,x) for x in set(bamNames).intersection(set(tbitNames)) ] )
+            if debug:
+                print "Using only common chromosomes between between "
+                "index and reference:"
+                print set(bamNames).intersection(set(tbitNames))
+            chrNameBitToBam = dict([(x, x) for x in
+                                    set(bamNames).intersection(set(tbitNames))])
         else:
-           if debug:
-              print "Index and reference do not have matching chromosome names"
-           exit(0)
+            if debug:
+                print "Index and reference do not have matching "
+                "chromosome names"
+            exit(0)
 
     return chrNameBitToBam
+
 
 def getCommonChrNames(bamFileHandlers, verbose=True):
     r"""
     Compares the names and lengths of a list of bam file handlers.
     The input is list of pysam file handlers.
-    
+
     The function returns a duple containing the common chromosome names
     and the common chromome lengths.
 
