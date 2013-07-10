@@ -1,4 +1,5 @@
 import ConfigParser
+import os
 
 config = ConfigParser.ConfigParser()
-config.read("../config/deepTools.cfg")
+config.read(os.path.dirname(__file__) + "/../config/deepTools.cfg")

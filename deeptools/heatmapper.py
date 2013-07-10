@@ -9,6 +9,10 @@ import pysam
 from bx.intervals.io import GenomicIntervalReader
 
 
+def compute_sub_matrix_wrapper(args):
+    return heatmapper.compute_sub_matrix_worker(*args)
+
+
 class heatmapper:
     """
     Class to handle the reading and
@@ -72,10 +76,10 @@ class heatmapper:
                     "processors ".format(label, len(mp_args),
                                          parameters['proc number'])
                 pool = multiprocessing.Pool(parameters['proc number'])
-                res = pool.map_async(heatmapper.compute_sub_matrix_wrapper,
+                res = pool.map_async(compute_sub_matrix_wrapper,
                                      mp_args).get(9999999)
             else:
-                res = map(heatmapper.compute_sub_matrix_wrapper, mp_args)
+                res = map(compute_sub_matrix_wrapper, mp_args)
 
             # each worker in the pools returns a tuple containing
             # the submatrix data and the regions that correspond to the
@@ -97,10 +101,6 @@ class heatmapper:
         self.matrixDict = matrixDict
         self.regionsDict = regionsDict
         self.parameters = parameters
-
-    @staticmethod
-    def compute_sub_matrix_wrapper(args):
-        return heatmapper.compute_sub_matrix_worker(*args)
 
     @staticmethod
     def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
@@ -320,10 +320,11 @@ class heatmapper:
                 valuesArray[indexStart:indexEnd] += 1
         except ValueError:
             sys.stderr.write(
-                "Value out of range for region %s %s %s\n" % (chrom, start, end ))
+                "Value out of range for region %s %s %s\n" % (chrom, start, end))
             return np.array([0])  # return something inocuous
 
-        return heatmapper.coverageFromArray(valuesArray, zones, binSize, avgType)
+        return heatmapper.coverageFromArray(valuesArray, zones,
+                                            binSize, avgType)
 
     @staticmethod
     def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType,
@@ -424,8 +425,9 @@ class heatmapper:
             region = line.split('\t')
             chrom, start, end, name, mean, strand = region[0:6]
             matrix_rows.append(np.fromiter(region[6:], np.float))
-            regions.append({'chrom': chrom, 'start': start, 'end': end,
-                            'name': name, 'mean': mean, 'strand': strand})
+            regions.append({'chrom': chrom, 'start': int(start),
+                            'end': int(end), 'name': name, 'mean': float(mean),
+                            'strand': strand})
             includedIntervals += 1
 
         if len(regions):
@@ -494,7 +496,7 @@ class heatmapper:
                 # this method to join np_array values
                 # keeps nans while converting them to strings
                 try:
-                    score = self.matrixAvgsDict[label][j]
+                    score = float(self.matrixAvgsDict[label][j])
                 except KeyError:
                     score = 0
                 matrix_values = "\t".join(

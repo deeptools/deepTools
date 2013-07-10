@@ -531,13 +531,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'Other colors can be specified using the #rrggbb '
             'notation.')
 
+        color_options = "', '".join([m for m in matplotlib.cm.datad
+                                     if not m.endswith('_r')])
+
         optional.add_argument(
             '--colorMap', default='RdYlBu',
             help='Color map to use for the heatmap. Available values can be '
             'seen here: '
             'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/',
-            choices=[m for m in matplotlib.cm.datad])
+            'matplotlib_cm/ The available options are: \'' +
+            color_options + '\'')
+
         optional.add_argument('--zMin', '-min',
                               default=None,
                               help='Minimum value for the heatmap intensities')
