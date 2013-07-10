@@ -436,7 +436,7 @@ def heatmapperOutputArgs(args=None,
         output.add_argument(
             '--outFileSortedRegions',
             help='File name in which the regions are saved '
-            'after skiping zeros or min/max threshold values. The '
+            'after skipping zeros or min/max threshold values. The '
             'order of the regions in the file follows the sorting '
             'order selected. This is useful, for example, to '
             'generate other heatmaps keeping the sorting of the '
