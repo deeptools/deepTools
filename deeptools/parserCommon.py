@@ -405,15 +405,13 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
     output.add_argument('--outFileName', '-out',
-                        help='File name to save the image, '
-                        'e.g. MyHeatmap.png ',
+                        help='File name to save the image. The file '
+                        'ending will be used to determine the image '
+                        'format. The available options are: "png", "emf", '
+                        '"eps", "pdf" and "svg", e. g. MyHeatmap.png ',
                         type=writableFile,
                         required=True)
-    output.add_argument('--outFileFormat', '-O',
-                        help='Output format for the image. Options '
-                        'are "png", "emf", "eps", "pdf", "svg".',
-                        default="png",
-                        choices=["png", "emf", "eps", "pdf", "svg"])
+
     output.add_argument('--outFileNameData',
                         help='File name to save the data '
                         'underlying data for the average profile, e.g. '

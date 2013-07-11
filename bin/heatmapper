@@ -89,7 +89,7 @@ def plot_profile(ax, ma, average_type, color, label,
             ax.plot(row, 'yellow', alpha=0.1)
 
 
-def plotMatrix(hm, outFileName, outFileFormat='png',
+def plotMatrix(hm, outFileName,
                colorMap='binary', missingDataColor='black',
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
@@ -379,18 +379,10 @@ def plotMatrix(hm, outFileName, outFileFormat='png',
                        heatFracHeight - smallSpacerFrac])
             fig.colorbar(img, cax=legend)
 
-    if showSummaryPlot and not showHeatmap:
-        # for some reason if the bbox_inches is used
-        # then the legend for the summary plot is omited
-        plt.savefig(outFileName, format=outFileFormat,
-                    bbox_inches='tight', pdd_inches=0)
-
-    else:
-        # To remove the white space from the surroundings of the image:
-        # bbox_inches = 'tight'
-       # savefig(outFileName, format=outFileFormat, bbox_inches='tight');
-        plt.savefig(outFileName, format=outFileFormat,
-                    bbox_inches='tight', pdd_inches=0, dpi=200)
+    # To remove the white space from the surroundings of the image:
+    # bbox_inches = 'tight'
+   # savefig(outFileName, format=outFileFormat, bbox_inches='tight');
+    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200)
 
 
 def flattenMatrix(matrixDict):
@@ -492,7 +484,7 @@ def main(args):
         hm.saveBED(args.outFileSortedRegions)
 
     plotMatrix(hm,
-               args.outFileName, args.outFileFormat,
+               args.outFileName,
                args.colorMap, args.missingDataColor, args.plotTitle,
                args.xAxisLabel, args.yAxisLabel, args.regionsLabel,
                args.zMin, args.zMax,

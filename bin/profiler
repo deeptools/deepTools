@@ -86,7 +86,7 @@ def plot_profile(ax, ma, average_type, color, label,
     ax.set_xlim(0, max(x))
 
 
-def plotProfile(hm, outFileName, outFileFormat='png',
+def plotProfile(hm, outFileName,
                 plotTitle='',
                 xAxisLabel='', yAxisLabel='',
                 yMin=None, yMax=None,
@@ -237,8 +237,7 @@ def plotProfile(hm, outFileName, outFileFormat='png',
 
     # for some reason if the bbox_inches is used
     # then the legend for the summary plot is omited
-    plt.savefig(outFileName, format=outFileFormat,
-                bbox_inches='tight', pdd_inches=0, dpi=200)
+    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200)
 
 
 def main(args):
@@ -274,7 +273,7 @@ def main(args):
         hm.saveBED(args.outFileSortedRegions)
 
     plotProfile(hm,
-                args.outFileName, args.outFileFormat,
+                args.outFileName,
                 args.plotTitle,
                 args.xAxisLabel, args.yAxisLabel,
                 args.yMin, args.yMax,
