@@ -91,6 +91,20 @@ class heatmapper:
             matrix = np.ma.masked_invalid(matrix)
             # merge all valid regions
             regionList = np.concatenate([r[1] for r in res], axis=0)
+
+#            import ipdb;ipdb.set_trace()
+            regions_no_score = sum([r[2] for r in res])
+            if regions_no_score > len(regions) * 0.75:
+                file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
+                prcnt = 100 * float(regions_no_score) / len(regions)
+                print "\n\nWarning: {:.2f}% of regions are not associated "\
+                    "to a score in the given {} file. Check that the "\
+                    "chromosome  names from the BED file are consistent with "\
+                    "the chromosome names in the given {} file and that both "\
+                    "files refer to the same species\n\n".format(prcnt,
+                                                                 file_type,
+                                                                 file_type)
+
             if len(regionList) == 0:
                 print "Error: could not compute values for any of the regions"
                 exit()
@@ -116,7 +130,7 @@ class heatmapper:
 
         j = 0
         subRegions = []
-
+        regions_no_score = 0
         for feature in regions:
            # print some information
             if parameters['body'] > 0 and \
@@ -196,9 +210,10 @@ class heatmapper:
                     parameters['missing data as zero'])
 
                 if coverage is None:
+                    regions_no_score += 1
                     if parameters['verbose']:
                         sys.stderr.write(
-                            "No scores defined for region "
+                            "No data was found for region "
                             "{} {}:{}-{}. Skipping...\n".format(
                                 feature['name'], feature['chrom'],
                                 feature['start'], feature['end']))
@@ -277,7 +292,7 @@ class heatmapper:
         subMatrix = subMatrix[0:j, :]
         if len(subRegions) != len(subMatrix[:, 0]):
             print "regions lengths do not match"
-        return (subMatrix, subRegions)
+        return (subMatrix, subRegions, regions_no_score)
 
     @staticmethod
     def coverageFromArray(valuesArray, zones, binSize, avgType):
@@ -299,9 +314,11 @@ class heatmapper:
                                                    retstep=True)
                 for pos in np.ceil(posArray):
                     indexStart = int(pos - start)
-                    indexEnd   = int(indexStart + binSize)
-                    countsList.append(heatmapper.myAverage(valuesArray[indexStart:indexEnd],
-                                                avgType))
+#                    indexEnd   = int(indexStart + binSize)
+                    indexEnd   = int(indexStart + stepSize)
+                    countsList.append(
+                        heatmapper.myAverage(valuesArray[indexStart:indexEnd],
+                                             avgType))
                 cvgList.append(np.array(countsList))
             except ValueError:
                 pass
@@ -418,7 +435,8 @@ class heatmapper:
                         includedIntervals - regionGroups[-1][0] > 1:
                     label = line[1:]
                     regionsDict[label] = np.array(regions[:])
-                    matrixDict[label] = np.vstack(matrix_rows)
+                    matrixDict[label] = \
+                        np.ma.masked_invalid(np.vstack(matrix_rows))
                     regions = []
                     matrix_rows = []
                 continue
@@ -432,7 +450,8 @@ class heatmapper:
 
         if len(regions):
             regionsDict[default_group_name] = np.array(regions)
-            matrixDict[default_group_name] = np.vstack(matrix_rows)
+            matrixDict[default_group_name] = \
+                np.ma.masked_invalid(np.vstack(matrix_rows))
 
         self.regionsDict = regionsDict
         self.matrixDict = matrixDict
@@ -455,9 +474,9 @@ class heatmapper:
                         self.parameters['bin size']
                     self.lengthDict[label] = \
                         b + (matrixAvgs / self.parameters['bin size'])
-
-                matrixAvgs = np.__getattribute__(sort_using)(
-                    self.matrixDict[label], axis=1)
+                else:
+                    matrixAvgs = np.__getattribute__(sort_using)(
+                        self.matrixDict[label], axis=1)
                 SS = matrixAvgs.argsort()
 
                 if sort_method == 'descend':
@@ -495,10 +514,15 @@ class heatmapper:
             for region in regions:
                 # this method to join np_array values
                 # keeps nans while converting them to strings
-                try:
-                    score = float(self.matrixAvgsDict[label][j])
-                except KeyError:
-                    score = 0
+                score = 0
+                if self.matrixAvgsDict is not None:
+                    try:
+                        if np.isnan(self.matrixAvgsDict[label][j]):
+                            score = 'nan'
+                        else:
+                            score = np.float(self.matrixAvgsDict[label][j])
+                    except KeyError:
+                        pass
                 matrix_values = "\t".join(
                     np.char.mod('%f', self.matrixDict[label][j]))
                 fh.write(
@@ -604,6 +628,15 @@ class heatmapper:
     def saveBED(self, file_handle):
         for label, regions in self.regionsDict.iteritems():
             j = 0
+            score = 0
+            if self.matrixAvgsDict is not None:
+                try:
+                    if np.isnan(self.matrixAvgsDict[label][j]):
+                        score = 'nan'
+                    else:
+                        score = np.float(self.matrixAvgsDict[label][j])
+                except KeyError:
+                    pass
             for region in regions:
                 file_handle.write(
                     '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
@@ -611,7 +644,7 @@ class heatmapper:
                         region['start'],
                         region['end'],
                         region['name'],
-                        self.matrixAvgsDict[label][j],
+                        score,
                         region['strand']))
                 j += 1
             file_handle.write('#{}\n'.format(label))
@@ -689,10 +722,10 @@ class heatmapper:
             regionsDict[default_group_name] = np.array(regions)
 
         if verbose:
-            print "%d (%.2f) regions covering the exact same interval "
-            "were found" % \
-                (duplicates,
-                 float(duplicates) * 100 / totalIntervals)
+            print "{} ({:.2f}) regions covering the exact same " \
+                "interval were found".format(
+                duplicates,
+                float(duplicates) * 100 / totalIntervals)
 
         return regionsDict
 

@@ -29,8 +29,8 @@ def parseArguments(args=None):
         "and 'reference-point.",
         dest='command')
 
-    # binning mode options
-    binning = subparsers.add_parser(
+    # scale-regions mode options
+    scaleRegions = subparsers.add_parser(
         'scale-regions',
         parents=[parserCommon.compareMatrixRequiredArgs(),
                  parserCommon.computeMatrixOutputArgs(),
@@ -51,6 +51,17 @@ def parseArguments(args=None):
 
     args = parser.parse_args(args)
 
+    if args.command == 'scale-regions':
+        args.nanAfterEnd = False
+        args.referencePoint = None
+    elif args.command == 'reference-point':
+        if args.beforeRegionStartLength == 0 and \
+                args.afterRegionStartLength == 0:
+            print "\nUpstrean and downstream regions are both set to 0. "\
+                "Nothing to output. Maybe you want to use "\
+                "the scale-regions mode?\n"
+            exit()
+
     return(args)
 
 
@@ -70,6 +81,18 @@ def main(args):
     ... '/tmp/_test.mat')
     True
     >>> os.remove('/tmp/_test.mat')
+    >>> args = parseArguments("scale-regions \
+    ... -R ../deeptools/test/test_heatmapper/test2.bed \
+    ... -S ../deeptools/test/test_heatmapper/test.bw \
+    ... -b 100 -a 100 -m 100 --outFileName /tmp/_test2.mat.gz \
+    ... -bs 10 -p 1".split())
+    >>> main(args)
+    >>> os.system('gunzip -f /tmp/_test2.mat.gz')
+    0
+    >>> filecmp.cmp('../deeptools/test/test_heatmapper/master_scale_reg.mat',
+    ... '/tmp/_test2.mat')
+    True
+    >>> os.remove('/tmp/_test2.mat')
     """
 
     parameters = {'upstream': args.beforeRegionStartLength,
