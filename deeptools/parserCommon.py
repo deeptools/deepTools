@@ -202,22 +202,22 @@ def computeMatrixOutputArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
     output.add_argument('--outFileName', '-out',
-                        help='File name to save the encoded matrix file '
+                        help='File name to save the gzipped matrix file '
                         'needed by the "heatmapper" and "profiler" tools.',
                         type=writableFile,
                         required=True)
     output.add_argument('--outFileNameData',
-                        help='File name to save the data underlying '
-                        'data the averages per matrix column. This '
-                        'corresponds to the underlying data used to '
-                        'plot a profile. Example: myProfile.tab',
+                        help='Name to save the averages per matrix '
+                        'column into a text file. This corresponds to'
+                        'the underlying data used to '
+                        'plot a summary profile. Example: myProfile.tab',
                         type=argparse.FileType('w'))
 
     output.add_argument('--outFileNameMatrix',
                         help='If this option is given, then the matrix '
                         'of values underlying the heatmap will be saved '
-                        'using this name, e.g. MyMatrix.tab. This matrix '
-                        'can easily be loaded into R.',
+                        'using the indicated name, e.g. IndividualValues.tab.'
+                        'This matrix can easily be loaded into R or other programs.',
                         metavar='FILE',
                         type=writableFile)
     output.add_argument('--outFileSortedRegions',
@@ -325,8 +325,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortUsing',
                           help='Indicate which method should be used for '
-                          'sorting. For each row the '
-                          'method is computed.',
+                          'sorting. The value is computed for each row.',
                           choices=["mean", "median", "max", "min", "sum",
                                    "region_length"],
                           default='mean')
@@ -545,15 +544,15 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               default=None,
                               help='Maximum value for the heatmap intensities')
         optional.add_argument('--heatmapHeight',
-                              help='height in cm. The default for the heatmap '
-                              'height is 25 centimeters. The minimum value is '
-                              '3 cm and the maximum is 100.',
+                              help='Height in cm. The default for the heatmap '
+                              'height is 25. The minimum value is '
+                              '3 and the maximum is 100.',
                               type=float,
                               default=25)
 
         optional.add_argument('--heatmapWidth',
                               help='Width in cm. The default value is 7.5 '
-                              'centimeters. The minimum value is 1cm  and the '
+                              'The minimum value is 1 and the '
                               'maximum is 100.',
                               type=float,
                               default=7.5)

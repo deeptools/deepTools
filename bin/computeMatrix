@@ -15,12 +15,14 @@ def parseArguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             description='This tool summarizes and prepares an intermediary '
-            'file that can be used afterwards to plot a or a profile. Such '
-            'file is based on a score associated to genomic regions. '
-            'Typically, these regions are genes, but '
+            'file containing scores associated with genomic regions ''
+            'that can be used afterwards to plot a heatmap or a profile. '
+            'Typically, these genoic regions are genes, but '
             'any other regions defined in a BED or GFF '
             'format can be used. This tool can also be used to '
-            'filter and sort regions according to their score',
+            'filter and sort regions according to their score.'
+            'Type %(prog)s reference-point --help to learn more about'
+            'the specific parameters.',
             epilog='An example usage is:\n %(prog)s reference-point -S '
             '<biwig file> -R <bed file> -b 1000\n\n')
 
@@ -36,7 +38,7 @@ def parseArguments(args=None):
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='scale-regions')],
         help="In the scale-regions mode, all regions in the BED/GFF file are "
-        "stretched or shrunk to fit into a common length.")
+        "stretched or shrunk to the same length (bp) that is indicated by the user.")
 
     # reference point arguments
     refpoint = subparsers.add_parser(
@@ -45,8 +47,8 @@ def parseArguments(args=None):
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='reference-point')],
         help="Reference-point refers to a position within the BED/GFF regions "
-        "(e.g start of region). In the reference-point mode only those "
-        "genomic positions before (downstream) or after (upstream) the "
+        "(e.g start of region). In the reference-point, mode only those "
+        "genomic positions before (downstream) and/or after (upstream) the "
         "reference point will be plotted.")
 
     args = parser.parse_args(args)
