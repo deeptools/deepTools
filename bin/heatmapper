@@ -147,7 +147,7 @@ def plotMatrix(hm, outFileName, outFileFormat='png',
     spaceBetweenClusterNames = 0
 
     if showSummaryPlot:
-        spaceBetweenClusterNames = 0.55
+        spaceBetweenClusterNames = 0.25
         sumFigHeightInches = 1.5
 
     if showSummaryPlot and showHeatmap:
@@ -339,7 +339,11 @@ def plotMatrix(hm, outFileName, outFileFormat='png',
                                 cmap=colorMap,
                                 extent=[0, ma.shape[1], ma.shape[0], 0])
 
-            if label in hm.lengthDict.keys() and \
+            # plot a line showing the border of the gene length
+            # only if the matrix is using reference-point (b>0)
+            # The lengthDict is set to none if the matrix is
+            # not ordered according to region length
+            if b > 0 and label in hm.lengthDict.keys() and \
                     hm.lengthDict[label] is not None:
                 x_lim  = axHeat.get_xlim()
                 y_lim  = axHeat.get_ylim()
@@ -442,17 +446,27 @@ def main(args):
     ... --outFileName /tmp/_test.png".split())
     >>> main(args)
     >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/master.png', '/tmp/_test.png')
+    ... '../deeptools/test/test_heatmapper/master.png', '/tmp/_test.png') #may fail if diff version of  matplotlib library is used
     True
+    >>> os.remove('/tmp/_test.png')
     >>> args = parseArguments(
     ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test.png --regionsLabel uno,dos".split())
+    ... --outFileName /tmp/_test2.png --regionsLabel uno,dos".split())
     >>> main(args)
     >>> filecmp.cmp(
     ... '../deeptools/test/test_heatmapper/master_relabeled.png',
-    ... '/tmp/_test.png')
+    ... '/tmp/_test2.png') #may fail because diff matplotlib library was used
     True
-    >>> os.remove('/tmp/_test.png')
+    >>> os.remove('/tmp/_test2.png')
+    >>> args = parseArguments(
+    ... "-m ../deeptools/test/test_heatmapper/master_scale_reg.mat.gz \
+    ... --outFileName /tmp/_test3.png".split())
+    >>> main(args)
+    >>> filecmp.cmp(
+    ... '../deeptools/test/test_heatmapper/master_scale_reg.png',
+    ... '/tmp/_test3.png') #may fail because diff matplotlib library was used
+    True
+    >>> os.remove('/tmp/_test3.png')
 
     """
 

@@ -268,12 +268,6 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'of the given regions. If the '
                               'regions are genes, this would be the distance '
                               'downstream of the transcription end site.')
-        # this options only exist for reference-point
-        optional.add_argument('--nanAfterEnd',
-                              help=argparse.SUPPRESS,
-                              default=False)
-        optional.add_argument('--referencePoint',
-                              default=None, help=argparse.SUPPRESS)
 
     elif case == 'reference-point':
         optional.add_argument('--referencePoint',
@@ -321,7 +315,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'descending order based on '
                           'the mean value per region.',
                           choices=["descend", "ascend", "no"],
-                          default='descend')
+                          default='no')
 
     optional.add_argument('--sortUsing',
                           help='Indicate which method should be used for '
@@ -530,13 +524,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'Other colors can be specified using the #rrggbb '
             'notation.')
 
+        color_options = "', '".join([m for m in matplotlib.cm.datad
+                                     if not m.endswith('_r')])
+
         optional.add_argument(
             '--colorMap', default='RdYlBu',
             help='Color map to use for the heatmap. Available values can be '
             'seen here: '
             'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/',
-            choices=[m for m in matplotlib.cm.datad])
+            'matplotlib_cm/ The available options are: \'' +
+            color_options + '\'')
+
         optional.add_argument('--zMin', '-min',
                               default=None,
                               help='Minimum value for the heatmap intensities')

@@ -15,7 +15,7 @@ from matplotlib.font_manager import FontProperties
 from deeptools import parserCommon
 from deeptools import heatmapper
 
-debug = 1
+debug = 0
 plt.ioff()
 
 
@@ -68,9 +68,9 @@ def plot_profile(ax, ma, average_type, color, label,
     sumry = np.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     if plot_type != 'overlapped_lines':
-        ax.plot(sumry, color=color, label=label, alpha=0.6)
+#        ax.plot(sumry, color=color, label=label, alpha=0.6)
+        ax.plot(sumry, label=label, alpha=0.9)
         x = np.arange(len(sumry))
-
     if plot_type == 'fill':
         ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
 
@@ -83,6 +83,7 @@ def plot_profile(ax, ma, average_type, color, label,
         ax.patch.set_facecolor('black')
         for row in ma:
             ax.plot(row, 'yellow', alpha=0.1)
+    ax.set_xlim(0, max(x))
 
 
 def plotProfile(hm, outFileName, outFileFormat='png',
@@ -99,16 +100,18 @@ def plotProfile(hm, outFileName, outFileFormat='png',
 
     tickPlotAdj = 0.5
     plt.rcParams['font.size'] = 10.0
+    fontP = FontProperties()
+    fontP.set_size('small')
 #    rcParams['font.size'] = 9.0
 
-    # the heatmapHeight value is given in cm
+    # convert cm values to inches
     plotHeightInches = float(plotHeight) / 2.54
     figWidth = float(plotWidth) / 2.54
 
     # measures are in inches
     topBorder = 0.36
-    bottomBorder = 0.2
-    spacer = 1
+    spacer = 0.25
+    bottomBorder = 0.3
 
     numGroups = len(hm.matrixDict)
 
@@ -120,18 +123,11 @@ def plotProfile(hm, outFileName, outFileFormat='png',
         onePlotPerGroup = True
 
     # plotHeightInches  height of plot plus bottom spacing
-    if onePlotPerGroup:
-        # decide the figure size based on the number of groups defined
-        # Each summary plot occupies 1 x 1.3 inches plus 0.4 inches for
-        # spacing. The plot occupies plotHeightInches inches
-        figHeight = topBorder + bottomBorder + numGroups * \
-            plotHeightInches
-
-        figHeight = topBorder + bottomBorder + numGroups * \
-            (plotHeightInches + spacer)
-    else:
+    if not onePlotPerGroup:
         figHeight = topBorder + bottomBorder + (numGroups / 2) * \
             spacer + plotHeightInches
+    else:
+        figHeight = plotHeightInches
 
     sumFracHeight = float(plotHeightInches) / figHeight
     # fraction of the height for summary plots
@@ -191,7 +187,8 @@ def plotProfile(hm, outFileName, outFileFormat='png',
         if onePlotPerGroup:
             # create an axis for each sub plot
             bottom = 1 - topBorderFrac - (index + 1) * sumFracHeight
-            ax = fig.add_axes([left, bottom, width, sumFracHeight])
+            ax = fig.add_subplot(numGroups, 1, index + 1, label=label)
+#            ax = fig.add_axes([left, bottom, width, sumFracHeight])
             plot_profile(ax, ma, averageType,
                          cmap_plot(1. * index / numGroups), label,
                          plot_type=plotType)
@@ -206,6 +203,9 @@ def plotProfile(hm, outFileName, outFileFormat='png',
                           for i in range(1, numTicks, 2)]
             ax.set_yticks(yTicks)
             ax.axes.set_ylabel(yAxisLabel)
+
+            ax.legend(loc='upper right', prop=fontP,
+                      frameon=False, markerscale=0.5)
 
         else:
             # add new lines to existing plot
@@ -222,8 +222,6 @@ def plotProfile(hm, outFileName, outFileFormat='png',
         ax.axes.set_xticks(xTicks)
         ax.axes.set_xticklabels(xTicksLabel)
         #ax.axes.set_title(plotTitle, weight='bold');
-        fontP = FontProperties()
-        fontP.set_size('small')
         # the legend shows in a box below the plot
         ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
                   loc='upper center',
@@ -249,20 +247,14 @@ def main(args):
     >>> import os
     >>> args = parseArguments(
     ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test.png".split())
+    ... --outFileName /tmp/_test.png --regionsLabel uno,dos \
+    ... --plotType std".split())
     >>> main(args)
     >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/master.png', '/tmp/_test.png')
-    True
-    >>> args = parseArguments(
-    ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test.png --regionsLabel uno,dos --plotType std".split())
-    >>> main(args)
-    >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/master_relabeled.png',
+    ... '../deeptools/test/test_heatmapper/profile_master.png',
     ... '/tmp/_test.png')
     True
-    >>> #os.remove('/tmp/_test.png')
+    >>> os.remove('/tmp/_test.png')
 
     """
 
