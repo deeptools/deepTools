@@ -10,7 +10,8 @@ setup(
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler',
-             'bin/computeMatrix', 'bin/computeGCBias', 'bin/correctGCBias'],
+             'bin/computeMatrix', 'bin/computeGCBias', 'bin/correctGCBias',
+             'bin/bigwigCompare],
 #    url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
     description='Useful library to deal with mapped reads in sorted '
