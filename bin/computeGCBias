@@ -126,6 +126,7 @@ def parseArguments(args=None):
 
     plot.add_argument('--regionSize',
                       metavar='INT',
+                      type=int,
                       default=300,
                       help='To plot the reads per GC over a region'
                       'the size of the region is required. By default, '
@@ -573,12 +574,13 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
     title = "reads per regions of {} bp".format(args.regionSize)
     fig = plt.figure(figsize=(6, 8))
     ax1 = fig.add_subplot(211, title=title)
-    ax2 = fig.add_subplot(212, title='log2 of correction')
+    ax2 = fig.add_subplot(212, title='normalized observed/expected read counts')
 
     # make boxplot
 
     bp = ax1.boxplot(reads_per_gc, notch=0, patch_artist=True)
-    plt.setp(bp['boxes'], color='black', facecolor='lightblue')
+#    plt.setp(bp['boxes'], color='black', facecolor='mediumaquamarine')
+    plt.setp(bp['boxes'], color='black', facecolor='khaki')
     plt.setp(bp['medians'], color='black')
     plt.setp(bp['whiskers'], color='black', linestyle='dashed')
     plt.setp(bp['fliers'], marker='None')
@@ -586,28 +588,31 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
     # get the whisker that spands the most
     y_max = max([x.get_data()[1][1] for x in bp['whiskers']])
     ax1.set_ylim(0 - (y_max * 0.05), y_max * 1.05)
+    ax1.set_ylabel('Number of reads')
+    ax1.set_xlabel('GC fraction')
 #    ax1.set_xticks([1, 2])
     ax1.set_xticklabels(bin_labels)
-
-    ax2.plot(np.log2(frequencies[:, 2]))
+    x = np.linspace(0, 1, frequencies.shape[0])
+    ax2.plot(x, np.log2(frequencies[:, 2]), color='#8c96f0')
+    ax2.set_xlabel('GC fraction')
+    ax2.set_ylabel('log2ratio observed/expected')
 #    fig.suptitle(args.title, fontsize='small')
 #    plt.tight_layout()
-    if not file_name.endswith('.png'):
-        file_name = file_name + '.png'
+    plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100)
 
 
 def main(args):
     ################## compute histograms #################
 
-    # fail early
-    outputFile = "{}/corrected_counts".format(args.outDir)
+    # check if directory is writable
     try:
         if not os.path.exists(args.outDir):
             os.mkdir(args.outDir)
-        open(outputFile, 'w').close()
-    except IOError as detail:
-        print detail
+    except OSError:
+        sys.stderr.write("\nCould not create {} folder. Please check that "
+                        "the path is valid  and has write "
+                        "permissions\n\n".format(args.outDir))
         exit()
 
     if args.filterOut:
@@ -664,11 +669,10 @@ def main(args):
                   for i in range(len(bam.references))]
 
     # check if  a precomputed correction already exists
-    if os.path.exists(args.outDir + "/frequencies_data_min.txt"):
+    if os.path.exists(args.outDir + "/frequencies_data.txt"):
         print "The destination directory {} already contains the " \
-            "computation of a GC bias. You can either proceed to " \
-            "plot the bias or correct it.".format(args.outDir)
-        exit(1)
+            "computation of a GC bias. You can proceed with " \
+            "the correction tool.".format(args.outDir)
 
     # use possion distribution to identify peaks that should be discarted
     # I multiply by 4, because the real distribution of reads

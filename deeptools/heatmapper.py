@@ -60,6 +60,7 @@ class heatmapper:
         regionsDict = self.getRegionsAndGroups(regions_file, verbose=verbose)
 
         matrixDict = OrderedDict()
+        matrixAvgsDict = OrderedDict()
         for label, regions in regionsDict.iteritems():
             # args to pass to the multiprocessing workers
             mp_args = []
@@ -109,12 +110,14 @@ class heatmapper:
                 print "Error: could not compute values for any of the regions"
                 exit()
 
+            matrixAvgsDict[label] = np.mean(matrix, axis=1)
             matrixDict[label] = matrix
             regionsDict[label] = regionList
 
         self.matrixDict = matrixDict
         self.regionsDict = regionsDict
         self.parameters = parameters
+        self.matrixAvgsDict = matrixAvgsDict
 
     @staticmethod
     def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
@@ -402,6 +405,7 @@ class heatmapper:
         matrix_rows = []
         regionsDict = OrderedDict()
         matrixDict = OrderedDict()
+        matrixAvgsDict = OrderedDict()
         regionGroups = [(0, '')]
         parameters = dict()
         totalIntervals = 0
@@ -437,6 +441,10 @@ class heatmapper:
                     regionsDict[label] = np.array(regions[:])
                     matrixDict[label] = \
                         np.ma.masked_invalid(np.vstack(matrix_rows))
+                    # be default compute the mean average
+                    # this will be rewritten in case the user
+                    # has choosen to sort the matrix
+                    matrixAvgsDict[label] = np.mean(matrixDict[label], axis=1)
                     regions = []
                     matrix_rows = []
                 continue
@@ -452,6 +460,8 @@ class heatmapper:
             regionsDict[default_group_name] = np.array(regions)
             matrixDict[default_group_name] = \
                 np.ma.masked_invalid(np.vstack(matrix_rows))
+            matrixAvgsDict[label] = np.mean(matrixDict[default_group_name],
+                                            axis=1)
 
         self.regionsDict = regionsDict
         self.matrixDict = matrixDict
@@ -472,6 +482,8 @@ class heatmapper:
                                            for x in self.regionsDict[label]])
                     b = self.parameters['upstream'] / \
                         self.parameters['bin size']
+                    # for plotting I add the upstream
+                    # distance
                     self.lengthDict[label] = \
                         b + (matrixAvgs / self.parameters['bin size'])
                 else:
@@ -515,14 +527,12 @@ class heatmapper:
                 # this method to join np_array values
                 # keeps nans while converting them to strings
                 score = 0
+#                score = region['mean']
                 if self.matrixAvgsDict is not None:
-                    try:
-                        if np.isnan(self.matrixAvgsDict[label][j]):
-                            score = 'nan'
-                        else:
-                            score = np.float(self.matrixAvgsDict[label][j])
-                    except KeyError:
-                        pass
+                    if np.ma.is_masked(self.matrixAvgsDict[label][j]):
+                        score = 'nan'
+                    else:
+                        score = np.float(self.matrixAvgsDict[label][j])
                 matrix_values = "\t".join(
                     np.char.mod('%f', self.matrixDict[label][j]))
                 fh.write(
@@ -628,16 +638,16 @@ class heatmapper:
     def saveBED(self, file_handle):
         for label, regions in self.regionsDict.iteritems():
             j = 0
-            score = 0
-            if self.matrixAvgsDict is not None:
-                try:
-                    if np.isnan(self.matrixAvgsDict[label][j]):
-                        score = 'nan'
-                    else:
-                        score = np.float(self.matrixAvgsDict[label][j])
-                except KeyError:
-                    pass
             for region in regions:
+                score = 0
+                if self.matrixAvgsDict is not None:
+                    try:
+                        if np.isnan(self.matrixAvgsDict[label][j]):
+                            score = 'nan'
+                        else:
+                            score = np.float(self.matrixAvgsDict[label][j])
+                    except KeyError:
+                        pass
                 file_handle.write(
                     '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
                         region['chrom'],

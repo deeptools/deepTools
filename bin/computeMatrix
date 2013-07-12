@@ -15,7 +15,7 @@ def parseArguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             description='This tool summarizes and prepares an intermediary '
-            'file containing scores associated with genomic regions ''
+            'file containing scores associated with genomic regions '
             'that can be used afterwards to plot a heatmap or a profile. '
             'Typically, these genoic regions are genes, but '
             'any other regions defined in a BED or GFF '
@@ -38,7 +38,8 @@ def parseArguments(args=None):
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='scale-regions')],
         help="In the scale-regions mode, all regions in the BED/GFF file are "
-        "stretched or shrunk to the same length (bp) that is indicated by the user.")
+        "stretched or shrunk to the same length (bp) that is indicated by "
+        "the user.")
 
     # reference point arguments
     refpoint = subparsers.add_parser(
@@ -111,7 +112,7 @@ def main(args):
                   'skip zeros': args.skipZeros,
                   'verbose': args.verbose,
                   'nan after end': args.nanAfterEnd,
-                  'proc number': args.numberOfProcessors
+                  'proc number': args.numberOfProcessors,
                   }
 
     hm = heatmapper.heatmapper()
