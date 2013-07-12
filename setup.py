@@ -7,9 +7,10 @@ setup(
     author='Fidel Ramirez',
     author_email='ramirez@ie-freiburg.mpg.de',
     packages=['deeptools', 'deeptools.test'],
-    scripts=['bin/bams2ratio', 'bin/bam2wig', 'bin/correlateBams',
+    scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
-             'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler'],
+             'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler',
+             'bin/computeMatrix', 'bin/computeGCBias', 'bin/correctGCBias'],
 #    url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
     description='Useful library to deal with mapped reads in sorted '
