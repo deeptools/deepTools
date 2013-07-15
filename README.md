@@ -1,6 +1,6 @@
-========
+*********
 deepTools
-========
+*********
 
 This suite of tools provides useful routines to deal with mapped reads.
 This includes converting bams to bigwig or bedgraph coverage files, run a 
