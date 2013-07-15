@@ -123,7 +123,7 @@ class heatmapper:
     def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
         # read BAM or scores file
         if score_file.endswith(".bam"):
-            bamfile = pysam.Samfile(file=score_file.name)
+            bamfile = pysam.Samfile(score_file, 'rb')
         else:
             from bx.bbi.bigwig_file import BigWigFile
             bigwig = BigWigFile(file=open(score_file, 'r') )
