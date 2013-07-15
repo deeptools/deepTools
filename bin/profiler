@@ -83,6 +83,7 @@ def plot_profile(ax, ma, average_type, color, label,
         ax.patch.set_facecolor('black')
         for row in ma:
             ax.plot(row, 'yellow', alpha=0.1)
+        x = np.arange(len(row))
     ax.set_xlim(0, max(x))
 
 
