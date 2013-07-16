@@ -13,7 +13,7 @@ Install from source
 The easiest way to install deppTools is by downloading the
 source file and using python distutils tools:
 
-	$ wget https://github.com/fidelram/deepTools/blob/master/dist/deepTools-1.5.tar.gz
+	$ wget https://github.com/fidelram/deepTools/blob/master/dist/deepTools-1.5.tar.gz?raw=true
  $ tar -xzvf deepTools-1.5.tar.gz
 
 Then go to the unpacked directory and
