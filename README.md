@@ -24,6 +24,10 @@ and simply run the install script:
 
 	$ cd deepTools
 	$ python setup.py install
+	
+DeepTools relies on other software to run properly. *Please edit
+the following file to suit your needs*: config/deepTools.cfg
+
 
 By default, the script will install python library and executable
 codes globally, which means you need to be root or administrator of
