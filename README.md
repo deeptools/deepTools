@@ -10,16 +10,19 @@ GC correction and plot heatmaps and profiles.
 Install from source
 ===================
 
-The easiest way to install deppTools is by downloading the
-source file and using python distutils tools:
+The easiest way to install deepTools is by downloading the
+source file and using python pip or easy_install tools:
 
-	$ wget https://github.com/fidelram/deepTools/blob/master/dist/deepTools-1.5.tar.gz?raw=true
- $ tar -xzvf deepTools-1.5.tar.gz
+	$ pip install deepTools
 
-Then go to the unpacked directory and
+Other option is to clone the repository
+	
+	$ git clone https://github.com/fidelram/deepTools
+
+Then go to the deepTools directory and
 and simply run the install script:
 
-	$ cd deepTools-1.5
+	$ cd deepTools
 	$ python setup.py install
 
 By default, the script will install python library and executable
