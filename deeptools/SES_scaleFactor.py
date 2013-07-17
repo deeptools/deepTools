@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
+#sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
 
 import numpy as np
 

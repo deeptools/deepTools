@@ -14,7 +14,11 @@ The easiest way to install deepTools is by downloading the
 source file and using python pip or easy_install tools:
 
 	$ pip install deepTools
+	$ vim [deepTools folder]/config/deepTools.cfg
 
+The `deepTools.cfg` files contains some paths that need to be 
+adjusted.
+ 
 Other option is to clone the repository
 	
 	$ git clone https://github.com/fidelram/deepTools
@@ -23,10 +27,10 @@ Then go to the deepTools directory and
 and simply run the install script:
 
 	$ cd deepTools
+        $ vim config/deepTools.cfg
 	$ python setup.py install
 	
-DeepTools relies on other software to run properly. *Please edit
-the following file to suit your needs*: config/deepTools.cfg
+DeepTools relies on other software to run properly. 
 
 
 By default, the script will install python library and executable

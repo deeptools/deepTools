@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import sys
-sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
+
 
 # own tools
 import argparse

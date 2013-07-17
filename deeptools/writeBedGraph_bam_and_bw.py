@@ -2,7 +2,7 @@ import sys
 import os
 import shutil
 import tempfile
-sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
+#sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
 import numpy as np
 
 # NGS packages

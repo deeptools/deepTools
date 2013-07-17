@@ -2,7 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import sys
-sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
+
 
 import argparse
 import numpy as np

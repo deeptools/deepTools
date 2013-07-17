@@ -4,7 +4,7 @@
 import sys
 import os
 import time
-sys.path.insert(1, '/data/projects/ramirez/tools/deepTools/')
+
 
 import pysam
 import multiprocessing

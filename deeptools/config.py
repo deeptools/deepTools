@@ -1,5 +1,5 @@
 import ConfigParser
-import os
-
+from pkg_resources import resource_stream
 config = ConfigParser.ConfigParser()
-config.read(os.path.dirname(__file__) + "/../config/deepTools.cfg")
+config_file = resource_stream('config', 'deepTools.cfg')
+config.readfp(config_file)

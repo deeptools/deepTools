@@ -1,8 +1,7 @@
 import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
+#sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
 
 import numpy as np
-import multiprocessing
 from scipy.stats import poisson
 
 # own tools

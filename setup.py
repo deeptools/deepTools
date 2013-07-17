@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='deepTools',
-    version='1.5',
+    version='1.5.1',
     author='Fidel Ramirez',
     author_email='ramirez@ie-freiburg.mpg.de',
     packages=['deeptools', 'deeptools.test'],
@@ -12,7 +12,11 @@ setup(
              'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler',
              'bin/computeMatrix', 'bin/computeGCBias', 'bin/correctGCBias',
              'bin/bigwigCompare'],
-#    url='http://pypi.python.org/pypi/deepTools/',
+    include_package_data = True,
+#    data_files=[('config', ['config/deepTools.cfg']),
+#                ('galaxy', ['galaxy/bamCompare.xml','galaxy/bamCoverage.xml',
+#                            'galaxy/heatmapper.xml'])],
+    url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
     description='Useful library to deal with mapped reads in sorted '
     'BAM format.',
