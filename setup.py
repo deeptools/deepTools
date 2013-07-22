@@ -6,7 +6,7 @@ setup(
     version='1.5.1',
     author='Fidel Ramirez',
     author_email='ramirez@ie-freiburg.mpg.de',
-    packages=['deeptools', 'deeptools.test'],
+    packages=['deeptools', 'deeptools.test', 'config'],
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler',
