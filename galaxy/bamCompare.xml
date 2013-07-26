@@ -1,4 +1,4 @@
-<tool id="bamCompate" name="bamCompare" version="1.0">
+<tool id="bamCompare" name="bamCompare" version="1.0">
   <description>
 
     Normalize and compare two BAM files to output ratio, log2ratio or difference.
@@ -79,7 +79,7 @@
 
     <conditional name="scaling">
       <param name="method" type="select" 
-	     label="Method to use for scaling the largest sample to the smallest.">
+	     label="Method to use for scaling the largest sample to the smallest">
 	    <option value="readCount" selected="true">read count</option>
 	    <option value="SES">signal extraction scaling (SES)</option>
 	    <option value="own">enter own scaling factors</option>
@@ -101,7 +101,7 @@
 
     <conditional name="comparison">
       <param name="type" type="select" 
-	     label="How the two files should be compared?">
+	     label="How to compare the two files">
 	    <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
 	    <option value="ratio">compute the ratio of the number of reads</option>
 	    <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
@@ -115,6 +115,8 @@
                 <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
                 <option value="no">Do not normalize or scale</option>	
 	      </param>
+	      <when value="rpkm" />
+	      <when value="no" />
 	      <when value="1x">
 	        <param name="normalizeTo1x" type="integer" value="2150570000"
 		       label="Report normalized coverage to 1x sequenceing depth"
