@@ -45,4 +45,4 @@ To install under a specific location use:
 	$ python setup.py install --prefix <target directory>
 
 
-For support, questions, feature requests contact: deeptools@googlegroups.com 
+For support, questions, or feature requests contact: deeptools@googlegroups.com 
