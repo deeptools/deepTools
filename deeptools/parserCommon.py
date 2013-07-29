@@ -189,8 +189,8 @@ def computeMatrixRequiredArgs(args=None):
                           required=True)
     required.add_argument('--scoreFileName', '-S',
                           help='bigWig file containing '
-                          'the scores to be plotted. A bigWig '
-                          'files can be obtained using the bamCoverage '
+                          'the scores to be plotted. BigWig '
+                          'files can be obtained by using the bamCoverage '
                           'or bamCompare tools. More information about '
                           'the bigWig file format can be found at '
                           'http://genome.ucsc.edu/goldenPath/help/bigWig.html ',
