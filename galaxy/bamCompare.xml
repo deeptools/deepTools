@@ -1,12 +1,12 @@
-<tool id="bams2ratio" name="bams-to-ratio" version="1.3">
+<tool id="bamCompare" name="bamCompare" version="1.0">
   <description>
 
     Normalize and compare two BAM files to output ratio, log2ratio or difference.
   
   </description>
 
-  <command interpreter="python">
-  bams2ratio
+  <command>
+  bamCompare
   --bamfile1 '$bamFile1'
   -bai1 '${bamFile1.metadata.bam_index}'
   --bamfile2 '$bamFile2'
@@ -17,12 +17,6 @@
 
   --fragmentLength $fragmentLength
   --binSize $binSize
-  --smoothRange '$smoothRange'
-  $doNotExtendPairedEnds
-
-  #if $region!='':
-    --region '$region'
-  #end if
 
   #if $scaling.method == 'SES':
     --scaleFactorsMethod SES
@@ -34,7 +28,7 @@
   #end if
 
   --ratio $comparison.type
-  --missingDataAsZero $missingDataAsZero
+  
   
   #if $comparison.type=='subtract':
     #if $comparison.normalization.type=='rpkm':
@@ -43,7 +37,26 @@
       --normalizeTo1x $comparison.normalization.normalizeTo1x
     #end if
   #end if
-  -p 1
+  
+  #if $advancedOpt.showAdvancedOpt == "yes":
+    #if $advancedOpt.smoothLength:
+      --smoothLength '$advancedOpt.smoothLength'
+    #end if
+    
+    #if str($advancedOpt.region.value) != '':
+      --region '$advancedOpt.region'
+    #end if
+    $advancedOpt.doNotExtendPairedEnds
+    $advancedOpt.ignoreDuplicates
+    
+    #if $advancedOpt.minMappingQuality:
+      --minMappingQuality '$advancedOpt.minMappingQuality'
+    #end if
+    
+    --missingDataAsZero $advancedOpt.missingDataAsZero
+    
+  #end if
+  --numberOfProcessors 4
   
 
   </command>
@@ -57,93 +70,103 @@
 
     <param name="fragmentLength" type="integer" value="300" min="1"
 	   label="Length of the average fragment size"
-	   help ="Reads will be extended to match this length. If set to the read length or smaller, the read will not be extended. However, the give size will be used together with the value given by 'normalize to 1x'. The formula to normalize using the sequencing depth is genomeSize/(# of mapped reads * fragment length)."/>
+	   help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
 
     <param name="binSize" type="integer" value="50" min="1" 
 	   label="Bin size in bp"
-	   help="The genome will be divided in bins (also called tiles) of 
-		 the specified length. For each bin the overlaping number 
-		 of fragments (or reads)  will be reported. If only half 
-		 a fragment overlaps, this fraction will be reported. "/>
+	   help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. "/>
 
-    <param name="smoothRange" type="text" value="0"
-	   label="Smooth range using the following length (in bp)"
-	   help ="An integer indicating the number of base pairs that should be considered when computing the number of reads overlaping the --binSize regions.  Any value smaller than  bin size will be ignored and no smoothing will be applied. When this option is in place, a sliding window of length 'fragment Length' would be considered to count the number of reads for each bin. In other words, the smooth range length defines a window, larger than the bin size, to average the reads. This window is advanced/moved over the distance defined in the bin size'. "/>
-
-    <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds"
-	   falsevalue="" checked="False"
-	   label="Extend paired-ends to 'fragment length' instead of BAM pair fragment length"
-	   help ="By default paired-ends will be extended to match their respective 
-		  fragment length reported in the BAM file. Setting this option will
-		  cause that paired-end reads will be extended to match the given
-		  'fragment length'. In the case of single-end reads setting this parameter
-		  has no effect." />
-
-    <param name="region" type="text" value=""
-	   label="Region of the genome to compute the coverage"
-	   help="The format is chr:start:end Leave in black to compute 
-		 the coverage for of the whole genome. This optionis useful to test
-		 different parameters without having to wait for the computation
-		 of the whole genome comparison." />
 
     <conditional name="scaling">
       <param name="method" type="select" 
-	     label="Method to use for scaling the largest sample to the smallest.">
-	<option value="SES" selected="true">Signal extraction scaling (SES)</option>
-	<option value="readCount">read count</option>
-	<option value="own">enter own scaling factors</option>
+	     label="Method to use for scaling the largest sample to the smallest">
+	    <option value="readCount" selected="true">read count</option>
+	    <option value="SES">signal extraction scaling (SES)</option>
+	    <option value="own">enter own scaling factors</option>
       </param>
       <when value="SES">
-	<param name="sampleLength" type="integer" value="1000" min="10"
-	       label="Length in base pairs used for sampling the genome"
-	       help="The default is fine. Only change it if you know what you are doing" />
+	    <param name="sampleLength" type="integer" value="1000" min="10"
+	           label="Length in base pairs used to sample the genome and compute the size or scaling factors to compare the two  BAM files "
+	           help="The default is fine. Only change it if you know what you are doing" />
       </when>
       <when value="readCount" />
       <when value="own">
-	<param name="scaleFactor1" type="float" value="1"
-	       label="Scale factor for treatment"/>
+	    <param name="scaleFactor1" type="float" value="1"
+	           label="Scale factor for treatment"/>
 
-	<param name="scaleFactor2" type="float" value="1"
-	       label="Scale factor for input"/>
+	    <param name="scaleFactor2" type="float" value="1"
+	           label="Scale factor for input"/>
       </when>
     </conditional>
 
     <conditional name="comparison">
       <param name="type" type="select" 
-	     label="How the two files should be compared?">
-	<option value="log2" selected="true">compute log2 of the number of reads ratio</option>
-	<option value="ratio">compute the ratio of the number of reads</option>
-	<option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
+	     label="How to compare the two files">
+	    <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
+	    <option value="ratio">compute the ratio of the number of reads</option>
+	    <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
       </param>
       <when value="log2" />
       <when value="ratio" />
       <when value="subtract">
-	<conditional name="normalization">
-	  <param name="type" type="select" label="Normalization method" >
-            <option value="1x">Normalize coverage to 1x</option>
-            <option value="rpkm">Normalize to Fragments (reads) per kilobase per million (RPKM)</option>
-            <option value="no">Do not normalize or scale</option>	
-	  </param>
-	  <when value="1x">
-	    <param name="normalizeTo1x" type="integer" value="2150570000"
-		   label="Report normalized coverage to 1x sequenceing depth"
-		   help ="Sequencing depth is defined as the total number of mapped reads * fragment length / effective genome size. To use this option, the effective genome size has to be given. Common values are: mm9: 2150570000, hg19:2451960000, dm3:121400000 and ce10:93260000."/>
-	  </when>
-	</conditional>
+	    <conditional name="normalization">
+	      <param name="type" type="select" label="Normalization method" >
+                <option value="1x">Normalize coverage to 1x</option>
+                <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
+                <option value="no">Do not normalize or scale</option>	
+	      </param>
+	      <when value="rpkm" />
+	      <when value="no" />
+	      <when value="1x">
+	        <param name="normalizeTo1x" type="integer" value="2150570000"
+		       label="Report normalized coverage to 1x sequenceing depth"
+		       help ="Sequencing depth is defined as the total number of mapped reads * fragment length / effective genome size. To use this option, the effective genome size has to be given. Common values are: mm9: 2150570000, hg19:2451960000, dm3:121400000 and ce10:93260000."/>
+	      </when>
+	    </conditional>
       </when>
     </conditional>
 
-    <param name="missingDataAsZero" type="boolean" truevalue="yes" 
-	   falsevalue="no" checked="True"
-	   label ="Keep zero read counts?"
-	   help  ="Determines if regions with zero counts
-                   should be ignored or keeped. If unset, regions with zero reads counts in both samples will be ignored and not included in the output file. Genome browsers like IGV can highlight such regions." />
-
+    
 
     <param name="outFileFormat" type="select" label="Coverage file format">
         <option value="bigwig" selected="true">bigwig</option>
 	<option value="bedgraph">bedgraph</option>
     </param>
+    
+        <conditional name="advancedOpt">
+    <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+        <option value="no" selected="true">no</option>
+        <option value="yes">yes</option>
+      </param>
+      <when value="no" />
+      <when value="yes">
+    
+     <param name="smoothLength" type="integer" value="1" optional="true" min="1"
+	   label="Smooth values using the following length (in bp)"
+	   help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
+
+    <param name="region" type="text" value=""
+	   label="Region of the genome to limit the operation to"
+	   help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+	   
+	 <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
+	    label="Do not extend paired ends"
+	    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+	  
+	 <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+	    label="Ignore duplicates"
+	    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
+	  
+	  <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+	    label="Minimum mapping quality"
+	    help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
+	    
+	  <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
+	   label ="Treat missing data as zero"
+	   help  ="This parameter determines if missing data should be treated as zeros. If unchecked, missing data will be ignored and not included in the output file. Missing data is defined as those regions for which both BAM files have 0 reads." />
+
+	</when>
+ </conditional>
 
   </inputs>
   <outputs>
@@ -165,7 +188,18 @@
 
 **What it does**
 
-This tool computes the normalized ratio/difference of the read coverage from two bam files. 
+This tool compares two BAM files based on the number of mapped reads. To
+compare the BAM files the genome is partitioned into bins of equal size, then
+the number of reads found in each BAM file are counted for such bins and
+finally a summarizing value is reported. This vaule can be the ratio of the
+number of reads per bin, the log2 of the ratio or the difference. This tool
+can normalize the number of reads on each BAM file using the SES method
+proposed by Diaz et al. (2012). "Normalization, bias correction, and peak
+calling for ChIP-seq". Statistical applications in genetics and molecular
+biology, 11(3). Normalization based on read counts is also available. The
+output is either a bedgraph or a bigwig file containing the bin location and
+the resulting comparison values. By default if reads are mated the fragment
+length reported in the BAM file is used.
 
 -----
 
