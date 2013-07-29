@@ -178,7 +178,7 @@ Arguments used by heatmapper and profiler
 """
 
 
-def compareMatrixRequiredArgs(args=None):
+def computeMatrixRequiredArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--regionsFileName', '-R',
@@ -188,10 +188,12 @@ def compareMatrixRequiredArgs(args=None):
                           type=argparse.FileType('r'),
                           required=True)
     required.add_argument('--scoreFileName', '-S',
-                          help='File name of either a bigWig file (containing '
-                          'a score, usually covering the whole genome) or of '
-                          'a BAM file. For this last case, coverage counts '
-                          'will be used for the heatmap.',
+                          help='bigWig file containing '
+                          'the scores to be plotted. A bigWig '
+                          'files can be obtained using the bamCoverage '
+                          'or bamCompare tools. More information about '
+                          'the bigWig file format can be found at '
+                          'http://genome.ucsc.edu/goldenPath/help/bigWig.html ',
                           metavar='File',
                           type=argparse.FileType('r'),
                           required=True)
