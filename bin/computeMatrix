@@ -34,7 +34,7 @@ def parseArguments(args=None):
     # scale-regions mode options
     scaleRegions = subparsers.add_parser(
         'scale-regions',
-        parents=[parserCommon.compareMatrixRequiredArgs(),
+        parents=[parserCommon.computeMatrixRequiredArgs(),
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='scale-regions')],
         help="In the scale-regions mode, all regions in the BED/GFF file are "
@@ -44,7 +44,7 @@ def parseArguments(args=None):
     # reference point arguments
     refpoint = subparsers.add_parser(
         'reference-point',
-        parents=[parserCommon.compareMatrixRequiredArgs(),
+        parents=[parserCommon.computeMatrixRequiredArgs(),
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='reference-point')],
         help="Reference-point refers to a position within the BED/GFF regions "

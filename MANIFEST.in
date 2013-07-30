@@ -1,0 +1,6 @@
+include *.txt
+include README.md
+recursive-include docs *.txt
+include galaxy/*.xml
+include galaxy_test_data/*
+include config/deepTools.cfg

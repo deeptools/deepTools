@@ -40,7 +40,9 @@ script.
 
 	$ python setup.py --help
 
-To install under a specific location use::
+To install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
 
+
+For support, questions, or feature requests contact: deeptools@googlegroups.com 
