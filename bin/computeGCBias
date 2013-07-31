@@ -570,6 +570,8 @@ def bin_by(x, y, nbins=10):
 
 
 def plotGCbias(file_name, frequencies, reads_per_gc):
+    from matplotlib import use
+    use('Agg')
     import matplotlib.pyplot as plt
 
     # prepare data for boxplot
@@ -584,7 +586,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
 
     bp = ax1.boxplot(reads_per_gc, notch=0, patch_artist=True)
 #    plt.setp(bp['boxes'], color='black', facecolor='mediumaquamarine')
-    plt.setp(bp['boxes'], color='black', facecolor='khaki')
+    plt.setp(bp['boxes'], color='black', facecolor='LightGreen')
     plt.setp(bp['medians'], color='black')
     plt.setp(bp['whiskers'], color='black', linestyle='dashed')
     plt.setp(bp['fliers'], marker='None')
@@ -695,7 +697,7 @@ def main(args):
                           verbose=args.verbose,
                           region=args.region)
 
-    np.savetxt(GCbiasFrequenciesFile.name, data)
+    np.savetxt(args.GCbiasFrequenciesFile.name, data)
 
     if args.biasPlot:
         reads_per_gc = countReadsPerGC(args.regionSize,
