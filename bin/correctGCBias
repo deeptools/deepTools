@@ -66,12 +66,6 @@ def parseArguments(args=None):
                         metavar='two bit file',
                         required=True)
 
-    parser.add_argument('--fragmentLength', '-l',
-                        help='Fragment length used for the sequencing. If '
-                        'paired-end reads are used the fragment length is '
-                        'computed based from the bam file',
-                        type=int)
-
     group = parser.add_argument_group('Output options')
 
     group.add_argument('--GCbiasDir', '-d',
@@ -478,19 +472,8 @@ def main(args):
     mp_args = []
     bedGraphStep = args.binSize
 
-    if args.fragmentLength:
-        fragmentLength = \
-            {'median': args.fragmentLength}
-
-    else:
-        fragmentLength = \
-            peFragmentSize(args.bamfile, None,
-                           numberOfProcessors=args.numberOfProcessors)
-        if not fragmentLength:
-            print "Please provide the fragment length used for the "
-            "sample preparation."
-
-        fragmentLength = {'median': int(fragmentLength['median'])}
+    
+    fragmentLength = {'median': len(R_gc) - 1}
 
     chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
@@ -589,12 +572,13 @@ class Tester():
         R_gc = np.loadtxt(self.root + "R_gc_paired.txt")
         R_gc_min = np.loadtxt(self.root + "R_gc_paired.txt")
         R_gc_max = np.loadtxt(self.root + "R_gc_paired.txt")
-
+        import pdb;pdb.set_trace()
         global_vars['max_dup_gc'] = np.ones(301)
 
         start = 200
         end = 300
         fragmentLength = {'median': 200, 'min': 150, 'max': 250}
+        print (fragmentLength['median'], len(R_gc))
         bedGraphStep = 25
         return (self.chrNameBam,
                 self.chrNameBit, start, end, fragmentLength, bedGraphStep )
@@ -612,6 +596,7 @@ class Tester():
         start = 200
         end = 250
         fragmentLength = {'median': 200, 'min': 150, 'max': 250}
+        print (fragmentLength['median'], len(R_gc))
         return (self.chrNameBam,
                 self.chrNameBit, start, end, fragmentLength)
 
@@ -626,6 +611,7 @@ class Tester():
         start = 0
         end = 500
         fragmentLength = {'median': 200, 'min': 150, 'max': 250}
+        print (fragmentLength['median'], len(R_gc))
         global global_vars
         global_vars['bam']  = self.root + "paired.bam"
         return ('chr2L', 'chr2L', start, end, fragmentLength )
