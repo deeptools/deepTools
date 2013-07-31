@@ -511,7 +511,7 @@ def main(args):
                                                 " ".join(res)))
 
         print "indexing bam"
-        os.system("{} index {}.bam ".format(samtools, args.correctedFile.name))
+        os.system("{} index {} ".format(samtools, args.correctedFile.name))
         for tempFileName in res:
             os.remove(tempFileName)
 
