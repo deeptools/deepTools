@@ -24,7 +24,7 @@ Other option is to clone the repository
 	$ git clone https://github.com/fidelram/deepTools
 
 Then go to the deepTools directory, edit the `deepTools.cfg` 
-file and and then run the install script a:
+file and then run the install script a:
 
 	$ cd deepTools
 	$ vim config/deepTools.cfg
