@@ -1,5 +1,3 @@
-import sys
-#sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
 import os
 import shutil
 import tempfile

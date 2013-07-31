@@ -44,8 +44,9 @@ def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Computes the GC bias ussing Benjamini\'s method '
-        '[citation]. The resulting GC bias can later be used to plot '
+        description='Computes the GC bias using Benjamini\'s method '
+        '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
+        'The resulting GC bias can later be used to plot '
         'the bias or to correct the bias.')
 
     # define the arguments
@@ -111,10 +112,13 @@ def parseArguments(args=None):
 
     group = parser.add_argument_group('Output options')
 
-    group.add_argument('--outDir', '-o',
-                       help='Output dir name. In this path several files '
-                       'will be written, including a final bigwig/bam file.',
-                       metavar='output file',
+    group.add_argument('--GCbiasFrequenciesFile', '-freq',
+                       help='Path to save the file containing, '
+                       'the observed and expected read frequencies per GC '
+                       'content. This file is needed to run the '
+                       'correctGCBias tool. This is a text file.',
+                       type=argparse.FileType('r'),
+                       metavar='FILE',
                        required=True)
 
     plot = parser.add_argument_group('Diagnostic plot options')
@@ -566,6 +570,8 @@ def bin_by(x, y, nbins=10):
 
 
 def plotGCbias(file_name, frequencies, reads_per_gc):
+    from matplotlib import use
+    use('Agg')
     import matplotlib.pyplot as plt
 
     # prepare data for boxplot
@@ -580,7 +586,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
 
     bp = ax1.boxplot(reads_per_gc, notch=0, patch_artist=True)
 #    plt.setp(bp['boxes'], color='black', facecolor='mediumaquamarine')
-    plt.setp(bp['boxes'], color='black', facecolor='khaki')
+    plt.setp(bp['boxes'], color='black', facecolor='LightGreen')
     plt.setp(bp['medians'], color='black')
     plt.setp(bp['whiskers'], color='black', linestyle='dashed')
     plt.setp(bp['fliers'], marker='None')
@@ -606,15 +612,6 @@ def main(args):
     ################## compute histograms #################
 
     # check if directory is writable
-    try:
-        if not os.path.exists(args.outDir):
-            os.mkdir(args.outDir)
-    except OSError:
-        sys.stderr.write("\nCould not create {} folder. Please check that "
-                        "the path is valid  and has write "
-                        "permissions\n\n".format(args.outDir))
-        exit()
-
     if args.filterOut:
         filter_out_file = args.filterOut.name
         args.filterOut.close()
@@ -668,11 +665,6 @@ def main(args):
     chromSizes = [(bam.references[i], bam.lengths[i])
                   for i in range(len(bam.references))]
 
-    # check if  a precomputed correction already exists
-    if os.path.exists(args.outDir + "/frequencies_data.txt"):
-        print "The destination directory {} already contains the " \
-            "computation of a GC bias. You can proceed with " \
-            "the correction tool.".format(args.outDir)
 
     # use possion distribution to identify peaks that should be discarted
     # I multiply by 4, because the real distribution of reads
@@ -705,7 +697,7 @@ def main(args):
                           verbose=args.verbose,
                           region=args.region)
 
-    np.savetxt(args.outDir + "/frequencies_data.txt", data)
+    np.savetxt(args.GCbiasFrequenciesFile.name, data)
 
     if args.biasPlot:
         reads_per_gc = countReadsPerGC(args.regionSize,
