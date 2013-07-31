@@ -610,15 +610,6 @@ def main(args):
     ################## compute histograms #################
 
     # check if directory is writable
-    try:
-        if not os.path.exists(args.outDir):
-            os.mkdir(args.outDir)
-    except OSError:
-        sys.stderr.write("\nCould not create {} folder. Please check that "
-                        "the path is valid  and has write "
-                        "permissions\n\n".format(args.outDir))
-        exit()
-
     if args.filterOut:
         filter_out_file = args.filterOut.name
         args.filterOut.close()
