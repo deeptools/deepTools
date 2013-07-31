@@ -1,0 +1,194 @@
+<tool id="dt_profiler" name="profiler" version="1.0">
+  <description>
+    creates a profile plot for a score associated to genomic regions
+  </description>
+
+  <command>
+  profiler
+  --matrixFile $matrixFile
+  
+  #if $output.showOutputSettings == "yes"
+      #set newoutFileName=str($outFileName)+"."+str($output.outFileFormat)
+      --outFileName $newoutFilename
+      #if $output.outFileNameData:
+        --outFileNameData '$output.outFileNameData' 
+      #end if
+
+      #if $output.outFileNameMatrix:
+      --outFileNameMatrix '$output.outFileNameMatrix'
+      #end if
+      
+      #if $output.outFileSortedRegions:
+        --outFileSortedRegions '$output.outFileSortedRegions'
+      #end if
+  #else
+  #set newoutFileName=str($outFileName)+".png"
+  --outFileName $newoutFileName
+  #end if
+  
+  #if $scaleRegions.showScaleRegionsOpt == "yes":
+    --startLabel $scaleRegions.startLabel
+    --endLabel $scaleRegions.endLabel
+    --refPointLabel $scaleRegions.refPointLabel
+  #end if
+  
+  #if $advancedOpt.showAdvancedOpt == "yes"
+    #if $advancedOpt.averageType:
+      --averageType '$advancedOpt.averageType'
+    #end if
+    --plotHeight $advancedOpt.plotHeight
+    --plotWidth $advancedOpt.plotWidth
+    --plotType $advancedOpt.plotType
+    
+    --regionsLabel '$advancedOpt.regionsLabel'
+      
+    #if str($advancedOpt.plotTitle.value) != "None":
+      --plotTitle '$advancedOpt.plotTitle'
+    #end if
+      
+    $advancedOpt.onePlotPerGroup
+    
+    #if $advancedOpt.yMin:
+      --yMin $advancedOpt.yMin
+    #end if
+    #if $advancedOpt.yMax:
+      --yMax $advancedOpt.yMax
+    #end if
+      
+    --xAxisLabel '$advancedOpt.xAxisLabel'
+    #if str($advancedOpt.yAxisLabel.value) != "None":
+      --yAxisLabel '$advancedOpt.yAxisLabel'
+    #end if
+  #end if
+  ; mv $newoutFileName $outFileName
+  </command>
+
+  <inputs>
+  
+  <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
+  
+  <conditional name="scaleRegions">
+    <param name="showScaleRegionsOpt" type="select" label="The input matrix was computed in scale-regions mode">
+      <option value="no" selected="true">no</option>
+      <option value="yes">yes</option>
+      </param>
+      <when value="no" />
+      <when value="yes">
+        <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
+        <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
+        
+        <param name="refPointLabel" type="text" value="TSS" size="10" label="Reference point label" help ="[only for scale-regions mode] Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
+      </when>
+  </conditional>
+  
+  <conditional name="output" >
+        <param name="showOutputSettings" type="select" label="Show advanced output settings" >
+        <option value="no" selected="true">no</option>
+        <option value="yes">yes</option>
+      </param>
+      <when value="no" />
+      <when value="yes">
+        <param name="outFileFormat" type="select" label="Image file format">
+            <option value="png" selected="true">png</option>
+	        <option value="pdf">pdf</option>
+            <option value="svg">svg</option>
+            <option value="eps">eps</option>
+            <option value="emf">emf</option>
+        </param>
+        <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
+        <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
+        <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+      </when>
+    </conditional>
+  
+  <conditional name="advancedOpt">
+    <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+        <option value="no" selected="true">no</option>
+        <option value="yes">yes</option>
+      </param>
+      <when value="no" />
+      <when value="yes">
+        <param name="averageType" type="select" label="Define the type of statistic that should be used for the profile.">
+          <option value="mean" selected="true">mean</option>
+          <option value="median">median</option>
+          <option value="min">min</option>
+          <option value="max">max</option>
+          <option value="sum">sum</option>
+          <option value="std">std</option>
+        </param>
+        
+        <param name="plotHeight" type="integer" value="5" min="3" 
+          label="Plot height" 
+          help="Height in cm. The default for the plot height is 5 centimeters. The minimum value is 3 cm." />
+        <param name="plotWidth" type="integer" value="8" min="1" 
+          label="Plot width" 
+          help="Width in cm. The default value is 8 centimeters. The minimum value is 1 cm." />
+        
+        <param name="plotType" type="select" label="Plot type"
+          help="For the summary plot (profile) only. The &quot;lines&quot; option will plot the profile line based on the average type selected. The &quot;fill&quot; option fills the region between zero and the profile curve. The fill in color is semi transparent to distinguish different profiles. The &quot;std&quot; option colors the region between the profile and the standard deviation of the data. As in the case of fill, a semi-transparent color is used. The option &quot;overlapped_lines&quot; plots each region values, one on top of the other; this option only works if &quot;one plot per proup&quot; is set.">
+          <option value="lines" selected="true">lines</option>
+          <option value="fill">fill</option>
+          <option value="std">std</option>
+          <option value="overlapped_lines">overlapped lines</option>
+        </param>
+        
+        <param name="regionsLabel" type="text" value="genes" size="30" label="Labels for the regions plotted in the heatmap" help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
+        
+        <param name="plotTitle" type="text" value="" size="30" label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
+        
+        <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" label="Do one plot per group" help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
+        
+        <param name="yMin" type="float" value="" size="3" label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
+	    <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
+	    
+	    <param name="xAxisLabel" type="text" value="gene distance (bp)" size="50" label="Description for the x-axis label" />
+        <param name="yAxisLabel" type="text" value="" size="50" label="Description for the y-axis label for the top panel" />
+        
+      </when>
+  </conditional>
+  
+  </inputs>
+  <outputs>
+    <data format="png" name="outFileName" label="${tool.name} image">
+	<change_format>
+		<when input="output.outFileFormat" value="pdf" format="pdf" />
+		<when input="output.outFileFormat" value="svg" format="svg" />
+		<when input="output.outFileFormat" value="eps" format="eps" />
+		<when input="output.outFileFormat" value="emf" format="emf" />
+	</change_format>
+    </data>
+    <data format="tabular" name="outFileNameData" label="${tool.name} raw plot data">
+      <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>
+    </data>
+    <data format="tabular" name="outFileNameMatrix" label="${tool.name} matrix of heatmap values">
+      <filter>(output['showOutputSettings'] == 'yes' and output['saveMatrix'] == True)</filter>
+    </data>
+    <data format="bed" name="outFileSortedRegions" label="${tool.name} sorted/filtered regions">
+      <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
+    </data>  
+  </outputs>
+  <help>
+
+**What it does**
+
+This tool creates a profile plot for a score associated to genomic regions.
+Typically, these regions are genes, but any other regions defined in a BED or
+GFF format will work. A preprocessed matrix generated by the tool
+computeMatrix is required.
+
+-----
+
+.. class:: infomark
+
+Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+
+This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
+
+
+.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
+.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
+.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
+
+  </help>
+  
+</tool>

@@ -2,13 +2,13 @@
   <description>
   </description>
   <stdio>
-    <exit_code range="0:" level="warning" description="Warning" />
+    <exit_code range="0" level="warning" description="Warning" />
   </stdio>
   <command>
   computeGCBias
   --bamfile '$bamInput'
   --species '$species'
-  --outDir ./
+  --GCbiasFrequenciesFile $outFileName
   --fragmentLength $fragmentLength
   
   #if $source.ref_source=="history":
@@ -36,12 +36,14 @@
     
   #end if
   
+  #set move=""
   #if $output.showOutputSettings == "yes"
       #if $output.saveBiasPlot:
         --biasPlot biasPlot.png
+        #set move="mv biasPlot.png $biasPlot"
       #end if
   #end if
-  ; mv ./frequencies_data.txt $outFileName; mv biasPlot.png $biasPlot
+  ; $move
 
   </command>
 

@@ -8,15 +8,15 @@
   --outFileName '$outFileName'
   
   #if $output.showOutputSettings == "yes"
-      #if $output.outFileNameData:
-        --outFileNameData '$output.outFileNameData' 
+      #if $output.saveData:
+        --outFileNameData '$outFileNameData' 
       #end if
-      #if $output.outFileNameMatrix:
-      --outFileNameMatrix '$output.outFileNameMatrix'
+      #if $output.saveMatrix:
+      --outFileNameMatrix '$outFileNameMatrix'
       #end if
       
-      #if $output.outFileSortedRegions:
-        --outFileSortedRegions '$output.outFileSortedRegions'
+      #if $output.saveSortedRegions:
+        --outFileSortedRegions '$outFileSortedRegions'
       #end if
   #end if
   
