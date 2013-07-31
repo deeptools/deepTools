@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-
 import os
 import tempfile
 import shutil
@@ -18,7 +16,6 @@ from scipy.stats import binom
 
 from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools.countReadsPerBin import getFragmentFromRead
-from deeptools.PE_fragment_size import peFragmentSize
 from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
 
@@ -39,9 +36,9 @@ def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Computes the GC bias ussing Benjamini\'s method '
-        '[citation]. The resulting GC bias can later be used to plot '
-        'the bias or to correct the bias.')
+        description='Corrects the GC bias using Benjamini\'s method '
+        '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
+        'The tool computeGC bias needs to be run first.')
 
     # define the arguments
     parser.add_argument('--bamfile', '-b',
@@ -66,19 +63,27 @@ def parseArguments(args=None):
                         metavar='two bit file',
                         required=True)
 
+
     group = parser.add_argument_group('Output options')
 
-    group.add_argument('--GCbiasDir', '-d',
-                       help='Directory path where the output of '
-                       'computeGCbias was saved.',
-                       metavar='dir path',
+    group.add_argument('--GCbiasFrequenciesFile', '-freq',
+                       help='Indicate the output file from '
+                       'computeGCBias containing, '
+                       'the observed and expected read frequencies per GC '
+                       'content.',
+                       type=argparse.FileType('r'),
+                       metavar='FILE',
                        required=True)
 
-    group.add_argument('--outFileFormat', '-f',
-                       help='File format of the output. Currently two options '
-                       'are available:  BAM and bigwig. Default is BAM',
-                       default='bam',
-                       choices=['bam', 'bigwig'] )
+    group.add_argument('--correctedFile', '-o',
+                       help='Name of the corrected file. The ending will '
+                       'be used to decide the ouput file format. The options '
+                       'are ".bam", ".bw" for a bigWig file, ".bg" for a '
+                       'bedgraph file.',
+                       metavar='FILE',
+                       type=argparse.FileType('w'),
+                       required=True)
+
 
     args = parser.parse_args(args)
 
@@ -138,17 +143,18 @@ def writeCorrected_wrapper(args):
     return writeCorrected_worker(*args)
 
 
-def writeCorrected_worker(chrNameBam, chrNameBit, start, end,
-                          fragmentLength, step):
+def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     r"""writes a bedgraph file containing the GC correction of
     a region from the genome
     >>> test = Tester()
     >>> tempFile = writeCorrected_worker(*test.testWriteCorrectedChunk())
     >>> open(tempFile, 'r').readlines()
-    ['chr2L\t200\t225\t54.9\n', 'chr2L\t225\t250\t58.5\n', 'chr2L\t250\t275\t64.5\n', 'chr2L\t275\t300\t67.8\n']
+    ['chr2L\t200\t225\t31.6\n', 'chr2L\t225\t250\t33.8\n', 'chr2L\t250\t275\t37.9\n', 'chr2L\t275\t300\t40.9\n']
     >>> os.remove(tempFile)
     """
     global R_gc
+    fragmentLength = len(R_gc) - 1
+
     cvg_corr = np.zeros(end - start)
 
     i = 0
@@ -167,7 +173,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end,
         r_index += 1
         try:
             # calculate GC content of read fragment
-            gc = getReadGCcontent(tbit, read, fragmentLength['median'],
+            gc = getReadGCcontent(tbit, read, fragmentLength,
                                   chrNameBit)
         except Exception as detail:
             print detail
@@ -191,7 +197,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end,
         try:
             fragmentStart, fragmentEnd = \
                 getFragmentFromRead(read,
-                                    fragmentLength['median'],
+                                    fragmentLength,
                                     extendPairedEnds=True)
             vectorStart = max(fragmentStart - start, 0)
             vectorEnd   = min(fragmentEnd   - start, end - start)
@@ -252,7 +258,7 @@ def writeCorrectedSam_wrapper(args):
 
 
 def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
-                             fragmentLength, step=None,
+                             step=None,
                              tag_but_not_change_number=False,
                              verbose=True):
     r"""
@@ -266,7 +272,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> res = os.system("{} index {}".format(test.samtools, tempFile))
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch(args[0], 200, 250)]
-    [2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 1, 2, 1, 2, 2, 2]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
     >>> tempFile = \
@@ -275,11 +281,12 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> res = os.system("{} index {}".format(test.samtools, tempFile))
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch('chr2L', 0, 50)]
-    [2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 2]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
     """
     global R_gc
+    fragmentLength = len(R_gc) - 1
 
     if verbose: print "Sam for %s %s %s " % (chrNameBit, start, end)
     i = 0
@@ -323,7 +330,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
             # not present. This could
             # happen because of removal of the mate
             # by some filtering
-            gc = getReadGCcontent(tbit, read, fragmentLength['median'],
+            gc = getReadGCcontent(tbit, read, fragmentLength,
                                   chrNameBit)
             if gc:
                 copies = numCopiesOfRead(float(1) / R_gc[gc])
@@ -343,7 +350,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         readName = read.qname
         readTag = read.tags
         if gc:
-            GC = int(100 * np.round(float(gc) / fragmentLength['median'],
+            GC = int(100 * np.round(float(gc) / fragmentLength,
                                     decimals=2))
             readTag.append(
                 ('CO', float(round(float(1) / R_gc[gc], 2))))
@@ -407,19 +414,10 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
 
 #############
 def main(args):
-    # fail early
-    outputFile = "{}/corrected_counts".format(args.GCbiasDir)
-    try:
-        if not os.path.exists(args.GCbiasDir):
-            os.mkdir(args.GCbiasDir)
-        open(outputFile, 'w').close()
-    except IOError as detail:
-        print detail
-        exit()
 
     global F_gc, N_gc, R_gc
 
-    data = np.loadtxt(args.GCbiasDir + "/frequencies_data.txt")
+    data = np.loadtxt(args.GCbiasFrequenciesFile.name)
 
     F_gc = data[:, 0]
     N_gc = data[:, 1]
@@ -472,9 +470,6 @@ def main(args):
     mp_args = []
     bedGraphStep = args.binSize
 
-    
-    fragmentLength = {'median': len(R_gc) - 1}
-
     chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
 
@@ -491,12 +486,12 @@ def main(args):
                 continue
             length = min(size, i + chunkSize)
             mp_args.append((chrom, chrNameBamToBit[chrom], i, length,
-                            fragmentLength, bedGraphStep))
+                            bedGraphStep))
             c += 1
 
     pool = multiprocessing.Pool(args.numberOfProcessors)
 
-    if args.outFileFormat == 'bam':
+    if args.correctedFile.name.endswith('bam'):
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
             print ("using {} processors for {} "
                    "number of tasks".format(args.numberOfProcessors,
@@ -508,37 +503,44 @@ def main(args):
             res = map(writeCorrectedSam_wrapper, mp_args)
 
         if len(res) == 1:
-            os.system("cp {} {}.bam ".format(res[0], outputFile))
+            os.system("cp {} {}".format(res[0], args.correctedFile.name))
         else:
             print "concatenating intemerdiary bams"
-            os.system("{} cat -o {}.bam {} ".format(samtools,
-                                                    outputFile,
-                                                    " ".join(res)))
+            os.system("{} cat -o {} {} ".format(samtools,
+                                                args.correctedFile.name,
+                                                " ".join(res)))
 
         print "indexing bam"
-        os.system("{} index {}.bam ".format(samtools, outputFile) )
+        os.system("{} index {}.bam ".format(samtools, args.correctedFile.name))
         for tempFileName in res:
             os.remove(tempFileName)
 
-    elif args.outFileFormat in ['bigwig', 'bedgraph']:
+    if args.correctedFile.name.endswith('bg') or \
+            args.correctedFile.name.endswith('bw'):
+
+        _temp_bg_file = tempfile.NamedTemporaryFile()
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
 
             res = pool.map_async(writeCorrected_wrapper, mp_args).get(9999999)
         else:
             res = map(writeCorrected_wrapper, mp_args)
         # concatenate intermediary bedgraph files
-        outFile = open(outputFile, 'wb')
         for tempFileName in res:
             if tempFileName:
             # concatenate all intermediate tempfiles into one
             # bedgraph file
-                shutil.copyfileobj(open(tempFileName, 'rb'), outFile)
+                shutil.copyfileobj(open(tempFileName, 'rb'), _temp_bg_file)
                 os.remove(tempFileName)
 
-        outFile.close()
+        args.correctedFile.close()
         chromSizes = [(x, bit[x].size) for x in bit.keys()]
-        writeBedGraph.bedGraphToBigWig(chromSizes, outputFile,
-                                       outputFile + ".bw")
+        if args.correctedFile.name.endswith('bg'):
+            os.system("mv {} {}".format(_temp_bg_file, 
+                                        args.correctedFile.name))
+        else:
+            writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file.name,
+                                           args.correctedFile.name)
+        _temp_bg_file.close()
 
 
 class Tester():
@@ -570,51 +572,39 @@ class Tester():
         """
         global R_gc, R_gc_min, R_gc_max
         R_gc = np.loadtxt(self.root + "R_gc_paired.txt")
-        R_gc_min = np.loadtxt(self.root + "R_gc_paired.txt")
-        R_gc_max = np.loadtxt(self.root + "R_gc_paired.txt")
-        import pdb;pdb.set_trace()
+
         global_vars['max_dup_gc'] = np.ones(301)
 
         start = 200
         end = 300
-        fragmentLength = {'median': 200, 'min': 150, 'max': 250}
-        print (fragmentLength['median'], len(R_gc))
         bedGraphStep = 25
         return (self.chrNameBam,
-                self.chrNameBit, start, end, fragmentLength, bedGraphStep )
+                self.chrNameBit, start, end, bedGraphStep )
 
     def testWriteCorrectedSam(self):
         """ prepare arguments for test
         """
         global R_gc, R_gc_min, R_gc_max
         R_gc = np.loadtxt(self.root + "R_gc_paired.txt")
-        R_gc_min = np.loadtxt(self.root + "R_gc_paired.txt")
-        R_gc_max = np.loadtxt(self.root + "R_gc_paired.txt")
 
         global_vars['max_dup_gc'] = np.ones(301)
 
         start = 200
         end = 250
-        fragmentLength = {'median': 200, 'min': 150, 'max': 250}
-        print (fragmentLength['median'], len(R_gc))
         return (self.chrNameBam,
-                self.chrNameBit, start, end, fragmentLength)
+                self.chrNameBit, start, end)
 
     def testWriteCorrectedSam_paired(self):
         """ prepare arguments for test.
         """
         global R_gc, R_gc_min, R_gc_max
         R_gc = np.loadtxt(self.root + "R_gc_paired.txt")
-        R_gc_min = np.loadtxt(self.root + "R_gc_paired.txt")
-        R_gc_max = np.loadtxt(self.root + "R_gc_paired.txt")
-
+        
         start = 0
         end = 500
-        fragmentLength = {'median': 200, 'min': 150, 'max': 250}
-        print (fragmentLength['median'], len(R_gc))
         global global_vars
         global_vars['bam']  = self.root + "paired.bam"
-        return ('chr2L', 'chr2L', start, end, fragmentLength )
+        return ('chr2L', 'chr2L', start, end )
 
 
 if __name__ == "__main__":
