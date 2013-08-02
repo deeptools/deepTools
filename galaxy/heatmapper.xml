@@ -3,6 +3,7 @@
 
   <requirements>
     <requirement type="package">deepTools</requirement>
+    <requirement type="python-module">deepTools</requirement> 
     <requirement type="python-module">matplotlib</requirement>
     <requirement type="python-module">argsparse</requirement>
     <requirement type="python-module">itertools</requirement>
