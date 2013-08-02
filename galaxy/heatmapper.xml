@@ -1,25 +1,37 @@
 <tool id="heatmapper" name="Heatmapper" version="1.0">
   <description>creates a heatmap for a score associated to genomic regions</description>
+
+  <requirements>
+    <requirement type="package">deepTools</requirement>
+    <requirement type="python-module">matplotlib</requirement>
+    <requirement type="python-module">argsparse</requirement>
+    <requirement type="python-module">itertools</requirement>
+    <requirement type="python-module">pysam</requirement>
+    <requirement type="python-module">numpy</requirement>
+    <requirement type="python-module">pylab</requirement>
+    <requirement type="python-module">bx.intervals.io</requirement>
+  </requirements>
+
   <command>
   heatmapper
   --matrixFile $matrixFile
   #if $output.showOutputSettings == "yes"
       #set newoutFileName=str($outFileName)+"."+str($output.outFileFormat)
-      --outFileName $newoutFilename
-      #if $output.outFileNameData:
-        --outFileNameData '$output.outFileNameData' 
+      --outFileName $newoutFileName
+      #if $outFileNameData:
+        --outFileNameData '$outFileNameData' 
       #end if
 
-      #if $output.outFileNameMatrix:
-      --outFileNameMatrix '$output.outFileNameMatrix'
+      #if $outFileNameMatrix:
+      --outFileNameMatrix '$outFileNameMatrix'
       #end if
       
-      #if $output.outFileSortedRegions:
-        --outFileSortedRegions '$output.outFileSortedRegions'
+      #if $outFileSortedRegions:
+        --outFileSortedRegions '$outFileSortedRegions'
       #end if
   #else
-  #set newoutFileName=str($outFileName)+".png"
-  --outFileName $newoutFileName
+    #set newoutFileName=str($outFileName)+".png"
+    --outFileName $newoutFileName
   #end if
   
   #if $advancedOpt.showAdvancedOpt == "yes"
@@ -332,16 +344,6 @@
     </data>  
   </outputs>
 
-  <requirements>
-    <requirement type="python-module">matplotlib</requirement>
-    <requirement type="python-module">argsparse</requirement>
-    <requirement type="python-module">itertools</requirement>
-    <requirement type="python-module">pysam</requirement>
-    <requirement type="python-module">numpy</requirement>
-    <requirement type="python-module">pylab</requirement>
-    <requirement type="python-module">bx.intervals.io</requirement>
-    <requirement type="python-module">deepTools</requirement>
-  </requirements>
   <help>
 
 **What it does**
