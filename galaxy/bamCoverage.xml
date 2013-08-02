@@ -1,11 +1,11 @@
 <tool id="bamCoverage" name="bamCoverage" version="1.0">
-  <description>
-
-  Given a BAM file, generates a coverage bigwig file.  Multiple 
-  options available to count reads and normalize coverage.
-  
-  </description>
-
+  <description>Given a BAM file, generates a coverage bigwig file.  Multiple options available to count reads and normalize coverage.</description>
+  <requirements>
+    <requirement type="package" version="1.7.1">numpy</requirement>
+    <requirement type="python-module">argsparse</requirement>
+    <requirement type="python-module">pysam</requirement>
+    <requirement type="python-module">numpy</requirement>
+  </requirements>
   <command>bamCoverage
   --bam '$bamInput'
   --bamIndex ${bamInput.metadata.bam_index}
@@ -120,13 +120,6 @@
 	</change_format>
     </data>
   </outputs>
-
-  <requirements>
-    <requirement type="python-module">argsparse</requirement>
-    <requirement type="python-module">pysam</requirement>
-    <requirement type="python-module">numpy</requirement>
-  </requirements>
-
   <help>
 
 **What it does**

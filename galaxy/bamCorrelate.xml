@@ -1,7 +1,5 @@
 <tool id="bamCorrelate" name="bamCorrelate" version="1.0">
-  <description>
-    corrlates pairs of bam files.
-  </description>
+  <description>corrlates pairs of bam files</description>
 
   <command>
   #set files=[]

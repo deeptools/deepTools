@@ -1,10 +1,11 @@
 <tool id="bamCompare" name="bamCompare" version="1.0">
-  <description>
-
-    Normalize and compare two BAM files to output ratio, log2ratio or difference.
-  
-  </description>
-
+  <description>Normalize and compare two BAM files to output ratio, log2ratio or difference.</description>
+  <requirements>
+    <requirement type="package" version="1.7.1">numpy</requirement>
+    <requirement type="python-module">argsparse</requirement>
+    <requirement type="python-module">pysam</requirement>
+    <requirement type="python-module">numpy</requirement>
+  </requirements>
   <command>
   bamCompare
   --bamfile1 '$bamFile1'
@@ -177,13 +178,6 @@
 	</change_format>
     </data>
   </outputs>
-
-  <requirements>
-    <requirement type="python-module">argsparse</requirement>
-    <requirement type="python-module">pysam</requirement>
-    <requirement type="python-module">numpy</requirement>
-  </requirements>
-
   <help>
 
 **What it does**

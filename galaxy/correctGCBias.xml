@@ -31,8 +31,7 @@
   
   <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
   
-  <param name="bamInput" format="bam" type="data" label="Input BAM file"
-	   help="The BAM file must be sorted and indexed."/>
+  <param name="bamInput" format="bam" type="data" label="Input BAM file" help="The BAM file must be sorted and indexed."/>
   
   <param name="species" type="text" value="" label="Species name abbreviation" />
   
@@ -42,8 +41,8 @@
         <option value="history">in your history</option>
     </param>
     <when value="cached">
-        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-            <options from_data_table="lastz_seqs" />
+        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact your Galaxy team">
+            <options from_data_table="deepTools_seqs" />
         </param>
     </when>
     <when value="history">

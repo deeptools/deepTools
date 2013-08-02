@@ -1,9 +1,5 @@
 <tool id="bigwigCompare" name="bigwigCompare" version="1.0">
-  <description>
-
-    compares two bigwig files based on the number of mapped reads.
-  
-  </description>
+  <description>compares two bigwig files based on the number of mapped reads</description>
 
   <command>
   bigwigCompare

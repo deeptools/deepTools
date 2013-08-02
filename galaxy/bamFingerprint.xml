@@ -1,7 +1,5 @@
 <tool id="bamFingerprint" name="bamFingerprint" version="1.0">
-  <description>
-    plots profiles of bam files.
-  </description>
+  <description>plots profiles of bam files</description>
 
   <command>
   #set files=[]

@@ -2,15 +2,12 @@
   <description>creates a heatmap for a score associated to genomic regions</description>
 
   <requirements>
-    <requirement type="package">deepTools</requirement>
-    <requirement type="python-module">deepTools</requirement> 
-    <requirement type="python-module">matplotlib</requirement>
-    <requirement type="python-module">argsparse</requirement>
-    <requirement type="python-module">itertools</requirement>
-    <requirement type="python-module">pysam</requirement>
-    <requirement type="python-module">numpy</requirement>
-    <requirement type="python-module">pylab</requirement>
-    <requirement type="python-module">bx.intervals.io</requirement>
+    <requirement type="package" version="0.1.18">samtools</requirement>
+    <requirement type="package" version="1.7.1">numpy</requirement>
+    <requirement type="package" version="1.2.1">matplotlib</requirement>
+    <requirement type="package" version="0.12.0">scipy</requirement>
+    <requirement type="package" version="0.1">ucsc_tools</requirement>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
   </requirements>
 
   <command>

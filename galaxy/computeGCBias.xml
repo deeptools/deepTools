@@ -1,6 +1,5 @@
 <tool id="computeGCBias" name="computeGCBias" version="1.0">
-  <description>
-  </description>
+  <description></description>
   <stdio>
     <exit_code range="0" level="warning" description="Warning" />
   </stdio>
@@ -61,7 +60,7 @@
     </param>
     <when value="cached">
         <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-            <options from_data_table="lastz_seqs" />
+            <options from_data_table="deepTools_seqs" />
         </param>
     </when>
     <when value="history">
