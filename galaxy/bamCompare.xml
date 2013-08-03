@@ -1,6 +1,7 @@
 <tool id="bamCompare" name="bamCompare" version="1.0">
   <description>Normalize and compare two BAM files to output ratio, log2ratio or difference.</description>
   <requirements>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
     <requirement type="package" version="1.7.1">numpy</requirement>
     <requirement type="python-module">argsparse</requirement>
     <requirement type="python-module">pysam</requirement>

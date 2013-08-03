@@ -1,5 +1,8 @@
 <tool id="computeMatrix" name="computeMatrix" version="1.0">
   <description>summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile</description>
+  <requirements>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
+  </requirements>
   <command>
   computeMatrix
   $mode.mode_select

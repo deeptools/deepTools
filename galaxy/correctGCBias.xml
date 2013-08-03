@@ -1,6 +1,9 @@
 <tool id="correctGCBias" name="correctGCBias" version="1.0">
   <description>
   </description>
+  <requirements>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
+  </requirements>
   <command>
   correctGCBias
   --bamfile '$bamInput'

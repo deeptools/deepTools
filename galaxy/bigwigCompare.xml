@@ -1,6 +1,8 @@
 <tool id="bigwigCompare" name="bigwigCompare" version="1.0">
   <description>compares two bigwig files based on the number of mapped reads</description>
-
+  <requirements>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
+  </requirements>
   <command>
   bigwigCompare
   --bigwig1 '$bigwigFile1'
