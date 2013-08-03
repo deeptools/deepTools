@@ -44,7 +44,7 @@
     --averageTypeBins '$advancedOpt.averageTypeBins'
     $advancedOpt.missingDataAsZero
     $advancedOpt.skipZeros
-    $advancedOpt.binSize
+    -bs $advancedOpt.binSize
     
     #if $advancedOpt.minThreshold:
     --minThreshold $advancedOpt.minThreshold
