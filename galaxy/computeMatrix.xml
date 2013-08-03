@@ -44,6 +44,7 @@
     --averageTypeBins '$advancedOpt.averageTypeBins'
     $advancedOpt.missingDataAsZero
     $advancedOpt.skipZeros
+    $advancedOpt.binSize
     
     #if $advancedOpt.minThreshold:
     --minThreshold $advancedOpt.minThreshold
@@ -172,6 +173,19 @@
       <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
     </data>  
   </outputs>
+    <!--
+    computeMatrix -S test.bw -R test2.bed -a 100 -b 100 -bs 1 
+    -->
+    <tests>
+        <test>
+            <param name="regionsFile" value="test2.bed" ftype="bed" />
+            <param name="scoreFile" value="test.bw" ftype="bigwig" />
+            <param name="advancedOpt.binSize" value="1" />
+            <param name="mode.beforeRegionStartLength" value="100" />
+            <param name="mode.afterRegionStartLength" value="100" />
+            <output name="outFileName" file="master.mat.gz" ftype="bgzip" compare="sim_size" delta="100" />
+        </test>
+    </tests>
   <help>
 **What it does**
 

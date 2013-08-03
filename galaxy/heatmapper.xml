@@ -341,7 +341,12 @@
       <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
     </data>  
   </outputs>
-
+    <tests>
+        <test>
+            <param name="matrixFile" value="master.mat.gz" ftype="bgzip" />
+            <output name="outFileName" file="master.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
   <help>
 
 **What it does**
