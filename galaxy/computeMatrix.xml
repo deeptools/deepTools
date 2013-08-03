@@ -125,7 +125,7 @@
         <param name="binSize" type="integer" value="100" min="1" optional="true" label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" />
         
         <param name="sortRegions" type="select" label="Sort regions"
-	       help="Whether the output file should present the regions sorted.">
+           help="Whether the output file should present the regions sorted.">
           <option value="no" selected="true">no ordering</option>
           <option value="descend">descending order</option>
           <option value="ascend">ascending order</option>

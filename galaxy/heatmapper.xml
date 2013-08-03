@@ -98,7 +98,7 @@
       <when value="yes">
         <param name="outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
-	        <option value="pdf">pdf</option>
+            <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
             <option value="emf">emf</option>
@@ -117,7 +117,7 @@
       <when value="no" />
       <when value="yes">
         <param name="sortRegions" type="select" label="Sort regions"
-	       help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
+           help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
           <option value="no" selected="true">no ordering</option>
           <option value="descend">descending order</option>
           <option value="ascend">ascending order</option>
@@ -288,16 +288,16 @@
         <param name="zMin" type="float" value="" size="3" label="Minimum value for the heatmap intensities. Leave empty for automatic values" optional="true"/>
         <param name="zMax" type="float" value="" size="3" label="Maximum value for the heatmap intensities. Leave empty for automatic values" optional="true"/>
         <param name="yMin" type="float" value="" size="3" label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
-	    <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
-	    
-	    <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200" label="Description for the x-axis label" />
+        <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
+        
+        <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200" label="Description for the x-axis label" />
         <param name="yAxisLabel" type="text" value="genes" size="30" label="Description for the y-axis label for the top panel" />
         
         <param name="heatmapWidth" type="float" value="7.5" min="1" max="100" label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
 
-	    <param name="heatmapHeight" type="float" value="25" min="3" max="100" label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
-	    
-	    <param name="whatToShow" type="select" label="What to show" help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
+        <param name="heatmapHeight" type="float" value="25" min="3" max="100" label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
+        
+        <param name="whatToShow" type="select" label="What to show" help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
           <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
           <option value="plot only">summary plot only</option>
           <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
@@ -324,12 +324,12 @@
   </inputs>
   <outputs>
     <data format="png" name="outFileName" label="${tool.name} image">
-	<change_format>
-		<when input="output.outFileFormat" value="pdf" format="pdf" />
-		<when input="output.outFileFormat" value="svg" format="svg" />
-		<when input="output.outFileFormat" value="eps" format="eps" />
-		<when input="output.outFileFormat" value="emf" format="emf" />
-	</change_format>
+    <change_format>
+        <when input="output.outFileFormat" value="pdf" format="pdf" />
+        <when input="output.outFileFormat" value="svg" format="svg" />
+        <when input="output.outFileFormat" value="eps" format="eps" />
+        <when input="output.outFileFormat" value="emf" format="emf" />
+    </change_format>
     </data>
     <data format="tabular" name="outFileNameData" label="${tool.name} raw plot data">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>

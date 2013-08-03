@@ -68,24 +68,24 @@
       <when value="no" />
       <when value="yes">
           <param name="region" type="text" value=""
-	        label="Region of the genome to limit the operation to"
-	        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-	       
-	       <param name="binSize" type="integer" value="50" min="1" 
-	         label="Bin size in bp"
-	         help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+           
+           <param name="binSize" type="integer" value="50" min="1" 
+             label="Bin size in bp"
+             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
       </when>
   </conditional>
   </inputs>
   
   <outputs>
     <data format="bam" name="outFileName">
-	<change_format>
-		<when input="outFileFormat" value="bw" format="bigwig" />
-		<when input="outFileFormat" value="bam" format="bam" />
-		<when input="outFileFormat" value="bg" format="bedgraph" />
-	</change_format>
-	</data>
+    <change_format>
+        <when input="outFileFormat" value="bw" format="bigwig" />
+        <when input="outFileFormat" value="bam" format="bam" />
+        <when input="outFileFormat" value="bg" format="bedgraph" />
+    </change_format>
+    </data>
   </outputs>
   <help>
 

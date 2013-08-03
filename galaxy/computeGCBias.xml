@@ -52,7 +52,7 @@
   <inputs>
   
   <param name="bamInput" format="bam" type="data" label="Input BAM file"
-	   help="The BAM file must be sorted and indexed."/>
+       help="The BAM file must be sorted and indexed."/>
   
   <param name="species" type="text" value="" label="Species name abbreviation" />
   
@@ -82,29 +82,29 @@
       <when value="no" />
       <when value="yes">
           <param name="region" type="text" value=""
-	        label="Region of the genome to limit the operation to"
-	        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-	       
-	       <param name="binSize" type="integer" value="50" min="1" 
-	         label="Bin size in bp"
-	         help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
-	         
-	       <param name="sampleSize" type="integer" value="50000000" min="1"
-	         label="Number of sampling points to be considered" />
-	       
-	       <param name="regionSize" type="integer" value="300" min="1"
-	         label="Region size"
-	         help ="To plot the reads per GC over a region the size of the region is required. By default, the bin size is set to 300bp, which is close to the standard fragment size for Illumina machines. However, if the depth of sequencing is low a larger bin size will be required, otherwise many bins will not overlap with any read."/>
-	       
-	       <param name="filterOut" type="data" format="bed" optional="true"
-	         label="BED file containing genomic regions to be excluded from the estimation of the correction"
-	         help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
-	       <param name="extraSampling" type="data" format="bed" optional="true"
-	         label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
-	         help="" />
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+           
+           <param name="binSize" type="integer" value="50" min="1" 
+             label="Bin size in bp"
+             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+             
+           <param name="sampleSize" type="integer" value="50000000" min="1"
+             label="Number of sampling points to be considered" />
+           
+           <param name="regionSize" type="integer" value="300" min="1"
+             label="Region size"
+             help ="To plot the reads per GC over a region the size of the region is required. By default, the bin size is set to 300bp, which is close to the standard fragment size for Illumina machines. However, if the depth of sequencing is low a larger bin size will be required, otherwise many bins will not overlap with any read."/>
+           
+           <param name="filterOut" type="data" format="bed" optional="true"
+             label="BED file containing genomic regions to be excluded from the estimation of the correction"
+             help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
+           <param name="extraSampling" type="data" format="bed" optional="true"
+             label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
+             help="" />
       </when>
   </conditional>
-  
+
   <conditional name="output" >
         <param name="showOutputSettings" type="select" label="Show additional output options" >
         <option value="no" selected="true">no</option>
