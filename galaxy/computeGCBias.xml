@@ -8,17 +8,21 @@
   </stdio>
   <command>
   computeGCBias
+
+  ##ToDo
+  --numberOfProcessors 4
+
   --bamfile '$bamInput'
   --species '$species'
   --GCbiasFrequenciesFile $outFileName
   --fragmentLength $fragmentLength
-  
+
   #if $source.ref_source=="history":
     --genome $source.input1
   #else:
     --genome "${source.input1_2bit.fields.path}"
   #end if
-  
+
   #if $advancedOpt.showAdvancedOpt == "yes":
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
@@ -27,60 +31,56 @@
     --binSize '$advancedOpt.binSize'
     --sampleSize '$advancedOpt.sampleSize'
     --regionSize '$advancedOpt.regionSize'
-    
+
     #if $advancedOpt.filterOut:
       --filterOut $advancedOpt.filterOut
     #end if
-    
+
     #if $advancedOpt.extraSampling:
       --extraSampling $advancedOpt.extraSampling
     #end if
-    
+
   #end if
-  
-  #set move=""
+
   #if $output.showOutputSettings == "yes"
       #if $output.saveBiasPlot:
-        --biasPlot biasPlot.png
-        #set move="mv biasPlot.png $biasPlot"
+        --biasPlot biasPlot.png ;
+        mv biasPlot.png $biasPlot
       #end if
   #end if
-  ; $move
 
   </command>
-
   <inputs>
-  
-  <param name="bamInput" format="bam" type="data" label="Input BAM file"
-       help="The BAM file must be sorted and indexed."/>
-  
-  <param name="species" type="text" value="" label="Species name abbreviation" />
-  
-  <conditional name="source">
-    <param name="ref_source" type="select" label="Reference genome">
-        <option value="cached">locally cached</option>
-        <option value="history">in your history</option>
-    </param>
-    <when value="cached">
-        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-            <options from_data_table="deepTools_seqs" />
+
+      <param name="bamInput" format="bam" type="data" label="Input BAM file"
+        help="The BAM file must be sorted and indexed."/>
+      <param name="species" type="text" value="" label="Species name abbreviation" />
+
+      <conditional name="source">
+        <param name="ref_source" type="select" label="Reference genome">
+            <option value="cached">locally cached</option>
+            <option value="history">in your history</option>
         </param>
-    </when>
-    <when value="history">
-        <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
-    </when>
-  </conditional>
-  <param name="fragmentLength" type="integer" value="300" min="1"
-     label="Fragment length used for the sequencing"
-     help ="If paired-end reads are used the fragment length is computed based from the bam file."/>
-  
-  <conditional name="advancedOpt">
-    <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
+        <when value="cached">
+            <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
+                <options from_data_table="deepTools_seqs" />
+            </param>
+        </when>
+        <when value="history">
+            <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
+        </when>
+      </conditional>
+      <param name="fragmentLength" type="integer" value="300" min="1"
+        label="Fragment length used for the sequencing"
+        help ="If paired-end reads are used the fragment length is computed based from the bam file."/>
+
+    <conditional name="advancedOpt">
+        <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+            <option value="no" selected="true">no</option>
+            <option value="yes">yes</option>
+        </param>
+        <when value="no" />
+        <when value="yes">
           <param name="region" type="text" value=""
             label="Region of the genome to limit the operation to"
             help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
@@ -102,10 +102,10 @@
            <param name="extraSampling" type="data" format="bed" optional="true"
              label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
              help="" />
-      </when>
-  </conditional>
+        </when>
+    </conditional>
 
-  <conditional name="output" >
+    <conditional name="output" >
         <param name="showOutputSettings" type="select" label="Show additional output options" >
         <option value="no" selected="true">no</option>
         <option value="yes">yes</option>
@@ -143,5 +143,4 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 .. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
   </help>
-  
 </tool>

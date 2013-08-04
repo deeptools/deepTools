@@ -5,11 +5,15 @@
   </requirements>
   <command>
   computeMatrix
+
+  ##ToDo
+  --numberOfProcessors 4
+
   $mode.mode_select
   --regionsFileName '$regionsFile'
   --scoreFileName '$scoreFile'
   --outFileName '$outFileName'
-  
+
   #if $output.showOutputSettings == "yes"
       #if $output.saveData:
         --outFileNameData '$outFileNameData' 
@@ -17,12 +21,12 @@
       #if $output.saveMatrix:
       --outFileNameMatrix '$outFileNameMatrix'
       #end if
-      
+
       #if $output.saveSortedRegions:
         --outFileSortedRegions '$outFileSortedRegions'
       #end if
   #end if
-  
+
   #if $mode.mode_select == "reference-point":
     --referencePoint $mode.referencePoint
     $mode.nanAfterEnd
@@ -37,15 +41,15 @@
       --afterRegionStartLength $mode.regionStartLength.afterRegionStartLength
     #end if
   #end if
-  
+
   #if $advancedOpt.showAdvancedOpt == "yes":
     --sortRegions '$advancedOpt.sortRegions'
     --sortUsing '$advancedOpt.sortUsing'
     --averageTypeBins '$advancedOpt.averageTypeBins'
     $advancedOpt.missingDataAsZero
     $advancedOpt.skipZeros
-    -bs $advancedOpt.binSize
-    
+    --binSize $advancedOpt.binSize
+
     #if $advancedOpt.minThreshold:
     --minThreshold $advancedOpt.minThreshold
     #end if
@@ -55,20 +59,20 @@
     #if $advancedOpt.scale:
     --scale $advancedOpt.scale
     #end if
-  
+
   #end if
-  --numberOfProcessors 4
+
   </command>
   <inputs>
     <param name="regionsFile" format="bed,gff" type="data" label="Regions to plot" help="File, in BED or GFF format, containing the regions to plot."/>
     <param name="scoreFile" format="bigwig,bam" type="data" label="Score file" help="Either a bigWig file (containing a score, usually covering the whole genome) or a BAM file. For this last case, coverage counts will be used for the heatmap."/>
-    
+
     <conditional name="mode" >
       <param name="mode_select" type="select" label="computeMatrix has two main output options" help="In the scale-regions mode, all regions in the BED/GFF file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED/GFF regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
         <option value="scale-regions" selected="true">scale-regions</option>
         <option value="reference-point">reference-point</option>
       </param>
-      
+
       <when value="scale-regions" >
         <param name="regionBodyLength" type="integer" value="500" label="Distance in bp to which all regions are going to be fitted"/>
         <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
@@ -112,8 +116,7 @@
         <param name="saveSortedRegions" type="boolean" label="Save the regions after skiping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
     </when>
     </conditional>
-    
-    
+
     <conditional name="advancedOpt" >
       <param name="showAdvancedOpt" type="select" label="Show advanced options" >
         <option value="no" selected="true">no</option>
@@ -121,16 +124,14 @@
       </param>
       <when value="no" />
       <when value="yes">
-        
         <param name="binSize" type="integer" value="100" min="1" optional="true" label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" />
-        
         <param name="sortRegions" type="select" label="Sort regions"
            help="Whether the output file should present the regions sorted.">
           <option value="no" selected="true">no ordering</option>
           <option value="descend">descending order</option>
           <option value="ascend">ascending order</option>
         </param>
-        
+
         <param name="sortUsing" type="select" label="Method used for sorting." help="The value is computed for each row." >
           <option value="mean" selected="true">mean</option>
           <option value="median">median</option>
@@ -139,7 +140,7 @@
           <option value="sum">sum</option>
           <option value="region_length">region length</option>
         </param>
-        
+
         <param name="averageTypeBins" type="select" label="Define the type of statistic that should be used over the bin size range">
           <option value="mean" selected="true">mean</option>
           <option value="median">median</option>
@@ -148,11 +149,9 @@
           <option value="sum">sum</option>
           <option value="std">std</option>
         </param>
-        
+
         <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" label="Indicate missing data as zero" help="Only for bigwig input! Set to &quot;yes&quot;, if missing data should be indicated as zeros. Default is to ignore such cases which will be depicted as black areas in the heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options)."/>
-        
         <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue="" label="Skip zeros" help="Whether regions with only scores of zero should be included or not. Default is to include them."/>
-        
         <param name="minThreshold" type="float" optional="true" label="Minimum threshold" help="Any region containing a value that is equal or less than this numeric value will be skipped. This is useful to skip, for example, genes where the read count is zero for any of the bins. This could be the result of unmappable areas and can bias the overall results."/>
         <param name="maxThreshold" type="float" optional="true" label="Maximum threshold" help="Any region containing a value that is equal or higher that this numeric value will be skipped. The max threshold is useful to skip those few regions with very high read counts (e.g. major satellites) that may bias the average values."/>
         <param name="scale" type="float" optional="true" label="Scale" help="If set, all values are multiplied by this number."/>
@@ -204,5 +203,4 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
 .. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
   </help>
-
 </tool>

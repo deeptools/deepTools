@@ -15,6 +15,10 @@
     #end if
   #end for
   bamCorrelate
+
+  ##ToDo
+  --numberOfProcessors 4
+
   --bamfiles #echo " ".join($files)
   --labels #echo " ".join($labels)
   
@@ -53,12 +57,10 @@
       --minMappingQuality '$advancedOpt.minMappingQuality'
     #end if
   #end if
-  
-  --numberOfProcessors 4; mv $newoutFileName $outFileName
+  ; mv $newoutFileName $outFileName
   </command>
 
   <inputs>
-  
   <repeat name="inputs" title="Input files" min="2">
     <param name="bamfile" type="data" format="bam" 
         label="Bam file" 
@@ -67,7 +69,7 @@
         label="Label"
         help="Label to use in the output. If not given the dataset name will be used instead."/>
   </repeat>
-  
+
   <param name="fragmentLength" type="integer" value="300" min="1"
        label="Length of the average fragment size"
        help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>

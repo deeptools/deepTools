@@ -15,6 +15,10 @@
     #end if
   #end for
   bamFingerprint
+
+  ##ToDo
+  --numberOfProcessors 4
+
   --bamfiles #echo " ".join($files)
   --labels #echo " ".join($labels)
   
@@ -49,12 +53,10 @@
       --minMappingQuality '$advancedOpt.minMappingQuality'
     #end if
   #end if
-  
-  --numberOfProcessors 4; mv $newoutFileName $outFileName
+  ; mv $newoutFileName $outFileName
   </command>
 
   <inputs>
-  
   <repeat name="inputs" title="Input files" min="2">
     <param name="bamfile" type="data" format="bam" 
         label="Bam file" 
@@ -63,10 +65,8 @@
         label="Label"
         help="Label to use in the output. If not given the dataset name will be used instead."/>
   </repeat>
-  
   <param name="fragmentLength" type="integer" value="200" min="1"
        label="Length of the average fragment size"/>
-  
   <conditional name="advancedOpt">
     <param name="showAdvancedOpt" type="select" label="Show advanced options" >
       <option value="no" selected="true">no</option>
