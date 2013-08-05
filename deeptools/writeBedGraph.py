@@ -184,7 +184,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     chrSizesFileName = _file2.name
 
     if sort:
-        sort_cmd = cfg.config.get('external_tools', 'sort')
+        sort_cmd = cfg.config_get('external_tools', 'sort')
         # temporary file to store sorted bedgraph file
         _file = NamedTemporaryFile(delete=False)
         tempFileName1 = _file.name
@@ -192,7 +192,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
                                                 bedGraphPath, tempFileName1))
         bedGraphPath = tempFileName1
 
-    bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
+    bedgraph_to_bigwig = cfg.config_get('external_tools', 'bedgraph_to_bigwig')
     system("{} {} {} {}".format(bedgraph_to_bigwig,
                                 bedGraphPath, chrSizesFileName, bigWigPath))
 

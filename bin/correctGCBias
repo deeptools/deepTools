@@ -19,7 +19,7 @@ from deeptools.countReadsPerBin import getFragmentFromRead
 from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
 
-samtools = cfg.config.get('external_tools', 'samtools')
+samtools = cfg.config_get('external_tools', 'samtools')
 global_vars = dict()
 # Taken from
 # http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html
@@ -545,12 +545,12 @@ def main(args):
 
 class Tester():
     def __init__(self):
-        self.root = cfg.config.get('general', 'test_root') + "/test_corrGC/"
+        self.root = cfg.config_get('general', 'test_root') + "/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
         self.bamFile  = self.root + "test.bam"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        self.samtools = cfg.config.get('external_tools', 'samtools')
+        self.samtools = cfg.config_get('external_tools', 'samtools')
         bam = pysam.Samfile(self.bamFile)
         bit = twobit.TwoBitFile(open(self.tbitFile ))
         global debug
