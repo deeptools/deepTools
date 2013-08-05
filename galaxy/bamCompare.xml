@@ -157,7 +157,7 @@
             help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
 
         <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-            label="Minimum mapping quality"
+            label="Minimum mapping quality (e.g. BOWTIE2 measures)"
             help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
 
         <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
