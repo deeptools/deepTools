@@ -41,12 +41,8 @@
   --plotFile $newoutFileName
   
   #if $outputOpt.showOutputOpt == "yes"
-      #if $outputOpt.outFileRawCounts:
-        --outRawCounts '$outputOpt.outFileRawCounts' 
-      #end if
-      #if $outputOpt.outFileCorMatrix:
-        --outFileCorMatrix '$outputOpt.outFileCorMatrix'
-      #end if
+        --outRawCounts '$outFileRawCounts' 
+        --outFileCorMatrix '$outFileCorMatrix'
   #end if
   
   #if $advancedOpt.showAdvancedOpt == "yes":
