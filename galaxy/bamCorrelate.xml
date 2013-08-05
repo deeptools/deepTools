@@ -4,16 +4,28 @@
     <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
   </requirements>
   <command>
-  #set files=[]
-  #set labels=[]
-  #for $i in $inputs
-    #set $files += [str($i.bamfile)]
-    #if str($i.label.value) != "":
-        #set $labels += ["\"%s\"" % ($i.label.value)]
-    #else
-        #set $labels += ["\"%s\"" % ($i.bamfile.name)]
-    #end if
-  #end for
+
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set files=[]
+    #set labels=[]
+    #for $i in $inputs
+
+        #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+        #set $temp_input_path = $temp_input_handle.name
+        #silent $temp_input_handle.close()
+        #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
+        #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile), $temp_input_path))
+        #set $files.append('%s.bam' % $temp_input_path)
+
+
+        ##set $files += [str($i.bamfile)]
+        #if str($i.label.value) != "":
+            #set $labels += ["\"%s\"" % ($i.label.value)]
+        #else
+            #set $labels += ["\"%s\"" % ($i.bamfile.name)]
+        #end if
+    #end for
   bamCorrelate
 
   ##ToDo
