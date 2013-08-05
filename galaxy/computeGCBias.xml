@@ -1,4 +1,4 @@
-<tool id="computeGCBias" name="computeGCBias" version="1.0">
+<tool id="computeGCBias" name="computeGCBias" version="1.0.1">
   <description></description>
   <requirements>
     <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
@@ -7,12 +7,21 @@
     <exit_code range="0" level="warning" description="Warning" />
   </stdio>
   <command>
+    #import tempfile
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
+    #silent $temp_bam_handle.close()
+    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
+    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
+
   computeGCBias
 
   ##ToDo
   --numberOfProcessors 4
 
-  --bamfile '$bamInput'
+  --bamfile '$temp_bam_path'
   --species '$species'
   --GCbiasFrequenciesFile $outFileName
   --fragmentLength $fragmentLength
@@ -48,6 +57,8 @@
         mv biasPlot.png $biasPlot
       #end if
   #end if
+
+  ; rm $temp_dir -rf
 
   </command>
   <inputs>
