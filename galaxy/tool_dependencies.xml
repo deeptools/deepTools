@@ -26,7 +26,6 @@
         <repository name="package_scipy_0_12" owner="bgruening" prior_installation_required="True" />
     </package>
 
-
     <package name="ucsc_tools" version="0.1">
         <install version="1.0">
             <actions>
@@ -50,17 +49,13 @@
                 </action>
                 <action type="set_environment">
                     <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR</environment_variable>
-                    <environment_variable name="BEDGRAPHTOBIGWIG_BIN" action="set_to">$INSTALL_DIR/bedGraphToBigWig</environment_variable>
-                    <environment_variable name="BIGWIGINFO_BIN" action="set_to">$INSTALL_DIR/bigWigInfo</environment_variable>
-                    <environment_variable name="SORT_BIN" action="set_to">sort</environment_variable>
                 </action>
              </actions>
          </install>
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-
-    <package name="deepTools" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">
+    <package name="deepTools" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">
         <install version="1.0">
             <actions>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
@@ -70,18 +65,12 @@
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
                     python setup.py install --install-lib $INSTALL_DIR/lib/python --install-scripts $INSTALL_DIR/bin
                 </action>
-                <!-- populate samtools PATH, deepTools needs a full path to the samtools binary, like /foo/bar/samtools-->
-                <action type="set_environment_for_install">
-                    <repository name="package_samtools_0_1_18" owner="devteam">
-                        <package name="samtools" version="0.1.18" />
-                    </repository>
-                </action>
-
 
                 <action type="set_environment">
                     <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
                     <environment_variable name="PYTHONPATH" action="append_to" >$INSTALL_DIR/lib/python</environment_variable>
-                    <environment_variable action="set_to" name="SAMTOOLS_BIN">$ENV[PATH_NUMPY]</environment_variable>
+                    <!-- disable the config file of deepTools -->
+                    <environment_variable name="DEEP_TOOLS_NO_CONFIG" action="set_to">TRUE</environment_variable>
                 </action>
              </actions>
          </install>
