@@ -1,5 +1,5 @@
 <tool id="bamCorrelate" name="bamCorrelate" version="1.0.1">
-  <description>corrlates pairs of bam files</description>
+  <description>correlates pairs of BAM files</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
   </requirements>
@@ -125,7 +125,7 @@
         
     <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
        label ="Include zeros"
-       help  ="If set, then zero counts that happen for *all* bam files given are included. The default behavior is to ignore those cases" />
+       help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases" />
 
     </when>
   </conditional>
@@ -156,15 +156,18 @@
 
 **What it does**
 
-Genomes are split into bins of given length. For each bin the number of reads
-found for each of the bam files is counted. A correlation is computed for all
-pairs of bam files.
+This tool is useful to assess the overall similarity of different BAM files. A typical application
+is to check the correlation between replicates or published data sets.
+
+The tool splits the genomes are into bins of given length. For each bin, the number of reads
+found in each BAM file is counted and a correlation is computed for all
+pairs of BAM files.
 
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 

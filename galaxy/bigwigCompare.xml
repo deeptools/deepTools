@@ -1,5 +1,5 @@
 <tool id="bigwigCompare" name="bigwigCompare" version="1.0">
-  <description>compares two bigwig files based on the number of mapped reads</description>
+  <description>normalizes and compares two bigWig files to obtain the ratio, log2ratio or difference</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
     <requirement type="package" version="0.1">ucsc_tools</requirement>
@@ -92,14 +92,14 @@
 This tool compares two bigwig files based on the number of mapped reads. To
 compare the bigwig files the genome is partitioned into bins of equal size,
 then the number of reads found in each BAM file are counted for such bins and
-finally a summarizing value is reported. This vaule can be the ratio of the
-number of readsper bin, the log2 of the ratio, the sum or the difference.
+finally a summarizing value is reported. This value can be the ratio of the
+number of reads per bin, the log2 of the ratio, the sum or the difference.
 
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
