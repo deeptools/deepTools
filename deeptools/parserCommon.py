@@ -110,7 +110,7 @@ def getParentArgParse(args=None):
                         'to use all available processors.',
                         metavar="INT",
                         type=numberOfProcessors,
-                        default=cfg.config.get('general',
+                        default=cfg.config_get('general',
                                                'default_proc_number'),
                         required=False)
 
@@ -386,7 +386,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
-                          default=cfg.config.get('general',
+                          default=cfg.config_get('general',
                                                  'default_proc_number'),
                           required=False)
     return parser

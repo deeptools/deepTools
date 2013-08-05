@@ -223,7 +223,7 @@ def writeBedGraph(
 
     """
 
-    bigwig_info = cfg.config.get('external_tools', 'bigwig_info')
+    bigwig_info = cfg.config_get('external_tools', 'bigwig_info')
     bamHandlers = [openBam(indexedFile) for
                    indexedFile,
                    fileFormat in bamOrBwFileList if fileFormat == 'bam']
