@@ -1,19 +1,25 @@
-from os import environ
+import os
 import ConfigParser
 from pkg_resources import resource_stream
-config = ConfigParser.ConfigParser()
-config_file = resource_stream('config', 'deepTools.cfg')
-config.readfp(config_file)
 
-def config_get(class_name, name):
-    try:
-        # check if an enviromental variable is set.
-        # if this is the case, it will override the
-        # config file settings
-        env_class = class_name + '_env'
-        env_name = config.get(env_class, name)
-        res = environ[env_name]
-    except KeyError:
-        res = config.get(class_name, name)
 
-    return res
+"""
+If the environment variable DEEP_TOOLS_NO_CONFIG is set the binaries 
+from the PATH will be taken. That is used in the Galaxy Tool Shed integration
+"""
+
+if  os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
+    config = ConfigParser.ConfigParser()
+    config.add_section('general')
+    config.set('general', 'default_proc_number', 'max/2')
+
+    config.add_section('external_tools')
+    config.set('external_tools', 'sort', 'sort')
+    config.set('external_tools', 'samtools', 'samtools')
+    config.set('external_tools', 'bedgraph_to_bigwig', 'bedGraphToBigWig')
+    config.set('external_tools', 'bigwig_info', 'bigWigInfo')
+
+else:
+    config = ConfigParser.ConfigParser()
+    config_file = resource_stream('config', 'deepTools.cfg')
+    config.readfp(config_file)
