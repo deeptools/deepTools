@@ -13,9 +13,6 @@
   <command>
   heatmapper
 
-  ##ToDo
-  --numberOfProcessors 4
-
   --matrixFile $matrixFile
   #if $output.showOutputSettings == "yes"
       #set newoutFileName=str($outFileName)+"."+str($output.outFileFormat)

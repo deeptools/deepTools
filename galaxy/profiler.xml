@@ -8,9 +8,6 @@
   <command>
   profiler
 
-  ##ToDo
-  --numberOfProcessors 4
-
   --matrixFile $matrixFile
 
   #if $output.showOutputSettings == "yes"

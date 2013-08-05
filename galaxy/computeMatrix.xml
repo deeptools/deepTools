@@ -6,13 +6,13 @@
   <command>
   computeMatrix
 
-  ##ToDo
-  --numberOfProcessors 4
-
   $mode.mode_select
   --regionsFileName '$regionsFile'
   --scoreFileName '$scoreFile'
   --outFileName '$outFileName'
+
+  ##ToDo
+  --numberOfProcessors 4
 
   #if $output.showOutputSettings == "yes"
       #if $output.saveData:
