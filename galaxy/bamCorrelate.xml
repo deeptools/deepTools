@@ -1,10 +1,10 @@
-<tool id="bamCorrelate" name="bamCorrelate" version="1.0">
+<tool id="bamCorrelate" name="bamCorrelate" version="1.0.1">
   <description>corrlates pairs of bam files</description>
   <requirements>
     <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
   </requirements>
   <command>
-
+    #import tempfile
     #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
 
     #set files=[]
@@ -15,8 +15,8 @@
         #set $temp_input_path = $temp_input_handle.name
         #silent $temp_input_handle.close()
         #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
-        #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile), $temp_input_path))
-        #set $files.append('%s.bam' % $temp_input_path)
+        #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
+        #silent $files.append('%s.bam' % $temp_input_path)
 
 
         ##set $files += [str($i.bamfile)]
