@@ -2,31 +2,32 @@
   <description>creates a heatmap for a score associated to genomic regions</description>
 
   <requirements>
-    <requirement type="package">deepTools</requirement>
-    <requirement type="python-module">deepTools</requirement> 
-    <requirement type="python-module">matplotlib</requirement>
-    <requirement type="python-module">argsparse</requirement>
-    <requirement type="python-module">itertools</requirement>
-    <requirement type="python-module">pysam</requirement>
-    <requirement type="python-module">numpy</requirement>
-    <requirement type="python-module">pylab</requirement>
-    <requirement type="python-module">bx.intervals.io</requirement>
+    <requirement type="package" version="0.1.18">samtools</requirement>
+    <requirement type="package" version="1.7.1">numpy</requirement>
+    <requirement type="package" version="1.2.1">matplotlib</requirement>
+    <requirement type="package" version="0.12.0">scipy</requirement>
+    <requirement type="package" version="0.1">ucsc_tools</requirement>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
   </requirements>
 
   <command>
   heatmapper
+
+  ##ToDo
+  --numberOfProcessors 4
+
   --matrixFile $matrixFile
   #if $output.showOutputSettings == "yes"
       #set newoutFileName=str($outFileName)+"."+str($output.outFileFormat)
       --outFileName $newoutFileName
       #if $outFileNameData:
-        --outFileNameData '$outFileNameData' 
+        --outFileNameData '$outFileNameData'
       #end if
 
       #if $outFileNameMatrix:
       --outFileNameMatrix '$outFileNameMatrix'
       #end if
-      
+
       #if $outFileSortedRegions:
         --outFileSortedRegions '$outFileSortedRegions'
       #end if
@@ -37,61 +38,61 @@
   
   #if $advancedOpt.showAdvancedOpt == "yes"
       #if $advancedOpt.sortRegions:
-      --sortRegions '$advancedOpt.sortRegions'
+        --sortRegions '$advancedOpt.sortRegions'
       #end if
       
       #if $advancedOpt.sortUsing:
-      --sortUsing '$advancedOpt.sortUsing'
+        --sortUsing '$advancedOpt.sortUsing'
       #end if
       
       #if $advancedOpt.averageTypeSummaryPlot:
-      --averageTypeSummaryPlot '$advancedOpt.averageTypeSummaryPlot'
+        --averageTypeSummaryPlot '$advancedOpt.averageTypeSummaryPlot'
       #end if
       
       #if str($advancedOpt.missingDataColor.value) != "None":
-      --missingDataColor '$advancedOpt.missingDataColor'
+        --missingDataColor '$advancedOpt.missingDataColor'
       #end if
       
       --colorMap '$advancedOpt.colorMap'
       
       #if $advancedOpt.zMin:
-      --zMin $advancedOpt.zMin
+        --zMin $advancedOpt.zMin
       #end if
       #if $advancedOpt.zMax:
-      --zMax $advancedOpt.zMax
+        --zMax $advancedOpt.zMax
       #end if
       
       #if $advancedOpt.yMin:
-      --yMin $advancedOpt.yMin
+        --yMin $advancedOpt.yMin
       #end if
       #if $advancedOpt.yMax:
-      --yMax $advancedOpt.yMax
+        --yMax $advancedOpt.yMax
       #end if
-      
+
       --xAxisLabel '$advancedOpt.xAxisLabel'
       --yAxisLabel '$advancedOpt.yAxisLabel'
-      
+
       --heatmapWidth $advancedOpt.heatmapWidth
       --heatmapHeight $advancedOpt.heatmapHeight
-      
+
       --whatToShow '$advancedOpt.whatToShow'
-      
+
       --startLabel '$advancedOpt.startLabel' 
       --endLabel '$advancedOpt.endLabel'
       --refPointLabel '$advancedOpt.referencePointLabel'
       --regionsLabel '$advancedOpt.regionsLabel'
-      
+
       #if str($advancedOpt.plotTitle.value) != "None":
       --plotTitle '$advancedOpt.plotTitle'
       #end if
-      
+
       $advancedOpt.onePlotPerGroup
   #end if
+
   ; mv $newoutFileName $outFileName
   </command>
   <inputs>
     <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
-    
     <conditional name="output" >
         <param name="showOutputSettings" type="select" label="Show advanced output settings" >
         <option value="no" selected="true">no</option>
@@ -101,7 +102,7 @@
       <when value="yes">
         <param name="outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
-	        <option value="pdf">pdf</option>
+            <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
             <option value="emf">emf</option>
@@ -111,7 +112,7 @@
         <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
     </when>
     </conditional>
-    
+
     <conditional name="advancedOpt" >
       <param name="showAdvancedOpt" type="select" label="Show advanced options" >
         <option value="no" selected="true">no</option>
@@ -120,12 +121,12 @@
       <when value="no" />
       <when value="yes">
         <param name="sortRegions" type="select" label="Sort regions"
-	       help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
+           help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
           <option value="no" selected="true">no ordering</option>
           <option value="descend">descending order</option>
           <option value="ascend">ascending order</option>
         </param>
-        
+
         <param name="sortUsing" type="select" label="Method used for sorting" help="For each row the method is computed." >
           <option value="mean" selected="true">mean</option>
           <option value="median">median</option>
@@ -134,7 +135,7 @@
           <option value="sum">sum</option>
           <option value="region_length">region length</option>
         </param>
-        
+
         <param name="averageTypeSummaryPlot" type="select" label="Type of statistic that should be plotted in the summary image above the heatmap">
           <option value="mean" selected="true">mean</option>
           <option value="median">median</option>
@@ -143,164 +144,162 @@
           <option value="sum">sum</option>
           <option value="std">std</option>
         </param>
-        
+
         <param name="missingDataColor" type="text" label="Missing data color" value="black" optional="true" help="If 'Represent missing data as zero' is not set, such cases will be colored in black by default. By using this parameter a different color can be set. A value between 0 and 1 will be used for a gray scale (black is 0). Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html. Alternatively colors can be specified using the #rrggbb notation." />
-        
+
         <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available values can be seen here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
-        <option value="RdYlBu" selected="true">RdYlBu</option>
-        <option value="Accent">Accent</option>
-        <option value="Spectral">Spectral</option>
-        <option value="Set1">Set1</option>
-        <option value="Set2">Set2</option>
-        <option value="Set3">Set3</option>
-        <option value="Dark2">Dark2</option>
-        <option value="Reds">Reds</option>
-        <option value="Oranges">Oranges</option>
-        <option value="Greens">Greens</option>
-        <option value="Blues">Blues</option>
-        <option value="Greys">Greys</option>
-        <option value="Purples">Purples</option>
-        <option value="Paired">Paired</option>
-        <option value="Pastel1">Pastel1</option>
-        <option value="Pastel2">Pastel2</option>
-        <option value="spring">spring</option>
-        <option value="summer">summer</option>
-        <option value="autumn">autumn</option>
-        <option value="winter">winter</option>
-        <option value="hot">hot</option>
-        <option value="coolwarm">coolwarm</option>
-        <option value="cool">cool</option>
-        <option value="seismic">seismic</option>
-        <option value="terrain">terrain</option>
-        <option value="ocean">ocean</option>
-        <option value="rainbow">rainbow</option>
-        <option value="bone">bone</option>
-        <option value="flag">flag</option>
-        <option value="prism">prism</option>
-        <option value="cubehelix">cubehelix</option>
-        <option value="binary">binary</option>
-        <option value="pink">pink</option>
-        <option value="gray">gray</option>
-        <option value="copper">copper</option>
-        <option value="BrBG">BrBG</option>
-        <option value="BuGn">BuGn</option>
-        <option value="BuPu">BuPu</option>
-        <option value="GnBu">GnBu</option>
-        <option value="OrRd">OrRd</option>
-        <option value="PiYG">PiYG</option>
-        <option value="PRGn">PRGn</option>
-        <option value="PuOr">PuOr</option>
-        <option value="PuRd">PuRd</option>
-        <option value="PuBu">PuBu</option>
-        <option value="RdBu">RdBu</option>
-        <option value="RdGy">RdGy</option>
-        <option value="RdPu">RdPu</option>
-        <option value="YlGn">YlGn</option>
-        <option value="PuBuGn">PuBuGn</option>
-        <option value="RdYlGn">RdYlGn</option>
-        <option value="YlGnBu">YlGnBu</option>
-        <option value="YlOrBr">YlOrBr</option>
-        <option value="YlOrRd">YlOrRd</option>
-        <option value="gist_gray">gist_gray</option>
-        <option value="gist_stern">gist_stern</option>
-        <option value="gist_earth">gist_earth</option>
-        <option value="gist_yarg">gist_yarg</option>
-        <option value="gist_ncar">gist_ncar</option>
-        <option value="gist_rainbow">gist_rainbow</option>
-        <option value="gist_heat">gist_heat</option>
-        <option value="gnuplot">gnuplot</option>
-        <option value="gnuplot2">gnuplot2</option>
-        <option value="CMRmap">CMRmap</option>
-        <option value="bwr">bwr</option>
-        <option value="hsv">hsv</option>
-        <option value="brg">brg</option>
-        <option value="jet">jet</option>
-        <option value="afmhot">afmhot</option>
-        
-        <option value="Accent_r">Accent reversed</option>
-        <option value="Spectral_r">Spectral reversed</option>
-        <option value="Set1_r">Set1 reversed</option>
-        <option value="Set2_r">Set2 reversed</option>
-        <option value="Set3_r">Set3 reversed</option>
-        <option value="Dark2_r">Dark2 reversed</option>
-        <option value="Reds_r">Reds reversed</option>
-        <option value="Oranges_r">Oranges reversed</option>
-        <option value="Greens_r">Greens reversed</option>
-        <option value="Blues_r">Blues reversed</option>
-        <option value="Greys_r">Greys reversed</option>
-        <option value="Purples_r">Purples reversed</option>
-        <option value="Paired_r">Paired reversed</option>
-        <option value="Pastel1_r">Pastel1 reversed</option>
-        <option value="Pastel2_r">Pastel2 reversed</option>
-        <option value="spring_r">spring reversed</option>
-        <option value="summer_r">summer reversed</option>
-        <option value="autumn_r">autumn reversed</option>
-        <option value="winter_r">winter reversed</option>
-        <option value="hot_r">hot reversed</option>
-        <option value="coolwarm_r">coolwarm reversed</option>
-        <option value="cool_r">cool reversed</option>
-        <option value="seismic_r">seismic reversed</option>
-        <option value="terrain_r">terrain reversed</option>
-        <option value="ocean_r">ocean reversed</option>
-        <option value="rainbow_r">rainbow reversed</option>
-        <option value="bone_r">bone reversed</option>
-        <option value="flag_r">flag reversed</option>
-        <option value="prism_r">prism reversed</option>
-        <option value="cubehelix_r">cubehelix reversed</option>
-        <option value="binary_r">binary reversed</option>
-        <option value="pink_r">pink reversed</option>
-        <option value="gray_r">gray reversed</option>
-        <option value="copper_r">copper reversed</option>
-        <option value="BrBG_r">BrBG reversed</option>
-        <option value="BuGn_r">BuGn reversed</option>
-        <option value="BuPu_r">BuPu reversed</option>
-        <option value="GnBu_r">GnBu reversed</option>
-        <option value="OrRd_r">OrRd reversed</option>
-        <option value="PiYG_r">PiYG reversed</option>
-        <option value="PRGn_r">PRGn reversed</option>
-        <option value="PuOr_r">PuOr reversed</option>
-        <option value="PuRd_r">PuRd reversed</option>
-        <option value="PuBu_r">PuBu reversed</option>
-        <option value="RdBu_r">RdBu reversed</option>
-        <option value="RdGy_r">RdGy reversed</option>
-        <option value="RdPu_r">RdPu reversed</option>
-        <option value="YlGn_r">YlGn reversed</option>
-        <option value="PuBuGn_r">PuBuGn reversed</option>
-        <option value="RdYlBu_r">RdYlBu reversed</option>
-        <option value="RdYlGn_r">RdYlGn reversed</option>
-        <option value="YlGnBu_r">YlGnBu reversed</option>
-        <option value="YlOrBr_r">YlOrBr reversed</option>
-        <option value="YlOrRd_r">YlOrRd reversed</option>
-        <option value="gist_gray_r">gist_gray reversed</option>
-        <option value="gist_stern_r">gist_stern reversed</option>
-        <option value="gist_earth_r">gist_earth reversed</option>
-        <option value="gist_yarg_r">gist_yarg reversed</option>
-        <option value="gist_ncar_r">gist_ncar reversed</option>
-        <option value="gist_rainbow_r">gist_rainbow reversed</option>
-        <option value="gist_heat_r">gist_heat reversed</option>
-        <option value="gnuplot_r">gnuplot reversed</option>
-        <option value="gnuplot2_r">gnuplot2 reversed</option>
-        <option value="CMRmap_r">CMRmap reversed</option>
-        <option value="bwr_r">bwr reversed</option>
-        <option value="hsv_r">hsv reversed</option>
-        <option value="brg_r">brg reversed</option>
-        <option value="jet_r">jet reversed</option>
-        <option value="afmhot_r">afmhot reversed</option>
+            <option value="RdYlBu" selected="true">RdYlBu</option>
+            <option value="Accent">Accent</option>
+            <option value="Spectral">Spectral</option>
+            <option value="Set1">Set1</option>
+            <option value="Set2">Set2</option>
+            <option value="Set3">Set3</option>
+            <option value="Dark2">Dark2</option>
+            <option value="Reds">Reds</option>
+            <option value="Oranges">Oranges</option>
+            <option value="Greens">Greens</option>
+            <option value="Blues">Blues</option>
+            <option value="Greys">Greys</option>
+            <option value="Purples">Purples</option>
+            <option value="Paired">Paired</option>
+            <option value="Pastel1">Pastel1</option>
+            <option value="Pastel2">Pastel2</option>
+            <option value="spring">spring</option>
+            <option value="summer">summer</option>
+            <option value="autumn">autumn</option>
+            <option value="winter">winter</option>
+            <option value="hot">hot</option>
+            <option value="coolwarm">coolwarm</option>
+            <option value="cool">cool</option>
+            <option value="seismic">seismic</option>
+            <option value="terrain">terrain</option>
+            <option value="ocean">ocean</option>
+            <option value="rainbow">rainbow</option>
+            <option value="bone">bone</option>
+            <option value="flag">flag</option>
+            <option value="prism">prism</option>
+            <option value="cubehelix">cubehelix</option>
+            <option value="binary">binary</option>
+            <option value="pink">pink</option>
+            <option value="gray">gray</option>
+            <option value="copper">copper</option>
+            <option value="BrBG">BrBG</option>
+            <option value="BuGn">BuGn</option>
+            <option value="BuPu">BuPu</option>
+            <option value="GnBu">GnBu</option>
+            <option value="OrRd">OrRd</option>
+            <option value="PiYG">PiYG</option>
+            <option value="PRGn">PRGn</option>
+            <option value="PuOr">PuOr</option>
+            <option value="PuRd">PuRd</option>
+            <option value="PuBu">PuBu</option>
+            <option value="RdBu">RdBu</option>
+            <option value="RdGy">RdGy</option>
+            <option value="RdPu">RdPu</option>
+            <option value="YlGn">YlGn</option>
+            <option value="PuBuGn">PuBuGn</option>
+            <option value="RdYlGn">RdYlGn</option>
+            <option value="YlGnBu">YlGnBu</option>
+            <option value="YlOrBr">YlOrBr</option>
+            <option value="YlOrRd">YlOrRd</option>
+            <option value="gist_gray">gist_gray</option>
+            <option value="gist_stern">gist_stern</option>
+            <option value="gist_earth">gist_earth</option>
+            <option value="gist_yarg">gist_yarg</option>
+            <option value="gist_ncar">gist_ncar</option>
+            <option value="gist_rainbow">gist_rainbow</option>
+            <option value="gist_heat">gist_heat</option>
+            <option value="gnuplot">gnuplot</option>
+            <option value="gnuplot2">gnuplot2</option>
+            <option value="CMRmap">CMRmap</option>
+            <option value="bwr">bwr</option>
+            <option value="hsv">hsv</option>
+            <option value="brg">brg</option>
+            <option value="jet">jet</option>
+            <option value="afmhot">afmhot</option>
+            <option value="Accent_r">Accent reversed</option>
+            <option value="Spectral_r">Spectral reversed</option>
+            <option value="Set1_r">Set1 reversed</option>
+            <option value="Set2_r">Set2 reversed</option>
+            <option value="Set3_r">Set3 reversed</option>
+            <option value="Dark2_r">Dark2 reversed</option>
+            <option value="Reds_r">Reds reversed</option>
+            <option value="Oranges_r">Oranges reversed</option>
+            <option value="Greens_r">Greens reversed</option>
+            <option value="Blues_r">Blues reversed</option>
+            <option value="Greys_r">Greys reversed</option>
+            <option value="Purples_r">Purples reversed</option>
+            <option value="Paired_r">Paired reversed</option>
+            <option value="Pastel1_r">Pastel1 reversed</option>
+            <option value="Pastel2_r">Pastel2 reversed</option>
+            <option value="spring_r">spring reversed</option>
+            <option value="summer_r">summer reversed</option>
+            <option value="autumn_r">autumn reversed</option>
+            <option value="winter_r">winter reversed</option>
+            <option value="hot_r">hot reversed</option>
+            <option value="coolwarm_r">coolwarm reversed</option>
+            <option value="cool_r">cool reversed</option>
+            <option value="seismic_r">seismic reversed</option>
+            <option value="terrain_r">terrain reversed</option>
+            <option value="ocean_r">ocean reversed</option>
+            <option value="rainbow_r">rainbow reversed</option>
+            <option value="bone_r">bone reversed</option>
+            <option value="flag_r">flag reversed</option>
+            <option value="prism_r">prism reversed</option>
+            <option value="cubehelix_r">cubehelix reversed</option>
+            <option value="binary_r">binary reversed</option>
+            <option value="pink_r">pink reversed</option>
+            <option value="gray_r">gray reversed</option>
+            <option value="copper_r">copper reversed</option>
+            <option value="BrBG_r">BrBG reversed</option>
+            <option value="BuGn_r">BuGn reversed</option>
+            <option value="BuPu_r">BuPu reversed</option>
+            <option value="GnBu_r">GnBu reversed</option>
+            <option value="OrRd_r">OrRd reversed</option>
+            <option value="PiYG_r">PiYG reversed</option>
+            <option value="PRGn_r">PRGn reversed</option>
+            <option value="PuOr_r">PuOr reversed</option>
+            <option value="PuRd_r">PuRd reversed</option>
+            <option value="PuBu_r">PuBu reversed</option>
+            <option value="RdBu_r">RdBu reversed</option>
+            <option value="RdGy_r">RdGy reversed</option>
+            <option value="RdPu_r">RdPu reversed</option>
+            <option value="YlGn_r">YlGn reversed</option>
+            <option value="PuBuGn_r">PuBuGn reversed</option>
+            <option value="RdYlBu_r">RdYlBu reversed</option>
+            <option value="RdYlGn_r">RdYlGn reversed</option>
+            <option value="YlGnBu_r">YlGnBu reversed</option>
+            <option value="YlOrBr_r">YlOrBr reversed</option>
+            <option value="YlOrRd_r">YlOrRd reversed</option>
+            <option value="gist_gray_r">gist_gray reversed</option>
+            <option value="gist_stern_r">gist_stern reversed</option>
+            <option value="gist_earth_r">gist_earth reversed</option>
+            <option value="gist_yarg_r">gist_yarg reversed</option>
+            <option value="gist_ncar_r">gist_ncar reversed</option>
+            <option value="gist_rainbow_r">gist_rainbow reversed</option>
+            <option value="gist_heat_r">gist_heat reversed</option>
+            <option value="gnuplot_r">gnuplot reversed</option>
+            <option value="gnuplot2_r">gnuplot2 reversed</option>
+            <option value="CMRmap_r">CMRmap reversed</option>
+            <option value="bwr_r">bwr reversed</option>
+            <option value="hsv_r">hsv reversed</option>
+            <option value="brg_r">brg reversed</option>
+            <option value="jet_r">jet reversed</option>
+            <option value="afmhot_r">afmhot reversed</option>
         </param>
-        
+
         <param name="zMin" type="float" value="" size="3" label="Minimum value for the heatmap intensities. Leave empty for automatic values" optional="true"/>
         <param name="zMax" type="float" value="" size="3" label="Maximum value for the heatmap intensities. Leave empty for automatic values" optional="true"/>
         <param name="yMin" type="float" value="" size="3" label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
-	    <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
-	    
-	    <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200" label="Description for the x-axis label" />
-        <param name="yAxisLabel" type="text" value="genes" size="30" label="Description for the y-axis label for the top panel" />
-        
-        <param name="heatmapWidth" type="float" value="7.5" min="1" max="100" label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
+        <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
 
-	    <param name="heatmapHeight" type="float" value="25" min="3" max="100" label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
-	    
-	    <param name="whatToShow" type="select" label="What to show" help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
+        <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200" label="Description for the x-axis label" />
+        <param name="yAxisLabel" type="text" value="genes" size="30" label="Description for the y-axis label for the top panel" />
+
+        <param name="heatmapWidth" type="float" value="7.5" min="1" max="100" label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
+        <param name="heatmapHeight" type="float" value="25" min="3" max="100" label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
+
+        <param name="whatToShow" type="select" label="What to show" help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
           <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
           <option value="plot only">summary plot only</option>
           <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
@@ -308,16 +307,13 @@
           <option value="heatmap and colorbar">heatmap and colorbar</option>
           <option value="colorbar only">colorbar only</option>
         </param>
-        
+
         <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
         <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
-        
+
         <param name="referencePointLabel" type="text" value="TSS" size="10" label="Reference point label" help ="[only for scale-regions mode] Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
-        
         <param name="regionsLabel" type="text" value="genes" size="30" label="Labels for the regions plotted in the heatmap" help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
-        
         <param name="plotTitle" type="text" value="" size="30" label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
-        
         <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" label="Do one plot per group" help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
 
 
@@ -327,12 +323,12 @@
   </inputs>
   <outputs>
     <data format="png" name="outFileName" label="${tool.name} image">
-	<change_format>
-		<when input="output.outFileFormat" value="pdf" format="pdf" />
-		<when input="output.outFileFormat" value="svg" format="svg" />
-		<when input="output.outFileFormat" value="eps" format="eps" />
-		<when input="output.outFileFormat" value="emf" format="emf" />
-	</change_format>
+    <change_format>
+        <when input="output.outFileFormat" value="pdf" format="pdf" />
+        <when input="output.outFileFormat" value="svg" format="svg" />
+        <when input="output.outFileFormat" value="eps" format="eps" />
+        <when input="output.outFileFormat" value="emf" format="emf" />
+    </change_format>
     </data>
     <data format="tabular" name="outFileNameData" label="${tool.name} raw plot data">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>
@@ -344,7 +340,12 @@
       <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
     </data>  
   </outputs>
-
+    <tests>
+        <test>
+            <param name="matrixFile" value="master.mat.gz" ftype="bgzip" />
+            <output name="outFileName" file="master.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
   <help>
 
 **What it does**
@@ -364,5 +365,4 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
 .. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
   </help>
-
 </tool>

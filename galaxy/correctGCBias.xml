@@ -1,62 +1,66 @@
 <tool id="correctGCBias" name="correctGCBias" version="1.0">
   <description>
   </description>
+  <requirements>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
+    <requirement type="package" version="0.1">ucsc_tools</requirement>
+  </requirements>
   <command>
   correctGCBias
+
+  ##ToDo
+  --numberOfProcessors 4
+
   --bamfile '$bamInput'
   --species '$species'
   --GCbiasFrequenciesFile $GCbiasFrequenciesFile
-  
+
   #if $source.ref_source=="history":
     --genome $source.input1
   #else:
     --genome "${source.input1_2bit.fields.path}"
   #end if
-  
+
   #if $advancedOpt.showAdvancedOpt == "yes":
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
     #end if
-    
+
     --binSize '$advancedOpt.binSize'  
   #end if
-  
+
   #set newoutFileName="corrected."+str($outFileFormat)
-  
+
   --correctedFile $newoutFileName; mv $newoutFileName $outFileName
 
   </command>
 
   <inputs>
-  
   <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
-  
-  <param name="bamInput" format="bam" type="data" label="Input BAM file"
-	   help="The BAM file must be sorted and indexed."/>
-  
+  <param name="bamInput" format="bam" type="data" label="Input BAM file" help="The BAM file must be sorted and indexed."/>
   <param name="species" type="text" value="" label="Species name abbreviation" />
-  
+
   <conditional name="source">
     <param name="ref_source" type="select" label="Reference genome">
         <option value="cached">locally cached</option>
         <option value="history">in your history</option>
     </param>
     <when value="cached">
-        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-            <options from_data_table="lastz_seqs" />
+        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact your Galaxy team">
+            <options from_data_table="deepTools_seqs" />
         </param>
     </when>
     <when value="history">
         <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
     </when>
   </conditional>
-     
+
   <param name="outFileFormat" type="select" label="File format of the output">
     <option value="bam">bam</option>
     <option value="bw">bigwig</option>
     <option value="bg">bedgraph</option>
   </param>
-  
+
   <conditional name="advancedOpt">
     <param name="showAdvancedOpt" type="select" label="Show advanced options" >
         <option value="no" selected="true">no</option>
@@ -65,24 +69,24 @@
       <when value="no" />
       <when value="yes">
           <param name="region" type="text" value=""
-	        label="Region of the genome to limit the operation to"
-	        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-	       
-	       <param name="binSize" type="integer" value="50" min="1" 
-	         label="Bin size in bp"
-	         help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+           
+           <param name="binSize" type="integer" value="50" min="1" 
+             label="Bin size in bp"
+             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
       </when>
   </conditional>
   </inputs>
-  
+
   <outputs>
     <data format="bam" name="outFileName">
-	<change_format>
-		<when input="outFileFormat" value="bw" format="bigwig" />
-		<when input="outFileFormat" value="bam" format="bam" />
-		<when input="outFileFormat" value="bg" format="bedgraph" />
-	</change_format>
-	</data>
+    <change_format>
+        <when input="outFileFormat" value="bw" format="bigwig" />
+        <when input="outFileFormat" value="bam" format="bam" />
+        <when input="outFileFormat" value="bg" format="bedgraph" />
+    </change_format>
+    </data>
   </outputs>
   <help>
 
@@ -105,5 +109,4 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 .. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
   </help>
-  
 </tool>

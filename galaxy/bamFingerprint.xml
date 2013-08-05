@@ -1,8 +1,8 @@
 <tool id="bamFingerprint" name="bamFingerprint" version="1.0">
-  <description>
-    plots profiles of bam files.
-  </description>
-
+  <description>plots profiles of bam files</description>
+  <requirements>
+    <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
+  </requirements>
   <command>
   #set files=[]
   #set labels=[]
@@ -15,6 +15,10 @@
     #end if
   #end for
   bamFingerprint
+
+  ##ToDo
+  --numberOfProcessors 4
+
   --bamfiles #echo " ".join($files)
   --labels #echo " ".join($labels)
   
@@ -49,12 +53,10 @@
       --minMappingQuality '$advancedOpt.minMappingQuality'
     #end if
   #end if
-  
-  --numberOfProcessors 4; mv $newoutFileName $outFileName
+  ; mv $newoutFileName $outFileName
   </command>
 
   <inputs>
-  
   <repeat name="inputs" title="Input files" min="2">
     <param name="bamfile" type="data" format="bam" 
         label="Bam file" 
@@ -63,10 +65,8 @@
         label="Label"
         help="Label to use in the output. If not given the dataset name will be used instead."/>
   </repeat>
-  
   <param name="fragmentLength" type="integer" value="200" min="1"
-	   label="Length of the average fragment size"/>
-  
+       label="Length of the average fragment size"/>
   <conditional name="advancedOpt">
     <param name="showAdvancedOpt" type="select" label="Show advanced options" >
       <option value="no" selected="true">no</option>
@@ -75,40 +75,39 @@
     <when value="no" />
     <when value="yes">
     <param name="smoothLength" type="integer" value="1" optional="true" min="1"
-	   label="Smooth values using the following length (in bp)"
-	   help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
-	   
+       label="Smooth values using the following length (in bp)"
+       help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
+       
     <param name="region" type="text" value=""
-	   label="Region of the genome to limit the operation to"
-	   help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-	
-	<param name="binSize" type="integer" value="10000" min="1" 
-	   label="Bin size in bp"
-	   help="Length in base pairs for a window used to sample the genome."/>
-	
-	<param name="numberOfSamples" type="integer" value="100000" min="1" 
-	   label="Number of samples"
-	   help="Number of samples taken from the genome to compute the scaling factors"/>
+       label="Region of the genome to limit the operation to"
+       help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+    
+    <param name="binSize" type="integer" value="10000" min="1" 
+       label="Bin size in bp"
+       help="Length in base pairs for a window used to sample the genome."/>
+    
+    <param name="numberOfSamples" type="integer" value="100000" min="1" 
+       label="Number of samples"
+       help="Number of samples taken from the genome to compute the scaling factors"/>
     
     <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-	    label="Do not extend paired ends"
-	    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
-	  
-	<param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
-	    label="Ignore duplicates"
-	    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
-	  
-	<param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-	    label="Minimum mapping quality"
-	    help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
-	    
-	<param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
-	   label ="Include zeros"
-	   help  ="If set, then zero counts that happen for *all* bam files given are ignored. This will result in a reduced number of read counts than the specified in number of samples" />
-  
+        label="Do not extend paired ends"
+        help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+      
+    <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+        label="Ignore duplicates"
+        help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
+      
+    <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+        label="Minimum mapping quality"
+        help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
+        
+    <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
+       label ="Include zeros"
+       help  ="If set, then zero counts that happen for *all* bam files given are ignored. This will result in a reduced number of read counts than the specified in number of samples" />
     </when>
   </conditional>
-  
+
   <conditional name="outputOpt">
     <param name="showOutputOpt" type="select" label="Show additional output options" >
       <option value="no" selected="true">no</option>
@@ -119,7 +118,6 @@
     <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
     </when>
   </conditional>
-  
   </inputs>
   <outputs>
     <data format="png" name="outFileName" />
