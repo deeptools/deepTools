@@ -11,8 +11,8 @@
   --matrixFile $matrixFile
 
   #if $output.showOutputSettings == "yes"
-      #set newoutFileName=str($outFileName)+"."+str($output.outFileFormat)
-      --outFileName $newoutFilename
+      #set newoutFileName = str($outFileName)+"."+str($output.outFileFormat)
+      --outFileName $newoutFileName
       #if $output.outFileNameData:
         --outFileNameData '$output.outFileNameData' 
       #end if
@@ -25,7 +25,7 @@
         --outFileSortedRegions '$output.outFileSortedRegions'
       #end if
   #else
-    #set newoutFileName=str($outFileName)+".png"
+    #set newoutFileName = str($outFileName)+".png"
     --outFileName $newoutFileName
   #end if
   
