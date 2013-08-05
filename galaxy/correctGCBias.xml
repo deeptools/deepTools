@@ -1,4 +1,4 @@
-<tool id="correctGCBias" name="correctGCBias" version="1.0">
+<tool id="correctGCBias" name="correctGCBias" version="1.0.1">
   <description>
   </description>
   <requirements>
@@ -6,39 +6,53 @@
     <requirement type="package" version="0.1">ucsc_tools</requirement>
   </requirements>
   <command>
+    #import tempfile
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
+    #silent $temp_bam_handle.close()
+    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
+    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
+
+
   correctGCBias
-
-  ##ToDo
-  --numberOfProcessors 4
-
-  --bamfile '$bamInput'
+  --bamfile '$temp_bam_path'
   --species '$species'
   --GCbiasFrequenciesFile $GCbiasFrequenciesFile
-
+  
   #if $source.ref_source=="history":
     --genome $source.input1
   #else:
     --genome "${source.input1_2bit.fields.path}"
   #end if
-
+  
   #if $advancedOpt.showAdvancedOpt == "yes":
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
     #end if
-
+    
     --binSize '$advancedOpt.binSize'  
   #end if
-
+  
   #set newoutFileName="corrected."+str($outFileFormat)
-
+  
   --correctedFile $newoutFileName; mv $newoutFileName $outFileName
 
   </command>
 
   <inputs>
+
   <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
+
   <param name="bamInput" format="bam" type="data" label="Input BAM file" help="The BAM file must be sorted and indexed."/>
-  <param name="species" type="text" value="" label="Species name abbreviation" />
+
+  <param name="species" type="select" label="Species name abbreviation">
+    <option value="hg19">hg19</option>
+    <option value="ce10">ce10</option>
+    <option value="dm3">dm3</option>
+    <option value="mm9">mm9</option>
+  </param>
 
   <conditional name="source">
     <param name="ref_source" type="select" label="Reference genome">
@@ -54,13 +68,13 @@
         <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
     </when>
   </conditional>
-
+     
   <param name="outFileFormat" type="select" label="File format of the output">
     <option value="bam">bam</option>
     <option value="bw">bigwig</option>
     <option value="bg">bedgraph</option>
   </param>
-
+  
   <conditional name="advancedOpt">
     <param name="showAdvancedOpt" type="select" label="Show advanced options" >
         <option value="no" selected="true">no</option>
@@ -78,7 +92,7 @@
       </when>
   </conditional>
   </inputs>
-
+  
   <outputs>
     <data format="bam" name="outFileName">
     <change_format>
@@ -109,4 +123,5 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 .. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
   </help>
+  
 </tool>

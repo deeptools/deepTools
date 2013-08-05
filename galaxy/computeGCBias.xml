@@ -1,4 +1,4 @@
-<tool id="computeGCBias" name="computeGCBias" version="1.0">
+<tool id="computeGCBias" name="computeGCBias" version="1.0.1">
   <description></description>
   <requirements>
     <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
@@ -7,12 +7,21 @@
     <exit_code range="0" level="warning" description="Warning" />
   </stdio>
   <command>
+    #import tempfile
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
+    #silent $temp_bam_handle.close()
+    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
+    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
+
   computeGCBias
 
   ##ToDo
   --numberOfProcessors 4
 
-  --bamfile '$bamInput'
+  --bamfile '$temp_bam_path'
   --species '$species'
   --GCbiasFrequenciesFile $outFileName
   --fragmentLength $fragmentLength
@@ -49,12 +58,21 @@
       #end if
   #end if
 
+  ; rm $temp_dir -rf
+
   </command>
   <inputs>
 
       <param name="bamInput" format="bam" type="data" label="Input BAM file"
         help="The BAM file must be sorted and indexed."/>
-      <param name="species" type="text" value="" label="Species name abbreviation" />
+      <!--<param name="species" type="text" value="" label="Species name abbreviation" />-->
+
+        <param name="species" type="select" label="Species name abbreviation">
+            <option value="hg19">hg19</option>
+            <option value="ce10">ce10</option>
+            <option value="dm3">dm3</option>
+            <option value="mm9">mm9</option>
+        </param>
 
       <conditional name="source">
         <param name="ref_source" type="select" label="Reference genome">

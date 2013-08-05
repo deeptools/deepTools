@@ -4,16 +4,27 @@
     <requirement type="package" version="1.5.1_98e5d8a61431ea8605c0643d991a1a5d8999b4dc">deepTools</requirement>
   </requirements>
   <command>
-  #set files=[]
-  #set labels=[]
-  #for $i in $inputs
-    #set $files += [str($i.bamfile)]
-    #if str($i.label.value) != "":
-        #set $labels += ["\"%s\"" % ($i.label.value)]
-    #else
-        #set $labels += ["\"%s\"" % ($i.bamfile.name)]
-    #end if
-  #end for
+    #import tempfile
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set files=[]
+    #set labels=[]
+    #for $i in $inputs
+        #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+        #set $temp_input_path = $temp_input_handle.name
+        #silent $temp_input_handle.close()
+        #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
+        #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
+        #silent $files.append('%s.bam' % $temp_input_path)
+
+        ##set $files += [str($i.bamfile)]
+        #if str($i.label.value) != "":
+            #set $labels += ["\"%s\"" % ($i.label.value)]
+        #else
+            #set $labels += ["\"%s\"" % ($i.bamfile.name)]
+        #end if
+    #end for
+
   bamFingerprint
 
   ##ToDo
@@ -21,39 +32,40 @@
 
   --bamfiles #echo " ".join($files)
   --labels #echo " ".join($labels)
-  
+
   --fragmentLength $fragmentLength
-  
+
   #set newoutFileName=str($outFileName)+".png"
   --plotFile $newoutFileName
-  
+
   #if $outputOpt.showOutputOpt == "yes"
       #if $outputOpt.saveRawCounts:
         --outRawCounts '$outFileRawCounts' 
       #end if
   #end if
-  
+
   #if $advancedOpt.showAdvancedOpt == "yes":
     #if $advancedOpt.smoothLength:
       --smoothLength '$advancedOpt.smoothLength'
     #end if
-    
+
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
     #end if
-    
+
     --binSize '$advancedOpt.binSize'
     --numberOfSamples '$advancedOpt.numberOfSamples'
-    
+
     $advancedOpt.doNotExtendPairedEnds
     $advancedOpt.ignoreDuplicates
     $advancedOpt.skipZeros
-    
+
     #if $advancedOpt.minMappingQuality:
       --minMappingQuality '$advancedOpt.minMappingQuality'
     #end if
   #end if
   ; mv $newoutFileName $outFileName
+  ; rm $temp_dir -rf
   </command>
 
   <inputs>
