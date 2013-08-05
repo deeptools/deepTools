@@ -70,6 +70,7 @@
     #end if
   #end if
   ; mv $newoutFileName $outFileName
+  ; rm $temp_dir -rf
   </command>
 
   <inputs>
