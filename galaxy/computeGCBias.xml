@@ -54,7 +54,14 @@
 
       <param name="bamInput" format="bam" type="data" label="Input BAM file"
         help="The BAM file must be sorted and indexed."/>
-      <param name="species" type="text" value="" label="Species name abbreviation" />
+      <!--<param name="species" type="text" value="" label="Species name abbreviation" />-->
+
+        <param name="species" type="select" label="Species name abbreviation">
+            <option value="hg19">hg19</option>
+            <option value="ce10">ce10</option>
+            <option value="dm3">dm3</option>
+            <option value="mm9">mm9</option>
+        </param>
 
       <conditional name="source">
         <param name="ref_source" type="select" label="Reference genome">
