@@ -1,4 +1,4 @@
-    <?xml version="1.0"?>
+<?xml version="1.0"?>
 <!--
 
     <requirement type="package">deepTools</requirement>
@@ -59,7 +59,7 @@
         <install version="1.0">
             <actions>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
-                <action type="shell_command">git reset --hard 98e5d8a61431ea8605c0643d991a1a5d8999b4dc</action>
+                <action type="shell_command">git reset --hard 59e067cce039cb93add04823c9f51cab202f8c2b</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
