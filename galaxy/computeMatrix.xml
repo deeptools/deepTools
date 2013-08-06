@@ -82,7 +82,7 @@
   <inputs>
 
     <repeat name="regionsFiles" title="regions to plot" min="1">
-        <param name="regionsFile" format="bed,gff" type="data" label="Regions to plot" help="File, in BED or GFF format, containing the regions to plot."/>
+        <param name="regionsFile" format="bed" type="data" label="Regions to plot" help="File, in BED or GFF format, containing the regions to plot."/>
         <param name="label" type="text" size="30" optional="true" value="" label="Label" help="Label to use in the output."/>
     </repeat>
 
