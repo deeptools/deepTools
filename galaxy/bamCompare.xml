@@ -1,5 +1,5 @@
 <tool id="bamCompare" name="bamCompare" version="1.0">
-  <description>Normalize and compare two BAM files to output ratio, log2ratio or difference.</description>
+  <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference.</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
     <requirement type="package" version="1.7.1">numpy</requirement>
@@ -180,30 +180,28 @@
 **What it does**
 
 This tool compares two BAM files based on the number of mapped reads. To
-compare the BAM files the genome is partitioned into bins of equal size, then
-the number of reads found in each BAM file are counted for such bins and
-finally a summarizing value is reported. This vaule can be the ratio of the
-number of reads per bin, the log2 of the ratio or the difference. This tool
-can normalize the number of reads on each BAM file using the SES method
-proposed by Diaz et al. (2012). "Normalization, bias correction, and peak
-calling for ChIP-seq". Statistical applications in genetics and molecular
-biology, 11(3). Normalization based on read counts is also available. The
-output is either a bedgraph or a bigwig file containing the bin location and
-the resulting comparison values. By default if reads are mated the fragment
-length reported in the BAM file is used.
+compare the BAM files, the genome is partitioned into bins of equal size,
+the reads are counted for each bin and each BAM file and finally, a summarizing value is reported.
+This value can be the ratio of the number of reads per bin, the log2 of the ratio or the difference.
+This tool can normalize the number of reads on each BAM file using the SES method
+proposed by Diaz et al. (2012). Stat Appl Genet Mol Biol 11(3). Normalization based on read counts is also available. The
+output is either a bedGraph or a bigWig file containing the bin location and
+the resulting comparison values.
+If paired-end reads are present, the fragment
+length reported in the BAM file is used by default.
 
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
 
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
+
 
   </help>
   

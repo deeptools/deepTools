@@ -1,5 +1,6 @@
 <tool id="computeGCBias" name="computeGCBias" version="1.0.1">
-  <description></description>
+  <description>to see whether your samples should be normalized for GC bias</description>
+  
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
   </requirements>
@@ -151,8 +152,8 @@
 
 **What it does**
 
-Computes the GC bias ussing Benjamini's method [citation]. The resulting GC
-bias can later be used to plot the bias or to correct the bias.
+This tool computes the GC bias ussing the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. 
+The output is used to plot the bias and can also be used later on to correct the bias with the tool correctGCbias.
 
 -----
 
