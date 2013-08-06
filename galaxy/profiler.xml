@@ -11,8 +11,8 @@
   --matrixFile $matrixFile
 
   #if $output.showOutputSettings == "yes"
-      #set newoutFileName=str($outFileName)+"."+str($output.outFileFormat)
-      --outFileName $newoutFilename
+      #set newoutFileName = str($outFileName)+"."+str($output.outFileFormat)
+      --outFileName $newoutFileName
       #if $output.outFileNameData:
         --outFileNameData '$output.outFileNameData' 
       #end if
@@ -25,7 +25,7 @@
         --outFileSortedRegions '$output.outFileSortedRegions'
       #end if
   #else
-    #set newoutFileName=str($outFileName)+".png"
+    #set newoutFileName = str($outFileName)+".png"
     --outFileName $newoutFileName
   #end if
   
@@ -96,7 +96,7 @@
         </param>
         <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
         <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
-        <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+        <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="This outputs the file of genomic intervals in the order that will be shown in the heatmap or summary profile. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
       </when>
     </conditional>
 
@@ -171,7 +171,7 @@ computeMatrix is required.
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 

@@ -1,5 +1,5 @@
 <tool id="computeMatrix" name="computeMatrix" version="1.0">
-  <description>summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile</description>
+  <description>prepares an intermediary file that is required for heatmapper and profiler and produces data tables of scores associated with genomic regions</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
   </requirements>
@@ -68,7 +68,7 @@
     <param name="scoreFile" format="bigwig" type="data" label="Score file" help="Either a bigWig file (containing a score, usually covering the whole genome) or a BAM file. For this last case, coverage counts will be used for the heatmap."/>
 
     <conditional name="mode" >
-      <param name="mode_select" type="select" label="computeMatrix has two main output options" help="In the scale-regions mode, all regions in the BED/GFF file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED/GFF regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
+      <param name="mode_select" type="select" label="computeMatrix has two main options" help="In the scale-regions mode, all regions in the BED/GFF file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED/GFF regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
         <option value="scale-regions" selected="true">scale-regions</option>
         <option value="reference-point">reference-point</option>
       </param>
@@ -111,9 +111,9 @@
       </param>
       <when value="no" />
       <when value="yes">
-        <param name="saveData" type="boolean" label="Save the averages per matrix column into a text file" help="This corresponds to the underlying data used to plot a summary profile."/>
-        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap" help="This matrix can easily be loaded into R or other programs."/>
-        <param name="saveSortedRegions" type="boolean" label="Save the regions after skiping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+        <param name="saveData" type="boolean" label="Save the averages per matrix column into a text file" help="This corresponds to the underlying data used to plot a summary profile and might be useful for additional customized analyses. This file can also be saved later on using profiler."/>
+        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap" help="This file can also be saved later on using heatmapper. The resulting matrix can easily be loaded into R or other programs."/>
+        <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="This outputs the file of genomic intervals in the order that will be shown in the heatmap or summary profile. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap. This file can also be saved later on using profiler or heatmapper."/>
     </when>
     </conditional>
 
@@ -160,15 +160,15 @@
     
     </inputs>
   <outputs>
-    <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: matrix">
+    <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: matrix for profiler and heatmapper">
     </data>
-    <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: raw data">
+    <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: data underlying summary profile">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>
     </data>
-    <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: matrix of values">
+    <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: data underlying heatmap">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveMatrix'] == True)</filter>
     </data>
-    <data format="bed" name="outFileSortedRegions" label="${tool.name} on ${on_string}: sorted/filtered regions">
+    <data format="bed" name="outFileSortedRegions" label="${tool.name} on ${on_string}: sorted and filtered regions">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
     </data>  
   </outputs>
@@ -194,7 +194,7 @@ This tool summarizes and prepares an intermediary file containing scores associa
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
