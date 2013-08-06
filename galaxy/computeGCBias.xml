@@ -145,7 +145,8 @@
   <outputs>
     <data format="tabular" name="outFileName" />
     <data format="png" name="biasPlot" label="${tool.name} on ${on_string}: bias plot">
-      <filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>
+      <filter>saveBiasPlot is True</filter>      
+      <!--<filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>-->
     </data>
   </outputs>
   <help>
