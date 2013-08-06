@@ -65,7 +65,7 @@
   </command>
   <inputs>
     <param name="regionsFile" format="bed,gff" type="data" label="Regions to plot" help="File, in BED or GFF format, containing the regions to plot."/>
-    <param name="scoreFile" format="bigwig,bam" type="data" label="Score file" help="Either a bigWig file (containing a score, usually covering the whole genome) or a BAM file. For this last case, coverage counts will be used for the heatmap."/>
+    <param name="scoreFile" format="bigwig" type="data" label="Score file" help="Either a bigWig file (containing a score, usually covering the whole genome) or a BAM file. For this last case, coverage counts will be used for the heatmap."/>
 
     <conditional name="mode" >
       <param name="mode_select" type="select" label="computeMatrix has two main output options" help="In the scale-regions mode, all regions in the BED/GFF file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED/GFF regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
