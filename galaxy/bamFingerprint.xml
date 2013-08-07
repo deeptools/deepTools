@@ -1,5 +1,5 @@
 <tool id="bamFingerprint" name="bamFingerprint" version="1.0">
-  <description>plots profiles of bam files</description>
+  <description>plots profiles of BAM files; useful for assesing ChIP signal strength</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
   </requirements>
@@ -45,10 +45,7 @@
   #end if
 
   #if $advancedOpt.showAdvancedOpt == "yes":
-    #if $advancedOpt.smoothLength:
-      --smoothLength '$advancedOpt.smoothLength'
-    #end if
-
+    
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
     #end if
@@ -72,7 +69,7 @@
   <repeat name="inputs" title="Input files" min="2">
     <param name="bamfile" type="data" format="bam" 
         label="Bam file" 
-        help="The BAM file must be sorted and indexed."/>
+        help="The BAM file must be sorted."/>
     <param name="label" type="text" size="30" optional="true" value=""
         label="Label"
         help="Label to use in the output. If not given the dataset name will be used instead."/>
@@ -86,10 +83,7 @@
     </param>
     <when value="no" />
     <when value="yes">
-    <param name="smoothLength" type="integer" value="1" optional="true" min="1"
-       label="Smooth values using the following length (in bp)"
-       help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
-       
+        
     <param name="region" type="text" value=""
        label="Region of the genome to limit the operation to"
        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
@@ -112,11 +106,11 @@
       
     <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
         label="Minimum mapping quality"
-        help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
+        help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
         
     <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
        label ="Include zeros"
-       help  ="If set, then zero counts that happen for *all* bam files given are ignored. This will result in a reduced number of read counts than the specified in number of samples" />
+       help  ="If set, then zero counts that happen for *all* BAM files given are ignored. This might have the effect that fewer regions are considered than indicated in the option where the number of samples is defined." />
     </when>
   </conditional>
 
@@ -143,7 +137,7 @@
 
 This tool is based on a method developed by Diaz et al. (2012). Stat Appl Genet Mol Biol 11(3).
 The resulting plot can be used to assess the strength of a ChIP (for factors that bind to narrow regions).
-The tool first samples indexed bam files and counts all reads overlapping a window (bin) of specified length.
+The tool first samples indexed BAM files and counts all reads overlapping a window (bin) of specified length.
 These counts are then sorted according to their rank and the cumulative sum of read counts are plotted. An ideal input
 with perfect uniform distribution of reads along the genome (i.e. without enrichments in open chromatin etc.) should
 generate a straight diagonal line. A very specific and strong ChIP enrichment will be indicated by a prominent and steep
@@ -154,14 +148,13 @@ few bins which corresponds to high, narrow enrichments seen for transcription fa
 
 .. class:: infomark
 
-If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
 
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
   </help>
   

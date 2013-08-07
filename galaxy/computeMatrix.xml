@@ -82,14 +82,14 @@
   <inputs>
 
     <repeat name="regionsFiles" title="regions to plot" min="1">
-        <param name="regionsFile" format="bed" type="data" label="Regions to plot" help="File, in BED or GFF format, containing the regions to plot."/>
+        <param name="regionsFile" format="bed" type="data" label="Regions to plot" help="File, in BED format, containing the regions to plot."/>
         <param name="label" type="text" size="30" optional="true" value="" label="Label" help="Label to use in the output."/>
     </repeat>
 
-    <param name="scoreFile" format="bigwig" type="data" label="Score file" help="Either a bigWig file (containing a score, usually covering the whole genome) or a BAM file. For this last case, coverage counts will be used for the heatmap."/>
+    <param name="scoreFile" format="bigwig" type="data" label="Score file" help="Should be a bigWig file (containing a score, usually covering the whole genome). You can generate a bigWig file either from a bedGraph or WIG file using UCSC tools or from a BAM file using the deepTool bamCoverage."/>
 
     <conditional name="mode" >
-      <param name="mode_select" type="select" label="computeMatrix has two main output options" help="In the scale-regions mode, all regions in the BED/GFF file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED/GFF regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
+      <param name="mode_select" type="select" label="computeMatrix has two main output options" help="In the scale-regions mode, all regions in the BED file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
         <option value="scale-regions" selected="true">scale-regions</option>
         <option value="reference-point">reference-point</option>
       </param>
@@ -162,7 +162,7 @@
           <option value="region_length">region length</option>
         </param>
 
-        <param name="averageTypeBins" type="select" label="Define the type of statistic that should be used over the bin size range">
+        <param name="averageTypeBins" type="select" label="Define the type of statistic that should be displayed." help="The value is computed for each bin.">
           <option value="mean" selected="true">mean</option>
           <option value="median">median</option>
           <option value="min">min</option>
@@ -171,7 +171,7 @@
           <option value="std">std</option>
         </param>
 
-        <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" label="Indicate missing data as zero" help="Only for bigwig input! Set to &quot;yes&quot;, if missing data should be indicated as zeros. Default is to ignore such cases which will be depicted as black areas in the heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options)."/>
+        <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" label="Indicate missing data as zero" help="Set to &quot;yes&quot;, if missing data should be indicated as zeros. Default is to ignore such cases which will be depicted as black areas in the heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options)."/>
         <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue="" label="Skip zeros" help="Whether regions with only scores of zero should be included or not. Default is to include them."/>
         <param name="minThreshold" type="float" optional="true" label="Minimum threshold" help="Any region containing a value that is equal or less than this numeric value will be skipped. This is useful to skip, for example, genes where the read count is zero for any of the bins. This could be the result of unmappable areas and can bias the overall results."/>
         <param name="maxThreshold" type="float" optional="true" label="Maximum threshold" help="Any region containing a value that is equal or higher that this numeric value will be skipped. The max threshold is useful to skip those few regions with very high read counts (e.g. major satellites) that may bias the average values."/>
@@ -209,19 +209,17 @@
   <help>
 **What it does**
 
-This tool summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile. Typically, these genomic regions are genes, but any other regions defined in a BED or GFF format can be used. This tool can also be used to filter and sort regions according to their score.
+This tool summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile. Typically, these genomic regions are genes, but any other regions defined in a BED or INTERVAL format can be used. This tool can also be used to filter and sort regions according to their score.
 
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
-
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
   </help>
 </tool>
