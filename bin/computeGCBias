@@ -605,7 +605,16 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
 #    fig.suptitle(args.title, fontsize='small')
 #    plt.tight_layout()
     plt.tight_layout()
-    plt.savefig(file_name, bbox_inches='tight', dpi=100)
+
+    # check if the filetype is supported by matplotlib, otherwise fallback to png
+    # ToDo: specify the filetype via an command line for galaxy
+    filetype = os.path.splitext( file_name )[1]
+    if filetype in ['.emf', '.eps', '.pdf', '.pgf', '.png', 'ps', '.raw', '.rgba', '.svg', '.svgz']:
+        plt.savefig(file_name, bbox_inches='tight', dpi=100)
+    else:
+        print 'Plotting filetype "%s" is not supported by matplotlib. PNG is used instead.' % filetype
+        plt.savefig(file_name, bbox_inches='tight', dpi=100, format='png')
+
 
 
 def main(args):
