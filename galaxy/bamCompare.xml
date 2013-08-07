@@ -65,10 +65,10 @@
 
   <inputs>
     <param name="bamFile1" format="bam" type="data" label="Treatment BAM file"
-       help="The BAM file must be sorted and indexed."/>
+       help="The BAM file must be sorted."/>
 
     <param name="bamFile2" format="bam" type="data" label="Input BAM file"
-       help="The BAM file must be sorted and indexed."/>
+       help="The BAM file must be sorted."/>
 
     <param name="fragmentLength" type="integer" value="300" min="1"
        label="Length of the average fragment size"
@@ -158,7 +158,7 @@
 
         <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
             label="Minimum mapping quality (e.g. BOWTIE2 measures)"
-            help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
+            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
 
         <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
             label ="Treat missing data as zero"
@@ -194,7 +194,7 @@ length reported in the BAM file is used by default.
 
 .. class:: infomark
 
-If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 

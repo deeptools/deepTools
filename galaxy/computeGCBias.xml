@@ -69,7 +69,7 @@
   <inputs>
 
       <param name="bamInput" format="bam" type="data" label="Input BAM file"
-        help="The BAM file must be sorted and indexed."/>
+        help="The BAM file must be sorted."/>
       <!--<param name="species" type="text" value="" label="Species name abbreviation" />-->
 
         <param name="species" type="select" label="Species name abbreviation">
@@ -95,7 +95,7 @@
       </conditional>
       <param name="fragmentLength" type="integer" value="300" min="1"
         label="Fragment length used for the sequencing"
-        help ="If paired-end reads are used the fragment length is computed based from the bam file."/>
+        help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
 
     <conditional name="advancedOpt">
         <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -117,7 +117,7 @@
            
            <param name="regionSize" type="integer" value="300" min="1"
              label="Region size"
-             help ="To plot the reads per GC over a region the size of the region is required. By default, the bin size is set to 300bp, which is close to the standard fragment size for Illumina machines. However, if the depth of sequencing is low a larger bin size will be required, otherwise many bins will not overlap with any read."/>
+             help ="To plot the reads per GC over a region, the size of the region is required (see below for more details of the mthod). By default, the bin size is set to 300 bp, which is close to the standard fragment size many sequencing applications. However, if the depth of sequencing is low, a larger bin size will be required, otherwise many bins will not overlap with any read."/>
            
            <param name="filterOut" type="data" format="bed" optional="true"
              label="BED file containing genomic regions to be excluded from the estimation of the correction"
@@ -145,28 +145,39 @@
   <outputs>
     <data format="tabular" name="outFileName" />
     <data format="png" name="biasPlot" label="${tool.name} on ${on_string}: bias plot">
-      <filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>
+      <filter>saveBiasPlot is True</filter>      
+      <!--<filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>-->
     </data>
   </outputs>
   <help>
 
 **What it does**
 
-This tool computes the GC bias ussing the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. 
+This tool computes the GC bias ussing the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. (see below for more explanations)
 The output is used to plot the bias and can also be used later on to correct the bias with the tool correctGCbias.
+There are two plots produced by the tool: a boxplot showing the absolute read numbers per genomic-GC bin and an x-y plot
+depicting the ratio of observed/expected reads per genomic GC content bin.
+
+-----
+**Summary of the method used**
+In order to estimate how many reads with what kind of GC content one should have sequenced, we first need to determine how many regions the specific
+reference genome contains for each amount of GC content, i.e. how many regions in the genome have 50% GC (or 10% GC or 90% GC or...).
+We then sample a large number of equally sized genome bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any 
+sequencing as it only depends on the respective reference genome (i.e. it will most likely vary between mouse and fruit fly due to their genome's different GC contents).
+The OBSERVED values are based on the reads from the sequenced sample. Instead of noting how many genomic regions there are per GC content, we now count the reads per GC content.
+In an ideal sample without GC bias, the ratio of OBSERVED/EXPECTED values should be close to 1 regardless of the GC content. Due to PCR (over)amplifications, the majority of ChIP samples
+usually shows a significant bias towards reads with high GC content (>50%)
 
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
-
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
   </help>
 </tool>

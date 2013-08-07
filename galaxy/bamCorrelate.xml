@@ -46,10 +46,7 @@
   #end if
   
   #if $advancedOpt.showAdvancedOpt == "yes":
-    #if $advancedOpt.smoothLength:
-      --smoothLength '$advancedOpt.smoothLength'
-    #end if
-    
+        
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
     #end if
@@ -73,7 +70,7 @@
   <repeat name="inputs" title="Input files" min="2">
     <param name="bamfile" type="data" format="bam" 
         label="Bam file" 
-        help="The BAM file must be sorted and indexed."/>
+        help="The BAM file must be sorted."/>
     <param name="label" type="text" size="30" optional="true" value=""
         label="Label"
         help="Label to use in the output. If not given the dataset name will be used instead."/>
@@ -81,7 +78,7 @@
 
   <param name="fragmentLength" type="integer" value="300" min="1"
        label="Length of the average fragment size"
-       help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+       help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
 
   <param name="corMethod" type="select" label="Correlation method">
     <option value="pearson">Pearson</option>
@@ -95,9 +92,7 @@
     </param>
     <when value="no" />
     <when value="yes">
-    <param name="smoothLength" type="integer" value="1" optional="true" min="1"
-       label="Smooth values using the following length (in bp)"
-       help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
+   
        
     <param name="region" type="text" value=""
        label="Region of the genome to limit the operation to"
@@ -121,11 +116,11 @@
       
     <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
         label="Minimum mapping quality"
-        help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
+        help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
         
     <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
        label ="Include zeros"
-       help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases" />
+       help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
 
     </when>
   </conditional>
@@ -159,7 +154,7 @@
 This tool is useful to assess the overall similarity of different BAM files. A typical application
 is to check the correlation between replicates or published data sets.
 
-The tool splits the genomes are into bins of given length. For each bin, the number of reads
+The tool splits the genomes into bins of given length. For each bin, the number of reads
 found in each BAM file is counted and a correlation is computed for all
 pairs of BAM files.
 
@@ -167,14 +162,14 @@ pairs of BAM files.
 
 .. class:: infomark
 
-If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
 
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
+
 
   </help>
   

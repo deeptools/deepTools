@@ -1,5 +1,5 @@
 <tool id="bamCoverage" name="bamCoverage" version="1.0">
-  <description>Given a BAM file, generates a coverage bigwig file.  Multiple options available to count reads and normalize coverage.</description>
+  <description> generates a coverage bigWig file from a given BAM file.  Multiple options are available to count reads and normalize coverage.</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
     <requirement type="package" version="0.1">ucsc_tools</requirement>
@@ -47,7 +47,7 @@
 
   <inputs>
     <param name="bamInput" format="bam" type="data" label="Input BAM file"
-       help="The BAM file must be sorted and indexed."/>
+       help="The BAM file must be sorted."/>
 
     <param name="fragmentLength" type="integer" value="300" min="1"
        label="Length of the average fragment size"
@@ -107,7 +107,7 @@
 
           <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
             label="Minimum mapping quality"
-            help= "If set, only reads that have a mapping quality score higher than the given value are considered"/>
+            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
         </when>
     </conditional>
   </inputs>
@@ -129,14 +129,13 @@ Given a BAM file, this tool generates a bigWig or bedGraph file of fragment or r
 
 .. class:: infomark
 
-If you would like to give us feedback or you run into any trouble, please sent an email to deeptools@googlegroups.com
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
 
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
 </help>
 </tool>
