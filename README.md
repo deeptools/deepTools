@@ -62,7 +62,7 @@ user and run the the installation script:
 
 The -r argument specifies the version of deepTools. You can get the latest revsion number from the test tool shed or with the following command:
 
-	hg identify http://testtoolshed.g2.bx.psu.edu/repos/bgruening/chemicaltoolbox
+	hg identify http://testtoolshed.g2.bx.psu.edu/repos/bgruening/deeptools
 
 You can watch the installation status under: Top Panel → Admin → Manage installed tool shed repositories
 
