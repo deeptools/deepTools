@@ -153,7 +153,7 @@
 
 **What it does**
 
-This tool computes the GC bias ussing the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. (see below for more explanations)
+This tool computes the GC bias using the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. (see below for more explanations)
 The output is used to plot the bias and can also be used later on to correct the bias with the tool correctGCbias.
 There are two plots produced by the tool: a boxplot showing the absolute read numbers per genomic-GC bin and an x-y plot
 depicting the ratio of observed/expected reads per genomic GC content bin.
