@@ -159,7 +159,9 @@ There are two plots produced by the tool: a boxplot showing the absolute read nu
 depicting the ratio of observed/expected reads per genomic GC content bin.
 
 -----
+
 **Summary of the method used**
+
 In order to estimate how many reads with what kind of GC content one should have sequenced, we first need to determine how many regions the specific
 reference genome contains for each amount of GC content, i.e. how many regions in the genome have 50% GC (or 10% GC or 90% GC or...).
 We then sample a large number of equally sized genome bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any 
