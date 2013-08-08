@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
-
 import argparse 
 import multiprocessing
 from  matplotlib import use as mplt_use
@@ -37,7 +34,6 @@ def parseArguments(args=None):
                         help = 'List of sorted Bam files',
                         required = True)
 
-    
     parser.add_argument('--labels', '-l',
                         metavar = 'list of labels files',
                         help = 'List of labels to use in the output. '
@@ -61,14 +57,12 @@ def parseArguments(args=None):
                         default = 5e5,
                         type = int)
 
-
     parser.add_argument('--skipZeros',
                         help = 'If set, then zero counts that happen for *all* bam files given are ignored. This will result in a reduced number of read counts than the the specified in --numberOfSamples',
                         action = 'store_true',
                         required = False)
 
     group = parser.add_argument_group('Output')
-
 
     group.add_argument('--plotFile', '-plot',
                        help = 'File name to save the .png file containing a plot '
@@ -92,7 +86,6 @@ def parseArguments(args=None):
         args.labels = args.bamfiles
 
     return(args)
-
 
 
 def main(args):
@@ -124,9 +117,6 @@ def main(args):
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
-
-#    os.system("/data/projects/ramirez/tools/utilities/_bamFingerprint.R {0} {1} ".format(outFileName, args.outFileName))
-#    os.system("/data/projects/ramirez/tools/utilities/_correlate_pearson.R {0} {1} ".format(outFileName, args.outFileName))
 
 if __name__ == "__main__":
     args = parseArguments()

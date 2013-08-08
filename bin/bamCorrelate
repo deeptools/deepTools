@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
-
 import argparse # to parse command line arguments
 import numpy as np
 

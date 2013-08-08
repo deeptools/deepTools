@@ -1,8 +1,5 @@
+#!/usr/bin/env python
 #-*- coding: utf-8 -*-
-
-import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
-sys.path.append('/galaxy/local_tools/mpi-ie/')
 
 import numpy as np
 import multiprocessing
