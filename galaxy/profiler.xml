@@ -4,6 +4,7 @@
   </description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
+    <requirement type="package" >deepTools</requirement>
   </requirements>
   <command>
   profiler
@@ -13,16 +14,16 @@
   #if $output.showOutputSettings == "yes"
       #set newoutFileName = str($outFileName)+"."+str($output.outFileFormat)
       --outFileName $newoutFileName
-      #if $output.outFileNameData:
-        --outFileNameData '$output.outFileNameData' 
+      #if $output.saveData:
+        --outFileNameData '$outFileNameData' 
       #end if
 
-      #if $output.outFileNameMatrix:
-      --outFileNameMatrix '$output.outFileNameMatrix'
+      #if $output.saveMatrix:
+      --outFileNameMatrix '$outFileNameMatrix'
       #end if
-      
-      #if $output.outFileSortedRegions:
-        --outFileSortedRegions '$output.outFileSortedRegions'
+
+      #if $output.saveSortedRegions:
+        --outFileSortedRegions '$outFileSortedRegions'
       #end if
   #else
     #set newoutFileName = str($outFileName)+".png"
@@ -141,12 +142,12 @@
   </inputs>
   <outputs>
     <data format="png" name="outFileName" label="${tool.name} image">
-    <change_format>
-        <when input="output.outFileFormat" value="pdf" format="pdf" />
-        <when input="output.outFileFormat" value="svg" format="svg" />
-        <when input="output.outFileFormat" value="eps" format="eps" />
-        <when input="output.outFileFormat" value="emf" format="emf" />
-    </change_format>
+        <change_format>
+            <when input="output.outFileFormat" value="pdf" format="pdf" />
+            <when input="output.outFileFormat" value="svg" format="svg" />
+            <when input="output.outFileFormat" value="eps" format="eps" />
+            <when input="output.outFileFormat" value="emf" format="emf" />
+        </change_format>
     </data>
     <data format="tabular" name="outFileNameData" label="${tool.name} raw plot data">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>
