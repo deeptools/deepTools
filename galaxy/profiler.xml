@@ -33,7 +33,6 @@
   #if $scaleRegions.showScaleRegionsOpt == "yes":
     --startLabel $scaleRegions.startLabel
     --endLabel $scaleRegions.endLabel
-    --refPointLabel $scaleRegions.refPointLabel
   #end if
   
   #if $advancedOpt.showAdvancedOpt == "yes"
@@ -77,7 +76,6 @@
         <when value="yes">
             <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
             <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
-            <param name="refPointLabel" type="text" value="TSS" size="10" label="Reference point label" help ="[only for scale-regions mode] Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
         </when>
     </conditional>
 
