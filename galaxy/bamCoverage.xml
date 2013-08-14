@@ -2,9 +2,9 @@
   <description> generates a coverage bigWig file from a given BAM file.  Multiple options are available to count reads and normalize coverage.</description>
   <requirements>
     <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
-    <requirement type="package" >deepTools</requirement>
     <requirement type="package" version="0.1">ucsc_tools</requirement>
     <requirement type="package" version="1.7.1">numpy</requirement>
+    <requirement type="package" >deepTools</requirement>
   </requirements>
   <command>
   bamCoverage
