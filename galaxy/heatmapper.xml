@@ -1,4 +1,4 @@
-<tool id="heatmapper" name="heatmapper" version="1.0">
+<tool id="deeptools_heatmapper" name="heatmapper" version="1.0">
   <description>creates a heatmap for a score associated to genomic regions</description>
 
   <requirements>

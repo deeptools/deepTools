@@ -1,4 +1,4 @@
-<tool id="computeGCBias" name="computeGCBias" version="1.0.1">
+<tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.1">
   <description>to see whether your samples should be normalized for GC bias</description>
   
   <requirements>
