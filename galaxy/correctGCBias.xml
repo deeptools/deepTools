@@ -1,7 +1,7 @@
 <tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.1">
   <description>uses the output from computeGCBias to generate corrected BAM files</description>
   <requirements>
-    <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
+    <requirement type="package" version="1.5.1_df852fa1ef13251a17274ee18fbf919fbc515079">deepTools</requirement>
     <requirement type="package" version="0.1">ucsc_tools</requirement>
     <requirement type="package" >deepTools</requirement>
   </requirements>

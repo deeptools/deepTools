@@ -3,7 +3,7 @@
     creates a profile plot for a score associated to genomic regions
   </description>
   <requirements>
-    <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
+    <requirement type="package" version="1.5.1_df852fa1ef13251a17274ee18fbf919fbc515079">deepTools</requirement>
     <requirement type="package" >deepTools</requirement>
   </requirements>
   <command>

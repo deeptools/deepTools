@@ -55,11 +55,11 @@
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-    <package name="deepTools" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">
+    <package name="deepTools" version="1.5.1_df852fa1ef13251a17274ee18fbf919fbc515079">
         <install version="1.0">
             <actions>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
-                <action type="shell_command">git reset --hard 59e067cce039cb93add04823c9f51cab202f8c2b</action>
+                <action type="shell_command">git reset --hard df852fa1ef13251a17274ee18fbf919fbc515079</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
