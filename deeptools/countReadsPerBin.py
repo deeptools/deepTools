@@ -19,7 +19,7 @@ def countReadsInRegions_wrapper(args):
 
 def countReadsInRegions_worker(chrom, start, end, bamFilesList, 
                                stepSize, binLength, defaultFragmentLength, 
-                               skipZeros = False):
+                               skipZeros = False, ignoreDuplicates = False):
     """ counts the reads in each bam file at each 'stepSize' position
     within the interval start, end 
     for a 'binLength' window.
@@ -65,11 +65,16 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
         for bam in bamHandlers:
             avgReadsArray.append( \
                 getCoverageOfRegion( bam, 
-                                     chrom, i, i+binLength, 
-                                     binLength, 
+                                     chrom, 
+                                     i,
+                                     i+binLength,
+                                     binLength,
                                      defaultFragmentLength, 
                                      extendPairedEnds, 
-                                     zerosToNans )[0] )
+                                     zerosToNans,
+                                     ignoreDuplicates,
+                                    )[0]
+                                )
 
         if np.isnan(sum(avgReadsArray)):
             continue
@@ -93,7 +98,7 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
 
 def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples, defaultFragmentLength, 
                       numberOfProcessors=1, skipZeros=True, verbose=False, region=None,
-                      chrsToSkip=[]):
+                      chrsToSkip=[], ignoreDuplicates= False):
     r"""
     This function visits a number of sites and returs a list containing read counts.
     Each row to one sampled site and each column correspond to each of the bamFiles
@@ -152,7 +157,7 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples, defaultFragmentL
         region += ":{}".format(tileSize)
 
     imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength, 
-                                     defaultFragmentLength, skipZeros),
+                                     defaultFragmentLength, skipZeros, ignoreDuplicates),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,

@@ -149,14 +149,16 @@ def main(args):
     else:
         skipZeros = True
 
-    num_reads_per_bin = countR.getNumReadsPerBin(args.bamfiles, 
-                                                 args.binSize, args.numberOfSamples, 
-                                                 args.fragmentLength, 
-                                                 numberOfProcessors=args.numberOfProcessors, 
-                                                 skipZeros=skipZeros,
-                                                 verbose=args.verbose,
-                                                 region=args.region)
-
+    num_reads_per_bin = countR.getNumReadsPerBin(args.bamfiles,
+                                                 args.binSize,
+                                                 args.numberOfSamples,
+                                                 args.fragmentLength,
+                                                 numberOfProcessors = args.numberOfProcessors 
+                                                 skipZeros = skipZeros,
+                                                 verbose = args.verbose,
+                                                 region = args.region,
+                                                 ignoreDuplicates = args.ignoreDuplicates
+                                                )
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
