@@ -1,22 +1,39 @@
-<tool id="computeGCBias" name="computeGCBias" version="1.0">
-  <description>
-  </description>
+<tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.1">
+  <description>to see whether your samples should be normalized for GC bias</description>
+  
+  <requirements>
+    <requirement type="package" version="1.5.1_df852fa1ef13251a17274ee18fbf919fbc515079">deepTools</requirement>
+    <requirement type="package" >deepTools</requirement>
+  </requirements>
   <stdio>
     <exit_code range="0" level="warning" description="Warning" />
   </stdio>
   <command>
+    #import tempfile
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
+    #silent $temp_bam_handle.close()
+    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
+    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
+
   computeGCBias
-  --bamfile '$bamInput'
+
+  ##ToDo
+  --numberOfProcessors 4
+
+  --bamfile '$temp_bam_path'
   --species '$species'
   --GCbiasFrequenciesFile $outFileName
   --fragmentLength $fragmentLength
-  
+
   #if $source.ref_source=="history":
     --genome $source.input1
   #else:
     --genome "${source.input1_2bit.fields.path}"
   #end if
-  
+
   #if $advancedOpt.showAdvancedOpt == "yes":
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
@@ -25,85 +42,96 @@
     --binSize '$advancedOpt.binSize'
     --sampleSize '$advancedOpt.sampleSize'
     --regionSize '$advancedOpt.regionSize'
-    
+
     #if $advancedOpt.filterOut:
       --filterOut $advancedOpt.filterOut
     #end if
-    
+
     #if $advancedOpt.extraSampling:
       --extraSampling $advancedOpt.extraSampling
     #end if
-    
+
   #end if
-  
-  #set move=""
-  #if $output.showOutputSettings == "yes"
-      #if $output.saveBiasPlot:
-        --biasPlot biasPlot.png
-        #set move="mv biasPlot.png $biasPlot"
-      #end if
+
+  #if $saveBiasPlot:
+    --biasPlot $biasPlot
   #end if
-  ; $move
+
+##  #if $output.showOutputSettings == "yes"
+##      #if $output.saveBiasPlot:
+##        --biasPlot biasPlot.png ;
+##        mv biasPlot.png $biasPlot
+##      #end if
+##  #end if
+
+  ; rm $temp_dir -rf
 
   </command>
-
   <inputs>
-  
-  <param name="bamInput" format="bam" type="data" label="Input BAM file"
-	   help="The BAM file must be sorted and indexed."/>
-  
-  <param name="species" type="text" value="" label="Species name abbreviation" />
-  
-  <conditional name="source">
-    <param name="ref_source" type="select" label="Reference genome">
-        <option value="cached">locally cached</option>
-        <option value="history">in your history</option>
-    </param>
-    <when value="cached">
-        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-            <options from_data_table="lastz_seqs" />
+
+      <param name="bamInput" format="bam" type="data" label="Input BAM file"
+        help="The BAM file must be sorted."/>
+      <!--<param name="species" type="text" value="" label="Species name abbreviation" />-->
+
+        <param name="species" type="select" label="Species name abbreviation">
+            <option value="hg19">hg19</option>
+            <option value="ce10">ce10</option>
+            <option value="dm3">dm3</option>
+            <option value="mm9">mm9</option>
         </param>
-    </when>
-    <when value="history">
-        <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
-    </when>
-  </conditional>
-  <param name="fragmentLength" type="integer" value="300" min="1"
-     label="Fragment length used for the sequencing"
-     help ="If paired-end reads are used the fragment length is computed based from the bam file."/>
-  
-  <conditional name="advancedOpt">
-    <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
+
+      <conditional name="source">
+        <param name="ref_source" type="select" label="Reference genome">
+            <option value="cached">locally cached</option>
+            <option value="history">in your history</option>
+        </param>
+        <when value="cached">
+            <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
+                <options from_data_table="deepTools_seqs" />
+            </param>
+        </when>
+        <when value="history">
+            <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
+        </when>
+      </conditional>
+      <param name="fragmentLength" type="integer" value="300" min="1"
+        label="Fragment length used for the sequencing"
+        help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
+
+    <conditional name="advancedOpt">
+        <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+            <option value="no" selected="true">no</option>
+            <option value="yes">yes</option>
+        </param>
+        <when value="no" />
+        <when value="yes">
           <param name="region" type="text" value=""
-	        label="Region of the genome to limit the operation to"
-	        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-	       
-	       <param name="binSize" type="integer" value="50" min="1" 
-	         label="Bin size in bp"
-	         help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
-	         
-	       <param name="sampleSize" type="integer" value="50000000" min="1"
-	         label="Number of sampling points to be considered" />
-	       
-	       <param name="regionSize" type="integer" value="300" min="1"
-	         label="Region size"
-	         help ="To plot the reads per GC over a region the size of the region is required. By default, the bin size is set to 300bp, which is close to the standard fragment size for Illumina machines. However, if the depth of sequencing is low a larger bin size will be required, otherwise many bins will not overlap with any read."/>
-	       
-	       <param name="filterOut" type="data" format="bed" optional="true"
-	         label="BED file containing genomic regions to be excluded from the estimation of the correction"
-	         help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
-	       <param name="extraSampling" type="data" format="bed" optional="true"
-	         label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
-	         help="" />
-      </when>
-  </conditional>
-  
-  <conditional name="output" >
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+           
+           <param name="binSize" type="integer" value="50" min="1" 
+             label="Bin size in bp"
+             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+             
+           <param name="sampleSize" type="integer" value="50000000" min="1"
+             label="Number of sampling points to be considered" />
+           
+           <param name="regionSize" type="integer" value="300" min="1"
+             label="Region size"
+             help ="To plot the reads per GC over a region, the size of the region is required (see below for more details of the mthod). By default, the bin size is set to 300 bp, which is close to the standard fragment size many sequencing applications. However, if the depth of sequencing is low, a larger bin size will be required, otherwise many bins will not overlap with any read."/>
+           
+           <param name="filterOut" type="data" format="bed" optional="true"
+             label="BED file containing genomic regions to be excluded from the estimation of the correction"
+             help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
+           <param name="extraSampling" type="data" format="bed" optional="true"
+             label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
+             help="" />
+        </when>
+    </conditional>
+
+    <param name="saveBiasPlot" type="boolean" truevalue="--biasPlot" falsevalue="" checked="True" label="Save a diagnostic image summarizing the GC bias found on the sample"/>
+    <!--
+    <conditional name="output" >
         <param name="showOutputSettings" type="select" label="Show additional output options" >
         <option value="no" selected="true">no</option>
         <option value="yes">yes</option>
@@ -113,33 +141,46 @@
         <param name="saveBiasPlot" type="boolean" label="Save a diagnostic image summarizing the GC bias found on the sample"/>
       </when>
     </conditional>
+    -->
   </inputs>
   <outputs>
     <data format="tabular" name="outFileName" />
     <data format="png" name="biasPlot" label="${tool.name} on ${on_string}: bias plot">
-      <filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>
+      <filter>saveBiasPlot is True</filter>      
+      <!--<filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>-->
     </data>
   </outputs>
   <help>
 
 **What it does**
 
-Computes the GC bias ussing Benjamini's method [citation]. The resulting GC
-bias can later be used to plot the bias or to correct the bias.
+This tool computes the GC bias using the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. (see below for more explanations)
+The output is used to plot the bias and can also be used later on to correct the bias with the tool correctGCbias.
+There are two plots produced by the tool: a boxplot showing the absolute read numbers per genomic-GC bin and an x-y plot
+depicting the ratio of observed/expected reads per genomic GC content bin.
+
+-----
+
+**Summary of the method used**
+
+In order to estimate how many reads with what kind of GC content one should have sequenced, we first need to determine how many regions the specific
+reference genome contains for each amount of GC content, i.e. how many regions in the genome have 50% GC (or 10% GC or 90% GC or...).
+We then sample a large number of equally sized genome bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any 
+sequencing as it only depends on the respective reference genome (i.e. it will most likely vary between mouse and fruit fly due to their genome's different GC contents).
+The OBSERVED values are based on the reads from the sequenced sample. Instead of noting how many genomic regions there are per GC content, we now count the reads per GC content.
+In an ideal sample without GC bias, the ratio of OBSERVED/EXPECTED values should be close to 1 regardless of the GC content. Due to PCR (over)amplifications, the majority of ChIP samples
+usually shows a significant bias towards reads with high GC content (>50%)
 
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
-
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
 
   </help>
-  
 </tool>

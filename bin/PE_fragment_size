@@ -3,9 +3,6 @@
 
 import argparse
 
-import sys
-sys.path.append('/data/projects/ramirez/tools/deepTools/')
-
 # own tools
 from deeptools.PE_fragment_size import peFragmentSize
 #from deeptools import PE_fragment_size

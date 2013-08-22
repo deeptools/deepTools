@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-#sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
-
 import numpy as np
 
 # own packages

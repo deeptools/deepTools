@@ -1,9 +1,23 @@
-<tool id="correctGCBias" name="correctGCBias" version="1.0">
-  <description>
-  </description>
+<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.1">
+  <description>uses the output from computeGCBias to generate corrected BAM files</description>
+  <requirements>
+    <requirement type="package" version="1.5.1_df852fa1ef13251a17274ee18fbf919fbc515079">deepTools</requirement>
+    <requirement type="package" version="0.1">ucsc_tools</requirement>
+    <requirement type="package" >deepTools</requirement>
+  </requirements>
   <command>
+    #import tempfile
+    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+
+    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
+    #silent $temp_bam_handle.close()
+    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
+    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
+
+
   correctGCBias
-  --bamfile '$bamInput'
+  --bamfile '$temp_bam_path'
   --species '$species'
   --GCbiasFrequenciesFile $GCbiasFrequenciesFile
   
@@ -28,22 +42,26 @@
   </command>
 
   <inputs>
-  
+
   <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
-  
-  <param name="bamInput" format="bam" type="data" label="Input BAM file"
-	   help="The BAM file must be sorted and indexed."/>
-  
-  <param name="species" type="text" value="" label="Species name abbreviation" />
-  
+
+  <param name="bamInput" format="bam" type="data" label="Input BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
+
+  <param name="species" type="select" label="Species name abbreviation">
+    <option value="hg19">hg19</option>
+    <option value="ce10">ce10</option>
+    <option value="dm3">dm3</option>
+    <option value="mm9">mm9</option>
+  </param>
+
   <conditional name="source">
     <param name="ref_source" type="select" label="Reference genome">
         <option value="cached">locally cached</option>
         <option value="history">in your history</option>
     </param>
     <when value="cached">
-        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-            <options from_data_table="lastz_seqs" />
+        <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact your Galaxy team">
+            <options from_data_table="deepTools_seqs" />
         </param>
     </when>
     <when value="history">
@@ -65,44 +83,43 @@
       <when value="no" />
       <when value="yes">
           <param name="region" type="text" value=""
-	        label="Region of the genome to limit the operation to"
-	        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-	       
-	       <param name="binSize" type="integer" value="50" min="1" 
-	         label="Bin size in bp"
-	         help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+           
+           <param name="binSize" type="integer" value="50" min="1" 
+             label="Bin size in bp"
+             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
       </when>
   </conditional>
   </inputs>
   
   <outputs>
     <data format="bam" name="outFileName">
-	<change_format>
-		<when input="outFileFormat" value="bw" format="bigwig" />
-		<when input="outFileFormat" value="bam" format="bam" />
-		<when input="outFileFormat" value="bg" format="bedgraph" />
-	</change_format>
-	</data>
+    <change_format>
+        <when input="outFileFormat" value="bw" format="bigwig" />
+        <when input="outFileFormat" value="bam" format="bam" />
+        <when input="outFileFormat" value="bg" format="bedgraph" />
+    </change_format>
+    </data>
   </outputs>
   <help>
 
 **What it does**
 
-Computes the GC bias ussing Benjamini's method [citation]. The resulting GC
-bias can later be used to plot the bias or to correct the bias.
-
+This tool requires the output from computeGCBias to correct the given BAM files according to the method proposed by Benjamini and Speed (2012). Nucleic Acids Res.
+The resulting BAM files can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
 -----
 
 .. class:: infomark
 
-Please acknowledge that this tool **is still in development** and we will be very happy to receive feedback from the users. If you run into any trouble please sent an email to `Fidel Ramirez`_.
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
 
 .. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _Fidel Ramirez: ramirez@ie-freiburg.mpg.de
+
 
   </help>
   
