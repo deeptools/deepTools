@@ -78,7 +78,7 @@ def bam(args=None):
                        metavar='INT',
                        help='If set, only reads that have a mapping '
                        'quality score higher than --minMappingQuality are '
-                       'considered',
+                       'considered.',
                        type=int,
                        )
 
@@ -89,7 +89,7 @@ def getParentArgParse(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--binSize', '-bs',
                         help='Size of the bins in bp for the ouput '
-                        'of the bigwig/bedgraph file',
+                        'of the bigwig/bedgraph file.',
                         metavar="INT bp",
                         type=int,
                         default=50)
@@ -99,7 +99,7 @@ def getParentArgParse(args=None):
                         'to - this is useful when testing parameters to '
                         'reduce the computing time. The format is '
                         'chr:start:end, for example --region chr10 or '
-                        '--region chr10:456700:891000',
+                        '--region chr10:456700:891000.',
                         metavar="CHR:START:END",
                         required=False,
                         type=genomicRegion)
@@ -184,7 +184,7 @@ def computeMatrixRequiredArgs(args=None):
     required.add_argument('--regionsFileName', '-R',
                           metavar='File',
                           help='File name, in BED or GFF format, containing '
-                          'the regions to plot',
+                          'the regions to plot.',
                           type=argparse.FileType('r'),
                           required=True)
     required.add_argument('--scoreFileName', '-S',
@@ -251,7 +251,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'the region. Default is TSS (transcription '
                               'start site), but could be changed to anything, '
                               'e.g. "peak start".'
-                              'Same for the --endLabel option. See below')
+                              'Same for the --endLabel option. See below.')
         optional.add_argument('--endLabel',
                               default='TES',
                               help='Label shown in the plot for the region '
@@ -287,14 +287,14 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               type=int,
                               metavar='INT bp',
                               help='Distance upstream of the reference-point '
-                              'selected ',
+                              'selected.',
                               required=True)
         optional.add_argument('--afterRegionStartLength', '-a', '--downstream',
                               default=1500,
                               metavar='INT bp',
                               type=int,
                               help='Distance downstream of the '
-                              'reference-point selected',
+                              'reference-point selected.',
                               required=True)
         optional.add_argument('--nanAfterEnd',
                               action='store_true',
@@ -302,12 +302,12 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'are discarted. This is useful to visualize '
                               'the region end when not using the '
                               'scale-regions mode and when the reference-'
-                              'point is set to the TSS')
+                              'point is set to the TSS.')
 
     optional.add_argument('--binSize', '-bs',
                           help='Length, in base pairs, of the non-overlapping '
                           'bin for averaging the score over the '
-                          'regions length',
+                          'regions length.',
                           type=int,
                           default=10)
 
@@ -332,8 +332,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                                    "max", "std", "sum"],
                           help='Define the type of statistic that should be '
                           'used over the bin size range. The '
-                          'options are: "mean", "median", "min", "max" and '
-                          '"std". The default is "mean"')
+                          'options are: "mean", "median", "min", "max", "sum" and '
+                          '"std". The default is "mean".')
 
     optional.add_argument('--missingDataAsZero',
                           help='[only for bigwig input] Set to "yes", if '
@@ -341,13 +341,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'is to ignore such cases which will be depicted as '
                           'black areas in the heatmap. (see '
                           '--missingDataColor argument of the heatmapper '
-                          'for additional options)',
+                          'for additional options).',
                           action='store_true')
 
     optional.add_argument('--skipZeros',
                           help='Whether regions with only scores of zero '
                           'should be included or not. Default is to include '
-                          'them. ',
+                          'them.',
                           action='store_true')
 
     optional.add_argument('--minThreshold',
@@ -372,12 +372,12 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--verbose',
                           help='set to yes, to see Warning messages and '
-                          'other information',
+                          'other information.',
                           action='store_true')
 
     optional.add_argument('--scale',
                           help='If set, all values are multiplied by '
-                          'this number',
+                          'this number.',
                           type=float,
                           default=1)
     optional.add_argument('--numberOfProcessors', '-p',
@@ -410,14 +410,14 @@ def heatmapperOutputArgs(args=None,
                         help='File name to save the image. The file '
                         'ending will be used to determine the image '
                         'format. The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg", e. g. MyHeatmap.png ',
+                        '"eps", "pdf" and "svg", e. g. MyHeatmap.png.',
                         type=writableFile,
                         required=True)
 
     output.add_argument('--outFileNameData',
                         help='File name to save the data '
                         'underlying data for the average profile, e.g. '
-                        'myProfile.tab',
+                        'myProfile.tab.',
                         type=argparse.FileType('w'))
     if mode == 'heatmap':
         output.add_argument('--outFileNameMatrix',
@@ -452,7 +452,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             choices=["mean", "median", "min",
                      "max", "std", "sum"],
             help='Define the type of statistic that should be used for the '
-            'profile. The options are: "mean", "median", "min", "max" and '
+            'profile. The options are: "mean", "median", "min", "max", "sum" and '
             '"std".')
 
         optional.add_argument('--plotHeight',
@@ -509,7 +509,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "max", "std", "sum"],
             help='Define the type of statistic that should be plotted in the '
             'summary image above the heatmap. The options are: "mean", '
-            '"median", "min", "max" and "std".')
+            '"median", "min", "max", "sum" and "std".')
 
         optional.add_argument(
             '--missingDataColor',
@@ -537,10 +537,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--zMin', '-min',
                               default=None,
-                              help='Minimum value for the heatmap intensities')
+                              help='Minimum value for the heatmap intensities.')
         optional.add_argument('--zMax', '-max',
                               default=None,
-                              help='Maximum value for the heatmap intensities')
+                              help='Maximum value for the heatmap intensities.')
         optional.add_argument('--heatmapHeight',
                               help='Height in cm. The default for the heatmap '
                               'height is 25. The minimum value is '
@@ -561,7 +561,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '"plot and heatmap", '
             '"heatmap only", "colorbar only", "heatmap and '
             'colorbar", and the default "plot, heatmap and '
-            'colorbar" ',
+            'colorbar".',
             choices=["plot, heatmap and colorbar",
                      "plot and heatmap", "heatmap only",
                      "colorbar only", "heatmap and colorbar"],
@@ -582,12 +582,12 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'shown in the plot for the region '
                           'end. Default is TES (transcription end site).')
     optional.add_argument('--refPointLabel',
-                          help='[only for scale-regions mode] Label '
+                          help='[only for reference-point mode] Label '
                           'shown in the plot for the '
                           'reference-point. Default '
                           'is the same as the reference point selected '
                           '(e.g. TSS), but could be anything, e.g. '
-                          '"peak start" etc.',
+                          '"peak start".',
                           default='TSS')
     optional.add_argument('--nanAfterEnd',
                           help=argparse.SUPPRESS,
@@ -600,28 +600,28 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'plotted a list of lables '
                           'separated by comma and limited by quotes, '
                           'is requires. For example, '
-                          ' --regionsLabel "label1, label2" '
+                          ' --regionsLabel "label1, label2". '
                           'Default is "genes".')
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
-                          'the generated image. Leave blank for no title',
+                          'the generated image. Leave blank for no title.',
                           default='')
 
     optional.add_argument('--xAxisLabel', '-x',
                           default='gene distance (bp)',
-                          help='Description for the x-axis label')
+                          help='Description for the x-axis label.')
     optional.add_argument('--yAxisLabel', '-y',
                           default='',
                           help='Description for the y-axis label for the '
-                          'top panel')
+                          'top panel.')
 
     optional.add_argument('--yMin',
                           default=None,
-                          help='Minimum value for the Y-axis')
+                          help='Minimum value for the Y-axis.')
     optional.add_argument('--yMax',
                           default=None,
-                          help='Maximum value for the Y-axis')
+                          help='Maximum value for the Y-axis.')
 
     optional.add_argument('--onePlotPerGroup',
                           help='When the region file contains groups separated'
@@ -631,7 +631,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'top of each other.',
                           action='store_true')
     optional.add_argument('--verbose',
-                          help='set to yes, to see Warning messages and '
-                          'other information',
+                          help='If set warning messages and '
+                          'addition information are given.',
                           action='store_true')
     return parser

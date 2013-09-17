@@ -117,7 +117,7 @@ def parseArguments(args=None):
                        'the observed and expected read frequencies per GC '
                        'content. This file is needed to run the '
                        'correctGCBias tool. This is a text file.',
-                       type=argparse.FileType('r'),
+                       type=argparse.FileType('w'),
                        metavar='FILE',
                        required=True)
 
