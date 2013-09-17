@@ -13,8 +13,8 @@
 -->
 
 <tool_dependency>
-    <package name="samtools" version="0.1.18">
-        <repository name="package_samtools_0_1_18" owner="devteam" />
+    <package name="samtools" version="0.1.19">
+        <repository name="package_samtools_0_1_19" owner="iuc" />
     </package>
     <package name="numpy" version="1.7.1">
         <repository name="package_numpy_1_7" owner="iuc" />
@@ -24,6 +24,9 @@
     </package>
     <package name="scipy" version="0.12.0">
         <repository name="package_scipy_0_12" owner="iuc" />
+    </package>
+    <package name="pysam" version="0.7.5">
+        <repository name="package_pysam_0_7_5" owner="iuc" />
     </package>
 
     <package name="ucsc_tools" version="0.1">
