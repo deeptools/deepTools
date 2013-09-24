@@ -25,7 +25,9 @@
     <package name="scipy" version="0.12.0">
         <repository name="package_scipy_0_12" owner="iuc" />
     </package>
-
+    <package name="pysam" version="0.7.5">
+        <repository name="package_pysam_0_7_5" owner="iuc" />
+    </package>
     <package name="ucsc_tools" version="0.1">
         <install version="1.0">
             <actions>
@@ -47,6 +49,15 @@
                 <action type="chmod">
                     <file mode="755">$INSTALL_DIR/bigWigInfo</file>
                 </action>
+                <action type="download_binary">
+                    <url_template os="linux" architecture="x86_64">http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph</url_template>
+                    <url_template os="darwin" architecture="i686">http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.i386/bigWigToBedGraph</url_template>
+                    <url_template os="darwin" architecture="i386">http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.i386/bigWigToBedGraph</url_template>
+                    <url_template os="darwin" architecture="x86_64">http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/bigWigToBedGraph</url_template>
+                </action>
+                <action type="chmod">
+                    <file mode="755">$INSTALL_DIR/bigWigToBedGraph</file>
+                </action>
                 <action type="set_environment">
                     <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR</environment_variable>
                 </action>
@@ -58,11 +69,17 @@
     <package name="deepTools" version="1.5.1_df852fa1ef13251a17274ee18fbf919fbc515079">
         <install version="1.0">
             <actions>
+                <!-- populate the environment variables from the dependend repos -->
+                <action type="set_environment_for_install">>
+                    <repository name="package_pysam_0_7_5" owner="fubar">
+                        <package name="pysam" version="0.7.5" />
+                    </repository>
+                </action>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
                 <action type="shell_command">git reset --hard df852fa1ef13251a17274ee18fbf919fbc515079</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
-                    export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
+                    export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python: &amp;&amp; 
                     python setup.py install --install-lib $INSTALL_DIR/lib/python --install-scripts $INSTALL_DIR/bin
                 </action>
 
