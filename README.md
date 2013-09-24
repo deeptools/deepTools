@@ -1,11 +1,21 @@
 ======================================================================
-deepTools: suite of common processing routies for deep sequencing data 
+deepTools: user-friendly tools for the normalization and visualization of deep-sequencing data.
 ======================================================================
 
-This suite of tools provides useful routines to deal with mapped reads.
-This includes converting bams to bigwig or bedgraph coverage files, run a 
-GC correction and plot heatmaps and profiles.
+deepTools address the challenge of visualizing the large amounts of data 
+that are now routinely generated from sequencing centers in a meaningful
+way. To do so, deepTools contain useful routines to process the mapped
+reads data through removal of duplicates and different filtering options
+to create coverage files in standard bedGraph and bigWig file formats.
+deepTools allow the creation of normalized coverage files or the
+comparison between two files (for example, treatment and control).
+Finally, using such normalized and standardized files, multiple
+visualizations can be created to identify enrichments with
+functional annotations of the genome. For a gallery of images that
+can be produced and a description of the tools see
+http://f1000.com/posters/browse/summary/1094053
 
+![example heatmap](https://raw.github.com/fidelram/deepTools/master/examples/heatmaps.png)
 ===================
 Install from source
 ===================
