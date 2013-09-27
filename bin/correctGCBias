@@ -19,17 +19,10 @@ from deeptools.countReadsPerBin import getFragmentFromRead
 from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
 
-samtools = cfg.config.get('external_tools', 'samtools')
-global_vars = dict()
-# Taken from
-# http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html
-mappableGenomeSizes = {'mm9': 2150570000,
-                       'hg19': 2451960000,
-                       'dm3': 121400000,
-                       'ce10': 93260000}
-
 debug = 0
 
+samtools = cfg.config.get('external_tools', 'samtools')
+global_vars = dict()
 
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()
@@ -46,11 +39,21 @@ def parseArguments(args=None):
                         help='Sorted Bam file to correct.',
                         required=True)
 
-    parser.add_argument('--species', '-s',
-                        metavar='species name',
-                        help='Species name abbreviation',
-                        choices=['ce10', 'dm3', 'hg19', 'mm9' ],
-                        required=True)
+    parser.add_argument('--effectiveGenomeSize',
+                        help='The effective genome size is the portion '
+                        'of the genome that is mappable. Large fractions of '
+                        'the genome are stretches of NNNN that should be '
+                        'discarded. Also, if repetitive regions were not '
+                        'included in the mapping of reads, the effective '
+                        'genome size needs to be adjusted accordingly. '
+                        'Common values are: mm9: 2150570000, '
+                        'hg19:2451960000, dm3:121400000 and ce10:93260000. '
+                        'See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 ' 
+                        'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
+                        'for several effective genome sizes.',
+                        default=None,
+                        type=int,
+                        required=False)
 
     parser.add_argument('--genome', '-g',
                         help='Genome in two bit format. Most genomes can be '
@@ -263,7 +266,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
                              verbose=True):
     r"""
     Writes a SAM file, deleting and adding some reads in order to compensate
-    for the GC bias. **This is a probabilistic method.**
+    for the GC bias. **This is a stochastic method.**
     >>> np.random.seed(1)
     >>> test = Tester()
     >>> args = test.testWriteCorrectedSam()
@@ -440,12 +443,10 @@ def main(args):
     bit = twobit.TwoBitFile(open(global_vars['2bit']))
     bam = pysam.Samfile(global_vars['bam'])
 
-    global_vars['mapppable_genome_size'] = mappableGenomeSizes[args.species]
     global_vars['genome_size'] = sum([bit[x].size for x in bit.index])
     global_vars['total_reads'] = bam.mapped
     global_vars['reads_per_bp'] = \
-        float(global_vars['total_reads']) / \
-        global_vars['mapppable_genome_size']
+        float(global_vars['total_reads']) / args.effectiveGenomeSize
 
     ################# apply correction ##################
     print "applying correction"
