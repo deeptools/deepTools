@@ -58,8 +58,17 @@ def parseArguments(args=None):
                         '(total number of mapped reads * fragment length) / '
                         'effective genome size.\nTo use this option, the '
                         'effective genome size has to be indicated after the '
-                        'command. Common values are: mm9: 2150570000, '
-                        'hg19:2451960000, dm3:121400000 and ce10:93260000.',
+                        'command. The effective genome size is the portion '
+                        'of the genome that is mappable. Large fractions of '
+                        'the genome are stretches of NNNN that should be '
+                        'discarded. Also, if repetitive regions were not '
+                        'included in the mapping of reads, the effective '
+                        'genome size needs to be adjusted accordingly. '
+                        'Common values are: mm9: 2150570000, '
+                        'hg19:2451960000, dm3:121400000 and ce10:93260000. '
+                        'See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 ' 
+                        'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
+                        'for several effective genome sizes.',
                         default=None,
                         type=int,
                         required=False)
