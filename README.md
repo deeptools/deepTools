@@ -15,6 +15,7 @@ functional annotations of the genome. For a gallery of images that
 can be produced and a description of the tools see
 http://f1000.com/posters/browse/summary/1094053
 
+![example heatmap](https://raw.github.com/fidelram/deepTools/master/examples/heatmaps.png)
 ===================
 Install from source
 ===================
