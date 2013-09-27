@@ -35,6 +35,14 @@
     --species ${source.input1_2bit.fields.value}
   #end if
 
+
+  #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+    --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
+  #else:
+    --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
+  #end if
+
+
   #if $advancedOpt.showAdvancedOpt == "yes":
     #if str($advancedOpt.region.value) != '':
       --region '$advancedOpt.region'
@@ -84,10 +92,27 @@
             </param>
         </when>
         <when value="history">
-            <param name="species" type="text" value="" label="Species name abbreviation" />
             <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
         </when>
       </conditional>
+
+      <conditional name="effectiveGenomeSize">
+        <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
+            help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded. 
+                    Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly. 
+                    See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
+            <option value="2150570000">mm9</option>
+            <option value="2451960000">hg19</option>
+            <option value="121400000">dm3</option>
+            <option value="93260000">ce10</option>
+            <option value="specific">user specified</option>
+        </param>
+        <when value="specific">
+            <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
+        </when>
+      </conditional>
+
+
       <param name="fragmentLength" type="integer" value="300" min="1"
         label="Fragment length used for the sequencing"
         help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
