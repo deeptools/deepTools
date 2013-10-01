@@ -8,21 +8,65 @@ import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from scipy.stats import pearsonr, spearmanr
 def parseArguments(args=None):
-    parentParser = parserCommon.getParentArgParse()
-    bamParser = parserCommon.bam()
-
     parser = \
         argparse.ArgumentParser(
-        description = 'Genomes are split into bins of given '
-        'length. For each bin the number of reads found for each of the bam '
-        'files is counted. A correlation is computed for all pairs of bam '
-        'files.',
-        parents=[parentParser, bamParser],
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+            description='Genomes are split into bins. '
+            'For each bin the number of reads found for each of the bam '
+            'files is counted. A correlation is computed for all pairs of bam '
+            'files.',
+            epilog='An example usage is:\n %(prog)s bins -b treatment.bam input.bam '
+            '-plot correlation.png -f 200 -method pearson\n\n',
+            conflict_handler='resolve')
+
+    subparsers = parser.add_subparsers(
+        help="%(prog)s has two main options: 'bins', "
+        "and 'BED-file.",
+        dest='command')
+
+    parentParser = parserCommon.getParentArgParse(binSize=False)
+    bamParser = parserCommon.bam()
+
+    # bins mode options
+    binsMode = subparsers.add_parser(
+        'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        conflict_handler='resolve')
+        parents=[parentParser,
+                 bamParser,
+                 requiredArgs(case='bins')],
+        help="In the bins mode, the correlation is computed based on equal "\
+            "length bins. The number of bins to be used has to be specified.")
+
+    # BED file arguments
+    BEDmode = subparsers.add_parser(
+        'BED-file',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[parentParser,
+                 bamParser,
+                 requiredArgs(case='BED-file')],
+        help="In the BED-file options, as list of genomic regions in BED "\
+            "format has to be given. For each region in the BED file the "\
+            "number of overlapping reads is counted in each of the BAM "\
+            "files. Then the correlation is computed.")
+
+    args = parser.parse_args(args)
+    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
+    
+    
+    if args.labels and len(args.bamfiles) != len(args.labels):
+        print "The number of does not match the number of bam files."
+        exit(0)
+    if not args.labels:
+        args.labels = args.bamfiles
+    return(args)
+
+######
+def requiredArgs(case='bins'):
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
 
     # define the arguments
-    parser.add_argument('--bamfiles', '-b',
+    required.add_argument('--bamfiles', '-b',
                         metavar = 'list of bam files',
                         help = 'List of indexed bam files separated by space',
                         nargs = '+',
@@ -35,16 +79,43 @@ def parseArguments(args=None):
                         'Separate the labels by space.',
                         nargs = '+')
     
-    parser.add_argument('--binSize', '-bs',
-                        help = 'Length in base pairs for a window used to sample the genome.',
-                        default = 10000,
-                        type = int)
+    if case=='bins':
+        parser.add_argument('--binSize', '-bs',
+                            help = 'Length in base pairs for a window used '
+                            'to sample the genome.',
+                            default = 10000,
+                            type = int)
 
-    parser.add_argument('--numberOfSamples', '-n',
-                        help = 'Number of samples taken from the genome to compute the scaling factors',
-                        default = 1e5,
-                        type = int)
+        parser.add_argument('--numberOfSamples', '-n',
+                            help = 'Number of samples taken from the genome to compute '
+                            'the scaling factors',
+                            default=int(1e5),
+                            type=int)
 
+        required.add_argument('--BEDfile', 
+                              help=argparse.SUPPRESS,
+                              default=None)
+    else:
+        parser.add_argument('--binSize', '-bs',
+                            help=argparse.SUPPRESS,
+                            default=10000,
+                            type=int)
+
+        parser.add_argument('--numberOfSamples', '-n',
+                            help=argparse.SUPPRESS,
+                            default=int(1e5),
+                            type=int)
+
+        required.add_argument('--BED', 
+                           help = '*If* the correlation wants to be limited to '
+                               'certain regions a BED file can be given. If this '
+                               'is the case, then the correlation is computed for '
+                               'the number of reads that overlap such regions and '
+                               'the values set for binSize and numberOfSamples are ' 
+                               'ignored.',
+                           metavar='FILE',
+                           type=argparse.FileType('r'),
+                           required=True)
 
     parser.add_argument('--corMethod',
                         help = 'correlation method to use',
@@ -57,7 +128,7 @@ def parseArguments(args=None):
                         'behavior is to ignore those cases ',
                         action = 'store_true',
                         required = False)
-
+        ####
     group = parser.add_argument_group('Output')
 
     group.add_argument('--plotFile', '-plot',
@@ -77,17 +148,7 @@ def parseArguments(args=None):
                         metavar = 'FILENAME',
                         type=argparse.FileType('w'))
 
-    args = parser.parse_args(args)
-    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
-    
-    
-    if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of does not match the number of bam files."
-        exit(0)
-    if not args.labels:
-        args.labels = args.bamfiles
-    return(args)
-
+    return parser
 
 def plotCorrelation(corr_matrix, labels, plotFileName):
     from  matplotlib import use as mplt_use
@@ -132,7 +193,8 @@ def plotCorrelation(corr_matrix, labels, plotFileName):
 
 def main(args):
     """
-    1. get read counts at different positions all of same length
+    1. get read counts at different positions eigher 
+    all of same length or from bed regions
     
     2. compute  correlation
 
@@ -152,7 +214,8 @@ def main(args):
                                                  numberOfProcessors=args.numberOfProcessors, 
                                                  skipZeros=skipZeros,
                                                  verbose=args.verbose,
-                                                 region=args.region)
+                                                 region=args.region,
+                                                 bedFile=args.BED)
 
 
     if args.outRawCounts:
