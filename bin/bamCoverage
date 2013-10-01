@@ -86,6 +86,9 @@ def parseArguments(args=None):
 
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
     if args.scaleFactor != 1: args.normalizeTo1x = None
+    if args.smoothLength <= args.binSize:
+        args.smoothLength = None
+
     return(args)
 
 
