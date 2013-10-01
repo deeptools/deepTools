@@ -6,6 +6,7 @@ debug = 0
 def mapReduce(staticArgs, func, chromSize,
               genomeChunkLength=None,
               region=None,
+              bedFile=None,
               numberOfProcessors=4,
               verbose=False):
 
@@ -29,7 +30,15 @@ def mapReduce(staticArgs, func, chromSize,
 
     :param chromSize: A list of duples containing the chromome
                       name and its length
-    :param region: The format is chr:start:end
+    :param region: The format is chr:start:end:tileSize (see function
+                   getUserRegion)
+    :param staticArgs: tuple of arguments that are sent to the given 'func'
+
+    :param func: function to call. The function is called using the
+                 followin parameters (chor, start, end, staticArgs)
+    :param bedFile: Is a bed file is given, the args to the func to be
+                    called are extended to include a list of bed
+                    defined regions.
     """
 
     if not genomeChunkLength:
@@ -50,6 +59,12 @@ def mapReduce(staticArgs, func, chromSize,
         if verbose:
             print (chromSize, regionStart, regionEnd, genomeChunkLength)
 
+    if bedFile:
+        bed_interval_tree = BED_to_interval_tree(bedFile)
+        # modify chromSize such that it only contains
+        # chromosomes that are in the bed file
+        chromSize = [x for x in chromSize if x[0] in bed_interval_tree.keys()]
+        
     TASKS = []
     # iterate over all chromosomes
     for chrom, size in chromSize:
@@ -60,6 +75,24 @@ def mapReduce(staticArgs, func, chromSize,
             argsList = [chrom, startPos, endPos]
             # add to argument list the static list received the the function
             argsList.extend(staticArgs)
+
+            # if a bed file is give, append to the TASK list,
+            # a list of bed regions that overlap with the
+            # current genomeChunk.
+            
+            if bedFile:
+                bed_regions_list = []
+                for bed_region in bed_interval_tree[chrom].find(startPos, endPos):
+                    # start + 1 is used to avoid regions that may overlap
+                    # with two genomeChunks to be counted twice. Such region
+                    # is only added for the genomeChunk that contains the start
+                    # of the bed region.
+
+                    bed_regions_list.append([chrom, bed_region.start,
+                                             bed_region.start + 1])
+                # add to argument list, the position of the bed regions to use
+                argsList.append(bed_regions_list)
+
             TASKS.append(tuple(argsList))
 
     if len(TASKS) > 1 and numberOfProcessors > 1:
@@ -136,3 +169,32 @@ def getUserRegion(chromSizes, regionString, max_chunk_size=1e6):
             chunkSize -= chunkSize % tilesize
 
     return (chromSizes, regionStart, regionEnd, int(chunkSize))
+
+
+def BED_to_interval_tree(BED_file):
+    """
+    Creates an index of intervals for each BED entri
+
+    :param BED_file: file handler of a BED file
+    """
+    from bx.intervals.intersection import IntervalTree, Interval
+
+    bed_interval_tree = {}
+    for line in BED_file:
+        if line[0] == "#": continue
+        fields = line.strip().split()
+        chrom, start_bed, end_bed, = fields[0], int(fields[1]), int(fields[2])
+
+        if chrom not in bed_interval_tree:
+            bed_interval_tree[chrom] = IntervalTree()
+
+        # skip if a region overlaps with a region already seen
+        """
+        if len(bed_interval_tree[chrom].find(start_bed, start_bed + 1)) > 0:
+            continue
+        """
+        
+        bed_interval_tree[chrom].add_interval(Interval(start_bed, end_bed))
+
+    print "finish proccessing bed file"
+    return bed_interval_tree
