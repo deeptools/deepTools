@@ -85,14 +85,15 @@ def bam(args=None):
     return parser
 
 
-def getParentArgParse(args=None):
+def getParentArgParse(args=None, binSize=True):
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--binSize', '-bs',
-                        help='Size of the bins in bp for the ouput '
-                        'of the bigwig/bedgraph file.',
-                        metavar="INT bp",
-                        type=int,
-                        default=50)
+    if binSize:
+        parser.add_argument('--binSize', '-bs',
+                            help='Size of the bins in bp for the ouput '
+                            'of the bigwig/bedgraph file.',
+                            metavar="INT bp",
+                            type=int,
+                            default=50)
 
     parser.add_argument('--region', '-r',
                         help='Region of the genome to limit the operation '
