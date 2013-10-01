@@ -157,6 +157,9 @@ def parseArguments(args=None):
     else:
         args.ignoreForNormalization = []
 
+    if args.smoothLength <= args.binSize:
+        args.smoothLength = None
+
     return(args)
 
 ########################################
