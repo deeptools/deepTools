@@ -5,7 +5,6 @@ import sys
 import os
 import time
 
-import pysam
 import multiprocessing
 import numpy as np
 import argparse
@@ -19,6 +18,7 @@ from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import parserCommon, mapReduce
 from deeptools.PE_fragment_size import peFragmentSize
 from deeptools import config as cfg
+from deeptools import bamHandler
 
 
 debug = 0
@@ -213,7 +213,7 @@ def countReadsPerGC_worker(chromNameBam,
 
     chromNameBit = chrNameBamToBit[chromNameBam]
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
-    bam  = pysam.Samfile(global_vars['bam'])
+    bam = bamHandler.openBam(global_vars['bam'])
     c = 1
     sub_reads_per_gc = []
     positions_to_sample = getPositionsToSample(chromNameBit,
@@ -312,7 +312,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     subF_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
 
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
-    bam  = pysam.Samfile(global_vars['bam'])
+    bam  = bamHandler.openBam(global_vars['bam'])
     peak = 0
     startTime = time.time()
 
@@ -637,7 +637,7 @@ def main(args):
     global_vars['extra_sampling_file']  = extra_sampling_file
 
     bit = twobit.TwoBitFile(open(global_vars['2bit']))
-    bam = pysam.Samfile(global_vars['bam'])
+    bam = bamHandler.openBam(global_vars['bam'])
 
     if args.fragmentLength:
         fragmentLength = \
@@ -714,6 +714,7 @@ def main(args):
 
 class Tester():
     def __init__(self):
+        import pysam
         self.root = cfg.config.get('general', 'test_root') + "/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
         self.bamFile  = self.root + "test.bam"
