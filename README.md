@@ -1,6 +1,6 @@
-======================================================================
+==============================================================================================
 deepTools: user-friendly tools for the normalization and visualization of deep-sequencing data.
-======================================================================
+==============================================================================================
 
 deepTools address the challenge of visualizing the large amounts of data 
 that are now routinely generated from sequencing centers in a meaningful
