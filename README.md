@@ -4,23 +4,25 @@ deepTools
 ### user-friendly tools for the normalization and visualization of deep-sequencing data
 
 
-deepTools address the challenge of visualizing the large amounts of data 
-that are now routinely generated from sequencing centers in a meaningful
-way. To do so, deepTools contain useful routines to process the mapped
+deepTools addresses the challenge of handling the large amounts of data 
+that are now routinely generated from sequencing centers. To do so, deepTools contains useful routines to process the mapped
 reads data through removal of duplicates and different filtering options
 to create coverage files in standard bedGraph and bigWig file formats.
-deepTools allow the creation of normalized coverage files or the
+In addition, deepTools allow the creation of normalized coverage files or the
 comparison between two files (for example, treatment and control).
 Finally, using such normalized and standardized files, multiple
 visualizations can be created to identify enrichments with
 functional annotations of the genome. For a gallery of images that
-can be produced and a description of the tools see
+can be produced, see
 http://f1000.com/posters/browse/summary/1094053
 
 ![example heatmap](https://raw.github.com/fidelram/deepTools/master/examples/heatmaps.png)
 
+For support, questions, or feature requests contact: deeptools@googlegroups.com
+
 ### Table of Contents  
-[Installation](#installation)  
+[How we typically use deepTools](#weUse)
+[How to install deepTools](#installation)  
 [Basic options and parameters of deepTools](#parameters)  
 
 [Using deepTools](#usage):
@@ -40,12 +42,17 @@ http://f1000.com/posters/browse/summary/1094053
   * [heatmapper](#heatmapper)
   * [profiler](#profiler)
 
-[Appendix: Data format intro](#append)
+[Glossary](#glossary)
 
+<a name="weUse"/>
+How we use deepTools
+--------------------------------
+Our work usually begins with one or more __FASTQ__ file(s) of deeply-sequenced samples. . After a first quality control using [FASTQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/), we align the reads to the reference genome, e.g. using [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml).
 
+ 
 <a name="installation"/>
 Installation
-------------
+---------------
 ### Installation from source
 
 The easiest way to install deepTools is by downloading the
@@ -110,14 +117,14 @@ You can watch the installation status under: Top Panel → Admin → Manage inst
 - Galaxy test tool shed → Sequence Analysis → deeptools
 - install deeptools
 
-
-For support, questions, or feature requests contact: deeptools@googlegroups.com
-
 <a name="usage"/>
 Using deepTools
 ---------------
 
 deepTools consists of a set of modules that can be used independently to work with mapped reads. We have subdivided such tasks into *quality controls*, *normalizations* and *visualizations*.
+
+Given, for example, a 
+
 Here's a concise summary of the tools.
 
 | tool | type | input files | main output file(s) | application |
@@ -129,12 +136,13 @@ Here's a concise summary of the tools.
 | bamCompare | normalisation | 2 BAM | bedGraph or bigWig | normalize 2 BAM files to each other using a mathematical operation of your choice (e.g. log2ratio, difference)|
 | computeMatrix | visualization | 1 bigWig, 1 BED | zipped file, to be used with heatmapper or profiler | compute the values needed for heatmaps and summary plots |
 | heatmapper | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
-| profiler | visualziation | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a greoupd of genomic regions |
+| profiler | visualziation | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
 
 <a name="parameters"/>
 General information about deepTools usage
------------------------------------------
--	Input files, Output files, optional and mandatory parameters
+---------------------------------------------------------
+
+Input files, Output files, optional and mandatory parameters
 -	specify the number of processors
 -	always specify output names
 -	output format of plots should be indicted by the file ending, e.g. MyPlot.pdf will return a pdf, MyPlot.png a png-file
@@ -145,7 +153,7 @@ Quality checks
 --------------
 <a name="bamCorrelate"/>
 ### bamCorrelate
--	What it does
+
 -	Output files:
 o	plot
 o	matrix
@@ -200,6 +208,14 @@ Visualizations
 <a name="profiler"/>
 ### profiler
 
-<a name="append"/>
-Appendix: Data format intro
+<a name="glossary"/>
+Glossary
 ------------------------------------
+this is to test whether I can see the explanation of a [BAM][] file
+and this to test whether I can link several things to the same address: [SAM][]
+[BAM]: http://daringfireball.net/projects/markdown/syntax#html "binary version of a SAM file"
+[SAM]: http://daringfireball.net/projects/markdown/syntax#html "nonbinary"
+### References
+
+
+This tool is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
