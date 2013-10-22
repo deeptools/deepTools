@@ -1,9 +1,10 @@
-<tool id="dt_profiler" name="profiler" version="1.0">
+<tool id="deeptools_profiler" name="profiler" version="1.0">
   <description>
     creates a profile plot for a score associated to genomic regions
   </description>
   <requirements>
-    <requirement type="package" version="1.5.1_59e067cce039cb93add04823c9f51cab202f8c2b">deepTools</requirement>
+    <requirement type="package" version="1.5.1_3e13687c89e951476776b15afb4bbbc3b906f761">deepTools</requirement>
+    <requirement type="package" >deepTools</requirement>
   </requirements>
   <command>
   profiler
@@ -13,16 +14,16 @@
   #if $output.showOutputSettings == "yes"
       #set newoutFileName = str($outFileName)+"."+str($output.outFileFormat)
       --outFileName $newoutFileName
-      #if $output.outFileNameData:
-        --outFileNameData '$output.outFileNameData' 
+      #if $output.saveData:
+        --outFileNameData '$outFileNameData' 
       #end if
 
-      #if $output.outFileNameMatrix:
-      --outFileNameMatrix '$output.outFileNameMatrix'
+      #if $output.saveMatrix:
+      --outFileNameMatrix '$outFileNameMatrix'
       #end if
-      
-      #if $output.outFileSortedRegions:
-        --outFileSortedRegions '$output.outFileSortedRegions'
+
+      #if $output.saveSortedRegions:
+        --outFileSortedRegions '$outFileSortedRegions'
       #end if
   #else
     #set newoutFileName = str($outFileName)+".png"
@@ -32,7 +33,6 @@
   #if $scaleRegions.showScaleRegionsOpt == "yes":
     --startLabel $scaleRegions.startLabel
     --endLabel $scaleRegions.endLabel
-    --refPointLabel $scaleRegions.refPointLabel
   #end if
   
   #if $advancedOpt.showAdvancedOpt == "yes"
@@ -76,7 +76,6 @@
         <when value="yes">
             <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
             <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
-            <param name="refPointLabel" type="text" value="TSS" size="10" label="Reference point label" help ="[only for scale-regions mode] Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
         </when>
     </conditional>
 
@@ -141,12 +140,12 @@
   </inputs>
   <outputs>
     <data format="png" name="outFileName" label="${tool.name} image">
-    <change_format>
-        <when input="output.outFileFormat" value="pdf" format="pdf" />
-        <when input="output.outFileFormat" value="svg" format="svg" />
-        <when input="output.outFileFormat" value="eps" format="eps" />
-        <when input="output.outFileFormat" value="emf" format="emf" />
-    </change_format>
+        <change_format>
+            <when input="output.outFileFormat" value="pdf" format="pdf" />
+            <when input="output.outFileFormat" value="svg" format="svg" />
+            <when input="output.outFileFormat" value="eps" format="eps" />
+            <when input="output.outFileFormat" value="emf" format="emf" />
+        </change_format>
     </data>
     <data format="tabular" name="outFileNameData" label="${tool.name} raw plot data">
       <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>

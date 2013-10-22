@@ -34,6 +34,7 @@ def parseArguments(args=None):
     # scale-regions mode options
     scaleRegions = subparsers.add_parser(
         'scale-regions',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[parserCommon.computeMatrixRequiredArgs(),
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='scale-regions')],
@@ -44,6 +45,7 @@ def parseArguments(args=None):
     # reference point arguments
     refpoint = subparsers.add_parser(
         'reference-point',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[parserCommon.computeMatrixRequiredArgs(),
                  parserCommon.computeMatrixOutputArgs(),
                  parserCommon.computeMatrixOptArgs(case='reference-point')],

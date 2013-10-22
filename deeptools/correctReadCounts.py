@@ -1,5 +1,5 @@
-import sys
-#sys.path.insert(0, '/data/projects/ramirez/tools/deepTools/deeptools')
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
 
 import numpy as np
 from scipy.stats import poisson
