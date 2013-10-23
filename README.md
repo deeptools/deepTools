@@ -17,13 +17,16 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 ![gallery](https://raw.github.com/fidelram/deepTools/master/examples/collage.png)
 
 ### Table of Contents  
-[How we use deepTools](#weUse)
+
+[What can I do with deepTools? Overview!](#usage)
 
 [How to install deepTools](#installation) 
 
+[How we use deepTools](#weUse)
+
 [Basic options and parameters of deepTools](#parameters)  
 
-[What can I do with deepTools? Overview!](#usage)
+
 
 More detailed information about the individual programs:
   + [deepTools for data quality checks](https://github.com/fidelram/deepTools/blob/master/manual/QC.md)
@@ -34,35 +37,28 @@ More detailed information about the individual programs:
 
 [Glossary](https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing)
 
-<a name="weUse"/>
-How we use deepTools
---------------------------------
-The majority of samples that we handle within our facility come from ChIP-seq experiments, therefore you will find many examples from ChIP-seq analyses. This does not mean that deepTools is restricted to ChIP-seq data analysis, but some tools, such as _bamFingerprint_ specifically address ChIP-seq-issues. (That being said, we do process quite a bit of RNA-seq and genomic sequencing data, too.
+---------------------------------------------------------------------------------------------------------------------
 
-[Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "From aligned reads to coverage profiles using deepTools") are slides that we used for teaching at the University of Freiburg.
+<a name="usage"/>
+What can I do with deepTools?
+---------------
 
-As depicted in the figure down below, our work usually begins with one or more [FASTQ][] file(s) of deeply-sequenced samples. After a first quality control using [FASTQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ "Check out FASTQC"), we align the reads to the reference genome, e.g. using [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml "bowtie, one of the most popular aligners").
-We then use deepTools to assess the quality of the aligned reads:
+deepTools consists of a set of modules that can be used independently to work with mapped reads. We have subdivided such tasks into *quality controls*, *normalizations* and *visualizations*.
 
-1. __Correlation between [BAM][] files__ (_bamCorrelate_). This is a very basic test to see whether the sequenced and aligned reads meet your expectations. We use this check to assess the reproducibility - either between replicates and/or between different experiments that might have used the same antibody/the same cell type etc. For instance, replicates should correlate better than differently treated samples.
-2. __GC bias check__ (_computeGCbias_). Many sequencing protocols require several rounds of PCR-based amplification of the DNA to be sequenced. Unfortunately, most DNA polymerases used for PCR introduce significant GC biases as they prefer to amplify GC-rich templates. Depending on the sample (preparation), the GC bias can vary significantly and we routinely check its extent. In case we need to compare files with different GC biases, we use the _correctGCbias_ module to match the GC bias.
-See the paper by [Benjamini and Speed][] for many insights into this problem.
-3. __Assessing the ChIP strength__. This is a QC we do to get a feeling for the signal-to-noise ratio in samples from ChIP-seq experiments. It is based on the insights published by [Diaz et al.][].
+Here's a concise summary of the tools - if you would like more detailed information about the individual tools and example figures, follow the links in the table or check out our general description of [how we use deepTools](#weUse)
 
-Once we're satisfied by the basic quality checks, we normally __convert the large [BAM][] files into a leaner data format, typically [bigWig][]__. bigWig files have several advantages over BAM files that mainly stem from their significantly decreased size:
-  - useful for data sharing & storage
-  - intuitive visualization in Genome Browsers (e.g. UCSC Genome Browser, IGV)
-  - more efficient downstream analyses are possible
+| tool | type | input files | main output file(s) | application |
+|------|--------|-------------|--------------- |---------------|
+| [bamCorrelate][] | QC | 2 or more BAM | clustered heatmap | Pearson or Spearman correlation between read distributions |
+| [bamFingerprint][] | QC | 2 BAM | 1 diagnostic plot | assess enrichment strength of a ChIP sample |
+| [computeGCBias][] | QC | 1 BAM | 2 diagnostic plots | calculate the exp. and obs. GC distribution of reads|
+| [bamCoverage][] | normalization | BAM | bedGraph or bigWig | obtain the normalized read coverage of a single BAM file |
+| [bamCompare][] | normalization | 2 BAM | bedGraph or bigWig | normalize 2 BAM files to each other using a mathematical operation of your choice (e.g. log2ratio, difference)|
+| [computeMatrix][] | visualization | 1 bigWig, 1 BED | zipped file, to be used with heatmapper or profiler | compute the values needed for heatmaps and summary plots |
+| [heatmapper][] | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
+| [profiler][] | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
 
-The deepTools modules _bamCompare_ and _bamCoverage_ do not only allow the simple conversion from BAM to bigWig (or [bedGraph][] for that matter), __the main reason why we developed those tools was that we wanted to be able to *normalize* the read coverages__ so that we could compare different samples despite differences in sequencing depth, GC biases and so on.
 
-Finally, once all the files have passed our visual inspections, the fun of downstream analyses with _heatmapper_ and _profiler_ can begin! 
-
-Here's a visual summary of our average workflow - deepTools modules are indicated in bold letters, alternative software such as FASTQC and bowtie are noted in regular font. Everything written in red is related to quality control (QC) of the samples.
-
-![flowChartI](https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
-
- 
 <a name="installation"/>
 Installation
 ---------------
@@ -130,27 +126,37 @@ You can watch the installation status under: Top Panel → Admin → Manage inst
 - Galaxy test tool shed → Sequence Analysis → deeptools
 - install deeptools
 
-<a name="usage"/>
-What can I do with deepTools?
----------------
-
-deepTools consists of a set of modules that can be used independently to work with mapped reads. We have subdivided such tasks into *quality controls*, *normalizations* and *visualizations*.
-
-Here's a concise summary of the tools - if you would like more detailed information about the individual tools and example figures, follow the links in the table.
-
-| tool | type | input files | main output file(s) | application |
-|------|--------|-------------|--------------- |---------------|
-| [bamCorrelate][] | QC | 2 or more BAM | clustered heatmap | Pearson or Spearman correlation between read distributions |
-| [bamFingerprint][] | QC | 2 BAM | 1 diagnostic plot | assess enrichment strength of a ChIP sample |
-| [computeGCBias][] | QC | 1 BAM | 2 diagnostic plots | calculate the exp. and obs. GC distribution of reads|
-| [bamCoverage][] | normalization | BAM | bedGraph or bigWig | obtain the normalized read coverage of a single BAM file |
-| [bamCompare][] | normalization | 2 BAM | bedGraph or bigWig | normalize 2 BAM files to each other using a mathematical operation of your choice (e.g. log2ratio, difference)|
-| [computeMatrix][] | visualization | 1 bigWig, 1 BED | zipped file, to be used with heatmapper or profiler | compute the values needed for heatmaps and summary plots |
-| [heatmapper][] | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
-| [profiler][] | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
-
-
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
+
+<a name="weUse"/>
+How we use deepTools
+--------------------------------
+The majority of samples that we handle within our facility come from ChIP-seq experiments, therefore you will find many examples from ChIP-seq analyses. This does not mean that deepTools is restricted to ChIP-seq data analysis, but some tools, such as _bamFingerprint_ specifically address ChIP-seq-issues. (That being said, we do process quite a bit of RNA-seq and genomic sequencing data, too.
+
+[Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "From aligned reads to coverage profiles using deepTools") are slides that we used for teaching at the University of Freiburg.
+
+As depicted in the figure down below, our work usually begins with one or more [FASTQ][] file(s) of deeply-sequenced samples. After a first quality control using [FASTQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ "Check out FASTQC"), we align the reads to the reference genome, e.g. using [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml "bowtie, one of the most popular aligners").
+We then use deepTools to assess the quality of the aligned reads:
+
+1. __Correlation between [BAM][] files__ (_bamCorrelate_). This is a very basic test to see whether the sequenced and aligned reads meet your expectations. We use this check to assess the reproducibility - either between replicates and/or between different experiments that might have used the same antibody/the same cell type etc. For instance, replicates should correlate better than differently treated samples.
+2. __GC bias check__ (_computeGCbias_). Many sequencing protocols require several rounds of PCR-based amplification of the DNA to be sequenced. Unfortunately, most DNA polymerases used for PCR introduce significant GC biases as they prefer to amplify GC-rich templates. Depending on the sample (preparation), the GC bias can vary significantly and we routinely check its extent. In case we need to compare files with different GC biases, we use the _correctGCbias_ module to match the GC bias.
+See the paper by [Benjamini and Speed][] for many insights into this problem.
+3. __Assessing the ChIP strength__. This is a QC we do to get a feeling for the signal-to-noise ratio in samples from ChIP-seq experiments. It is based on the insights published by [Diaz et al.][].
+
+Once we're satisfied by the basic quality checks, we normally __convert the large [BAM][] files into a leaner data format, typically [bigWig][]__. bigWig files have several advantages over BAM files that mainly stem from their significantly decreased size:
+  - useful for data sharing & storage
+  - intuitive visualization in Genome Browsers (e.g. UCSC Genome Browser, IGV)
+  - more efficient downstream analyses are possible
+
+The deepTools modules _bamCompare_ and _bamCoverage_ do not only allow the simple conversion from BAM to bigWig (or [bedGraph][] for that matter), __the main reason why we developed those tools was that we wanted to be able to *normalize* the read coverages__ so that we could compare different samples despite differences in sequencing depth, GC biases and so on.
+
+Finally, once all the files have passed our visual inspections, the fun of downstream analyses with _heatmapper_ and _profiler_ can begin! 
+
+Here's a visual summary of our average workflow - deepTools modules are indicated in bold letters, alternative software such as FASTQC and bowtie are noted in regular font. Everything written in red is related to quality control (QC) of the samples.
+
+![flowChartI](https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
+
+ 
 
 <a name="parameters"/>
 General information about deepTools usage
