@@ -37,7 +37,9 @@ More detailed information about the individual programs:
 <a name="weUse"/>
 How we use deepTools
 --------------------------------
-The majority of samples that we handle within our facility come from ChIP-seq experiments, therefore you will find many examples from ChIP-seq analyses. This does not mean that deepTools is restricted to ChIP-seq data analysis, but some tools, such as _bamFingerprint_ specifically address ChIP-seq-issues. (That being said, we do process quite a bit of RNA-seq and genomic sequencing data, too.)
+The majority of samples that we handle within our facility come from ChIP-seq experiments, therefore you will find many examples from ChIP-seq analyses. This does not mean that deepTools is restricted to ChIP-seq data analysis, but some tools, such as _bamFingerprint_ specifically address ChIP-seq-issues. (That being said, we do process quite a bit of RNA-seq and genomic sequencing data, too.
+
+[Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "From aligned reads to coverage profiles using deepTools") are slides that we used for teaching at the University of Freiburg.
 
 As depicted in the figure down below, our work usually begins with one or more [FASTQ][] file(s) of deeply-sequenced samples. After a first quality control using [FASTQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/ "Check out FASTQC"), we align the reads to the reference genome, e.g. using [bowtie2](http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml "bowtie, one of the most popular aligners").
 We then use deepTools to assess the quality of the aligned reads:
@@ -146,6 +148,9 @@ Here's a concise summary of the tools - if you would like more detailed informat
 | [computeMatrix][] | visualization | 1 bigWig, 1 BED | zipped file, to be used with heatmapper or profiler | compute the values needed for heatmaps and summary plots |
 | [heatmapper][] | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
 | [profiler][] | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
+
+
+remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
 
 <a name="parameters"/>
 General information about deepTools usage
