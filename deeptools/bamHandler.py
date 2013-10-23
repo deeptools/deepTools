@@ -2,6 +2,11 @@ import pysam
 import tempfile, os
 
 def openBam(bamFile, bamIndex=None):
+    try:
+        open(bamFile, 'r').close()
+    except IOError:
+        print "Bam file {} does not exist".format(bamFile)
+        exit()
     if bamIndex and bamIndex != bamFile + ".bai":
         try:
             f = open(bamIndex, 'r')
