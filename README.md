@@ -14,6 +14,8 @@ http://f1000.com/posters/browse/summary/1094053
 
 For support, questions, or feature requests contact: deeptools@googlegroups.com
 
+![gallery](https://raw.github.com/fidelram/deepTools/master/examples/collage.png)
+
 ### Table of Contents  
 [How we use deepTools](#weUse)
 
@@ -24,9 +26,9 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 [What can I do with deepTools? Overview!](#usage)
 
 More detailed information about the individual programs:
-  + [deepTools for data quality checks](https://github.com/fidelram/deepTools/blob/manual/manual/QC.md)
-  + [deepTools for normalizations](https://github.com/fidelram/deepTools/blob/manual/manual/normalizations.md)
-  + [deepTools for visualizations](https://github.com/fidelram/deepTools/blob/manual/manual/visualizations.md)
+  + [deepTools for data quality checks](https://github.com/fidelram/deepTools/blob/master/manual/QC.md)
+  + [deepTools for normalizations](https://github.com/fidelram/deepTools/blob/manual/master/normalizations.md)
+  + [deepTools for visualizations](https://github.com/fidelram/deepTools/blob/manual/master/visualizations.md)
 
 [FAQ](#FAQ)
 
@@ -56,7 +58,7 @@ Finally, once all the files have passed our visual inspections, the fun of downs
 
 Here's a visual summary of our average workflow - deepTools modules are indicated in bold letters, alternative software such as FASTQC and bowtie are noted in regular font. Everything written in red is related to quality control (QC) of the samples.
 
-![flowChartI](https://raw.github.com/fidelram/deepTools/manual/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
+![flowChartI](https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
 
  
 <a name="installation"/>
@@ -169,11 +171,11 @@ Here we point out some parameters that you might find especially useful in your 
 <a name="FAQ"/>
 FAQs
 -------
-#### How do deepTools handle data from paired-end sequencing?
+#### How does deepTools handle data from paired-end sequencing?
 Generally, all the modules working with BAM files (_bamCorrelate, bamCoverage, bamCompare, bamFingerprint, computeGCbias_)
 recognize paired-end sequencing data. You can enforce to ignore the fragment length based on the mate pairs using the option __doNotExtendPairedEnds_
 
-#### Where can I download the 2bit genome files required by _computeGCbias_?
+#### Where can I download the 2bit genome files required for _computeGCbias_?
 The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.edu/gbdb/).
 Search for the .2bit ending. Otherwise, __fasta files can be converted to 2bit__ using the UCSC programm
 faToTwoBit (available for different plattforms from [here](http://hgdownload.cse.ucsc.edu/admin/exe/)
@@ -187,16 +189,16 @@ faToTwoBit (available for different plattforms from [here](http://hgdownload.cse
 [bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
 [FASTQ]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file of raw reads (almost straight out of the sequencer)"
 
-[bamCorrelate]: https://github.com/fidelram/deepTools/edit/manual/manual/QC.md
-[bamFingerprint]: https://github.com/fidelram/deepTools/edit/manual/manual/QC.md
-[computeGCBias]: https://github.com/fidelram/deepTools/edit/manual/manual/QC.md
+[bamCorrelate]: https://github.com/fidelram/deepTools/edit/master/manual/QC.md
+[bamFingerprint]: https://github.com/fidelram/deepTools/edit/master/manual/QC.md
+[computeGCBias]: https://github.com/fidelram/deepTools/edit/master/manual/QC.md
 
-[bamCoverage]: https://github.com/fidelram/deepTools/blob/manual/manual/normalizations.md
-[bamCompare]: https://github.com/fidelram/deepTools/blob/manual/manual/normalizations.md
+[bamCoverage]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
+[bamCompare]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
 
-[computeMatrix]: https://github.com/fidelram/deepTools/blob/manual/manual/visualizations.md
-[heatmapper]: https://github.com/fidelram/deepTools/blob/manual/manual/visualizations.md
-[profiler]: https://github.com/fidelram/deepTools/blob/manual/manual/visualizations.md
+[computeMatrix]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
+[heatmapper]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
+[profiler]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
 ### References
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
 [Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
