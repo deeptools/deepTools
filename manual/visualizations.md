@@ -4,7 +4,7 @@ Visualization
 The modules for visualizing scores contained in [bigWig][] files are separated into a tool that calculates the values
 (_computeMatrix_) and two tools that contain many, many options to fine-tune the plot (_heatmapper_ and _profiler_).
 
-![FLOWCHART IMAGE]
+![flowChartII](https://raw.github.com/fidelram/deepTools/manual/examples/flowChart_computeMatrixetc.png "Relationship between computeMatrix, heatmapper and profiler")
 
 ## Table of content
 
