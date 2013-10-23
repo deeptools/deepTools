@@ -48,7 +48,6 @@
       --region '$advancedOpt.region'
     #end if
     
-    --binSize '$advancedOpt.binSize'
     --sampleSize '$advancedOpt.sampleSize'
     --regionSize '$advancedOpt.regionSize'
 
@@ -127,10 +126,6 @@
           <param name="region" type="text" value=""
             label="Region of the genome to limit the operation to"
             help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-           
-           <param name="binSize" type="integer" value="50" min="1" 
-             label="Bin size in bp"
-             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
              
            <param name="sampleSize" type="integer" value="50000000" min="1"
              label="Number of sampling points to be considered" />
