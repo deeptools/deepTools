@@ -58,7 +58,17 @@ class heatmapper:
                       parameters['bin size'])
 
         regionsDict = self.getRegionsAndGroups(regions_file, verbose=verbose)
-
+        group_len = [len(x) for x in regionsDict]
+        # check if a given group is too small. Groups that
+        # are too small can be plotted and an error is shown.
+        if len(group_len) > 1:
+            sum_len = sum(group_len)
+            group_frac = [float(x)/sum_len for x in group_len]
+            if min(group_frac) <= 0.002:
+                print "One of the groups defined in the bed file is " 
+                "too small. Groups that are too small can't be plotted."
+                "Please remove the group to continue."
+                exit()
         matrixDict = OrderedDict()
         matrixAvgsDict = OrderedDict()
         for label, regions in regionsDict.iteritems():

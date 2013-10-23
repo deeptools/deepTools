@@ -1,50 +1,59 @@
-
 import numpy as np
 import time
 import multiprocessing
-import argparse # to parse command line arguments
-from matplotlib.mlab import prctile
 
-# NGS packages
-import pysam
-
-# my packages
-from utilities import *
+# deepTools packages
+from utilities import getCommonChrNames
 import bamHandler
 import mapReduce 
 
+debug = 0
 
 def countReadsInRegions_wrapper(args):
     return countReadsInRegions_worker(*args)
 
 def countReadsInRegions_worker(chrom, start, end, bamFilesList, 
                                stepSize, binLength, defaultFragmentLength, 
-                               skipZeros = False):
+                               skipZeros=False, bedRegions=None):
     """ counts the reads in each bam file at each 'stepSize' position
-    within the interval start, end 
-    for a 'binLength' window.
-    The idea is to get counts for window positions at different positions
-    for sampling. That is why the bins are not consecutive. 
+    within the interval start, end for a 'binLength' window.
+    Because the idea is to get counts for window positions at different positions
+    for sampling the bins are equally spaced between each other and are
+    not one directly next *after* the other.
+ 
+    If a list of bedRegions is given, then the number of reads
+    that overlaps with each region is counted.
+
     The result is a list of tuples. 
     >>> test = Tester()
 
-    The transpose is used to get better looking numbers. the first line corresponds to
-    the number of reads per bin in the first bamfile
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200, [test.bamFile1, test.bamFile2], 50, 25, 0))
+    The transpose is used to get better looking numbers. the first line
+    corresponds to the number of reads per bin in the first bamfile.
+    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bamFile1, test.bamFile2], 50, 25, 0))
     array([[ 0.,  0.,  1.,  1.],
            [ 0.,  1.,  1.,  2.]])
 
     When skipZeros is set to true, those cases in which *all* of the
     bamfiles have zero counts for a certain bin are ignored
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200, [test.bamFile1, test.bamFile2], 50, 25, 0, skipZeros=True))
+    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bamFile1, test.bamFile2], 50, 25, 0, skipZeros=True))
     array([[ 0.,  1.,  1.],
            [ 1.,  1.,  2.]])
 
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200, [test.bamFile1, test.bamFile2], 200, 200, 0))
+    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bamFile1, test.bamFile2], 200, 200, 0))
     array([[ 2.],
            [ 4.]])
 
-     """
+    Test bed regions:
+    >>> bedRegions = [(test.chrom, 10, 20), (test.chrom, 150, 160)]
+    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bamFile1, test.bamFile2], 0, 200, 0, bedRegions=bedRegions))
+    array([[ 0.,  1.],
+           [ 0.,  2.]])
+
+    """
 
     if start > end:
         raise NameError("start %d bigger that end %d" % (start, end))
@@ -58,19 +67,28 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     zerosToNans = False
     
     bamHandlers = [bamHandler.openBam(bam) for bam in bamFilesList]
-    for i in xrange(start, end, stepSize):
-        if i + binLength > end:
-            break
+
+    regionsToConsider = []
+    if bedRegions:
+        for chrom, start, end in bedRegions:
+            regionsToConsider.append((chrom, start, end, end - start))
+    else:
+        for i in xrange(start, end, stepSize):
+            if i + binLength > end:
+                break
+            regionsToConsider.append((chrom, i, i + binLength, binLength))
+
+    for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         for bam in bamHandlers:
-            avgReadsArray.append( \
-                getCoverageOfRegion( bam, 
-                                     chrom, i, i+binLength, 
-                                     binLength, 
-                                     defaultFragmentLength, 
-                                     extendPairedEnds, 
-                                     zerosToNans )[0] )
-
+          avgReadsArray.append( \
+                getCoverageOfRegion(bam, 
+                                    chrom, start, end,
+                                    binLength,
+                                    defaultFragmentLength, 
+                                    extendPairedEnds, 
+                                    zerosToNans )[0])
+        # skip if any of the bam files returns a NaN
         if np.isnan(sum(avgReadsArray)):
             continue
 
@@ -84,31 +102,38 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     if debug:
         endTime = time.time()
         
-        print "%s countReadsInRegions_worker: processing %d  (%.1f per sec) @ %s:%s-%s"  % \
-                ( multiprocessing.current_process().name,
-                  rows, rows / (endTime - startTime) , chrom, start, end )
+        print "%s countReadsInRegions_worker: processing %d " \
+            "(%.1f per sec) @ %s:%s-%s"  % \
+            (multiprocessing.current_process().name,
+             rows, rows / (endTime - startTime) , chrom, start, end )
 
 
     return np.array(subNum_reads_per_bin).reshape(rows,len(bamFilesList)) 
 
-def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples, defaultFragmentLength, 
-                      numberOfProcessors=1, skipZeros=True, verbose=False, region=None,
+def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
+                      defaultFragmentLength, numberOfProcessors=1,
+                      skipZeros=True, verbose=False, region=None,
+                      bedFile=None,
                       chrsToSkip=[]):
-    r"""
-    This function visits a number of sites and returs a list containing read counts.
-    Each row to one sampled site and each column correspond to each of the bamFiles
 
-    If the chrsToSkip is given, then counts are filter out from this chromosome which, 
-    unless a female sample is used, the counts are less compared to 
-    autosomes. For most applications this is irrelevant but for other cases,
-    like when stimating the best scaling factor, this is important.
+    r"""
+    This function visits a number of sites and returs a matrix containing read
+    counts. Each row to one sampled site and each column correspond to each of
+    the bamFiles.
+
+    If the chrsToSkip is given, then counts are filter out from this
+    chromosome which, unless a female sample is used, the counts are less
+    compared to autosomes. For most applications this is irrelevant but for
+    other cases, like when stimating the best scaling factor, this is
+    important.
 
     The test data contains reads for 200 bp
     >>> test = Tester()
 
     The transpose function is used to get a nicer looking output.
     The first line corresponds to the number of reads per bin in bam file 1
-    >>> np.transpose(getNumReadsPerBin([test.bamFile1, test.bamFile2], 50, 4, 0, skipZeros=True))
+    >>> np.transpose(getNumReadsPerBin([test.bamFile1, test.bamFile2],
+    ... 50, 4, 0, skipZeros=True))
     array([[ 0.,  1.,  1.],
            [ 1.,  1.,  2.]])
 
@@ -149,13 +174,14 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples, defaultFragmentL
 
     if region:
         # in case a region is used, append the tilesize
-        region += ":{}".format(tileSize)
+        region += ":{}".format(binLength)
 
     imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength, 
                                      defaultFragmentLength, skipZeros),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
+                                    bedFile=bedFile,
                                     region=region,
                                     numberOfProcessors = numberOfProcessors)
 
@@ -257,6 +283,7 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     that overlap with each tile.
 
     >>> test = Tester()
+    >>> import pysam
 
     For this case the reads are length 36. For the positions given
     the number of overlapping read fragments is 4 and 5
@@ -417,7 +444,6 @@ class Tester():
         self.bamFile2  = self.root + "testB.bam"
         self.bamFile_PE  = self.root + "test_paired2.bam"
         self.chrom = '3R'
-        bam = pysam.Samfile(self.bamFile1)
         global debug
         debug = 0
 
