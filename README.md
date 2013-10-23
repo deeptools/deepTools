@@ -147,6 +147,9 @@ Here's a concise summary of the tools - if you would like more detailed informat
 | [heatmapper][] | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
 | [profiler][] | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
 
+
+remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
+
 <a name="parameters"/>
 General information about deepTools usage
 ---------------------------------------------------------
