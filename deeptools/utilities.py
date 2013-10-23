@@ -6,7 +6,7 @@ debug = 0
 def getGC_content(dnaString, as_fraction=True):
     if len(dnaString) == 0:
         return None
-    if dnaString.count('N') > len(dnaString) / 2:
+    if dnaString.count('N') > len(dnaString) * 0.05:
         raise Exception("too many NNNs in assembly sequence")
         return None
 
