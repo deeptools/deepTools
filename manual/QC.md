@@ -60,7 +60,7 @@ i.e. how many regions in the genome have 50% GC (or 10% GC or 90%
 GC or...).  For this, it samples a large number of equally sized genome bins
 and counts how many times we see a bin with 50% GC (or 10% GC or 90%
 or...). These __expected values are independent of any sequencing, but they do depend on the respective reference genome__.
-This means, that the expected values will of course differ between mouse and fruit fly due to their genome's
+This means, that the expected values will, of course, differ between mouse and fruit fly due to their genome's
 different GC contents, but it also means that strong biases in the reference genome assembly might lead to a false positive diagnosis of GC bias.
 
 After the expected values, the tool samples the BAM file of sequenced reads. Instead of noting how many genomic regions
@@ -102,8 +102,8 @@ according to their rank and the cumulative sum of read counts is
 plotted.
 
 ###	Output files: 
-  + plot
-  + matrix
+  + __Diagnostic plot__
+  + __Data matrix__
 
 ### What the plots tell you
 An ideal input with perfect uniform distribution of reads
