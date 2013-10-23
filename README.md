@@ -30,8 +30,8 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 
 More detailed information about the individual programs:
   + [deepTools for data quality checks](https://github.com/fidelram/deepTools/blob/master/manual/QC.md)
-  + [deepTools for normalizations](https://github.com/fidelram/deepTools/blob/manual/master/normalizations.md)
-  + [deepTools for visualizations](https://github.com/fidelram/deepTools/blob/manual/master/visualizations.md)
+  + [deepTools for normalizations](https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md)
+  + [deepTools for visualizations](https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md)
 
 [FAQ](#FAQ)
 
