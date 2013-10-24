@@ -1,13 +1,23 @@
 Normalization of BAM files
 ===========================
 
-[Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "How to get from aligned reads to coverage profiles using deepTools") you can download slides that we used for teaching. They might be useful to get a feeling for the steps that need to be taken to get from a [BAM][] file of aligned reads to a normalized [bigWig][] file of read densities.
+deepTools contains 3 tools for the normalization of [BAM][] files:
+1. _correctGCbias_: in case, you would like to normalize your read distributions to fit the expected GC values, you can use the output from [computeGCbias](https://raw.github.com/fidelram/deepTools/master/manual/QC.md "go to the chapter about data QC") and produce a GC-corrected [BAM]-file.
+2. _bamCoverage_: this tool converts a single [BAM][] file into a [bigWig][] file, enabling you to normalize for sequencing depth.
+3. _bamCompare_: like bamCoverage, this tool produces a normalized [bigWig][] file, but it takes 2 [BAM][] files, normalizes them for sequencing depth and subsequently performs a mathematical operation of your choice, i.e. it can output the ratio of the read coverages in both files or the like.
+
+
+[Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "How to get from aligned reads to coverage profiles using deepTools") you can download slides that we used for teaching. They contain additional details about how the coverage files are generated and normalized.
+
+
+![bamToBigWig](https://raw.github.com/fidelram/deepTools/master/examples/norm_IGVsnapshot_indFiles.png "snapshots of bigWig files loaded in IGV")
 
 ## Table of Content
 
   * [correctGCbias](#correctGCbias)
   * [bamCoverage](#bamCoverage)
   * [bamCompare](#bamCompare)
+
 
 
 <a name="correctGCbias"/>
@@ -32,7 +42,7 @@ bamCoverage
 Given a BAM file, this tool generates a [bigWig][] or [bedGraph][] file of fragment or read coverages. The way the method works is by first calculating all the number of reads (either extended to match the fragment length or not) that overlap each bin in the genome. Bins with zero counts are skipped, i.e. not added to the output file. The resulting read counts can be normalized using either a given scaling factor, the RPKM formula or to get a 1x depth of coverage (RPGC).
 
 ### output
-  + __coverage file__ either in [bigWig] or [bedGraph] format - these files are much smaller than the original [BAM] files which makes them ideal for sharing data (also, most Genome Browsers should be able to display this format)
+  + __coverage file__ either in [bigWig][] or [bedGraph][] format
 
 
 <a name="bamCompare"/>
@@ -47,15 +57,16 @@ of equal size, the reads are counted for each bin and each BAM file
 and finally, a summarizing value is reported.  This value can be the
 ratio of the number of reads per bin, the log2 of the ratio or the
 difference.  This tool can normalize the number of reads on each BAM
-file using the SES method proposed by [Diaz et al.][]Normalization based on read counts is also
-available. The output is either a bedGraph or a bigWig file containing
-the bin location and the resulting comparison values.  If paired-end
+file using the SES method proposed by [Diaz et al.][] Normalization based on read counts is also
+available. If paired-end
 reads are present, the fragment length reported in the BAM file is
 used by default.
 
 ### output file
   + same as for bamCoverage, except that you now obtain __1__ coverage file that is based on __2__ [BAM][] files.
 
+
+![bamCompare](https://raw.github.com/fidelram/deepTools/master/examples/norm_bamCompare.png "Mathematical operations for comparing 2 BAM files implemented in bamCompare")
 
 
 -----------------------------------------------------------------------------------
