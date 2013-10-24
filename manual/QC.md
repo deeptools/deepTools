@@ -12,7 +12,7 @@ bamCorrelate
 -------------
 
 
-This tool is useful to assess the overall similarity of different BAM
+This tool is useful to assess the overall similarity of different [BAM][]
 files. A typical application is to check the correlation between
 replicates or published data sets.
 
@@ -27,17 +27,24 @@ bamCorrelate can be run in 2 modes: _bins_ and _bed_.
 In the bins mode, the correlation is computed based on equal length bins. The user has to specifcy the _number of bins_. This is useful to assess the overall similarity of BAM files,
 but due to the random sampling of the genome, outliers might be produced that will skew the correlation values.
 
-In the BED-file options, the user has to supply a list of genomic regions in BED format (chr, start, end) in addition to (a) BAM file(s). bamCorrelate subsequently only calculates the
+In the BED-file options, the user has to supply a list of genomic regions in [BED][] format in addition to (a) BAM file(s). bamCorrelate subsequently only calculates the
 number of overlapping reads for these regions. This can be used, for example, to compare the ChIP-seq coverages of two different samples in peak regions only.
 
 ### Output files:
-    - plot
-    - matrix
+  - __diagnostic plot__ the plot produced by bamCorrelate is a clustered heatmap displaying the values for each pair-wise correlation, see below for an example
+  - __data matrix__ (optional) in case you want to plot the correlation values using a different program, e.g. R, this matrix can be used
 
 ### Example Figures
 
-replicates, input vs ChIP, patient 1 vs patient2
+Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample.
+  
+![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_humanSamples.png "bamCorrelate result")
 
+Here's the command that was used:
+
+    $ deepTools-1.5.2/bin/bamCorrelate -f 300 -p 12 --bamfiles GSM798383_SLX-1201.250.s_4.bwa.homo_sapiens_f.bam GSM798384_SLX-1881.334.s_1.bwa.homo_sapiens_f.bam GSM798406_SLX-1202.250.s_1.bwa.homo_sapiens_f.bam GSM798407_SLX-1880.337.s_8.bwa.homo_sapiens_f.bam --labels "ChIP p1" "ChIP p2" "Input p1" "Input p2" -plot /eva_data/deeptools_manual/bamCorrelate_bad2.pdf --corMethod pearson
+  
+Note how useful the --labels option is and that there is no limit to how many files you can supply. 
 
 
 <a name="computeGCbias"/>
@@ -69,11 +76,10 @@ there are per GC content, we now count the __reads per GC content__.
 ### Output files
 
   + __Diagnostic plot__
-    - box plot of absolute read numbers per genomic GC bin
-    - x-y plot of observed/expected read ratios per genomic GC content bin
-    
+      - box plot of absolute read numbers per genomic GC bin
+      - x-y plot of observed/expected read ratios per genomic GC content bin
   + __Data matrix__
-    - to be used for GC correction with _correctGCbias_
+      - to be used for GC correction with _correctGCbias_
     
 ### What the plots tell you
 In an ideal sample without GC bias, the ratio of observed/expected values
@@ -83,7 +89,15 @@ However, due to PCR (over)amplifications, the majority of ChIP samples usually s
 significant bias towards reads with high GC content (>50%) and a depletion of reads from GC-poor regions.
 
 ### Example figures
-  + Figure: strong bias vs. no bias vs. histone mark with inherent GC bias, GC bias of simulated data
+Let's start with an ideal case. The following plots were generate with computeGCbias using simulated reads from the Drosophila genome.
+
+![SimReads](https://raw.github.com/fidelram/deepTools/master/examples/GC_bias_simulated_reads_2L.png "GC plot on simulated reads")
+
+As you can see, both plots do not show enrichments or depletions for specific GC content bins.
+
+Now, let's have a look at real-life data from genomic DNA sequencing. Panels A and B can be clearly distinguished and the major change that took place between the experiments underlying the plots was that the samples in panel A were prepared with too many PCR cycles and a standard polymerase whereas the samples of panel B were subjected to very few rounds of amplification using a high fidelity DNA polymerase.
+
+![RealGC](https://raw.github.com/fidelram/deepTools/master/examples/QC_GCplots_input.png "real-life examples of GC biases")
 
 
 
@@ -103,7 +117,7 @@ plotted.
 
 ###	Output files: 
   + __Diagnostic plot__
-  + __Data matrix__
+  + __Data matrix__ of raw counts
 
 ### What the plots tell you
 An ideal input with perfect uniform distribution of reads
@@ -114,11 +128,12 @@ cumulative sum towards the highest rank. This means that a big chunk
 of reads from the ChIP sample is located in few bins which corresponds
 to high, narrow enrichments seen for transcription factors.
 
-  + Figure: good TF vs. bad TF vs. broad histone mark
+### Example figures
 
 
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
+[BED]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "simple text file of genomic regions (chr, start, end)"
 [SAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file containing all information about aligned reads"
 [bigWig]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a bedGraph file; contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
 [bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"

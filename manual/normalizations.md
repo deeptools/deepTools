@@ -1,6 +1,8 @@
 Normalization of BAM files
 ===========================
 
+[Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "How to get from aligned reads to coverage profiles using deepTools") you can download slides that we used for teaching. They might be useful to get a feeling for the steps that need to be taken to get from a [BAM][] file of aligned reads to a normalized [bigWig][] file of read densities.
+
 ## Table of Content
 
   * [correctGCbias](#correctGCbias)
@@ -14,13 +16,12 @@ CorrectGCbias
 
 ### What it does (uses output from computeGCbias)
 This tool requires the output from computeGCBias to correct the given
-BAM files according to the method proposed by Benjamini and Speed
-(2012). Nucleic Acids Res.  The resulting BAM files can be used in any
-downstream analyses, but be aware that you should not filter out
-duplicates from here on.
+[BAM][] files according to the method proposed by [Benjamini and Speed][].  The resulting [BAM][] files can be used in any
+downstream analyses, but __be aware that you should not filter out
+duplicates from here on__.
 
-### output files
-
+### output
+ + __GC-normalized BAM file__
 
 
 <a name="bamCoverage"/>
@@ -28,16 +29,10 @@ bamCoverage
 ------------
 
 ### What it does
-Given a BAM file, this tool generates a bigWig or bedGraph file of
-fragment or read coverages. The way the method works is by first
-calculating all the number of reads (either extended to match the
-fragment length or not) that overlap each bin in the genome. Bins with
-zero counts are skipped, i.e. not added to the output file. The
-resulting read counts can be normalized using either a given scaling
-factor, the RPKM formula or to get a 1x depth of coverage (RPGC).
+Given a BAM file, this tool generates a [bigWig][] or [bedGraph][] file of fragment or read coverages. The way the method works is by first calculating all the number of reads (either extended to match the fragment length or not) that overlap each bin in the genome. Bins with zero counts are skipped, i.e. not added to the output file. The resulting read counts can be normalized using either a given scaling factor, the RPKM formula or to get a 1x depth of coverage (RPGC).
 
-### output files
-
+### output
+  + __coverage file__ either in [bigWig] or [bedGraph] format - these files are much smaller than the original [BAM] files which makes them ideal for sharing data (also, most Genome Browsers should be able to display this format)
 
 
 <a name="bamCompare"/>
@@ -58,8 +53,8 @@ the bin location and the resulting comparison values.  If paired-end
 reads are present, the fragment length reported in the BAM file is
 used by default.
 
-  + output files
-  + Figure: IGV snapshots of a) BAM,  b) Norm To 1x, c)difference
+### output file
+  + same as for bamCoverage, except that you now obtain __1__ coverage file that is based on __2__ [BAM][] files.
 
 
 
