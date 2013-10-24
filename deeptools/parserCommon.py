@@ -441,7 +441,6 @@ def heatmapperOutputArgs(args=None,
 
 
 def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
-    import matplotlib
 
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
@@ -525,7 +524,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'Other colors can be specified using the #rrggbb '
             'notation.')
 
-        color_options = "', '".join([m for m in matplotlib.cm.datad
+        from matplotlib import cm
+        color_options = "', '".join([m for m in cm.datad
                                      if not m.endswith('_r')])
 
         optional.add_argument(
