@@ -130,6 +130,8 @@ to high, narrow enrichments seen for transcription factors.
 
 ### Example figures
 
+Here you see the combined 
+![fingerprint](https://raw.github.com/fidelram/deepTools/master/examples/QC_fingerprint.png "bamFingerprint outputs")
 
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
