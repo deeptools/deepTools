@@ -52,10 +52,12 @@ def parseArguments(args=None):
                         'hg19:2451960000, dm3:121400000 and ce10:93260000. '
                         'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
                         'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                        'for several effective genome sizes.',
+                        'for several effective genome sizes. This value is needed '
+                        'to detect enriched regions that, if not discarded '
+                        'can bias the results.',
                         default=None,
                         type=int,
-                        required=False)
+                        required=True)
 
     parser.add_argument('--genome', '-g',
                         help='Genome in two bit format. Most genomes can be '
@@ -65,7 +67,7 @@ def parseArguments(args=None):
                         'programm called faToTwoBit available for different '
                         'plattforms at '
                         'http://hgdownload.cse.ucsc.edu/admin/exe/',
-                        metavar='two bit file',
+                        metavar='2bit FILE',
                         required=True)
 
     parser.add_argument('--sampleSize',
@@ -572,7 +574,13 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
 
     # prepare data for boxplot
     reads, GC = reads_per_gc.T
-    reads_per_gc, bin_labels = bin_by(reads, GC, nbins=10)
+    reads_per_gc, bin_labels = bin_by(reads, GC, nbins=100)
+#    total = sum([len(x) for x in reads_per_gc])
+#    to_keep = [idx for idx, x in enumerate(reads_per_gc) if float(len(x))/total> 0.005]
+    to_keep = [idx for idx, x in enumerate(bin_labels) if 0.2 <= x <= 0.7 ]
+    reads_per_gc = [reads_per_gc[x] for x in to_keep]
+    bin_labels = [bin_labels[x] for x in to_keep]
+
     title = "reads per regions of {} bp".format(args.regionSize)
     fig = plt.figure(figsize=(6, 8))
     ax1 = fig.add_subplot(211, title=title)
@@ -586,22 +594,25 @@ def plotGCbias(file_name, frequencies, reads_per_gc):
     plt.setp(bp['medians'], color='black')
     plt.setp(bp['whiskers'], color='black', linestyle='dashed')
     plt.setp(bp['fliers'], marker='None')
-
     # get the whisker that spands the most
     y_max = max([x.get_data()[1][1] for x in bp['whiskers']])
     ax1.set_ylim(0 - (y_max * 0.05), y_max * 1.05)
     ax1.set_ylabel('Number of reads')
     ax1.set_xlabel('GC fraction')
-#    ax1.set_xticks([1, 2])
-    ax1.set_xticklabels(bin_labels)
+
+    xticks = [idx for idx, x in enumerate(bin_labels) if int(x*100) % 10 == 0]
+
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(["{:.1f}".format(bin_labels[x]) for x in xticks])
+
     x = np.linspace(0, 1, frequencies.shape[0])
     ax2.plot(x, np.log2(frequencies[:, 2]), color='#8c96f0')
     ax2.set_xlabel('GC fraction')
     ax2.set_ylabel('log2ratio observed/expected')
+    ax2.set_xlim(0.2,0.7)
 #    fig.suptitle(args.title, fontsize='small')
 #    plt.tight_layout()
     plt.tight_layout()
-
     # check if the filetype is supported by matplotlib, otherwise fallback to png
     # ToDo: specify the filetype via an command line for galaxy
     filetype = os.path.splitext( file_name )[1]
@@ -714,7 +725,6 @@ def main(args):
 
 class Tester():
     def __init__(self):
-        import pysam
         self.root = cfg.config.get('general', 'test_root') + "/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
         self.bamFile  = self.root + "test.bam"
@@ -722,7 +732,7 @@ class Tester():
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         self.samtools = cfg.config.get('external_tools', 'samtools')
-        bam = pysam.Samfile(self.bamFile)
+        bam = bamHandler.openBam(self.bamFile)
         bit = twobit.TwoBitFile(open(self.tbitFile ))
         global debug
         debug = 0
@@ -764,7 +774,7 @@ class Tester():
         fragmentLength = {'median': 10}
         chrNameBitToBam = {'chr2L': '2L'}
         stepSize = 1
-        bam = pysam.Samfile(global_vars['bam'])
+        bam = bamHandler.openBam(global_vars['bam'])
         chromSizes = [(bam.references[i], bam.lengths[i])
                       for i in range(len(bam.references))]
         return (fragmentLength,
@@ -774,7 +784,7 @@ class Tester():
         regionSize = 300
         chrNameBitToBam = {'chr2L': '2L'}
         stepSize = 1
-        bam = pysam.Samfile(global_vars['bam'])
+        bam = bamHandler.openBam(global_vars['bam'])
         chromSizes = [(bam.references[i], bam.lengths[i])
                       for i in range(len(bam.references))]
         return (regionSize,

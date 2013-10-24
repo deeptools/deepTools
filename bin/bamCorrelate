@@ -3,10 +3,15 @@
 
 import argparse # to parse command line arguments
 import numpy as np
+from  matplotlib import use as mplt_use
+mplt_use('Agg')
+import matplotlib.pyplot as plt
+
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from scipy.stats import pearsonr, spearmanr
+
 def parseArguments(args=None):
     parser = \
         argparse.ArgumentParser(
@@ -128,6 +133,30 @@ def requiredArgs(case='bins'):
                         'behavior is to ignore those cases ',
                         action = 'store_true',
                         required = False)
+
+    heatmap = parser.add_argument_group('Heatmap options')
+
+    heatmap.add_argument('--zMin', '-min',
+                          default=None,
+                          help='Minimum value for the heatmap intensities. '
+                          'If not specified the value is set automatically')
+    heatmap.add_argument('--zMax', '-max',
+                          default=None,
+                          help='Maximum value for the heatmap intensities.'
+                          'If not specified the value is set automatically')
+
+    from matplotlib import cm
+    color_options = "', '".join([m for m in cm.datad
+                                 if not m.endswith('_r')])
+
+    heatmap.add_argument(
+        '--colorMap', default='Reds',
+        help='Color map to use for the heatmap. Available values can be '
+        'seen here: '
+        'http://www.astro.lsa.umich.edu/~msshin/science/code/'
+        'matplotlib_cm/ The available options are: \'' +
+        color_options + '\'')
+
         ####
     group = parser.add_argument_group('Output')
 
@@ -150,28 +179,34 @@ def requiredArgs(case='bins'):
 
     return parser
 
-def plotCorrelation(corr_matrix, labels, plotFileName):
-    from  matplotlib import use as mplt_use
-    mplt_use('Agg')
-    import matplotlib.pyplot as plt
+def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
+                    vmin=None, colormap='Reds'):
     import scipy.cluster.hierarchy as sch
     M = corr_matrix.shape[0]
+
+    # set the minumun and maximun values
+    if vmax is None:
+        vmax = 1
+    if vmin is None:
+        vmin = 0 if corr_matrix.min()>=0 else -1
+
     # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(12,9))
-    axdendro = fig.add_axes([0.02,0.1,0.10,0.8])
+    fig = plt.figure(figsize=(10.5,9.5))
+    axdendro = fig.add_axes([0.02,0.1,0.10,0.7])
     axdendro.set_axis_off()
     Y = sch.linkage(corr_matrix, method='centroid')
-    Z = sch.dendrogram(Y, orientation='right')
+    Z = sch.dendrogram(Y, orientation='right', link_color_func=lambda k: 'black')
     axdendro.set_xticks([])
     axdendro.set_yticks([])
-    cmap = plt.get_cmap('Reds') 
+    cmap = plt.get_cmap(colormap)
+        
     # Plot distance matrix.
-    axmatrix = fig.add_axes([0.13,0.1,0.6,0.8])
+    axmatrix = fig.add_axes([0.13,0.1,0.6,0.7])
     index = Z['leaves']
     corr_matrix = corr_matrix[index,:]
     corr_matrix = corr_matrix[:,index]
     im = axmatrix.matshow(corr_matrix, aspect='equal', origin='lower', 
-                          cmap=cmap, extent=(0, M, 0, M))
+                          cmap=cmap, extent=(0, M, 0, M), vmax=vmax, vmin=vmin)
     axmatrix.yaxis.tick_right()
     axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
     axmatrix.set_yticklabels(np.array(labels).astype('str')[index], fontsize='small')
@@ -179,6 +214,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName):
     axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
     axmatrix.set_xticklabels(np.array(labels).astype('str')[index], fontsize='small', 
                              rotation='vertical')
+
 #    axmatrix.set_xticks([])
     # Plot colorbar.
     axcolor = fig.add_axes([0.13,0.065,0.6, 0.02])
@@ -187,7 +223,6 @@ def plotCorrelation(corr_matrix, labels, plotFileName):
         for col in range(M):
             axmatrix.text(row+0.5, col+0.5, "{:.2f}".format(corr_matrix[row,col]),
                           ha='center', va='center')
-    # Display and save figure.
     fig.savefig(plotFileName)
 
 
@@ -208,6 +243,18 @@ def main(args):
     else:
         skipZeros = True
 
+    if args.colorMap:
+        try:
+            cmap = plt.get_cmap(args.colorMap)
+        except ValueError as e:
+            print e
+            exit()
+
+    if 'BED' in args:
+        BED_regions = args.BED
+    else:
+        BED_regions = None
+
     num_reads_per_bin = countR.getNumReadsPerBin(args.bamfiles, 
                                                  args.binSize, args.numberOfSamples, 
                                                  args.fragmentLength, 
@@ -215,7 +262,7 @@ def main(args):
                                                  skipZeros=skipZeros,
                                                  verbose=args.verbose,
                                                  region=args.region,
-                                                 bedFile=args.BED)
+                                                 bedFile=BED_regions)
 
     # remove outliers, which will spoil pearson correlation
     # for each data set (cols) the values above the 99.9 
@@ -224,13 +271,15 @@ def main(args):
     # same rows
     to_remove = None
     for col in num_reads_per_bin.T:
-        outliers = np.flatnonzero(col < np.percentile(col, 99.9))
+        outliers = np.flatnonzero(col > np.percentile(col, 99.9))
         if to_remove is None:
             to_remove = set(outliers)
         else:
             to_remove = to_remove.intersection(outliers)
-    to_keep = np.delete(np.arange(num_reads_per_bin.shape[0]), to_remove)
-    num_reads_per_bin = num_reads_per_bin[to_keep,:]
+    if len(to_remove):
+        to_keep = [x for x in range(num_reads_per_bin.shape[0])
+                   if x not in to_remove]
+        num_reads_per_bin = num_reads_per_bin[to_keep,:]
     
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
@@ -265,7 +314,8 @@ def main(args):
 
     plotFileName = args.plotFile.name
     args.plotFile.close()
-    plotCorrelation(corr_matrix, args.labels, plotFileName)
+    plotCorrelation(corr_matrix, args.labels, plotFileName, args.zMax, args.zMin, 
+                    args.colorMap)
 
 if __name__ == "__main__":
     args = parseArguments()

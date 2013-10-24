@@ -230,7 +230,9 @@ def plotMatrix(hm, outFileName,
 
     fig.suptitle(plotTitle, y=1 - (0.06 / figHeight))
 
+    # colormap for the image
     cmap = plt.get_cmap(colorMap)
+    # color map for the profile on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
     cmap.set_bad(missingDataColor)  # nans are printed using this color
 
