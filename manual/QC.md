@@ -36,7 +36,7 @@ number of overlapping reads for these regions. This can be used, for example, to
 
 ### Example Figures
 
-Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample.
+Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32222 "GEO series")).
   
 ![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_humanSamples.png "bamCorrelate result")
 
