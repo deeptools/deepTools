@@ -66,8 +66,12 @@
       --minMappingQuality '$advancedOpt.minMappingQuality'
     #end if
 
-    --zMin $zMin
-    --zMax $zMax
+    #if $advancedOpt.zMin:
+        --zMin $advancedOpt.zMin
+    #end if
+    #if $advancedOpt.zMax:
+        --zMax $advancedOpt.zMax
+    #end if
     --colorMap '$advancedOpt.colorMap'
 
   #end if
