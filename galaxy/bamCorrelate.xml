@@ -90,62 +90,75 @@
             help="Label to use in the output. If not given the dataset name will be used instead."/>
     </repeat>
 
-    <param name="fragmentLength" type="integer" value="300" min="1"
-        label="Length of the average fragment size"
-        help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
 
-    <param name="corMethod" type="select" label="Correlation method">
-        <option value="pearson">Pearson</option>
-        <option value="spearman">Spearman</option>
-    </param>
-
-    <conditional name="advancedOpt">
-        <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-            <option value="no" selected="true">no</option>
-            <option value="yes">yes</option>
+    <conditional name="mode">
+        <param name="modeOpt" type="select" label="Choose computation mode" 
+            help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
+            <option value="bins" selected="true">Bins</option>
+            <option value="BED-file">BED file</option>
         </param>
-        <when value="no" />
-        <when value="yes">
+        <when value="bins">
+        </when>
 
-        <param name="region" type="text" value=""
-            label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-
-        <param name="binSize" type="integer" value="10000" min="1" 
-            label="Bin size in bp"
-            help="Length in base pairs for a window used to sample the genome."/>
-
-        <param name="numberOfSamples" type="integer" value="100000" min="1" 
-            label="Number of samples"
-            help="Number of samples taken from the genome to compute the scaling factors"/>
-
-        <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-            label="Do not extend paired ends"
-            help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
-
-        <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
-            label="Ignore duplicates"
-            help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
-
-        <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-            label="Minimum mapping quality"
-            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
-
-        <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
-            label ="Include zeros"
-            help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
-
-        <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
-            help="If not specified the value is set automatically."/>
-
-        <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
-            help="If not specified the value is set automatically."/>
-
-        <expand macro="colormap" />
+        <when value="BED-file">
+        </when>
 
 
-    </when>
-  </conditional>
+
+        <param name="fragmentLength" type="integer" value="300" min="1"
+            label="Length of the average fragment size"
+            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+
+        <param name="corMethod" type="select" label="Correlation method">
+            <option value="pearson">Pearson</option>
+            <option value="spearman">Spearman</option>
+        </param>
+
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="region" type="text" value=""
+                    label="Region of the genome to limit the operation to"
+                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
+                <param name="binSize" type="integer" value="10000" min="1" 
+                    label="Bin size in bp"
+                    help="Length in base pairs for a window used to sample the genome."/>
+
+                <param name="numberOfSamples" type="integer" value="100000" min="1" 
+                    label="Number of samples"
+                    help="Number of samples taken from the genome to compute the scaling factors"/>
+
+                <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
+                    label="Do not extend paired ends"
+                    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+
+                <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+                    label="Ignore duplicates"
+                    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
+
+                <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+                    label="Minimum mapping quality"
+                    help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
+
+                <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
+                    label ="Include zeros"
+                    help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+
+                <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
+                    help="If not specified the value is set automatically."/>
+
+                <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
+                    help="If not specified the value is set automatically."/>
+
+                <expand macro="colormap" />
+            </when>
+        </conditional>
+    </conditional>
 
   <conditional name="outputOpt">
     <param name="showOutputOpt" type="select" label="Show additional output options" >
