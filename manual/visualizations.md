@@ -65,14 +65,18 @@ As you can see, all genes have been scaled to the same size and the (mean) value
     + __--missingDataAsZero__ this option allows computeMatrix do interpret missing data points as zeroes. Be aware of the changes to the average values that this might cause.
     + __--missingDataColor__ this is in case you have very sparce data or were missing values make sense (e.g. when plotting methylated CpGs - half the genome should have no value). This option then allows you to pick out your favorite color for those regions. The default is white.
 3. __1 group per chromosome__ To tell computeMatrix that there are different groups of genomic regions, the [BED][]-file needs to contain the name of the group, preceded by a hash tag __at the end of each group__. The BED-file that was used here, contained 3 such lines and could be prepared as follows:
+    
+     $ grep ^chr2 AllGenes.bed > Dm.genes.indChromLabeled.bed
 
-
-    $ grep ^chr2 AllGenes.bed > Dm.genes.indChromLabeled.bed
-    $ echo "#chr2" >> Dm.genes.indChromLabeled.bed 
-    $ grep ^chr3 AllGenes.bed >> Dm.genes.indChromLabeled.bed
-    $ echo "#chr3" >> Dm.genes.indChromLabeled.bed 
-    $ grep ^chrX AllGenes.bed >> Dm.genes.indChromLabeled.bed
-    $ echo "#chrX" >> Dm.genes.indChromLabeled.bed
+     $ echo "#chr2" >> Dm.genes.indChromLabeled.bed
+     
+     $ grep ^chr3 AllGenes.bed >> Dm.genes.indChromLabeled.bed
+     
+     $ echo "#chr3" >> Dm.genes.indChromLabeled.bed
+     
+     $ grep ^chrX AllGenes.bed >> Dm.genes.indChromLabeled.bed
+     
+     $ echo "#chrX" >> Dm.genes.indChromLabeled.bed
 
 
 Here's the profiler plot corresponding to the heatmap above. There's one major difference though - do you spot it?
