@@ -1,10 +1,13 @@
 <tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.1">
-  <description>correlates pairs of BAM files</description>
-  <requirements>
-    <requirement type="package" version="1.5.1_3e13687c89e951476776b15afb4bbbc3b906f761">deepTools</requirement>
-    <requirement type="package" >deepTools</requirement>
-  </requirements>
-  <command>
+    <description>correlates pairs of BAM files</description>
+    <requirements>
+        <requirement type="package" version="1.5.1_3e13687c89e951476776b15afb4bbbc3b906f761">deepTools</requirement>
+        <requirement type="package" >deepTools</requirement>
+    </requirements>
+    <macros>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <command>
     #import tempfile
     #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
 
@@ -62,6 +65,11 @@
     #if $advancedOpt.minMappingQuality:
       --minMappingQuality '$advancedOpt.minMappingQuality'
     #end if
+
+    --zMin $zMin
+    --zMax $zMax
+    --colorMap '$advancedOpt.colorMap'
+
   #end if
   ; mv $newoutFileName $outFileName
   ; rm $temp_dir -rf
@@ -93,8 +101,7 @@
     </param>
     <when value="no" />
     <when value="yes">
-   
-       
+
     <param name="region" type="text" value=""
        label="Region of the genome to limit the operation to"
        help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
@@ -122,6 +129,15 @@
     <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
        label ="Include zeros"
        help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+
+     <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
+       help="If not specified the value is set automatically."/>
+
+     <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
+       help="If not specified the value is set automatically."/>
+
+        <expand macro="colormap" />
+
 
     </when>
   </conditional>
