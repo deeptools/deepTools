@@ -72,6 +72,14 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </conditional>
     </macro>
 
+    <token name="@reference_genome_source@">
+    #if $source.ref_source=="history":
+        --genome $source.input1
+    #else:
+        --genome "${source.input1_2bit.fields.path}"
+    #end if
+    </token>
+
     <macro name="effectiveGenomeSize">
         <conditional name="effectiveGenomeSize">
             <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
