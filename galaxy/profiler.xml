@@ -82,7 +82,7 @@
         </when>
     </conditional>
 
-graphic_output_settings
+    <expand macro="graphic_output_settings" />
 
     <conditional name="advancedOpt">
       <param name="showAdvancedOpt" type="select" label="Show advanced options" >

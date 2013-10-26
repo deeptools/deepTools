@@ -76,11 +76,11 @@
 
   ; rm $temp_dir -rf
 
-  </command>
-  <inputs>
+    </command>
+    <inputs>
 
-      <param name="bamInput" format="bam" type="data" label="Input BAM file"
-        help="The BAM file must be sorted."/>
+        <param name="bamInput" format="bam" type="data" label="Input BAM file"
+            help="The BAM file must be sorted."/>
 
       <conditional name="source">
         <param name="ref_source" type="select" label="Reference genome">
@@ -97,22 +97,7 @@
         </when>
       </conditional>
 
-      <conditional name="effectiveGenomeSize">
-        <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
-            help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded. 
-                    Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly. 
-                    See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
-            <option value="2150570000">mm9</option>
-            <option value="2451960000">hg19</option>
-            <option value="121400000">dm3</option>
-            <option value="93260000">ce10</option>
-            <option value="specific">user specified</option>
-        </param>
-        <when value="specific">
-            <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
-        </when>
-      </conditional>
-
+        <expand macro="effectiveGenomeSize" />
 
       <param name="fragmentLength" type="integer" value="300" min="1"
         label="Fragment length used for the sequencing"
