@@ -92,25 +92,8 @@
   </command>
   <inputs>
     <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
-    <conditional name="output" >
-        <param name="showOutputSettings" type="select" label="Show advanced output settings" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
-        <param name="outFileFormat" type="select" label="Image file format">
-            <option value="png" selected="true">png</option>
-            <option value="pdf">pdf</option>
-            <option value="svg">svg</option>
-            <option value="eps">eps</option>
-            <option value="emf">emf</option>
-        </param>
-        <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
-        <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
-        <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
-    </when>
-    </conditional>
+
+    <expand macro="graphic_output_settings" />
 
     <conditional name="advancedOpt" >
       <param name="showAdvancedOpt" type="select" label="Show advanced options" >
