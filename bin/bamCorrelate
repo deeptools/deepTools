@@ -97,7 +97,7 @@ def requiredArgs(case='bins'):
                             default=int(1e5),
                             type=int)
 
-        required.add_argument('--BEDfile', 
+        required.add_argument('--BED',
                               help=argparse.SUPPRESS,
                               default=None)
     else:
