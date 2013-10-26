@@ -8,6 +8,9 @@
   <stdio>
     <exit_code range="0" level="warning" description="Warning" />
   </stdio>
+    <macros>
+        <import>deepTools_macros.xml</import>
+    </macros
   <command>
     #import tempfile
     #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
@@ -20,8 +23,7 @@
 
   computeGCBias
 
-  ##ToDo
-  --numberOfProcessors 4
+    @THREADS@
 
   --bamfile '$temp_bam_path'
   --GCbiasFrequenciesFile $outFileName

@@ -6,11 +6,13 @@
     <requirement type="package" version="0.1">ucsc_tools</requirement>
     <requirement type="package" >deepTools</requirement>
   </requirements>
+    <macros>
+        <import>deepTools_macros.xml</import>
+    </macros
   <command>
   bamCompare
 
-  ##ToDo
-  --numberOfProcessors 4
+    @THREADS@
 
   --bamfile1 '$bamFile1'
   -bai1 '${bamFile1.metadata.bam_index}'

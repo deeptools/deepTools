@@ -6,11 +6,13 @@
     <requirement type="package" version="1.7.1">numpy</requirement>
     <requirement type="package" >deepTools</requirement>
   </requirements>
+    <macros>
+        <import>deepTools_macros.xml</import>
+    </macros
   <command>
   bigwigCompare
 
-  ##ToDo
-  --numberOfProcessors 4
+    @THREADS@
 
   --bigwig1 '$bigwigFile1'
   --bigwig2 '$bigwigFile2'

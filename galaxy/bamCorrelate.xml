@@ -32,8 +32,7 @@
 
         bamCorrelate
 
-        ##ToDo
-        --numberOfProcessors 4
+        @THREADS@
 
         --bamfiles #echo " ".join($files)
         --labels #echo " ".join($labels)
