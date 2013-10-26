@@ -31,10 +31,8 @@
 
   #if $source.ref_source=="history":
     --genome $source.input1
-    --species '$species'
   #else:
     --genome "${source.input1_2bit.fields.path}"
-    --species ${source.input1_2bit.fields.value}
   #end if
 
 
