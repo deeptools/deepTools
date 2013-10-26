@@ -10,7 +10,7 @@
   </stdio>
     <macros>
         <import>deepTools_macros.xml</import>
-    </macros
+    </macros>
   <command>
     #import tempfile
     #set $temp_dir = os.path.abspath(tempfile.mkdtemp())

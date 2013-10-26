@@ -8,7 +8,7 @@
   </requirements>
     <macros>
         <import>deepTools_macros.xml</import>
-    </macros
+    </macros>
   <command>
   bamCoverage
 
