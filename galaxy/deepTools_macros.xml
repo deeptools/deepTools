@@ -54,6 +54,16 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     </token>
 
+    <macro name="multiple_input_bams">
+        <repeat name="inputs" title="Input files" min="2">
+            <param name="bamfile" type="data" format="bam" 
+                label="Bam file" 
+                help="The BAM file must be sorted."/>
+            <param name="label" type="text" size="30" optional="true" value=""
+                label="Label"
+                help="Label to use in the output. If not given the dataset name will be used instead."/>
+          </repeat>
+    </macro>
 
     <macro name="reference_genome_source">
         <conditional name="source">
