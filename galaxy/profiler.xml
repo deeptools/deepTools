@@ -170,13 +170,7 @@ computeMatrix is required.
 
 .. class:: infomark
 
-If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
+@REFERENCES@
 
-This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
-
-
-.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
-.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-
-  </help>
+    </help>
 </tool>
