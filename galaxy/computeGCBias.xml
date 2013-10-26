@@ -29,11 +29,7 @@
   --GCbiasFrequenciesFile $outFileName
   --fragmentLength $fragmentLength
 
-  #if $source.ref_source=="history":
-    --genome $source.input1
-  #else:
-    --genome "${source.input1_2bit.fields.path}"
-  #end if
+    @reference_genome_source@
 
 
   #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
@@ -80,21 +76,7 @@
         <param name="bamInput" format="bam" type="data" label="Input BAM file"
             help="The BAM file must be sorted."/>
 
-      <conditional name="source">
-        <param name="ref_source" type="select" label="Reference genome">
-            <option value="cached">locally cached</option>
-            <option value="history">in your history</option>
-        </param>
-        <when value="cached">
-            <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-                <options from_data_table="deepTools_seqs" />
-            </param>
-        </when>
-        <when value="history">
-            <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
-        </when>
-      </conditional>
-
+        <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
 
       <param name="fragmentLength" type="integer" value="300" min="1"
