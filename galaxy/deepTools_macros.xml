@@ -1,4 +1,46 @@
 <macros>
+
+
+    <macro name="bamCorrelate_mode_actions">
+
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="region" type="text" value=""
+                    label="Region of the genome to limit the operation to"
+                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
+                <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
+                    label="Do not extend paired ends"
+                    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+
+                <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+                    label="Ignore duplicates"
+                    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
+
+                <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+                    label="Minimum mapping quality"
+                    help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
+
+                <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
+                    label ="Include zeros"
+                    help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+
+                <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
+                    help="If not specified the value is set automatically."/>
+
+                <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
+                    help="If not specified the value is set automatically."/>
+
+                <expand macro="colormap" />
+            </when>
+        </conditional>
+    </macro>
+
     <macro name="colormap">
 
         <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
