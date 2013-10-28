@@ -193,7 +193,83 @@
 
 **What it does**
 
-The heatmapper visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes. Those values can be visualized individually along each of the regions provided by the user in INTERVAL or BED format. In addition to the heatmap, an average profile plot is plotted on top of the heatmap (can be turned off by the user; it can also be generated separately by the tool profiler). We implemented vast optional parameters and we encourage you to play around with the min/max values displayed in the heatmap as well as with the different coloring options. If you would like to plot heatmaps for different groups of genomic regions individually, e.g. one plot per chromosome, simply supply each group as an individual BED file.
+The heatmapper visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes. 
+Those values can be visualized individually along each of the regions provided by the user in INTERVAL or BED format. 
+In addition to the heatmap, an average profile plot is plotted on top of the heatmap (can be turned off by the user; 
+it can also be generated separately by the tool profiler). 
+We implemented vast optional parameters and we encourage you to play around with the min/max values displayed in the heatmap as well as 
+with the different coloring options. If you would like to plot heatmaps for different groups of genomic regions individually, 
+e.g. one plot per chromosome, simply supply each group as an individual BED file.
+
+
+Example figures
+===============
+
+Here you see a typical, not too pretty example of a
+heatmap. We will use this example to explain several features of
+heatmapper, so do take a closer look.
+
+
+.. image:: $PATH_TO_IMAGES/visual_hm_DmelPolII.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+The plot was produced with the following commands:
+
+::
+
+    $ computeMatrix scale-regions -R Dm.genes.indChromLabeled.bed -S PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500 --regionBodyLength 1500 --binSize 10 -p20 --outFileName PolII_matrix_scaledGenes --sortRegions no
+    $ heatmapper -m PolII_matrix_scaledGenes --outFileName PolII_indChr_scaledGenes.pdf -T "Pol II" --whatToShow "heatmap only"
+
+As you can see, all genes have been scaled to the same size and the
+(mean) values per bin size (10 bp) are colored accordingly. In addition
+to the gene bodies, we added 500 bp up- and down-stream of the genes.
+
+1. **sorting of the regions** The default of heatmapper is to sort the
+   values descendingly. Using the --sort option, you can change that to
+   ascending, no sorting at all or according to the size of the region.
+2. **coloring** The default coloring by heatmapper is done using the
+   python colormap "RdYlBu".
+3. **stretches of white** You certainly have noticed that some gene
+   bodies are depicted as white lines within the otherwise colorful mass
+   of genes. Those regions are due to genes that, for whatever reason,
+   did not have any read coverage scores in the bigWig file. There are
+   several ways to handle these cases:
+
+   -  **--skipZeros** this is useful when your data actually has a quite
+      nice coverage, but there are 2 or 3 regions where you deliberately
+      filtered out reads or you don't expect any coverage (e.g. hardly
+      mappable regions). This will only work if the entire region does
+      not contain a single value.
+   -  **--missingDataAsZero** this option allows computeMatrix do
+      interpret missing data points as zeroes. Be aware of the changes
+      to the average values that this might cause.
+   -  **--missingDataColor** this is in case you have very sparce data
+      or were missing values make sense (e.g. when plotting methylated
+      CpGs - half the genome should have no value). This option then
+      allows you to pick out your favorite color for those regions. The
+      default is white.
+
+4. **1 group per chromosome** To tell computeMatrix that there are
+   different groups of genomic regions, the BED-file
+   needs to contain the name of the group, preceded by a hash tag **at
+   the end of each group**. The BED-file that was used here, contained 3
+   such lines and could be prepared as follows:
+
+   $ grep ^chr2 AllGenes.bed > Dm.genes.indChromLabeled.bed
+
+   $ echo "#chr2" >> Dm.genes.indChromLabeled.bed
+
+   $ grep ^chr3 AllGenes.bed >> Dm.genes.indChromLabeled.bed
+
+   $ echo "#chr3" >> Dm.genes.indChromLabeled.bed
+
+   $ grep ^chrX AllGenes.bed >> Dm.genes.indChromLabeled.bed
+
+   $ echo "#chrX" >> Dm.genes.indChromLabeled.bed
+
+
+
 
 -----
 

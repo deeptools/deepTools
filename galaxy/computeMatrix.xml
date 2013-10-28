@@ -211,9 +211,45 @@
         </test>
     </tests>
   <help>
-**What it does**
 
-This tool summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile. Typically, these genomic regions are genes, but any other regions defined in a BED or INTERVAL format can be used. This tool can also be used to filter and sort regions according to their score.
+Visualization
+=============
+
+The modules for visualizing scores contained in bigWig
+files are separated into a tool that calculates the values
+(*computeMatrix*) and two tools that contain many, many options to
+fine-tune the plot (*heatmapper* and *profiler*).
+
+.. image:: $PATH_TO_IMAGES/flowChart_computeMatrixetc.png
+   :alt: Relationship between computeMatrix, heatmapper and profiler
+
+
+
+What it does?
+=============
+
+This tool summarizes and prepares an intermediary file
+containing scores associated with genomic regions that can be used
+afterwards to plot a heatmap or a profile.
+
+Genomic regions can really be anything - genes, parts of genes, ChIP-seq
+peaks, favorite genome regions... as long as you provide a proper file
+in BED or INTERVAL format. This tool can also be used to filter and sort
+regions according to their score.
+
+
+Output files
+~~~~~~~~~~~~
+
+-  **obligatory**: zipped matrix of values to be used with *heatmapper*
+   and/or *profiler*
+-  **optional** (can also be generated with heatmapper or profiler in
+   case you forgot to produce them in the beginning):
+
+   -  BED-file of the regions sorted according to the calculated values
+   -  list of average values per genomic bin
+   -  matrix of values per genomic bin per genomic interval
+
 
 -----
 
