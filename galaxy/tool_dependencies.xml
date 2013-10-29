@@ -12,8 +12,8 @@
     <package name="scipy" version="0.12.0">
         <repository name="package_scipy_0_12" owner="iuc" />
     </package>
-    <package name="pysam" version="0.7.5">
-        <repository name="package_pysam_0_7_5" owner="iuc" />
+    <package name="pysam" version="0.7.6">
+        <repository name="package_pysam_0_7_6" owner="iuc" />
     </package>
 
     <package name="ucsc_tools" version="0.1">
