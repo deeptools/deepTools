@@ -91,6 +91,11 @@
 
 This tool requires the output from computeGCBias to correct the given BAM files according to the method proposed by Benjamini and Speed (2012). Nucleic Acids Res.
 The resulting BAM files can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
+
+**Output files**:
+
+- GC-normalized BAM file
+
 -----
 
 .. class:: infomark

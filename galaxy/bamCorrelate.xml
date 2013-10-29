@@ -149,6 +149,19 @@ The tool splits the genomes into bins of given length. For each bin, the number 
 found in each BAM file is counted and a correlation is computed for all
 pairs of BAM files.
 
+
+.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+**Output files**:
+
+- diagnostic plot produced by bamCorrelate is a clustered heatmap displaying the values for each pair-wise correlation, see below for an example
+- data matrix (optional) in case you want to plot the correlation values using a different program, e.g. R, this matrix can be used
+
+
+
+
 -----
 
 .. class:: infomark

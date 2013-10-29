@@ -132,7 +132,18 @@
 
 **What it does**
 
-Given a BAM file, this tool generates a bigWig or bedGraph file of fragment or read coverages. The way the method works is by first calculating all the number of reads (either extended to match the fragment length or not) that overlap each bin in the genome. Bins with zero counts are skipped, i.e. not added to the output file. The resulting read counts can be normalized using either a given scaling factor, the RPKM formula or to get a 1x depth of coverage (RPGC).
+Given a BAM file, this tool generates a bigWig or bedGraph file of fragment or read coverages. 
+The way the method works is by first calculating all the number of reads (either extended to match the fragment length or not) 
+that overlap each bin in the genome. Bins with zero counts are skipped, i.e. not added to the output file. 
+The resulting read counts can be normalized using either a given scaling factor, the RPKM formula or to get a 1x depth of coverage (RPGC).
+
+
+.. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
+
+
+**Output files**:
+
+- coverage file either in bigWig or bedGraph format
 
 -----
 

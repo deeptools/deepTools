@@ -196,6 +196,14 @@ the resulting comparison values.
 If paired-end reads are present, the fragment
 length reported in the BAM file is used by default.
 
+
+.. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
+
+
+**Output files**:
+
+- same as for bamCoverage, except that you now obtain 1 coverage file that is based on 2 BAM files.
+
 -----
 
 .. class:: infomark

@@ -138,6 +138,15 @@ generate a straight diagonal line. A very specific and strong ChIP enrichment wi
 rise of the cumulative sum towards the highest rank. This means that a big chunk of reads from the ChIP sample is located in
 few bins which corresponds to high, narrow enrichments seen for transcription factors.
 
+
+.. image:: $PATH_TO_IMAGES/QC_fingerprint.png
+
+
+**Output files**:
+
+- Diagnostic plot
+- Data matrix of raw counts
+
 -----
 
 .. class:: infomark

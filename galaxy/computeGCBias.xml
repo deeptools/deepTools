@@ -148,6 +148,21 @@ The OBSERVED values are based on the reads from the sequenced sample. Instead of
 In an ideal sample without GC bias, the ratio of OBSERVED/EXPECTED values should be close to 1 regardless of the GC content. Due to PCR (over)amplifications, the majority of ChIP samples
 usually shows a significant bias towards reads with high GC content (>50%)
 
+.. image:: $PATH_TO_IMAGES/QC_GCplots_input.png
+
+
+**Output files**:
+
+- Diagnostic plot
+
+  - box plot of absolute read numbers per genomic GC bin
+  - x-y plot of observed/expected read ratios per genomic GC content bin
+
+- Data matrix
+
+  - to be used for GC correction with correctGCbias
+
+
 -----
 
 .. class:: infomark
