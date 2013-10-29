@@ -1,9 +1,6 @@
 <tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.1">
     <description>correlates pairs of BAM files</description>
-    <requirements>
-        <requirement type="package" version="1.5.1_3e13687c89e951476776b15afb4bbbc3b906f761">deepTools</requirement>
-        <requirement type="package" >deepTools</requirement>
-    </requirements>
+    <expand macro="requirements" />
     <macros>
         <import>deepTools_macros.xml</import>
     </macros>
