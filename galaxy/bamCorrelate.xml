@@ -70,49 +70,49 @@
     <inputs>
         <expand macro="multiple_input_bams" />
 
-    <param name="fragmentLength" type="integer" value="300" min="1"
-        label="Length of the average fragment size"
-        help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+        <param name="fragmentLength" type="integer" value="300" min="1"
+            label="Length of the average fragment size"
+            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
 
-    <param name="corMethod" type="select" label="Correlation method">
-        <option value="pearson">Pearson</option>
-        <option value="spearman">Spearman</option>
-    </param>
-
-    <conditional name="mode">
-        <param name="modeOpt" type="select" label="Choose computation mode" 
-            help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
-            <option value="bins" selected="true">Bins</option>
-            <option value="BED-file">Limit correlation to certain regions (BED file)</option>
+        <param name="corMethod" type="select" label="Correlation method">
+            <option value="pearson">Pearson</option>
+            <option value="spearman">Spearman</option>
         </param>
-        <when value="bins">
-            <param name="binSize" type="integer" value="10000" min="1" 
-                label="Bin size in bp"
-                help="Length in base pairs for a window used to sample the genome."/>
 
-            <param name="numberOfSamples" type="integer" value="100000" min="1" 
-                label="Number of samples"
-                help="Number of samples taken from the genome to compute the scaling factors"/>
-            <expand macro="bamCorrelate_mode_actions" />
-        </when>
-        <when value="BED-file">
-            <param name="region_file" type="data" format="bed" label="Region file in BED format" help="Correlation is computed for the number of reads that overlap such regions."/>
-            <expand macro="bamCorrelate_mode_actions" />
-        </when>
+        <conditional name="mode">
+            <param name="modeOpt" type="select" label="Choose computation mode" 
+                help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
+                <option value="bins" selected="true">Bins</option>
+                <option value="BED-file">Limit correlation to certain regions (BED file)</option>
+            </param>
+            <when value="bins">
+                <param name="binSize" type="integer" value="10000" min="1" 
+                    label="Bin size in bp"
+                    help="Length in base pairs for a window used to sample the genome."/>
 
-    </conditional>
+                <param name="numberOfSamples" type="integer" value="100000" min="1" 
+                    label="Number of samples"
+                    help="Number of samples taken from the genome to compute the scaling factors"/>
+                <expand macro="bamCorrelate_mode_actions" />
+            </when>
+            <when value="BED-file">
+                <param name="region_file" type="data" format="bed" label="Region file in BED format" help="Correlation is computed for the number of reads that overlap such regions."/>
+                <expand macro="bamCorrelate_mode_actions" />
+            </when>
 
-    <conditional name="outputOpt">
-        <param name="showOutputOpt" type="select" label="Show additional output options" >
-            <option value="no" selected="true">no</option>
-            <option value="yes">yes</option>
-        </param>
-        <when value="no" />
-        <when value="yes">
-            <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
-            <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
-        </when>
-    </conditional>
+        </conditional>
+
+        <conditional name="outputOpt">
+            <param name="showOutputOpt" type="select" label="Show additional output options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
+                <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
+            </when>
+        </conditional>
 
     </inputs>
     <outputs>
