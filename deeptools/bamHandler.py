@@ -9,7 +9,7 @@ def openBam(bamFile, bamIndex=None):
         sys.exit( "Bam file {} does not exist".format( bamFile ) )
 
     if bamIndex and bamIndex != bamFile + ".bai":
-        if os.path.exists( bamIndex ):
+        if not os.path.exists( bamIndex ):
             exit("Given Index file {} does not exists.\n Be sure that the bam file you are using is indexed.".format(bamIndex))
 
         tmpDir = tempfile.mkdtemp()
