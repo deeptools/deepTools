@@ -36,7 +36,7 @@ number of overlapping reads for these regions. This can be used, for example, to
 
 ### Example Figures
 
-Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample.
+Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32222 "GEO series")).
   
 ![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_humanSamples.png "bamCorrelate result")
 
@@ -130,6 +130,9 @@ to high, narrow enrichments seen for transcription factors.
 
 ### Example figures
 
+Here you see the three different fingerprint plots that we routinely generate to check the outcome of ChIP-seq experiments.
+We chose these examples to show you how the nature of the ChIP signal (narrow and high vs. wide and not extremely high) is reflected in the "fingerprint" plots. Please note that for reasons we ourselves cannot recall anymore, these plots go by the name of "fingerprints" in our facility, but the idea underlying these plots came from [Diaz et al.][]
+![fingerprint](https://raw.github.com/fidelram/deepTools/master/examples/QC_fingerprint.png "bamFingerprint outputs")
 
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"

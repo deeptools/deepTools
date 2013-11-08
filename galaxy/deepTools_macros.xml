@@ -1,0 +1,309 @@
+<macros>
+    <macro name="bamCorrelate_mode_actions">
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="region" type="text" value=""
+                    label="Region of the genome to limit the operation to"
+                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
+                <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
+                    label="Do not extend paired ends"
+                    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+
+                <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+                    label="Ignore duplicates"
+                    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
+
+                <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+                    label="Minimum mapping quality"
+                    help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
+
+                <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
+                    label ="Include zeros"
+                    help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+
+                <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
+                    help="If not specified the value is set automatically."/>
+
+                <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
+                    help="If not specified the value is set automatically."/>
+
+                <expand macro="colormap" />
+            </when>
+        </conditional>
+    </macro>
+    <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
+    <macro name="requirements">
+        <requirements>
+            <requirement type="package" version="1.5.1_91b873c095bb4ca44da99e57d8b49784508aa98b">deepTools</requirement>
+            <requirement type="package" version="0.1">ucsc_tools</requirement>
+            <requirement type="package" version="1.7.1">numpy</requirement>
+            <requirement type="package" version="0.7.6">pysam</requirement>
+            <requirement type="package" version="0.1.19">samtools</requirement>
+            <requirement type="package" >samtools</requirement>
+            <requirement type="package" >deepTools</requirement>
+            <requirement type="package" >ucsc_tools</requirement>
+            <yield />
+        </requirements>
+        </macro>
+
+    <token name="@REFERENCES@">
+
+For more informations, please visit our `project site`_.
+
+If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
+
+This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
+
+
+.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
+.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
+.. _project site: https://github.com/fidelram/deepTools
+
+    </token>
+
+    <macro name="multiple_input_bams">
+        <repeat name="input_files" title="Input files" min="2">
+            <param name="bamfile" type="data" format="bam" 
+                label="Bam file" 
+                help="The BAM file must be sorted."/>
+            <param name="label" type="text" size="30" optional="true" value=""
+                label="Label"
+                help="Label to use in the output. If not given the dataset name will be used instead."/>
+          </repeat>
+    </macro>
+
+    <token name="@multiple_input_bams@">
+        #for $i in $input_files:
+            #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+            #set $temp_input_path = $temp_input_handle.name
+            #silent $temp_input_handle.close()
+            #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
+            #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
+            #silent $files.append('%s.bam' % $temp_input_path)
+
+            ##set $files += [str($i.bamfile)]
+            #if str($i.label.value) != "":
+                #set $labels += ["\"%s\"" % ($i.label.value)]
+            #else
+                #set $labels += ["\"%s\"" % ($i.bamfile.name)]
+            #end if
+        #end for
+    </token>
+
+    <macro name="reference_genome_source">
+        <conditional name="source">
+            <param name="ref_source" type="select" label="Reference genome">
+                <option value="cached">locally cached</option>
+                <option value="history">in your history</option>
+            </param>
+            <when value="cached">
+                <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
+                    <options from_data_table="deepTools_seqs" />
+                </param>
+            </when>
+            <when value="history">
+                <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
+            </when>
+        </conditional>
+    </macro>
+
+    <token name="@reference_genome_source@">
+    #if $source.ref_source=="history":
+        --genome $source.input1
+    #else:
+        --genome "${source.input1_2bit.fields.path}"
+    #end if
+    </token>
+
+    <macro name="effectiveGenomeSize">
+        <conditional name="effectiveGenomeSize">
+            <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
+                help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded. 
+                    Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly. 
+                    See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
+                <option value="2150570000">mm9</option>
+                <option value="2451960000">hg19</option>
+                <option value="121400000">dm3</option>
+                <option value="93260000">ce10</option>
+                <option value="specific">user specified</option>
+            </param>
+            <when value="specific">
+                <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
+            </when>
+        </conditional>
+    </macro>
+
+    <macro name="graphic_output_settings">
+        <conditional name="output" >
+            <param name="showOutputSettings" type="select" label="Show advanced output settings" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="outFileFormat" type="select" label="Image file format">
+                    <option value="png" selected="true">png</option>
+                    <option value="pdf">pdf</option>
+                    <option value="svg">svg</option>
+                    <option value="eps">eps</option>
+                    <option value="emf">emf</option>
+                </param>
+                <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
+                <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
+                <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+            </when>
+        </conditional>
+    </macro>
+
+    <macro name="colormap">
+
+        <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
+            <option value="RdYlBu" selected="true">RdYlBu</option>
+            <option value="Accent">Accent</option>
+            <option value="Spectral">Spectral</option>
+            <option value="Set1">Set1</option>
+            <option value="Set2">Set2</option>
+            <option value="Set3">Set3</option>
+            <option value="Dark2">Dark2</option>
+            <option value="Reds">Reds</option>
+            <option value="Oranges">Oranges</option>
+            <option value="Greens">Greens</option>
+            <option value="Blues">Blues</option>
+            <option value="Greys">Greys</option>
+            <option value="Purples">Purples</option>
+            <option value="Paired">Paired</option>
+            <option value="Pastel1">Pastel1</option>
+            <option value="Pastel2">Pastel2</option>
+            <option value="spring">spring</option>
+            <option value="summer">summer</option>
+            <option value="autumn">autumn</option>
+            <option value="winter">winter</option>
+            <option value="hot">hot</option>
+            <option value="coolwarm">coolwarm</option>
+            <option value="cool">cool</option>
+            <option value="seismic">seismic</option>
+            <option value="terrain">terrain</option>
+            <option value="ocean">ocean</option>
+            <option value="rainbow">rainbow</option>
+            <option value="bone">bone</option>
+            <option value="flag">flag</option>
+            <option value="prism">prism</option>
+            <option value="cubehelix">cubehelix</option>
+            <option value="binary">binary</option>
+            <option value="pink">pink</option>
+            <option value="gray">gray</option>
+            <option value="copper">copper</option>
+            <option value="BrBG">BrBG</option>
+            <option value="BuGn">BuGn</option>
+            <option value="BuPu">BuPu</option>
+            <option value="GnBu">GnBu</option>
+            <option value="OrRd">OrRd</option>
+            <option value="PiYG">PiYG</option>
+            <option value="PRGn">PRGn</option>
+            <option value="PuOr">PuOr</option>
+            <option value="PuRd">PuRd</option>
+            <option value="PuBu">PuBu</option>
+            <option value="RdBu">RdBu</option>
+            <option value="RdGy">RdGy</option>
+            <option value="RdPu">RdPu</option>
+            <option value="YlGn">YlGn</option>
+            <option value="PuBuGn">PuBuGn</option>
+            <option value="RdYlGn">RdYlGn</option>
+            <option value="YlGnBu">YlGnBu</option>
+            <option value="YlOrBr">YlOrBr</option>
+            <option value="YlOrRd">YlOrRd</option>
+            <option value="gist_gray">gist_gray</option>
+            <option value="gist_stern">gist_stern</option>
+            <option value="gist_earth">gist_earth</option>
+            <option value="gist_yarg">gist_yarg</option>
+            <option value="gist_ncar">gist_ncar</option>
+            <option value="gist_rainbow">gist_rainbow</option>
+            <option value="gist_heat">gist_heat</option>
+            <option value="gnuplot">gnuplot</option>
+            <option value="gnuplot2">gnuplot2</option>
+            <option value="CMRmap">CMRmap</option>
+            <option value="bwr">bwr</option>
+            <option value="hsv">hsv</option>
+            <option value="brg">brg</option>
+            <option value="jet">jet</option>
+            <option value="afmhot">afmhot</option>
+            <option value="Accent_r">Accent reversed</option>
+            <option value="Spectral_r">Spectral reversed</option>
+            <option value="Set1_r">Set1 reversed</option>
+            <option value="Set2_r">Set2 reversed</option>
+            <option value="Set3_r">Set3 reversed</option>
+            <option value="Dark2_r">Dark2 reversed</option>
+            <option value="Reds_r">Reds reversed</option>
+            <option value="Oranges_r">Oranges reversed</option>
+            <option value="Greens_r">Greens reversed</option>
+            <option value="Blues_r">Blues reversed</option>
+            <option value="Greys_r">Greys reversed</option>
+            <option value="Purples_r">Purples reversed</option>
+            <option value="Paired_r">Paired reversed</option>
+            <option value="Pastel1_r">Pastel1 reversed</option>
+            <option value="Pastel2_r">Pastel2 reversed</option>
+            <option value="spring_r">spring reversed</option>
+            <option value="summer_r">summer reversed</option>
+            <option value="autumn_r">autumn reversed</option>
+            <option value="winter_r">winter reversed</option>
+            <option value="hot_r">hot reversed</option>
+            <option value="coolwarm_r">coolwarm reversed</option>
+            <option value="cool_r">cool reversed</option>
+            <option value="seismic_r">seismic reversed</option>
+            <option value="terrain_r">terrain reversed</option>
+            <option value="ocean_r">ocean reversed</option>
+            <option value="rainbow_r">rainbow reversed</option>
+            <option value="bone_r">bone reversed</option>
+            <option value="flag_r">flag reversed</option>
+            <option value="prism_r">prism reversed</option>
+            <option value="cubehelix_r">cubehelix reversed</option>
+            <option value="binary_r">binary reversed</option>
+            <option value="pink_r">pink reversed</option>
+            <option value="gray_r">gray reversed</option>
+            <option value="copper_r">copper reversed</option>
+            <option value="BrBG_r">BrBG reversed</option>
+            <option value="BuGn_r">BuGn reversed</option>
+            <option value="BuPu_r">BuPu reversed</option>
+            <option value="GnBu_r">GnBu reversed</option>
+            <option value="OrRd_r">OrRd reversed</option>
+            <option value="PiYG_r">PiYG reversed</option>
+            <option value="PRGn_r">PRGn reversed</option>
+            <option value="PuOr_r">PuOr reversed</option>
+            <option value="PuRd_r">PuRd reversed</option>
+            <option value="PuBu_r">PuBu reversed</option>
+            <option value="RdBu_r">RdBu reversed</option>
+            <option value="RdGy_r">RdGy reversed</option>
+            <option value="RdPu_r">RdPu reversed</option>
+            <option value="YlGn_r">YlGn reversed</option>
+            <option value="PuBuGn_r">PuBuGn reversed</option>
+            <option value="RdYlBu_r">RdYlBu reversed</option>
+            <option value="RdYlGn_r">RdYlGn reversed</option>
+            <option value="YlGnBu_r">YlGnBu reversed</option>
+            <option value="YlOrBr_r">YlOrBr reversed</option>
+            <option value="YlOrRd_r">YlOrRd reversed</option>
+            <option value="gist_gray_r">gist_gray reversed</option>
+            <option value="gist_stern_r">gist_stern reversed</option>
+            <option value="gist_earth_r">gist_earth reversed</option>
+            <option value="gist_yarg_r">gist_yarg reversed</option>
+            <option value="gist_ncar_r">gist_ncar reversed</option>
+            <option value="gist_rainbow_r">gist_rainbow reversed</option>
+            <option value="gist_heat_r">gist_heat reversed</option>
+            <option value="gnuplot_r">gnuplot reversed</option>
+            <option value="gnuplot2_r">gnuplot2 reversed</option>
+            <option value="CMRmap_r">CMRmap reversed</option>
+            <option value="bwr_r">bwr reversed</option>
+            <option value="hsv_r">hsv reversed</option>
+            <option value="brg_r">brg reversed</option>
+            <option value="jet_r">jet reversed</option>
+            <option value="afmhot_r">afmhot reversed</option>
+        </param>
+
+    </macro>
+
+</macros>

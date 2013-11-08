@@ -1,154 +1,130 @@
 <tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.1">
-  <description>correlates pairs of BAM files</description>
-  <requirements>
-    <requirement type="package" version="1.5.1_3e13687c89e951476776b15afb4bbbc3b906f761">deepTools</requirement>
-    <requirement type="package" >deepTools</requirement>
-  </requirements>
-  <command>
-    #import tempfile
-    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+    <description>correlates pairs of BAM files</description>
+    <expand macro="requirements" />
+    <macros>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <command>
+        #import tempfile
+        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
 
-    #set files=[]
-    #set labels=[]
-    #for $i in $inputs
+        #set files=[]
+        #set labels=[]
 
-        #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-        #set $temp_input_path = $temp_input_handle.name
-        #silent $temp_input_handle.close()
-        #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
-        #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
-        #silent $files.append('%s.bam' % $temp_input_path)
+        @multiple_input_bams@
 
+        bamCorrelate
 
-        ##set $files += [str($i.bamfile)]
-        #if str($i.label.value) != "":
-            #set $labels += ["\"%s\"" % ($i.label.value)]
-        #else
-            #set $labels += ["\"%s\"" % ($i.bamfile.name)]
+        @THREADS@
+
+        --bamfiles #echo " ".join($files)
+        --labels #echo " ".join($labels)
+
+        --fragmentLength $fragmentLength
+        --corMethod $corMethod
+
+        #set newoutFileName=str($outFileName)+".png"
+        --plotFile $newoutFileName
+
+        #if $outputOpt.showOutputOpt == "yes"
+            --outRawCounts '$outFileRawCounts' 
+            --outFileCorMatrix '$outFileCorMatrix'
         #end if
-    #end for
-  bamCorrelate
 
-  ##ToDo
-  --numberOfProcessors 4
+        #if $mode.modeOpt == "bins":
+            --binSize '$mode.binSize'
+            --numberOfSamples '$modenumberOfSamples'
+        #else:
+            --BED $mode.region_file
+        #end if
 
-  --bamfiles #echo " ".join($files)
-  --labels #echo " ".join($labels)
-  
-  --fragmentLength $fragmentLength
-  --corMethod $corMethod
-  
-  #set newoutFileName=str($outFileName)+".png"
-  --plotFile $newoutFileName
-  
-  #if $outputOpt.showOutputOpt == "yes"
-        --outRawCounts '$outFileRawCounts' 
-        --outFileCorMatrix '$outFileCorMatrix'
-  #end if
-  
-  #if $advancedOpt.showAdvancedOpt == "yes":
-        
-    #if str($advancedOpt.region.value) != '':
-      --region '$advancedOpt.region'
-    #end if
-    
-    --binSize '$advancedOpt.binSize'
-    --numberOfSamples '$advancedOpt.numberOfSamples'
-    
-    $advancedOpt.doNotExtendPairedEnds
-    $advancedOpt.ignoreDuplicates
-    $advancedOpt.includeZeros
-    
-    #if $advancedOpt.minMappingQuality:
-      --minMappingQuality '$advancedOpt.minMappingQuality'
-    #end if
-  #end if
-  ; mv $newoutFileName $outFileName
-  ; rm $temp_dir -rf
-  </command>
+        ## options available in both modes
+        #if $mode.advancedOpt.showAdvancedOpt == "yes":
 
-  <inputs>
-  <repeat name="inputs" title="Input files" min="2">
-    <param name="bamfile" type="data" format="bam" 
-        label="Bam file" 
-        help="The BAM file must be sorted."/>
-    <param name="label" type="text" size="30" optional="true" value=""
-        label="Label"
-        help="Label to use in the output. If not given the dataset name will be used instead."/>
-  </repeat>
+            #if str($mode.advancedOpt.region.value) != '':
+            --region '$mode.advancedOpt.region'
+            #end if
 
-  <param name="fragmentLength" type="integer" value="300" min="1"
-       label="Length of the average fragment size"
-       help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+            $mode.advancedOpt.doNotExtendPairedEnds
+            $mode.advancedOpt.ignoreDuplicates
+            $mode.advancedOpt.includeZeros
 
-  <param name="corMethod" type="select" label="Correlation method">
-    <option value="pearson">Pearson</option>
-    <option value="spearman">Spearman</option>
-  </param>
+            #if $mode.advancedOpt.minMappingQuality:
+                --minMappingQuality '$mode.advancedOpt.minMappingQuality'
+            #end if
 
-  <conditional name="advancedOpt">
-    <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-      <option value="no" selected="true">no</option>
-      <option value="yes">yes</option>
+            #if $mode.advancedOpt.zMin:
+                --zMin $mode.advancedOpt.zMin
+            #end if
+            #if $mode.advancedOpt.zMax:
+                --zMax $mode.advancedOpt.zMax
+            #end if
+            --colorMap '$mode.advancedOpt.colorMap'
+
+        #end if
+
+        ; mv $newoutFileName $outFileName
+        ; rm $temp_dir -rf
+    </command>
+
+    <inputs>
+        <expand macro="multiple_input_bams" />
+
+    <param name="fragmentLength" type="integer" value="300" min="1"
+        label="Length of the average fragment size"
+        help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+
+    <param name="corMethod" type="select" label="Correlation method">
+        <option value="pearson">Pearson</option>
+        <option value="spearman">Spearman</option>
     </param>
-    <when value="no" />
-    <when value="yes">
-   
-       
-    <param name="region" type="text" value=""
-       label="Region of the genome to limit the operation to"
-       help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
 
-    <param name="binSize" type="integer" value="10000" min="1" 
-       label="Bin size in bp"
-       help="Length in base pairs for a window used to sample the genome."/>
+    <conditional name="mode">
+        <param name="modeOpt" type="select" label="Choose computation mode" 
+            help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
+            <option value="bins" selected="true">Bins</option>
+            <option value="BED-file">Limit correlation to certain regions (BED file)</option>
+        </param>
+        <when value="bins">
+            <param name="binSize" type="integer" value="10000" min="1" 
+                label="Bin size in bp"
+                help="Length in base pairs for a window used to sample the genome."/>
 
-    <param name="numberOfSamples" type="integer" value="100000" min="1" 
-       label="Number of samples"
-       help="Number of samples taken from the genome to compute the scaling factors"/>
+            <param name="numberOfSamples" type="integer" value="100000" min="1" 
+                label="Number of samples"
+                help="Number of samples taken from the genome to compute the scaling factors"/>
+            <expand macro="bamCorrelate_mode_actions" />
+        </when>
+        <when value="BED-file">
+            <param name="region_file" type="data" format="bed" label="Region file in BED format" help="Correlation is computed for the number of reads that overlap such regions."/>
+            <expand macro="bamCorrelate_mode_actions" />
+        </when>
 
-    <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-        label="Do not extend paired ends"
-        help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+    </conditional>
 
-    <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
-        label="Ignore duplicates"
-        help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
-      
-    <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-        label="Minimum mapping quality"
-        help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
-        
-    <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
-       label ="Include zeros"
-       help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+    <conditional name="outputOpt">
+        <param name="showOutputOpt" type="select" label="Show additional output options" >
+            <option value="no" selected="true">no</option>
+            <option value="yes">yes</option>
+        </param>
+        <when value="no" />
+        <when value="yes">
+            <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
+            <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
+        </when>
+    </conditional>
 
-    </when>
-  </conditional>
-
-  <conditional name="outputOpt">
-    <param name="showOutputOpt" type="select" label="Show additional output options" >
-      <option value="no" selected="true">no</option>
-      <option value="yes">yes</option>
-    </param>
-    <when value="no" />
-    <when value="yes">
-    <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
-    <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
-    </when>
-  </conditional>
-
-  </inputs>
-  <outputs>
-    <data format="png" name="outFileName" />
-    <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
-      <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveRawCounts'] == True)</filter>
-    </data>
-    <data format="tabular" name="outFileCorMatrix" label="${tool.name} on ${on_string}: correlation matrix">
-      <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveCorMatrix'] == True)</filter>
-    </data>
-  </outputs>
-  <help>
+    </inputs>
+    <outputs>
+        <data format="png" name="outFileName" />
+        <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
+            <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveRawCounts'] == True)</filter>
+        </data>
+        <data format="tabular" name="outFileCorMatrix" label="${tool.name} on ${on_string}: correlation matrix">
+            <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveCorMatrix'] == True)</filter>
+        </data>
+    </outputs>
+    <help>
 
 **What it does**
 
@@ -159,19 +135,24 @@ The tool splits the genomes into bins of given length. For each bin, the number 
 found in each BAM file is counted and a correlation is computed for all
 pairs of BAM files.
 
+
+.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+**Output files**:
+
+- diagnostic plot produced by bamCorrelate is a clustered heatmap displaying the values for each pair-wise correlation, see below for an example
+- data matrix (optional) in case you want to plot the correlation values using a different program, e.g. R, this matrix can be used
+
+
+
+
 -----
 
 .. class:: infomark
 
-If you would like to give us feedback or you run into any trouble, please send an email to deeptools@googlegroups.com
+@REFERENCES@
 
-This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
-
-
-.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
-.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-
-
-  </help>
-  
+    </help>
 </tool>

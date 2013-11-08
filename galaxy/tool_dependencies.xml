@@ -12,8 +12,8 @@
     <package name="scipy" version="0.12.0">
         <repository name="package_scipy_0_12" owner="iuc" />
     </package>
-    <package name="pysam" version="0.7.5">
-        <repository name="package_pysam_0_7_5" owner="iuc" />
+    <package name="pysam" version="0.7.6">
+        <repository name="package_pysam_0_7_6" owner="iuc" />
     </package>
 
     <package name="ucsc_tools" version="0.1">
@@ -54,7 +54,7 @@
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-    <package name="deepTools" version="1.5.1_3e13687c89e951476776b15afb4bbbc3b906f761">
+    <package name="deepTools" version="1.5.1_91b873c095bb4ca44da99e57d8b49784508aa98b">
         <install version="1.0">
             <actions>
                 <!-- populate the environment variables from the dependend repos -->
@@ -64,7 +64,7 @@
                     </repository>
                 </action>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
-                <action type="shell_command">git reset --hard 3e13687c89e951476776b15afb4bbbc3b906f761</action>
+                <action type="shell_command">git reset --hard 91b873c095bb4ca44da99e57d8b49784508aa98b</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
