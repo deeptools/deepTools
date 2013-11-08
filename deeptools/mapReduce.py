@@ -76,7 +76,7 @@ def mapReduce(staticArgs, func, chromSize,
             # add to argument list the static list received the the function
             argsList.extend(staticArgs)
 
-            # if a bed file is give, append to the TASK list,
+            # if a bed file is given, append to the TASK list,
             # a list of bed regions that overlap with the
             # current genomeChunk.
             
