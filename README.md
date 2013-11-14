@@ -64,16 +64,26 @@ Installation
 ---------------
 ### Installation from source
 
-The easiest way to install deepTools is by downloading the
-source file and using python pip or easy_install tools:
+The easiest way to install deepTools is by __downloading the source file and using python pip__ or easy_install tools:
 
-	$ pip install deepTools
-	$ vim [deepTools folder]/config/deepTools.cfg
+Requirements: Python 2.7, numpy, scipy installed
 
-The `deepTools.cfg` file contains several variables that
-need to be adjusted.
- 
-Other option is to clone the repository
+Commands:
+
+      $ cd ~
+      $ export PYTHONPATH=$PYTHONPATH:~/lib/python2.7/site-packages
+      $ export PATH=$PATH:~/bin:~/.local/bin
+
+If pip is not already available, install with:
+
+      $ easy_install --prefix=~ pip
+
+Install deepTools and dependencies with pip:
+
+      $ pip install --user deeptools
+
+
+__Another option is to clone the repository:__
 	
 	$ git clone https://github.com/fidelram/deepTools
 
@@ -97,6 +107,20 @@ script.
 To install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
+	
+##### Troubleshooting
+The easy_install command is provided by the python package setuptools.
+You can download the package from https://pypi.python.org/pypi/setuptools
+
+     $ wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
+     
+or the user-specific way:
+
+     $ wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+     $ python ez_setup.py --user
+
+Numpy/Scipy Installation:
+http://www.scipy.org/install.html
 
 
 #### Galaxy Installation with the Tool Shed
