@@ -19,16 +19,15 @@ replicates or published data sets.
 ### What it does
 The tool splits the genomes into bins of a given length. For each bin,
 the number of reads found in each BAM file is counted and a
-correlation is computed for all pairs of BAM files.
+correlation of the read coverages is computed for all pairs of BAM files.
 
 ### Important parameters
 bamCorrelate can be run in 2 modes: _bins_ and _bed_.
 
-In the bins mode, the correlation is computed based on equal length bins. The user has to specifcy the _number of bins_. This is useful to assess the overall similarity of BAM files,
-but due to the random sampling of the genome, outliers might be produced that will skew the correlation values.
+In the bins mode, the correlation is computed based on __randomly sampled bins of equal length__. The user has to specifcy the _number_ of bins. This is useful to assess the overall similarity of BAM files,
+but  outliers, such as heavily biased regions have the potential to skew the correlation values.
 
-In the BED-file options, the user has to supply a list of genomic regions in [BED][] format in addition to (a) BAM file(s). bamCorrelate subsequently only calculates the
-number of overlapping reads for these regions. This can be used, for example, to compare the ChIP-seq coverages of two different samples in peak regions only.
+In the BED-file options, the user supplies a list of genomic regions in [BED][] format in addition to (a) BAM file(s). bamCorrelate subsequently uses this list to compare the read coverages for these regions only. This can be used, for example, to compare the ChIP-seq coverages of two different samples for a set of peak regions.
 
 ### Output files:
   - __diagnostic plot__ the plot produced by bamCorrelate is a clustered heatmap displaying the values for each pair-wise correlation, see below for an example
@@ -36,7 +35,8 @@ number of overlapping reads for these regions. This can be used, for example, to
 
 ### Example Figures
 
-Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32222 "GEO series")).
+Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, thmight not be
+uniformere is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32222 "GEO series")).
   
 ![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_humanSamples.png "bamCorrelate result")
 
@@ -55,13 +55,11 @@ This tool computes the GC bias using the method proposed by [Benjamini
 and Speed][] (see below for more explanations). 
 
 
-### What it does (reference to Benjamini)
-
-The basic assumption of the GC bias diagnosis is that the distribution of sequenced reads might not be
-uniform across the genome, i.e. not all regions of the genome are similarly well sequenced.
+### What it does
+The basic assumption of the GC bias diagnosis is that an ideal sample should show a uniform distribution of sequenced reads across the genome, i.e. all regions of the genome should be similarly well sequenced.
 
 computeGCbias estimates how many reads with what kind of GC content one
-should have sequenced. This is based on the methods published by [Benjamini and Speed][].
+should have sequenced given an organism's genome GC content. The calculations are based on the methods published by [Benjamini and Speed][].
 The tool first determines how many regions the specific reference genome contains for each amount of GC content,
 i.e. how many regions in the genome have 50% GC (or 10% GC or 90%
 GC or...).  For this, it samples a large number of equally sized genome bins
@@ -85,8 +83,7 @@ there are per GC content, we now count the __reads per GC content__.
 In an ideal sample without GC bias, the ratio of observed/expected values
 should be close to 1 for all GC content bins.
 
-However, due to PCR (over)amplifications, the majority of ChIP samples usually shows a
-significant bias towards reads with high GC content (>50%) and a depletion of reads from GC-poor regions.
+However, due to PCR (over)amplifications, the majority of ChIP samples usually shows a significant bias towards reads with high GC content (>50%) and a depletion of reads from GC-poor regions.
 
 ### Example figures
 Let's start with an ideal case. The following plots were generate with computeGCbias using simulated reads from the Drosophila genome.
