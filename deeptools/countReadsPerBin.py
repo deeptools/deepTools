@@ -69,9 +69,11 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     bamHandlers = [bamHandler.openBam(bam) for bam in bamFilesList]
 
     regionsToConsider = []
+
     if bedRegions:
         for chrom, start, end in bedRegions:
             regionsToConsider.append((chrom, start, end, end - start))
+    
     else:
         for i in xrange(start, end, stepSize):
             if i + binLength > end:

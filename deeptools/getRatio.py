@@ -24,6 +24,12 @@ def getRatio(tileCoverage, args):
     >>> funcArgs['scaleFactors'] = (1, 0.5)
     >>> getRatio([10,20], funcArgs)
     0.0
+    >>> funcArgs['valueType'] ='reciprocal_ratio'
+    >>> funcArgs['scaleFactors'] = (1, 1)
+    >>> getRatio([20,10], funcArgs)
+    2.0
+    >>> getRatio([10,20], funcArgs)
+    -2.0
     """
 
     if not args['missingDataAsZero']:
@@ -66,6 +72,6 @@ def getRatio(tileCoverage, args):
             elif args['valueType'] == 'reciprocal_ratio':
                 # the reciprocal ratio of a/b
                 # is a/b if a/b > 1 else -1* b/a
-                ratio if ratio < 1 else -1.0 / ratio
+                ratio = ratio if ratio > 1 else -1.0 / ratio
 
     return ratio
