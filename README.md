@@ -123,13 +123,13 @@ Numpy/Scipy Installation:
 http://www.scipy.org/install.html
 
 
-#### Galaxy Installation with the Tool Shed
+#### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
 available in the [Galaxy Tool Shed](http://testtoolshed.g2.bx.psu.edu/view/bgruening/deeptools).
 
 
-#### Installation via Galaxy API (recommended)
+##### Installation via Galaxy API (recommended)
 
 At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin 
 user and run the the installation script:
@@ -143,7 +143,7 @@ The -r argument specifies the version of deepTools. You can get the latest revsi
 You can watch the installation status under: Top Panel → Admin → Manage installed tool shed repositories
 
 
-#### Installation via webbrowser
+##### Installation via webbrowser
 
 - go to the [admin page](http://localhost:8080/admin)
 - select *Search and browse tool sheds*
