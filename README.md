@@ -81,6 +81,9 @@ If pip is not already available, install with:
 Install deepTools and dependencies with pip:
 
       $ pip install --user deeptools
+Done.
+
+
 
 
 __Another option is to clone the repository:__
