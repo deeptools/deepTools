@@ -62,7 +62,17 @@ Here's a concise summary of the tools - if you would like more detailed informat
 <a name="installation"/>
 Installation
 ---------------
-### Installation from source
+[Installation from source](#linux)
+
+[Installation on a Mac](#mac)
+
+[Troubleshooting](#trouble)
+
+[Installation via Galaxy](#galaxy)
+
+
+<a name="linux"/>
+### Installation from source (Linux, command line)
 
 The easiest way to install deepTools is by __downloading the source file and using python pip__ or easy_install tools:
 
@@ -110,7 +120,35 @@ script.
 To install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
-	
+
+<a name="mac"/>
+### Installation on a MAC
+
+Requirement: Python 2.7 installed
+
+Numpy, Scipy, matplotlib are also required - in case you haven't installed them yet, download the packages and install them using dmg images:
+- http://sourceforge.net/projects/numpy/files/NumPy/
+- http://sourceforge.net/projects/scipy/files/scipy/
+- http://matplotlib.org/downloads.html
+
+Then install deepTools via the terminal ("Applications" --> "Terminal"):
+
+     $ cd ~
+     $ export PYTHONPATH=$PYTHONPATH:~/lib/python2.7/site-packages
+     $ export PATH=$PATH:~/bin:~/.local/bin:~/Library/Python/2.7/bin
+
+If pip is not already available, install with:
+
+     $ easy_install --prefix=~ pip
+
+Install deepTools and dependencies with pip:
+
+     $ pip install --user pysam
+     $ pip install --user bx-python
+     $ pip install --user --no-deps deeptools
+
+
+<a name="trouble"/>
 ##### Troubleshooting
 The easy_install command is provided by the python package setuptools.
 You can download the package from https://pypi.python.org/pypi/setuptools
@@ -125,7 +163,7 @@ or the user-specific way:
 Numpy/Scipy Installation:
 http://www.scipy.org/install.html
 
-
+<a name="galaxy"/>
 #### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
