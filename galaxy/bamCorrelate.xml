@@ -15,6 +15,15 @@
 
         bamCorrelate
 
+        #if $mode.modeOpt == "bins":
+            bins
+            --binSize '$mode.binSize'
+            --numberOfSamples '$mode.numberOfSamples'
+        #else:
+            BED-file
+            --BED $mode.region_file
+        #end if
+
         @THREADS@
 
         --bamfiles #echo " ".join($files)
@@ -29,13 +38,6 @@
         #if $outputOpt.showOutputOpt == "yes"
             --outRawCounts '$outFileRawCounts' 
             --outFileCorMatrix '$outFileCorMatrix'
-        #end if
-
-        #if $mode.modeOpt == "bins":
-            --binSize '$mode.binSize'
-            --numberOfSamples '$modenumberOfSamples'
-        #else:
-            --BED $mode.region_file
         #end if
 
         ## options available in both modes
