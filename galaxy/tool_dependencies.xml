@@ -54,7 +54,7 @@
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-    <package name="deepTools" version="1.5.1_91b873c095bb4ca44da99e57d8b49784508aa98b">
+    <package name="deepTools" version="1.5.1_323fa6bf083c9d40e5092a6364a4ab8fee57507a">
         <install version="1.0">
             <actions>
                 <!-- populate the environment variables from the dependend repos -->
@@ -64,7 +64,7 @@
                     </repository>
                 </action>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
-                <action type="shell_command">git reset --hard 91b873c095bb4ca44da99e57d8b49784508aa98b</action>
+                <action type="shell_command">git reset --hard 323fa6bf083c9d40e5092a6364a4ab8fee57507a</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
@@ -73,7 +73,7 @@
 
                 <action type="set_environment">
                     <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
-                    <environment_variable name="PYTHONPATH" action="append_to" >$INSTALL_DIR/lib/python</environment_variable>
+                    <environment_variable name="PYTHONPATH" action="prepend_to" >$INSTALL_DIR/lib/python</environment_variable>
                     <!-- disable the config file of deepTools -->
                     <environment_variable name="DEEP_TOOLS_NO_CONFIG" action="set_to">TRUE</environment_variable>
                 </action>
