@@ -167,7 +167,7 @@ http://www.scipy.org/install.html
 #### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
-available in the [Galaxy Tool Shed](http://testtoolshed.g2.bx.psu.edu/view/bgruening/deeptools).
+available in the [Galaxy Tool Shed](http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools).
 
 
 ##### Installation via Galaxy API (recommended)
