@@ -16,6 +16,9 @@
 
 
   correctGCBias
+
+    @THREADS@
+
   --bamfile '$temp_bam_path'
   --GCbiasFrequenciesFile $GCbiasFrequenciesFile
 
