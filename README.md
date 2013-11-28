@@ -167,7 +167,7 @@ http://www.scipy.org/install.html
 #### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
-available in the [Galaxy Tool Shed](http://testtoolshed.g2.bx.psu.edu/view/bgruening/deeptools).
+available in the [Galaxy Tool Shed](http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools).
 
 
 ##### Installation via Galaxy API (recommended)
@@ -175,11 +175,11 @@ available in the [Galaxy Tool Shed](http://testtoolshed.g2.bx.psu.edu/view/bgrue
 At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin 
 user and run the the installation script:
 
-	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost:8080 --url http://testtoolshed.g2.bx.psu.edu/ -o bgruening -r c8a0dc481493 --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
+	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost:8080 --url http://toolshed.g2.bx.psu.edu/ -o bgruening -r <revision> --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
 
 The -r argument specifies the version of deepTools. You can get the latest revsion number from the test tool shed or with the following command:
 
-	hg identify http://testtoolshed.g2.bx.psu.edu/repos/bgruening/deeptools
+	hg identify http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools
 
 You can watch the installation status under: Top Panel → Admin → Manage installed tool shed repositories
 
@@ -188,7 +188,7 @@ You can watch the installation status under: Top Panel → Admin → Manage inst
 
 - go to the [admin page](http://localhost:8080/admin)
 - select *Search and browse tool sheds*
-- Galaxy test tool shed → Sequence Analysis → deeptools
+- Galaxy tool shed → Sequence Analysis → deeptools
 - install deeptools
 
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
