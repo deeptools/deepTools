@@ -188,7 +188,7 @@ You can watch the installation status under: Top Panel → Admin → Manage inst
 
 - go to the [admin page](http://localhost:8080/admin)
 - select *Search and browse tool sheds*
-- Galaxy test tool shed → Sequence Analysis → deeptools
+- Galaxy tool shed → Sequence Analysis → deeptools
 - install deeptools
 
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
