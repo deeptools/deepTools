@@ -102,7 +102,7 @@ def main(args):
     else:
         scaleFactors = [1, 1]
 
-    scaling = float(scaleFactors[0]) / scaleFactors[1]
+    scaling = float(scaleFactors[0]) / float(scaleFactors[1])
 
     p1 = args.pseudocount * 1.0 / (1 + scaling)
     p2 = args.pseudocount * float(scaling) / (1 + scaling)

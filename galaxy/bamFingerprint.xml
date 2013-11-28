@@ -10,21 +10,8 @@
 
         #set files=[]
         #set labels=[]
-        #for $i in $inputs
-            #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-            #set $temp_input_path = $temp_input_handle.name
-            #silent $temp_input_handle.close()
-            #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
-            #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
-            #silent $files.append('%s.bam' % $temp_input_path)
 
-            ##set $files += [str($i.bamfile)]
-            #if str($i.label.value) != "":
-                #set $labels += ["\"%s\"" % ($i.label.value)]
-            #else
-                #set $labels += ["\"%s\"" % ($i.bamfile.name)]
-            #end if
-        #end for
+        @multiple_input_bams@
 
     bamFingerprint
 

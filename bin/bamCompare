@@ -185,6 +185,25 @@ def main(args):
     bam1 = bamHandler.openBam(args.bamfile1, args.bamIndex1)
     bam2 = bamHandler.openBam(args.bamfile2, args.bamIndex2)
 
+    # if a list of chromosomes to remove from normalization
+    # is given, remove their counts
+    if len(args.ignoreForNormalization) > 0:
+        import pysam
+        # get the number of mapped reads but excluding
+        # some undesired chromosomes
+        bam1_mapped = sum([int(y[2]) for y in
+                           [x.split("\t") for x in
+                            pysam.idxstats(bam1.filename)]
+                           if y[0] not in args.ignoreForNormalization])
+
+        bam2_mapped = sum([int(y[2]) for y in
+                           [x.split("\t") for x in
+                            pysam.idxstats(bam2.filename)]
+                           if y[0] not in args.ignoreForNormalization])
+    else:
+        bam1_mapped = bam1.mapped
+        bam2_mapped = bam2.mapped
+
     ################# find scaling factor ##################
 
     if args.scaleFactors:
@@ -214,22 +233,6 @@ def main(args):
                     float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped]))
 
         elif args.scaleFactorsMethod == 'readCount':
-            if len(args.ignoreForNormalization) > 0:
-                import pysam
-                # get the number of mapped reads but excluding
-                # some undesired chromosomes
-                bam1_mapped = sum([int(y[2]) for y in
-                                   [x.split("\t") for x in
-                                    pysam.idxstats(bam1.filename)]
-                                   if y[0] not in args.ignoreForNormalization])
-
-                bam2_mapped = sum([int(y[2]) for y in
-                                   [x.split("\t") for x in
-                                    pysam.idxstats(bam2.filename)]
-                                   if y[0] not in args.ignoreForNormalization])
-            else:
-                bam1_mapped = bam1.mapped
-                bam2_mapped = bam2.mapped
             scaleFactors = \
                 float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
             if args.verbose:
@@ -252,28 +255,29 @@ def main(args):
         else:
             mappedReads = bam2_mapped
 
-        if args.normalizeTo1x:
-            current_coverage = \
-                float(mappedReads * args.fragmentLength) / args.normalizeTo1x
-            # the scale factor is 1 / coverage,
-            scaleFactor = 1.0 / current_coverage
-            scaleFactors = np.array(scaleFactors) * scaleFactor
-            if args.verbose:
-                print "Estimated current coverage {}".format(current_coverage)
-                print "Scale factor to convert " \
-                    "current coverage to 1: {}".format(scaleFactor)
-        else:
-            # by default normalize using RPKM
-            # the RPKM is:
-            # Num reads per tile/(total reads (in millions)*tile length in Kb)
-            millionReadsMapped = float(mappedReads)  / 1e6
-            tileLengthInKb = float(args.binSize) / 1000
-            scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
-            scaleFactors = np.array(scaleFactors) * scaleFactor
-            if args.verbose:
-                print "scale factor using sequencing "
-                "RPKM is {0}".format(scaleFactor)
-                print "Individual scale factors are {0}".format(scaleFactors)
+        if args.scaleFactors is None:
+            if args.normalizeTo1x:
+                current_coverage = \
+                                 float(mappedReads * args.fragmentLength) / args.normalizeTo1x
+                # the scale factor is 1 / coverage,
+                scaleFactor = 1.0 / current_coverage
+                scaleFactors = np.array(scaleFactors) * scaleFactor
+                if args.verbose:
+                    print "Estimated current coverage {}".format(current_coverage)
+                    print "Scale factor to convert " \
+                          "current coverage to 1: {}".format(scaleFactor)
+            else:
+                # by default normalize using RPKM
+                # the RPKM is:
+                # Num reads per tile/(total reads (in millions)*tile length in Kb)
+                millionReadsMapped = float(mappedReads)  / 1e6
+                tileLengthInKb = float(args.binSize) / 1000
+                scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
+                scaleFactors = np.array(scaleFactors) * scaleFactor
+    if args.verbose:
+        print "scale factor using sequencing "
+        "RPKM is {0}".format(scaleFactor)
+        print "Individual scale factors are {0}".format(scaleFactors)
 
     ################# compute log2ratio ##################
 

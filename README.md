@@ -62,18 +62,41 @@ Here's a concise summary of the tools - if you would like more detailed informat
 <a name="installation"/>
 Installation
 ---------------
-### Installation from source
+[Installation from source](#linux)
 
-The easiest way to install deepTools is by downloading the
-source file and using python pip or easy_install tools:
+[Installation on a Mac](#mac)
 
-	$ pip install deepTools
-	$ vim [deepTools folder]/config/deepTools.cfg
+[Troubleshooting](#trouble)
 
-The `deepTools.cfg` file contains several variables that
-need to be adjusted.
- 
-Other option is to clone the repository
+[Installation via Galaxy](#galaxy)
+
+
+<a name="linux"/>
+### Installation from source (Linux, command line)
+
+The easiest way to install deepTools is by __downloading the source file and using python pip__ or easy_install tools:
+
+Requirements: Python 2.7, numpy, scipy installed
+
+Commands:
+
+      $ cd ~
+      $ export PYTHONPATH=$PYTHONPATH:~/lib/python2.7/site-packages
+      $ export PATH=$PATH:~/bin:~/.local/bin
+
+If pip is not already available, install with:
+
+      $ easy_install --prefix=~ pip
+
+Install deepTools and dependencies with pip:
+
+      $ pip install --user deeptools
+Done.
+
+
+
+
+__Another option is to clone the repository:__
 	
 	$ git clone https://github.com/fidelram/deepTools
 
@@ -98,32 +121,74 @@ To install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
 
+<a name="mac"/>
+### Installation on a MAC
 
-#### Galaxy Installation with the Tool Shed
+Requirement: Python 2.7 installed
+
+Numpy, Scipy, matplotlib are also required - in case you haven't installed them yet, download the packages and install them using dmg images:
+- http://sourceforge.net/projects/numpy/files/NumPy/
+- http://sourceforge.net/projects/scipy/files/scipy/
+- http://matplotlib.org/downloads.html
+
+Then install deepTools via the terminal ("Applications" --> "Terminal"):
+
+     $ cd ~
+     $ export PYTHONPATH=$PYTHONPATH:~/lib/python2.7/site-packages
+     $ export PATH=$PATH:~/bin:~/.local/bin:~/Library/Python/2.7/bin
+
+If pip is not already available, install with:
+
+     $ easy_install --prefix=~ pip
+
+Install deepTools and dependencies with pip:
+
+     $ pip install --user pysam
+     $ pip install --user bx-python
+     $ pip install --user --no-deps deeptools
+
+
+<a name="trouble"/>
+##### Troubleshooting
+The easy_install command is provided by the python package setuptools.
+You can download the package from https://pypi.python.org/pypi/setuptools
+
+     $ wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
+     
+or the user-specific way:
+
+     $ wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
+     $ python ez_setup.py --user
+
+Numpy/Scipy Installation:
+http://www.scipy.org/install.html
+
+<a name="galaxy"/>
+#### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
-available in the [Galaxy Tool Shed](http://testtoolshed.g2.bx.psu.edu/view/bgruening/deeptools).
+available in the [Galaxy Tool Shed](http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools).
 
 
-#### Installation via Galaxy API (recommended)
+##### Installation via Galaxy API (recommended)
 
 At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin 
 user and run the the installation script:
 
-	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost:8080 --url http://testtoolshed.g2.bx.psu.edu/ -o bgruening -r c8a0dc481493 --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
+	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost:8080 --url http://toolshed.g2.bx.psu.edu/ -o bgruening -r <revision> --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
 
 The -r argument specifies the version of deepTools. You can get the latest revsion number from the test tool shed or with the following command:
 
-	hg identify http://testtoolshed.g2.bx.psu.edu/repos/bgruening/deeptools
+	hg identify http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools
 
 You can watch the installation status under: Top Panel → Admin → Manage installed tool shed repositories
 
 
-#### Installation via webbrowser
+##### Installation via webbrowser
 
 - go to the [admin page](http://localhost:8080/admin)
 - select *Search and browse tool sheds*
-- Galaxy test tool shed → Sequence Analysis → deeptools
+- Galaxy tool shed → Sequence Analysis → deeptools
 - install deeptools
 
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com

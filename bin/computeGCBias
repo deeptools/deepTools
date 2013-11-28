@@ -26,7 +26,7 @@ debug = 0
 global_vars = dict()
 
 def parseArguments(args=None):
-    parentParser = parserCommon.getParentArgParse()
+    parentParser = parserCommon.getParentArgParse(binSize=False)
     parser = argparse.ArgumentParser(
         parents=[parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,

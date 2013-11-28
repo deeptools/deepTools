@@ -59,7 +59,7 @@
             <actions>
                 <!-- populate the environment variables from the dependend repos -->
                 <action type="set_environment_for_install">
-                    <repository name="package_pysam_0_7_5" owner="fubar">
+                    <repository name="package_pysam_0_7_5" owner="iuc">
                         <package name="pysam" version="0.7.5" />
                     </repository>
                 </action>
