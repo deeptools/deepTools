@@ -27,10 +27,10 @@
                     label ="Include zeros"
                     help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
 
-                <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
+                <param name="zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
                     help="If not specified the value is set automatically."/>
 
-                <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
+                <param name="zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
                     help="If not specified the value is set automatically."/>
 
                 <expand macro="colormap" />
