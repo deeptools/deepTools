@@ -104,7 +104,10 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             </param>
             <when value="cached">
                 <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-                    <options from_data_table="deepTools_seqs" />
+                    <options from_data_table="deepTools_seqs">
+                        <filter type="sort_by" column="1" />
+                        <validator type="no_options" message="No indexes are available." />
+                    </options>
                 </param>
             </when>
             <when value="history">
