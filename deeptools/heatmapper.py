@@ -42,13 +42,13 @@ class heatmapper:
         # the beforeRegionStartLength is extended such that
         # length is a multiple of binSize
         if parameters['downstream'] % parameters['bin size'] > 0:
-            print "Length of region after the body has to be a multiple of "
-            "--binSize. Current value {}".format(parameters['downstream'])
+            print "Length of region after the body has to be a multiple of " \
+                "--binSize. Current value {}".format(parameters['downstream'])
             exit()
 
         if parameters['upstream'] % parameters['bin size'] > 0:
-            print "Length of region before the body has to be a multiple of "
-            "--binSize . Current value {}".format(parameters['upstream'])
+            print "Length of region before the body has to be a multiple of " \
+                "--binSize . Current value {}".format(parameters['upstream'])
             exit()
 
         # determine the number of matrix columns based on the lengths
@@ -65,9 +65,9 @@ class heatmapper:
             sum_len = sum(group_len)
             group_frac = [float(x)/sum_len for x in group_len]
             if min(group_frac) <= 0.002:
-                print "One of the groups defined in the bed file is " 
-                "too small. Groups that are too small can't be plotted."
-                "Please remove the group to continue."
+                print "One of the groups defined in the bed file is " \
+                    "too small. Groups that are too small can't be plotted. " \
+                    "Please remove the group to continue."
                 exit()
         matrixDict = OrderedDict()
         matrixAvgsDict = OrderedDict()
@@ -83,9 +83,10 @@ class heatmapper:
 
             if len(mp_args) > 1 and parameters['proc number'] > 1:
                 if parameters['verbose']:
-                    print "'{}' total workers: {}, using {} "
-                    "processors ".format(label, len(mp_args),
-                                         parameters['proc number'])
+                    print "Label:'{}' ".format(label)
+                    print "total workers: {}, using {} " \
+                        "processors ".format(len(mp_args),
+                                             parameters['proc number'])
                 pool = multiprocessing.Pool(parameters['proc number'])
                 res = pool.map_async(compute_sub_matrix_wrapper,
                                      mp_args).get(9999999)
@@ -149,8 +150,8 @@ class heatmapper:
             if parameters['body'] > 0 and \
                     feature['end'] - feature['start'] < parameters['bin size']:
                 if parameters['verbose']:
-                    print "Region shorter than window width "
-                    "({}) {} {}:{}:{}. Skipping...".format(
+                    print "Region shorter than window width " \
+                        "({}) {} {}:{}:{}. Skipping...".format(
                         (feature['end'] - feature['start']),
                         feature['name'], feature['chrom'],
                         feature['start'], feature['end'])
@@ -166,16 +167,20 @@ class heatmapper:
                 a = parameters['downstream'] / parameters['bin size']
                 start = feature['start']
                 end = feature['end']
-           # build zones (zone0: region before the region start,
-           # zone1, the body of the region (not always present)
-           # and zone2 the region from the end of the region downstream
+
+            # build zones:
+            #  zone0: region before the region start,
+            #  zone1: the body of the region (not always present)
+            #  zone2: the region from the end of the region downstream
+            #  the format for each zone is: start, end, number of bins
             if parameters['body'] > 0:
                 zones = \
                     [(feature['start'] - b * parameters['bin size'],
                       feature['start'], b ),
                      (feature['start'],
-                      feature['end'] - parameters['body'] /
-                      parameters['bin size'],
+                      feature['end'],
+                      #feature['end'] - parameters['body'] /
+                      #parameters['bin size'],
                       parameters['body'] / parameters['bin size']),
                      (feature['end'],
                       feature['end'] + a * parameters['bin size'], a)]
@@ -194,11 +199,11 @@ class heatmapper:
 
             if feature['start'] - b * parameters['bin size'] < 0:
                 if parameters['verbose']:
-                    print "region too close to chromosome start "
-                    "for {} {}:{}:{}. ".format(feature['name'],
-                                               feature['chrom'],
-                                               feature['start'],
-                                               feature['end'])
+                    print "region too close to chromosome start " \
+                        "for {} {}:{}:{}. ".format(feature['name'],
+                                                   feature['chrom'],
+                                                   feature['start'],
+                                                   feature['end'])
             coverage = None
             if score_file.endswith(".bam"):
                 if feature['chrom'] not in bamfile.references:
@@ -316,26 +321,34 @@ class heatmapper:
 
         cvgList = []
         start = zones[0][0]
-        for zone in zones:
+        for zone_start, zone_end, num_bins  in zones:
             # the linspace is to get equally spaced positions along the range
             # If the gene is short the sampling regions could overlap,
             # if it is long, the sampling regions would be spaced
             countsList = []
-            try:
-                (posArray, stepSize) = np.linspace(zone[0], zone[1], zone[2],
-                                                   endpoint=False,
-                                                   retstep=True)
-                for pos in np.ceil(posArray):
-                    indexStart = int(pos - start)
-#                    indexEnd   = int(indexStart + binSize)
-                    indexEnd   = int(indexStart + stepSize)
+
+            # this case happens when the downstream or upstream
+            # region is set to 0 
+            if zone_start == zone_end:
+                continue
+
+            (posArray, stepSize) = np.linspace(zone_start, zone_end, num_bins,
+                                               endpoint=False,
+                                               retstep=True)
+            stepSize = np.ceil(stepSize) 
+
+            for pos in np.floor(posArray):
+                indexStart = int(pos - start)
+                #indexEnd   = int(indexStart + binSize)
+                indexEnd   = int(indexStart + stepSize + 1)
+                try:
                     countsList.append(
                         heatmapper.myAverage(valuesArray[indexStart:indexEnd],
                                              avgType))
-                cvgList.append(np.array(countsList))
-            except ValueError:
-                pass
-
+                except:
+                    import ipdb;ipdb.set_trace()
+                    
+            cvgList.append(np.array(countsList))
         return np.concatenate(cvgList)
 
     @staticmethod
@@ -371,7 +384,7 @@ class heatmapper:
         except TypeError:
             # this error happens when bigwig returns nothing,
             # For example when a chromosome
-            # is not nown.
+            # is not known.
             return None
         except OverflowError as detail:
             print detail
@@ -380,7 +393,6 @@ class heatmapper:
         # replaces nans for zeros
         if nansAsZeros:
             valuesArray[np.isnan(valuesArray)] = 0
-
         return heatmapper.coverageFromArray(valuesArray, zones,
                                             binSize, avgType)
 
@@ -404,7 +416,7 @@ class heatmapper:
         self.lengthDict = OrderedDict()
         self.matrixAvgsDict = OrderedDict()
 
-    def readMatrixFile(self, matrix_file, verbose=None, default_group_name=''):
+    def readMatrixFile(self, matrix_file, verbose=None, default_group_name='label_1'):
         # reads a bed file containing the position
         # of genomic intervals
         # In case a hash sign '#' is found in the
@@ -420,7 +432,7 @@ class heatmapper:
         parameters = dict()
         totalIntervals = 0
         includedIntervals = 0
-
+            
         fh = gzip.open(matrix_file)
         for line in fh:
             line = line.strip()
@@ -445,8 +457,8 @@ class heatmapper:
                     parameters[key] = value
                 continue
             if line.startswith('#'):
-                if includedIntervals > 1 and  \
-                        includedIntervals - regionGroups[-1][0] > 1:
+                if includedIntervals > 0 and  \
+                        includedIntervals - regionGroups[-1][0] > 0:
                     label = line[1:]
                     regionsDict[label] = np.array(regions[:])
                     matrixDict[label] = \
@@ -593,9 +605,9 @@ class heatmapper:
                 "given were: {}\n.".format(len(self.matrixDict), group_labels))
             exit(1)
         elif len(set(group_labels)) != len(group_labels):
-            print "The group labels given contain repeated names. Please "
-            "give a unique name to each value. The values given are "
-            "{} ".format(group_labels)
+            print "The group labels given contain repeated names. Please " \
+                "give a unique name to each value. The values given are " \
+                "{} ".format(group_labels)
             exit(1)
 
         matrixDict = OrderedDict()
@@ -722,8 +734,8 @@ class heatmapper:
                     prevInterval.start == ginterval.start and \
                     prevInterval.end == ginterval.end:
                 if verbose:
-                    print "Gene in same region already included:  "
-                    "{} {}:{}-{}. Skipping...".format(
+                    print "Gene in same region already included:  " \
+                        "{} {}:{}-{}. Skipping...".format(
                         ginterval.fields[3],
                         ginterval.chrom, ginterval.start,
                         ginterval.end)
