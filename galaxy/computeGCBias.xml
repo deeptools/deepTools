@@ -8,63 +8,52 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+        ln -s $bamInput local_bamInput.bam;
+        ln -s $bamInput.metadata.bam_index local_bamInput.bam.bai;
 
-    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
-    #silent $temp_bam_handle.close()
-    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
-    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
+        computeGCBias
 
-  computeGCBias
+            @THREADS@
 
-    @THREADS@
+            --bamfile 'local_bamInput.bam'
+            --GCbiasFrequenciesFile $outFileName
+            --fragmentLength $fragmentLength
 
-  --bamfile '$temp_bam_path'
-  --GCbiasFrequenciesFile $outFileName
-  --fragmentLength $fragmentLength
+            @reference_genome_source@
 
-    @reference_genome_source@
+            #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+                --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
+            #else:
+                --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
+            #end if
 
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                #if str($advancedOpt.region.value) != '':
+                    --region '$advancedOpt.region'
+                #end if
 
-  #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-    --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
-  #else:
-    --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
-  #end if
+                --sampleSize '$advancedOpt.sampleSize'
+                --regionSize '$advancedOpt.regionSize'
 
+                #if $advancedOpt.filterOut:
+                    --filterOut $advancedOpt.filterOut
+                #end if
 
-  #if $advancedOpt.showAdvancedOpt == "yes":
-    #if str($advancedOpt.region.value) != '':
-      --region '$advancedOpt.region'
-    #end if
-    
-    --sampleSize '$advancedOpt.sampleSize'
-    --regionSize '$advancedOpt.regionSize'
+                #if $advancedOpt.extraSampling:
+                    --extraSampling $advancedOpt.extraSampling
+                #end if
+            #end if
 
-    #if $advancedOpt.filterOut:
-      --filterOut $advancedOpt.filterOut
-    #end if
+            #if $saveBiasPlot:
+                --biasPlot $biasPlot
+            #end if
 
-    #if $advancedOpt.extraSampling:
-      --extraSampling $advancedOpt.extraSampling
-    #end if
-
-  #end if
-
-  #if $saveBiasPlot:
-    --biasPlot $biasPlot
-  #end if
-
-##  #if $output.showOutputSettings == "yes"
-##      #if $output.saveBiasPlot:
-##        --biasPlot biasPlot.png ;
-##        mv biasPlot.png $biasPlot
-##      #end if
-##  #end if
-
-  ; rm $temp_dir -rf
+        ##  #if $output.showOutputSettings == "yes"
+        ##      #if $output.saveBiasPlot:
+        ##        --biasPlot biasPlot.png ;
+        ##        mv biasPlot.png $biasPlot
+        ##      #end if
+        ##  #end if
 
     </command>
     <inputs>

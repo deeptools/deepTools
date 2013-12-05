@@ -29,6 +29,10 @@
 
         #end if
     </command>
+    <stdio>
+        <regex match="Error:" />
+        <regex match="EXception:" />
+    </stdio>
     <inputs>
         <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file" />
         <param name="bigwigFile2" format="bigwig" type="data" label="Input bigwig file" />

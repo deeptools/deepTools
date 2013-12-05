@@ -27,10 +27,10 @@
                     label ="Include zeros"
                     help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
 
-                <param name="zMin" type="integer" value="" label="Minimum value for the heatmap intensities"
+                <param name="zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
                     help="If not specified the value is set automatically."/>
 
-                <param name="zMax" type="integer" value="" label="Maximum value for the heatmap intensities"
+                <param name="zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
                     help="If not specified the value is set automatically."/>
 
                 <expand macro="colormap" />
@@ -40,14 +40,14 @@
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <macro name="requirements">
         <requirements>
-            <requirement type="package" version="1.5.1_91b873c095bb4ca44da99e57d8b49784508aa98b">deepTools</requirement>
-            <requirement type="package" version="0.1">ucsc_tools</requirement>
-            <requirement type="package" version="1.7.1">numpy</requirement>
-            <requirement type="package" version="0.7.6">pysam</requirement>
-            <requirement type="package" version="0.1.19">samtools</requirement>
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
+            <requirement type="package" version="1.5.1_323fa6bf083c9d40e5092a6364a4ab8fee57507a">deepTools</requirement>
+            <requirement type="package" version="0.1">ucsc_tools</requirement>
+            <requirement type="package" version="1.7.1">numpy</requirement>
+            <requirement type="package" version="0.7.7">pysam</requirement>
+            <requirement type="package" version="0.1.19">samtools</requirement>
             <yield />
         </requirements>
         </macro>
@@ -104,7 +104,10 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             </param>
             <when value="cached">
                 <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-                    <options from_data_table="deepTools_seqs" />
+                    <options from_data_table="deepTools_seqs">
+                        <filter type="sort_by" column="1" />
+                        <validator type="no_options" message="No indexes are available." />
+                    </options>
                 </param>
             </when>
             <when value="history">
