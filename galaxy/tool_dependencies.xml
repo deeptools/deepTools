@@ -1,19 +1,22 @@
 <?xml version="1.0"?>
 <tool_dependency>
     <package name="samtools" version="0.1.19">
-        <repository name="package_samtools_0_1_19" owner="iuc" />
+        <repository name="package_samtools_0_1_19" owner="iuc" prior_installation_required="True" />
     </package>
     <package name="numpy" version="1.7.1">
-        <repository name="package_numpy_1_7" owner="iuc" />
+        <repository name="package_numpy_1_7" owner="iuc" prior_installation_required="True" />
     </package>
     <package name="matplotlib" version="1.2.1">
-        <repository name="package_matplotlib_1_2" owner="iuc" />
+        <repository name="package_matplotlib_1_2" owner="iuc" prior_installation_required="True" />
     </package>
     <package name="scipy" version="0.12.0">
-        <repository name="package_scipy_0_12" owner="iuc" />
+        <repository name="package_scipy_0_12" owner="iuc" prior_installation_required="True" />
     </package>
     <package name="pysam" version="0.7.7">
-        <repository name="package_pysam_0_7_7" owner="iuc" />
+        <repository name="package_pysam_0_7_7" owner="iuc" prior_installation_required="True" />
+    </package>
+    <package name="bx-python" version="12-2013">
+        <repository name="package_bx_python_12_2013" owner="iuc" prior_installation_required="True" />
     </package>
 
     <package name="ucsc_tools" version="0.1">
@@ -54,7 +57,7 @@
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-    <package name="deepTools" version="1.5.1_323fa6bf083c9d40e5092a6364a4ab8fee57507a">
+    <package name="deepTools" version="1.5.4_fada41ab04f78c4c78d10c7a216e5c3160e8c36e">
         <install version="1.0">
             <actions>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
@@ -63,8 +66,11 @@
                     <repository name="package_pysam_0_7_7" owner="iuc">
                         <package name="pysam" version="0.7.7" />
                     </repository>
+                    <repository name="package_bx_python_12_2013" owner="iuc">
+                        <package name="bx-python" version="12-2013" />
+                    </repository>
                 </action>
-                <action type="shell_command">git reset --hard 323fa6bf083c9d40e5092a6364a4ab8fee57507a</action>
+                <action type="shell_command">git reset --hard fada41ab04f78c4c78d10c7a216e5c3160e8c36e</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
@@ -78,6 +84,9 @@
                 </action>
              </actions>
          </install>
-         <readme>Installation of deepTools from Fidel Ramirez.</readme>
+         <readme>
+            Installation of deepTools from Fidel Ramirez.
+            https://github.com/fidelram/deepTools
+         </readme>
      </package>
 </tool_dependency>
