@@ -192,9 +192,10 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
 
     # Compute and plot dendrogram.
     fig = plt.figure(figsize=(10.5,9.5))
-    axdendro = fig.add_axes([0.02,0.1,0.10,0.7])
+    axdendro = fig.add_axes([0.02,0.1,0.1,0.7])
     axdendro.set_axis_off()
-    Y = sch.linkage(corr_matrix, method='centroid')
+    Y = sch.linkage(corr_matrix, method='complete')
+#    Y = sch.linkage(corr_matrix, method='centroid')
     Z = sch.dendrogram(Y, orientation='right', link_color_func=lambda k: 'black')
     axdendro.set_xticks([])
     axdendro.set_yticks([])

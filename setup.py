@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='deepTools',
-    version='1.5.2',
+    version='1.5.4',
     author='Fidel Ramirez',
     author_email='ramirez@ie-freiburg.mpg.de',
     packages=['deeptools', 'deeptools.test', 'config'],
