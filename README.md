@@ -48,7 +48,7 @@ deepTools consists of a set of modules that can be used independently to work wi
 Here's a concise summary of the tools - if you would like more detailed information about the individual tools and example figures, follow the links in the table or check out our general description of [how we use deepTools](#weUse)
 
 | tool | type | input files | main output file(s) | application |
-|------|--------|-------------|--------------- |---------------|
+|------|------|-------------|---------------------|-------------|
 | [bamCorrelate][] | QC | 2 or more BAM | clustered heatmap | Pearson or Spearman correlation between read distributions |
 | [bamFingerprint][] | QC | 2 BAM | 1 diagnostic plot | assess enrichment strength of a ChIP sample |
 | [computeGCBias][] | QC | 1 BAM | 2 diagnostic plots | calculate the exp. and obs. GC distribution of reads|
@@ -265,9 +265,9 @@ faToTwoBit (available for different plattforms from [here](http://hgdownload.cse
 [bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
 [FASTQ]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file of raw reads (almost straight out of the sequencer)"
 
-[bamCorrelate]: https://github.com/fidelram/deepTools/edit/master/manual/QC.md
-[bamFingerprint]: https://github.com/fidelram/deepTools/edit/master/manual/QC.md
-[computeGCBias]: https://github.com/fidelram/deepTools/edit/master/manual/QC.md
+[bamCorrelate]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
+[bamFingerprint]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
+[computeGCBias]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
 
 [bamCoverage]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
 [bamCompare]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
