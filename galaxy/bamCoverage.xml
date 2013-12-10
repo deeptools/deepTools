@@ -48,7 +48,7 @@
     </command>
 
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="Input BAM file"
+        <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
 
         <param name="fragmentLength" type="integer" value="300" min="1"

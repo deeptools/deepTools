@@ -35,7 +35,7 @@
     </stdio>
     <inputs>
         <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file" />
-        <param name="bigwigFile2" format="bigwig" type="data" label="Input bigwig file" />
+        <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
 
         <param name="comparison_type" type="select" 
                 label="How to compare the two files"

@@ -115,10 +115,11 @@
       
       <when value="reference-point">
         <param name="referencePoint" type="select" label="The reference point for the plotting">
-        <option value="TSS" selected="true">region start (TSS)</option>
-        <option value="TES" selected="true">region end (TES)</option>
-        <option value="center" selected="true">center of the region</option>
+            <option value="TSS" selected="true">beginning of region (e.g. TSS)</option>
+            <option value="TES">end of region (e.g. TES)</option>
+            <option value="center">center of region</option>
         </param>
+        
         <param name="nanAfterEnd" type="boolean" truevalue="--nanAfterEnd" falsevalue="" label="Discard any values after the region end" help="This is useful to visualize the region end when not using the scale-regions mode and when the reference-point is set to the TSS."/>
         <param name="beforeRegionStartLength" type="integer" value="1000" min="1" label="Distance upstream of the start site of the regions defined in the region file" help="If the regions are genes, this would be the distance upstream of the transcription start site."/>
         
@@ -128,15 +129,15 @@
     
     <conditional name="output" >
         <param name="showOutputSettings" type="select" label="Show additional output options" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
-        <param name="saveData" type="boolean" label="Save the averages per matrix column into a text file" help="This corresponds to the underlying data used to plot a summary profile."/>
-        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap" help="This matrix can easily be loaded into R or other programs."/>
-        <param name="saveSortedRegions" type="boolean" label="Save the regions after skiping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
-    </when>
+            <option value="no" selected="true">no</option>
+            <option value="yes">yes</option>
+        </param>
+          <when value="no" />
+          <when value="yes">
+            <param name="saveData" type="boolean" label="Save the averages per matrix column into a text file" help="This corresponds to the underlying data used to plot a summary profile."/>
+            <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap" help="This matrix can easily be loaded into R or other programs."/>
+            <param name="saveSortedRegions" type="boolean" label="Save the regions after skiping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+        </when>
     </conditional>
 
     <conditional name="advancedOpt" >
@@ -182,17 +183,32 @@
     
     </inputs>
   <outputs>
-    <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: matrix">
+    <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: Matrix">
     </data>
-    <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: raw data">
-      <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>
+    <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
+        <filter>
+        ((
+            output['showOutputSettings'] == 'yes' and 
+            output['saveData'] is True
+        ))
+        </filter>
     </data>
-    <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: matrix of values">
-      <filter>(output['showOutputSettings'] == 'yes' and output['saveMatrix'] == True)</filter>
+    <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: Heatmap values">
+        <filter>
+        ((
+            output['showOutputSettings'] == 'yes' and 
+            output['saveMatrix'] is True
+        ))
+        </filter>
     </data>
     <data format="bed" name="outFileSortedRegions" label="${tool.name} on ${on_string}: sorted/filtered regions">
-      <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
-    </data>  
+        <filter>
+        ((
+            output['showOutputSettings'] == 'yes' and 
+            output['saveSortedRegions'] is True
+        ))
+        </filter>
+    </data>
   </outputs>
     <!--
     computeMatrix -S test.bw -R test2.bed -a 100 -b 100 -bs 1 

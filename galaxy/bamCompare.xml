@@ -70,7 +70,7 @@
         <param name="bamFile1" format="bam" type="data" label="Treatment BAM file"
             help="The BAM file must be sorted."/>
 
-        <param name="bamFile2" format="bam" type="data" label="Input BAM file"
+        <param name="bamFile2" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
 
         <param name="fragmentLength" type="integer" value="300" min="1"

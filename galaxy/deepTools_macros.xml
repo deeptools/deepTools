@@ -47,6 +47,7 @@
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
+            <requirement type="package" version="1.2.1">matplotlib</requirement>
             <requirement type="package" version="0.1.19">samtools</requirement>
             <requirement type="package" version="12-2013">bx-python</requirement>
             <yield />
@@ -69,7 +70,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </token>
 
     <macro name="multiple_input_bams">
-        <repeat name="input_files" title="Input files" min="2">
+        <repeat name="input_files" title="BAM files" min="2">
             <param name="bamfile" type="data" format="bam" 
                 label="Bam file" 
                 help="The BAM file must be sorted."/>
