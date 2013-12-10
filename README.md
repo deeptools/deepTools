@@ -256,7 +256,10 @@ The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.ed
 Search for the .2bit ending. Otherwise, __fasta files can be converted to 2bit__ using the UCSC programm
 faToTwoBit (available for different plattforms from [here](http://hgdownload.cse.ucsc.edu/admin/exe/)
 
+#### When should I exclude peaks from the GC bias computation?
+Here's what we do: We usually check the GC bias (using _computeGCbias_) on the entire data set. If we notice that the majority of the genome is dramatically biased (i.e. instead of a straight line for genome regions of 30-60% GC content we see a diagonale or something even weirder) and we want to compare this particular, biased sample with another unbiased (or differently GC biased) sample, then we need to correct the GC bias (using _correctGCbias_).
 
+Now, imagine that the biased sample is a ChIP for a protein binding to methylated or mammalian promoter regions. By default, such data is going to have a GC bias because CpG-rich regions should be enriched. Therefore, you can use the option to exclude regions of signficant enrichment from the GC bias computation and subsequent correction to only account for the background bias without interfering with the true signal too much. 
 
 ------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
