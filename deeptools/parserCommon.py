@@ -43,9 +43,9 @@ def bam(args=None):
                        'match the --fragmentLength.',
                        type=int,
                        metavar="INT bp",
-                       required=True)
+                       default='200')
 
-    parser.add_argument('--smoothLength',
+    group.add_argument('--smoothLength',
                         metavar="INT bp",
                         help='The smooth length defines a window, larger than '
                         'the binSize, to average the number of reads. For '
@@ -87,15 +87,16 @@ def bam(args=None):
 
 def getParentArgParse(args=None, binSize=True):
     parser = argparse.ArgumentParser(add_help=False)
+    optional = parser.add_argument_group('Optional arguments')
     if binSize:
-        parser.add_argument('--binSize', '-bs',
+        optional.add_argument('--binSize', '-bs',
                             help='Size of the bins in bp for the ouput '
                             'of the bigwig/bedgraph file.',
                             metavar="INT bp",
                             type=int,
                             default=50)
 
-    parser.add_argument('--region', '-r',
+    optional.add_argument('--region', '-r',
                         help='Region of the genome to limit the operation '
                         'to - this is useful when testing parameters to '
                         'reduce the computing time. The format is '
@@ -105,7 +106,7 @@ def getParentArgParse(args=None, binSize=True):
                         required=False,
                         type=genomicRegion)
 
-    parser.add_argument('--numberOfProcessors', '-p',
+    optional.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. Type "max/2" to '
                         'use half the maximun number of processors or "max" '
                         'to use all available processors.',
@@ -115,7 +116,7 @@ def getParentArgParse(args=None, binSize=True):
                                                'default_proc_number'),
                         required=False)
 
-    parser.add_argument('--verbose', '-v',
+    optional.add_argument('--verbose', '-v',
                         help='Set to see processing messages.',
                         action='store_true')
 

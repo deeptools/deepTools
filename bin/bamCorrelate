@@ -36,23 +36,27 @@ def parseArguments(args=None):
     binsMode = subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[parentParser,
+        parents=[bamCorrelateArgs(case='bins'),
+                 parentParser,
                  bamParser,
-                 requiredArgs(case='bins')],
+                 ],
         help="In the bins mode, the correlation is computed based on equal "\
-            "length bins. The number of bins to be used has to be specified.")
+            "length bins. The number of bins to be used has to be specified.",
+            add_help=False)
 
     # BED file arguments
     BEDmode = subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[parentParser,
+        parents=[bamCorrelateArgs(case='BED-file'),
+                 parentParser,
                  bamParser,
-                 requiredArgs(case='BED-file')],
+                 ],
         help="In the BED-file options, as list of genomic regions in BED "\
             "format has to be given. For each region in the BED file the "\
             "number of overlapping reads is counted in each of the BAM "\
-            "files. Then the correlation is computed.")
+            "files. Then the correlation is computed.",
+            add_help=False)
 
     args = parser.parse_args(args)
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
@@ -66,7 +70,7 @@ def parseArguments(args=None):
     return(args)
 
 ######
-def requiredArgs(case='bins'):
+def bamCorrelateArgs(case='bins'):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
 
@@ -77,36 +81,56 @@ def requiredArgs(case='bins'):
                         nargs = '+',
                         required = True)
 
-    parser.add_argument('--labels', '-l',
-                        metavar = 'list of labels files',
-                        help = 'List of labels to use in the output. '
+    required.add_argument('--plotFile', '-o',
+                       help='File name to save the file containing the heatmap '
+                       'of the correlation. The given file ending will be used '
+                       ' to determine the image '
+                        'format. The available options are: "png", "emf", '
+                        '"eps", "pdf" and "svg", e. g. correlation.pdf',
+                       type=argparse.FileType('w'),
+                       metavar = 'file name',
+                       required=True)
+
+    required.add_argument('--corMethod', '-c',
+                          help = 'correlation method to use',
+                          choices = ['pearson', 'spearman'],
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument("--help", "-h",  action="help", help="show this help message and exit")
+    optional.add_argument('--labels', '-l',
+                        metavar = '',
+                        help = 'List of labels to use in the image. '
                         'If not given the file names will be used instead. '
                         'Separate the labels by space.',
                         nargs = '+')
     
     if case=='bins':
-        parser.add_argument('--binSize', '-bs',
-                            help = 'Length in base pairs for a window used '
-                            'to sample the genome.',
-                            default = 10000,
-                            type = int)
+        optional.add_argument('--binSize', '-bs',
+                              metavar='',
+                              help = 'Length in base pairs for a window used '
+                              'to sample the genome.',
+                              default = 10000,
+                              type = int)
 
-        parser.add_argument('--numberOfSamples', '-n',
-                            help = 'Number of samples taken from the genome to compute '
-                            'the scaling factors',
-                            default=int(1e5),
-                            type=int)
+        optional.add_argument('--numberOfSamples', '-n',
+                              metavar='',
+                              help = 'Number of places to sample to compute '
+                              'the correlation',
+                              default=int(1e6),
+                              type=int)
 
         required.add_argument('--BED',
                               help=argparse.SUPPRESS,
                               default=None)
     else:
-        parser.add_argument('--binSize', '-bs',
+        optional.add_argument('--binSize', '-bs',
                             help=argparse.SUPPRESS,
                             default=10000,
                             type=int)
 
-        parser.add_argument('--numberOfSamples', '-n',
+        optional.add_argument('--numberOfSamples', '-n',
                             help=argparse.SUPPRESS,
                             default=int(1e5),
                             type=int)
@@ -122,12 +146,7 @@ def requiredArgs(case='bins'):
                            type=argparse.FileType('r'),
                            required=True)
 
-    parser.add_argument('--corMethod',
-                        help = 'correlation method to use',
-                        choices = ['pearson', 'spearman'],
-                        required=True)
-
-    parser.add_argument('--includeZeros',
+    optional.add_argument('--includeZeros',
                         help = 'If set, then zero counts that happen for '
                         '*all* bam files given are included. The default '
                         'behavior is to ignore those cases ',
@@ -137,13 +156,15 @@ def requiredArgs(case='bins'):
     heatmap = parser.add_argument_group('Heatmap options')
 
     heatmap.add_argument('--zMin', '-min',
-                          default=None,
-                          help='Minimum value for the heatmap intensities. '
-                          'If not specified the value is set automatically')
+                         metavar='',
+                         default=None,
+                         help='Minimum value for the heatmap intensities. '
+                         'If not specified the value is set automatically')
     heatmap.add_argument('--zMax', '-max',
-                          default=None,
-                          help='Maximum value for the heatmap intensities.'
-                          'If not specified the value is set automatically')
+                         metavar='',
+                         default=None,
+                         help='Maximum value for the heatmap intensities.'
+                         'If not specified the value is set automatically')
 
     from matplotlib import cm
     color_options = "', '".join([m for m in cm.datad
@@ -151,6 +172,7 @@ def requiredArgs(case='bins'):
 
     heatmap.add_argument(
         '--colorMap', default='Reds',
+        metavar='',
         help='Color map to use for the heatmap. Available values can be '
         'seen here: '
         'http://www.astro.lsa.umich.edu/~msshin/science/code/'
@@ -158,29 +180,29 @@ def requiredArgs(case='bins'):
         color_options + '\'')
 
         ####
-    group = parser.add_argument_group('Output')
+    group = parser.add_argument_group('Output optional options')
 
-    group.add_argument('--plotFile', '-plot',
-                       help = 'File name to save the .png file containing a plot '
-                       'of the correlation.',
-                       metavar = 'FILE',
-                       type=argparse.FileType('w'),
-                       required=True)
-
-    group.add_argument('--outFileCorMatrix', '-o',
+    group.add_argument('--outFileCorMatrix',
                         help = 'Output file name for the correlation matrix.',
-                        metavar = 'FILENAME',
+                        metavar = '',
                         type=argparse.FileType('w'))
 
     group.add_argument('--outRawCounts',
                         help = 'Output file name to save the bin counts',
-                        metavar = 'FILENAME',
+                        metavar = '',
                         type=argparse.FileType('w'))
 
+    group.add_argument('--plotFileFormat',
+                       metavar='',
+                       help='image format type. If given, this option overrides the '
+                       'image format based on the plotFile ending. '
+                       'The available options are: "png", "emf", '
+                        '"eps", "pdf" and "svg"',
+                       choices=['png','pdf', 'svg','eps', 'emf'])
     return parser
 
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
-                    vmin=None, colormap='Reds'):
+                    vmin=None, colormap='Reds', image_format=None):
     import scipy.cluster.hierarchy as sch
     M = corr_matrix.shape[0]
 
@@ -224,8 +246,8 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
         for col in range(M):
             axmatrix.text(row+0.5, col+0.5, "{:.2f}".format(corr_matrix[row,col]),
                           ha='center', va='center')
-    fig.savefig(plotFileName)
 
+    fig.savefig(plotFileName, format=image_format)
 
 def main(args):
     """
@@ -316,7 +338,7 @@ def main(args):
     plotFileName = args.plotFile.name
     args.plotFile.close()
     plotCorrelation(corr_matrix, args.labels, plotFileName, args.zMax, args.zMin, 
-                    args.colorMap)
+                    args.colorMap, image_format=args.plotFileFormat)
 
 if __name__ == "__main__":
     args = parseArguments()
