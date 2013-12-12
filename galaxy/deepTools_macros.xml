@@ -154,6 +154,16 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </conditional>
     </macro>
 
+    <macro name="image_file_format">
+        <param name="outFileFormat" type="select" label="Image file format">
+            <option value="png" selected="true">png</option>
+            <option value="pdf">pdf</option>
+            <option value="svg">svg</option>
+            <option value="eps">eps</option>
+            <option value="emf">emf</option>
+        </param>
+    </macro>
+
     <macro name="graphic_output_settings">
         <conditional name="output" >
             <param name="showOutputSettings" type="select" label="Show advanced output settings" >
@@ -162,13 +172,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="outFileFormat" type="select" label="Image file format">
-                    <option value="png" selected="true">png</option>
-                    <option value="pdf">pdf</option>
-                    <option value="svg">svg</option>
-                    <option value="eps">eps</option>
-                    <option value="emf">emf</option>
-                </param>
+                <yield />
                 <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
                 <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
                 <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
@@ -176,8 +180,34 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </conditional>
     </macro>
 
-    <macro name="colormap">
+    <macro name="output_graphic_outputs">
+        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and 
+                output['saveData'] is True
+            ))
+            </filter>
+        </data>
+        <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: Heatmap values">
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and 
+                output['saveMatrix'] is True
+            ))
+            </filter>
+        </data>
+        <data format="bed" name="outFileSortedRegions" label="${tool.name} on ${on_string}: sorted/filtered regions">
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and 
+                output['saveSortedRegions'] is True
+            ))
+            </filter>
+        </data>
+    </macros>
 
+    <macro name="colormap">
         <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>

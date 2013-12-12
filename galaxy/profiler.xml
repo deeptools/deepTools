@@ -81,7 +81,9 @@
             </when>
         </conditional>
 
-        <expand macro="graphic_output_settings" />
+        <expand macro="graphic_output_settings">
+            <expand macro="image_file_format" />
+        <expand>
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -131,17 +133,9 @@
                 <when input="output.outFileFormat" value="emf" format="emf" />
             </change_format>
         </data>
-        <data format="tabular" name="outFileNameData" label="${tool.name} raw plot data">
-            <filter>(output['showOutputSettings'] == 'yes' and output['saveData'] == True)</filter>
-        </data>
-        <data format="tabular" name="outFileNameMatrix" label="${tool.name} matrix of heatmap values">
-            <filter>(output['showOutputSettings'] == 'yes' and output['saveMatrix'] == True)</filter>
-        </data>
-        <data format="bed" name="outFileSortedRegions" label="${tool.name} sorted/filtered regions">
-            <filter>(output['showOutputSettings'] == 'yes' and output['saveSortedRegions'] == True)</filter>
-        </data>
-  </outputs>
-  <help>
+        <expand macro="output_graphic_outputs" />
+    </outputs>
+    <help>
 
 **What it does**
 
