@@ -1,6 +1,7 @@
 <tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.1">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
     <expand macro="requirements" />
+    <expand macro="stdio" />
     <macros>
         <import>deepTools_macros.xml</import>
     </macros>

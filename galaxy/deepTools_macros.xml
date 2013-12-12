@@ -47,13 +47,23 @@
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
+            <requirement type="package" version="0.12.0">scipy</requirement>
             <requirement type="package" version="1.2.1">matplotlib</requirement>
             <requirement type="package" version="0.1.19">samtools</requirement>
             <requirement type="package" version="12-2013">bx-python</requirement>
             <yield />
         </requirements>
-        </macro>
-
+    </macro>
+    <macro name="stdio">
+        <stdio>
+            <exit_code range="1:" />
+            <exit_code range=":-1" />
+            <exit_code range="0" level="warning" description="Warning" />
+            <regex match="Error:" />
+            <regex match="Exception:" />
+            <regex match="EXception:" />
+        </stdio>
+    </macro>
     <token name="@REFERENCES@">
 
 For more informations, please visit our `project site`_.

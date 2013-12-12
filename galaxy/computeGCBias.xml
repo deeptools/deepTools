@@ -1,9 +1,7 @@
 <tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.1">
     <description>to see whether your samples should be normalized for GC bias</description>
     <expand macro="requirements" />
-    <stdio>
-        <exit_code range="0" level="warning" description="Warning" />
-    </stdio>
+    <expand macro="stdio" />
     <macros>
         <import>deepTools_macros.xml</import>
     </macros>
