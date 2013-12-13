@@ -664,7 +664,7 @@ class heatmapper:
                 score = 0
                 if self.matrixAvgsDict is not None:
                     try:
-                        if np.isnan(self.matrixAvgsDict[label][j]):
+                        if self.matrixAvgsDict[label][j] is np.ma.masked:
                             score = 'nan'
                         else:
                             score = np.float(self.matrixAvgsDict[label][j])
