@@ -6,9 +6,6 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
-
         #set files=[]
         #set labels=[]
 
@@ -22,16 +19,17 @@
 
         --bamfiles #echo " ".join($files)
         --labels #echo " ".join($labels)
-
         --fragmentLength $fragmentLength
         --corMethod $corMethod
 
-        #set newoutFileName=str($outFileName)+".png"
-        --plotFile $newoutFileName
+        --plotFile $outFileName
 
         #if $outputOpt.showOutputOpt == "yes"
             --outRawCounts '$outFileRawCounts' 
             --outFileCorMatrix '$outFileCorMatrix'
+            --plotFileFormat $output.outFileFormat
+        #else:
+            --plotFileFormat 'png'
         #end if
 
         #if $mode.modeOpt == "bins":
@@ -65,9 +63,6 @@
             --colorMap '$mode.advancedOpt.colorMap'
 
         #end if
-
-        ; mv $newoutFileName $outFileName
-        ; rm $temp_dir -rf
     </command>
 
     <inputs>
@@ -112,6 +107,13 @@
             </param>
             <when value="no" />
             <when value="yes">
+                <param name="outFileFormat" type="select" label="Image file format">
+                    <option value="png" selected="true">png</option>
+                    <option value="pdf">pdf</option>
+                    <option value="svg">svg</option>
+                    <option value="eps">eps</option>
+                    <option value="emf">emf</option>
+                </param>
                 <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
                 <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
             </when>
@@ -119,7 +121,14 @@
 
     </inputs>
     <outputs>
-        <data format="png" name="outFileName" />
+        <data format="png" name="outFileName">
+            <change_format>
+                <when input="output.outFileFormat" value="pdf" format="pdf" />
+                <when input="output.outFileFormat" value="svg" format="svg" />
+                <when input="output.outFileFormat" value="eps" format="eps" />
+                <when input="output.outFileFormat" value="emf" format="emf" />
+            </change_format>
+        </data>
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveRawCounts'] == True)</filter>
         </data>

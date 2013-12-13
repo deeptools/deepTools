@@ -11,10 +11,10 @@
         profiler
 
         --matrixFile $matrixFile
+        --outFileName $outFileName
 
         #if $output.showOutputSettings == "yes"
-            #set newoutFileName = str($outFileName)+"."+str($output.outFileFormat)
-            --outFileName $newoutFileName
+            --plotFileFormat $output.outFileFormat
 
             #if $output.saveData:
                 --outFileNameData '$outFileNameData' 
@@ -28,8 +28,7 @@
                 --outFileSortedRegions '$outFileSortedRegions'
             #end if
         #else
-            #set newoutFileName = str($outFileName)+".png"
-            --outFileName $newoutFileName
+            --plotFileFormat 'png'
         #end if
 
         #if $scaleRegions.showScaleRegionsOpt == "yes":
@@ -65,7 +64,6 @@
                 --yAxisLabel '$advancedOpt.yAxisLabel'
             #end if
         #end if
-        ; mv $newoutFileName $outFileName
     </command>
     <inputs>
         <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
@@ -113,7 +111,6 @@
                     <option value="std">std</option>
                     <option value="overlapped_lines">overlapped lines</option>
                 </param>
-
                 <param name="regionsLabel" type="text" value="genes" size="30" label="Labels for the regions plotted in the heatmap" help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
                 <param name="plotTitle" type="text" value="" size="30" label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" label="Do one plot per group" help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
@@ -125,14 +122,6 @@
         </conditional>
     </inputs>
     <outputs>
-        <data format="png" name="outFileName" label="${tool.name} image">
-            <change_format>
-                <when input="output.outFileFormat" value="pdf" format="pdf" />
-                <when input="output.outFileFormat" value="svg" format="svg" />
-                <when input="output.outFileFormat" value="eps" format="eps" />
-                <when input="output.outFileFormat" value="emf" format="emf" />
-            </change_format>
-        </data>
         <expand macro="output_graphic_outputs" />
     </outputs>
     <help>

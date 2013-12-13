@@ -172,7 +172,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             </param>
             <when value="no" />
             <when value="yes">
-                <yield />
+                <param name="outFileFormat" type="select" label="Image file format">
+                    <option value="png" selected="true">png</option>
+                    <option value="pdf">pdf</option>
+                    <option value="svg">svg</option>
+                    <option value="eps">eps</option>
+                    <option value="emf">emf</option>
+                </param>
                 <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
                 <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
                 <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
@@ -181,6 +187,14 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </macro>
 
     <macro name="output_graphic_outputs">
+        <data format="png" name="outFileName" label="${tool.name} image">
+            <change_format>
+                <when input="output.outFileFormat" value="pdf" format="pdf" />
+                <when input="output.outFileFormat" value="svg" format="svg" />
+                <when input="output.outFileFormat" value="eps" format="eps" />
+                <when input="output.outFileFormat" value="emf" format="emf" />
+            </change_format>
+        </data>
         <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
             <filter>
             ((
@@ -205,7 +219,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             ))
             </filter>
         </data>
-    </macros>
+    </macro>
 
     <macro name="colormap">
         <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
