@@ -31,7 +31,8 @@ def parseArguments(args=None):
         'any other regions defined in a BED or GFF '
         'format will work. A preprocessed matrix generated '
         'by the tool computeMatrix is required.',
-        epilog='An example usage is: %(prog)s -m <matrix file>')
+        epilog='An example usage is: %(prog)s -m <matrix file>',
+        add_help=False)
 
     args = parser.parse_args(args)
 
@@ -97,7 +98,8 @@ def plotProfile(hm, outFileName,
                 plotHeight=5,
                 plotWidth=8,
                 onePlotPerGroup=False,
-                plotType='simple'):
+                plotType='simple',
+                image_format=None):
 
     tickPlotAdj = 0.5
     plt.rcParams['font.size'] = 10.0
@@ -238,7 +240,8 @@ def plotProfile(hm, outFileName,
 
     # for some reason if the bbox_inches is used
     # then the legend for the summary plot is omited
-    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200)
+    plt.savefig(outFileName, bbox_inches='tight', 
+        pdd_inches=0, dpi=200, format=image_format)
 
 
 def main(args):
@@ -285,7 +288,8 @@ def main(args):
                 args.plotHeight,
                 args.plotWidth,
                 args.onePlotPerGroup,
-                plotType=args.plotType)
+                plotType=args.plotType,
+                image_format=args.plotFileFormat)
 
 
 if __name__ == "__main__":
