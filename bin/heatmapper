@@ -204,7 +204,7 @@ def plotMatrix(hm, outFileName,
     smallSpacerFrac = smallSpacer / figHeight
 
     # figsize: w,h tuple in inches
-    fig = plt.figure(figsize=(figWidth, figHeight), dpi=360)
+    fig = plt.figure(figsize=(figWidth, figHeight))
 
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
@@ -383,7 +383,7 @@ def plotMatrix(hm, outFileName,
                        heatFracHeight - smallSpacerFrac])
             fig.colorbar(img, cax=legend)
 
-    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200, 
+    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
 
 

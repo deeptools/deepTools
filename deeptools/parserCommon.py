@@ -453,7 +453,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                          'is not grouped, otherwise only the first group will '
                          'be clustered. If more specific clustering methods '
                          'are required it is advisable to save the underlying matrix '
-                         'and run the clustering using other software. ',
+                         'and run the clustering using other software. The plotting  '
+                         'of the clustering may fail (Error: Segmentation fault) if a '
+                         'cluster has very few members compared to the total number '
+                         'or regions.',
                          type=int)
     
     optional = parser.add_argument_group('Optional arguments')
