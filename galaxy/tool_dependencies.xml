@@ -57,7 +57,7 @@
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-    <package name="deepTools" version="1.5.4_fada41ab04f78c4c78d10c7a216e5c3160e8c36e">
+    <package name="deepTools" version="1.5.4_6765c227d9628f8e6ba690e6fde7f1d86c497b49">
         <install version="1.0">
             <actions>
                 <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
@@ -70,7 +70,7 @@
                         <package name="bx-python" version="12-2013" />
                     </repository>
                 </action>
-                <action type="shell_command">git reset --hard fada41ab04f78c4c78d10c7a216e5c3160e8c36e</action>
+                <action type="shell_command">git reset --hard 6765c227d9628f8e6ba690e6fde7f1d86c497b49</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>
                 <action type="shell_command">
                     export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 

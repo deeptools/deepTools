@@ -1,4 +1,4 @@
-<tool id="deeptools_bigwigCompare" name="bigwigCompare" version="1.0">
+<tool id="deeptools_bigwigCompare" name="bigwigCompare" version="1.0.2">
     <description>normalizes and compares two bigWig files to obtain the ratio, log2ratio or difference</description>
     <expand macro="requirements"/>
     <expand macro="stdio" />
