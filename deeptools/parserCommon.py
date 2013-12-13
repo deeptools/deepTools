@@ -401,6 +401,14 @@ def heatmapperMatrixArgs(args=None):
                           help='Matrix file from the computeMatrix tool.',
                           type=argparse.FileType('r'),
                           )
+
+    required.add_argument('--outFileName', '-out',
+                        help='File name to save the image. The file '
+                        'ending will be used to determine the image '
+                        'format. The available options are: "png", "emf", '
+                        '"eps", "pdf" and "svg", e. g. MyHeatmap.png.',
+                        type=writableFile,
+                        required=True)
     return parser
 
 
@@ -408,13 +416,6 @@ def heatmapperOutputArgs(args=None,
                          mode=['heatmap', 'profile'][0]):
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
-    output.add_argument('--outFileName', '-out',
-                        help='File name to save the image. The file '
-                        'ending will be used to determine the image '
-                        'format. The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg", e. g. MyHeatmap.png.',
-                        type=writableFile,
-                        required=True)
 
     output.add_argument('--outFileNameData',
                         help='File name to save the data '
@@ -444,8 +445,20 @@ def heatmapperOutputArgs(args=None,
 def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
     parser = argparse.ArgumentParser(add_help=False)
+    cluster = parser.add_argument_group('Clustering arguments')
+    cluster.add_argument('--kmeans',
+                         help='Number of clusters to compute. When this '
+                         'option is set, then the matrix is split into clusters '
+                         'using the kmeans algorithm. Only works for data that '
+                         'is not grouped, otherwise only the first group will '
+                         'be clustered. If more specific clustering methods '
+                         'are required it is advisable to save the underlying matrix '
+                         'and run the clustering using other software. ',
+                         type=int)
+    
     optional = parser.add_argument_group('Optional arguments')
 
+    optional.add_argument("--help", "-h",  action="help", help="show this help message and exit")
     if mode == 'profile':
         optional.add_argument(
             '--averageType',
@@ -632,6 +645,15 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'set, each group will get its own plot, stacked on '
                           'top of each other.',
                           action='store_true')
+
+    optional.add_argument('--plotFileFormat',
+                       metavar='',
+                       help='image format type. If given, this option overrides the '
+                       'image format based on the plotFile ending. '
+                       'The available options are: "png", "emf", '
+                        '"eps", "pdf" and "svg"',
+                       choices=['png','pdf', 'svg','eps', 'emf'])
+
     optional.add_argument('--verbose',
                           help='If set warning messages and '
                           'addition information are given.',
