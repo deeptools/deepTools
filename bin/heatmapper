@@ -492,6 +492,21 @@ def main(args):
         hm.matrixDict = _matrixDict
         hm.regionsDict = _regionsDict
 
+    # check if maybe some group is too small to be plotted
+    # this causes a segmentation fault so is better to
+    # try catch the problem and return a meaningful output
+    total_regions = 0
+    for group_matrix in hm.matrixDict.values():
+        total_regions += group_matrix.shape[0]
+
+    for label, group_matrix in hm.matrixDict.iteritems():
+        if float(group_matrix.shape[0])/total_regions < 5.0/1000:
+            print "Group {} contains too few regions {}. It can't "\
+                "be plotted. Try removing this group ".format(
+                label, 
+                group_matrix.shape[0])
+            exit(0)
+                                                              
     if len(args.regionsLabel):
         hm.reLabelGroups(args.regionsLabel)
 
@@ -535,7 +550,10 @@ def hmcluster(matrix, k, method='kmeans'):
         from scipy.cluster.vq import vq, kmeans
 
         centroids,_ = kmeans(matrix, k)
-        idx,_ = vq(matrix, centroids)
+        # order the centroids in an attempt to
+        # get the same cluster order
+        order = np.argsort(centroids.mean(axis=1))
+        idx,_ = vq(matrix, centroids[order,])
 
 
     if method == 'hierarchical':
