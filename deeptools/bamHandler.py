@@ -35,4 +35,7 @@ def openBam(bamFile, bamIndex=None):
     except:
         sys.exit("The file {} does not have BAM format ".format(bamFile))
 
+    if bam.mapped == 0:
+        sys.exit("The file {} does have any mapped reads. ".format(bamFile))
+
     return bam
