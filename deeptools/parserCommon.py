@@ -212,7 +212,7 @@ def computeMatrixOutputArgs(args=None):
                         required=True)
     output.add_argument('--outFileNameData',
                         help='Name to save the averages per matrix '
-                        'column into a text file. This corresponds to'
+                        'column into a text file. This corresponds to '
                         'the underlying data used to '
                         'plot a summary profile. Example: myProfile.tab',
                         type=argparse.FileType('w'))
