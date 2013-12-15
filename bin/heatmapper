@@ -24,8 +24,8 @@ plt.ioff()
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
-                 parserCommon.heatmapperOutputArgs(),
-                 parserCommon.heatmapperOptionalArgs(mode='heatmap')],
+                 parserCommon.heatmapperOutputArgs( mode='heatmap' ),
+                 parserCommon.heatmapperOptionalArgs( mode='heatmap' )],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool creates a heatmap for a '
         'score associated to genomic regions. '
@@ -506,7 +506,7 @@ def main(args):
                 label, 
                 group_matrix.shape[0])
             exit(0)
-                                                              
+
     if len(args.regionsLabel):
         hm.reLabelGroups(args.regionsLabel)
 

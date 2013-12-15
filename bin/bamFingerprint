@@ -76,6 +76,14 @@ def parseArguments(args=None):
                         metavar = 'FILENAME',
                         type=argparse.FileType('w'))
 
+    group.add_argument('--plotFileFormat',
+                       metavar='',
+                       help='image format type. If given, this option overrides the '
+                       'image format based on the plotFile ending. '
+                       'The available options are: "png", "emf", '
+                        '"eps", "pdf" and "svg"',
+                       choices=['png','pdf', 'svg','eps', 'emf'])
+
     args = parser.parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
@@ -110,7 +118,12 @@ def main(args):
         yl = plt.ylabel('fraction w.r.t. bin with highest coverage')
         i +=1
     plt.legend(loc='upper left')
-    plt.savefig(args.plotFile, bbox_inches=0)
+
+    # set the plotFileFormat explicitly to None to trigger the format from the file-extension
+    if not args.plotFileFormat:
+        args.plotFileFormat = None
+
+    plt.savefig(args.plotFile, bbox_inches=0, format=args.plotFileFormat)
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )

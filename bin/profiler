@@ -22,8 +22,8 @@ plt.ioff()
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
-                 parserCommon.heatmapperOutputArgs(),
-                 parserCommon.heatmapperOptionalArgs(mode='profile')],
+                 parserCommon.heatmapperOutputArgs( mode='profile' ),
+                 parserCommon.heatmapperOptionalArgs( mode='profile' )],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool creates a profile plot for a '
         'score associated to genomic regions. '
