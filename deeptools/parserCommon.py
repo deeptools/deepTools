@@ -422,6 +422,18 @@ def heatmapperOutputArgs(args=None,
                         'underlying data for the average profile, e.g. '
                         'myProfile.tab.',
                         type=argparse.FileType('w'))
+
+    output.add_argument(
+        '--outFileSortedRegions',
+        help='File name in which the regions are saved '
+        'after skipping zeros or min/max threshold values. The '
+        'order of the regions in the file follows the sorting '
+        'order selected. This is useful, for example, to '
+        'generate other heatmaps keeping the sorting of the '
+        'first heatmap. Example: Heatmap1sortedRegions.bed',
+        metavar='FILE',
+        type=argparse.FileType('w'))
+
     if mode == 'heatmap':
         output.add_argument('--outFileNameMatrix',
                             help='If this option is given, then the matrix '
@@ -429,16 +441,6 @@ def heatmapperOutputArgs(args=None,
                             'using this name, e.g. MyMatrix.tab.',
                             metavar='FILE',
                             type=writableFile)
-        output.add_argument(
-            '--outFileSortedRegions',
-            help='File name in which the regions are saved '
-            'after skipping zeros or min/max threshold values. The '
-            'order of the regions in the file follows the sorting '
-            'order selected. This is useful, for example, to '
-            'generate other heatmaps keeping the sorting of the '
-            'first heatmap. Example: Heatmap1sortedRegions.bed',
-            metavar='FILE',
-            type=argparse.FileType('w'))
     return parser
 
 
