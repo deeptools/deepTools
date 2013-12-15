@@ -69,6 +69,15 @@
                     <repository name="package_bx_python_12_2013" owner="iuc">
                         <package name="bx-python" version="12-2013" />
                     </repository>
+                    <repository name="package_numpy_1_7" owner="iuc">
+                        <package name="numpy" version="1.7.1" />
+                    </repository>
+                    <repository name="package_matplotlib_1_2" owner="iuc">
+                        <package name="matplotlib" version="1.2.1" />
+                    </repository>
+                    <repository name="package_scipy_0_12" owner="iuc">
+                        <package name="scipy" version="0.12.0" />
+                    </repository>
                 </action>
                 <action type="shell_command">git reset --hard 6765c227d9628f8e6ba690e6fde7f1d86c497b49</action>
                 <action type="make_directory">$INSTALL_DIR/lib/python</action>

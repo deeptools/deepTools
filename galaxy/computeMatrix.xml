@@ -120,15 +120,15 @@
             <option	 value="TES">end of region (e.g. TES)</option>
             <option value="center">center of region</option>
         </param>
-        
         <param name="nanAfterEnd" type="boolean" truevalue="--nanAfterEnd" falsevalue="" label="Discard any values after the region end" help="This is useful to visualize the region end when not using the scale-regions mode and when the reference-point is set to the TSS."/>
         <param name="beforeRegionStartLength" type="integer" value="1000" min="1" label="Distance upstream of the start site of the regions defined in the region file" help="If the regions are genes, this would be the distance upstream of the transcription start site."/>
-        
         <param name="afterRegionStartLength" type="integer" value="1000" min="1" label="Distance downstream of the end site of the given regions" help="If the regions are genes, this would be the distance downstream of the transcription end site."/>
       </when>
     </conditional>
 
-    <expand macro="graphic_output_settings" />
+    <expand macro="input_graphic_output_settings">
+        <expand macro="input_save_matrix_values" />
+    </expand>
 
     <conditional name="advancedOpt" >
       <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -175,6 +175,7 @@
   <outputs>
     <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: Matrix" />
     <expand macro="output_graphic_outputs" />
+    <expand macro="output_save_matrix_values" />
   </outputs>
     <!--
     computeMatrix -S test.bw -R test2.bed -a 100 -b 100 -bs 1 

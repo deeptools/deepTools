@@ -5,91 +5,84 @@
     <macros>
         <import>deepTools_macros.xml</import>
     </macros>
-  <command>
-    #import tempfile
-    #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+    <command>
+        #import tempfile
+        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
 
-    #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-    #set $temp_bam_path = $temp_bam_handle.name + '.bam'
-    #silent $temp_bam_handle.close()
-    #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
-    #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
-
-
-  correctGCBias
-
-    @THREADS@
-
-  --bamfile '$temp_bam_path'
-  --GCbiasFrequenciesFile $GCbiasFrequenciesFile
-
-    @reference_genome_source@
+        #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
+        #set $temp_bam_path = $temp_bam_handle.name + '.bam'
+        #silent $temp_bam_handle.close()
+        #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
+        #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
 
 
-  #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-    --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
-  #else:
-    --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
-  #end if
+        correctGCBias
+
+        @THREADS@
+
+        --bamfile '$temp_bam_path'
+        --GCbiasFrequenciesFile $GCbiasFrequenciesFile
+
+        @reference_genome_source@
 
 
-  #if $advancedOpt.showAdvancedOpt == "yes":
-    #if str($advancedOpt.region.value) != '':
-      --region '$advancedOpt.region'
-    #end if
-    
-    --binSize '$advancedOpt.binSize'  
-  #end if
-  
-  #set newoutFileName="corrected."+str($outFileFormat)
-  
-  --correctedFile $newoutFileName; mv $newoutFileName $outFileName
+        #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+            --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
+        #else:
+            --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
+        #end if
 
-  </command>
+        #if $advancedOpt.showAdvancedOpt == "yes":
+            #if str($advancedOpt.region.value) != '':
+                --region '$advancedOpt.region'
+            #end if
+            --binSize '$advancedOpt.binSize'  
+        #end if
 
-  <inputs>
+        #set newoutFileName="corrected."+str($outFileFormat)
+        --correctedFile $newoutFileName;
 
-  <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
-
-  <param name="bamInput" format="bam" type="data" label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
-
+        mv $newoutFileName $outFileName
+    </command>
+    <inputs>
+        <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
+        <param name="bamInput" format="bam" type="data" label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
 
-  <param name="outFileFormat" type="select" label="File format of the output">
-    <option value="bam">bam</option>
-    <option value="bw">bigwig</option>
-    <option value="bg">bedgraph</option>
-  </param>
-  
-  <conditional name="advancedOpt">
-    <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
-          <param name="region" type="text" value=""
-            label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-           
-           <param name="binSize" type="integer" value="50" min="1" 
-             label="Bin size in bp"
-             help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
-      </when>
-  </conditional>
-  </inputs>
-  
-  <outputs>
-    <data format="bam" name="outFileName">
-    <change_format>
-        <when input="outFileFormat" value="bw" format="bigwig" />
-        <when input="outFileFormat" value="bam" format="bam" />
-        <when input="outFileFormat" value="bg" format="bedgraph" />
-    </change_format>
-    </data>
-  </outputs>
-  <help>
+        <param name="outFileFormat" type="select" label="File format of the output">
+            <option value="bam">bam</option>
+            <option value="bw">bigwig</option>
+            <option value="bg">bedgraph</option>
+        </param>
+
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="region" type="text" value=""
+                    label="Region of the genome to limit the operation to"
+                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
+                <param name="binSize" type="integer" value="50" min="1" 
+                    label="Bin size in bp"
+                    help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+            </when>
+        </conditional>
+    </inputs>
+    <outputs>
+        <data format="bam" name="outFileName">
+            <change_format>
+                <when input="outFileFormat" value="bw" format="bigwig" />
+                <when input="outFileFormat" value="bam" format="bam" />
+                <when input="outFileFormat" value="bg" format="bedgraph" />
+            </change_format>
+        </data>
+    </outputs>
+    <help>
 
 **What it does**
 

@@ -1,5 +1,5 @@
 <macros>
-    <macro name="bamCorrelate_mode_actions">
+    <xml name="bamCorrelate_mode_actions">
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -36,9 +36,9 @@
                 <expand macro="colormap" />
             </when>
         </conditional>
-    </macro>
+    </xml>
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <macro name="requirements">
+    <xml name="requirements">
         <requirements>
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
@@ -53,17 +53,17 @@
             <requirement type="package" version="12-2013">bx-python</requirement>
             <yield />
         </requirements>
-    </macro>
-    <macro name="stdio">
+    </xml>
+    <xml name="stdio">
         <stdio>
             <exit_code range="1:" />
             <exit_code range=":-1" />
-            <exit_code range="0" level="warning" description="Warning" />
             <regex match="Error:" />
             <regex match="Exception:" />
             <regex match="EXception:" />
+            <regex match="Traceback" />
         </stdio>
-    </macro>
+    </xml>
     <token name="@REFERENCES@">
 
 For more informations, please visit our `project site`_.
@@ -79,7 +79,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     </token>
 
-    <macro name="multiple_input_bams">
+    <xml name="multiple_input_bams">
         <repeat name="input_files" title="BAM files" min="2">
             <param name="bamfile" type="data" format="bam" 
                 label="Bam file" 
@@ -88,7 +88,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 label="Label"
                 help="Label to use in the output. If not given the dataset name will be used instead."/>
           </repeat>
-    </macro>
+    </xml>
 
     <token name="@multiple_input_bams@">
         #for $i in $input_files:
@@ -108,7 +108,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         #end for
     </token>
 
-    <macro name="reference_genome_source">
+    <xml name="reference_genome_source">
         <conditional name="source">
             <param name="ref_source" type="select" label="Reference genome">
                 <option value="cached">locally cached</option>
@@ -126,7 +126,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
             </when>
         </conditional>
-    </macro>
+    </xml>
 
     <token name="@reference_genome_source@">
     #if $source.ref_source=="history":
@@ -136,7 +136,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     #end if
     </token>
 
-    <macro name="effectiveGenomeSize">
+    <xml name="effectiveGenomeSize">
         <conditional name="effectiveGenomeSize">
             <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
                 help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded. 
@@ -152,9 +152,9 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
             </when>
         </conditional>
-    </macro>
+    </xml>
 
-    <macro name="image_file_format">
+    <xml name="image_file_format">
         <param name="outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
@@ -162,9 +162,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="eps">eps</option>
             <option value="emf">emf</option>
         </param>
-    </macro>
+    </xml>
 
-    <macro name="graphic_output_settings">
+    <xml name="input_save_matrix_values">
+        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
+    </xml>
+
+    <xml name="input_graphic_output_settings">
         <conditional name="output" >
             <param name="showOutputSettings" type="select" label="Show advanced output settings" >
                 <option value="no" selected="true">no</option>
@@ -172,21 +176,24 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="outFileFormat" type="select" label="Image file format">
-                    <option value="png" selected="true">png</option>
-                    <option value="pdf">pdf</option>
-                    <option value="svg">svg</option>
-                    <option value="eps">eps</option>
-                    <option value="emf">emf</option>
-                </param>
-                <param name="saveData" type="boolean" label="Save the data underlying data for the average profile"/>
-                <param name="saveMatrix" type="boolean" label="Save the the matrix of values underlying the heatmap"/>
+                <yield />
+                <param name="saveData" type="boolean" label="Save the data underlying the average profile"/>
                 <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
             </when>
         </conditional>
-    </macro>
+    </xml>
 
-    <macro name="output_graphic_outputs">
+    <xml name="input_image_file_format">
+        <param name="outFileFormat" type="select" label="Image file format">
+            <option value="png" selected="true">png</option>
+            <option value="pdf">pdf</option>
+            <option value="svg">svg</option>
+            <option value="eps">eps</option>
+            <option value="emf">emf</option>
+        </param>
+    </xml>
+
+    <xml name="output_image_file_format">
         <data format="png" name="outFileName" label="${tool.name} image">
             <change_format>
                 <when input="output.outFileFormat" value="pdf" format="pdf" />
@@ -195,19 +202,25 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <when input="output.outFileFormat" value="emf" format="emf" />
             </change_format>
         </data>
-        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
-            <filter>
-            ((
-                output['showOutputSettings'] == 'yes' and 
-                output['saveData'] is True
-            ))
-            </filter>
-        </data>
+    </xml>
+
+    <xml name="output_save_matrix_values">
         <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: Heatmap values">
             <filter>
             ((
                 output['showOutputSettings'] == 'yes' and 
                 output['saveMatrix'] is True
+            ))
+            </filter>
+        </data>
+    </xml>
+
+    <xml name="output_graphic_outputs">
+        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and 
+                output['saveData'] is True
             ))
             </filter>
         </data>
@@ -219,9 +232,9 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             ))
             </filter>
         </data>
-    </macro>
+    </xml>
 
-    <macro name="colormap">
+    <xml name="colormap">
         <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>
@@ -363,6 +376,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="afmhot_r">afmhot reversed</option>
         </param>
 
-    </macro>
+    </xml>
 
 </macros>

@@ -107,13 +107,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="outFileFormat" type="select" label="Image file format">
-                    <option value="png" selected="true">png</option>
-                    <option value="pdf">pdf</option>
-                    <option value="svg">svg</option>
-                    <option value="eps">eps</option>
-                    <option value="emf">emf</option>
-                </param>
+                <expand macro="input_image_file_format"/>
                 <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
                 <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
             </when>
@@ -121,14 +115,7 @@
 
     </inputs>
     <outputs>
-        <data format="png" name="outFileName">
-            <change_format>
-                <when input="output.outFileFormat" value="pdf" format="pdf" />
-                <when input="output.outFileFormat" value="svg" format="svg" />
-                <when input="output.outFileFormat" value="eps" format="eps" />
-                <when input="output.outFileFormat" value="emf" format="emf" />
-            </change_format>
-        </data>
+        <expand macro="output_image_file_format" />
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveRawCounts'] == True)</filter>
         </data>

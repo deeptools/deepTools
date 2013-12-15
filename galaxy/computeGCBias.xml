@@ -42,16 +42,10 @@
                 #end if
             #end if
 
-            #if $saveBiasPlot:
-                --biasPlot $biasPlot
+            #if str($image_format) != 'none':
+                --biasPlot $outImageName
+                --plotFileFormat $image_format
             #end if
-
-        ##  #if $output.showOutputSettings == "yes"
-        ##      #if $output.saveBiasPlot:
-        ##        --biasPlot biasPlot.png ;
-        ##        mv biasPlot.png $biasPlot
-        ##      #end if
-        ##  #end if
 
     </command>
     <inputs>
@@ -93,28 +87,33 @@
         </when>
     </conditional>
 
-    <param name="saveBiasPlot" type="boolean" truevalue="--biasPlot" falsevalue="" checked="True" label="Save a diagnostic image summarizing the GC bias found on the sample"/>
-    <!--
-    <conditional name="output" >
-        <param name="showOutputSettings" type="select" label="Show additional output options" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
-        <param name="saveBiasPlot" type="boolean" label="Save a diagnostic image summarizing the GC bias found on the sample"/>
-      </when>
-    </conditional>
-    -->
-  </inputs>
-  <outputs>
-    <data format="tabular" name="outFileName" />
-    <data format="png" name="biasPlot" label="${tool.name} on ${on_string}: bias plot">
-      <filter>saveBiasPlot is True</filter>      
-      <!--<filter>(output['showOutputSettings'] == 'yes' and output['saveBiasPlot'] == True)</filter>-->
-    </data>
-  </outputs>
-  <help>
+        <param name="image_format" type="select" label="GC bias plot" help="If given, a diagnostic image summarizing the GC bias found on the sample will be created.">
+            <option value="none" selected="true">No image</option>
+            <option value="png">Image in png format</option>
+            <option value="pdf">Image in pdf format</option>
+            <option value="svg">Image in svg format</option>
+            <option value="eps">Image in eps format</option>
+            <option value="emf">Image in emf format</option>
+        </param>
+
+    </inputs>
+    <outputs>
+        <data format="tabular" name="outFileName" />
+        <data format="png" name="outImageName" label="${tool.name} GC-bias Plot">
+            <filter>
+            ((
+                image_format != 'none'
+            ))
+            </filter>
+            <change_format>
+                <when input="image_format" value="pdf" format="pdf" />
+                <when input="image_format" value="svg" format="svg" />
+                <when input="image_format" value="eps" format="eps" />
+                <when input="image_format" value="emf" format="emf" />
+            </change_format>
+        </data>
+    </outputs>
+    <help>
 
 **What it does**
 

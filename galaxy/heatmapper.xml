@@ -79,12 +79,22 @@
             #end if
 
             $advancedOpt.onePlotPerGroup
+
+            #if $advancedOpt.clustering.clustering_options == 'kmeans':
+                #if int($advancedOpt.clustering.k_kmeans) > 0:
+                    --kmeans $advancedOpt.clustering.k_kmeans
+                #end if
+            #end if
+
         #end if
     </command>
     <inputs>
         <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
 
-        <expand macro="graphic_output_settings" />
+        <expand macro="input_graphic_output_settings">
+            <expand macro="input_image_file_format" />
+            <expand macro="input_save_matrix_values" />
+        </expand>
 
         <conditional name="advancedOpt" >
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -149,19 +159,27 @@
                 <param name="regionsLabel" type="text" value="genes" size="30" label="Labels for the regions plotted in the heatmap" help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
                 <param name="plotTitle" type="text" value="" size="30" label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" label="Do one plot per group" help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
+
+                <conditional name="clustering">
+                    <param name="clustering_options" type="select" label="Clustering algorithm">
+                        <option value="none">No clustering</option>
+                        <option value="kmeans">Kmeans clustering</option>
+                    </param>
+                    <when value="kmeans">
+                        <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute" 
+                            help="When this option is set, then the matrix is split into clusters using the kmeans algorithm. Only works for data that is not grouped, otherwise only the first group will be clustered. If more specific clustering methods are required it is advisable to save the underlying matrix and run the clustering using other software. The plotting of the clustering may fail (Error: Segmentation fault) if a cluster has very few members compared to the total number or regions. (default: None)."/>
+                    </when>
+                    <when value="none" />
+                </conditional>
+
+
             </when>
         </conditional>
     </inputs>
     <outputs>
-        <data format="png" name="outFileName" label="${tool.name} image">
-            <change_format>
-                <when input="output.outFileFormat" value="pdf" format="pdf" />
-                <when input="output.outFileFormat" value="svg" format="svg" />
-                <when input="output.outFileFormat" value="eps" format="eps" />
-                <when input="output.outFileFormat" value="emf" format="emf" />
-            </change_format>
-        </data>
+        <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
+        <expand macro="output_save_matrix_values" />
     </outputs>
     <tests>
         <test>

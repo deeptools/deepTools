@@ -20,10 +20,6 @@
                 --outFileNameData '$outFileNameData' 
             #end if
 
-            #if $output.saveMatrix:
-                --outFileNameMatrix '$outFileNameMatrix'
-            #end if
-
             #if $output.saveSortedRegions:
                 --outFileSortedRegions '$outFileSortedRegions'
             #end if
@@ -79,9 +75,9 @@
             </when>
         </conditional>
 
-        <expand macro="graphic_output_settings">
-            <expand macro="image_file_format" />
-        <expand>
+        <expand macro="input_graphic_output_settings">
+            <expand macro="input_image_file_format" />
+        </expand>
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -122,6 +118,7 @@
         </conditional>
     </inputs>
     <outputs>
+        <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
     </outputs>
     <help>
