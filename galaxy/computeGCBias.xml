@@ -10,7 +10,6 @@
         ln -s $bamInput.metadata.bam_index local_bamInput.bam.bai;
 
         computeGCBias
-
             @THREADS@
 
             --bamfile 'local_bamInput.bam'
@@ -46,47 +45,43 @@
                 --biasPlot $outImageName
                 --plotFileFormat $image_format
             #end if
-
     </command>
     <inputs>
-
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
 
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
 
-      <param name="fragmentLength" type="integer" value="300" min="1"
-        label="Fragment length used for the sequencing"
-        help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
+        <param name="fragmentLength" type="integer" value="300" min="1"
+            label="Fragment length used for the sequencing"
+            help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="region" type="text" value=""
+                    label="Region of the genome to limit the operation to"
+                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
 
-    <conditional name="advancedOpt">
-        <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-            <option value="no" selected="true">no</option>
-            <option value="yes">yes</option>
-        </param>
-        <when value="no" />
-        <when value="yes">
-          <param name="region" type="text" value=""
-            label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-             
-           <param name="sampleSize" type="integer" value="50000000" min="1"
-             label="Number of sampling points to be considered" />
-           
-           <param name="regionSize" type="integer" value="300" min="1"
-             label="Region size"
-             help ="To plot the reads per GC over a region, the size of the region is required (see below for more details of the mthod). By default, the bin size is set to 300 bp, which is close to the standard fragment size many sequencing applications. However, if the depth of sequencing is low, a larger bin size will be required, otherwise many bins will not overlap with any read."/>
-           
-           <param name="filterOut" type="data" format="bed" optional="true"
-             label="BED file containing genomic regions to be excluded from the estimation of the correction"
-             help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
-           <param name="extraSampling" type="data" format="bed" optional="true"
-             label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
-             help="" />
-        </when>
-    </conditional>
+                <param name="sampleSize" type="integer" value="50000000" min="1"
+                    label="Number of sampling points to be considered" />
 
+                <param name="regionSize" type="integer" value="300" min="1"
+                    label="Region size"
+                    help ="To plot the reads per GC over a region, the size of the region is required (see below for more details of the mthod). By default, the bin size is set to 300 bp, which is close to the standard fragment size many sequencing applications. However, if the depth of sequencing is low, a larger bin size will be required, otherwise many bins will not overlap with any read."/>
+
+                <param name="filterOut" type="data" format="bed" optional="true"
+                    label="BED file containing genomic regions to be excluded from the estimation of the correction"
+                    help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
+                <param name="extraSampling" type="data" format="bed" optional="true"
+                    label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
+                    help="" />
+            </when>
+        </conditional>
         <param name="image_format" type="select" label="GC bias plot" help="If given, a diagnostic image summarizing the GC bias found on the sample will be created.">
             <option value="none" selected="true">No image</option>
             <option value="png">Image in png format</option>
@@ -95,7 +90,6 @@
             <option value="eps">Image in eps format</option>
             <option value="emf">Image in emf format</option>
         </param>
-
     </inputs>
     <outputs>
         <data format="tabular" name="outFileName" />
