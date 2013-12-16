@@ -83,8 +83,8 @@
             </when>
         </conditional>
         <param name="image_format" type="select" label="GC bias plot" help="If given, a diagnostic image summarizing the GC bias found on the sample will be created.">
-            <option value="none" selected="true">No image</option>
-            <option value="png">Image in png format</option>
+            <option value="none">No image</option>
+            <option value="png" selected="true">Image in png format</option>
             <option value="pdf">Image in pdf format</option>
             <option value="svg">Image in svg format</option>
             <option value="eps">Image in eps format</option>
