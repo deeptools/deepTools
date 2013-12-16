@@ -23,7 +23,7 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
       * [download annotation](downloadann)
   * [Tools](#tools)
   * [Example Workflows](#workflows)
-  * [deepTools Galaxy Tipps and FAQ]("https://github.com/fidelram/deepTools/edit/master/manual/GalaxyFAQs.md")
+  * [deepTools Galaxy Tipps and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
   * [Where to get help](#help)
    
 
@@ -241,7 +241,7 @@ We have compiled several workflows that should give you a feeling for the kinds 
 Where to get help?
 --------------------
 
-Please check our [deepTools Galaxy Tipps and FAQs]("https://github.com/fidelram/deepTools/edit/master/manual/GalaxyFAQs.md")
+Please check our [deepTools Galaxy Tipps and FAQs](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
 
 * general Galaxy help: wiki.galaxyproject.org/Learn
 * specific help with deepTools Galaxy: deeptools@googlegroups.com
