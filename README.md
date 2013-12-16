@@ -26,6 +26,8 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 
 [Basic options and parameters of deepTools](#parameters)  
 
+[Using deepTools within Galaxy](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md "Change to the Galaxy help site")
+
 
 
 More detailed information about the individual programs:
