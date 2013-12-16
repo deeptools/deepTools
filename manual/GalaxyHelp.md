@@ -200,7 +200,7 @@ Galaxy has 2 file formats to store lists of genomic regions:
 
 * BED
     * very similar to INTERVAL, but stricter when it comes to what is expected to be kept in which column:
-    1. to 3. Column: same as interval
+        * 1. to 3. Column: same as interval
         * Column 4: name
         * Column 5: score
         * Column 6: strand
@@ -209,7 +209,7 @@ In case you would like to work with several lists of genomic regions, e.g. gener
 * Operate on genomic intervals
 * BEDtools
 
-Each tool's function is explained within Galaxy. Do browse those tools as they might be inspiring new angles of analyses for you!
+Each tool's function is explained within Galaxy. Do browse those tools as they will give you a very good glimpse of the scope of possible analyses!
 
 
 <a name="textfiles">
