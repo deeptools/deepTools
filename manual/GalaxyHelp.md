@@ -2,12 +2,13 @@ Using deepTools within Galaxy
 =============================
 
 We have a publicly available deepTools installation embedded within the Galaxy framework: __deeptools.ie-freiburg.mpg.de__
+
 [Galaxy][] is a tremendously useful platform developed by the Galaxy Team at Penn State.
 This platform is meant to offer access to a large variety of bioinformatics tools that __can be used without computer programming experiences__.
 
 We have compiled several information that will hopefully get you started with your data analysis quickly. If you have never worked with Galaxy before, we recommend to start from the top.
 
-If you just need a refresher of __how to upload data into Galaxy__, please have a look [down below](#upload) or download [these slides](https://drive.google.com/file/d/0B8DPnFM4SLr2MGI4cHFqVDRTVEE/edit?usp=sharing "Getting Data into Galaxy").
+If you just need a refresher of __how to upload data into Galaxy__, please have a look [down below](#upload).
 
 If you do not know the difference between a BAM and a BED file, that's fine - just make sure you have a look at this brief overview [here](https://drive.google.com/file/d/0B8DPnFM4SLr2UHY3cHNZdTFEcDg/edit?usp=sharing "NGS Data Formats") before starting your analysis as high-throughput sequencing data relies on several specific __data formats__.
 
@@ -20,7 +21,7 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
   * [Data import](#upload)
       * [upload files](#dataup)
       * [import shared files](#dataim)
-      * [download annotation](downloadann)
+      * [download annotation and publicly available tracks](downloadann)
   * [Tools](#tools)
   * [Example Workflows](#workflows)
   * [deepTools Galaxy Tipps and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
@@ -117,11 +118,11 @@ Within the Data Library you will find a folder called "Sample Data" that contain
 <a name="downloadann">
 #### Download annotation files from public data bases
 
-In many cases you will want to correlate your sequencing data results with known genome annotation, such as genes, exons, transcription start sites etc. These information can be obtained via the two main sources of genome annotation, [UCSC][] and [BioMart][]. Please note that UCSC and BioMart will cater to different ways of genome annotation, i.e. genes defined in UCSC might not correspond to the same regions in a gene file downloaded from BioMart. (For a brief overview over the issues of genome annotation, you can check out [Wikipedia](http://en.wikipedia.org/wiki/Genome_project "Genome annotation article"), if you'd always wanted to know much more about those issues, [this](http://www.ncbi.nlm.nih.gov/pubmed/22510764 "A beginner's guide to eukaryotic genome annotation, Nat. Genetics, 2012") might be a good start.)
+In many cases you will want to query your sequencing data results for known genome annotation, such as genes, exons, transcription start sites etc. These information can be obtained via the two main sources of genome annotation, [UCSC][] and [BioMart][]. Please note that UCSC and BioMart will cater to different ways of genome annotation, i.e. genes defined in UCSC might not correspond to the same regions in a gene file downloaded from BioMart. (For a brief overview over the issues of genome annotation, you can check out [Wikipedia](http://en.wikipedia.org/wiki/Genome_project "Genome annotation article"), if you'd always wanted to know much more about those issues, [this](http://www.ncbi.nlm.nih.gov/pubmed/22510764 "A beginner's guide to eukaryotic genome annotation, Nat. Genetics, 2012") might be a good start.)
 
 You can access the data stored at UCSC or BioMart conveniently through our Galaxy instance which will import the resulting files into your history. Just go to __"Get data"__ --> "UCSC" or "BioMart".
 
-The majority of annotation files will probably be in [BED][] format, however, there is no limitation on the kind of data you would like to incorporate. UCSC, for example, offers a wide range of data that you can browse via the "group" and "track" menus. 
+The majority of annotation files will probably be in [BED][] format, however, there is no limitation on the kind of data you would like to incorporate. UCSC, for example, offers a wide range of data that you can browse via the "group" and "track" menus (for example, you could download the GC content of the genome as a signal file from UCSC via the "group" menu ("Mapping and Sequencing Tracks")). 
 
 So, here's a screenshot from downloading a BED-file of all RefSeq genes defined for the human genome (version hg19):
 ![UCSC](https://raw.github.com/fidelram/deepTools/master/examples/Gal_UCSC.png "Screenshot of the UCSC main table browser")
