@@ -1,6 +1,8 @@
 Frequently asked questions
 ===========================
 
+#### [How can I do...?](#HowTo)
+
 #### [Galaxy-specific questions](#GalSpecific)
 * [I've reached my quota - what can I do to save some space?](#quota)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
@@ -15,6 +17,7 @@ Frequently asked questions
 * [How can I increase the resolution of the heatmap?](#hmresolution)
 
 
+##### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
 ----------------------------------------------------------------------------------------------------
 
 Galaxy-specific questions <a name="GalSpecific">
@@ -53,7 +56,6 @@ General deepTools-related questions <a name="general">
 
 
 #### When should I exclude regions from computeGCbias? <a name="excludeGC">
-
 In general, we recommend that you should only correct for GC bias (using computeGCbias followed by correctGCbias) if you observe that the majority of the genome (the region between 30-60%) is continuously GC-biased __and__ you want to compare this sample with another sample that is not GC-biased.
 
 Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC bias, we incorporated the possibility to supply a file of regions to computeGCbias that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched per se. This way, the computeGCbias will focus on background regions.
@@ -62,12 +64,16 @@ Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4me
 #### Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?<a name="bamCorrelateLimit">
 Yes. However, the way bamCorrelate (and all the other deepTools handle the option "limit the computation to a specific region" is as follows: first, the _entire_ genome represented in the BAM file will be regarded and sampled, _then_ all the regions or sampled bins that do not overlap with the region indicated by the user will be discarded. This means that if you wanted 10,000 bins to be sampled and you focus on, let's say, chromosome 2, the final computation will not be performed on the whole set of 10,000 bins, but only on those bins that overlap with chromosome 2.
 
-#### How do I calculate the effective genome size for an organism that's not in your list?]<a name="effGenomeSize">
+
+#### How do I calculate the effective genome size for an organism that's not in your list?<a name="effGenomeSize">
 This is something you will have to find a solution outside of deepTools at the moment. We suggest to run faCount from UCSC tools. If you used multi-read alignment (e.g. with bowtie2), then you can use that tool to report the total number of bases as well as the number of unmapped bp, indicated by 'N'. The effective genome size is the total number of reads minus the number of 'N'.
+
 
 #### The heatmap I generated looks very "coarse", I would like a much more fine-grained image. <a name="hmresolution">
 * decrease the __bin size__ when generating the matrix using computeMatrix
   * go to "advanced options" --> "Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" --> define a smaller value, e.g. 50 or 25 bp
 
 * make sure, however, that you used a sufficiently small bin size when calculating the bigWig file, though (if generated with deepTools, you can check the option "bin size")
+----------------------------------------------------------------
+##### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
  
