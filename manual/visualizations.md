@@ -78,6 +78,18 @@ As you can see, all genes have been scaled to the same size and the (mean) value
      
      $ echo "#chrX" >> Dm.genes.indChromLabeled.bed
 
+Example of the heatmapper using the --kmeans option to cluster the resulting matrix.
+
+![Heatmap](https://raw.github.com/fidelram/deepTools/master/examples/heatmaps_kmeans_Pol_II.png "Heatmap of RNA Polymerase II ChIP-seq divided into two clusters.")
+
+The plot was produced with the following commands:
+
+    $ /deepTools-1.5/bin/computeMatrix reference-point -R Dm.genes.indChromLabeled.bed -S PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500o  --binSize 50 -p20 --outFileName PolII_matrix_TSS
+    $ /deepTools-1.5/bin/heatmapper -m PolII_matrix_TSS --kmeans 2 --outFileName PolII_two_clusters -T "Pol II" --sortUsing region_length --whatToShow "heatmap only"
+
+When --kmeans option is given, specifiying the desired number of clusters, the heatmapper runs the [k-means][] clustering algorithm. In this example _Droshopila m._ genes were divided into two clusters separating those genes haveing Pol II at the promoter region from those genes not having Poll II at the promoter. The genes belonging to each cluster can be obtained by adding the --outFileSortedRegions which tells the heatmapper to create a BED file with the clustering results. Within the BED file the groups are separated by a hash (#). To have a better control on the clustering it is recommended to load the matrix raw data into specialized software like [cluster3] or [R]. For this, the option --outFileNameMatrix should be added to the heatmapper. The order of the rows is the same as in the ouput of the --outFileSortedRegions BED file.
+
+
 
 Here's the profiler plot corresponding to the heatmap above. There's one major difference though - do you spot it?
 
@@ -102,6 +114,8 @@ When you compare the profiler commands with the heatmapper commands, you also no
 ### References
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
 [Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
-
+[k-means]: http://en.wikipedia.org/wiki/K-means_clustering
+[cluster3]: http://bonsai.hgc.jp/~mdehoon/software/cluster/
+[R]: http://www.r-project.org/
 
 This tool is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
