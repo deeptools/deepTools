@@ -67,7 +67,7 @@ As you can see, all genes have been scaled to the same size and the (mean) value
 This is what you would have to select to achieve the same result within Galaxy:
 
 ###### computeMatrix
-![computeMatrixGal01](https://raw.github.com/fidelram/deepTools/master/examples/visual_computeMatrix03.png "deepTools Galaxy screenshot of computeMatrix")
+![computeMatrixGal01](https://raw.github.com/fidelram/deepTools/master/examples/visual_computeMatrix01.png "deepTools Galaxy screenshot of computeMatrix")
 ![computeMatrixGal02](https://raw.github.com/fidelram/deepTools/master/examples/visual_computeMatrix02.png "deepTools Galaxy screenshot of computeMatrix (advanced options)")
 
 ###### heatmapper
@@ -79,24 +79,21 @@ Note that we supplied just _one_ BED-file via the command line whereas in Galaxy
 
 On the command line, the program expects a BED file where different groups of genomic regions are concatenated into one file, where the beginning of each group should be indicated by "#group name".
 The BED-file that was used here, contained 3 such lines and could be prepared as follows:
-    
-     $ grep ^chr2 AllGenes.bed > Dm.genes.indChromLabeled.bed
 
+     $ grep ^chr2 AllGenes.bed > Dm.genes.indChromLabeled.bed
      $ echo "#chr2" >> Dm.genes.indChromLabeled.bed
-     
      $ grep ^chr3 AllGenes.bed >> Dm.genes.indChromLabeled.bed
-     
      $ echo "#chr3" >> Dm.genes.indChromLabeled.bed
-     
      $ grep ^chrX AllGenes.bed >> Dm.genes.indChromLabeled.bed
-     
      $ echo "#chrX" >> Dm.genes.indChromLabeled.bed
      
 In Galaxy, you can simply generate three different data sets starting from a whole genome list by using the "Filter" tool three times:
+
 1. c1=="chr2" --> Dm.genes.chr2.bed
 2. c1=="chr3" --> Dm.genes.chr3.bed
 3. c1=="chrX" --> Dm.genes.chrX.bed
-4. 
+
+
 
 #### Important parameters for optimizing the visualization
 1. __sorting of the regions__: The default of heatmapper is to sort the values descendingly. You can change that to ascending, no sorting at all or according to the size of the region (Using the `--sort` option on the command line or advanced options in Galaxy). We strongly recommend to leave the sorting option at "no sorting" for the intitial computeMatrix step.
@@ -105,6 +102,8 @@ In Galaxy, you can simply generate three different data sets starting from a who
     + __--skipZeros__ this is useful when your data actually has a quite nice coverage, but there are 2 or 3 regions where you deliberately filtered out reads or you don't expect any coverage (e.g. hardly mappable regions). This will only work if the entire region does not contain a single value. 
     + __--missingDataAsZero__ this option allows computeMatrix do interpret missing data points as zeroes. Be aware of the changes to the average values that this might cause.
     + __--missingDataColor__ this is in case you have very sparce data or were missing values make sense (e.g. when plotting methylated CpGs - half the genome should have no value). This option then allows you to pick out your favorite color for those regions. The default is black (was white when the above shown image was produced).
+
+
 
 
 ### Summary plots
