@@ -138,6 +138,7 @@ We chose these examples to show you how the nature of the ChIP signal (narrow an
 
 
 [Back to the general help](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
+
 [Back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/ )
 
 -----------------------------------------------------------------------------------
