@@ -34,12 +34,13 @@ This section is meant to give you quick guidance to specific tasks you may want 
 All of these tipps assume that you're working on the [deepTools Galaxy][] and have uploaded your files.
 
 #### I have downloaded/received a [FASTQ][] file - how do I generate a file I can look at in a Genome Browser?<a name="FASTQ2IGV">
-#### How can I assess the reproducibility of my sequencing replicates?<a name="repCorr">
-tool: [bamCorrelate][]
-input: BAM files
-output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages
 
+
+#### How can I assess the reproducibility of my sequencing replicates?<a name="repCorr">
+* tool: [bamCorrelate][]
+* input: BAM files
     * you can compare as many samples as you want - the more you put at the same time, the longer the computation takes
+* output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages
 
 
 #### How do I get an input-normalized ChIP-seq coverage file?<a name="InputNorm">
@@ -49,9 +50,8 @@ output: heatmap of correlations - the closer two samples are to each other, the 
 
 
 #### How can I compare the ChIP strength for different ChIP experiments?<a name="fprint">
-tool: __bamFingerprint__
-
-Just indicate more than 2 BAM files by selecting "add BAM file". Make sure you get all the labels right.
+* tool: [bamFingerprint][]
+* input: as many BAM files as you'd like to compare. Make sure you get all the labels right!
 
 
 #### How do I know whether my sample is GC biased? And if yes, how do I correct for it?<a name="GC">
@@ -59,6 +59,7 @@ Just indicate more than 2 BAM files by selecting "add BAM file". Make sure you g
 2. use the tool [computeGCbias][] on that BAM file (default settings, just make sure your reference genome and genome size are matching)
 3. have a look at the image that is produced and compare it to the examples [here](https://github.com/fidelram/deepTools/blob/master/manual/QC.md#computeGCbias)
 4. if your sample shows an almost linear increase in exp/obs coverage (on the log scale of the lower plot), then you should consider correcting the GC bias - if you think that the biological interpretation of this data would otherwise be compromised (e.g. by comparing it to another sample that does not have an inherent GC bias)
+    
     + the GC bias can be corrected with the tool [correctGCbias][] using the second output of the computeGCbias tool that you had to run anyway
     + CAUTION!! correctGCbias will add reads to otherwise depleted regions (typically GC-poor regions), that means that you should __not__ remove duplicates in any downstream analyses based on the GC-corrected BAM file (we therefore recommend to remove duplicates before doing the correction so that only those duplicate reads are kept that were produced by the GC correction procedure)
 
@@ -68,11 +69,11 @@ Just indicate more than 2 BAM files by selecting "add BAM file". Make sure you g
 2. then you need a BED or INTERVAL file of genes (you can obtain one via "Get Data" --> "UCSC main table browser" --> group: "Genes and Gene Predictions" --> (e.g.) "RefSeqGenes" --> send to Galaxy
 3. then use [computeMatrix][] with the coverage file generated in (1) and the BED file from (2), indicate "reference-point" and whatever other option you would like to tune
 ![computeMatrixGal04](https://raw.github.com/fidelram/deepTools/master/examples/visual_computeMatrix03.png "deepTools Galaxy screenshot of computeMatrix for profiles in reference-point mode")
-4. then use the output from (3) with [heatmapper][]
+4. then use the output from (3) with [heatmapper][] (if you would like to cluster the signals, choose "kmeans clustering" (last option of "advanced options") with a reasonable number of cluster, e.g. 2 or 3
 
 
 
-#### How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments](#profiler)
+#### How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments?<a name="profiler">
 1. you need two BED files: one with X-chromosomal and one with autosomal genes
     * you can download a full list of genes via "Get Data" --> "UCSC main table browser" --> group:"Genes and Gene Predictions" --> tracks: (e.g.) "RefSeqGenes" --> send to Galaxy
     * then filter the full list twice using the tool "Filter data on any column using simple expressions" 
@@ -145,8 +146,8 @@ This is something you will have to find a solution outside of deepTools at the m
 #### The heatmap I generated looks very "coarse", I would like a much more fine-grained image. <a name="hmresolution">
 * decrease the __bin size__ when generating the matrix using computeMatrix
   * go to "advanced options" --> "Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" --> define a smaller value, e.g. 50 or 25 bp
-
 * make sure, however, that you used a sufficiently small bin size when calculating the bigWig file, though (if generated with deepTools, you can check the option "bin size")
+
 ----------------------------------------------------------------
 ##### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
 ----------------------------------------------------------------
@@ -162,6 +163,7 @@ This is something you will have to find a solution outside of deepTools at the m
 [computeGCBias]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
 [bamCoverage]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
 [bamCompare]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
+[correctGCbias]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
 [computeMatrix]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
 [heatmapper]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
 [profiler]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
