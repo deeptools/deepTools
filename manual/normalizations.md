@@ -3,9 +3,9 @@ Normalization of BAM files
 
 deepTools contains 3 tools for the normalization of [BAM][] files:
 
-1. _correctGCbias_: in case, you would like to normalize your read distributions to fit the expected GC values, you can use the output from [computeGCbias](https://raw.github.com/fidelram/deepTools/master/manual/QC.md "go to the chapter about data QC") and produce a GC-corrected [BAM]-file.
-2. _bamCoverage_: this tool converts a single [BAM][] file into a [bigWig][] file, enabling you to normalize for sequencing depth.
-3. _bamCompare_: like bamCoverage, this tool produces a normalized [bigWig][] file, but it takes 2 [BAM][] files, normalizes them for sequencing depth and subsequently performs a mathematical operation of your choice, i.e. it can output the ratio of the read coverages in both files or the like.
+1. _)correctGCbias__: in case, you would like to normalize your read distributions to fit the expected GC values, you can use the output from [computeGCbias](https://raw.github.com/fidelram/deepTools/master/manual/QC.md "go to the chapter about data QC") and produce a GC-corrected [BAM]-file.
+2. __bamCoverage__: this tool converts a single [BAM][] file into a [bigWig][] file, enabling you to normalize for sequencing depth.
+3. __bamCompare__: like bamCoverage, this tool produces a normalized [bigWig][] file, but it takes 2 [BAM][] files, normalizes them for sequencing depth and subsequently performs a mathematical operation of your choice, i.e. it can output the ratio of the read coverages in both files or the like.
 
 
 [Here](https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing "How to get from aligned reads to coverage profiles using deepTools") you can download slides that we used for teaching. They contain additional details about how the coverage files are generated and normalized.
@@ -100,6 +100,9 @@ Note that the option "missing Data As Zero" can be found within the "advanced op
 ![bamCompare](https://raw.github.com/fidelram/deepTools/master/examples/norm_bamCompare.png "Mathematical operations for comparing 2 BAM files implemented in bamCompare")
 
 
+[back to the general help](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
+
+[back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
 
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
