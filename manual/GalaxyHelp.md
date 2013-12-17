@@ -165,19 +165,19 @@ The most important category is called __"deepTools"__ that contains 8 major tool
 
 | tool | type | input files | main output file(s) | application |
 |------|------|-------------|---------------------|-------------|
-| bamCorrelate | QC | 2 or more BAM | clustered heatmap | Pearson or Spearman correlation between read distributions |
-| bamFingerprint | QC | 2 BAM | 1 diagnostic plot | assess enrichment strength of a ChIP sample |
-| computeGCBias | QC | 1 BAM | 2 diagnostic plots | calculate the exp. and obs. GC distribution of reads|
-| bamCoverage | normalization | BAM | bedGraph or bigWig | obtain the normalized read coverage of a single BAM file |
-| bamCompare | normalization | 2 BAM | bedGraph or bigWig | normalize 2 BAM files to each other using a mathematical operation of your choice (e.g. log2ratio, difference)|
-| computeMatrix | visualization | 1 bigWig, 1 BED | zipped file, to be used with heatmapper or profiler | compute the values needed for heatmaps and summary plots |
-| heatmapper | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
-| profiler | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
+| [bamCorrelate][] | QC | 2 or more BAM | clustered heatmap | Pearson or Spearman correlation between read distributions |
+| [bamFingerprint][]| QC | 2 BAM | 1 diagnostic plot | assess enrichment strength of a ChIP sample |
+| [computeGCBias][] | QC | 1 BAM | 2 diagnostic plots | calculate the exp. and obs. GC distribution of reads|
+| [bamCoverage][] | normalization | BAM | bedGraph or bigWig | obtain the normalized read coverage of a single BAM file |
+| [bamCompare] | normalization | 2 BAM | bedGraph or bigWig | normalize 2 BAM files to each other using a mathematical operation of your choice (e.g. log2ratio, difference)|
+| [computeMatrix][] | visualization | 1 bigWig, 1 BED | zipped file, to be used with heatmapper or profiler | compute the values needed for heatmaps and summary plots |
+| [heatmapper][] | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
+| [profiler][] | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
 
 
-If you would like to have more details about the individual tools, [here](https://drive.google.com/file/d/0B8DPnFM4SLr2M0lZYkl6UEw2WGs/edit?usp=sharing "Visual Manual of deepTools Galaxy") is a _manual that covers the basic functions of deepTools_, starting from an overview of a typical workflow of NGS data analysis and ending with several different examples to demonstrate the power of heatmaps and summary plots.
+If you would like to have more details about the individual tools, follow the links in the table and have a look at this manual [here](https://drive.google.com/file/d/0B8DPnFM4SLr2M0lZYkl6UEw2WGs/edit?usp=sharing "Visual Manual of deepTools Galaxy") that _covers the basic functions of deepTools_, starting from an overview of a typical workflow of NGS data analysis and ending with several different examples to demonstrate the power of heatmaps and summary plots.
 
-For each tool, there will specific explanations within the [deepTools Galaxy][] main frame, too.
+__For each tool, you will find specific explanations within the [deepTools Galaxy][] main frame, too.__
 
 ##### General options and parameters of deepTools <a name="params">
 
@@ -285,3 +285,12 @@ This tool is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.
 [bigWig]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a bedGraph file; contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
 [bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
 [FASTQ]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file of raw reads (almost straight out of the sequencer)"
+
+[bamCorrelate]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
+[bamFingerprint]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
+[computeGCBias]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
+[bamCoverage]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
+[bamCompare]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
+[computeMatrix]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
+[heatmapper]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
+[profiler]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
