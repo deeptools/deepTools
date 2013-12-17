@@ -31,7 +31,9 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
   * [Galaxy workflows](#workflows)    
   * [deepTools Galaxy Tipps and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
   * [Where to get help](#help)
-   
+
+
+[back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
 
 <a name="basics">
 Basic features of Galaxy
@@ -267,6 +269,9 @@ Please check our [deepTools Galaxy FAQs](https://github.com/fidelram/deepTools/b
 * general Galaxy help: wiki.galaxyproject.org/Learn
 * specific help with deepTools Galaxy: deeptools@googlegroups.com
 * if you encounter a failing data set, please send a bug report via Galaxy and we will get in touch
+
+
+[back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
 
 
 -----------------------------------------------------------------------------------
