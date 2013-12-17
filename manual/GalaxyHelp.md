@@ -174,10 +174,11 @@ The most important category is called __"deepTools"__ that contains 8 major tool
 | [heatmapper][] | visualization | computeMatrix output | heatmap of read coverages | visualize the read coverages for genomic regions |
 | [profiler][] | visualization | computeMatrix output | summary plot ("meta-profile") | visualize the average read coverages over a group of genomic regions |
 
+We have compiled several sources of detailed information specifically about the usage of deepTools:
 
-If you would like to have more details about the individual tools, follow the links in the table and have a look at this manual [here](https://drive.google.com/file/d/0B8DPnFM4SLr2M0lZYkl6UEw2WGs/edit?usp=sharing "Visual Manual of deepTools Galaxy") that _covers the basic functions of deepTools_, starting from an overview of a typical workflow of NGS data analysis and ending with several different examples to demonstrate the power of heatmaps and summary plots.
-
-__For each tool, you will find specific explanations within the [deepTools Galaxy][] main frame, too.__
+1. General overview of [how we use deep Tools](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHowWeUseDeepTools.md);  [here](https://drive.google.com/file/d/0B8DPnFM4SLr2M0lZYkl6UEw2WGs/edit?usp=sharing "Visual Manual of deepTools Galaxy") is the pdf version of this overview
+2. Each individual tool is described in more detail on separate pages - just follow the links in the table above
+3. For each tool, you will find specific explanations within the [deepTools Galaxy][] main frame, too.
 
 ##### General options and parameters of deepTools <a name="params">
 
