@@ -136,9 +136,9 @@ Here you see three different fingerprint plots that we routinely generate to che
 We chose these examples to show you how the nature of the ChIP signal (narrow and high vs. wide and not extremely high) is reflected in the "fingerprint" plots. Please note that for reasons we ourselves cannot recall anymore, these plots go by the name of "fingerprints" in our facility, but the idea underlying these plots came from [Diaz et al.][]
 ![fingerprint](https://raw.github.com/fidelram/deepTools/master/examples/QC_fingerprint.png "bamFingerprint outputs")
 
-Again, there is no limit on the number of files that you can compare. Here's an example of 3 different H3K27ac ChIP-seq experiments compared to an input from the same cell line:
 
-![fingerprint](https://raw.github.com/fidelram/deepTools/master/examples/QC_fingerprint02.png "bamFingerprint outputs")
+[Back to the general help](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
+[Back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/ )
 
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
