@@ -146,16 +146,21 @@ Per default, BioMart will not output a BED file like UCSC does. It is therefore 
 In case you have registered with deepTools Galaxy you can have more than one history. In order to minimize the disk space you're occupying we strongly suggest to __copy__ data sets between histories in case that you would like to use one data set in different histories. This can easily be done via the History panel's option button --> "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side while you should indicate the target history on the right hand side.
 
 
+[Back to the deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/)
+
 <a name="tools">
 Which tools can I find in the deepTools Galaxy?
 -------------------------------------------------------
 
 As mentioned above, each Galaxy installation can be tuned to the individual interests. Our goal is to provide a Galaxy that enables you to __quality check, process and normalize and subsequently visualize your data obtained by high-throughput DNA sequencing__.
 
-* [deepTools - NGS data handling](#deepTools)
-* [peak calling (ChIP-seq specific)](#peaks)
-* [operating on genomic intervals](#BED)
-* [working with text files and tables](#textfiles)
+We provide the following kinds of tools:
+
+1. [deepTools - NGS data handling](#deepTools)
+2. [peak calling (ChIP-seq specific)](#peaks)
+3. [operating on genomic intervals](#BED)
+4. [working with text files and tables](#textfiles)
+
 
 
 <a name="deepTools">
