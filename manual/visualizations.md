@@ -58,7 +58,7 @@ The plot was produced with the following commands:
 
 As you can see, all genes have been scaled to the same size and the (mean) values per bin size (10 bp) are colored accordingly. In addition to the gene bodies, we added 500 bp up- and down-stream of the genes.
 
-1. __sorting of the regions__ The default of heatmapper is to sort the values descendingly. Using the --sort option, you can change that to ascending, no sorting at all or according to the size of the region.
+1. __sorting of the regions__ The default of heatmapper is to sort the values descendingly. Using the `--sort` option, you can change that to ascending, no sorting at all or according to the size of the region.
 2. __coloring__ The default coloring by heatmapper is done using the python colormap "RdYlBu".
 4. __stretches of white__ You certainly have noticed that some gene bodies are depicted as white lines within the otherwise colorful mass of genes. Those regions are due to genes that, for whatever reason, did not have any read coverage scores in the bigWig file. There are several ways to handle these cases:
     + __--skipZeros__ this is useful when your data actually has a quite nice coverage, but there are 2 or 3 regions where you deliberately filtered out reads or you don't expect any coverage (e.g. hardly mappable regions). This will only work if the entire region does not contain a single value. 
@@ -78,16 +78,16 @@ As you can see, all genes have been scaled to the same size and the (mean) value
      
      $ echo "#chrX" >> Dm.genes.indChromLabeled.bed
 
-Example of the heatmapper using the --kmeans option to cluster the resulting matrix.
+Example of the heatmapper using the `--kmeans` option to cluster the resulting matrix.
 
 ![Heatmap](https://raw.github.com/fidelram/deepTools/master/examples/heatmaps_kmeans_Pol_II.png "Heatmap of RNA Polymerase II ChIP-seq divided into two clusters.")
 
 The plot was produced with the following commands:
 
     $ /deepTools-1.5/bin/computeMatrix reference-point -R Dm.genes.indChromLabeled.bed -S PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500o  --binSize 50 -p20 --outFileName PolII_matrix_TSS
-    $ /deepTools-1.5/bin/heatmapper -m PolII_matrix_TSS --kmeans 2 --outFileName PolII_two_clusters -T "Pol II" --sortUsing region_length --whatToShow "heatmap only"
+    $ /deepTools-1.5/bin/heatmapper -m PolII_matrix_TSS --kmeans 2 --outFileName PolII_two_clusters.pdf -T "Pol II" --sortUsing region_length --whatToShow "heatmap only"
 
-When --kmeans option is given, specifiying the desired number of clusters, the heatmapper runs the [k-means][] clustering algorithm. In this example _Droshopila m._ genes were divided into two clusters separating those genes haveing Pol II at the promoter region from those genes not having Poll II at the promoter. The genes belonging to each cluster can be obtained by adding the --outFileSortedRegions which tells the heatmapper to create a BED file with the clustering results. Within the BED file the groups are separated by a hash (#). To have a better control on the clustering it is recommended to load the matrix raw data into specialized software like [cluster3] or [R]. For this, the option --outFileNameMatrix should be added to the heatmapper. The order of the rows is the same as in the ouput of the --outFileSortedRegions BED file.
+When `--kmeans` option is given, specifiying the desired number of clusters, the heatmapper runs the [k-means][] clustering algorithm. In this example _Drosophila m._ genes were divided into two clusters separating those genes having Pol II at the promoter region from those genes not having Poll II at the promoter. The genes belonging to each cluster can be obtained by adding the `--outFileSortedRegions` which tells the heatmapper to create a BED file with the clustering results. Within the BED file the groups are separated by a hash (#). To have a better control on the clustering it is recommended to load the matrix raw data into specialized software like [cluster3] or [R]. For this, the option `--outFileNameMatrix` should be added to the heatmapper. The order of the rows is the same as in the ouput of the `--outFileSortedRegions` BED file.
 
 
 
@@ -100,7 +100,7 @@ We used the same [BED][] file as for the heatmap, hence the 3 different groups (
     $ /deepTools-1.5/bin/computeMatrix reference-point --referencePoint TSS -R Dm.genes.indChromLabeled.bed -S PolII.bw -b 1000 -a 1000 -bs 10 -p20 --outFileName PolII_matrix_indChr_refPoint --missingDataAsZero --sortRegions no
     $ /deepTools-1.5/bin/profiler --matrixFile PolII_matrix_indChr_refPoint --outFileName profile_PolII_indChr_refPoint.pdf --plotType fill --startLabel "TSS" -T "Pol II around TSS" --yAxisLabel "mean Pol II coverage" --onePlotPerGroup
  
-When you compare the profiler commands with the heatmapper commands, you also notice that we made use of many more labelling options here, e.g. --yAxisLabel and a more specific title via -T
+When you compare the profiler commands with the heatmapper commands, you also notice that we made use of many more labelling options here, e.g. `--yAxisLabel` and a more specific title via `-T`
 
 
 
