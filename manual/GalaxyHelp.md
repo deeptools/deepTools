@@ -23,7 +23,12 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
       * [import shared files](#dataim)
       * [download annotation and publicly available tracks](#downloadann)
   * [Tools](#tools)
-  * [Example Workflows](#workflows)
+      * [deepTools - NGS data handling](#deepTools)
+          - [General options and parameters of deepTools](#params)
+      * [peak calling (ChIP-seq specific)](#peaks)
+      * [operating on genomic intervals](#BED)
+      * [working with text files and tables](#textfiles)
+  * [Galaxy workflows](#workflows)    
   * [deepTools Galaxy Tipps and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
   * [Where to get help](#help)
    
@@ -174,6 +179,16 @@ If you would like to have more details about the individual tools, [here](https:
 
 For each tool, there will specific explanations within the [deepTools Galaxy][] main frame, too.
 
+##### General options and parameters of deepTools <a name="params">
+
+Once you select a tool, you will see that almost every option has a brief description of its purpose writtin in grey font. There are some options that you will encounter over and over again, so it's important that you understand their implications. Most of these options are related to the __computation of read coverages__.
+
+   * __Length of average fragment size__: For high-throughput sequencing of short reads, the cells' DNA is typically sheared and fragments of a certain size are selected to be sequenced. Very often, this will be between 200 to 300 bp. From each of these fragments, the reads one obtains will only represent the first (and/or) last 30-50 bp (depending on the chosen read length). When calculating coverages, we therefore extend the reads to match the original fragment size. In the case of paired-end sequencing, the exact fragment size will be known, for single-end sequencing every read will be extended to the same length.
+   * __bin size__: In order to create a continuous profile of read coverages along the genome, we need to divide the genome into regions of equal length for which the number of overlapping reads is counted. The size of this window could be 1 bp, however, for practical reasons we usually chose a bin size between 10 to 50 bp (depending on the depth of sequencing, the size of the genome and the desired resolution).
+   * __Minimum mapping quality__: This is an optional parameter ("Advanced options"). If you set the Minimum mapping quality to 10, all reads with a mapping quality below 10 will not be taken into consideration for the read coverage computation.
+   * __ignore duplicates__: This an optional parameter, too, that will filter out reads that have the exact same start and end point (thought to be PCR artefacts). You should absolutely __not__ select this option if you have a BAM file that you corrected for GC bias.
+   * __missing Data as zero__: If this option is selected, regions where no overlapping reads are found will be included as regions with coverage = 0. Note that this is different from including those regions with "no coverage". Imagine 4 genome bins with read coverages of 0,1,2,3 - the average of these four bins will be 6/4 = 1.5. If the first bin would have been marked with "no coverage", it would not have been included in the calculation for the average read coverage, thus the result would have been 6/3 = 2.
+
 
 <a name="peaks">
 #### Peak calling
@@ -228,14 +243,13 @@ There are 3 main categories:
    * this category is very useful if you have several data sets that you would like to work with, e.g. by comparing them
 
 
-<a name="help">
-Example workflows
+<a name="workflows">
+Workflows
 --------------------
 Workflows are Galaxy's equivalent of protocols. This is an extremely useful feature as it allows users to share their protocols and bioinformatic analyses in a very easy and transparent way.
 This is the graphical representation of a Galaxy workflow that can easily be modified via drag'n'drop within the workflows manual (you must be registered with deepTools Galaxy to be able to generate your own workflows).
 ![workflow](https://raw.github.com/fidelram/deepTools/master/examples/Gal_workflow.png "Exemplary Galaxy workflow")
 
-We have compiled several workflows that should give you a feeling for the kinds of analyses that can be done using [deepTools Galaxy].
 
 
 <a name="help">
