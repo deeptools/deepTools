@@ -40,11 +40,16 @@ uniformere is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nl
   
 ![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_humanSamples.png "bamCorrelate result")
 
-Here's the command that was used:
+You can supply any number of BAM files that you would like to compare. In Galaxy, you simply have to click "Add BAM file", in the command line you simply list all files one after the other (you can give meaningful name via the --label option).
+
+Here's the command that was used with the command line version:
 
     $ deepTools-1.5.2/bin/bamCorrelate -f 300 -p 12 --bamfiles GSM798383_SLX-1201.250.s_4.bwa.homo_sapiens_f.bam GSM798384_SLX-1881.334.s_1.bwa.homo_sapiens_f.bam GSM798406_SLX-1202.250.s_1.bwa.homo_sapiens_f.bam GSM798407_SLX-1880.337.s_8.bwa.homo_sapiens_f.bam --labels "ChIP p1" "ChIP p2" "Input p1" "Input p2" -plot /eva_data/deeptools_manual/bamCorrelate_bad2.pdf --corMethod pearson
   
-Note how useful the --labels option is and that there is no limit to how many files you can supply. 
+
+Here is another example of ChIP samples where H3K27ac was ChIPed by the same experimentator for different cell populations while H3K27me was performed with the same antibody, but at different times. You can see that the correlation between the K27ac replicates is much higher than for the H3K27me3 samples, however, for both histone marks, the ChIP-seq experiments are more similar to each other than to the other ChIP or to the input. In fact, the signals of K27ac and K27me3 are almost not correlated at all which supports the notion that their biological function is also quite opposing.
+
+![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_RoadmapData.png "bamCorrelate result")
 
 
 <a name="computeGCbias"/>
