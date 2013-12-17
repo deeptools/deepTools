@@ -43,7 +43,7 @@
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.4_6765c227d9628f8e6ba690e6fde7f1d86c497b49">deepTools</requirement>
+            <requirement type="package" version="1.5.4_74aac0843a956ca352e3e85087f20c8f158e2f7d">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
@@ -91,6 +91,10 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <token name="@multiple_input_bams@">
+        #import tempfile
+        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+        #set files=[]
+        #set labels=[]
         #for $i in $input_files:
             #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
             #set $temp_input_path = $temp_input_handle.name
