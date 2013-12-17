@@ -24,7 +24,10 @@ Frequently asked questions
 * [How can I increase the resolution of the heatmap?](#hmresolution)
 
 
-###### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
+###### [Back to deepTools Galaxy](https://deeptools.ie-freiburg.mpg.de)
+
+###### [Go to the general help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md)
+
 ----------------------------------------------------------------------------------------------------
 
 
