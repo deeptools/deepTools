@@ -5,6 +5,7 @@ Frequently asked questions
 * [I've reached my quota - what can I do to save some space?](#quota)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
 * [How can I determine basic parameters of a BAM file?](#BAMparams)
+* [How can I get a measure of mappability and GC content for my genome of interest?](#MapGC)
 
 #### [General deepTools-related questions](#general)
 * [I just want to try out a tool, how can I optimize the computation time?](#compTime)
@@ -37,6 +38,10 @@ Simply run MACS on the BAM file that you would like to gain the information for 
 * duplication rate
 * number of tags = number of reads
 * d = distance = average DNA fragment size
+
+
+#### How can I get a measure of mappability and GC content for my genome of interest?<a name="MapGC">
+In the tools panel, go to "Get Data" --> "UCSC main table browser" --> select your organism and the genome assembly you're interested in --> select "Mapping and Sequencing Tracks" (group menu) --> select the track
 
 
 
