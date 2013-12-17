@@ -21,7 +21,7 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
   * [Data import](#upload)
       * [upload files](#dataup)
       * [import shared files](#dataim)
-      * [download annotation and publicly available tracks](downloadann)
+      * [download annotation and publicly available tracks](#downloadann)
   * [Tools](#tools)
   * [Example Workflows](#workflows)
   * [deepTools Galaxy Tipps and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
@@ -242,7 +242,7 @@ We have compiled several workflows that should give you a feeling for the kinds 
 Where to get help?
 --------------------
 
-Please check our [deepTools Galaxy Tipps and FAQs](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
+Please check our [deepTools Galaxy FAQs](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
 
 * general Galaxy help: wiki.galaxyproject.org/Learn
 * specific help with deepTools Galaxy: deeptools@googlegroups.com
