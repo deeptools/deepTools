@@ -103,7 +103,7 @@ Now, let's have a look at real-life data from genomic DNA sequencing. Panels A a
 
 
 
-<a name="bamFingerprint"/>
+<a name="bamFingerprint"/></a>
 bamFingerprint
 ---------------
 
