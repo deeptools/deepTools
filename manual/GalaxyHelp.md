@@ -104,7 +104,13 @@ The data upload of files <2 GB that lie on your computer is fairly straight-forw
 
 For files >2GB there's the option to upload via an FTP server. If your data is available via an URL that links to an FTP server, you can simply paste the URL in the empty text box. 
 
-If you do not have access to an FTP server, you can directly upload to our Galaxy's FTP. For this, you must first register with deeptools.ie-freiburg.mpg.de (via “User” --> “register”; registration requires an email address and is free of charge). You will also need an FTP client, e.g. [filezilla](https://filezilla-project.org/ "Filezilla web site"). Once you've registered with us and you've got the FTP client, login to the __FTP client__ using your deepTools Galaxy user name and password (host: deeptools.ie-freiburg.mpg.de). Down below you see a screenshot of how that looks like with filezilla. Move the file you wish to upload to the remote site and go back to [deepTools Galaxy][] where the file should now appear once you click on the tool "Upload file" (--> "Files uploaded via FTP"). Hit “execute”.
+If you do not have access to an FTP server, you can directly upload to our Galaxy's FTP.
+* first register with deeptools.ie-freiburg.mpg.de (via “User” --> “register”; registration requires an email address and is free of charge)
+* You will also need an FTP client, e.g. [filezilla](https://filezilla-project.org/ "Filezilla web site").
+* Then login to the __FTP client__ using your __deepTools Galaxy user name and password__ (host: deeptools.ie-freiburg.mpg.de). Down below you see a screenshot of how that looks like with filezilla.
+* Copy the file you wish to upload to the remote site (in filezilla, you can simply drag the file to the window on the right hand side)
+* Go back to [deepTools Galaxy][]
+* Click on the tool "Upload file" (--> "Files uploaded via FTP") - here the files you just copied over via filezilla should appear. Select the files you want and hit “execute”. They will be moved from the FTP server to your history.
 
 ![Filezilla](https://raw.github.com/fidelram/deepTools/master/examples/Gal_filezilla.png "Screenshot of filezilla")
 
@@ -112,11 +118,11 @@ If you do not have access to an FTP server, you can directly upload to our Galax
 <a name="dataim">
 #### Import data sets from the Galaxy data library
 
-If you would like to try out some tools and play around with sample data, you can import some files that we have saved within the general data storage of the deepTools Galaxy server. These files are not part of anyone's history in particular, but everyone can import them into his or her own history.
+If you would like to play around with sample data, you can import files that we have saved within the general data storage of the deepTools Galaxy server. Everyone can import them into his or her own history, they will not contribute to the user's disk quota.
 
-You can reach the data library via "Shared Data" in the top menu where you select "Data Libraries". (As you can see, there's more than just data that can be shared within Galaxy.)
+You can reach the data library via "Shared Data" in the top menu, then select "Data Libraries".
 
-Within the Data Library you will find a folder called "Sample Data" that contains data that we downloaded from the [Roadmap project][]. More precisely, we donwloaded the [FASTQ][] files and mapped the reads to the human reference genome (version hg19). The [BAM] files
+Within the Data Library you will find a folder called "Sample Data" that contains data that we downloaded from the [Roadmap project][] and [UCSC][]. More precisely, we donwloaded the [FASTQ][] files and mapped the reads to the human reference genome (version hg19) to obtain the [BAM] files you see. In addition, you will find signal tracks of DNase-seq data from UCSC, bigWig files with GC content for flies and mice and some annotation files.
 
 ![DataLibrary](https://raw.github.com/fidelram/deepTools/master/examples/Gal_DataLib.png "Screenshots of how to get to the Data Library")
 
@@ -128,23 +134,23 @@ In many cases you will want to query your sequencing data results for known geno
 
 You can access the data stored at UCSC or BioMart conveniently through our Galaxy instance which will import the resulting files into your history. Just go to __"Get data"__ --> "UCSC" or "BioMart".
 
-The majority of annotation files will probably be in [BED][] format, however, there is no limitation on the kind of data you would like to incorporate. UCSC, for example, offers a wide range of data that you can browse via the "group" and "track" menus (for example, you could download the GC content of the genome as a signal file from UCSC via the "group" menu ("Mapping and Sequencing Tracks")). 
+The majority of annotation files will probably be in BED format, however, you can also find other data sets. UCSC, for example, offers a wide range of data that you can browse via the "group" and "track" menus (for example, you could download the GC content of the genome as a signal file from UCSC via the "group" menu ("Mapping and Sequencing Tracks"). Note, however, that the download through this interface is limited to 100,000 lines per file which might not be sufficient for some mammalian data sets). 
 
-So, here's a screenshot from downloading a BED-file of all RefSeq genes defined for the human genome (version hg19):
+Here's a screenshot from downloading a BED-file of all RefSeq genes defined for the human genome (version hg19):
 ![UCSC](https://raw.github.com/fidelram/deepTools/master/examples/Gal_UCSC.png "Screenshot of the UCSC main table browser")
 
 
 And here's how you would do it for the BioMart approach:
 ![Biomart](https://raw.github.com/fidelram/deepTools/master/examples/Gal_biomart.png "Screenshot of the Biomart main table browser")
 
-Per default, BioMart will not output a BED file like UCSC does. It is therefore important that you make sure you get all the information you need (most likely: chromosome, gene start, gene end, ID, strand) via the "Attributes" section. You can click on the "Results" button at any time to check the format of the table that will be sent to Galaxy (Note that the strand information will be decoded as 1 for "forward" or "plus" strand and -1 for "reverse" or "minus" strand.)
+Per default, __BioMart will not output a BED file__ like UCSC does. It is therefore important that you make sure you get all the information you need (most likely: chromosome, gene start, gene end, ID, strand) via the "Attributes" section. You can click on the "Results" button at any time to check the format of the table that will be sent to Galaxy (Note that the strand information will be decoded as 1 for "forward" or "plus" strand and -1 for "reverse" or "minus" strand.)
 
->be aware, that BED files from UCSC will have chromosomes labelled with “chr” while ENSEMBL usually returns just the number – this might lead to incompatibilities, i.e. when working with annotations from UCSC and ENSEMBL, you need to make sure to use the same naming!
+>Be aware, that BED files from UCSC will have chromosomes labelled with “chr” while ENSEMBL usually returns just the number – this might lead to incompatibilities, i.e. when working with annotations from UCSC and ENSEMBL, you need to make sure to use the same naming!
 
 
 <a name="copy">
 #### __For registered users only__: Copy data sets between histories
-In case you have registered with deepTools Galaxy you can have more than one history. In order to minimize the disk space you're occupying we strongly suggest to __copy__ data sets between histories in case that you would like to use one data set in different histories. This can easily be done via the History panel's option button --> "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side while you should indicate the target history on the right hand side.
+In case you have registered with deepTools Galaxy you can have more than one history. In order to minimize the disk space you're occupying we strongly suggest to __copy__ data sets between histories when you're using the same data set in different histories. This can easily be done via the History panel's option button --> "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side and the target history on the right hand side.
 
 
 [Back to the deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/)
