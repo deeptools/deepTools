@@ -23,7 +23,7 @@ tempArray = []
 for line in sys.stdin:
     if line[0] == '#':
         clusterName = line[1:].strip()
-	tempArray.append("#"+clusterName+"\n")
+        tempArray.append("#"+clusterName+"\n")
         open(clusterName + ".bed", 'w').write("".join(tempArray))
         tempArray = []
         continue
