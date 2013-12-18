@@ -149,6 +149,10 @@ The genes belonging to each cluster can be obtained by via `--outFileSortedRegio
 To have a better control on the clustering it is recommended to load the matrix raw data into __specialized software like [cluster3] or [R]__. You can obtain the matrix via the option `--outFileNameMatrix` on the command line and by the "advanced output options" in Galaxy. The order of the rows is the same as in the ouput of the `--outFileSortedRegions` BED file.
 
 
+[back to the general help](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
+
+[back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
+
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
 [BED]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "simple text file of genomic regions (chr, start, end)"

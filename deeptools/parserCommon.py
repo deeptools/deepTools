@@ -138,16 +138,21 @@ def numberOfProcessors(string):
             numberOfProcessors = int(string)
             if numberOfProcessors > availProc:
                 raise argparse.ArgumentTypeError(
-                    "{} is too large. Max number of processors available "
-                    "is {}".format(numberOfProcessors, availProc))
+                    "Whishful thinking! Your computer only has {} processors and "
+                    "you want to use {}.".format(numberOfProcessors, availProc))
         except ValueError:
             raise argparse.ArgumentTypeError(
                 "{} is not a valid number of processors".format(string))
-        except:
-            raise argparse.ArgumentTypeError("Unckown error")
 
-    return numberOfProcessors
+        except Exception as e:
+            raise argparse.ArgumentTypeError("the value given is not valid. "
+                                             "Error message: {}\nThe number of "
+                                             "available processors in your "
+                                             "computer is {}.".format(string,e,
+                                                                      availProc))
 
+        return numberOfProcessors
+        
 
 def genomicRegion(string):
     # remove whitespaces using split,join trick
