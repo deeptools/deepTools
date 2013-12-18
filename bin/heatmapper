@@ -41,7 +41,7 @@ def parseArguments(args=None):
     for attr in ['zMin', 'zMax', 'yMax', 'yMin']:
         try:
             args.__setattr__(attr, float(args.__getattribute__(attr)))
-#       except ValueError, TypeError:
+        #except ValueError, TypeError:
         except:
             args.__setattr__(attr, None)
 
@@ -121,7 +121,7 @@ def plotMatrix(hm, outFileName,
             zMax = None
 
     plt.rcParams['font.size'] = 10.0
-#    rcParams['font.size'] = 9.0
+    # rcParams['font.size'] = 9.0
 
     showSummaryPlot = False
     showHeatmap = False
