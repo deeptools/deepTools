@@ -82,6 +82,14 @@ def parseArguments(args=None):
                         action='store_true',
                         required=False)
 
+    parser.add_argument('--ignoreForNormalization', '-ignore',
+                        help='A list of chromosome names '
+                        'separated by comma and limited by quotes, '
+                        'containing those '
+                        'chromosomes that want to be excluded '
+                        'for computing the normalization. For example, '
+                        ' --ignoreForNormalization "chrX, chrM" ')
+
     args = parser.parse_args(args)
 
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
@@ -91,6 +99,12 @@ def parseArguments(args=None):
             "size ({}).\n\n No smoothing will be done".format(args.smoothLength,
                                                               args.binSize)
         args.smoothLength = None
+
+    if args.ignoreForNormalization:
+        args.ignoreForNormalization = \
+            [x.strip() for x in args.ignoreForNormalization.split(',')]
+    else:
+        args.ignoreForNormalization = []
 
     return(args)
 
@@ -111,6 +125,20 @@ def scaleFactor(string):
 
 def main(args):
     bamHandle = bamHandler.openBam(args.bam, args.bamIndex)
+
+    # if a list of chromosomes to remove from normalization
+    # is given, remove their counts
+    if len(args.ignoreForNormalization) > 0:
+        import pysam
+        # get the number of mapped reads but excluding
+        # some undesired chromosomes
+        bam_mapped = sum([int(y[2]) for y in
+                           [x.split("\t") for x in
+                            pysam.idxstats(bamHandle.filename)]
+                           if y[0] not in args.ignoreForNormalization])
+    else:
+        bam_mapped = bamHandle.mapped
+
     tileSize = args.binSize if args.binSize > 0 else 50
     fragmentLength = \
         args.fragmentLength if args.fragmentLength > 0 else 300
@@ -123,7 +151,7 @@ def main(args):
 
     if args.normalizeTo1x:
         current_coverage = \
-            float(bamHandle.mapped * fragmentLength) / args.normalizeTo1x
+            float(bam_mapped * fragmentLength) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
         args.scaleFactor = 1.0 / current_coverage
         if debug:
@@ -133,7 +161,7 @@ def main(args):
     elif args.normalizeUsingRPKM:
         # the RPKM is the # reads per tile / \
         #    ( total reads (in millions) * tile length in Kb)
-        millionReadsMapped = float(bamHandle.mapped)  / 1e6
+        millionReadsMapped = float(bam_mapped)  / 1e6
         tileLengthInKb = float(args.binSize) / 1000
         args.scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
         if debug:
@@ -152,7 +180,6 @@ def main(args):
                                 smoothLength=args.smoothLength,
                                 minMappingQuality=args.minMappingQuality,
                                 ignoreDuplicates=args.ignoreDuplicates)
-
 
 if __name__ == "__main__":
     args = parseArguments()
