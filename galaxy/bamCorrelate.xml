@@ -24,7 +24,7 @@
 
         --plotFile $outFileName
 
-        #if $outputOpt.showOutputOpt == "yes"
+        #if $output.showOutputSettings == "yes"
             --outRawCounts '$outFileRawCounts' 
             --outFileCorMatrix '$outFileCorMatrix'
             --plotFileFormat $output.outFileFormat
@@ -100,8 +100,8 @@
 
         </conditional>
 
-        <conditional name="outputOpt">
-            <param name="showOutputOpt" type="select" label="Show additional output options" >
+        <conditional name="output">
+            <param name="showOutputSettings" type="select" label="Show advanced output settings" >
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
@@ -117,10 +117,20 @@
     <outputs>
         <expand macro="output_image_file_format" />
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
-            <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveRawCounts'] == True)</filter>
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and 
+                output['saveRawCounts'] is True
+            ))
+            </filter>
         </data>
         <data format="tabular" name="outFileCorMatrix" label="${tool.name} on ${on_string}: correlation matrix">
-            <filter>(outputOpt['showOutputOpt'] == 'yes' and outputOpt['saveCorMatrix'] == True)</filter>
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and 
+                output['saveCorMatrix'] is True
+            ))
+            </filter>
         </data>
     </outputs>
     <help>

@@ -6,12 +6,6 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
-
-        #set files=[]
-        #set labels=[]
-
         @multiple_input_bams@
 
     bamFingerprint
@@ -34,7 +28,6 @@
       #else
         --plotFileFormat 'png'
       #end if
-
 
       #if $advancedOpt.showAdvancedOpt == "yes":
         
@@ -117,8 +110,8 @@
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>
             ((
-                outputOpt['showOutputOpt'] == 'yes' and 
-                outputOpt['saveRawCounts'] is True
+                output['showOutputSettings'] == 'yes' and 
+                output['saveRawCounts'] is True
             ))
             </filter>
         </data>
