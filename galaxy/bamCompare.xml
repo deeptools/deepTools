@@ -38,30 +38,29 @@
           #elif $comparison.normalization.type=='1x':
             --normalizeTo1x $comparison.normalization.normalizeTo1x
           #end if
-
-          #if str($comparison.ignoreForNormalization).strip() != '':
-            --ignoreForNormalization $comparison.ignoreForNormalization
-          #end if
-
       #end if
 
       #if $advancedOpt.showAdvancedOpt == "yes":
-        #if $advancedOpt.smoothLength:
-          --smoothLength '$advancedOpt.smoothLength'
-        #end if
+            #if $advancedOpt.smoothLength:
+            --smoothLength '$advancedOpt.smoothLength'
+            #end if
 
-        #if str($advancedOpt.region.value) != '':
-          --region '$advancedOpt.region'
-        #end if
+            #if str($advancedOpt.region.value) != '':
+                --region '$advancedOpt.region'
+            #end if
 
-        $advancedOpt.doNotExtendPairedEnds
-        $advancedOpt.ignoreDuplicates
+            $advancedOpt.doNotExtendPairedEnds
+            $advancedOpt.ignoreDuplicates
 
-        #if $advancedOpt.minMappingQuality:
-          --minMappingQuality '$advancedOpt.minMappingQuality'
-        #end if
+            #if $advancedOpt.minMappingQuality:
+                --minMappingQuality '$advancedOpt.minMappingQuality'
+            #end if
 
-        --missingDataAsZero $advancedOpt.missingDataAsZero
+            --missingDataAsZero $advancedOpt.missingDataAsZero
+
+            #if str($advancedOpt.ignoreForNormalization).strip() != '':
+                --ignoreForNormalization $advancedOpt.ignoreForNormalization
+            #end if
 
       #end if
 
@@ -128,9 +127,6 @@
                             help ="Sequencing depth is defined as the total number of mapped reads * fragment length / effective genome size. To use this option, the effective genome size has to be given. Common values are: mm9: 2150570000, hg19:2451960000, dm3:121400000 and ce10:93260000."/>
                     </when>
                 </conditional>
-                <param name="ignoreForNormalization" type="text" value="" size="50"
-                    label="regions that should be excluded for calculating the scaling factor"
-                    help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
             </when>
         </conditional>
 
@@ -147,29 +143,34 @@
             <when value="no" />
             <when value="yes">
 
-            <param name="smoothLength" type="integer" value="1" optional="true" min="1"
-                label="Smooth values using the following length (in bp)"
-                help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
+                <param name="smoothLength" type="integer" value="1" optional="true" min="1"
+                    label="Smooth values using the following length (in bp)"
+                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
 
-            <param name="region" type="text" value=""
-                label="Region of the genome to limit the operation to"
-                help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+                <param name="region" type="text" value=""
+                    label="Region of the genome to limit the operation to"
+                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
 
-            <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-                label="Do not extend paired ends"
-                help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
+                <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
+                    label="Do not extend paired ends"
+                    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
 
-            <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
-                label="Ignore duplicates"
-                help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
+                <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+                    label="Ignore duplicates"
+                    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
 
-            <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-                label="Minimum mapping quality (e.g. BOWTIE2 measures)"
-                help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
+                <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+                    label="Minimum mapping quality (e.g. BOWTIE2 measures)"
+                    help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
 
-            <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
-                label ="Treat missing data as zero"
-                help  ="This parameter determines if missing data should be treated as zeros. If unchecked, missing data will be ignored and not included in the output file. Missing data is defined as those regions for which both BAM files have 0 reads." />
+                <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
+                    label ="Treat missing data as zero"
+                    help  ="This parameter determines if missing data should be treated as zeros. If unchecked, missing data will be ignored and not included in the output file. Missing data is defined as those regions for which both BAM files have 0 reads." />
+
+                <param name="ignoreForNormalization" type="text" value="" size="50"
+                    label="regions that should be excluded for calculating the scaling factor"
+                    help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
+
             </when>
         </conditional>
 
