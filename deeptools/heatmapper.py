@@ -659,6 +659,7 @@ class heatmapper:
 
     def saveBED(self, file_handle):
         for label, regions in self.regionsDict.iteritems():
+            cluster = label.find('cluster') != -1
             j = 0
             for region in regions:
                 score = 0
@@ -670,16 +671,32 @@ class heatmapper:
                             score = np.float(self.matrixAvgsDict[label][j])
                     except KeyError:
                         pass
-                file_handle.write(
-                    '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                        region['chrom'],
-                        region['start'],
-                        region['end'],
-                        region['name'],
-                        score,
-                        region['strand']))
+                # If the label is from clustering, we add an additional column
+                # TODO: we need to decide if you want to go with an additional column
+                # also for other labels. Comment lines are not in the BED specification
+                # and can couse additional errors.
+                if cluster:
+                    file_handle.write(
+                        '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                            region['chrom'],
+                            region['start'],
+                            region['end'],
+                            region['name'],
+                            score,
+                            region['strand'],
+                            label))
+                else:
+                    file_handle.write(
+                        '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                            region['chrom'],
+                            region['start'],
+                            region['end'],
+                            region['name'],
+                            score,
+                            region['strand']))
                 j += 1
-            file_handle.write('#{}\n'.format(label))
+            if not cluster:
+                file_handle.write('#{}\n'.format(label))
         file_handle.close()
 
     @staticmethod
