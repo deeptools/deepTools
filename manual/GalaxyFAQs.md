@@ -2,7 +2,7 @@ Frequently asked questions
 ===========================
 
 #### [How can I do...?](#HowTo)
-* [I have downloaded/received a FASTQ file - how do I generate a file I can look at in a Genome Browser?](#FASTQ2IGV)
+* [I have downloaded/received a BAM file - how do I generate a file I can look at in a Genome Browser?](#FASTQ2IGV)
 * [How can I assess the reproducibility of my sequencing replicates?](#repCorr)
 * [How do I get an input-normalized ChIP-seq coverage file?](#InputNorm)
 * [How can I compare the ChIP strength for different ChIP experiments?](#fprint)
@@ -36,8 +36,9 @@ How can I do...? <a name="HowTo">
 This section is meant to give you quick guidance to specific tasks you may want to perform. There are many more ways in which you can use [deepTools Galaxy][] than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
 All of these tipps assume that you're working on the [deepTools Galaxy][] and have uploaded your files.
 
-#### I have downloaded/received a [FASTQ][] file - how do I generate a file I can look at in a Genome Browser?<a name="FASTQ2IGV">
-
+#### I have downloaded/received a [BAM][] file - how do I generate a file I can look at in a Genome Browser?<a name="FASTQ2IGV">
+* tool: [bamCoverage][]
+* input: your BAM file
 
 #### How can I assess the reproducibility of my sequencing replicates?<a name="repCorr">
 * tool: [bamCorrelate][]
