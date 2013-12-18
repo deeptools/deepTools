@@ -1,3 +1,5 @@
+[General options and parameters of deepTools](#params)
+
 How we use deepTools
 --------------------------------
 The majority of samples that we handle within our facility come from ChIP-seq experiments, therefore you will find many examples from ChIP-seq analyses. This does not mean that deepTools is restricted to ChIP-seq data analysis, but some tools, such as _bamFingerprint_ specifically address ChIP-seq-issues. (That being said, we do process quite a bit of RNA-seq, other -seq and genomic sequencing data using deepTools, too.)
@@ -22,6 +24,17 @@ Finally, once all the files have passed our visual inspections, the fun of downs
 Here's a visual summary of our average workflow - deepTools modules are indicated in bold letters, alternative software such as FASTQC and bowtie are noted in regular font. Everything written in red is related to quality control (QC) of the samples.
 
 ![flowChartI](https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
+
+------------------------------------------------
+### General options and parameters of deepTools <a name="params">
+
+Once you select a tool, you will see that almost every option has a brief description of its purpose. There are some options that you will encounter over and over again, so it's important that you understand their implications. Most of these options are related to the __computation of read coverages__.
+
+   * __Length of average fragment size__: For high-throughput sequencing of short reads, the cells' DNA is typically sheared and fragments of a certain size are selected to be sequenced. Very often, this will be between 200 to 300 bp. From each of these fragments, the reads one obtains will only represent the first (and/or) last 30-50 bp (depending on the chosen read length). When calculating coverages, we therefore extend the reads to match the original fragment size. In the case of paired-end sequencing, the exact fragment size will be known, for single-end sequencing every read will be extended to the same length.
+   * __bin size__: In order to create a continuous profile of read coverages along the genome, we need to divide the genome into regions of equal length for which the number of overlapping reads is counted. The size of this window could be 1 bp, however, for practical reasons we usually chose a bin size between 10 to 50 bp (depending on the depth of sequencing, the size of the genome and the desired resolution).
+   * __Minimum mapping quality__: This is an optional parameter ("Advanced options"). If you set the Minimum mapping quality to 10, all reads with a mapping quality below 10 will not be taken into consideration for the read coverage computation.
+   * __ignore duplicates__: This an optional parameter, too, that will filter out reads that have the exact same start and end point (thought to be PCR artefacts). You should absolutely __not__ select this option if you have a BAM file that you corrected for GC bias.
+   * __missing Data as zero__: If this option is selected, regions where no overlapping reads are found will be included as regions with coverage = 0. Note that this is different from including those regions with "no coverage". Imagine 4 genome bins with read coverages of 0,1,2,3 - the average of these four bins will be 6/4 = 1.5. If the first bin would have been marked with "no coverage", it would not have been included in the calculation for the average read coverage, thus the result would have been 6/3 = 2.
 
 -----------------------------------
 [Back to the general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
