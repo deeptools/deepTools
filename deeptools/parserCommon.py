@@ -136,10 +136,6 @@ def numberOfProcessors(string):
     else:
         try:
             numberOfProcessors = int(string)
-            if numberOfProcessors > availProc:
-                raise argparse.ArgumentTypeError(
-                    "Whishful thinking! Your computer only has {} processors and "
-                    "you want to use {}.".format(numberOfProcessors, availProc))
         except ValueError:
             raise argparse.ArgumentTypeError(
                 "{} is not a valid number of processors".format(string))
@@ -150,6 +146,9 @@ def numberOfProcessors(string):
                                              "available processors in your "
                                              "computer is {}.".format(string,e,
                                                                       availProc))
+
+        if numberOfProcessors > availProc:
+            numberOfProcessors = availProc
 
         return numberOfProcessors
         
