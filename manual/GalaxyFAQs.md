@@ -38,11 +38,13 @@ Frequently asked questions
 
 How can I do...? <a name="HowTo"></a>
 --------------------------------------------------
-This section is meant to give you quick guidance to specific tasks you may want to perform within Galaxy. We tried to make you aware of commonly user-specified options (circles) and placed screenshots of the output on the right hand side of each tool's screenshot. Do let us know if you spot things that are missing, should be explained better or are plain confusing!
+This section is meant to give you quick guidance to specific tasks you may want to perform. We're using screenshots from Galaxy here, if you're using the command-line version, you can easily follow the given examples by typing the program name and the help option (e.g. /deepTools/bin/bamCoverage --help) which will show you all the parameters and options, most of them named very similarly to those in Galaxy.
+
+For each "recipe" here, you will find the screenshot of the tool and the input parameters on the left hand side(circles mark non-default, _user-specified entries_) and screenshots of the output on the right hand side. Do let us know if you spot things that are missing, should be explained better or are plain confusing!
 
 There are many more ways in which you can use [deepTools Galaxy][] than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
 
-All of these tipps assume that you're working on the [deepTools Galaxy][] and have uploaded your files.
+__All recipes assume that you're working on the [deepTools Galaxy][] and have uploaded your files.__
 
 ------------------------------------------------------------------------------------------------------
 
@@ -96,7 +98,7 @@ Note: BAM files can also be viewed in Genome Browsers, however, they're large an
 
 #### How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages around the transcription start site of all genes?<a name="HM"></a>
 * if you want to start with a BAM file, begin by _generating the normalized read coverages_ using the tool [bamCoverage][] with the option "normalize to 1x sequencing depth" (make sure that you indicate the correct genome size) (1)
-* you also need a BED or INTERVAL file of genes (you can obtain one via "Get Data" --> "UCSC main table browser" --> group: "Genes and Gene Predictions" --> (e.g.) "RefSeqGenes" --> send to Galaxy (2)
+* you also need a BED or INTERVAL file of genes (you can obtain one via "Get Data" &rarr; "UCSC main table browser" &rarr; group: "Genes and Gene Predictions" &rarr; (e.g.) "RefSeqGenes" &rarr; send to Galaxy (2)
 
 
 ![GalHow_clustHM01](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM01.png "deepTools Galaxy screenshot of how to get a list of genes from UCSC")
@@ -112,9 +114,9 @@ Note: BAM files can also be viewed in Genome Browsers, however, they're large an
 
 #### How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments?<a name="profiler"></a>
 * you need two __BED files__: one with X-chromosomal and one with autosomal genes (1)
-    * you can download a full list of genes via "Get Data" --> "UCSC main table browser" --> group:"Genes and Gene Predictions" --> tracks: (e.g.) "RefSeqGenes" --> send to Galaxy
+    * you can download a full list of genes via "Get Data" &rarr; "UCSC main table browser" &rarr; group:"Genes and Gene Predictions" &rarr; tracks: (e.g.) "RefSeqGenes" &rarr; send to Galaxy
     * then filter the full list twice using the tool "Filter data on any column using simple expressions" 
-        - first use the expression: c1=="chrX" to filter the list of all genes --> this will generate a list of X-linked genes
+        - first use the expression: c1=="chrX" to filter the list of all genes &rarr; this will generate a list of X-linked genes
         - then re-run the filtering, now with c1!="chrX" which will generate a list of genes that do not belong to chromosome X (!= indicates "not matching")
 * you need __bigWig files__ for each experiment (in case you only have BAM files, run [bamCoverage][] on every BAM file first) (2)
 * use [computeMatrix][] for each signal file (bigWig) (you only need to specify all the parameters once, then use the re-run button underneath the first data set and just replace the signal file with the next one) (3)
@@ -122,7 +124,7 @@ Note: BAM files can also be viewed in Genome Browsers, however, they're large an
     * indicate the corresponding signal file
     * make sure to __re-name__ every data set in the history once computeMatrix is done so that you can easily keep track of which matrix was based on which bigWig file (you can always find these information by clicking on the i-button in the respective data set)
 * now use [profiler][] for every file you generated with computeMatrix (4)
-    * important: display the "advanced output options" and select "save the data underlying the average profile" --> this will generate a table in addition to the summary plot images
+    * important: display the "advanced output options" and select "save the data underlying the average profile" &rarr; this will generate a table in addition to the summary plot images
 * now you have at least 2 separate images of profiles - one for each bigWig file - you can either leave it like this or use another script that will plot all the summary plots in one image at once (5)
     * this tool is called "Plotting the summary plots for multiple signals"
     * it uses the tables generated by profiler in (4)
@@ -132,9 +134,9 @@ The result could look like this:
 
 ![GalHow_profilesXA02](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_profiles_XvsA02.png "combined profiles for different histone marks") 
 
-As you have noticed, this task requires several steps that are repeated. Here is a screenshot of how the Galaxy workflow would look like (you can find it under "Shared Data" --> "Published Workflows" --> "Summary plots for X and autosomal genes" where we have constructed it with the example histone marks from the Data Library. Be aware that running this workflow will take up quite some computation timing, but it won't require much input from your part - so start if before you go off for lunch ;) )
+As you have noticed, this task requires several steps that are repeated. Here is a screenshot of how the Galaxy workflow would look like (you can find it under "Shared Data" &rarr; "Published Workflows" &rarr; "Summary plots for X and autosomal genes" where we have constructed it with the example histone marks from the Data Library. Be aware that running this workflow will take up quite some computation timing, but it won't require much input from your part - so start if before you go off for lunch ;) )
 
-If you're not sure how to use the published workflow, please read [this entry](#workflow)
+If you're not sure how to use the published workflow, please read [this entry](#workflow).
 
 ![GalHow_profilesXA](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_profiles_XvsA.png "Screenshot of the workflow designed for the above described task")
 
@@ -142,7 +144,7 @@ If you're not sure how to use the published workflow, please read [this entry](#
 
 
 
-Galaxy-specific questions <a name="GalSpecific">
+Galaxy-specific questions <a name="GalSpecific"></a>
 --------------------------------------------------
 
 #### I've reached my quota - what can I do to save some space? <a name="quota"></a>
@@ -151,9 +153,9 @@ Galaxy-specific questions <a name="GalSpecific">
 
 
 #### How can I use a published workflow?<a name="workflow"></a>
-You __must register__ if you want to use the workflows within [deepTools Galaxy][].
+You __must register__ if you want to use the workflows within [deepTools Galaxy][]. ("User" &rarr; "Register" - all you have to supply is an email address)
 
-You can find workflows that are public or specifically shared with you by another user via "Shared Data" --> "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
+You can find workflows that are public or specifically shared with you by another user via "Shared Data" &rarr; "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
 
 ![GalHow_wf01](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf01.png "Finding published workflows")
 
@@ -179,11 +181,11 @@ Simply run MACS on the BAM file that you would like to gain the information for 
 
 
 
-General deepTools-related questions <a name="general">
+General deepTools-related questions <a name="general"></a>
 --------------------------------------------------------------
 
 #### How can I test a tool with little computation time? <a name="compTime"></a>
-* when you're playing around with the tools to see what kinds of results they will produce: limit the operation to one chromosome only to __save computation time__! ("advanced output options" --> "Region of the genome to limit the operation to")
+* when you're playing around with the tools to see what kinds of results they will produce: limit the operation to one chromosome only to __save computation time__! ("advanced output options" &rarr; "Region of the genome to limit the operation to")
 
 
 #### When should I exclude regions from computeGCbias? <a name="excludeGC"></a>
@@ -205,14 +207,14 @@ Once you've copied a data set from one history to another, check two things:
 
 #### The heatmap I generated looks very "coarse", I would like a much more fine-grained image. <a name="hmresolution"></a>
 * decrease the __bin size__ when generating the matrix using computeMatrix
-  * go to "advanced options" --> "Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" --> define a smaller value, e.g. 50 or 25 bp
+  * go to "advanced options" &rarr; "Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" &rarr; define a smaller value, e.g. 50 or 25 bp
 * make sure, however, that you used a sufficiently small bin size when calculating the bigWig file, though (if generated with deepTools, you can check the option "bin size")
 
 
 #### How can I change the automatic labels of the clusters in a kmeans clustered heatmap?<a name="hmlabels"></a>
-Each cluster will get its own box, exactly the same way as different groups of regions. Therefore, you can use the same option to define the labels of the final heatmap: Heatmapper --> "Advanced output options" --> "Labels for the regions plotted in the heatmap".
+Each cluster will get its own box, exactly the same way as different groups of regions. Therefore, you can use the same option to define the labels of the final heatmap: Heatmapper &rarr; "Advanced output options" &rarr; "Labels for the regions plotted in the heatmap".
 
-If you indicated 3 clusters for kmeans clustering, enter here: C1, C2, C3 --> instead of the full default label ("cluster 1"), the heatmap will be labeled with the abbreviations.
+If you indicated 3 clusters for kmeans clustering, enter here: C1, C2, C3 &rarr; instead of the full default label ("cluster 1"), the heatmap will be labeled with the abbreviations.
 
 #### How do I calculate the effective genome size for an organism that's not in your list?<a name="effGenomeSize"></a>
 This is something you will have to find a solution outside of deepTools at the moment. We suggest to run faCount from UCSC tools. If you used multi-read alignment (e.g. with bowtie2), then you can use that tool to report the total number of bases as well as the number of unmapped bp, indicated by 'N'. The effective genome size is the total number of reads minus the number of 'N'.

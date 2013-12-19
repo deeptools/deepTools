@@ -26,7 +26,7 @@ Here's a visual summary of our average workflow - deepTools modules are indicate
 ![flowChartI](https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
 
 ------------------------------------------------
-### General options and parameters of deepTools <a name="params">
+### General options and parameters of deepTools <a name="params"></a>
 
 Once you select a tool, you will see that almost every option has a brief description of its purpose. There are some options that you will encounter over and over again, so it's important that you understand their implications. Most of these options are related to the __computation of read coverages__.
 

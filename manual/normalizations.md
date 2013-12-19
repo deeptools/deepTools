@@ -3,7 +3,7 @@ Normalization of BAM files
 
 deepTools contains 3 tools for the normalization of [BAM][] files:
 
-1. _)correctGCbias__: in case, you would like to normalize your read distributions to fit the expected GC values, you can use the output from [computeGCbias](https://raw.github.com/fidelram/deepTools/master/manual/QC.md "go to the chapter about data QC") and produce a GC-corrected [BAM]-file.
+1. __correctGCbias__: in case, you would like to normalize your read distributions to fit the expected GC values, you can use the output from [computeGCbias](https://raw.github.com/fidelram/deepTools/master/manual/QC.md "go to the chapter about data QC") and produce a GC-corrected [BAM]-file.
 2. __bamCoverage__: this tool converts a single [BAM][] file into a [bigWig][] file, enabling you to normalize for sequencing depth.
 3. __bamCompare__: like bamCoverage, this tool produces a normalized [bigWig][] file, but it takes 2 [BAM][] files, normalizes them for sequencing depth and subsequently performs a mathematical operation of your choice, i.e. it can output the ratio of the read coverages in both files or the like.
 
@@ -21,7 +21,7 @@ deepTools contains 3 tools for the normalization of [BAM][] files:
 
 
 
-<a name="correctGCbias"/>
+<a name="correctGCbias"/></a>
 CorrectGCbias
 ---------------
 
@@ -32,7 +32,7 @@ This tool requires the output from [computeGCBias](https://github.com/fidelram/d
  + __GC-normalized BAM file__
 
 
-<a name="bamCoverage"/>
+<a name="bamCoverage"/></a>
 bamCoverage
 ------------
 
@@ -47,7 +47,7 @@ Given a BAM file, this tool generates a [bigWig][] or [bedGraph][] file of fragm
 
 Here's an exemplary command to generate a single [bigWig][] file out of a single [BAM][] file via the command line:
 
-    $/deepTools-1.5/bin/bamCoverage -b corrected_counts.bam -bs 10 --normalizeTo1x 2150570000 --fragmentLength 200 -o Coverage.GCcorrected.SeqDepthNorm.bw --ignoreForNormalization chrX
+    $/deepTools-1.5/bin/bamCoverage --bam corrected_counts.bam --binSize 10 --normalizeTo1x 2150570000 --fragmentLength 200 -o Coverage.GCcorrected.SeqDepthNorm.bw --ignoreForNormalization chrX
 
   + The bin size __(-bs)__ can be chosen completely to your liking. The smaller it is, the bigger your file will be.
   + This was a mouse sample, therefore the effective genome size for mouse had to be indicated once it was decided that the file should be normalize to 1x coverage.
@@ -61,7 +61,7 @@ Using [deepTools Galaxy][], this is what you would have done:
 
  
 
-<a name="bamCompare"/>
+<a name="bamCompare"/></a>
 bamCompare
 ------------
 
@@ -77,7 +77,7 @@ reads are present, the fragment length reported in the BAM file is used by defau
 
 Here's an example command that generated the log2(ChIP/Input) values via the command line.
 
-    $ /deepTools-1.5/bin/bamCompare -b1 ChIP.bam -b2 Input.bam -bs 25 -f 200 --missingDataAsZero no --ratio log2 --scaleFactorsMethod SES -o log2ratio_ChIP_vs_Input.bw
+    $ /deepTools-1.5/bin/bamCompare --bamfile1 ChIP.bam -bamfile2 Input.bam --binSize 25 --fragmentLength 200 --missingDataAsZero no --ratio log2 --scaleFactorsMethod SES -o log2ratio_ChIP_vs_Input.bw
     
 
 The Galaxy equivalent:

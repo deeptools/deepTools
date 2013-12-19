@@ -28,13 +28,13 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
       * [operating on genomic intervals](#BED)
       * [working with text files and tables](#textfiles)
   * [Galaxy workflows](#workflows)    
-  * [deepTools Galaxy Tipps and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
+  * [deepTools Galaxy Tips and FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md)
   * [Where to get help](#help)
 
 
 [back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
 
-<a name="basics">
+<a name="basics"></a>
 Basic features of Galaxy
 -------------------------
 
@@ -83,7 +83,7 @@ If you encounter a failure after you've run a tool, please follow those steps (i
 3. if you've checked your input data and the error is persisting, click on the green bug (lower left corner of the failed data set) and send the __bug report__ to us.
 
 
-<a name="upload">
+<a name="upload"></a>
 Data import into Galaxy
 -------------------------
 
@@ -95,7 +95,7 @@ There are three main ways to populate your Galaxy history with data files:
 4. [__For registered users only__: Copy data sets between histories](#copy)
 
 
-<a name="dataup">
+<a name="dataup"></a>
 #### Upload files from your computer
 The data upload of files <2 GB that lie on your computer is fairly straight-forward: click on the category "Get data" and choose the tool "Upload file". Then select the file via the "Browse" button.
         
@@ -115,7 +115,7 @@ If you do not have access to an FTP server, you can directly upload to our Galax
 ![Filezilla](https://raw.github.com/fidelram/deepTools/master/examples/Gal_filezilla.png "Screenshot of filezilla")
 
 
-<a name="dataim">
+<a name="dataim"></a>
 #### Import data sets from the Galaxy data library
 
 If you would like to play around with sample data, you can import files that we have saved within the general data storage of the deepTools Galaxy server. Everyone can import them into his or her own history, they will not contribute to the user's disk quota.
@@ -127,7 +127,7 @@ Within the Data Library you will find a folder called "Sample Data" that contain
 ![DataLibrary](https://raw.github.com/fidelram/deepTools/master/examples/Gal_DataLib.png "Screenshots of how to get to the Data Library")
 
 
-<a name="downloadann">
+<a name="downloadann"></a>
 #### Download annotation files from public data bases
 
 In many cases you will want to query your sequencing data results for known genome annotation, such as genes, exons, transcription start sites etc. These information can be obtained via the two main sources of genome annotation, [UCSC][] and [BioMart][]. Please note that UCSC and BioMart will cater to different ways of genome annotation, i.e. genes defined in UCSC might not correspond to the same regions in a gene file downloaded from BioMart. (For a brief overview over the issues of genome annotation, you can check out [Wikipedia](http://en.wikipedia.org/wiki/Genome_project "Genome annotation article"), if you'd always wanted to know much more about those issues, [this](http://www.ncbi.nlm.nih.gov/pubmed/22510764 "A beginner's guide to eukaryotic genome annotation, Nat. Genetics, 2012") might be a good start.)
@@ -148,15 +148,14 @@ Per default, __BioMart will not output a BED file__ like UCSC does. It is theref
 >Be aware, that BED files from UCSC will have chromosomes labelled with “chr” while ENSEMBL usually returns just the number – this might lead to incompatibilities, i.e. when working with annotations from UCSC and ENSEMBL, you need to make sure to use the same naming!
 
 
-<a name="copy">
+<a name="copy"></a>
 #### __For registered users only__: Copy data sets between histories
 In case you have registered with deepTools Galaxy you can have more than one history. In order to minimize the disk space you're occupying we strongly suggest to __copy__ data sets between histories when you're using the same data set in different histories. This can easily be done via the History panel's option button --> "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side and the target history on the right hand side.
 
 
 [Back to the deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/)
 
-<a name="tools">
-Which tools can I find in the deepTools Galaxy?
+Which tools can I find in the deepTools Galaxy?<a name="tools"></a>
 -------------------------------------------------------
 
 As mentioned above, each Galaxy installation can be tuned to the individual interests. Our goal is to provide a Galaxy that enables you to __quality check, process and normalize and subsequently visualize your data obtained by high-throughput DNA sequencing__.
@@ -170,7 +169,7 @@ We provide the following kinds of tools:
 
 
 
-<a name="deepTools">
+<a name="deepTools"></a>
 #### deepTools
 
 The most important category is called __"deepTools"__ that contains 8 major tools:
@@ -193,7 +192,7 @@ We have compiled several sources of detailed information specifically about the 
 2. Each individual tool is described in more detail on separate pages - just follow the links in the table above
 3. For each tool, you will find specific explanations within the [deepTools Galaxy][] main frame, too.
 
-<a name="peaks">
+<a name="peaks"></a>
 #### Peak calling
 
 In ChIP-seq analysis, peak calling algorithms are essential downstream analysis tools to identify regions of significant enrichments (i.e. where the ChIP sample contained significantly more sequenced reads than the input control sample). By now, there must be close to 100 programs out there (see [Wilbanks et al.](http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0011471 "Wilbanks et al.") for a comparison of peak calling programs).
@@ -205,7 +204,7 @@ In contrast to deepTools that were developed for handling and generating _contin
 We have included the peak callers [MACS][], [SICER][] and [CCAT][] within our Galaxy instance with [MACS][] being the most popular peak calling algorithm for the identification of localized transcription factor binding sites while [SICER][] was developed for diffuse ChIP-seq signals.
 
 
-<a name="BED">
+<a name="BED"></a>
 #### Working with genomic intervals
 
 Galaxy has 2 file formats to store lists of genomic regions:
@@ -232,7 +231,7 @@ In case you would like to work with several lists of genomic regions, e.g. gener
 Each tool's function is explained within Galaxy. Do browse those tools as they will give you a very good glimpse of the scope of possible analyses!
 
 
-<a name="textfiles">
+<a name="textfiles"></a>
 #### Working with text files and tables
 In addition to deepTools that were specifically developed for the handling of NGS data, we have incorporated several standard Galaxy tools that enable you to manipulate tab-separated files such as gene lists, peak lists, data matrices etc.
 
@@ -246,7 +245,7 @@ There are 3 main categories:
    * this category is very useful if you have several data sets that you would like to work with, e.g. by comparing them
 
 
-<a name="workflows">
+<a name="workflows"></a>
 Workflows
 --------------------
 Workflows are Galaxy's equivalent of protocols. This is an extremely useful feature as it allows users to share their protocols and bioinformatic analyses in a very easy and transparent way.
@@ -255,7 +254,7 @@ This is the graphical representation of a Galaxy workflow that can easily be mod
 
 
 
-<a name="help">
+<a name="help"></a>
 Where to get help?
 --------------------
 
