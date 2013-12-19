@@ -5,3 +5,4 @@ include galaxy/*.xml
 include galaxy/tool-data/*
 include galaxy_test_data/*
 include config/deepTools.cfg
+include scripts/*
