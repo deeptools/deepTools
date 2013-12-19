@@ -11,10 +11,11 @@ def output(args=None):
                        type=writableFile,
                        required=True)
 
+    default = checkBigWig('bigwig')
     group.add_argument('--outFileFormat', '-of',
-                       help='Output file type. Either "bigwig" or "bedgraph"',
+                       help='Output file type. Either "bigwig" or "bedgraph".',
                        choices=['bigwig', 'bedgraph'],
-                       default='bigwig')
+                       default=default)
 
     return parser
 
@@ -176,6 +177,33 @@ def writableFile(string):
     except:
         msg = "{} file can be opened for writing".format(string)
         raise argparse.ArgumentTypeError(msg)
+    return string
+
+
+def checkBigWig(string):
+    """
+    Checks if the path to USCS bedGraphToBigWig as set in the config
+    is installed and is executable.
+    """
+    if string == 'bigwig':
+        import config as cfg
+        import os
+        bedgraph_to_bigwig = cfg.config.get('external_tools',
+                                            'bedgraph_to_bigwig')
+        if not os.path.isfile(bedgraph_to_bigwig) or \
+                not os.access(bedgraph_to_bigwig, os.X_OK):
+            msg = "\nYour computer does not have the UCSC program " \
+                "bedGraphToBigWig installed or configured in the " \
+                "set up. In order to output bigwig files this tool " \
+                "needs to be installed and linked in the " \
+                "config/deepTools.cfg file.\n\n" \
+                "The program can be downloaded from here: " \
+                "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
+                "The output is set by default to 'bedgraph' "
+            
+            print msg
+            return 'bedgraph'
+
     return string
 
 
