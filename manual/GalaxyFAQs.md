@@ -1,5 +1,3 @@
-[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyFAQs.pdf)
-
 Frequently asked questions
 ===========================
 
@@ -225,6 +223,9 @@ This is something you will have to find a solution outside of deepTools at the m
 
 ----------------------------------------------------------------
 ##### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyFAQs.pdf)
+
 ----------------------------------------------------------------
 [Galaxy]: http://galaxyproject.org/ "General Galaxy platform from Penn State"
 [GEO]: http://www.ncbi.nlm.nih.gov/geo/ "GEO database"
