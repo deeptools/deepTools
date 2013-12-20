@@ -266,7 +266,7 @@ Please check our [deepTools Galaxy FAQs](https://github.com/fidelram/deepTools/b
 
 
 [back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
-
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyHelp.pdf)
 
 -----------------------------------------------------------------------------------
 
