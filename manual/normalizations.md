@@ -116,3 +116,5 @@ Note that the option "missing Data As Zero" can be found within the "advanced op
 [deepTools Galaxy]: http://deeptools.ie-freiburg.mpg.de/ "deepTools Galaxy at the Max-Planck-Institute of Immunobiology and Epigenetics"
 
 This tool is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/normalizations.pdf)
