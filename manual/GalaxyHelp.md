@@ -10,9 +10,9 @@ We have compiled several information that will hopefully get you started with yo
 
 If you just need a refresher of __how to upload data into Galaxy__, please have a look [down below](#upload).
 
-If you do not know the difference between a BAM and a BED file, that's fine - just make sure you have a look at this brief overview [here](https://drive.google.com/file/d/0B8DPnFM4SLr2UHY3cHNZdTFEcDg/edit?usp=sharing "NGS Data Formats") before starting your analysis as high-throughput sequencing data relies on several specific __data formats__.
+If you do not know the difference between a BAM and a BED file, that's fine - just make sure you have a look at this brief overview [here](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/Galaxy_DataFormats_NGS.pdf "NGS Data Formats") before starting your analysis as high-throughput sequencing data relies on several specific __data formats__.
 
-If you would like to dive right into the analysis of BAM or bigWig files using [deepTools Galaxy][], [here](https://drive.google.com/file/d/0B8DPnFM4SLr2M0lZYkl6UEw2WGs/edit?usp=sharing "Visual Manual of deepTools Galaxy") is a __manual that covers the basic functions of deepTools__, starting from an overview of a typical workflow of NGS data analysis and ending with several different examples to demonstrate the power of heatmaps and summary plots.
+If you would like to dive right into the analysis of BAM or bigWig files using [deepTools Galaxy][], [here](https://drive.google.com/file/d/0B8DPnFM4SLr2M0lZYkl6UEw2WGs/edit?usp=sharing "Visual Manual of deepTools Galaxy") is a __manual that covers the basic functions of deepTools__, starting from an overview of a typical workflow of NGS data analysis and ending with several different examples to demonstrate the power of heatmaps and summary plots. For more specific help, check our [FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md).
 
 -----------------------------------------------------------------------------------
 ## Table of Content
@@ -32,7 +32,7 @@ If you would like to dive right into the analysis of BAM or bigWig files using [
   * [Where to get help](#help)
 
 
-[back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
+[Go to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
 
 <a name="basics"></a>
 Basic features of Galaxy
@@ -265,8 +265,9 @@ Please check our [deepTools Galaxy FAQs](https://github.com/fidelram/deepTools/b
 * if you encounter a failing data set, please send a bug report via Galaxy and we will get in touch
 
 
-[back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
-[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyHelp.pdf)
+[Go to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyHelp.pdf "GalaxyHelp.pdf")
 
 -----------------------------------------------------------------------------------
 
