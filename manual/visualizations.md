@@ -153,6 +153,8 @@ To have a better control on the clustering it is recommended to load the matrix 
 
 [back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
 
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/visualizations.pdf)
+
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
 [BED]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "simple text file of genomic regions (chr, start, end)"
