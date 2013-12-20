@@ -40,11 +40,11 @@ How can I do...? <a name="HowTo"></a>
 --------------------------------------------------
 This section is meant to give you quick guidance to specific tasks you may want to perform. We're using screenshots from Galaxy here, if you're using the command-line version, you can easily follow the given examples by typing the program name and the help option (e.g. /deepTools/bin/bamCoverage --help) which will show you all the parameters and options, most of them named very similarly to those in Galaxy.
 
-For each "recipe" here, you will find the screenshot of the tool and the input parameters on the left hand side(circles mark non-default, _user-specified entries_) and screenshots of the output on the right hand side. Do let us know if you spot things that are missing, should be explained better or are plain confusing!
+For each "recipe" here, you will find the screenshot of the tool and the input parameters on the left hand side (we marked non-default, _user-specified entries_) and screenshots of the output on the right hand side. Do let us know if you spot things that are missing, should be explained better or are plain confusing!
 
 There are many more ways in which you can use [deepTools Galaxy][] than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
 
-__All recipes assume that you're working on the [deepTools Galaxy][] and have uploaded your files.__
+__All recipes assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g. [deepTools Galaxy][].__
 
 ------------------------------------------------------------------------------------------------------
 
