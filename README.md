@@ -127,9 +127,10 @@ To install under a specific location use:
 ### Installation on a MAC
 
 Although the installation of deepTools itself is quite simple,
-the installation of the required modules scipy and NumPy  bit of extra work.
+the installation of the required modules SciPy and NumPy demand
+a bit of extra work.
 
-The easiest way is to install the 
+The easiest way is to install them is together with the
 [Anaconda Scientific Python Distribution][]. After installation, open
 a terminal ("Applications" --> "Terminal"): and type:
 
