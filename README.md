@@ -126,12 +126,23 @@ To install under a specific location use:
 <a name="mac"/>
 ### Installation on a MAC
 
+Although the installation of deepTools itself is quite simple,
+the installation of the required modules scipy and NumPy  bit of extra work.
+
+The easiest way is to install the 
+[Anaconda Scientific Python Distribution][]. After installation, open
+a terminal ("Applications" --> "Terminal"): and type:
+
+     $ pip install deeptools
+  	   
+In case the individual installation of the dependencies is prefered follow 
+the next steps:
+
 Requirement: Python 2.7 installed
 
-Numpy, Scipy, matplotlib are also required - in case you haven't installed them yet, download the packages and install them using dmg images:
+Download the packages and install them using dmg images:
 - http://sourceforge.net/projects/numpy/files/NumPy/
 - http://sourceforge.net/projects/scipy/files/scipy/
-- http://matplotlib.org/downloads.html
 
 Then install deepTools via the terminal ("Applications" --> "Terminal"):
 
@@ -145,9 +156,7 @@ If pip is not already available, install with:
 
 Install deepTools and dependencies with pip:
 
-     $ pip install --user pysam
-     $ pip install --user bx-python
-     $ pip install --user --no-deps deeptools
+     $ pip install --user deeptools
 
 
 <a name="trouble"/>
@@ -283,6 +292,6 @@ Now, imagine that the biased sample is a ChIP for a protein binding to methylate
 ### References
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
 [Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
-
+[Anaconda Scientific Python Distribution]: https://store.continuum.io/cshop/anaconda/
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
