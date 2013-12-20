@@ -1,3 +1,5 @@
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyFAQs.pdf)
+
 Frequently asked questions
 ===========================
 
