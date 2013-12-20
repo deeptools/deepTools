@@ -153,3 +153,5 @@ We chose these examples to show you how the nature of the ChIP signal (narrow an
 
 
 This tool is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyQC.pdf)
