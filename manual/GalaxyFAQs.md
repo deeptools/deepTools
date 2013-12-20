@@ -12,7 +12,8 @@ Frequently asked questions
 
 #### [Galaxy-specific questions](#GalSpecific)
 * [I've reached my quota - what can I do to save some space?](#quota)
-* [How can I use a published workflow?](#workflow)
+* [How can I use a published workflow within deepTools Galaxy?](#workflow)
+* [I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?](#workflow2)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
 * [How can I determine basic parameters of a BAM file?](#BAMparams)
 
@@ -136,7 +137,7 @@ The result could look like this:
 
 As you have noticed, this task requires several steps that are repeated. Here is a screenshot of how the Galaxy workflow would look like (you can find it under "Shared Data" &rarr; "Published Workflows" &rarr; "Summary plots for X and autosomal genes" where we have constructed it with the example histone marks from the Data Library. Be aware that running this workflow will take up quite some computation timing, but it won't require much input from your part - so start if before you go off for lunch ;) )
 
-If you're not sure how to use the published workflow, please read [this entry](#workflow).
+If you're not sure how to use the published workflow, please read [this entry](#workflow) or go to the central [Galaxy learning page full of tutorials]( https://wiki.galaxyproject.org/Learn/Screencasts#Tutorials "Galaxy Tutorials").
 
 ![GalHow_profilesXA](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_profiles_XvsA.png "Screenshot of the workflow designed for the above described task")
 
@@ -163,6 +164,11 @@ A green box should appear, there you select "start using this workflow" which sh
 
 ![GalHow_wf02](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png "Finding published workflows")
 
+#### I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible? <a name="workflow2"></a>
+
+Yes, it is possible. The only requirement is that your local Galaxy has a recent installation of deepTools.
+
+Go to the workflows, click on the ones you're interested in and go to "Download". This will save the workflows into .ga files on your computer. Now go to your local Galaxy installation and login. Go to the workflow menu and select "import workflow" (top right hand corner of the page). Click on "Browse" and select the saved workflow. If you have the same tool versions installed in your local Galaxy, these workflows should work right away.
 
 
 #### What's the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy) <a name="integrate"></a>
