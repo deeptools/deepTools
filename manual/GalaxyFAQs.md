@@ -12,16 +12,17 @@ Frequently asked questions
 
 #### [Galaxy-specific questions](#GalSpecific)
 * [I've reached my quota - what can I do to save some space?](#quota)
+* * [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
 * [How can I use a published workflow within deepTools Galaxy?](#workflow)
 * [I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?](#workflow2)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
 * [How can I determine basic parameters of a BAM file?](#BAMparams)
 
 #### [General deepTools-related questions](#general)
+* [How does deepTools handle data from paired-end sequencing?](#PE)
 * [I just want to try out a tool, how can I optimize the computation time?](#compTime)
-* [When should I exclude regions from computeGCbias?](#excludeGC)
 * [Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?](#bamCorrelateLimit)
-* [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
+* [When should I exclude regions from computeGCbias?](#excludeGC)
 
 ###### Heatmapper
 * [How can I increase the resolution of the heatmap?](#hmresolution)
@@ -29,11 +30,13 @@ Frequently asked questions
 
 ###### External data
 * [How do I calculate the effective genome size for an organism that's not in your list?](#effGenomeSize)
+* [Where can I download the 2bit genome files required for computeGCbias?](#2bit)
 
-###### [Back to deepTools Galaxy](https://deeptools.ie-freiburg.mpg.de)
+###### [Go to deepTools Galaxy](https://deeptools.ie-freiburg.mpg.de)
 
-###### [Go to the general help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md)
+###### [Go to the general Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md)
 
+###### [Go to installation information](https://github.com/fidelram/deepTools/edit/master/README.md#installation)
 ----------------------------------------------------------------------------------------------------
 
 
@@ -152,6 +155,13 @@ Galaxy-specific questions <a name="GalSpecific"></a>
 1. make sure that all the data sets you deleted are __permanently__ eliminated from our disks: go to the history option button and select "Purge deleted data sets", then hit the "refresh" button on top of your history panel
 2. download all data sets for which you've completed the analysis, then remove the data sets (click on the "x" and then make sure they're purged (see above)
 
+#### Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!<a name="refresh"></a>
+Once you've copied a data set from one history to another, check two things:
+* do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
+* hit the refresh button
+
+![GalHow_clustHM03](https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png "Galaxy history refresh button")
+
 
 #### How can I use a published workflow?<a name="workflow"></a>
 You __must register__ if you want to use the workflows within [deepTools Galaxy][]. ("User" &rarr; "Register" - all you have to supply is an email address)
@@ -190,25 +200,20 @@ Simply run MACS on the BAM file that you would like to gain the information for 
 General deepTools-related questions <a name="general"></a>
 --------------------------------------------------------------
 
+#### How does deepTools handle data from paired-end sequencing?<a name="PE"></a>
+Generally, all the modules working with BAM files (_bamCorrelate, bamCoverage, bamCompare, bamFingerprint, computeGCbias_)
+recognize paired-end sequencing data. You can enforce to ignore the fragment length based on the mate pairs using the option __doNotExtendPairedEnds_
+
 #### How can I test a tool with little computation time? <a name="compTime"></a>
 * when you're playing around with the tools to see what kinds of results they will produce: limit the operation to one chromosome only to __save computation time__! ("advanced output options" &rarr; "Region of the genome to limit the operation to")
 
+#### Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?<a name="bamCorrelateLimit"></a>
+Yes. However, the way bamCorrelate (and all the other deepTools handle the option "limit the computation to a specific region" is as follows: first, the _entire_ genome represented in the BAM file will be regarded and sampled, _then_ all the regions or sampled bins that do not overlap with the region indicated by the user will be discarded. This means that if you wanted 10,000 bins to be sampled and you focus on, let's say, chromosome 2, the final computation will not be performed on the whole set of 10,000 bins, but only on those bins that overlap with chromosome 2.
 
 #### When should I exclude regions from computeGCbias? <a name="excludeGC"></a>
 In general, we recommend that you should only correct for GC bias (using computeGCbias followed by correctGCbias) if you observe that the majority of the genome (the region between 30-60%) is continuously GC-biased __and__ you want to compare this sample with another sample that is not GC-biased.
 
 Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC bias, we incorporated the possibility to supply a file of regions to computeGCbias that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched per se. This way, the computeGCbias will focus on background regions.
-
-
-#### Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?<a name="bamCorrelateLimit"></a>
-Yes. However, the way bamCorrelate (and all the other deepTools handle the option "limit the computation to a specific region" is as follows: first, the _entire_ genome represented in the BAM file will be regarded and sampled, _then_ all the regions or sampled bins that do not overlap with the region indicated by the user will be discarded. This means that if you wanted 10,000 bins to be sampled and you focus on, let's say, chromosome 2, the final computation will not be performed on the whole set of 10,000 bins, but only on those bins that overlap with chromosome 2.
-
-#### Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!<a name="refresh"></a>
-Once you've copied a data set from one history to another, check two things:
-* do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
-* hit the refresh button
-
-![GalHow_clustHM03](https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png "Galaxy history refresh button")
 
 
 #### The heatmap I generated looks very "coarse", I would like a much more fine-grained image. <a name="hmresolution"></a>
@@ -226,9 +231,12 @@ If you indicated 3 clusters for kmeans clustering, enter here: C1, C2, C3 &rarr;
 This is something you will have to find a solution outside of deepTools at the moment. We suggest to run faCount from UCSC tools. If you used multi-read alignment (e.g. with bowtie2), then you can use that tool to report the total number of bases as well as the number of unmapped bp, indicated by 'N'. The effective genome size is the total number of reads minus the number of 'N'.
 
 
+#### Where can I download the 2bit genome files required for _computeGCbias_?<a name="2bit"></a>
+The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.edu/gbdb/).
+Search for the .2bit ending. Otherwise, __fasta files can be converted to 2bit__ using the UCSC programm
+faToTwoBit (available for different plattforms from [here](http://hgdownload.cse.ucsc.edu/admin/exe/)
 
 ----------------------------------------------------------------
-##### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
 
 [Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyFAQs.pdf)
 
