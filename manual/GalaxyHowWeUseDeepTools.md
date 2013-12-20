@@ -64,3 +64,5 @@ Once you select a tool, you will see that almost every option has a brief descri
 
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyHowWeUseDeepTools.pdf)
