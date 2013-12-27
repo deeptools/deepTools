@@ -114,7 +114,7 @@ Note: BAM files can also be viewed in Genome Browsers, however, they're large an
 
 * tools: [computeMatrix][], then [heatmapper][]
 * inputs:
-    * 1 bigWig file of normalized read coverages
+    * 1 bigWig file of normalized read coverages (e.g. the result of bamCoverage or bamCompare)
     * 1 BED or INTERVAL file of genes, e.g. obtained through Galaxy via "Get Data" &rarr; "UCSC main table browser" &rarr; group: "Genes and Gene Predictions" &rarr; (e.g.) "RefSeqGenes" &rarr; send to Galaxy (see screenshots below)
 
 ![GalHow_clustHM01](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM01.png "deepTools Galaxy screenshot of how to get a list of genes from UCSC")
