@@ -12,7 +12,7 @@ Frequently asked questions
 
 #### [Galaxy-specific questions](#GalSpecific)
 * [I've reached my quota - what can I do to save some space?](#quota)
-* * [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
+* [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
 * [How can I use a published workflow within deepTools Galaxy?](#workflow)
 * [I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?](#workflow2)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
@@ -51,6 +51,14 @@ There are many more ways in which you can use [deepTools Galaxy][] than those de
 __All recipes assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g. [deepTools Galaxy][].__
 
 _If you would like to try out the protocols with sample data, go to [deepTools Galaxy][] --> "Shared Data" --> "Data Libraries" --> "Sample Data". Use one file from each folder. E.g., import 1 BAM file from the folder "mapped reads", 1 bigwig file from the folder "normalized read coverages", and the .bed file "Human RefSeq genes" from the folder "annotation data" into your current Galaxy history. For testing our protocols via the command line, you can download the sample files to your computer by clicking on the triangle right next to the file name._ 
+
+* [I have downloaded/received a BAM file - how do I generate a file I can look at in a Genome Browser?](#FASTQ2IGV)
+* [How can I assess the reproducibility of my sequencing replicates?](#repCorr)
+* [How do I know whether my sample is GC biased? And if yes, how do I correct for it?](#GC)
+* [How do I get an input-normalized ChIP-seq coverage file?](#InputNorm)
+* [How can I compare the ChIP strength for different ChIP experiments?](#fprint)
+* [How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages around the transcription start site of all genes?](#HM)
+* [How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments](#profiler)
 
 ------------------------------------------------------------------------------------------------------
 
