@@ -100,18 +100,17 @@
         <param name="regionBodyLength" type="integer" value="500" label="Distance in bp to which all regions are going to be fitted"/>
         <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
         <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="Label shown in the plot for the region end. Default is TES (transcription end site)."/>
-        <conditional name="regionStartLength">
-        <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
-          <option value="no" selected="true">no</option>
-          <option value="yes">yes</option>
-        </param>
-        <when value="no" />
-        <when value="yes">
-          <param name="beforeRegionStartLength" type="integer" value="1000" min="1" optional="true" label="Distance upstream of the start site of the regions defined in the region file" help="If the regions are genes, this would be the distance upstream of the transcription start site."/>
-        
-          <param name="afterRegionStartLength" type="integer" value="1000" min="1" optional="true" label="Distance downstream of the end site of the given regions" help="If the regions are genes, this would be the distance downstream of the transcription end site."/>
-        </when>
-        </conditional>
+            <conditional name="regionStartLength">
+                <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
+                    <option value="no" selected="true">no</option>
+                    <option value="yes">yes</option>
+                </param>
+                <when value="no" />
+                <when value="yes">
+                    <param name="beforeRegionStartLength" type="integer" value="1000" min="1" optional="true" label="Distance upstream of the start site of the regions defined in the region file" help="If the regions are genes, this would be the distance upstream of the transcription start site."/>
+                    <param name="afterRegionStartLength" type="integer" value="1000" min="1" optional="true" label="Distance downstream of the end site of the given regions" help="If the regions are genes, this would be the distance downstream of the transcription end site."/>
+                </when>
+            </conditional>
       </when>
       
       <when value="reference-point">
