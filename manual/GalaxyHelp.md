@@ -92,7 +92,7 @@ There are three main ways to populate your Galaxy history with data files:
 1. [Data upload from your computer](#dataup)
 2. [Import a shared data set from the Galaxy data library](#dataim)
 3. [Download annotation data from public servers](#downloadann)
-4. [__For registered users only__: Copy data sets between histories](#copy)
+4. [Copy data sets between histories](#copy)
 
 
 <a name="dataup"></a>
@@ -149,7 +149,7 @@ Per default, __BioMart will not output a BED file__ like UCSC does. It is theref
 
 
 <a name="copy"></a>
-#### __For registered users only__: Copy data sets between histories
+#### Copy data sets between histories
 In case you have registered with deepTools Galaxy you can have more than one history. In order to minimize the disk space you're occupying we strongly suggest to __copy__ data sets between histories when you're using the same data set in different histories. This can easily be done via the History panel's option button --> "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side and the target history on the right hand side.
 
 

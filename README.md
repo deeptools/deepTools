@@ -35,7 +35,7 @@ More detailed information about the individual programs:
   + [deepTools for normalizations](https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md)
   + [deepTools for visualizations](https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md)
 
-[FAQ](#FAQ)
+[FAQ](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyFAQs.md#general)
 
 [Glossary](https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing)
 
@@ -254,24 +254,6 @@ Here we point out some parameters that you might find especially useful in your 
 #### random tips 
   + output format of plots should be indicted by the file ending, e.g. MyPlot.pdf will return a pdf, MyPlot.png a png-file
   + all tools that produce plots can also output the underlying data - this can be useful in case you don’t like the deepTools visualization as you can then use the data matrices produced by deepTools with your favourite plotting module, e.g. R or Excel
-
-
-<a name="FAQ"/>
-FAQs
--------
-#### How does deepTools handle data from paired-end sequencing?
-Generally, all the modules working with BAM files (_bamCorrelate, bamCoverage, bamCompare, bamFingerprint, computeGCbias_)
-recognize paired-end sequencing data. You can enforce to ignore the fragment length based on the mate pairs using the option __doNotExtendPairedEnds_
-
-#### Where can I download the 2bit genome files required for _computeGCbias_?
-The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.edu/gbdb/).
-Search for the .2bit ending. Otherwise, __fasta files can be converted to 2bit__ using the UCSC programm
-faToTwoBit (available for different plattforms from [here](http://hgdownload.cse.ucsc.edu/admin/exe/)
-
-#### When should I exclude peaks from the GC bias computation?
-Here's what we do: We usually check the GC bias (using _computeGCbias_) on the entire data set. If we notice that the majority of the genome is dramatically biased (i.e. instead of a straight line for genome regions of 30-60% GC content we see a diagonale or something even weirder) and we want to compare this particular, biased sample with another unbiased (or differently GC biased) sample, then we need to correct the GC bias (using _correctGCbias_).
-
-Now, imagine that the biased sample is a ChIP for a protein binding to methylated or mammalian promoter regions. By default, such data is going to have a GC bias because CpG-rich regions should be enriched. Therefore, you can use the option to exclude regions of signficant enrichment from the GC bias computation and subsequent correction to only account for the background bias without interfering with the true signal too much. 
 
 ------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"

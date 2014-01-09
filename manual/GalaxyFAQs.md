@@ -1,7 +1,7 @@
 Frequently asked questions
 ===========================
 
-#### [How can I do...?](#HowTo)
+#### [How can I do...? Some exemplary protocols](#HowTo)
 * [I have downloaded/received a BAM file - how do I generate a file I can look at in a Genome Browser?](#FASTQ2IGV)
 * [How can I assess the reproducibility of my sequencing replicates?](#repCorr)
 * [How do I know whether my sample is GC biased? And if yes, how do I correct for it?](#GC)
@@ -12,15 +12,17 @@ Frequently asked questions
 
 #### [Galaxy-specific questions](#GalSpecific)
 * [I've reached my quota - what can I do to save some space?](#quota)
-* [How can I use a published workflow?](#workflow)
+* [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
+* [How can I use a published workflow within deepTools Galaxy?](#workflow)
+* [I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?](#workflow2)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
 * [How can I determine basic parameters of a BAM file?](#BAMparams)
 
 #### [General deepTools-related questions](#general)
+* [How does deepTools handle data from paired-end sequencing?](#PE)
 * [I just want to try out a tool, how can I optimize the computation time?](#compTime)
-* [When should I exclude regions from computeGCbias?](#excludeGC)
 * [Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?](#bamCorrelateLimit)
-* [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
+* [When should I exclude regions from computeGCbias?](#excludeGC)
 
 ###### Heatmapper
 * [How can I increase the resolution of the heatmap?](#hmresolution)
@@ -28,11 +30,13 @@ Frequently asked questions
 
 ###### External data
 * [How do I calculate the effective genome size for an organism that's not in your list?](#effGenomeSize)
+* [Where can I download the 2bit genome files required for computeGCbias?](#2bit)
 
-###### [Back to deepTools Galaxy](https://deeptools.ie-freiburg.mpg.de)
+###### [Go to deepTools Galaxy](https://deeptools.ie-freiburg.mpg.de)
 
-###### [Go to the general help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md)
+###### [Go to the general Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md)
 
+###### [Go to installation information](https://github.com/fidelram/deepTools/edit/master/README.md#installation)
 ----------------------------------------------------------------------------------------------------
 
 
@@ -45,6 +49,16 @@ For each "recipe" here, you will find the screenshot of the tool and the input p
 There are many more ways in which you can use [deepTools Galaxy][] than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
 
 __All recipes assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g. [deepTools Galaxy][].__
+
+_If you would like to try out the protocols with sample data, go to [deepTools Galaxy][] --> "Shared Data" --> "Data Libraries" --> "Sample Data". Use one file from each folder. E.g., import 1 BAM file from the folder "mapped reads", 1 bigwig file from the folder "normalized read coverages", and the .bed file "Human RefSeq genes" from the folder "annotation data" into your current Galaxy history. For testing our protocols via the command line, you can download the sample files to your computer by clicking on the triangle right next to the file name._ 
+
+* [I have downloaded/received a BAM file - how do I generate a file I can look at in a Genome Browser?](#FASTQ2IGV)
+* [How can I assess the reproducibility of my sequencing replicates?](#repCorr)
+* [How do I know whether my sample is GC biased? And if yes, how do I correct for it?](#GC)
+* [How do I get an input-normalized ChIP-seq coverage file?](#InputNorm)
+* [How can I compare the ChIP strength for different ChIP experiments?](#fprint)
+* [How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages around the transcription start site of all genes?](#HM)
+* [How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments](#profiler)
 
 ------------------------------------------------------------------------------------------------------
 
@@ -83,8 +97,8 @@ Note: BAM files can also be viewed in Genome Browsers, however, they're large an
 
 #### How do I get an input-normalized ChIP-seq coverage file?<a name="InputNorm"></a>
 
-1. you need two BAM files: one for the input, one for the ChIP-seq experiment
-2. use the tool [bamCompare][] with ChIP = treatment, input = control sample
+* input: you need two BAM files, one for the input, one for the ChIP-seq experiment
+* tool: [bamCompare][] with ChIP = treatment, input = control sample
 
 ![GalHow_bamCompare](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCompare.png "deepTools Galaxy screenshot of bamCompare usage and output")
 --------------------------------------------------
@@ -97,37 +111,55 @@ Note: BAM files can also be viewed in Genome Browsers, however, they're large an
 --------------------------------------------------
 
 #### How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages around the transcription start site of all genes?<a name="HM"></a>
-* if you want to start with a BAM file, begin by _generating the normalized read coverages_ using the tool [bamCoverage][] with the option "normalize to 1x sequencing depth" (make sure that you indicate the correct genome size) (1)
-* you also need a BED or INTERVAL file of genes (you can obtain one via "Get Data" &rarr; "UCSC main table browser" &rarr; group: "Genes and Gene Predictions" &rarr; (e.g.) "RefSeqGenes" &rarr; send to Galaxy (2)
 
+* tools: [computeMatrix][], then [heatmapper][]
+* inputs:
+    * 1 bigWig file of normalized read coverages (e.g. the result of bamCoverage or bamCompare)
+    * 1 BED or INTERVAL file of genes, e.g. obtained through Galaxy via "Get Data" &rarr; "UCSC main table browser" &rarr; group: "Genes and Gene Predictions" &rarr; (e.g.) "RefSeqGenes" &rarr; send to Galaxy (see screenshots below)
 
 ![GalHow_clustHM01](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM01.png "deepTools Galaxy screenshot of how to get a list of genes from UCSC")
 
-* use [computeMatrix][] with the coverage file generated in (1) and the BED file from (2), indicate "reference-point" and whatever other option you would like to tune (3)
+* use [computeMatrix][] with the bigWig file and the BED file
+* indicate "reference-point"  (and whatever other option you would like to tune, see screenshot below)
 
 ![GalHow_clustHM02](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM02.png "deepTools Galaxy screenshot of computeMatrix for profiles in reference-point mode with output")
 
-* use the output from (3) with [heatmapper][] (if you would like to cluster the signals, choose "kmeans clustering" (last option of "advanced options") with a reasonable number of clusters)
+* use the output from computeMatrix with [heatmapper][]
+    * if you would like to cluster the signals, choose "kmeans clustering" (last option of "advanced options") with a reasonable number of clusters (usually between 2 to 7)
 
 ![GalHow_clustHM03](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM03.png "deepTools Galaxy screenshot of heatmapper usage and output")
 --------------------------------------------------
 
 #### How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments?<a name="profiler"></a>
-* you need two __BED files__: one with X-chromosomal and one with autosomal genes (1)
-    * you can download a full list of genes via "Get Data" &rarr; "UCSC main table browser" &rarr; group:"Genes and Gene Predictions" &rarr; tracks: (e.g.) "RefSeqGenes" &rarr; send to Galaxy
-    * then filter the full list twice using the tool "Filter data on any column using simple expressions" 
-        - first use the expression: c1=="chrX" to filter the list of all genes &rarr; this will generate a list of X-linked genes
-        - then re-run the filtering, now with c1!="chrX" which will generate a list of genes that do not belong to chromosome X (!= indicates "not matching")
-* you need __bigWig files__ for each experiment (in case you only have BAM files, run [bamCoverage][] on every BAM file first) (2)
-* use [computeMatrix][] for each signal file (bigWig) (you only need to specify all the parameters once, then use the re-run button underneath the first data set and just replace the signal file with the next one) (3)
+
+Make sure you're familiar with computeMatrix and profiler before using this protocol.
+* tools:
+    * Filter data on any column using simple expressions
+    * computeMatrix
+    * profiler
+    * (plotting the summary plots for multiple samples)
+* inputs:
+    * several bigWig files (one for each sequencing experiment you would like to compare)
+    * two BED files, one with X-chromosomal and one with autosomal genes
+
+##### How do obtain a BED file for X chromosomal and autosomal genes each
+
+1. download a full list of genes via "Get Data" &rarr; "UCSC main table browser" &rarr; group:"Genes and Gene Predictions" &rarr; tracks: (e.g.) "RefSeqGenes" &rarr; send to Galaxy
+2. filter the list twice using the tool __"Filter data on any column using simple expressions"__ 
+
+    - first use the expression: c1=="chrX" to filter the list of all genes &rarr; this will generate a list of X-linked genes
+    - then re-run the filtering, now with c1!="chrX" which will generate a list of genes that do not belong to chromosome X (!= indicates "not matching")
+
+##### Compute the average values for X and autosomal genes 
+* use [computeMatrix][] for __each__ signal file (bigWig) (you only need to specify all the parameters once, then use the re-run button underneath the first data set and just replace the signal file with the next one)
     * supply both filtered BED files (click on "Add new regions to plot" once) and label them
     * indicate the corresponding signal file
     * make sure to __re-name__ every data set in the history once computeMatrix is done so that you can easily keep track of which matrix was based on which bigWig file (you can always find these information by clicking on the i-button in the respective data set)
-* now use [profiler][] for every file you generated with computeMatrix (4)
+* now use [profiler][] for every file you generated with computeMatrix
     * important: display the "advanced output options" and select "save the data underlying the average profile" &rarr; this will generate a table in addition to the summary plot images
-* now you have at least 2 separate images of profiles - one for each bigWig file - you can either leave it like this or use another script that will plot all the summary plots in one image at once (5)
+* now you have at least 2 separate images of profiles - one for each bigWig file - you can either leave it like this or use another script that will plot all the summary plots in one image at once
     * this tool is called "Plotting the summary plots for multiple signals"
-    * it uses the tables generated by profiler in (4)
+    * it uses the tables generated by profiler
     * for each group of genes (in this case, X and autosomal genes = 2 groups), you can assign a color
 
 The result could look like this:
@@ -136,7 +168,7 @@ The result could look like this:
 
 As you have noticed, this task requires several steps that are repeated. Here is a screenshot of how the Galaxy workflow would look like (you can find it under "Shared Data" &rarr; "Published Workflows" &rarr; "Summary plots for X and autosomal genes" where we have constructed it with the example histone marks from the Data Library. Be aware that running this workflow will take up quite some computation timing, but it won't require much input from your part - so start if before you go off for lunch ;) )
 
-If you're not sure how to use the published workflow, please read [this entry](#workflow).
+If you're not sure how to use the published workflow, please read [this entry](#workflow) or go to the central [Galaxy learning page full of tutorials]( https://wiki.galaxyproject.org/Learn/Screencasts#Tutorials "Galaxy Tutorials").
 
 ![GalHow_profilesXA](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_profiles_XvsA.png "Screenshot of the workflow designed for the above described task")
 
@@ -151,6 +183,13 @@ Galaxy-specific questions <a name="GalSpecific"></a>
 1. make sure that all the data sets you deleted are __permanently__ eliminated from our disks: go to the history option button and select "Purge deleted data sets", then hit the "refresh" button on top of your history panel
 2. download all data sets for which you've completed the analysis, then remove the data sets (click on the "x" and then make sure they're purged (see above)
 
+#### Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!<a name="refresh"></a>
+Once you've copied a data set from one history to another, check two things:
+* do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
+* hit the refresh button
+
+![GalHow_clustHM03](https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png "Galaxy history refresh button")
+
 
 #### How can I use a published workflow?<a name="workflow"></a>
 You __must register__ if you want to use the workflows within [deepTools Galaxy][]. ("User" &rarr; "Register" - all you have to supply is an email address)
@@ -163,6 +202,11 @@ A green box should appear, there you select "start using this workflow" which sh
 
 ![GalHow_wf02](https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png "Finding published workflows")
 
+#### I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible? <a name="workflow2"></a>
+
+Yes, it is possible. The only requirement is that your local Galaxy has a recent installation of deepTools.
+
+Go to the workflows, click on the ones you're interested in and go to "Download". This will save the workflows into .ga files on your computer. Now go to your local Galaxy installation and login. Go to the workflow menu and select "import workflow" (top right hand corner of the page). Click on "Browse" and select the saved workflow. If you have the same tool versions installed in your local Galaxy, these workflows should work right away.
 
 
 #### What's the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy) <a name="integrate"></a>
@@ -184,25 +228,20 @@ Simply run MACS on the BAM file that you would like to gain the information for 
 General deepTools-related questions <a name="general"></a>
 --------------------------------------------------------------
 
+#### How does deepTools handle data from paired-end sequencing?<a name="PE"></a>
+Generally, all the modules working with BAM files (_bamCorrelate, bamCoverage, bamCompare, bamFingerprint, computeGCbias_)
+recognize paired-end sequencing data. You can enforce to ignore the fragment length based on the mate pairs using the option __doNotExtendPairedEnds_
+
 #### How can I test a tool with little computation time? <a name="compTime"></a>
 * when you're playing around with the tools to see what kinds of results they will produce: limit the operation to one chromosome only to __save computation time__! ("advanced output options" &rarr; "Region of the genome to limit the operation to")
 
+#### Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?<a name="bamCorrelateLimit"></a>
+Yes. However, the way bamCorrelate (and all the other deepTools handle the option "limit the computation to a specific region" is as follows: first, the _entire_ genome represented in the BAM file will be regarded and sampled, _then_ all the regions or sampled bins that do not overlap with the region indicated by the user will be discarded. This means that if you wanted 10,000 bins to be sampled and you focus on, let's say, chromosome 2, the final computation will not be performed on the whole set of 10,000 bins, but only on those bins that overlap with chromosome 2.
 
 #### When should I exclude regions from computeGCbias? <a name="excludeGC"></a>
 In general, we recommend that you should only correct for GC bias (using computeGCbias followed by correctGCbias) if you observe that the majority of the genome (the region between 30-60%) is continuously GC-biased __and__ you want to compare this sample with another sample that is not GC-biased.
 
 Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC bias, we incorporated the possibility to supply a file of regions to computeGCbias that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched per se. This way, the computeGCbias will focus on background regions.
-
-
-#### Does it speed up the computation if I limit bamCorrelate to one chromosome, but keep the same numbers and sizes of sampling bins?<a name="bamCorrelateLimit"></a>
-Yes. However, the way bamCorrelate (and all the other deepTools handle the option "limit the computation to a specific region" is as follows: first, the _entire_ genome represented in the BAM file will be regarded and sampled, _then_ all the regions or sampled bins that do not overlap with the region indicated by the user will be discarded. This means that if you wanted 10,000 bins to be sampled and you focus on, let's say, chromosome 2, the final computation will not be performed on the whole set of 10,000 bins, but only on those bins that overlap with chromosome 2.
-
-#### Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!<a name="refresh"></a>
-Once you've copied a data set from one history to another, check two things:
-* do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
-* hit the refresh button
-
-![GalHow_clustHM03](https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png "Galaxy history refresh button")
 
 
 #### The heatmap I generated looks very "coarse", I would like a much more fine-grained image. <a name="hmresolution"></a>
@@ -220,9 +259,12 @@ If you indicated 3 clusters for kmeans clustering, enter here: C1, C2, C3 &rarr;
 This is something you will have to find a solution outside of deepTools at the moment. We suggest to run faCount from UCSC tools. If you used multi-read alignment (e.g. with bowtie2), then you can use that tool to report the total number of bases as well as the number of unmapped bp, indicated by 'N'. The effective genome size is the total number of reads minus the number of 'N'.
 
 
+#### Where can I download the 2bit genome files required for _computeGCbias_?<a name="2bit"></a>
+The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.edu/gbdb/).
+Search for the .2bit ending. Otherwise, __fasta files can be converted to 2bit__ using the UCSC programm
+faToTwoBit (available for different plattforms from [here](http://hgdownload.cse.ucsc.edu/admin/exe/)
 
 ----------------------------------------------------------------
-##### [Back to general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
 
 [Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyFAQs.pdf)
 
