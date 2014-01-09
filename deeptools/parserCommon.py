@@ -185,18 +185,23 @@ def checkBigWig(string):
     Checks if the path to USCS bedGraphToBigWig as set in the config
     is installed and is executable.
     """
+    import os
+    if  os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
+        return string
+
     if string == 'bigwig':
         import config as cfg
-        import os
         bedgraph_to_bigwig = cfg.config.get('external_tools',
                                             'bedgraph_to_bigwig')
         if not os.path.isfile(bedgraph_to_bigwig) or \
                 not os.access(bedgraph_to_bigwig, os.X_OK):
-            msg = "\nYour computer does not have the UCSC program " \
-                "bedGraphToBigWig installed or configured in the " \
-                "set up. In order to output bigwig files this tool " \
-                "needs to be installed and linked in the " \
-                "config/deepTools.cfg file.\n\n" \
+            msg = "\nYour computer does not have the UCSC program \n" \
+                "bedGraphToBigWig installed or configured in the \n" \
+                "set up. In order to output bigwig files this tool \n" \
+                "needs to be installed and linked in the \n" \
+                "config/deepTools.cfg file. Optionally, setting the \n" \
+                "environment variable DEEP_TOOLS_NO_CONFIG will search \n" \
+                "the program using the PATH.\n\n" \
                 "The program can be downloaded from here: " \
                 "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
                 "The output is set by default to 'bedgraph' "
