@@ -64,7 +64,7 @@ def mapReduce(staticArgs, func, chromSize,
         # modify chromSize such that it only contains
         # chromosomes that are in the bed file
         chromSize = [x for x in chromSize if x[0] in bed_interval_tree.keys()]
-        
+
     TASKS = []
     # iterate over all chromosomes
     for chrom, size in chromSize:
@@ -79,10 +79,19 @@ def mapReduce(staticArgs, func, chromSize,
             # if a bed file is given, append to the TASK list,
             # a list of bed regions that overlap with the
             # current genomeChunk.
-            
             if bedFile:
+                # this method to get the bedFile regions may seem
+                # cumbersome but I (fidel) think is better to
+                # balance the load between multiple procesors.
+                # This method first partitions the genome into smaller
+                # chunks and then, for each chunk, the list of
+                # regions overlapping the chunk interval is added.
+                # This is preferable to sending each worker a
+                # single region because of the overhead of initiating
+                # the data.
                 bed_regions_list = []
-                for bed_region in bed_interval_tree[chrom].find(startPos, endPos):
+                for bed_region in bed_interval_tree[chrom].find(startPos,
+                                                                endPos):
                     # start + 1 is used to avoid regions that may overlap
                     # with two genomeChunks to be counted twice. Such region
                     # is only added for the genomeChunk that contains the start
@@ -90,6 +99,8 @@ def mapReduce(staticArgs, func, chromSize,
 
                     bed_regions_list.append([chrom, bed_region.start,
                                              bed_region.start + 1])
+                if len(bed_regions_list) == 0:
+                    continue
                 # add to argument list, the position of the bed regions to use
                 argsList.append(bed_regions_list)
 
@@ -193,8 +204,6 @@ def BED_to_interval_tree(BED_file):
         if len(bed_interval_tree[chrom].find(start_bed, start_bed + 1)) > 0:
             continue
         """
-        
         bed_interval_tree[chrom].add_interval(Interval(start_bed, end_bed))
 
-    print "finish proccessing bed file"
     return bed_interval_tree

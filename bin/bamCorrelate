@@ -287,7 +287,14 @@ def main(args):
                                                  region=args.region,
                                                  bedFile=BED_regions)
 
-    # remove outliers, which will spoil pearson correlation
+    if args.outRawCounts:
+        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
+        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
+        for row in num_reads_per_bin:
+            args.outRawCounts.write(fmt % tuple(row))
+
+
+    # remove outliers, which will spoil pearson correlation.
     # for each data set (cols) the values above the 99.9 
     # percentile are identified. Such values are removed from 
     # the num_reads_per_bin matrix if they occour in the
@@ -304,11 +311,6 @@ def main(args):
                    if x not in to_remove]
         num_reads_per_bin = num_reads_per_bin[to_keep,:]
     
-    if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
-        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
-        for row in num_reads_per_bin:
-            args.outRawCounts.write(fmt % tuple(row))
 
     # num_reads_per_bin: rows correspond to  bins, cols to  samples
     M = len(args.bamfiles)
