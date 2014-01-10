@@ -186,7 +186,7 @@ def checkBigWig(string):
     is installed and is executable.
     """
     import os
-    if  os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
+    if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
         return string
 
     if string == 'bigwig':
@@ -205,7 +205,7 @@ def checkBigWig(string):
                 "The program can be downloaded from here: " \
                 "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
                 "The output is set by default to 'bedgraph' "
-            
+
             print msg
             return 'bedgraph'
 
