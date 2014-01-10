@@ -1,10 +1,12 @@
+#-*- coding: utf-8 -*-
+
 from setuptools import setup
 
 setup(
     name='deepTools',
     version='1.5.5',
-    author='Fidel Ramirez',
-    author_email='ramirez@ie-freiburg.mpg.de',
+    author='Fidel Ramirez, Friederike Dündar, Björn Grüning, Sarah Diehl',
+    author_email='deeptools@googlegroups.com',
     packages=['deeptools', 'deeptools.test', 'config'],
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
@@ -12,7 +14,7 @@ setup(
              'bin/computeMatrix', 'bin/computeGCBias', 'bin/correctGCBias',
              'bin/bigwigCompare'],
     include_package_data = True,
-#    data_files=[('config', ['config/deepTools.cfg']),
+    data_files=[('etc', ['config/deepTools.cfg'])],
 #                ('galaxy', ['galaxy/bamCompare.xml','galaxy/bamCoverage.xml',
 #                            'galaxy/heatmapper.xml'])],
     url='http://pypi.python.org/pypi/deepTools/',
