@@ -15,6 +15,7 @@ Frequently asked questions
 * [Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!](#refresh)
 * [How can I use a published workflow within deepTools Galaxy?](#workflow)
 * [I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?](#workflow2)
+* [How can I have a look at the continuous read coverages from bigWig files? Which Genome Browser do you recommend?](#browser)
 * [What is the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?](#integrate)
 * [How can I determine basic parameters of a BAM file?](#BAMparams)
 
@@ -207,6 +208,15 @@ A green box should appear, there you select "start using this workflow" which sh
 Yes, it is possible. The only requirement is that your local Galaxy has a recent installation of deepTools.
 
 Go to the workflows, click on the ones you're interested in and go to "Download". This will save the workflows into .ga files on your computer. Now go to your local Galaxy installation and login. Go to the workflow menu and select "import workflow" (top right hand corner of the page). Click on "Browse" and select the saved workflow. If you have the same tool versions installed in your local Galaxy, these workflows should work right away.
+
+#### How can I have a look at the continuous read coverages from bigWig files? Which Genome Browser do you recommend? <a name="browser"></a>
+There are 2 popular Genome Browsers to visualize continuous data: [UCSC](http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu "UCSC Genome Browser") and [IGV](http://www.broadinstitute.org/igv/ "IGV Genome Browser").
+
+##### IGV (recommended)
+
+##### UCSC
+There is a direct link from within deepTools Galaxy to stream a data set to UCSC.
+[UCSC user guide](https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html "UCSC user guide")
 
 
 #### What's the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy) <a name="integrate"></a>
