@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import argparse # to parse command line arguments
+import argparse
 import numpy as np
-from  matplotlib import use as mplt_use
+from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
-
+from scipy.stats import pearsonr, spearmanr
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
-from scipy.stats import pearsonr, spearmanr
+from deeptools._version import __version__
+
 
 def parseArguments(args=None):
     parser = \
@@ -20,14 +21,18 @@ def parseArguments(args=None):
             'For each bin the number of reads found for each of the bam '
             'files is counted. A correlation is computed for all pairs of bam '
             'files.',
-            epilog='An example usage is:\n %(prog)s bins -b treatment.bam input.bam '
+            epilog='An example usage is:\n %(prog)s bins '
+            '-b treatment.bam input.bam '
             '-plot correlation.png -f 200 -method pearson\n\n',
             conflict_handler='resolve')
 
+    parser.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers(
         help="%(prog)s has two main options: 'bins', "
         "and 'BED-file.",
-        dest='command')
+        dest='command',
+)
 
     parentParser = parserCommon.getParentArgParse(binSize=False)
     bamParser = parserCommon.bam()
@@ -40,9 +45,12 @@ def parseArguments(args=None):
                  parentParser,
                  bamParser,
                  ],
-        help="In the bins mode, the correlation is computed based on equal "\
-            "length bins. The number of bins to be used has to be specified.",
-            add_help=False)
+        help="In the bins mode, the correlation is computed based on equal "
+        "length bins. The number of bins to be used has to be specified.",
+        add_help=False,
+        usage='An example usage is:\n %(prog)s '
+        '-b treatment.bam input.bam '
+        '-plot correlation.png -f 200 -method pearson\n\n')
 
     # BED file arguments
     BEDmode = subparsers.add_parser(
@@ -52,22 +60,25 @@ def parseArguments(args=None):
                  parentParser,
                  bamParser,
                  ],
-        help="In the BED-file options, as list of genomic regions in BED "\
-            "format has to be given. For each region in the BED file the "\
-            "number of overlapping reads is counted in each of the BAM "\
-            "files. Then the correlation is computed.",
-            add_help=False)
+        help="In the BED-file options, as list of genomic regions in BED "
+        "format has to be given. For each region in the BED file the "
+        "number of overlapping reads is counted in each of the BAM "
+        "files. Then the correlation is computed.",
+        usage='An example usage is:\n %(prog)s '
+        '--BED genes.bed -b treatment.bam input.bam '
+        '-plot correlation.png -f 200 -method pearson\n\n',
+        add_help=False)
 
     args = parser.parse_args(args)
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
-    
-    
+
     if args.labels and len(args.bamfiles) != len(args.labels):
         print "The number of does not match the number of bam files."
         exit(0)
     if not args.labels:
         args.labels = args.bamfiles
     return(args)
+
 
 ######
 def bamCorrelateArgs(case='bins'):
@@ -76,10 +87,10 @@ def bamCorrelateArgs(case='bins'):
 
     # define the arguments
     required.add_argument('--bamfiles', '-b',
-                        metavar = 'list of bam files',
-                        help = 'List of indexed bam files separated by space',
-                        nargs = '+',
-                        required = True)
+                          metavar = 'list of bam files',
+                          help = 'List of indexed bam files separated by space',
+                          nargs = '+',
+                          required = True)
 
     required.add_argument('--plotFile', '-o',
                        help='File name to save the file containing the heatmap '
@@ -98,15 +109,15 @@ def bamCorrelateArgs(case='bins'):
 
     optional = parser.add_argument_group('Optional arguments')
 
-    optional.add_argument("--help", "-h",  action="help", help="show this help message and exit")
+    optional.add_argument("--help", "-h", action="help",
+                          help="show this help message and exit")
     optional.add_argument('--labels', '-l',
                         metavar = '',
                         help = 'List of labels to use in the image. '
                         'If not given the file names will be used instead. '
                         'Separate the labels by space.',
                         nargs = '+')
-    
-    if case=='bins':
+    if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                               metavar='',
                               help = 'Length in base pairs for a window used '

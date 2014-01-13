@@ -1,5 +1,6 @@
 import argparse
 import config as cfg
+from deeptools._version import __version__
 
 
 def output(args=None):
@@ -87,15 +88,23 @@ def bam(args=None):
 
 
 def getParentArgParse(args=None, binSize=True):
+    """
+    Typical arguments for several tools
+    """
+
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
+
     if binSize:
         optional.add_argument('--binSize', '-bs',
-                            help='Size of the bins in bp for the ouput '
-                            'of the bigwig/bedgraph file.',
-                            metavar="INT bp",
-                            type=int,
-                            default=50)
+                              help='Size of the bins in bp for the ouput '
+                              'of the bigwig/bedgraph file.',
+                              metavar="INT bp",
+                              type=int,
+                              default=50)
 
     optional.add_argument('--region', '-r',
                         help='Region of the genome to limit the operation '
@@ -277,6 +286,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
 
     if case == 'scale-regions':
         optional.add_argument('--regionBodyLength', '-m',
@@ -500,7 +511,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     
     optional = parser.add_argument_group('Optional arguments')
 
-    optional.add_argument("--help", "-h",  action="help", help="show this help message and exit")
+    optional.add_argument("--help", "-h",  action="help",
+                          help="show this help message and exit")
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
     if mode == 'profile':
         optional.add_argument(
             '--averageType',

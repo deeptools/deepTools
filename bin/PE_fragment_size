@@ -5,50 +5,60 @@ import argparse
 
 # own tools
 from deeptools.PE_fragment_size import peFragmentSize
-#from deeptools import PE_fragment_size
+from deeptools._version import __version__
+
 
 def parseArguments(args=None):
-    parser = argparse.ArgumentParser(description = 'Given a BAM file it '
-                                     'samples several regions to estimate the paird-end '
-                                     'fragment length. ' )
-    parser.add_argument('bam', 
-                        help = 'Bam file to process',
-                        metavar = 'bam-file')
+    parser = argparse.ArgumentParser(
+        description='Given a BAM file it '
+        'samples several regions to estimate the paird-end '
+        'fragment length. ' )
+    parser.add_argument('bam',
+                        help='Bam file to process',
+                        metavar='bam-file')
 
     parser.add_argument('-bai',
-                        help = 'Index for the bam file. Default is to consider a the path of the bam file adding the .bai suffix.',
-                        metavar = 'bam-file-index')
+                        help='Index for the bam file. Default is to '
+                        'consider a the path of the bam file adding '
+                        'the .bai suffix.',
+                        metavar='bam-file-index')
 
     parser.add_argument('--histogram', '-hist',
-                        help = 'This options saves a .png file containing a histogram '
-                        'for the distribion of fragment length.',
-                        metavar = 'FILE')
+                        help='This options saves a .png file containing '
+                        'a histogram for the distribion of fragment length.',
+                        metavar='FILE')
 
     parser.add_argument('--numberOfProcessors', '-p',
-                        help = 'Number of processors to use. The default is to use one',
-                        metavar = "INT",
-                        type = int,
-                        default = 1,
-                        required = False)
+                        help='Number of processors to use. The default is '
+                        'to use one',
+                        metavar="INT",
+                        type=int,
+                        default=1,
+                        required=False)
 
-    parser.add_argument('--verbose', 
-                        help = 'Set if processing data messages are wanted.',
-                        action = 'store_true',
-                        required = False)
+    parser.add_argument('--verbose',
+                        help='Set if processing data messages are wanted.',
+                        action='store_true',
+                        required=False)
+
+    parser.add_argument('--version', action='version',
+                        version='%(prog)s {}'.format(__version__))
 
     args = parser.parse_args(args)
     return(args)
 
+
 def main(args):
     fragLength = peFragmentSize(args.bam, args.bai, return_lengths=True,
-                                  numberOfProcessors =args.numberOfProcessors)
+                                numberOfProcessors=args.numberOfProcessors)
 
     if not fragLength:
         print "No pairs were found. Is the dataset Paired-end?"
         return
 
     print "Sample size: {}\n".format(fragLength['sample_size'])
-    print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n3rd Qu.: {}\nMax.: {}\nStd: {}".format(
+    print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
+    "3rd Qu.: {}\nMax.: {}\nStd: {}".format(
         fragLength['min'],
         fragLength['qtile25'],
         fragLength['mean'],
@@ -61,7 +71,9 @@ def main(args):
         import matplotlib
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt
-        hh = plt.hist(fragLength['lengths'], 50, range=(fragLength['min'], fragLength['mean']*2), normed=True)
+        hh = plt.hist(fragLength['lengths'], 50,
+                      range=(fragLength['min'], fragLength['mean'] * 2),
+                      normed=True)
         plt.savefig(args.histogram, bbox_inches=0)
 
 
