@@ -25,8 +25,7 @@ def parseArguments(args=None):
             'bedGraph file of fragment or read coverages. The way the method '
             'works is by first calculating all the number of  reads (either '
             'extended to match the fragment length or not) that overlap each '
-            'bin in the genome. Bins with zero counts are skipped, i.e. not '
-            'added to the output file.\nThe resulting read counts can be '
+            'bin in the genome\nThe resulting read counts can be '
             'normalized using either a given scaling factor, the RPKM formula '
             'or to get a 1x depth of coverage (RPGC).\n',
             epilog='Example usage: %(prog)s -b test.bam')
@@ -176,7 +175,7 @@ def main(args):
                                 numberOfProcessors=args.numberOfProcessors,
                                 format=args.outFileFormat,
                                 extendPairedEnds=args.extendPairedEnds,
-                                zerosToNans=True,
+                                zerosToNans=False,
                                 smoothLength=args.smoothLength,
                                 minMappingQuality=args.minMappingQuality,
                                 ignoreDuplicates=args.ignoreDuplicates)
