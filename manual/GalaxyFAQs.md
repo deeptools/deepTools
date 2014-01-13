@@ -230,17 +230,18 @@ For more information, check out the [IGV documentation](http://www.broadinstitut
 
 ##### UCSC
 There is a direct link from within deepTools Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
+
 ![GalFAQ_IGV](https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC_dataset.png "Screenshot of IGV browser display of bigWig files")
 Click on "main" and the UCSC browser should open within a new window, displaying the data set that you chose.
 The default setting for bigWig files is the "dense" display that looks like a heatmap.
 
 ![Gal_FAQ_UCSC01](https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC01.png "Screenshot of UCSC Genome Browser display of bigWig files")
-If you would like to display the continuous profile in a "valley-mountain" fashion like the one shown in the IGV screenshot, go to the drop-down menu next underneath your custom track and choose "full" instead of "dense".
+If you would like to display the continuous profile in a "valley-mountain" fashion like the one shown in the IGV screenshot, go to the drop-down menu underneath your custom track and choose "full".
 
-For more information on how to use the UCSC Genome Browser, go [here](https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html "UCSC user guide").
+UCSC has large amounts of public data that you can display which you can find by scrolling down the page, beyond your custom track entry. For more information on how to use the UCSC Genome Browser, go [here](https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html "UCSC user guide").
 
-####### Known issues with UCSC
-* **chromosome naming**: UCSC expects chromosome names to be indicated in the format "chr"<number>, e.g. chr1. If you mapped your reads to a non-UCSC-standard genome, chances are that chromosomes are just labeled with their number. bigWig files generated from these BAM files will not be recognized by UCSC, i.e. you will see the data set name, but no signal.
+###### Known issues with UCSC
+* **chromosome naming**: UCSC expects chromosome names to be indicated in the format "chr"Number, e.g. chr1. If you mapped your reads to a non-UCSC-standard genome, chances are that chromosomes are labeled just with their number. bigWig files generated from these BAM files will not be recognized by UCSC, i.e. you will see the data set name, but no signal.
 * **no upload of bigWig files from your hard drive**: to minimize the computational strains, UCSC relies on streaming bigWig files (i.e. there's no need to load the entire file at once, the browser will always just load the data for the specific region a user is looking at).
 
 #### What's the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy) <a name="integrate"></a>
