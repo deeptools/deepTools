@@ -106,7 +106,7 @@ Then go to the deepTools directory, edit the `deepTools.cfg`
 file and then run the install script a:
 
 	$ cd deepTools
-	$ vim config/deepTools.cfg
+	$ vim deeptools/config/deepTools.cfg
 	$ python setup.py install
 	
 
