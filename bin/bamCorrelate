@@ -21,9 +21,9 @@ def parseArguments(args=None):
             'For each bin the number of reads found for each of the bam '
             'files is counted. A correlation is computed for all pairs of bam '
             'files.',
-            epilog='An example usage is:\n %(prog)s bins '
+            usage='An example usage is:\n %(prog)s bins '
             '-b treatment.bam input.bam '
-            '-plot correlation.png -f 200 -method pearson\n\n',
+            '-o correlation.png -f 200 -method pearson\n\n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
