@@ -6,7 +6,7 @@ import re
 
 from setuptools import setup
 from setuptools.command.sdist import sdist as _sdist
-
+from setuptools.command.install import install as _install
 
 VERSION_PY = """
 # This file is originally generated from Git information by running 'setup.py
@@ -58,19 +58,52 @@ class sdist(_sdist):
         return _sdist.run(self)
 
 
+class install(_install):
+    def run(self):
+        _install.run(self)
+#        import ipdb;ipdb.set_trace()
+        # check the installation of UCSC tools
+        try:
+            subprocess.call(["bedGraphToBigWig", "-h"])
+        except OSError as e:
+            if e.errno == os.errno.ENOENT:
+                # handle file not found error.
+                import warnings
+                # the config file is installed in:
+                config_file = self.install_platlib + \
+                    "/deeptools/config/deeptools.cfg"
+                msg = "\n#############################################\n\n"\
+                      "Your computer does not have the UCSC program \n" \
+                      "bedGraphToBigWig installed or configured in the \n" \
+                      "deepTools config file. In order to output bigwig \n" \
+                      "files this program needs to be installed and "\
+                      "referred in the \n"\
+                      "configuration file located at:\n\n{}\n\n" \
+                      "The program can be downloaded from here: " \
+                      "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
+                      "The output is set by default to 'bedgraph'\n\n "\
+                      "\n#############################################"\
+                      "\n\n".format(config_file)
+                warnings.warn(msg)
+            else:
+                # Something else went wrong while
+                # trying to run `bedGraphToBigWig`
+                raise
+
 setup(
     name='deepTools',
     version=get_version(),
     author='Fidel Ramirez, Friederike Dündar, Björn Grüning, Sarah Diehl',
     author_email='deeptools@googlegroups.com',
-    packages=['deeptools', 'deeptools.test', 'config'],
+    packages=['deeptools', 'deeptools.test'],
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler',
              'bin/computeGCBias', 'bin/correctGCBias',
              'bin/bigwigCompare'],
     include_package_data=True,
-    data_files=[('etc', ['config/deepTools.cfg'])],
+    package_data={'': ['config/deeptools.cfg']},
+#    data_files=[('deepTools', ['./deepTools.cfg'])],
 #                ('galaxy', ['galaxy/bamCompare.xml','galaxy/bamCoverage.xml',
 #                            'galaxy/heatmapper.xml'])],
     url='http://pypi.python.org/pypi/deepTools/',
@@ -85,5 +118,5 @@ setup(
         "pysam >= 0.7.1",
         "bx-python >= 0.5.0",
     ],
-    cmdclass={'sdist': sdist}
+    cmdclass={'sdist': sdist, 'install': install}
 )

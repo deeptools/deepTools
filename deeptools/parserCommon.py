@@ -199,6 +199,9 @@ def checkBigWig(string):
         return string
 
     if string == 'bigwig':
+        import pkg_resources
+        config_file = pkg_resources.resource_filename(__name__,
+                                                  'config/deeptools.cfg')
         import config as cfg
         bedgraph_to_bigwig = cfg.config.get('external_tools',
                                             'bedgraph_to_bigwig')
@@ -206,14 +209,16 @@ def checkBigWig(string):
                 not os.access(bedgraph_to_bigwig, os.X_OK):
             msg = "\nYour computer does not have the UCSC program \n" \
                 "bedGraphToBigWig installed or configured in the \n" \
-                "set up. In order to output bigwig files this tool \n" \
-                "needs to be installed and linked in the \n" \
-                "config/deepTools.cfg file. Optionally, setting the \n" \
-                "environment variable DEEP_TOOLS_NO_CONFIG will search \n" \
+                "deepTools config file. In order to output bigwig \n" \
+                "files this tool needs to be installed and referred in the \n"\
+                "configuration file located at:\n\n{}\n\n" \
+                "Optionally, setting the environment variable \n"\
+                "DEEP_TOOLS_NO_CONFIG will search \n" \
                 "the program using the PATH.\n\n" \
                 "The program can be downloaded from here: " \
                 "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
-                "The output is set by default to 'bedgraph' "
+                "The output is set by default to 'bedgraph' ".format(
+                    config_file)
 
             print msg
             return 'bedgraph'
