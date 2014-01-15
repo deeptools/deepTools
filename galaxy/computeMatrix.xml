@@ -51,8 +51,8 @@
     --afterRegionStartLength $mode.afterRegionStartLength
   #else
     --regionBodyLength $mode.regionBodyLength
-    --startLabel $mode.startLabel
-    --endLabel $mode.endLabel
+    --startLabel "$mode.startLabel"
+    --endLabel "$mode.endLabel"
     #if $mode.regionStartLength.regionStartLength_select == "yes":
       --beforeRegionStartLength $mode.regionStartLength.beforeRegionStartLength
       --afterRegionStartLength $mode.regionStartLength.afterRegionStartLength
