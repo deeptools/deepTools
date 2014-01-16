@@ -7,7 +7,7 @@ QC of aligned reads
   * [bamFingerprint](#bamFingerprint)
 
 
-<a name="bamCorrelate"/>
+<a name="bamCorrelate"/></a>
 bamCorrelate
 -------------
 
@@ -24,7 +24,7 @@ correlation of the read coverages is computed for all pairs of BAM files.
 ### Important parameters
 bamCorrelate can be run in 2 modes: _bins_ and _bed_.
 
-In the bins mode, the correlation is computed based on __randomly sampled bins of equal length__. The user has to specifcy the _number_ of bins. This is useful to assess the overall similarity of BAM files,
+In the bins mode, the correlation is computed based on __randomly sampled bins of equal length__. The user has to specify the _number_ of bins. This is useful to assess the overall similarity of BAM files,
 but  outliers, such as heavily biased regions have the potential to skew the correlation values.
 
 In the BED-file options, the user supplies a list of genomic regions in [BED][] format in addition to (a) BAM file(s). bamCorrelate subsequently uses this list to compare the read coverages for these regions only. This can be used, for example, to compare the ChIP-seq coverages of two different samples for a set of peak regions.
@@ -35,8 +35,7 @@ In the BED-file options, the user supplies a list of genomic regions in [BED][] 
 
 ### Example Figures
 
-Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, thmight not be
-uniformere is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32222 "GEO series")).
+Here is the result of running bamCorrelate. We supplied four [BAM][] files that were generated from 2 patients - for each patient, there is an input and a ChIP-seq sample (from [GSE32222](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE32222 "GEO series")).
   
 ![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_humanSamples.png "bamCorrelate result")
 
@@ -44,7 +43,7 @@ You can supply any number of BAM files that you would like to compare. In Galaxy
 
 Here's the command that was used with the command line version:
 
-    $ deepTools-1.5.2/bin/bamCorrelate -f 300 -p 12 --bamfiles GSM798383_SLX-1201.250.s_4.bwa.homo_sapiens_f.bam GSM798384_SLX-1881.334.s_1.bwa.homo_sapiens_f.bam GSM798406_SLX-1202.250.s_1.bwa.homo_sapiens_f.bam GSM798407_SLX-1880.337.s_8.bwa.homo_sapiens_f.bam --labels "ChIP p1" "ChIP p2" "Input p1" "Input p2" -plot /eva_data/deeptools_manual/bamCorrelate_bad2.pdf --corMethod pearson
+    $ deepTools-1.5.2/bin/bamCorrelate bins --fragmentLength 200 --bamfiles GSM798383_SLX-1201.250.s_4.bwa.homo_sapiens_f.bam GSM798384_SLX-1881.334.s_1.bwa.homo_sapiens_f.bam GSM798406_SLX-1202.250.s_1.bwa.homo_sapiens_f.bam GSM798407_SLX-1880.337.s_8.bwa.homo_sapiens_f.bam --labels "ChIP p1" "ChIP p2" "Input p1" "Input p2" --plotFile /eva_data/deeptools_manual/bamCorrelate_bad2.pdf --corMethod pearson
   
 
 Here is another example of ChIP samples where H3K27ac was ChIPed by the same experimentator for different cell populations while H3K27me was performed with the same antibody, but at different times. You can see that the correlation between the K27ac replicates is much higher than for the H3K27me3 samples, however, for both histone marks, the ChIP-seq experiments are more similar to each other than to the other ChIP or to the input. In fact, the signals of K27ac and K27me3 are almost not correlated at all which supports the notion that their biological function is also quite opposing.
@@ -52,7 +51,7 @@ Here is another example of ChIP samples where H3K27ac was ChIPed by the same exp
 ![bamCorrelate](https://raw.github.com/fidelram/deepTools/master/examples/QC_bamCorrelate_RoadmapData.png "bamCorrelate result")
 
 
-<a name="computeGCbias"/>
+<a name="computeGCbias"/></a>
 computeGCbias
 --------------
 
@@ -154,3 +153,5 @@ We chose these examples to show you how the nature of the ChIP signal (narrow an
 
 
 This tool is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/QC.pdf)

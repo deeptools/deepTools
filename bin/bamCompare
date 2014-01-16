@@ -274,9 +274,12 @@ def main(args):
                 tileLengthInKb = float(args.binSize) / 1000
                 scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
                 scaleFactors = np.array(scaleFactors) * scaleFactor
+
+                if args.verbose:
+                    print "scale factor for   "
+                    "RPKM is {0}".format(scaleFactor)
+    
     if args.verbose:
-        print "scale factor using sequencing "
-        "RPKM is {0}".format(scaleFactor)
         print "Individual scale factors are {0}".format(scaleFactors)
 
     ################# compute log2ratio ##################

@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-
-
 import argparse
 from collections import OrderedDict
 import numpy as np
@@ -109,6 +106,7 @@ def plotMatrix(hm, outFileName,
     matrixFlatten = None
     if zMin is None:
         matrixFlatten = flattenMatrix(hm.matrixDict)
+        # try to avoid outliers by using np.percentile
         zMin = np.percentile(matrixFlatten, 1.0)
         if np.isnan(zMin):
             zMin = None
@@ -116,7 +114,8 @@ def plotMatrix(hm, outFileName,
     if zMax is None:
         if matrixFlatten is None:
             matrixFlatten = flattenMatrix(hm.matrixDict)
-        zMax = np.percentile(matrixFlatten, 99.0)
+        # try to avoid outliers by using np.percentile
+        zMax = np.percentile(matrixFlatten, 98.0)
         if np.isnan(zMax):
             zMax = None
 
@@ -392,8 +391,8 @@ def flattenMatrix(matrixDict):
     concat and flatten
     """
     matrixFlatten = np.concatenate([x for x in matrixDict.values()]).flatten()
-    return matrixFlatten
-
+    # nans are removed from the flattened array
+    return matrixFlatten[np.isnan(matrixFlatten) == False]
 
 def mergeSmallGroups(matrixDict):
     groupLengths = [len(x) for x in matrixDict.values()]

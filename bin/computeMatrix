@@ -8,6 +8,7 @@ import argparse
 # own tools
 from deeptools import parserCommon
 from deeptools import heatmapper
+from deeptools._version import __version__
 
 
 def parseArguments(args=None):
@@ -26,6 +27,9 @@ def parseArguments(args=None):
             epilog='An example usage is:\n %(prog)s reference-point -S '
             '<biwig file> -R <bed file> -b 1000\n\n')
 
+    parser.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
+
     subparsers = parser.add_subparsers(
         help="%(prog)s has two main output options: 'scale-regions', "
         "and 'reference-point.",
@@ -40,7 +44,10 @@ def parseArguments(args=None):
                  parserCommon.computeMatrixOptArgs(case='scale-regions')],
         help="In the scale-regions mode, all regions in the BED/GFF file are "
         "stretched or shrunk to the same length (bp) that is indicated by "
-        "the user.")
+        "the user.",
+        usage='An example usage is:\n %(prog)s -S '
+        '<biwig file> -R <bed file> -b 1000\n\n')
+    
 
     # reference point arguments
     refpoint = subparsers.add_parser(
@@ -52,7 +59,10 @@ def parseArguments(args=None):
         help="Reference-point refers to a position within the BED/GFF regions "
         "(e.g start of region). In the reference-point, mode only those "
         "genomic positions before (downstream) and/or after (upstream) the "
-        "reference point will be plotted.")
+        "reference point will be plotted.",
+        usage='An example usage is:\n %(prog)s -S '
+        '<biwig file> -R <bed file> -a 3000 -b 3000\n\n')
+
 
     args = parser.parse_args(args)
 

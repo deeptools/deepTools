@@ -13,7 +13,7 @@ The modules for visualizing scores contained in [bigWig][] files are separated i
   * [profiler](#profiler)
   * [Example figures](#examples)
 
-<a name="computeMatrix"/>
+<a name="computeMatrix"/></a>
 ## computeMatrix
 This tool summarizes and prepares an intermediary file containing
 scores associated with genomic regions that can be used afterwards to
@@ -36,7 +36,7 @@ Please see the [example figures](#examples) down below for explanations of param
     - matrix of values per genomic bin per genomic interval
 
 
-<a name="heatmapper"/>
+<a name="heatmapper"/></a>
 ## heatmapper
 The heatmapper depicts values extracted from the [bigWig][] file for each genomic region individually.
 It requires the output from computeMatrix and most of its options are related to tweeking the visualization only. The values calculated by computeMatrix are not changed.
@@ -44,12 +44,12 @@ It requires the output from computeMatrix and most of its options are related to
 Definitely check the example at the bottom of the page to get a feeling for how many things you can tune.
 
 
-<a name="profiler"/>
+<a name="profiler"/></a>
 ## profiler
 This tool plots the average enrichments over all genomic regions supplied to computeMarix. It is a very useful complement to the heatmapper, especially in cases when you want to compare the scores for many different groups. Like heatmapper, profiler does not change the values that were compute by computeMatrix, but you can choose between many different ways to color and display the plots.
 
 
-<a name="examples"/>
+<a name="examples"/></a>
 ## Example figures
 
 Here you see a typical, not too pretty example of a heatmap. We will use this example to explain several features of computeMatrix and heatmapper, so do take a closer look.
@@ -59,8 +59,8 @@ Here you see a typical, not too pretty example of a heatmap. We will use this ex
 
 The plot was produced with the following commands:
 
-    $ /deepTools-1.5/bin/computeMatrix scale-regions -R Dm.genes.indChromLabeled.bed -S PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500 --regionBodyLength 1500 --binSize 10 -p20 --outFileName PolII_matrix_scaledGenes --sortRegions no
-    $ /deepTools-1.5/bin/heatmapper -m PolII_matrix_scaledGenes --outFileName PolII_indChr_scaledGenes.pdf -T "Pol II" --whatToShow "heatmap only"
+    $ /deepTools-1.5.2/bin/computeMatrix scale-regions --regionsFileName Dm.genes.indChromLabeled.bed --scoreFileName PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500 --regionBodyLength 1500 --binSize 10 --outFileName PolII_matrix_scaledGenes --sortRegions no
+    $ /deepTools-1.5.2/bin/heatmapper --matrixFile PolII_matrix_scaledGenes --outFileName PolII_indChr_scaledGenes.pdf --plotTitle "Pol II" --whatToShow "heatmap only"
 
 As you can see, all genes have been scaled to the same size and the (mean) values per bin size (10 bp) are colored accordingly. In addition to the gene bodies, we added 500 bp up- and down-stream of the genes.
 
@@ -96,12 +96,12 @@ In Galaxy, you can simply generate three different data sets starting from a who
 
 
 #### Important parameters for optimizing the visualization
-1. __sorting of the regions__: The default of heatmapper is to sort the values descendingly. You can change that to ascending, no sorting at all or according to the size of the region (Using the `--sort` option on the command line or advanced options in Galaxy). We strongly recommend to leave the sorting option at "no sorting" for the intitial computeMatrix step.
-2. __coloring__: The default coloring by heatmapper is done using the python colormap "RdYlBu", but this can be changed (--colorMap on the command line, advanced options within Galaxy).
+1. __sorting of the regions__: The default of heatmapper is to sort the values in descending order. You can change that to ascending, no sorting at all or according to the size of the region (Using the `--sort` option on the command line or advanced options in Galaxy). We strongly recommend to leave the sorting option at "no sorting" for the initial computeMatrix step.
+2. __coloring__: The default coloring by heatmapper is done using the python color map "RdYlBu", but this can be changed (--colorMap on the command line, advanced options within Galaxy).
 4. __dealing with missing data__: You have certainly noticed that some gene bodies are depicted as white lines within the otherwise colorful mass of genes. Those regions are due to genes that, for whatever reason, did not have any read coverage in the bigWig file. There are several ways to handle these cases:
-    + __--skipZeros__ this is useful when your data actually has a quite nice coverage, but there are 2 or 3 regions where you deliberately filtered out reads or you don't expect any coverage (e.g. hardly mappable regions). This will only work if the entire region does not contain a single value. 
+    + __--skipZeros__ this is useful when your data actually has a quite nice coverage, but there are 2 or 3 regions where you deliberately filtered out reads or you don't expect any coverage (e.g. hardly mapable regions). This will only work if the entire region does not contain a single value. 
     + __--missingDataAsZero__ this option allows computeMatrix do interpret missing data points as zeroes. Be aware of the changes to the average values that this might cause.
-    + __--missingDataColor__ this is in case you have very sparce data or were missing values make sense (e.g. when plotting methylated CpGs - half the genome should have no value). This option then allows you to pick out your favorite color for those regions. The default is black (was white when the above shown image was produced).
+    + __--missingDataColor__ this is in case you have very sparse data or were missing values make sense (e.g. when plotting methylated CpGs - half the genome should have no value). This option then allows you to pick out your favorite color for those regions. The default is black (was white when the above shown image was produced).
 
 
 
@@ -113,10 +113,10 @@ Here's the __profiler__ plot corresponding to the heatmap above. There's one maj
 
 We used the same [BED][] file(s) as for the heatmap, hence the 3 different groups (1 per chromosome). However, this time we used computeMatrix not with _scale-regions_ but with _reference-point_ mode.
 
-    $ /deepTools-1.5/bin/computeMatrix reference-point --referencePoint TSS -R Dm.genes.indChromLabeled.bed -S PolII.bw -b 1000 -a 1000 -bs 10 -p20 --outFileName PolII_matrix_indChr_refPoint --missingDataAsZero --sortRegions no
-    $ /deepTools-1.5/bin/profiler --matrixFile PolII_matrix_indChr_refPoint --outFileName profile_PolII_indChr_refPoint.pdf --plotType fill --startLabel "TSS" -T "Pol II around TSS" --yAxisLabel "mean Pol II coverage" --onePlotPerGroup
+    $ /deepTools-1.5.2/bin/computeMatrix reference-point --referencePoint TSS --regionsFileName Dm.genes.indChromLabeled.bed --scoreFileName PolII.bw --beforeRegionStartLength 1000 -afterRegionStartLength 1000 --binSize 10 --outFileName PolII_matrix_indChr_refPoint --missingDataAsZero --sortRegions no
+    $ /deepTools-1.5.2/bin/profiler --matrixFile PolII_matrix_indChr_refPoint --outFileName profile_PolII_indChr_refPoint.pdf --plotType fill --startLabel "TSS" --plotTitle "Pol II around TSS" --yAxisLabel "mean Pol II coverage" --onePlotPerGroup
  
-When you compare the profiler commands with the heatmapper commands, you also notice that we made use of many more labelling options here, e.g. `--yAxisLabel` and a more specific title via `-T`
+When you compare the profiler commands with the heatmapper commands, you also notice that we made use of many more labeling options here, e.g. `--yAxisLabel` and a more specific title via `-T`
 
 
 This is how you would have obtained this plot in Galaxy (only the part that's _different_ from the above shown command for the scale-regions version is shown):
@@ -138,20 +138,22 @@ Have  a look at this example with two clusters:
 
 The plot was produced with the following commands:
 
-    $ /deepTools-1.5/bin/computeMatrix reference-point -R Dm.genes.indChromLabeled.bed -S PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500o  --binSize 50 -p20 --outFileName PolII_matrix_TSS
-    $ /deepTools-1.5/bin/heatmapper -m PolII_matrix_TSS --kmeans 2 --outFileName PolII_two_clusters.pdf -T "Pol II" --sortUsing region_length --whatToShow "heatmap only"
+    $ /deepTools-1.5.2/bin/computeMatrix reference-point -regionsFilenName Dm.genes.indChromLabeled.bed --scoreFileName PolII.bw --beforeRegionStartLength 500 --afterRegionStartLength 500 --binSize 50 --outFileName PolII_matrix_TSS
+    $ /deepTools-1.5.2/bin/heatmapper --matrixFile PolII_matrix_TSS --kmeans 2 --outFileName PolII_two_clusters.pdf --plotTitle "Pol II" --sortUsing region_length --whatToShow "heatmap only"
 
 When the `--kmeans` option is chosen and more than 0 clusters are specified, heatmapper will run the [k-means][] clustering algorithm. In this example _Drosophila m._ genes were divided into two clusters separating those genes with Pol II at the promoter region (top) from those genes without Poll II at the promoter (bottom).
 Please note that the clustering will only work if the initial BED-file used with computeMatrix contained only _one_ group of genes (i.e. all genes, without any hash tags separating them)
 
 The genes belonging to each cluster can be obtained by via `--outFileSortedRegions` on the command line and "advanced output options in Galaxy". On the command line, this will result in a BED file where the groups are separated by a hash tag. In Galaxy, you will obtain individual data sets per cluster.
 
-To have a better control on the clustering it is recommended to load the matrix raw data into __specialized software like [cluster3] or [R]__. You can obtain the matrix via the option `--outFileNameMatrix` on the command line and by the "advanced output options" in Galaxy. The order of the rows is the same as in the ouput of the `--outFileSortedRegions` BED file.
+To have a better control on the clustering it is recommended to load the matrix raw data into __specialized software like [cluster3] or [R]__. You can obtain the matrix via the option `--outFileNameMatrix` on the command line and by the "advanced output options" in Galaxy. The order of the rows is the same as in the output of the `--outFileSortedRegions` BED file.
 
 
 [back to the general help](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
 
 [back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de)
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/visualizations.pdf)
 
 -----------------------------------------------------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"

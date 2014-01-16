@@ -5,26 +5,28 @@ import multiprocessing
 # deepTools packages
 from utilities import getCommonChrNames
 import bamHandler
-import mapReduce 
+import mapReduce
 
 debug = 0
+
 
 def countReadsInRegions_wrapper(args):
     return countReadsInRegions_worker(*args)
 
-def countReadsInRegions_worker(chrom, start, end, bamFilesList, 
-                               stepSize, binLength, defaultFragmentLength, 
+
+def countReadsInRegions_worker(chrom, start, end, bamFilesList,
+                               stepSize, binLength, defaultFragmentLength,
                                skipZeros=False, bedRegions=None):
     """ counts the reads in each bam file at each 'stepSize' position
     within the interval start, end for a 'binLength' window.
-    Because the idea is to get counts for window positions at different positions
-    for sampling the bins are equally spaced between each other and are
-    not one directly next *after* the other.
- 
+    Because the idea is to get counts for window positions at
+    different positions for sampling the bins are equally spaced
+    between each other and are  not one directly next *after* the other.
+
     If a list of bedRegions is given, then the number of reads
     that overlaps with each region is counted.
 
-    The result is a list of tuples. 
+    The result is a list of tuples.
     >>> test = Tester()
 
     The transpose is used to get better looking numbers. the first line
@@ -65,7 +67,7 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     startTime = time.time()
     extendPairedEnds = True
     zerosToNans = False
-    
+
     bamHandlers = [bamHandler.openBam(bam) for bam in bamFilesList]
 
     regionsToConsider = []
@@ -73,7 +75,6 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     if bedRegions:
         for chrom, start, end in bedRegions:
             regionsToConsider.append((chrom, start, end, end - start))
-    
     else:
         for i in xrange(start, end, stepSize):
             if i + binLength > end:
@@ -83,12 +84,12 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         for bam in bamHandlers:
-          avgReadsArray.append( \
-                getCoverageOfRegion(bam, 
+            avgReadsArray.append(
+                getCoverageOfRegion(bam,
                                     chrom, start, end,
                                     binLength,
-                                    defaultFragmentLength, 
-                                    extendPairedEnds, 
+                                    defaultFragmentLength,
+                                    extendPairedEnds,
                                     zerosToNans )[0])
         # skip if any of the bam files returns a NaN
         if np.isnan(sum(avgReadsArray)):
@@ -96,21 +97,18 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
 
         if skipZeros and sum(avgReadsArray) == 0:
             continue
-
         subNum_reads_per_bin.extend(avgReadsArray)
-
         rows += 1
 
     if debug:
         endTime = time.time()
-        
         print "%s countReadsInRegions_worker: processing %d " \
             "(%.1f per sec) @ %s:%s-%s"  % \
             (multiprocessing.current_process().name,
-             rows, rows / (endTime - startTime) , chrom, start, end )
+             rows, rows / (endTime - startTime), chrom, start, end )
 
+    return np.array(subNum_reads_per_bin).reshape(rows, len(bamFilesList))
 
-    return np.array(subNum_reads_per_bin).reshape(rows,len(bamFilesList)) 
 
 def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                       defaultFragmentLength, numberOfProcessors=1,
@@ -139,7 +137,8 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     array([[ 0.,  1.,  1.],
            [ 1.,  1.,  2.]])
 
-    >>> aa = np.transpose(getNumReadsPerBin([test.bamFile1, test.bamFile2], 50, 4, 0, skipZeros=True))
+    >>> aa = np.transpose(getNumReadsPerBin([test.bamFile1, test.bamFile2],
+    ... 50, 4, 0, skipZeros=True))
     >>> np.savez('/tmp/aa', aa)
     """
 
@@ -154,10 +153,10 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
-    # Also the skip may contain heterochromatic regions and 
+    # Also the skip may contain heterochromatic regions and
     # mitochondrial DNA
     if len(chrsToSkip): chromSizes = [ x for x in chromSizes if x[0] not in chrsToSkip ]
-        
+
     chrNames, chrLengths = zip(*chromSizes)
 
     genomeSize = sum(chrLengths)
@@ -178,22 +177,22 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
 
-    imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength, 
+    imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength,
                                      defaultFragmentLength, skipZeros),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
                                     bedFile=bedFile,
                                     region=region,
-                                    numberOfProcessors = numberOfProcessors)
+                                    numberOfProcessors=numberOfProcessors)
 
-    num_reads_per_bin = np.concatenate( imap_res, axis=0)
-            
+    num_reads_per_bin = np.concatenate(imap_res, axis=0)
     return num_reads_per_bin
 
 
 def getReadLength(read):
     return len(read)
+
 
 def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True, 
                         maxPairedFragmentLength=None):
@@ -275,7 +274,8 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True,
 
     return (fragmentStart, fragmentEnd)
 
-def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize, 
+
+def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
                         defaultFragmentLength, extendPairedEnds=True, 
                         zerosToNans=True, maxPairedFragmentLength=None,
                         minMappingQuality=None, ignoreDuplicates=False,

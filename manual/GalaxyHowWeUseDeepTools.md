@@ -10,7 +10,7 @@ We then use deepTools to assess the quality of the aligned reads:
 1. __Correlation between [BAM][] files__ (_bamCorrelate_). This is a very basic test to see whether the sequenced and aligned reads meet your expectations. We use this check to assess the reproducibility - either between replicates and/or between different experiments that might have used the same antibody/the same cell type etc. For instance, replicates should correlate better than differently treated samples.
 2. __GC bias check__ (_computeGCbias_). Many sequencing protocols require several rounds of PCR-based amplification of the DNA to be sequenced. Unfortunately, most DNA polymerases used for PCR introduce significant GC biases as they prefer to amplify GC-rich templates. Depending on the sample (preparation), the GC bias can vary significantly and we routinely check its extent. In case we need to compare files with different GC biases, we use the _correctGCbias_ module to match the GC bias.
 See the paper by [Benjamini and Speed][] for many insights into this problem.
-3. __Assessing the ChIP strength__. This is a QC we do to get a feeling for the signal-to-noise ratio in samples from ChIP-seq experiments. It is based on the insights published by [Diaz et al.][].
+3. __Assessing the ChIP strength__. This is a QC we do to get a feeling for the signal-to-noise ratio in samples from ChIP-seq experiments. It is based on the insights published by [Diaz et al.][]
 
 Once we're satisfied by the basic quality checks, we normally __convert the large [BAM][] files into a leaner data format, typically [bigWig][]__. bigWig files have several advantages over BAM files that mainly stem from their significantly decreased size:
   - useful for data sharing & storage
@@ -26,7 +26,7 @@ Here's a visual summary of our average workflow - deepTools modules are indicate
 ![flowChartI](https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png "Average analysis and QC workflow")
 
 ------------------------------------------------
-### General options and parameters of deepTools <a name="params">
+### General options and parameters of deepTools <a name="params"></a>
 
 Once you select a tool, you will see that almost every option has a brief description of its purpose. There are some options that you will encounter over and over again, so it's important that you understand their implications. Most of these options are related to the __computation of read coverages__.
 
@@ -39,7 +39,7 @@ Once you select a tool, you will see that almost every option has a brief descri
 -----------------------------------
 [Back to the general deepTools Galaxy help page](https://github.com/fidelram/deepTools/blob/master/manual/GalaxyHelp.md#deepTools)
 
-[Back to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/)
+[Go to deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de/)
 
 ------------------------------------
 [BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
@@ -60,7 +60,7 @@ Once you select a tool, you will see that almost every option has a brief descri
 [profiler]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
 ### References
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
-[Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
-
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
+
+[Download PDF](https://github.com/fidelram/deepTools/raw/master/manual/PDFs/GalaxyHowWeUseDeepTools.pdf)

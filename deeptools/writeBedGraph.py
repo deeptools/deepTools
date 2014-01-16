@@ -4,11 +4,11 @@ import tempfile
 import numpy as np
 
 # own modules
-import mapReduce
-from utilities import getCommonChrNames
-from countReadsPerBin import getCoverageOfRegion, getSmoothRange
+from deeptools import mapReduce
+from deeptools.utilities import getCommonChrNames
+from deeptools.countReadsPerBin import getCoverageOfRegion, getSmoothRange
+from deeptools import bamHandler
 import config as cfg
-import bamHandler
 
 debug = 0
 

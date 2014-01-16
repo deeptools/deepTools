@@ -1,5 +1,6 @@
 import argparse
 import config as cfg
+from deeptools._version import __version__
 
 
 def output(args=None):
@@ -11,10 +12,11 @@ def output(args=None):
                        type=writableFile,
                        required=True)
 
+    default = checkBigWig('bigwig')
     group.add_argument('--outFileFormat', '-of',
-                       help='Output file type. Either "bigwig" or "bedgraph"',
+                       help='Output file type. Either "bigwig" or "bedgraph".',
                        choices=['bigwig', 'bedgraph'],
-                       default='bigwig')
+                       default=default)
 
     return parser
 
@@ -86,15 +88,23 @@ def bam(args=None):
 
 
 def getParentArgParse(args=None, binSize=True):
+    """
+    Typical arguments for several tools
+    """
+
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
+
     if binSize:
         optional.add_argument('--binSize', '-bs',
-                            help='Size of the bins in bp for the ouput '
-                            'of the bigwig/bedgraph file.',
-                            metavar="INT bp",
-                            type=int,
-                            default=50)
+                              help='Size of the bins in bp for the ouput '
+                              'of the bigwig/bedgraph file.',
+                              metavar="INT bp",
+                              type=int,
+                              default=50)
 
     optional.add_argument('--region', '-r',
                         help='Region of the genome to limit the operation '
@@ -136,10 +146,6 @@ def numberOfProcessors(string):
     else:
         try:
             numberOfProcessors = int(string)
-            if numberOfProcessors > availProc:
-                raise argparse.ArgumentTypeError(
-                    "Whishful thinking! Your computer only has {} processors and "
-                    "you want to use {}.".format(numberOfProcessors, availProc))
         except ValueError:
             raise argparse.ArgumentTypeError(
                 "{} is not a valid number of processors".format(string))
@@ -150,6 +156,9 @@ def numberOfProcessors(string):
                                              "available processors in your "
                                              "computer is {}.".format(string,e,
                                                                       availProc))
+
+        if numberOfProcessors > availProc:
+            numberOfProcessors = availProc
 
         return numberOfProcessors
         
@@ -177,6 +186,43 @@ def writableFile(string):
     except:
         msg = "{} file can be opened for writing".format(string)
         raise argparse.ArgumentTypeError(msg)
+    return string
+
+
+def checkBigWig(string):
+    """
+    Checks if the path to USCS bedGraphToBigWig as set in the config
+    is installed and is executable.
+    """
+    import os
+    if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
+        return string
+
+    if string == 'bigwig':
+        import pkg_resources
+        config_file = pkg_resources.resource_filename(__name__,
+                                                  'config/deeptools.cfg')
+        import config as cfg
+        bedgraph_to_bigwig = cfg.config.get('external_tools',
+                                            'bedgraph_to_bigwig')
+        if not os.path.isfile(bedgraph_to_bigwig) or \
+                not os.access(bedgraph_to_bigwig, os.X_OK):
+            msg = "\nYour computer does not have the UCSC program \n" \
+                "bedGraphToBigWig installed or configured in the \n" \
+                "deepTools config file. In order to output bigwig \n" \
+                "files this tool needs to be installed and referred in the \n"\
+                "configuration file located at:\n\n{}\n\n" \
+                "Optionally, setting the environment variable \n"\
+                "DEEP_TOOLS_NO_CONFIG will search \n" \
+                "the program using the PATH.\n\n" \
+                "The program can be downloaded from here: " \
+                "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
+                "The output is set by default to 'bedgraph' ".format(
+                    config_file)
+
+            print msg
+            return 'bedgraph'
+
     return string
 
 
@@ -245,6 +291,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
 
     if case == 'scale-regions':
         optional.add_argument('--regionBodyLength', '-m',
@@ -468,7 +516,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     
     optional = parser.add_argument_group('Optional arguments')
 
-    optional.add_argument("--help", "-h",  action="help", help="show this help message and exit")
+    optional.add_argument("--help", "-h",  action="help",
+                          help="show this help message and exit")
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
     if mode == 'profile':
         optional.add_argument(
             '--averageType',

@@ -2,7 +2,6 @@
 #-*- coding: utf-8 -*-
 
 import sys
-import os
 import time
 
 import multiprocessing
@@ -20,62 +19,83 @@ from deeptools.PE_fragment_size import peFragmentSize
 from deeptools import config as cfg
 from deeptools import bamHandler
 
+from deeptools._version import __version__
 
 debug = 0
 
 global_vars = dict()
 
+
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse(binSize=False)
+    requiredArgs = getRequiredArgs()
     parser = argparse.ArgumentParser(
-        parents=[parentParser],
+        parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Computes the GC bias using Benjamini\'s method '
         '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
         'The resulting GC bias can later be used to plot '
-        'the bias or to correct the bias.')
+        'the bias or to correct the bias.',
+        usage='An example usage is:\n %(prog)s '
+        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit [options]',
+        conflict_handler='resolve',
+        add_help=False)
+
+    args = parser.parse_args(args)
+    return(args)
+
+
+def getRequiredArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--bamfile', '-b',
+                          metavar='bam file',
+                          help='Sorted Bam file. ',
+                          required=True)
+
+    required.add_argument('--effectiveGenomeSize',
+                          help='The effective genome size is the portion '
+                          'of the genome that is mappable. Large fractions of '
+                          'the genome are stretches of NNNN that should be '
+                          'discarded. Also, if repetitive regions were not '
+                          'included in the mapping of reads, the effective '
+                          'genome size needs to be adjusted accordingly. '
+                          'Common values are: mm9: 2150570000, '
+                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
+                          'See Table 2 of '
+                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
+                          'for several effective genome sizes. This value is '
+                          'needed to detect enriched regions that, if not '
+                          'discarded can bias the results.',
+                          default=None,
+                          type=int,
+                          required=True)
+
+    required.add_argument('--genome', '-g',
+                          help='Genome in two bit format. Most genomes can be '
+                          'found here: http://hgdownload.cse.ucsc.edu/gbdb/ '
+                          'Search for the .2bit ending. Otherwise, fasta '
+                          'files can be converted to 2bit using the UCSC '
+                          'programm called faToTwoBit available for different '
+                          'plattforms at '
+                          'http://hgdownload.cse.ucsc.edu/admin/exe/',
+                          metavar='2bit FILE',
+                          required=True)
 
     # define the arguments
-    parser.add_argument('--bamfile', '-b',
-                        metavar='bam file',
-                        help='Sorted Bam file. ',
-                        required=True)
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument("--help", "-h", action="help",
+                          help="show this help message and exit")
 
-    parser.add_argument('--effectiveGenomeSize',
-                        help='The effective genome size is the portion '
-                        'of the genome that is mappable. Large fractions of '
-                        'the genome are stretches of NNNN that should be '
-                        'discarded. Also, if repetitive regions were not '
-                        'included in the mapping of reads, the effective '
-                        'genome size needs to be adjusted accordingly. '
-                        'Common values are: mm9: 2150570000, '
-                        'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                        'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
-                        'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                        'for several effective genome sizes. This value is needed '
-                        'to detect enriched regions that, if not discarded '
-                        'can bias the results.',
-                        default=None,
-                        type=int,
-                        required=True)
-
-    parser.add_argument('--genome', '-g',
-                        help='Genome in two bit format. Most genomes can be '
-                        'found here: http://hgdownload.cse.ucsc.edu/gbdb/  '
-                        'Search for the .2bit ending. Otherwise, fasta '
-                        'files can be converted to 2bit using the UCSC '
-                        'programm called faToTwoBit available for different '
-                        'plattforms at '
-                        'http://hgdownload.cse.ucsc.edu/admin/exe/',
-                        metavar='2bit FILE',
-                        required=True)
-
-    parser.add_argument('--sampleSize',
+    optional.add_argument('--sampleSize',
                         default=5e7,
                         help='Number of sampling points to be considered.',
                         type=int)
 
-    parser.add_argument(
+    optional.add_argument(
         '--filterOut', '-fo',
         help='BED file containing genomic regions to be excluded '
         'from the estimation of the correction. Such regions '
@@ -95,18 +115,18 @@ def parseArguments(args=None):
         type=argparse.FileType('r'),
         metavar='BED file')
 
-    parser.add_argument('--extraSampling',
-                        help='BED file containing genomic regions for which '
-                        'extra sampling is required because they are '
-                        'underrepresented in the genome.',
-                        type=argparse.FileType('r'),
-                        metavar='BED file')
+    optional.add_argument('--extraSampling',
+                          help='BED file containing genomic regions for which '
+                          'extra sampling is required because they are '
+                          'underrepresented in the genome.',
+                          type=argparse.FileType('r'),
+                          metavar='BED file')
 
-    parser.add_argument('--fragmentLength', '-l',
-                        help='Fragment length used for the sequencing. If '
-                        'paired-end reads are used the fragment length is '
-                        'computed based from the bam file',
-                        type=int)
+    optional.add_argument('--fragmentLength', '-l',
+                          help='Fragment length used for the sequencing. If '
+                          'paired-end reads are used the fragment length is '
+                          'computed based from the bam file',
+                          type=int)
 
     group = parser.add_argument_group('Output options')
 
@@ -140,16 +160,14 @@ def parseArguments(args=None):
 
     group.add_argument('--plotFileFormat',
                        metavar='',
-                       help='image format type. If given, this option overrides the '
+                       help='image format type. If given, this '
+                       'option overrides the '
                        'image format based on the plotFile ending. '
                        'The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg"',
-                       choices=['png','pdf', 'svg','eps', 'emf'])
+                       '"eps", "pdf" and "svg"',
+                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
-    args = parser.parse_args(args)
-
-    return(args)
-
+    return parser
 
 def getPositionsToSample(chrom, start, end, stepSize):
     """
@@ -592,7 +610,8 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     title = "reads per regions of {} bp".format(args.regionSize)
     fig = plt.figure(figsize=(6, 8))
     ax1 = fig.add_subplot(211, title=title)
-    ax2 = fig.add_subplot(212, title='normalized observed/expected read counts')
+    ax2 = fig.add_subplot(212,
+                          title='normalized observed/expected read counts')
 
     # make boxplot
 
@@ -617,12 +636,11 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     ax2.plot(x, np.log2(frequencies[:, 2]), color='#8c96f0')
     ax2.set_xlabel('GC fraction')
     ax2.set_ylabel('log2ratio observed/expected')
-    ax2.set_xlim(0.2,0.7)
+    ax2.set_xlim(0.2, 0.7)
     #fig.suptitle(args.title, fontsize='small')
     #plt.tight_layout()
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
-
 
 
 def main(args):
@@ -673,13 +691,12 @@ def main(args):
     global_vars['total_reads'] = bam.mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
-        
+
     confidence_p_value = float(1) / args.sampleSize
 
     # chromSizes: list of tuples
     chromSizes = [(bam.references[i], bam.lengths[i])
                   for i in range(len(bam.references))]
-
 
     # use possion distribution to identify peaks that should be discarted.
     # I multiply by 4, because the real distribution of reads
@@ -721,7 +738,8 @@ def main(args):
                                        numberOfProcessors=args.numberOfProcessors,
                                        verbose=args.verbose,
                                        region=args.region)
-        plotGCbias(args.biasPlot, data, reads_per_gc, image_format=args.plotFileFormat)
+        plotGCbias(args.biasPlot, data, reads_per_gc,
+                   image_format=args.plotFileFormat)
 
 
 class Tester():
