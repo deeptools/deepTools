@@ -224,11 +224,23 @@ def plotMatrix(hm, outFileName,
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
     else:
+        xticks_values = [0]
+        xTicksLabel = []
+
+        # if no upstream region is set, do not set a x tick
+        if hm.parameters['upstream'] > 0:
+            xticks_values.append( hm.parameters['upstream'] )
+            xTicksLabel.append( '{0:.1f}'.format(-(float(b) / quotient)) )
+        # set the x tick for the body parameter, regardless if upstream is 0 (not set)
+        xticks_values.append( hm.parameters['upstream'] + hm.parameters['body'] )
+        xTicksLabel.append( startLabel )
+        xTicksLabel.append( endLabel )
+        if hm.parameters['downstream'] > 0:
+            xticks_values.append( hm.parameters['upstream'] + hm.parameters['body'] + hm.parameters['downstream'] )
+            xTicksLabel.append( '{0:.1f}{1}'.format(float(a) / quotient, symbol) )
+
         xTicks = [int(k / float(w)) - tickPlotAdj
-                  for k in [0, b, b + m, b + m + a]]
-        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
-                       startLabel, endLabel,
-                       '{0:.1f}kb'.format(float(a) / quotient, symbol)]
+                  for k in xticks_values]
 
     fig.suptitle(plotTitle, y=1 - (0.06 / figHeight))
 
