@@ -174,11 +174,11 @@
                 <conditional name="used_multiple_regions">
                     <param name="used_multiple_regions_options" type="select" 
                         label="Did you used multiple regions in ComputeMatrix?"
-                        help="That option is only relevant if you want to cluster the results. Clustering is only available with one selected region in ComputeMatrix.">
-                        <option value="no">No, I used only one region.</option>
+                        help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                         <option value="yes">Yes, I used multiple regions.</option>
+                        <option value="no">No, I used only one region.</option>
                     </param>
-                    <when value="yes">
+                    <when value="no">
                         <conditional name="clustering">
                             <param name="clustering_options" type="select" label="Clustering algorithm">
                                 <option value="none">No clustering</option>
@@ -191,7 +191,7 @@
                             <when value="none" />
                         </conditional>
                     </when>
-                    <when value="no" />
+                    <when value="yes" />
                 </conditional>
             </when>
         </conditional>
