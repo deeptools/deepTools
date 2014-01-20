@@ -483,9 +483,9 @@ def main(args):
 
     if args.kmeans is not None:
         k = args.kmeans
-        idx = hmcluster(hm.matrixDict[hm.matrixDict.keys()[0]], 
-                        k,
-                        method='kmeans')
+        idx = hm.hmcluster(hm.matrixDict[hm.matrixDict.keys()[0]], 
+                           k,
+                           method='kmeans')
 
         # split the matrix, region and averages in to clusters
         label = hm.matrixDict.keys()[0]
@@ -551,28 +551,6 @@ def main(args):
                args.whatToShow,
                image_format=args.plotFileFormat)
 
-def hmcluster(matrix, k, method='kmeans'):
-
-    matrix=np.asarray(matrix)
-    # replace nans for 0 otherwise kmeans produces a weird behaviour
-    matrix[np.isnan(matrix)]=0
-
-    if method == 'kmeans':
-        from scipy.cluster.vq import vq, kmeans
-
-        centroids,_ = kmeans(matrix, k)
-        # order the centroids in an attempt to
-        # get the same cluster order
-        order = np.argsort(centroids.mean(axis=1))
-        idx,_ = vq(matrix, centroids[order,])
-
-
-    if method == 'hierarchical':
-        from scipy.cluster.hierarchy import fcluster, linkage
-        Z = linkage(matrix, method='ward')
-        idx = fcluster(Z, k, criterion='maxclust')
-
-    return idx
 
 if __name__ == "__main__":
     args = parseArguments()

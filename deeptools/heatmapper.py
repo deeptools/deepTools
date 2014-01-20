@@ -793,3 +793,26 @@ class heatmapper:
         except IndexError:
             region['name'] = "No name"
         return region
+
+    @staticmethod
+    def hmcluster(matrix, k, method='kmeans'):
+
+        matrix = np.asarray(matrix)
+        # replace nans for 0 otherwise kmeans produces a weird behaviour
+        matrix[np.isnan(matrix)] = 0
+
+        if method == 'kmeans':
+            from scipy.cluster.vq import vq, kmeans
+
+            centroids, _ = kmeans(matrix, k)
+            # order the centroids in an attempt to
+            # get the same cluster order
+            order = np.argsort(centroids.mean(axis=1))
+            idx,_ = vq(matrix, centroids[order,])
+
+        if method == 'hierarchical':
+            from scipy.cluster.hierarchy import fcluster, linkage
+            Z = linkage(matrix, method='ward')
+            idx = fcluster(Z, k, criterion='maxclust')
+
+        return idx
