@@ -26,6 +26,5 @@ else:
     # of the deepTools instalation
     config_file = pkg_resources.resource_filename(__name__,
                                                   'config/deeptools.cfg')
-    print config_file
     config = ConfigParser.ConfigParser()
     config.readfp(open(config_file, 'r'))
