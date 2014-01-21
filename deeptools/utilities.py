@@ -92,7 +92,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
 
         # get the largest number of references (i.e. chromosome names)
         # from the list of bam files
-#        maxI = max( map( (lambda x: len(x.references)), bamFileHandlers ) )
+        # maxI = max( map( (lambda x: len(x.references)), bamFileHandlers ) )
         maxI = max( [ len(x.references) for x in bamFileHandlers ] )
         for i in range(0, maxI):
            for j in range(0, len(bamFileHandlers)):
@@ -119,9 +119,9 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
           chrSizes.append( (bamFileHandlers[0].references[i], bamFileHandlers[0].lengths[i] ) )
 
     outMessage.append( "\nUsing the following set of common chromosome names and lengths:\n" )
-    for i in range(0, len(chrSizes)):
-       outMessage.append( "{0:>15}\t{1:>10}\n".format(chrSizes[i][0], chrSizes[i][1]) )
-                
+    for chrSize in chrSizes:
+       outMessage.append( "{0:>15}\t{1:>10}\n".format(chrSize[0], chrSize[1]) )
+
     if verbose:
        sys.stderr.write("".join(outMessage) )
     return chrSizes
