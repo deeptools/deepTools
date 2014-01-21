@@ -133,6 +133,11 @@ def copyFileInMemory(filePath, suffix=''):
     moves the file into memory.
     This process speeds ups the multiprocessor access to such files
     """
+
+    # fallback for windows users
+    if os.name == 'nt':
+        return filePath
+
     import tempfile
     import shutil
     _tempFile = tempfile.NamedTemporaryFile( prefix="_corr_", 
@@ -142,5 +147,5 @@ def copyFileInMemory(filePath, suffix=''):
 
     memFileName = _tempFile.name
     _tempFile.close()
-    shutil.copyfile(filePath,memFileName)
+    shutil.copyfile( filePath, memFileName )
     return memFileName
