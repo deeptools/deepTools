@@ -1,5 +1,9 @@
 <macros>
     <xml name="bamCorrelate_mode_actions">
+        <param name="region" type="text" value=""
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -7,10 +11,6 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="region" type="text" value=""
-                    label="Region of the genome to limit the operation to"
-                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-
                 <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
                     label="Do not extend paired ends"
                     help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
@@ -43,7 +43,7 @@
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.4_e5c75f3e967be0fa1d6dbcbb63a0f992e1cdcd61">deepTools</requirement>
+            <requirement type="package" version="1.5.4_a44e2ea104c046ef2154b1f8e27f21d788a8b3b2">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
