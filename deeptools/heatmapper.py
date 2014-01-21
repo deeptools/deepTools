@@ -132,12 +132,12 @@ class heatmapper:
     @staticmethod
     def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
         # read BAM or scores file
-        if score_file.endswith(".bam"):
-            bamfile = pysam.Samfile(score_file, 'rb')
+        if score_file.endswith( ".bam" ):
+            bamfile = pysam.Samfile( score_file, 'rb' )
         else:
             from bx.bbi.bigwig_file import BigWigFile
-            bigwig = BigWigFile(file=open(score_file, 'r') )
-        # create an empty to store the matrix values
+            bigwig = BigWigFile( file=open( score_file, 'r' ) )
+        # create an empty matrix to store the values
         subMatrix = np.zeros((len(regions), matrixCols))
         subMatrix[:] = np.NAN
 
@@ -205,15 +205,6 @@ class heatmapper:
                                                    feature['end'])
             coverage = None
             if score_file.endswith(".bam"):
-                if feature['chrom'] not in bamfile.references:
-                    if parameters['verbose']:
-                        sys.stderr.write(
-                            "Skipping region located at unknown chromosome "
-                            " for {} {}:{}-{}.\n".format(feature['name'],
-                                                         feature['chrom'],
-                                                         feature['start'],
-                                                         feature['end']))
-                    continue
                 coverage = heatmapper.coverageFromBam(
                     bamfile, feature['chrom'], zones,
                     parameters['bin size'],
@@ -351,7 +342,32 @@ class heatmapper:
         return np.concatenate(cvgList)
 
     @staticmethod
+    def changeChromNames( chrom ):
+        """
+        Changes UCSC chromosome names to ensembl chromosome names and vice versa.
+        TODO: mapping from chromosome names ... e.g. mt, unknown_ ...
+        """
+        if chrom.startswith('chr'):
+            return chrom[3:]
+        else:
+            return 'chr%s' % chrom
+
+    @staticmethod
     def coverageFromBam(bamfile, chrom, zones, binSize, avgType):
+        if chrom not in bamfile.references:
+            chrom = heatmapper.changeChromNames( chrom )
+            if chrom not in bamfile.references:
+                if parameters['verbose']:
+                    sys.stderr.write(
+                        "Skipping region located at unknown chromosome "
+                        " for {} {}:{}-{}.\n".format(feature['name'],
+                                                     feature['chrom'],
+                                                     feature['start'],
+                                                     feature['end']))
+                return None
+            else:
+                sys.stderr.write( "Warning: Your chromosome names do not match. Please convert your input file to one consistent chromosome naming scheme." )
+
         start = zones[0][0]
         end = zones[-1][1]
         try:
@@ -371,23 +387,34 @@ class heatmapper:
     @staticmethod
     def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType,
                            nansAsZeros=False):
-        if zones[0][0] < 0:
-            valuesArray = np.zeros(zones[-1][1] - zones[0][0])
-            valuesArray[:] = np.nan
-            valuesArray[abs(zones[0][0]):] = \
-                bigwig.get_as_array(chrom, 0, zones[-1][1])
-        else:
-            valuesArray = bigwig.get_as_array(chrom, zones[0][0], zones[-1][1])
+
+        def _createValuesArray( bigwig, chrom, zones, ):
+            if zones[0][0] < 0:
+                valuesArray = np.zeros(zones[-1][1] - zones[0][0])
+                valuesArray[:] = np.nan
+                valuesArray[abs(zones[0][0]):] = \
+                    bigwig.get_as_array(chrom, 0, zones[-1][1])
+            else:
+                valuesArray = bigwig.get_as_array(chrom, zones[0][0], zones[-1][1])
+
+        valuesArray = _createValuesArray( bigwig, chrom, zones )
+
         try:
             valuesArray[0]
-        except TypeError:
-            # this error happens when bigwig returns nothing,
-            # For example when a chromosome
-            # is not known.
-            return None
-        except OverflowError as detail:
-            print detail
-            return None
+        except:
+            chrom = heatmapper.changeChromNames( chrom )
+            valuesArray = _createValuesArray( bigwig, chrom, zones )
+
+            try:
+                valuesArray[0]
+                sys.stderr.write( "Warning: Your chromosome names do not match. Please convert your input file to one consistent chromosome naming scheme." )
+            except TypeError:
+                # this error happens when bigwig returns nothing,
+                # For example when a chromosome is not known.
+                return None
+            except OverflowError as detail:
+                print detail
+                return None
 
         # replaces nans for zeros
         if nansAsZeros:
