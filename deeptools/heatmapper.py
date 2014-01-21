@@ -104,7 +104,6 @@ class heatmapper:
             # merge all valid regions
             regionList = np.concatenate([r[1] for r in res], axis=0)
 
-#            import ipdb;ipdb.set_trace()
             regions_no_score = sum([r[2] for r in res])
             if regions_no_score > len(regions) * 0.75:
                 file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
@@ -549,7 +548,7 @@ class heatmapper:
                 # this method to join np_array values
                 # keeps nans while converting them to strings
                 score = 0
-#                score = region['mean']
+                # score = region['mean']
                 if self.matrixAvgsDict is not None:
                     if np.ma.is_masked(self.matrixAvgsDict[label][j]):
                         score = 'nan'
