@@ -183,6 +183,11 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
 
     chrSizesFileName = _file2.name
 
+    # check if the file is empty
+    if os.stat( bedGraphPath ).st_size < 10:
+        print "Warning: The generated bedGraphFile was empty. Please adjust your deepTools settings and check your input files."
+        return False
+
     if sort:
         sort_cmd = cfg.config.get('external_tools', 'sort')
         # temporary file to store sorted bedgraph file
