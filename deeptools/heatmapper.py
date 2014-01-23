@@ -722,7 +722,8 @@ class heatmapper:
         duplicates = 0
         totalIntervals = 0
         includedIntervals = 0
-        for ginterval in GenomicIntervalReader(regions_file.readlines()):
+        for ginterval in GenomicIntervalReader(regions_file.readlines(),
+                                               fix_strand=True):
             totalIntervals += 1
             if ginterval.__str__()[0] == '#':
                 if includedIntervals > 1 and  \
