@@ -674,7 +674,7 @@ class heatmapper:
                 # If the label is from clustering, we add an additional column
                 # TODO: we need to decide if you want to go with an additional column
                 # also for other labels. Comment lines are not in the BED specification
-                # and can couse additional errors.
+                # and can cause additional errors.
                 if cluster:
                     file_handle.write(
                         '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
@@ -704,7 +704,8 @@ class heatmapper:
         matrix = np.ma.masked_invalid(matrix)
         return np.__getattribute__(avgType)(matrix, axis=0)
 
-    def filterGenomicIntervalFile( file_handle ):
+    @staticmethod
+    def filterGenomicIntervalFile(file_handle):
         """
         Filter track lines out of a GenomicIntervalFile, normally from UCSC.
         Return an iterator over the lines of file_handle.
@@ -732,7 +733,10 @@ class heatmapper:
         duplicates = 0
         totalIntervals = 0
         includedIntervals = 0
-        for ginterval in GenomicIntervalReader( filterGenomicIntervalFile( regions_file) ):
+        for ginterval in GenomicIntervalReader(
+            heatmapper.filterGenomicIntervalFile(regions_file),
+            fix_strand=True):
+
             totalIntervals += 1
             if ginterval.__str__().startswith('#'):
                 if includedIntervals > 1 and  \
