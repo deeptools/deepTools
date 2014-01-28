@@ -36,20 +36,29 @@ class heatmapper:
         """
         if parameters['body'] > 0 and \
                 parameters['body'] % parameters['bin size'] > 0:
-            print "Length of body to print has to be a multiple of --binSize"
-            exit()
+            sys.stderr.write("The --regionBodyLength has to be "
+                             "a multiple of --binSize.\nCurrently the "
+                             "values are {} {} for\nregionsBodyLength and "
+                             "binSize respectively".format(
+                    parameters['body'],
+                    parameters['bin size']))
+            exit(1)
 
         # the beforeRegionStartLength is extended such that
         # length is a multiple of binSize
         if parameters['downstream'] % parameters['bin size'] > 0:
-            print "Length of region after the body has to be a multiple of " \
-                "--binSize. Current value {}".format(parameters['downstream'])
-            exit()
+            sys.stderr.write(
+                "Length of region after the body has to be "
+                "a multiple of --binSize.\nCurrent value "
+                "is {}".format(parameters['downstream']))
+            exit(1)
 
         if parameters['upstream'] % parameters['bin size'] > 0:
-            print "Length of region before the body has to be a multiple of " \
-                "--binSize . Current value {}".format(parameters['upstream'])
-            exit()
+            sys.stderr.write(
+                "Length of region before the body has to be a multiple of "
+                "--binSize\nCurrent value is {}".format(
+                    parameters['upstream']))
+            exit(1)
 
         # determine the number of matrix columns based on the lengths
         # given by the user
@@ -65,10 +74,11 @@ class heatmapper:
             sum_len = sum(group_len)
             group_frac = [float(x)/sum_len for x in group_len]
             if min(group_frac) <= 0.002:
-                print "One of the groups defined in the bed file is " \
-                    "too small. Groups that are too small can't be plotted. " \
-                    "Please remove the group to continue."
-                exit()
+                sys.stderr.write(
+                    "One of the groups defined in the bed file is "
+                    "too small.\nGroups that are too small can't be plotted. "
+                    "Please remove the group to continue.")
+                exit(1)
         matrixDict = OrderedDict()
         matrixAvgsDict = OrderedDict()
         for label, regions in regionsDict.iteritems():
@@ -82,11 +92,6 @@ class heatmapper:
                                 matrixCols, parameters))
 
             if len(mp_args) > 1 and parameters['proc number'] > 1:
-                if parameters['verbose']:
-                    print "Label:'{}' ".format(label)
-                    print "total workers: {}, using {} " \
-                        "processors ".format(len(mp_args),
-                                             parameters['proc number'])
                 pool = multiprocessing.Pool(parameters['proc number'])
                 res = pool.map_async(compute_sub_matrix_wrapper,
                                      mp_args).get(9999999)
@@ -105,20 +110,17 @@ class heatmapper:
             regionList = np.concatenate([r[1] for r in res], axis=0)
 
             regions_no_score = sum([r[2] for r in res])
-            if regions_no_score > len(regions) * 0.75:
+            if regions_no_score > len(regions) * 0.75 or len(regionList) == 0:
                 file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
                 prcnt = 100 * float(regions_no_score) / len(regions)
-                print "\n\nWarning: {:.2f}% of regions are not associated "\
-                    "to a score in the given {} file. Check that the "\
-                    "chromosome  names from the BED file are consistent with "\
-                    "the chromosome names in the given {} file and that both "\
+                sys.stderr.write(
+                    "\n\nWarning: {:.2f}% of regions are *not* associated\n"
+                    "to any score in the given {} file. Check that the\n"
+                    "chromosome names from the BED file are consistent with\n"
+                    "the chromosome names in the given {} file and that both\n"
                     "files refer to the same species\n\n".format(prcnt,
                                                                  file_type,
-                                                                 file_type)
-
-            if len(regionList) == 0:
-                print "Error: could not compute values for any of the regions"
-                exit()
+                                                                 file_type))
 
             matrixAvgsDict[label] = np.mean(matrix, axis=1)
             matrixDict[label] = matrix
@@ -132,11 +134,11 @@ class heatmapper:
     @staticmethod
     def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
         # read BAM or scores file
-        if score_file.endswith( ".bam" ):
-            bamfile = pysam.Samfile( score_file, 'rb' )
+        if score_file.endswith(".bam"):
+            bamfile = pysam.Samfile(score_file, 'rb')
         else:
             from bx.bbi.bigwig_file import BigWigFile
-            bigwig = BigWigFile( file=open( score_file, 'r' ) )
+            bigwig = BigWigFile(file=open(score_file, 'r' ))
         # create an empty matrix to store the values
         subMatrix = np.zeros((len(regions), matrixCols))
         subMatrix[:] = np.NAN
@@ -149,11 +151,12 @@ class heatmapper:
             if parameters['body'] > 0 and \
                     feature['end'] - feature['start'] < parameters['bin size']:
                 if parameters['verbose']:
-                    print "Region shorter than window width " \
-                        "({}) {} {}:{}:{}. Skipping...".format(
-                        (feature['end'] - feature['start']),
-                        feature['name'], feature['chrom'],
-                        feature['start'], feature['end'])
+                    sys.stderr.write("A region that is shorter than "
+                                     "then bin size was found: "
+                                     "({}) {} {}:{}:{}. Skipping...".format(
+                            (feature['end'] - feature['start']),
+                            feature['name'], feature['chrom'],
+                            feature['start'], feature['end']))
                 continue
 
             if feature['strand'] == '-':
@@ -198,11 +201,12 @@ class heatmapper:
 
             if feature['start'] - b * parameters['bin size'] < 0:
                 if parameters['verbose']:
-                    print "region too close to chromosome start " \
-                        "for {} {}:{}:{}. ".format(feature['name'],
-                                                   feature['chrom'],
-                                                   feature['start'],
-                                                   feature['end'])
+                    sys.stderr.write(
+                        "Warning:region too close to chromosome start " \
+                            "for {} {}:{}:{}. ".format(feature['name'],
+                                                       feature['chrom'],
+                                                       feature['start'],
+                                                       feature['end']))
             coverage = None
             if score_file.endswith(".bam"):
                 coverage = heatmapper.coverageFromBam(
@@ -254,10 +258,10 @@ class heatmapper:
                     if parameters['verbose']:
                         sys.stderr.write(
                             "Skipping region with all scores equal to zero "
-                            "for {} {}:{}-{}.\n".format(feature['name'],
-                                                        feature['chrom'],
-                                                        feature['start'],
-                                                        feature['end']))
+                            "for\n'{}' {}:{}-{}.\n\n".format(feature['name'],
+                                                          feature['chrom'],
+                                                          feature['start'],
+                                                          feature['end']))
                     continue
                 elif parameters['verbose']:
                     sys.stderr.write(
@@ -299,33 +303,34 @@ class heatmapper:
         # remove empty rows
         subMatrix = subMatrix[0:j, :]
         if len(subRegions) != len(subMatrix[:, 0]):
-            print "regions lengths do not match"
+            sys.stderr.write("regions lengths do not match")
         return (subMatrix, subRegions, regions_no_score)
 
     @staticmethod
     def coverageFromArray(valuesArray, zones, binSize, avgType):
         try:
             valuesArray[0]
-        except IndexError:
-            print "values array %s, zones %s" % (valuesArray, zones)
+        except IndexError, TypeError:
+            sys.stderr.write("values array {}, zones {}\n".format(valuesArray,
+                                                                  zones))
 
         cvgList = []
         start = zones[0][0]
-        for zone_start, zone_end, num_bins  in zones:
+        for zone_start, zone_end, num_bins in zones:
             # the linspace is to get equally spaced positions along the range
             # If the gene is short the sampling regions could overlap,
             # if it is long, the sampling regions would be spaced
             countsList = []
 
             # this case happens when the downstream or upstream
-            # region is set to 0 
+            # region is set to 0
             if zone_start == zone_end:
                 continue
 
             (posArray, stepSize) = np.linspace(zone_start, zone_end, num_bins,
                                                endpoint=False,
                                                retstep=True)
-            stepSize = np.ceil(stepSize) 
+            stepSize = np.ceil(stepSize)
 
             for pos in np.floor(posArray):
                 indexStart = int(pos - start)
@@ -335,16 +340,17 @@ class heatmapper:
                     countsList.append(
                         heatmapper.myAverage(valuesArray[indexStart:indexEnd],
                                              avgType))
-                except:
-                    import ipdb;ipdb.set_trace()
-                    
+                except Exception as detail:
+                    sys.stderr.write("Exception found. "
+                                     "Message: {}\n".format(detail))
             cvgList.append(np.array(countsList))
         return np.concatenate(cvgList)
 
     @staticmethod
-    def changeChromNames( chrom ):
+    def changeChromNames(chrom):
         """
-        Changes UCSC chromosome names to ensembl chromosome names and vice versa.
+        Changes UCSC chromosome names to ensembl chromosome names
+        and vice versa.
         TODO: mapping from chromosome names ... e.g. mt, unknown_ ...
         """
         if chrom.startswith('chr'):
@@ -354,19 +360,27 @@ class heatmapper:
 
     @staticmethod
     def coverageFromBam(bamfile, chrom, zones, binSize, avgType):
+        """
+        currently this method is deactivated because is too slow.
+        It is preferred to create a coverage bigiwig file from the
+        bam file and then run heatmapper.
+        """
         if chrom not in bamfile.references:
-            chrom = heatmapper.changeChromNames( chrom )
+            chrom = heatmapper.changeChromNames(chrom)
             if chrom not in bamfile.references:
-                if parameters['verbose']:
-                    sys.stderr.write(
-                        "Skipping region located at unknown chromosome "
-                        " for {} {}:{}-{}.\n".format(feature['name'],
-                                                     feature['chrom'],
-                                                     feature['start'],
-                                                     feature['end']))
+                sys.stderr.write(
+                    "Skipping region located at unknown chromosome: {} "
+                    "Known chromosomes are: {}\n".format(chrom,
+                                                         bamfile.references))
                 return None
             else:
-                sys.stderr.write( "Warning: Your chromosome names do not match. Please convert your input file to one consistent chromosome naming scheme." )
+                sys.stderr.write("Warning: Your chromosome names do "
+                                 "not match.\n Please check that the "
+                                 "chromosome names in your BED "
+                                 "file correspond to the names in your "
+                                 "bigWig file.\n An empty line will be "
+                                 "added you your heatmap."
+                                 "scheme.\n")
 
         start = zones[0][0]
         end = zones[-1][1]
@@ -388,33 +402,70 @@ class heatmapper:
     def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType,
                            nansAsZeros=False):
 
-        def _createValuesArray( bigwig, chrom, zones, ):
+        """
+        uses bigwig file reader from bx-python
+        to query a region define by chrom and zones.
+        The ouput is an array that contains the bigwig
+        value per base pair. The summary over bins is
+        done in a later step when coverageFromArray is called.
+        This method is more reliable than quering the bins
+        directly from the bigwig, which should be more efficient.
+
+        By default, any region, even if no chromosome match is found
+        on the bigwig file, produces a result. In other words
+        no regions are skipped.
+
+        This is useful if several matrices wants to be merged
+        or if the sorted BED output of one computeMatrix operation
+        needs to be used for other cases
+        """
+
+        # intialize values array. The length of the array
+        # is the length of the region which is defined
+        # by the start of the first zone zones[0][0]
+        # to the end of the last zone zones[-1][1]
+        valuesArray = np.zeros(zones[-1][1] - zones[0][0])
+        if not nansAsZeros:
+            valuesArray[:] = np.nan
+        try:
+            bw_array = bigwig.get_as_array(chrom,
+                                           max(0, zones[0][0]),
+                                           zones[-1][1])
+        except Exception as detail:
+                sys.stderr.write("Exception found. Message: "
+                                 "{}\n".format(detail))
+
+        if bw_array is None:
+            # When bigwig.get_as_array queries a
+            # chromosome that is not known
+            # it returns None. Ideally, the bigwig should
+            # be able to inform the known chromosome names
+            # as is the case for bam files, but the
+            # bx-python function does not allow access to
+            # this info.
+            altered_chrom = heatmapper.changeChromNames(chrom)
+            bw_array = bigwig.get_as_array(chrom,
+                                           max(0, zones[0][0]),
+                                           zones[-1][1])
+            # test again if with the altered chromosome name
+            # the bigwig returns something.
+            if bw_array is None:
+                sys.stderr.write("Warning: Your chromosome names do "
+                                 "not match.\nPlease check that the "
+                                 "chromosome names in your BED "
+                                 "file\ncorrespond to the names in your "
+                                 "bigWig file.\nAn empty line will be "
+                                 "added you your heatmap.\nThe offending "
+                                 "chromosome name is "
+                                 "{}\n\n".format(chrom))
+
+        if bw_array is not None:
             if zones[0][0] < 0:
                 valuesArray = np.zeros(zones[-1][1] - zones[0][0])
                 valuesArray[:] = np.nan
-                valuesArray[abs(zones[0][0]):] = \
-                    bigwig.get_as_array(chrom, 0, zones[-1][1])
+                valuesArray[abs(zones[0][0]):] = bw_array
             else:
-                valuesArray = bigwig.get_as_array(chrom, zones[0][0], zones[-1][1])
-
-        valuesArray = _createValuesArray( bigwig, chrom, zones )
-
-        try:
-            valuesArray[0]
-        except:
-            chrom = heatmapper.changeChromNames( chrom )
-            valuesArray = _createValuesArray( bigwig, chrom, zones )
-
-            try:
-                valuesArray[0]
-                sys.stderr.write( "Warning: Your chromosome names do not match. Please convert your input file to one consistent chromosome naming scheme." )
-            except TypeError:
-                # this error happens when bigwig returns nothing,
-                # For example when a chromosome is not known.
-                return None
-            except OverflowError as detail:
-                print detail
-                return None
+                valuesArray = bw_array
 
         # replaces nans for zeros
         if nansAsZeros:
@@ -442,7 +493,8 @@ class heatmapper:
         self.lengthDict = OrderedDict()
         self.matrixAvgsDict = OrderedDict()
 
-    def readMatrixFile(self, matrix_file, verbose=None, default_group_name='label_1'):
+    def readMatrixFile(self, matrix_file, verbose=None,
+                       default_group_name='label_1'):
         # reads a bed file containing the position
         # of genomic intervals
         # In case a hash sign '#' is found in the
@@ -458,7 +510,7 @@ class heatmapper:
         parameters = dict()
         totalIntervals = 0
         includedIntervals = 0
-            
+
         fh = gzip.open(matrix_file)
         for line in fh:
             line = line.strip()
@@ -626,14 +678,15 @@ class heatmapper:
         """
         if len(group_labels) != len(self.matrixDict):
             sys.stderr.write(
-                "The number of groups does not match the number of labels "
-                "given. Please define {} different labels.\nThe labels "
+                "The number of groups does not match the number of labels\n"
+                "given. Please define {} different labels.\nThe labels\n"
                 "given were: {}\n.".format(len(self.matrixDict), group_labels))
             exit(1)
         elif len(set(group_labels)) != len(group_labels):
-            print "The group labels given contain repeated names. Please " \
-                "give a unique name to each value. The values given are " \
-                "{} ".format(group_labels)
+            sys.stderr.write(
+                "The group labels given contain repeated names. Please\n"
+                "give a unique name to each value. The values given are\n"
+                "{} \n".format(group_labels))
             exit(1)
 
         matrixDict = OrderedDict()
@@ -776,15 +829,15 @@ class heatmapper:
             # This assumes that the regions file given is sorted
             if prevInterval and prevInterval.chrom == ginterval.chrom and \
                     prevInterval.start == ginterval.start and \
-                    prevInterval.end == ginterval.end:
+                    prevInterval.end == ginterval.end and \
+                    prevInterval.strand == ginterval.strand:
                 if verbose:
-                    print "Gene in same region already included:  " \
-                        "{} {}:{}-{}. Skipping...".format(
-                        ginterval.fields[3],
-                        ginterval.chrom, ginterval.start,
-                        ginterval.end)
+                    sys.stderr.write("Gene in same region already included: "
+                                     "{} {}:{}-{}. Skipping...".format(
+                            ginterval.fields[3],
+                            ginterval.chrom, ginterval.start,
+                            ginterval.end))
                 duplicates += 1
-                continue
             else:
                 prevInterval = ginterval
 
@@ -797,11 +850,11 @@ class heatmapper:
         if len(regions):
             regionsDict[default_group_name] = np.array(regions)
 
-        if verbose:
-            print "{} ({:.2f}) regions covering the exact same " \
-                "interval were found".format(
-                duplicates,
-                float(duplicates) * 100 / totalIntervals)
+        if verbose and duplicates > 0:
+            sys.stderr.write(
+                "{} ({:.2f}) regions covering the exact same interval\n"
+                "were found".format(duplicates,
+                                    float(duplicates) * 100 / totalIntervals))
 
         return regionsDict
 

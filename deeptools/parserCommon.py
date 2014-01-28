@@ -107,28 +107,28 @@ def getParentArgParse(args=None, binSize=True):
                               default=50)
 
     optional.add_argument('--region', '-r',
-                        help='Region of the genome to limit the operation '
-                        'to - this is useful when testing parameters to '
-                        'reduce the computing time. The format is '
-                        'chr:start:end, for example --region chr10 or '
-                        '--region chr10:456700:891000.',
-                        metavar="CHR:START:END",
-                        required=False,
-                        type=genomicRegion)
+                          help='Region of the genome to limit the operation '
+                          'to - this is useful when testing parameters to '
+                          'reduce the computing time. The format is '
+                          'chr:start:end, for example --region chr10 or '
+                          '--region chr10:456700:891000.',
+                          metavar="CHR:START:END",
+                          required=False,
+                          type=genomicRegion)
 
     optional.add_argument('--numberOfProcessors', '-p',
-                        help='Number of processors to use. Type "max/2" to '
-                        'use half the maximun number of processors or "max" '
-                        'to use all available processors.',
-                        metavar="INT",
-                        type=numberOfProcessors,
-                        default=cfg.config.get('general',
-                                               'default_proc_number'),
-                        required=False)
+                          help='Number of processors to use. Type "max/2" to '
+                          'use half the maximun number of processors or "max" '
+                          'to use all available processors.',
+                          metavar="INT",
+                          type=numberOfProcessors,
+                          default=cfg.config.get('general',
+                                                 'default_proc_number'),
+                          required=False)
 
     optional.add_argument('--verbose', '-v',
-                        help='Set to see processing messages.',
-                        action='store_true')
+                          help='Set to see processing messages.',
+                          action='store_true')
 
     return parser
 
@@ -195,13 +195,14 @@ def checkBigWig(string):
     is installed and is executable.
     """
     import os
+    import sys
     if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
         return string
 
     if string == 'bigwig':
         import pkg_resources
         config_file = pkg_resources.resource_filename(__name__,
-                                                  'config/deeptools.cfg')
+                                                      'config/deeptools.cfg')
         import config as cfg
         bedgraph_to_bigwig = cfg.config.get('external_tools',
                                             'bedgraph_to_bigwig')
@@ -217,10 +218,10 @@ def checkBigWig(string):
                 "the program using the PATH.\n\n" \
                 "The program can be downloaded from here: " \
                 "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
-                "The output is set by default to 'bedgraph' ".format(
+                "The output is set by default to 'bedgraph'\n".format(
                     config_file)
 
-            print msg
+            sys.stderr.write(msg)
             return 'bedgraph'
 
     return string
@@ -425,9 +426,12 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           '(e.g. major satellites) that may bias the average '
                           'values.')
 
-    optional.add_argument('--verbose',
-                          help='set to yes, to see Warning messages and '
-                          'other information.',
+    # in contrast to other tools, 
+    # computeMatrix by default outputs
+    # messages and the --quiet flag supresses them
+    optional.add_argument('--quiet', '-q',
+                          help='Set to remove any warning or processing '
+                          'messages.',
                           action='store_true')
 
     optional.add_argument('--scale',
@@ -559,6 +563,15 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '--onePlotPerGroup is set.',
             choices=['lines', 'fill', 'std', 'overlapped_lines'],
             default='lines')
+
+        optional.add_argument('--colors',
+                              help='List of colors to use '
+                              'for the plotted lines. Color names '
+                              'and html hex strings (e.g. #eeff22) '
+                              'are accepted. The color names should '
+                              'be given separated by spaces. For example '
+                              '--colors red blue green ',
+                              nargs='+')
 
     elif mode == 'heatmap':
         optional.add_argument('--sortRegions',
