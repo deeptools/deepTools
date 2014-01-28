@@ -704,6 +704,16 @@ class heatmapper:
         matrix = np.ma.masked_invalid(matrix)
         return np.__getattribute__(avgType)(matrix, axis=0)
 
+    def filterGenomicIntervalFile( file_handle ):
+        """
+        Filter track lines out of a GenomicIntervalFile, normally from UCSC.
+        Return an iterator over the lines of file_handle.
+        """
+        for line in file_handle:
+            if line.startswith('browser') or line.startswith('track'):
+                continue
+            yield line
+
     @staticmethod
     def getRegionsAndGroups(regions_file, onlyMultiplesOf=1,
                             default_group_name='genes',
@@ -722,10 +732,9 @@ class heatmapper:
         duplicates = 0
         totalIntervals = 0
         includedIntervals = 0
-        for ginterval in GenomicIntervalReader(regions_file.readlines(),
-                                               fix_strand=True):
+        for ginterval in GenomicIntervalReader( filterGenomicIntervalFile( regions_file) ):
             totalIntervals += 1
-            if ginterval.__str__()[0] == '#':
+            if ginterval.__str__().startswith('#'):
                 if includedIntervals > 1 and  \
                         includedIntervals - regionGroups[-1][0] > 1:
                     label = ginterval.__str__()[1:]
