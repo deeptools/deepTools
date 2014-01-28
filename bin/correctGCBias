@@ -528,8 +528,8 @@ def main(args):
         # concatenate intermediary bedgraph files
         for tempFileName in res:
             if tempFileName:
-            # concatenate all intermediate tempfiles into one
-            # bedgraph file
+                # concatenate all intermediate tempfiles into one
+                # bedgraph file
                 shutil.copyfileobj(open(tempFileName, 'rb'), _temp_bg_file)
                 os.remove(tempFileName)
 

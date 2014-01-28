@@ -117,8 +117,8 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
             else:
                 tileCoverage.append(coverage[index][tileIndex])
 
-#        if  zerosToNans == True and sum(tileCoverage) == 0.0:
-#            continue
+        # if zerosToNans == True and sum(tileCoverage) == 0.0:
+        #   continue
 
         value = func(tileCoverage, funcArgs)
         """
