@@ -47,7 +47,7 @@
             #end if
 
             #if str($advancedOpt.colors.value) != "None":
-                --colors '$advancedOpt.colors'
+                --colors ' '.join( ['$color' for $color in $advancedOpt.colors.split()] )
             #end if
 
             $advancedOpt.onePlotPerGroup
