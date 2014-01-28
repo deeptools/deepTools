@@ -90,7 +90,7 @@ To install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
 
-<a name="mac"/></a>
+<a name="mac"></a>
 ### Installation on a MAC
 
 Although the installation of deepTools itself is quite simple,
