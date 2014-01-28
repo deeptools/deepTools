@@ -90,7 +90,7 @@ To install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
 
-<a name="mac"/>
+<a name="mac"/></a>
 ### Installation on a MAC
 
 Although the installation of deepTools itself is quite simple,
@@ -179,20 +179,19 @@ remember: for support, questions, or feature requests contact: deeptools@googleg
 [bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
 [FASTQ]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file of raw reads (almost straight out of the sequencer)"
 
-[bamCorrelate]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
-[bamFingerprint]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
-[computeGCBias]: https://github.com/fidelram/deepTools/blob/master/manual/QC.md
+[bamCorrelate]: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamCorrelate
+[bamFingerprint]: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamFingerprint
+[computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
+[bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage
+[bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+[computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
+[heatmapper]: https://github.com/fidelram/deepTools/wiki/Visualizations
+[profiler]: https://github.com/fidelram/deepTools/wiki/Visualizations
 
-[bamCoverage]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
-[bamCompare]: https://github.com/fidelram/deepTools/blob/master/manual/normalizations.md
-
-[computeMatrix]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
-[heatmapper]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
-[profiler]: https://github.com/fidelram/deepTools/blob/master/manual/visualizations.md
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
 [Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
 [Anaconda Scientific Python Distribution]: https://store.continuum.io/cshop/anaconda/
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
 
-[Wiki Start Page](Home) | [Code](https://github.com/fidelram/deepTools "gitHub repository of deepTools") | [deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de) | [FAQ](FAQ)
+[Wiki Start Page](https://github.com/fidelram/deepTools/wiki) | [deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de) | [FAQ](https://github.com/fidelram/deepTools/wiki/FAQ)
