@@ -43,7 +43,7 @@
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.4_a44e2ea104c046ef2154b1f8e27f21d788a8b3b2">deepTools</requirement>
+            <requirement type="package" version="1.5.4_eabc1c3842f4b6367fb41904061a3b95c9a0ce0c">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
