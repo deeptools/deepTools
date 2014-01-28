@@ -388,8 +388,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                                    "max", "std", "sum"],
                           help='Define the type of statistic that should be '
                           'used over the bin size range. The '
-                          'options are: "mean", "median", "min", "max", "sum" and '
-                          '"std". The default is "mean".')
+                          'options are: "mean", "median", "min", "max", "sum" '
+                          'and "std". The default is "mean".')
 
     optional.add_argument('--missingDataAsZero',
                           help='[only for bigwig input] Set to "yes", if '
@@ -554,14 +554,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'on the average type selected. The "fill" option '
             'fills the region between zero and the profile '
             'curve. The fill in color is semi transparent to '
-            'distinguish different profiles. The "std" option '
+            'distinguish different profiles. The "se" option '
             'colors the region between the profile and the '
-            'standard deviation of the data. As in the case of '
+            'standard error of the data. As in the case of '
             'fill, a semi-transparent color is used. The option '
             '"overlapped_lines" plots each region values, one on '
             'top of the other; this option only works if '
             '--onePlotPerGroup is set.',
-            choices=['lines', 'fill', 'std', 'overlapped_lines'],
+            choices=['lines', 'fill', 'se', 'overlapped_lines'],
             default='lines')
 
         optional.add_argument('--colors',

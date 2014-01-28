@@ -74,15 +74,22 @@ def plot_single(ax, ma, average_type, color, label,
     # only plot the average profiles without error regions
     if plot_type != 'overlapped_lines':
         ax.plot(sumry, color=color, label=label, alpha=0.9)
-#        ax.plot(sumry, label=label, alpha=0.9)
         x = np.arange(len(sumry))
     if plot_type == 'fill':
         ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
 
-    elif plot_type == 'std':
-        std = np.std(ma, axis=0)
-        ax.fill_between(x, sumry, sumry + std, facecolor=color, alpha=0.2)
-        ax.fill_between(x, sumry, sumry - std, facecolor=color, alpha=0.2)
+    elif plot_type == 'se':  #standard error
+        std = np.std(ma, axis=0)/np.sqrt(len(ma))
+        alpha = 0.2
+        # add the alpha channed to the color tuple
+        f_color = [c for c in color[:-1]] + [alpha]
+        # ideally the edgecolor should be None,
+        # but when generating a pdf image an edge is still
+        # drawn.
+        ax.fill_between(x, sumry, sumry + std, facecolor=f_color,
+                        edgecolor=f_color, lw=0.01)
+        ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
+                        edgecolor=f_color, lw=0.01)
 
     elif plot_type == 'overlapped_lines':
         ax.patch.set_facecolor('black')
@@ -199,7 +206,7 @@ def plotProfile(hm, outFileName,
 
     if not color_list:
         cmap_plot = plt.get_cmap('jet')
-        color_list = cmap_plot([np.arange(numGroups)/numGroups])
+        color_list = cmap_plot(np.arange(numGroups)/numGroups)
     else:
         from matplotlib import colors
         if len(color_list) < numGroups:
