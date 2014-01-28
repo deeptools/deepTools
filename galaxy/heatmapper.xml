@@ -147,7 +147,6 @@
 
                 <param name="whatToShow" type="select" label="What to show" help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
                     <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
-                    <option value="plot only">summary plot only</option>
                     <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
                     <option value="heatmap only">heatmap only</option>
                     <option value="heatmap and colorbar">heatmap and colorbar</option>
