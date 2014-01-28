@@ -47,7 +47,7 @@
             #end if
 
             #if str($advancedOpt.colors.value) != "None":
-                --colors ' '.join( ['$color' for $color in $advancedOpt.colors.split()] )
+                --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
             #end if
 
             $advancedOpt.onePlotPerGroup
@@ -113,15 +113,9 @@
                 </param>
                 <param name="regionsLabel" type="text" value="genes" size="30" label="Labels for the regions plotted in the heatmap" help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
                 <param name="plotTitle" type="text" value="" size="30" label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
-                <param name="colors" type="text" value="" size="40" label="List of colors to use for the plotted lines" help="Color names and html hex strings (e.g. #eeff22) are accepted. The color names should be given separated by spaces. (--colors red blue green)" >
-                    <sanitizer invalid_char=",">
-                        <valid initial="string.letters,string.digits">
-                            <add value=" " /> 
-                            <add value="#" />
-                        </valid>
-                    </sanitizer>
+                <param name="colors" type="text" value="" size="40" label="List of colors to use for the plotted lines" help="Color names and html hex strings (e.g. #eeff22) are accepted. The color names should be given separated by spaces. (--colors red blue green)">
+                    <validator type="expression" message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
-
 
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" label="Do one plot per group" help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
                 <param name="yMin" type="float" value="" size="3" label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
