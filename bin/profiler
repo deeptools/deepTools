@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+from __future__ import division
 import sys
-
 
 import argparse
 import numpy as np
@@ -73,8 +73,8 @@ def plot_single(ax, ma, average_type, color, label,
     sumry = np.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     if plot_type != 'overlapped_lines':
-#        ax.plot(sumry, color=color, label=label, alpha=0.6)
-        ax.plot(sumry, label=label, alpha=0.9)
+        ax.plot(sumry, color=color, label=label, alpha=0.9)
+#        ax.plot(sumry, label=label, alpha=0.9)
         x = np.arange(len(sumry))
     if plot_type == 'fill':
         ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
@@ -103,7 +103,8 @@ def plotProfile(hm, outFileName,
                 plotWidth=8,
                 onePlotPerGroup=False,
                 plotType='simple',
-                image_format=None):
+                image_format=None,
+                color_list=None):
 
     """
     Using the hm matrix, makes a line plot per group 
@@ -196,8 +197,23 @@ def plotProfile(hm, outFileName,
 
     fig.suptitle(plotTitle, y=1 - (0.06 / figHeight))
 
-    cmap_plot = plt.get_cmap('jet')
+    if not color_list:
+        cmap_plot = plt.get_cmap('jet')
+        color_list = cmap_plot([np.arange(numGroups)/numGroups])
+    else:
+        from matplotlib import colors
+        if len(color_list) < numGroups:
+            sys.stderr.write("\nThe given list of colors is too small, "
+                       "at least {} colors are needed\n".format(numGroups))
+            exit(1)
+        for color in color_list:
+            if not colors.is_color_like(color):
+                sys.stderr.write("\nThe color name {} is not valid. Check "
+                                 "the name or try with a html hex string "
+                                 "for example #eeff22".format(color))
 
+                exit(1)
+                
     # add_axes( rect ) where rect is [left, bottom, width, height] and
     # all quantities are in fractions of figure width and height.
     # summary plot
@@ -221,7 +237,7 @@ def plotProfile(hm, outFileName,
             ax = fig.add_subplot(numGroups, 1, index + 1, label=label)
 #            ax = fig.add_axes([left, bottom, width, sumFracHeight])
             plot_single(ax, ma, averageType,
-                         cmap_plot(1. * index / numGroups), label,
+                         color_list[index], label,
                          plot_type=plotType)
             ax.set_ylim(yMin, yMax)
             ax.axes.set_xticks(xTicks)
@@ -241,7 +257,7 @@ def plotProfile(hm, outFileName,
         else:
             # add new lines to existing plot
             plot_single(ax, ma, averageType,
-                         cmap_plot(1. * index / numGroups), label,
+                         color_list[index], label,
                          plot_type=plotType)
 
     # i.e if multipleLines in one plot:
@@ -339,7 +355,8 @@ def main(args):
                 args.plotWidth,
                 args.onePlotPerGroup,
                 plotType=args.plotType,
-                image_format=args.plotFileFormat)
+                image_format=args.plotFileFormat,
+                color_list=args.colors)
 
 
 if __name__ == "__main__":
