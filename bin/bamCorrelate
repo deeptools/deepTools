@@ -21,21 +21,20 @@ def parseArguments(args=None):
 
 bamCorrelate can be run in two modes: bins and BED-file.
 
-In the bins mode, the correlation is computed based
-on randomly sampled bins of equal length. The user
-has to specify the number of bins. This is useful
-to assess the overall similarity of BAM files.
+In the bins mode, the correlation is computed based on randomly
+sampled bins of equal length. The user has to specify the number of
+bins. This is useful to assess the overall similarity of BAM files.
 
-In the BED-file options, the user supplies a list
-of genomic regions in BED format in addition to
-the list of BAM files. bamCorrelate subsequently
-uses this list to compare the read coverages for
-these regions only. This can be used, for example,
-to compare the ChIP-seq coverages of two different
-samples for a set of peak regions.
+In the BED-file options, the user supplies a list of genomic regions
+in BED format in addition to the list of BAM files. bamCorrelate
+subsequently uses this list to compare the read coverages for these
+regions only. This can be used, for example, to compare the ChIP-seq
+coverages of two different samples for a set of peak regions.
 
-Type %(prog)s bins -h or %(prog)s BED-file -h for 
-detailed help.
+For detailed help type:
+
+%(prog)s bins -h or
+%(prog)s BED-file -h
 
 """,
             epilog='An example usage is:\n%(prog)s bins '
