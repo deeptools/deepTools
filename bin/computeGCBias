@@ -126,7 +126,8 @@ def getRequiredArgs():
                           help='Fragment length used for the sequencing. If '
                           'paired-end reads are used the fragment length is '
                           'computed based from the bam file',
-                          type=int)
+                          type=int,
+                          required=True)
 
     group = parser.add_argument_group('Output options')
 
