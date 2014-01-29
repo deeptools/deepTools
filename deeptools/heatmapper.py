@@ -39,7 +39,7 @@ class heatmapper:
             sys.stderr.write("The --regionBodyLength has to be "
                              "a multiple of --binSize.\nCurrently the "
                              "values are {} {} for\nregionsBodyLength and "
-                             "binSize respectively".format(
+                             "binSize respectively\n".format(
                     parameters['body'],
                     parameters['bin size']))
             exit(1)
@@ -50,13 +50,13 @@ class heatmapper:
             sys.stderr.write(
                 "Length of region after the body has to be "
                 "a multiple of --binSize.\nCurrent value "
-                "is {}".format(parameters['downstream']))
+                "is {}\n".format(parameters['downstream']))
             exit(1)
 
         if parameters['upstream'] % parameters['bin size'] > 0:
             sys.stderr.write(
                 "Length of region before the body has to be a multiple of "
-                "--binSize\nCurrent value is {}".format(
+                "--binSize\nCurrent value is {}\n".format(
                     parameters['upstream']))
             exit(1)
 
@@ -77,7 +77,7 @@ class heatmapper:
                 sys.stderr.write(
                     "One of the groups defined in the bed file is "
                     "too small.\nGroups that are too small can't be plotted. "
-                    "Please remove the group to continue.")
+                    "Please remove the group to continue.\n")
                 exit(1)
         matrixDict = OrderedDict()
         matrixAvgsDict = OrderedDict()
@@ -110,12 +110,18 @@ class heatmapper:
             regionList = np.concatenate([r[1] for r in res], axis=0)
 
             regions_no_score = sum([r[2] for r in res])
+            if len(regions) == 0:
+                sys.stderr.write(
+                    "\nERROR: BED file does not contain any valid regions. "
+                    "Please check\n")
+                exit(1)
             if regions_no_score == len(regions):
-                exit("None of the BED regions could be found in the bigWig"
+                sys.stderr.write(
+                    "\nERROR: None of the BED regions could be found in the bigWig"
                      "file.\nPlease check that the bigwig file is valid and "
                      "that the chromosome names between the BED file and "
-                     "the bigWig file correspond to each other")
-
+                     "the bigWig file correspond to each other\n")
+                exit(1)
             if regions_no_score > len(regions) * 0.75 or len(regionList) == 0:
                 file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
                 prcnt = 100 * float(regions_no_score) / len(regions)
@@ -159,7 +165,7 @@ class heatmapper:
                 if parameters['verbose']:
                     sys.stderr.write("A region that is shorter than "
                                      "then bin size was found: "
-                                     "({}) {} {}:{}:{}. Skipping...".format(
+                                     "({}) {} {}:{}:{}. Skipping...\n".format(
                             (feature['end'] - feature['start']),
                             feature['name'], feature['chrom'],
                             feature['start'], feature['end']))
@@ -210,7 +216,7 @@ class heatmapper:
                 if parameters['verbose']:
                     sys.stderr.write(
                         "Warning:region too close to chromosome start "
-                        "for {} {}:{}:{}. ".format(feature['name'],
+                        "for {} {}:{}:{}.\n".format(feature['name'],
                                                    feature['chrom'],
                                                    feature['start'],
                                                    feature['end']))
@@ -313,7 +319,7 @@ class heatmapper:
         # remove empty rows
         subMatrix = subMatrix[0:j, :]
         if len(subRegions) != len(subMatrix[:, 0]):
-            sys.stderr.write("regions lengths do not match")
+            sys.stderr.write("regions lengths do not match\n")
         return (subMatrix, subRegions, regions_no_score)
 
     @staticmethod
