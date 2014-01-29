@@ -3,6 +3,7 @@
     <expand macro="requirements"/>
     <expand macro="stdio" />
     <macros>
+        <token name="@BINARY@">heatmapper</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
