@@ -46,8 +46,11 @@ def parseArguments(args=None):
         except:
             args.__setattr__(attr, None)
 
-    args.plotHeight = args.plotHeight if args.plotHeight > 3 and \
-        args.plotHeight <= 100 else 10
+
+    if  args.plotHeight < 0.5:
+        args.plotHeight = 0.5
+    elif args.plotHeight > 100:
+        args.plotHeight = 100
 
     if args.regionsLabel != 'genes':
         args.regionsLabel = \
@@ -160,7 +163,7 @@ def plotProfile(hm, outFileName,
     if debug:
         print (figWidth, figHeight)
     # figsize: w,h tuple in inches
-    fig = plt.figure(figsize=(figWidth, figHeight), dpi=360)
+    fig = plt.figure(figsize=(figWidth, figHeight))
 
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']

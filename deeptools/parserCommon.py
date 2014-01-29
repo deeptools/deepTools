@@ -536,8 +536,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--plotHeight',
                               help='height in cm. The default for the plot '
-                              'height is 5 centimeters. The minimum value is '
-                              '3 cm.',
+                              'height is 5 centimeters.',
                               type=float,
                               default=5)
 
