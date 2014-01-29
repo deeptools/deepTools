@@ -249,7 +249,14 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     axdendro.set_xticks([])
     axdendro.set_yticks([])
     cmap = plt.get_cmap(colormap)
-
+    # this line simply makes a new cmap, based on the original
+    # colormap that goes from 0.0 to 0.9
+    # This is done to avoid colors that
+    # are too dark at the end of the range that do not offer
+    # a good contrast between the correlation numbers that are 
+    # plotted on black. 
+    # 
+    cmap = cmap.from_list(colormap + "clipped", cmap([0.0, 0.9]))
     # Plot distance matrix.
     axmatrix = fig.add_axes([0.13,0.1,0.6,0.7])
     index = Z['leaves']
