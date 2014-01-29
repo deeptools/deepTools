@@ -177,7 +177,7 @@
                         <option value="yes">Yes, I used multiple regions.</option>
                         <option value="no">No, I used only one region.</option>
                     </param>
-                    <when value="no">
+                    <when value="yes">
                         <conditional name="clustering">
                             <param name="clustering_options" type="select" label="Clustering algorithm">
                                 <option value="none">No clustering</option>
@@ -190,7 +190,7 @@
                             <when value="none" />
                         </conditional>
                     </when>
-                    <when value="yes" />
+                    <when value="no" />
                 </conditional>
             </when>
         </conditional>
