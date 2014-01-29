@@ -110,6 +110,12 @@ class heatmapper:
             regionList = np.concatenate([r[1] for r in res], axis=0)
 
             regions_no_score = sum([r[2] for r in res])
+            if regions_no_score == len(regions):
+                exit("None of the BED regions could be found in the bigWig"
+                     "file.\nPlease check that the bigwig file is valid and "
+                     "that the chromosome names between the BED file and "
+                     "the bigWig file correspond to each other")
+
             if regions_no_score > len(regions) * 0.75 or len(regionList) == 0:
                 file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
                 prcnt = 100 * float(regions_no_score) / len(regions)
@@ -190,7 +196,8 @@ class heatmapper:
                 zones = [(end - b * parameters['bin size'], end, b ),
                          (end, end + a * parameters['bin size'], a )]
             elif parameters['ref point'] == 'center':  # at the region center
-                middlePoint = feature['start'] + (feature['end'] - feature['start']) / 2
+                middlePoint = feature['start'] + (feature['end'] -
+                                                  feature['start']) / 2
                 zones = [(middlePoint - b * parameters['bin size'],
                           middlePoint, b),
                          (middlePoint,
@@ -202,11 +209,11 @@ class heatmapper:
             if feature['start'] - b * parameters['bin size'] < 0:
                 if parameters['verbose']:
                     sys.stderr.write(
-                        "Warning:region too close to chromosome start " \
-                            "for {} {}:{}:{}. ".format(feature['name'],
-                                                       feature['chrom'],
-                                                       feature['start'],
-                                                       feature['end']))
+                        "Warning:region too close to chromosome start "
+                        "for {} {}:{}:{}. ".format(feature['name'],
+                                                   feature['chrom'],
+                                                   feature['start'],
+                                                   feature['end']))
             coverage = None
             if score_file.endswith(".bam"):
                 coverage = heatmapper.coverageFromBam(
@@ -221,19 +228,21 @@ class heatmapper:
                     parameters['bin avg type'],
                     parameters['missing data as zero'])
 
-                if coverage is None:
-                    regions_no_score += 1
-                    if parameters['verbose']:
-                        sys.stderr.write(
-                            "No data was found for region "
-                            "{} {}:{}-{}. Skipping...\n".format(
-                                feature['name'], feature['chrom'],
-                                feature['start'], feature['end']))
+            """ 
+            if coverage is None:
+                regions_no_score += 1
+                if parameters['verbose']:
+                    sys.stderr.write(
+                        "No data was found for region "
+                        "{} {}:{}-{}. Skipping...\n".format(
+                            feature['name'], feature['chrom'],
+                            feature['start'], feature['end']))
 
-                    coverage = np.zeros(matrixCols)
-                    if not parameters['missing data as zero']:
-                        coverage[:] = np.nan
-                    continue
+                coverage = np.zeros(matrixCols)
+                if not parameters['missing data as zero']:
+                    coverage[:] = np.nan
+                continue
+            """
             try:
                 temp = coverage.copy()
                 temp[np.isnan(temp)] = 0
@@ -254,14 +263,15 @@ class heatmapper:
                 totalScore = 0
 
             if totalScore == 0:
+                regions_no_score += 1
                 if parameters['skip zeros']:
                     if parameters['verbose']:
                         sys.stderr.write(
                             "Skipping region with all scores equal to zero "
                             "for\n'{}' {}:{}-{}.\n\n".format(feature['name'],
-                                                          feature['chrom'],
-                                                          feature['start'],
-                                                          feature['end']))
+                                                             feature['chrom'],
+                                                             feature['start'],
+                                                             feature['end']))
                     continue
                 elif parameters['verbose']:
                     sys.stderr.write(
@@ -379,7 +389,7 @@ class heatmapper:
                                  "chromosome names in your BED "
                                  "file correspond to the names in your "
                                  "bigWig file.\n An empty line will be "
-                                 "added you your heatmap."
+                                 "added to your heatmap."
                                  "scheme.\n")
 
         start = zones[0][0]
@@ -392,7 +402,8 @@ class heatmapper:
                 valuesArray[indexStart:indexEnd] += 1
         except ValueError:
             sys.stderr.write(
-                "Value out of range for region %s %s %s\n" % (chrom, start, end))
+                "Value out of range for region {}s {} {}"
+                "\n".format(chrom, start, end))
             return np.array([0])  # return something inocuous
 
         return heatmapper.coverageFromArray(valuesArray, zones,
@@ -444,7 +455,7 @@ class heatmapper:
             # bx-python function does not allow access to
             # this info.
             altered_chrom = heatmapper.changeChromNames(chrom)
-            bw_array = bigwig.get_as_array(chrom,
+            bw_array = bigwig.get_as_array(altered_chrom,
                                            max(0, zones[0][0]),
                                            zones[-1][1])
             # test again if with the altered chromosome name
@@ -846,7 +857,7 @@ class heatmapper:
                     prevInterval.strand == ginterval.strand:
                 if verbose:
                     sys.stderr.write("Gene in same region already included: "
-                                     "{} {}:{}-{}. Skipping...".format(
+                                     "{} {}:{}-{}. Skipping...\n".format(
                             ginterval.fields[3],
                             ginterval.chrom, ginterval.start,
                             ginterval.end))
