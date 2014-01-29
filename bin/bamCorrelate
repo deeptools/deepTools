@@ -249,7 +249,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     axdendro.set_xticks([])
     axdendro.set_yticks([])
     cmap = plt.get_cmap(colormap)
-        
+
     # Plot distance matrix.
     axmatrix = fig.add_axes([0.13,0.1,0.6,0.7])
     index = Z['leaves']
@@ -259,11 +259,13 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                           cmap=cmap, extent=(0, M, 0, M), vmax=vmax, vmin=vmin)
     axmatrix.yaxis.tick_right()
     axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
-    axmatrix.set_yticklabels(np.array(labels).astype('str')[index], fontsize='small')
+    axmatrix.set_yticklabels(np.array(labels).astype('str')[index],
+                             fontsize=14)
 
     axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
-    axmatrix.set_xticklabels(np.array(labels).astype('str')[index], fontsize='small', 
-                             rotation='vertical')
+    axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
+                             fontsize=14,
+                             rotation=45)
 
 #    axmatrix.set_xticks([])
     # Plot colorbar.

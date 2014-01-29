@@ -247,8 +247,6 @@ class heatmapper:
                 temp = coverage.copy()
                 temp[np.isnan(temp)] = 0
                 totalScore = np.sum(temp)
-                if totalScore == 0:
-                    regions_no_score += 1
             except:
                 if parameters['verbose']:
                     sys.stderr.write(
@@ -265,14 +263,15 @@ class heatmapper:
                 totalScore = 0
 
             if totalScore == 0:
+                regions_no_score += 1
                 if parameters['skip zeros']:
                     if parameters['verbose']:
                         sys.stderr.write(
                             "Skipping region with all scores equal to zero "
                             "for\n'{}' {}:{}-{}.\n\n".format(feature['name'],
-                                                          feature['chrom'],
-                                                          feature['start'],
-                                                          feature['end']))
+                                                             feature['chrom'],
+                                                             feature['start'],
+                                                             feature['end']))
                     continue
                 elif parameters['verbose']:
                     sys.stderr.write(
@@ -858,7 +857,7 @@ class heatmapper:
                     prevInterval.strand == ginterval.strand:
                 if verbose:
                     sys.stderr.write("Gene in same region already included: "
-                                     "{} {}:{}-{}. Skipping...".format(
+                                     "{} {}:{}-{}. Skipping...\n".format(
                             ginterval.fields[3],
                             ginterval.chrom, ginterval.start,
                             ginterval.end))
