@@ -40,6 +40,7 @@
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <xml name="requirements">
         <requirements>
+            <requirement type="binary">@BINARY@</requirement>
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
@@ -53,6 +54,7 @@
             <requirement type="package" version="12-2013">bx-python</requirement>
             <yield />
         </requirements>
+        <version_command>@BINARY@ --version</version_command>
     </xml>
     <xml name="stdio">
         <stdio>

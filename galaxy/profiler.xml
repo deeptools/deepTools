@@ -5,6 +5,7 @@
     <expand macro="requirements" />
     <expand macro="stdio" />
     <macros>
+        <token name="@BINARY@">profiler</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
@@ -42,11 +43,11 @@
 
             --regionsLabel '$advancedOpt.regionsLabel'
 
-            #if str($advancedOpt.plotTitle.value) != "None":
+            #if str($advancedOpt.plotTitle).strip() != "":
                 --plotTitle '$advancedOpt.plotTitle'
             #end if
 
-            #if str($advancedOpt.colors.value) != "None":
+            #if str($advancedOpt.colors).strip() != "":
                 --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
             #end if
 
