@@ -1,8 +1,9 @@
-<tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.2">
+<tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.3">
     <description>correlates pairs of BAM files</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
     <macros>
+        <token name="@BINARY@">bamCorrelate</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
@@ -39,12 +40,12 @@
             --BED $mode.region_file
         #end if
 
-        ## options available in both modes
-        #if $mode.advancedOpt.showAdvancedOpt == "yes":
+        #### options available in both modes
+        #if str($mode.region.value) != '':
+            --region '$mode.region'
+        #end if
 
-            #if str($mode.advancedOpt.region.value) != '':
-            --region '$mode.advancedOpt.region'
-            #end if
+        #if $mode.advancedOpt.showAdvancedOpt == "yes":
 
             $mode.advancedOpt.doNotExtendPairedEnds
             $mode.advancedOpt.ignoreDuplicates

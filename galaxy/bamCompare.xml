@@ -1,8 +1,9 @@
-<tool id="deeptools_bamCompare" name="bamCompare" version="1.0.2">
+<tool id="deeptools_bamCompare" name="bamCompare" version="1.0.3">
     <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference. (bam2bigwig)</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
     <macros>
+        <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <command>

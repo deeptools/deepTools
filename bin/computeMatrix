@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import argparse
 import sys
 
-import argparse
-
-# own tools
 from deeptools import parserCommon
 from deeptools import heatmapper
 from deeptools._version import __version__
@@ -14,26 +12,32 @@ from deeptools._version import __version__
 def parseArguments(args=None):
     parser = \
         argparse.ArgumentParser(
-            formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            description='This tool summarizes and prepares an intermediary '
-            'file containing scores associated with genomic regions '
-            'that can be used afterwards to plot a heatmap or a profile. '
-            'Typically, these genoic regions are genes, but '
-            'any other regions defined in a BED or GFF '
-            'format can be used. This tool can also be used to '
-            'filter and sort regions according to their score.'
-            'Type %(prog)s reference-point --help to learn more about'
-            'the specific parameters.',
-            epilog='An example usage is:\n %(prog)s reference-point -S '
-            '<biwig file> -R <bed file> -b 1000\n\n')
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            description="""
+
+This tool summarizes and prepares an intermediary file containing
+scores associated with genomic regions that can be used afterwards to
+plot a heatmap or a profile.  Typically, these genoic regions are
+genes, but any other regions defined in a BED or GFF format can be
+used. This tool can also be used to filter and sort regions according
+to their score.
+
+To learn more about the specific parameters type:
+
+%(prog)s reference-point --help or
+%(prog)s scale-regions --help
+
+""",
+            epilog='An example usage is:\n  %(prog)s reference-point -S '
+            '<biwig file> -R <bed file> -b 1000\n \n')
 
     parser.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(__version__))
 
     subparsers = parser.add_subparsers(
-        help="%(prog)s has two main output options: 'scale-regions', "
-        "and 'reference-point.",
-        dest='command')
+        title='Commands',
+        dest='command',
+        metavar='')
 
     # scale-regions mode options
     scaleRegions = subparsers.add_parser(
@@ -45,9 +49,9 @@ def parseArguments(args=None):
         help="In the scale-regions mode, all regions in the BED/GFF file are "
         "stretched or shrunk to the same length (bp) that is indicated by "
         "the user.",
-        usage='An example usage is:\n %(prog)s -S '
-        '<biwig file> -R <bed file> -b 1000\n\n')
-    
+        usage='An example usage is:\n  %(prog)s -S '
+        '<biwig file> -R <bed file> -b 1000\n \n')
+
 
     # reference point arguments
     refpoint = subparsers.add_parser(
@@ -60,11 +64,13 @@ def parseArguments(args=None):
         "(e.g start of region). In the reference-point, mode only those "
         "genomic positions before (downstream) and/or after (upstream) the "
         "reference point will be plotted.",
-        usage='An example usage is:\n %(prog)s -S '
-        '<biwig file> -R <bed file> -a 3000 -b 3000\n\n')
-
+        usage='An example usage is:\n  %(prog)s -S '
+        '<biwig file> -R <bed file> -a 3000 -b 3000\n\ n')
 
     args = parser.parse_args(args)
+
+    if args.quiet is False:
+        args.verbose = True
 
     if args.command == 'scale-regions':
         args.nanAfterEnd = False
@@ -72,9 +78,9 @@ def parseArguments(args=None):
     elif args.command == 'reference-point':
         if args.beforeRegionStartLength == 0 and \
                 args.afterRegionStartLength == 0:
-            print "\nUpstrean and downstream regions are both set to 0. "\
-                "Nothing to output. Maybe you want to use "\
-                "the scale-regions mode?\n"
+            sys.stderr.write("\nUpstrean and downstream regions are both "
+                             "set to 0. Nothing to output. Maybe you want to "
+                             "use the scale-regions mode?\n")
             exit()
 
     return(args)

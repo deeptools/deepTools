@@ -1,8 +1,9 @@
-<tool id="deeptools_bamCoverage" name="bamCoverage" version="1.0.2">
+<tool id="deeptools_bamCoverage" name="bamCoverage" version="1.0.3">
     <description> generates a coverage bigWig file from a given BAM file.  Multiple options are available to count reads and normalize coverage. (bam2bigwig)</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
     <macros>
+        <token name="@BINARY@">bamCoverage</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <command>

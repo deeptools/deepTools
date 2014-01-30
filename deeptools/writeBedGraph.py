@@ -117,8 +117,8 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
             else:
                 tileCoverage.append(coverage[index][tileIndex])
 
-#        if  zerosToNans == True and sum(tileCoverage) == 0.0:
-#            continue
+        # if zerosToNans == True and sum(tileCoverage) == 0.0:
+        #   continue
 
         value = func(tileCoverage, funcArgs)
         """
@@ -182,6 +182,14 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     _file2.close()
 
     chrSizesFileName = _file2.name
+
+    # check if the file is empty
+    if os.stat(bedGraphPath).st_size < 10:
+        import sys
+        sys.stderr.write(
+            "Error: The generated bedGraphFile was empty. Please adjust\n"
+            "your deepTools settings and check your input files.")
+        exit(1)
 
     if sort:
         sort_cmd = cfg.config.get('external_tools', 'sort')

@@ -21,35 +21,33 @@ def parseArguments(args=None):
 
 bamCorrelate can be run in two modes: bins and BED-file.
 
-In the bins mode, the correlation is computed based
-on randomly sampled bins of equal length. The user
-has to specify the number of bins. This is useful
-to assess the overall similarity of BAM files.
+In the bins mode, the correlation is computed based on randomly
+sampled bins of equal length. The user has to specify the number of
+bins. This is useful to assess the overall similarity of BAM files.
 
-In the BED-file options, the user supplies a list
-of genomic regions in BED format in addition to
-the list of BAM files. bamCorrelate subsequently
-uses this list to compare the read coverages for
-these regions only. This can be used, for example,
-to compare the ChIP-seq coverages of two different
-samples for a set of peak regions.
+In the BED-file options, the user supplies a list of genomic regions
+in BED format in addition to the list of BAM files. bamCorrelate
+subsequently uses this list to compare the read coverages for these
+regions only. This can be used, for example, to compare the ChIP-seq
+coverages of two different samples for a set of peak regions.
 
-Type %(prog)s bins -h or %(prog)s BED-file -h for 
-detailed help.
+For detailed help type:
+
+%(prog)s bins -h or
+%(prog)s BED-file -h
 
 """,
-            epilog='An example usage is:\n%(prog)s bins '
+            epilog='An example usage is:\n  %(prog)s bins '
             '-b treatment.bam input.bam \ \n'
-            '-o correlation.png -f 200 -method pearson',
+            '-o correlation.png -f 200 -method pearson\n \n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers(
-        help="%(prog)s has two main options: 'bins', "
-        "and 'BED-file.",
+        title="Commands",
         dest='command',
-)
+        metavar='')
 
     parentParser = parserCommon.getParentArgParse(binSize=False)
     bamParser = parserCommon.bam()
@@ -65,9 +63,9 @@ detailed help.
         help="In the bins mode, the correlation is computed based on equal "
         "length bins. The number of bins to be used has to be specified.",
         add_help=False,
-        usage='An example usage is:\n %(prog)s '
+        usage='An example usage is:\n  %(prog)s '
         '-b treatment.bam input.bam '
-        '-o correlation.png -f 200 -method pearson\n\n')
+        '-o correlation.png -f 200 -method pearson\n \n')
 
     # BED file arguments
     BEDmode = subparsers.add_parser(
@@ -83,7 +81,7 @@ detailed help.
         "files. Then the correlation is computed.",
         usage='An example usage is:\n %(prog)s '
         '--BED genes.bed -b treatment.bam input.bam '
-        '-o correlation.png -f 200 -method pearson\n\n',
+        '-o correlation.png -f 200 -method pearson\n \n',
         add_help=False)
 
     args = parser.parse_args(args)
@@ -250,7 +248,14 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     axdendro.set_xticks([])
     axdendro.set_yticks([])
     cmap = plt.get_cmap(colormap)
-        
+    # this line simply makes a new cmap, based on the original
+    # colormap that goes from 0.0 to 0.9
+    # This is done to avoid colors that
+    # are too dark at the end of the range that do not offer
+    # a good contrast between the correlation numbers that are 
+    # plotted on black. 
+    # 
+    cmap = cmap.from_list(colormap + "clipped", cmap([0.0, 0.8]))
     # Plot distance matrix.
     axmatrix = fig.add_axes([0.13,0.1,0.6,0.7])
     index = Z['leaves']
@@ -260,11 +265,14 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                           cmap=cmap, extent=(0, M, 0, M), vmax=vmax, vmin=vmin)
     axmatrix.yaxis.tick_right()
     axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
-    axmatrix.set_yticklabels(np.array(labels).astype('str')[index], fontsize='small')
+    axmatrix.set_yticklabels(np.array(labels).astype('str')[index],
+                             fontsize=14)
 
     axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
-    axmatrix.set_xticklabels(np.array(labels).astype('str')[index], fontsize='small', 
-                             rotation='vertical')
+    axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
+                             fontsize=14,
+                             rotation=45,
+                             ha='left')
 
 #    axmatrix.set_xticks([])
     # Plot colorbar.

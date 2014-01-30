@@ -1,8 +1,9 @@
-<tool id="deeptools_heatmapper" name="heatmapper" version="1.0.2">
+<tool id="deeptools_heatmapper" name="heatmapper" version="1.0.3">
     <description>creates a heatmap for a score associated to genomic regions</description>
     <expand macro="requirements"/>
     <expand macro="stdio" />
     <macros>
+        <token name="@BINARY@">heatmapper</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
@@ -147,7 +148,6 @@
 
                 <param name="whatToShow" type="select" label="What to show" help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
                     <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
-                    <option value="plot only">summary plot only</option>
                     <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
                     <option value="heatmap only">heatmap only</option>
                     <option value="heatmap and colorbar">heatmap and colorbar</option>
@@ -178,7 +178,7 @@
                         <option value="yes">Yes, I used multiple regions.</option>
                         <option value="no">No, I used only one region.</option>
                     </param>
-                    <when value="no">
+                    <when value="yes">
                         <conditional name="clustering">
                             <param name="clustering_options" type="select" label="Clustering algorithm">
                                 <option value="none">No clustering</option>
@@ -191,7 +191,7 @@
                             <when value="none" />
                         </conditional>
                     </when>
-                    <when value="yes" />
+                    <when value="no" />
                 </conditional>
             </when>
         </conditional>
