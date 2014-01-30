@@ -37,18 +37,16 @@ For detailed help type:
 %(prog)s BED-file -h
 
 """,
-            epilog='An example usage is:\n%(prog)s bins '
+            epilog='An example usage is:\n  %(prog)s bins '
             '-b treatment.bam input.bam \ \n'
-            '-o correlation.png -f 200 -method pearson',
+            '-o correlation.png -f 200 -method pearson\n \n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers(
-        help="%(prog)s has two main options: 'bins', "
-        "and 'BED-file.",
-        dest='command',
-)
+        title="Commands",
+        metavar='')
 
     parentParser = parserCommon.getParentArgParse(binSize=False)
     bamParser = parserCommon.bam()
@@ -64,9 +62,9 @@ For detailed help type:
         help="In the bins mode, the correlation is computed based on equal "
         "length bins. The number of bins to be used has to be specified.",
         add_help=False,
-        usage='An example usage is:\n %(prog)s '
+        usage='An example usage is:\n  %(prog)s '
         '-b treatment.bam input.bam '
-        '-o correlation.png -f 200 -method pearson\n\n')
+        '-o correlation.png -f 200 -method pearson\n \n')
 
     # BED file arguments
     BEDmode = subparsers.add_parser(
@@ -82,7 +80,7 @@ For detailed help type:
         "files. Then the correlation is computed.",
         usage='An example usage is:\n %(prog)s '
         '--BED genes.bed -b treatment.bam input.bam '
-        '-o correlation.png -f 200 -method pearson\n\n',
+        '-o correlation.png -f 200 -method pearson\n \n',
         add_help=False)
 
     args = parser.parse_args(args)

@@ -85,6 +85,13 @@ def getRequiredArgs():
                           metavar='2bit FILE',
                           required=True)
 
+    required.add_argument('--fragmentLength', '-l',
+                          help='Fragment length used for the sequencing. If '
+                          'paired-end reads are used the fragment length is '
+                          'computed based from the bam file',
+                          type=int,
+                          required=True)
+
     # define the arguments
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument("--help", "-h", action="help",
@@ -121,13 +128,6 @@ def getRequiredArgs():
                           'underrepresented in the genome.',
                           type=argparse.FileType('r'),
                           metavar='BED file')
-
-    optional.add_argument('--fragmentLength', '-l',
-                          help='Fragment length used for the sequencing. If '
-                          'paired-end reads are used the fragment length is '
-                          'computed based from the bam file',
-                          type=int,
-                          required=True)
 
     group = parser.add_argument_group('Output options')
 
