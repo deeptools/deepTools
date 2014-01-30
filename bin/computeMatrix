@@ -36,6 +36,7 @@ To learn more about the specific parameters type:
 
     subparsers = parser.add_subparsers(
         title='Commands',
+        dest='command',
         metavar='')
 
     # scale-regions mode options

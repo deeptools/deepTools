@@ -46,6 +46,7 @@ For detailed help type:
                           version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers(
         title="Commands",
+        dest='command',
         metavar='')
 
     parentParser = parserCommon.getParentArgParse(binSize=False)
@@ -254,7 +255,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     # a good contrast between the correlation numbers that are 
     # plotted on black. 
     # 
-    cmap = cmap.from_list(colormap + "clipped", cmap([0.0, 0.9]))
+    cmap = cmap.from_list(colormap + "clipped", cmap([0.0, 0.8]))
     # Plot distance matrix.
     axmatrix = fig.add_axes([0.13,0.1,0.6,0.7])
     index = Z['leaves']
@@ -270,7 +271,8 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
     axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
                              fontsize=14,
-                             rotation=45)
+                             rotation=45,
+                             ha='left')
 
 #    axmatrix.set_xticks([])
     # Plot colorbar.
