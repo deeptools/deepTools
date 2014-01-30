@@ -187,7 +187,7 @@ def plotMatrix(hm, outFileName,
         figHeight = topBorder + bottomBorder + numGroups * \
             (sumFigHeightInches + sumFigSpacer) + heatmapHeightInches
     else:
-        figHeight = topBorder + bottomBorder + (numGroups / 2) * \
+        figHeight = topBorder + bottomBorder + (np.ceil(float(numGroups) / 2)) * \
             spaceBetweenClusterNames + sumFigHeightInches + sumFigSpacer + \
             heatmapHeightInches
 
