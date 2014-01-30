@@ -81,7 +81,7 @@
 
             $advancedOpt.onePlotPerGroup
 
-            #if $advancedOpt.used_multiple_regions.used_multiple_regions_options == 'yes':
+            #if $advancedOpt.used_multiple_regions.used_multiple_regions_options == 'no':
                 #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
                     #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
                         --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
@@ -178,7 +178,7 @@
                         <option value="yes">Yes, I used multiple regions.</option>
                         <option value="no">No, I used only one region.</option>
                     </param>
-                    <when value="yes">
+                    <when value="no">
                         <conditional name="clustering">
                             <param name="clustering_options" type="select" label="Clustering algorithm">
                                 <option value="none">No clustering</option>
@@ -191,7 +191,7 @@
                             <when value="none" />
                         </conditional>
                     </when>
-                    <when value="no" />
+                    <when value="yes" />
                 </conditional>
             </when>
         </conditional>
