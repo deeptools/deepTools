@@ -56,6 +56,43 @@
         </requirements>
         <version_command>@BINARY@ --version</version_command>
     </xml>
+
+    <xml name="kmeans_clustering">
+
+        <conditional name="used_multiple_regions">
+            <param name="used_multiple_regions_options" type="select" 
+                label="Did you used multiple regions in ComputeMatrix?"
+                help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
+                <option value="yes">Yes, I used multiple regions.</option>
+                <option value="no">No, I used only one region.</option>
+            </param>
+            <when value="no">
+                <conditional name="clustering">
+                    <param name="clustering_options" type="select" label="Clustering algorithm">
+                        <option value="none">No clustering</option>
+                        <option value="kmeans">Kmeans clustering</option>
+                    </param>
+                    <when value="kmeans">
+                        <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute" 
+                            help="When this option is set, then the matrix is split into clusters using the kmeans algorithm. Only works for data that is not grouped, otherwise only the first group will be clustered. If more specific clustering methods are required it is advisable to save the underlying matrix and run the clustering using other software. The plotting of the clustering may fail (Error: Segmentation fault) if a cluster has very few members compared to the total number or regions. (default: None)."/>
+                    </when>
+                    <when value="none" />
+                </conditional>
+            </when>
+            <when value="yes" />
+        </conditional>
+
+    </xml>
+    <token name="@kmeans_clusterin@">
+        #if $advancedOpt.used_multiple_regions.used_multiple_regions_options == 'no':
+            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
+                #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
+                    --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
+                #end if
+            #end if
+        #end if
+    </token>
+
     <xml name="stdio">
         <stdio>
             <exit_code range="1:" />

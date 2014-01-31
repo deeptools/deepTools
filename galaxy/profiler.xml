@@ -64,6 +64,9 @@
             #if str($advancedOpt.yAxisLabel.value) != "None":
                 --yAxisLabel '$advancedOpt.yAxisLabel'
             #end if
+
+            @kmeans_clusterin@
+
         #end if
     </command>
     <inputs>
@@ -123,6 +126,9 @@
                 <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
                 <param name="xAxisLabel" type="text" value="gene distance (bp)" size="50" label="Description for the x-axis label" />
                 <param name="yAxisLabel" type="text" value="" size="50" label="Description for the y-axis label for the top panel" />
+
+                <expand macro="kmeans_clustering" />
+
             </when>
         </conditional>
     </inputs>
