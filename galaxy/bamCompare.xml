@@ -37,7 +37,13 @@
           #if $comparison.normalization.type=='rpkm':
             --normalizeUsingRPKM
           #elif $comparison.normalization.type=='1x':
-            --normalizeTo1x $comparison.normalization.normalizeTo1x
+
+            #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+                --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
+            #else:
+                --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
+            #end if
+
           #end if
       #end if
 
@@ -123,9 +129,7 @@
                     <when value="rpkm" />
                     <when value="no" />
                     <when value="1x">
-                        <param name="normalizeTo1x" type="integer" value="2150570000"
-                            label="Report normalized coverage to 1x sequenceing depth"
-                            help ="Sequencing depth is defined as the total number of mapped reads * fragment length / effective genome size. To use this option, the effective genome size has to be given. Common values are: mm9: 2150570000, hg19:2451960000, dm3:121400000 and ce10:93260000."/>
+                        <expand macro="effectiveGenomeSize" />
                     </when>
                 </conditional>
             </when>
