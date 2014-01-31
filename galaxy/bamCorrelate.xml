@@ -150,17 +150,18 @@ pairs of BAM files.
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
+You can find more details in the `bamCorrelate wiki`_.
+
+.. _bamCorrelate wiki: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+
+
 **Output files**:
 
 - diagnostic plot produced by bamCorrelate is a clustered heatmap displaying the values for each pair-wise correlation, see below for an example
 - data matrix (optional) in case you want to plot the correlation values using a different program, e.g. R, this matrix can be used
 
 
-
-
 -----
-
-.. class:: infomark
 
 @REFERENCES@
 

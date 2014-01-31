@@ -143,13 +143,16 @@ The resulting read counts can be normalized using either a given scaling factor,
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
+You can find more details in the `bamCoverage wiki`_.
+
+.. _bamCoverage wiki: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage
+
+
 **Output files**:
 
 - coverage file either in bigWig or bedGraph format
 
 -----
-
-.. class:: infomark
 
 @REFERENCES@
 

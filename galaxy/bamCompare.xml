@@ -207,13 +207,18 @@ length reported in the BAM file is used by default.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
+You can find more details in the `bamCompare wiki`_.
+
+.. _bamCompare wiki: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+
+
 **Output files**:
 
 - same as for bamCoverage, except that you now obtain 1 coverage file that is based on 2 BAM files.
 
 -----
 
-.. class:: infomark
+@REFERENCES@
 
     </help>
 </tool>

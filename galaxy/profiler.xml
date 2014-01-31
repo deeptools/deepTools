@@ -152,9 +152,12 @@ many different ways to color and display the plots.
    :alt: Meta-gene profile of Rna Polymerase II
 
 
------
+You can find more details in the `profiler wiki`_.
 
-.. class:: infomark
+.. _profiler wiki: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-profiler
+
+
+-----
 
 @REFERENCES@
 

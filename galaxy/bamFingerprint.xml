@@ -134,14 +134,17 @@ few bins which corresponds to high, narrow enrichments seen for transcription fa
 .. image:: $PATH_TO_IMAGES/QC_fingerprint.png
 
 
+You can find more details in the `bamFingerprint wiki`_.
+
+.. _bamFingerprint wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamFingerprint
+
+
 **Output files**:
 
 - Diagnostic plot
 - Data matrix of raw counts
 
 -----
-
-.. class:: infomark
 
 @REFERENCES@
 

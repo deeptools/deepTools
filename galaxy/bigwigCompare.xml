@@ -94,9 +94,8 @@ then the number of reads found in each BAM file are counted for such bins and
 finally a summarizing value is reported. This value can be the ratio of the
 number of reads per bin, the log2 of the ratio, the sum or the difference.
 
------
 
-.. class:: infomark
+-----
 
 @REFERENCES@
 

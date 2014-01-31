@@ -198,9 +198,12 @@ e.g. one plot per chromosome, simply supply each group as an individual BED file
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
------
+You can find more details in the `heatmapper wiki`_.
 
-.. class:: infomark
+.. _heatmapper wiki: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-heatmapper
+
+
+-----
 
 @REFERENCES@
 

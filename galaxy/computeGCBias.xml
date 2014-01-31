@@ -132,6 +132,11 @@ usually shows a significant bias towards reads with high GC content (>50%)
 .. image:: $PATH_TO_IMAGES/QC_GCplots_input.png
 
 
+You can find more details in the `computeGCBias wiki`_.
+
+.. _computeGCBias wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
+
+
 **Output files**:
 
 - Diagnostic plot
@@ -145,8 +150,6 @@ usually shows a significant bias towards reads with high GC content (>50%)
 
 
 -----
-
-.. class:: infomark
 
 @REFERENCES@
 
