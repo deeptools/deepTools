@@ -208,7 +208,7 @@ regions according to their score.
    :alt: Relationship between computeMatrix, heatmapper and profiler
 
 
-You can find more details in the `computeMarix wiki`_.
+You can find more details in the `computeMatrix wiki`_.
 
 .. _computeMatrix wiki: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-computeMatrix
 
