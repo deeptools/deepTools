@@ -187,15 +187,19 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded. 
                     Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly. 
                     See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
-                <option value="2150570000">mm9 (2150570000)</option>
-                <option value="2451960000">hg19 (2451960000)</option>
-                <option value="121400000">dm3 (121400000)</option>
                 <option value="93260000">ce10 (93260000)</option>
+                <option value="121400000">dm3 (121400000)</option>
+                <option value="2451960000" selected="true">hg19 (2451960000)</option>
+                <option value="2150570000">mm9 (2150570000)</option>
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
                 <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
             </when>
+            <when value="2150570000" />
+            <when value="2451960000" />
+            <when value="121400000" />
+            <when value="93260000" />
         </conditional>
     </xml>
 
