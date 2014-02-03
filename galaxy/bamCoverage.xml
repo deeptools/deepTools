@@ -32,7 +32,7 @@
         #end if
 
         #if str($region).strip() != '':
-            --region 'region'
+            --region '$region'
         #end if
 
         #if $advancedOpt.showAdvancedOpt == "yes":
