@@ -25,10 +25,11 @@
                 --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
             #end if
 
+            #if str(region).strip() != '':
+                --region 'region'
+            #end if
+
             #if $advancedOpt.showAdvancedOpt == "yes":
-                #if str($advancedOpt.region.value) != '':
-                    --region '$advancedOpt.region'
-                #end if
 
                 --sampleSize '$advancedOpt.sampleSize'
                 --regionSize '$advancedOpt.regionSize'
@@ -57,6 +58,9 @@
         <param name="fragmentLength" type="integer" value="300" min="1"
             label="Fragment length used for the sequencing"
             help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
+
+        <expand macro="region_limit_operation" />
+
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -64,10 +68,6 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="region" type="text" value=""
-                    label="Region of the genome to limit the operation to"
-                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-
                 <param name="sampleSize" type="integer" value="50000000" min="1"
                     label="Number of sampling points to be considered" />
 

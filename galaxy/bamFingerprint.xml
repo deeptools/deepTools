@@ -30,12 +30,11 @@
         --plotFileFormat 'png'
       #end if
 
-      #if $advancedOpt.showAdvancedOpt == "yes":
-        
-        #if str($advancedOpt.region.value) != '':
-          --region '$advancedOpt.region'
-        #end if
+      #if str(region).strip() != '':
+          --region 'region'
+      #end if
 
+      #if $advancedOpt.showAdvancedOpt == "yes":
         --binSize '$advancedOpt.binSize'
         --numberOfSamples '$advancedOpt.numberOfSamples'
 
@@ -54,8 +53,12 @@
     <inputs>
         <expand macro="multiple_input_bams" />
 
+
         <param name="fragmentLength" type="integer" value="200" min="1"
            label="Length of the average fragment size"/>
+
+        <expand macro="region_limit_operation" />
+
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -63,10 +66,6 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="region" type="text" value=""
-                   label="Region of the genome to limit the operation to"
-                   help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-                
                 <param name="binSize" type="integer" value="10000" min="1" 
                    label="Bin size in bp"
                    help="Length in base pairs for a window used to sample the genome."/>

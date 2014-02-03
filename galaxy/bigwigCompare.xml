@@ -19,10 +19,11 @@
 
         --ratio $comparison_type
 
+        #if str(region).strip() != '':
+            --region 'region'
+        #end if
+
         #if $advancedOpt.showAdvancedOpt == "yes":
-          #if str($advancedOpt.region.value) != '':
-            --region '$advancedOpt.region'
-          #end if
 
           --missingDataAsZero $advancedOpt.missingDataAsZero
           --scaleFactors '$advancedOpt.scaleFactor1:$advancedOpt.scaleFactor2'
@@ -50,6 +51,8 @@
             <option value="bedgraph">bedgraph</option>
         </param>
 
+        <expand macro="region_limit_operation" />
+
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -60,10 +63,6 @@
                 <param name="binSize" type="integer" value="50" min="1" 
                     label="Bin size in bp"
                     help="Size of the bins in bp for the ouput of the bigwig/bedgraph file "/>
-
-                <param name="region" type="text" value=""
-                    label="Region of the genome to limit the operation to"
-                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
 
                 <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
                     label ="Treat missing data as zero"

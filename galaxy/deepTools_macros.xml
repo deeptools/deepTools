@@ -1,8 +1,7 @@
 <macros>
     <xml name="bamCorrelate_mode_actions">
-        <param name="region" type="text" value=""
-            label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
+        <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -37,6 +36,13 @@
             </when>
         </conditional>
     </xml>
+    
+    <xml name="region_limit_operation">
+        <param name="region" type="text" value=""
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+    </xml>
+    
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <xml name="requirements">
         <requirements>
