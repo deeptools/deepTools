@@ -41,8 +41,9 @@
             --binSize '$advancedOpt.binSize'  
         #end if
 
-        #set newoutFileName="corrected."+str($outFileFormat)
-        --correctedFile $newoutFileName;
+        ###set newoutFileName="corrected."+str($outFileFormat)
+        ##--correctedFile $newoutFileName;
+        --correctedFile "corrected.bam";
 
         mv $newoutFileName $outFileName
     </command>
@@ -52,12 +53,13 @@
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
 
+        <!--
         <param name="outFileFormat" type="select" label="File format of the output">
             <option value="bam">bam</option>
             <option value="bw">bigwig</option>
             <option value="bg">bedgraph</option>
         </param>
-
+        -->
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
@@ -75,11 +77,11 @@
     </inputs>
     <outputs>
         <data format="bam" name="outFileName">
-            <change_format>
+            <!--<change_format>
                 <when input="outFileFormat" value="bw" format="bigwig" />
                 <when input="outFileFormat" value="bam" format="bam" />
                 <when input="outFileFormat" value="bg" format="bedgraph" />
-            </change_format>
+            </change_format>-->
         </data>
     </outputs>
     <help>
