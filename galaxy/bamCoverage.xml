@@ -31,7 +31,7 @@
             --scaleFactor $scaling.scaleFactor
         #end if
 
-        #if str(region).strip() != '':
+        #if str($region).strip() != '':
             --region 'region'
         #end if
 

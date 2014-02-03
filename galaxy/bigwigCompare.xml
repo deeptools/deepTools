@@ -19,7 +19,7 @@
 
         --ratio $comparison_type
 
-        #if str(region).strip() != '':
+        #if str($region).strip() != '':
             --region 'region'
         #end if
 
