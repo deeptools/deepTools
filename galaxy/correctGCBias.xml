@@ -45,7 +45,8 @@
         ##--correctedFile $newoutFileName;
         --correctedFile "corrected.bam";
 
-        mv $newoutFileName $outFileName
+        ##mv $newoutFileName $outFileName
+        mv "corrected.bam" $outFileName
     </command>
     <inputs>
         <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
