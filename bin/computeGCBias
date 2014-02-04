@@ -25,7 +25,6 @@ debug = 0
 
 global_vars = dict()
 
-
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse(binSize=False)
     requiredArgs = getRequiredArgs()
@@ -37,7 +36,7 @@ def parseArguments(args=None):
         'The resulting GC bias can later be used to plot '
         'the bias or to correct the bias.',
         usage='An example usage is:\n %(prog)s '
-        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit [options]',
+        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt [options]',
         conflict_handler='resolve',
         add_help=False)
 
@@ -92,7 +91,7 @@ def getRequiredArgs():
                           type=int,
                           required=True)
 
-    # define the arguments
+    # define the optional arguments
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
