@@ -1,3 +1,4 @@
+import sys
 import argparse
 import config as cfg
 from deeptools._version import __version__
@@ -194,33 +195,10 @@ def checkBigWig(string):
     Checks if the path to USCS bedGraphToBigWig as set in the config
     is installed and is executable.
     """
-    import os
-    import sys
-    if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
-        return string
-
     if string == 'bigwig':
-        import pkg_resources
-        config_file = pkg_resources.resource_filename(__name__,
-                                                      'config/deeptools.cfg')
-        import config as cfg
-        bedgraph_to_bigwig = cfg.config.get('external_tools',
-                                            'bedgraph_to_bigwig')
-        if not os.path.isfile(bedgraph_to_bigwig) or \
-                not os.access(bedgraph_to_bigwig, os.X_OK):
-            msg = "\nYour computer does not have the UCSC program \n" \
-                "bedGraphToBigWig installed or configured in the \n" \
-                "deepTools config file. In order to output bigwig \n" \
-                "files this tool needs to be installed and referred in the \n"\
-                "configuration file located at:\n\n{}\n\n" \
-                "Optionally, setting the environment variable \n"\
-                "DEEP_TOOLS_NO_CONFIG will search \n" \
-                "the program using the PATH.\n\n" \
-                "The program can be downloaded from here: " \
-                "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
-                "The output is set by default to 'bedgraph'\n".format(
-                    config_file)
-
+        if not cfg.checkProgram('bedGraphToBigWig', 'h',
+                                'http://hgdownload.cse.ucsc.edu/admin/exe/'):
+            msg = "The output is set by default to 'bedgraph'\n"
             sys.stderr.write(msg)
             return 'bedgraph'
 
@@ -273,7 +251,8 @@ def computeMatrixOutputArgs(args=None):
                         help='If this option is given, then the matrix '
                         'of values underlying the heatmap will be saved '
                         'using the indicated name, e.g. IndividualValues.tab.'
-                        'This matrix can easily be loaded into R or other programs.',
+                        'This matrix can easily be loaded into R or '
+                        'other programs.',
                         metavar='FILE',
                         type=writableFile)
     output.add_argument('--outFileSortedRegions',
@@ -426,7 +405,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           '(e.g. major satellites) that may bias the average '
                           'values.')
 
-    # in contrast to other tools, 
+    # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
     optional.add_argument('--quiet', '-q',
@@ -505,22 +484,23 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
     parser = argparse.ArgumentParser(add_help=False)
     cluster = parser.add_argument_group('Clustering arguments')
-    cluster.add_argument('--kmeans',
-                         help='Number of clusters to compute. When this '
-                         'option is set, then the matrix is split into clusters '
-                         'using the kmeans algorithm. Only works for data that '
-                         'is not grouped, otherwise only the first group will '
-                         'be clustered. If more specific clustering methods '
-                         'are required it is advisable to save the underlying matrix '
-                         'and run the clustering using other software. The plotting  '
-                         'of the clustering may fail (Error: Segmentation fault) if a '
-                         'cluster has very few members compared to the total number '
-                         'or regions.',
-                         type=int)
-    
+    cluster.add_argument(
+        '--kmeans',
+        help='Number of clusters to compute. When this '
+        'option is set, then the matrix is split into clusters '
+        'using the kmeans algorithm. Only works for data that '
+        'is not grouped, otherwise only the first group will '
+        'be clustered. If more specific clustering methods '
+        'are required it is advisable to save the underlying matrix '
+        'and run the clustering using other software. The plotting  '
+        'of the clustering may fail (Error: Segmentation fault) if a '
+        'cluster has very few members compared to the total number '
+        'or regions.',
+        type=int)
+
     optional = parser.add_argument_group('Optional arguments')
 
-    optional.add_argument("--help", "-h",  action="help",
+    optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
@@ -531,8 +511,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             choices=["mean", "median", "min",
                      "max", "std", "sum"],
             help='Define the type of statistic that should be used for the '
-            'profile. The options are: "mean", "median", "min", "max", "sum" and '
-            '"std".')
+            'profile. The options are: "mean", "median", "min", "max", '
+            '"sum" and "std".')
 
         optional.add_argument('--plotHeight',
                               help='height in cm. The default for the plot '
@@ -720,12 +700,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           action='store_true')
 
     optional.add_argument('--plotFileFormat',
-                       metavar='',
-                       help='image format type. If given, this option overrides the '
-                       'image format based on the plotFile ending. '
-                       'The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg"',
-                       choices=['png','pdf', 'svg','eps', 'emf'])
+                          metavar='',
+                          help='image format type. If given, this '
+                          'option overrides the '
+                          'image format based on the plotFile ending. '
+                          'The available options are: "png", "emf", '
+                          '"eps", "pdf" and "svg"',
+                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
     optional.add_argument('--verbose',
                           help='If set warning messages and '
