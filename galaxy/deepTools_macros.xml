@@ -50,7 +50,7 @@
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.4_1093b2d281576f23ee04740bd5eae3f7b8422f7e">deepTools</requirement>
+            <requirement type="package" version="1.5.4_3268f7e1458f3a520ab6fea3039971ee9d7a6d5b">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
@@ -67,7 +67,7 @@
 
         <conditional name="used_multiple_regions">
             <param name="used_multiple_regions_options" type="select" 
-                label="Did you used multiple regions in ComputeMatrix?"
+                label="Did you use multiple regions in computeMatrix?"
                 help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                 <option value="yes">Yes, I used multiple regions.</option>
                 <option value="no">No, I used only one region.</option>

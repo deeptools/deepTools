@@ -1,4 +1,4 @@
-<tool id="deeptools_computeMatrix" name="computeMatrix" version="1.0.3">
+<tool id="deeptools_computeMatrix" name="computeMatrix" version="1.0.4">
     <description>summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -194,23 +194,24 @@
 
 **What it does**
 
-This tool summarizes and prepares an intermediary file
-containing scores associated with genomic regions that can be used
+This tool prepares an intermediary file (a gzipped table of values)
+that contains scores associated with genomic regions that can be used
 afterwards to plot a heatmap or a profile.
 
 Genomic regions can really be anything - genes, parts of genes, ChIP-seq
 peaks, favorite genome regions... as long as you provide a proper file
-in BED or INTERVAL format. This tool can also be used to filter and sort
-regions according to their score.
+in BED or INTERVAL format. If you would like to compare different groups of regions
+(i.e. genes from chromosome 2 and 3), you can supply more than 1 BED file, one for each group.
+
+computeMatrix can also be used to filter and sort
+regions according to their score by making use of its advanced output options.
 
 
 .. image:: $PATH_TO_IMAGES/flowChart_computeMatrixetc.png
    :alt: Relationship between computeMatrix, heatmapper and profiler
 
 
-You can find more details in the `computeMatrix wiki`_.
-
-.. _computeMatrix wiki: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-computeMatrix
+You can find more details on the computeMatrix wiki page: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-computeMatrix
 
 
 -----

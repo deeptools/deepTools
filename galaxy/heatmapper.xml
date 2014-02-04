@@ -1,4 +1,4 @@
-<tool id="deeptools_heatmapper" name="heatmapper" version="1.0.3">
+<tool id="deeptools_heatmapper" name="heatmapper" version="1.0.4">
     <description>creates a heatmap for a score associated to genomic regions</description>
     <expand macro="requirements"/>
     <expand macro="stdio" />
@@ -185,22 +185,21 @@
 
 **What it does**
 
-The heatmapper visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes. 
-Those values can be visualized individually along each of the regions provided by the user in INTERVAL or BED format. 
-In addition to the heatmap, an average profile plot is plotted on top of the heatmap (can be turned off by the user; 
-it can also be generated separately by the tool profiler). 
-We implemented vast optional parameters and we encourage you to play around with the min/max values displayed in the heatmap as well as 
-with the different coloring options. If you would like to plot heatmaps for different groups of genomic regions individually, 
-e.g. one plot per chromosome, simply supply each group as an individual BED file.
+The heatmapper visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes.
+Like profiler, it requires that computeMatrix was run first to calculate the values.
+ 
+We implemented vast optional parameters to optimize the visual output and we encourage you to play around with the min/max values displayed in the heatmap as well as 
+with the different coloring options. The most powerful option is the k-means clustering where you simply need to indicate the number of 
+groups with similar read distributions that you expect and the algorithm will do the sorting for you.
+
+Do check the examples on our help page with step-by-step protocols: https://github.com/fidelram/deepTools/wiki/Example-workflows
 
 
 .. image:: $PATH_TO_IMAGES/visual_hm_DmelPolII.png
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
-You can find more details in the `heatmapper wiki`_.
-
-.. _heatmapper wiki: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-heatmapper
+You can find more details on the tool itself on the heatmapper wiki page: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-heatmapper
 
 
 -----

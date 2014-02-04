@@ -1,4 +1,4 @@
-<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.3">
+<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.4">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -34,7 +34,7 @@
         #end if
 
         #if str($region).strip() != '':
-            --region 'region'
+            --region '$region'
         #end if
 
         #if $advancedOpt.showAdvancedOpt == "yes":
@@ -88,13 +88,11 @@
 
 **What it does**
 
-This tool requires the output from computeGCBias to correct the given BAM files according to the method proposed by Benjamini and Speed (2012). Nucleic Acids Res.
-The resulting BAM files can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
+This tool requires the output from computeGCBias to correct a given BAM file according to the method proposed by
+Benjamini and Speed (2012) Nucleic Acids Res.
+The resulting BAM file can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
 
-
-You can find more details in the `correctGCBias wiki`_.
-
-.. _correctGCBias wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-correctGCbias
+You can find more details on the correctGCBias wiki page: https://github.com/fidelram/deepTools/wiki/QC#wiki-correctGCbias
 
 
 **Output files**:
