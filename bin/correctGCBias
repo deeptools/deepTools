@@ -80,7 +80,7 @@ def parseArguments(args=None):
 
     group.add_argument('--correctedFile', '-o',
                        help='Name of the corrected file. The ending will '
-                       'be used to decide the ouput file format. The options '
+                       'be used to decide the output file format. The options '
                        'are ".bam", ".bw" for a bigWig file, ".bg" for a '
                        'bedgraph file.',
                        metavar='FILE',

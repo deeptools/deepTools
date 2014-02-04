@@ -25,9 +25,9 @@ def parseArguments(args=None):
         parents=[parentParser, bamParser, outputParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two BAM files based on the number of '
-        'mapped reads. To compare the BAM files the genome is partitioned '
+        'mapped reads. To compare the BAM files, the genome is partitioned '
         'into bins of equal size, then the number of reads found in each BAM '
-        'file are counted for such bins and finally a summarizing value is '
+        'file is counted for such bins and finally a summarizing value is '
         'reported. This vaule can be the ratio of the number of reads per '
         'bin, the log2 of the ratio or the difference. This tool can '
         'normalize the number of reads on each BAM file using the SES method '
@@ -36,7 +36,7 @@ def parseArguments(args=None):
         'and molecular biology, 11(3). Normalization based on read counts '
         'is also available. The output is either a bedgraph or a bigwig file '
         'containing the bin location and the resulting comparison values. By '
-        'default if reads are mated the fragment length reported in the BAM '
+        'default, if reads are mated, the fragment length reported in the BAM '
         'file is used.')
 
     # define the arguments
@@ -60,7 +60,7 @@ def parseArguments(args=None):
 
     parser.add_argument('--bamIndex2', '-bai2',
                         help='Index for the bam file1. Default is to consider '
-                        'a the path of the bam file adding the .bai suffix.',
+                        'the path of the bam file adding the .bai suffix.',
                         metavar='bam file index')
 
     parser.add_argument('--scaleFactorsMethod',
@@ -92,7 +92,7 @@ def parseArguments(args=None):
                         required=False)
 
     parser.add_argument('--ratio',
-                        help='The default output the log2ratio between the '
+                        help='The default is to output the log2ratio between the '
                         'two samples. The reciprocal ratio returns the '
                         'the negative of the inverse of the ratio '
                         'if the ratio is less than 0. The resulting '
@@ -103,14 +103,14 @@ def parseArguments(args=None):
                         required=False)
 
     parser.add_argument('--normalizeTo1x',
-                        help='only when --ratio subtract Report normalized '
-                        'coverage to 1x sequencing depth. Sequencing dept is '
+                        help='(only when --ratio subtract) Report normalized '
+                        'coverage to 1x sequencing depth. Sequencing depth is '
                         'defined as the total number of mapped reads*fragment '
                         'length / effective genome size. To use this option, '
                         'the effective genome size has to be given. Common '
                         'values are: mm9: 2150570000, hg19:2451960000, '
                         'dm3:121400000 and ce10:93260000. The default is '
-                        'not to use any normalization. ',
+                        'not to use any normalization.',
                         default=None,
                         type=int,
                         required=False)
@@ -120,7 +120,7 @@ def parseArguments(args=None):
                         'normalize the number of reads per bin. The formula '
                         'is: RPKM (per bin)=#reads per bin / ( # of mapped '
                         'reads (millions) * bin length (KB) ). This is the '
-                        'defalt normalization method.',
+                        'default normalization method.',
                         action='store_true',
                         required=False)
 
@@ -144,7 +144,7 @@ def parseArguments(args=None):
                         help='A list of chromosome names '
                         'separated by comma and limited by quotes, '
                         'containing those '
-                        'chromosomes that want to be excluded '
+                        'chromosomes that you want to be excluded '
                         'for computing the normalization. For example, '
                         ' --ignoreForNormalization "chrX, chrM" ')
 
@@ -173,8 +173,7 @@ def main(args):
     """
     The algorithm is composed of two parts.
 
-    1. Using the SES or mapped reads method.
-       Appropiate scaling factors are determined.
+    1. Using the SES or mapped reads method, appropiate scaling factors are determined.
 
     2. The genome is transversed, scaling the BAM files, and computing
        the log ratio/ratio/difference for bins of fixed width

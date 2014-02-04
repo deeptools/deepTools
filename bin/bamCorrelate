@@ -232,7 +232,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     import scipy.cluster.hierarchy as sch
     M = corr_matrix.shape[0]
 
-    # set the minumun and maximun values
+    # set the minimum and maximum values
     if vmax is None:
         vmax = 1
     if vmin is None:

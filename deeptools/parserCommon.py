@@ -100,7 +100,7 @@ def getParentArgParse(args=None, binSize=True):
 
     if binSize:
         optional.add_argument('--binSize', '-bs',
-                              help='Size of the bins in bp for the ouput '
+                              help='Size of the bins in bp for the output '
                               'of the bigwig/bedgraph file.',
                               metavar="INT bp",
                               type=int,
@@ -118,7 +118,7 @@ def getParentArgParse(args=None, binSize=True):
 
     optional.add_argument('--numberOfProcessors', '-p',
                           help='Number of processors to use. Type "max/2" to '
-                          'use half the maximun number of processors or "max" '
+                          'use half the maximum number of processors or "max" '
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
@@ -441,7 +441,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           default=1)
     optional.add_argument('--numberOfProcessors', '-p',
                           help='Number of processors to use. Type "max/2" to '
-                          'use half the maximun number of processors or "max" '
+                          'use half the maximum number of processors or "max" '
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
