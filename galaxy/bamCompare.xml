@@ -92,7 +92,7 @@
             <param name="method" type="select" 
                 label="Method to use for scaling the largest sample to the smallest">
                 <option value="readCount" selected="true">read count</option>
-                <option value="SES">signal extraction scaling (SES)</option>
+                <option value="SES">signal extraction scaling (SES), check the bamFingerprint plot before using it!</option>
                 <option value="own">enter own scaling factors</option>
             </param>
             <when value="SES">
@@ -205,9 +205,7 @@ length reported in the BAM file is used by default.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
-You can find more details in the `bamCompare wiki`_.
-
-.. _bamCompare wiki: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+You can find more details on the bamCompare wiki page: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
 
 
 **Output files**:

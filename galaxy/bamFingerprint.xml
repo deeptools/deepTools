@@ -120,11 +120,13 @@
 
 **What it does**
 
-This tool is based on a method developed by Diaz et al. (2012). Stat Appl Genet Mol Biol 11(3).
-The resulting plot can be used to assess the strength of a ChIP (for factors that bind to narrow regions).
+This tool is useful to assess the strength of a ChIP (i.e. how clearly the enrichment signal can be separated from the background signal)
+and it is based on a method developed by Diaz et al. (2012) Stat Appl Genet Mol Biol 11(3).
+
 The tool first samples indexed BAM files and counts all reads overlapping a window (bin) of specified length.
-These counts are then sorted according to their rank and the cumulative sum of read counts are plotted. An ideal input
-with perfect uniform distribution of reads along the genome (i.e. without enrichments in open chromatin etc.) should
+These counts are then sorted according to their rank (the bin with the highest number of reads has the highest rank)
+and the cumulative sum of read counts are plotted. An ideal input (control sample) with perfect uniform distribution of reads
+along the genome (i.e. without enrichments in open chromatin etc.) should
 generate a straight diagonal line. A very specific and strong ChIP enrichment will be indicated by a prominent and steep
 rise of the cumulative sum towards the highest rank. This means that a big chunk of reads from the ChIP sample is located in
 few bins which corresponds to high, narrow enrichments seen for transcription factors.
@@ -133,9 +135,7 @@ few bins which corresponds to high, narrow enrichments seen for transcription fa
 .. image:: $PATH_TO_IMAGES/QC_fingerprint.png
 
 
-You can find more details in the `bamFingerprint wiki`_.
-
-.. _bamFingerprint wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamFingerprint
+You can find more details on the bamFingerprint wiki page: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamFingerprint
 
 
 **Output files**:

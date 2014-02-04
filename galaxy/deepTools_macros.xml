@@ -67,7 +67,7 @@
 
         <conditional name="used_multiple_regions">
             <param name="used_multiple_regions_options" type="select" 
-                label="Did you used multiple regions in ComputeMatrix?"
+                label="Did you use multiple regions in computeMatrix?"
                 help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                 <option value="yes">Yes, I used multiple regions.</option>
                 <option value="no">No, I used only one region.</option>

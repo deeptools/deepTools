@@ -141,9 +141,9 @@
 **What it does**
 
 This tool plots the average enrichments over all genomic
-regions supplied to computeMarix. It is a very useful complement to the
-heatmapper, especially in cases when you want to compare the scores for
-many different groups. Like heatmapper, profiler does not change the
+regions supplied to computeMarix. It requires that computeMatrix was successfully run.
+It is a very useful complement to the heatmapper, especially in cases when you want to
+compare the scores for many different groups. Like heatmapper, profiler does not change the
 values that were compute by computeMatrix, but you can choose between
 many different ways to color and display the plots.
 
@@ -152,9 +152,7 @@ many different ways to color and display the plots.
    :alt: Meta-gene profile of Rna Polymerase II
 
 
-You can find more details in the `profiler wiki`_.
-
-.. _profiler wiki: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-profiler
+You can find more details on the profiler wiki page: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-profiler
 
 
 -----
