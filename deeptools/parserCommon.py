@@ -343,15 +343,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               type=int,
                               metavar='INT bp',
                               help='Distance upstream of the reference-point '
-                              'selected.',
-                              required=True)
+                              'selected.')
         optional.add_argument('--afterRegionStartLength', '-a', '--downstream',
                               default=1500,
                               metavar='INT bp',
                               type=int,
                               help='Distance downstream of the '
-                              'reference-point selected.',
-                              required=True)
+                              'reference-point selected.')
         optional.add_argument('--nanAfterEnd',
                               action='store_true',
                               help='If set, any values after the region end '
