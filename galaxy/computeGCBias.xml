@@ -1,4 +1,4 @@
-<tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.3">
+<tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.4">
     <description>to see whether your samples should be normalized for GC bias</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -25,8 +25,8 @@
                 --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
             #end if
 
-            #if str(region).strip() != '':
-                --region 'region'
+            #if str($region).strip() != '':
+                --region '$region'
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":

@@ -1,4 +1,4 @@
-<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.3">
+<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.4">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -33,8 +33,8 @@
             --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
         #end if
 
-        #if str(region).strip() != '':
-            --region 'region'
+        #if str($region).strip() != '':
+            --region '$region'
         #end if
 
         #if $advancedOpt.showAdvancedOpt == "yes":

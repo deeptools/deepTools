@@ -1,4 +1,4 @@
-<tool id="deeptools_bamCoverage" name="bamCoverage" version="1.0.3">
+<tool id="deeptools_bamCoverage" name="bamCoverage" version="1.0.4">
     <description> generates a coverage bigWig file from a given BAM file.  Multiple options are available to count reads and normalize coverage. (bam2bigwig)</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -31,8 +31,8 @@
             --scaleFactor $scaling.scaleFactor
         #end if
 
-        #if str(region).strip() != '':
-            --region 'region'
+        #if str($region).strip() != '':
+            --region '$region'
         #end if
 
         #if $advancedOpt.showAdvancedOpt == "yes":

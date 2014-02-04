@@ -50,7 +50,7 @@
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.4_1093b2d281576f23ee04740bd5eae3f7b8422f7e">deepTools</requirement>
+            <requirement type="package" version="1.5.4_3268f7e1458f3a520ab6fea3039971ee9d7a6d5b">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
@@ -200,7 +200,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
-                <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
+                <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
             </when>
             <when value="2150570000" />
             <when value="2451960000" />

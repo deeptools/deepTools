@@ -160,8 +160,8 @@ def numberOfProcessors(string):
         if numberOfProcessors > availProc:
             numberOfProcessors = availProc
 
-        return numberOfProcessors
-        
+    return numberOfProcessors
+
 
 def genomicRegion(string):
     # remove whitespaces using split,join trick
