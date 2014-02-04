@@ -71,6 +71,8 @@ To learn more about the specific parameters type:
 
     if args.quiet is False:
         args.verbose = True
+    else:
+        args.verbose = False
 
     if args.command == 'scale-regions':
         args.nanAfterEnd = False
@@ -115,7 +117,6 @@ def main(args):
     True
     >>> os.remove('/tmp/_test2.mat')
     """
-
     parameters = {'upstream': args.beforeRegionStartLength,
                   'downstream': args.afterRegionStartLength,
                   'body': args.regionBodyLength,
@@ -128,7 +129,6 @@ def main(args):
                   'max threshold': args.maxThreshold,
                   'scale': args.scale,
                   'skip zeros': args.skipZeros,
-                  'verbose': args.verbose,
                   'nan after end': args.nanAfterEnd,
                   'proc number': args.numberOfProcessors,
                   }

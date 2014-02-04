@@ -1,4 +1,4 @@
-<tool id="deeptools_bamCompare" name="bamCompare" version="1.0.3">
+<tool id="deeptools_bamCompare" name="bamCompare" version="1.0.4">
     <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference. (bam2bigwig)</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -47,13 +47,13 @@
           #end if
       #end if
 
+      #if str($region).strip() != '':
+          --region '$region'
+      #end if
+
       #if $advancedOpt.showAdvancedOpt == "yes":
             #if $advancedOpt.smoothLength:
             --smoothLength '$advancedOpt.smoothLength'
-            #end if
-
-            #if str($advancedOpt.region.value) != '':
-                --region '$advancedOpt.region'
             #end if
 
             $advancedOpt.doNotExtendPairedEnds
@@ -74,10 +74,10 @@
     </command>
 
     <inputs>
-        <param name="bamFile1" format="bam" type="data" label="Treatment BAM file"
+        <param name="bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
             help="The BAM file must be sorted."/>
 
-        <param name="bamFile2" format="bam" type="data" label="BAM file"
+        <param name="bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
 
         <param name="fragmentLength" type="integer" value="300" min="1"
@@ -92,7 +92,7 @@
             <param name="method" type="select" 
                 label="Method to use for scaling the largest sample to the smallest">
                 <option value="readCount" selected="true">read count</option>
-                <option value="SES">signal extraction scaling (SES)</option>
+                <option value="SES">signal extraction scaling (SES), check the bamFingerprint plot before using it!</option>
                 <option value="own">enter own scaling factors</option>
             </param>
             <when value="SES">
@@ -140,6 +140,8 @@
             <option value="bedgraph">bedgraph</option>
         </param>
 
+        <expand macro="region_limit_operation" />
+
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -151,10 +153,6 @@
                 <param name="smoothLength" type="integer" value="1" optional="true" min="1"
                     label="Smooth values using the following length (in bp)"
                     help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
-
-                <param name="region" type="text" value=""
-                    label="Region of the genome to limit the operation to"
-                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
 
                 <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
                     label="Do not extend paired ends"
@@ -207,9 +205,7 @@ length reported in the BAM file is used by default.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
-You can find more details in the `bamCompare wiki`_.
-
-.. _bamCompare wiki: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+You can find more details on the bamCompare wiki page: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
 
 
 **Output files**:

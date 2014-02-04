@@ -1,4 +1,4 @@
-<tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.3">
+<tool id="deeptools_computeGCBias" name="computeGCBias" version="1.0.4">
     <description>to see whether your samples should be normalized for GC bias</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -25,10 +25,11 @@
                 --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
             #end if
 
+            #if str($region).strip() != '':
+                --region '$region'
+            #end if
+
             #if $advancedOpt.showAdvancedOpt == "yes":
-                #if str($advancedOpt.region.value) != '':
-                    --region '$advancedOpt.region'
-                #end if
 
                 --sampleSize '$advancedOpt.sampleSize'
                 --regionSize '$advancedOpt.regionSize'
@@ -57,6 +58,9 @@
         <param name="fragmentLength" type="integer" value="300" min="1"
             label="Fragment length used for the sequencing"
             help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
+
+        <expand macro="region_limit_operation" />
+
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -64,10 +68,6 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="region" type="text" value=""
-                    label="Region of the genome to limit the operation to"
-                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-
                 <param name="sampleSize" type="integer" value="50000000" min="1"
                     label="Number of sampling points to be considered" />
 
@@ -112,7 +112,7 @@
 
 **What it does**
 
-This tool computes the GC bias using the method proposed by Benjamini and Speed (2012). Nucleic Acids Res. (see below for more explanations)
+This tool computes the GC bias using the method proposed by Benjamini and Speed (2012) Nucleic Acids Res. (see below for more explanations)
 The output is used to plot the bias and can also be used later on to correct the bias with the tool correctGCbias.
 There are two plots produced by the tool: a boxplot showing the absolute read numbers per genomic-GC bin and an x-y plot
 depicting the ratio of observed/expected reads per genomic GC content bin.
@@ -132,9 +132,7 @@ usually shows a significant bias towards reads with high GC content (>50%)
 .. image:: $PATH_TO_IMAGES/QC_GCplots_input.png
 
 
-You can find more details in the `computeGCBias wiki`_.
-
-.. _computeGCBias wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
+You can find more details on the computeGCBias wiki page: computeGCBias wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
 
 
 **Output files**:

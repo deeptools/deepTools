@@ -1,4 +1,4 @@
-<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.3">
+<tool id="deeptools_correctGCBias" name="correctGCBias" version="1.0.4">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -33,15 +33,17 @@
             --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
         #end if
 
+        #if str($region).strip() != '':
+            --region '$region'
+        #end if
+
         #if $advancedOpt.showAdvancedOpt == "yes":
-            #if str($advancedOpt.region.value) != '':
-                --region '$advancedOpt.region'
-            #end if
             --binSize '$advancedOpt.binSize'  
         #end if
 
-        #set newoutFileName="corrected."+str($outFileFormat)
-        --correctedFile $newoutFileName;
+        ###set newoutFileName="corrected."+str($outFileFormat)
+        ##--correctedFile $newoutFileName;
+        --correctedFile "corrected.bam";
 
         mv $newoutFileName $outFileName
     </command>
@@ -51,11 +53,14 @@
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
 
+        <!--
         <param name="outFileFormat" type="select" label="File format of the output">
             <option value="bam">bam</option>
             <option value="bw">bigwig</option>
             <option value="bg">bedgraph</option>
         </param>
+        -->
+        <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -64,10 +69,6 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="region" type="text" value=""
-                    label="Region of the genome to limit the operation to"
-                    help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
-
                 <param name="binSize" type="integer" value="50" min="1" 
                     label="Bin size in bp"
                     help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
@@ -76,24 +77,22 @@
     </inputs>
     <outputs>
         <data format="bam" name="outFileName">
-            <change_format>
+            <!--<change_format>
                 <when input="outFileFormat" value="bw" format="bigwig" />
                 <when input="outFileFormat" value="bam" format="bam" />
                 <when input="outFileFormat" value="bg" format="bedgraph" />
-            </change_format>
+            </change_format>-->
         </data>
     </outputs>
     <help>
 
 **What it does**
 
-This tool requires the output from computeGCBias to correct the given BAM files according to the method proposed by Benjamini and Speed (2012). Nucleic Acids Res.
-The resulting BAM files can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
+This tool requires the output from computeGCBias to correct a given BAM file according to the method proposed by
+Benjamini and Speed (2012) Nucleic Acids Res.
+The resulting BAM file can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
 
-
-You can find more details in the `correctGCBias wiki`_.
-
-.. _correctGCBias wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-correctGCbias
+You can find more details on the correctGCBias wiki page: https://github.com/fidelram/deepTools/wiki/QC#wiki-correctGCbias
 
 
 **Output files**:

@@ -1,4 +1,4 @@
-<tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.3">
+<tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.4">
     <description>correlates pairs of BAM files</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
@@ -142,23 +142,21 @@ This tool is useful to assess the overall similarity of different BAM files. A t
 is to check the correlation between replicates or published data sets.
 
 The tool splits the genomes into bins of given length. For each bin, the number of reads
-found in each BAM file is counted and a correlation is computed for all
-pairs of BAM files.
+found in each BAM file is counted and a correlation (either Pearson or Spearman) is computed for all
+pairs of BAM files. Finally, a heatmap is drawn based on the similarity of the samples.
 
 
 .. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
-You can find more details in the `bamCorrelate wiki`_.
-
-.. _bamCorrelate wiki: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+You can find more details on the bamCorrelate wiki page: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamCorrelate
 
 
 **Output files**:
 
-- diagnostic plot produced by bamCorrelate is a clustered heatmap displaying the values for each pair-wise correlation, see below for an example
-- data matrix (optional) in case you want to plot the correlation values using a different program, e.g. R, this matrix can be used
+- **diagnostic plot**: clustered heatmap displaying the values for each pair-wise correlation, see below for an example
+- data matrix (optional): if you want to plot the correlation values using a different program, e.g. R, this matrix can be used
 
 
 -----

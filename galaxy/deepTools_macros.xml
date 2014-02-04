@@ -1,8 +1,7 @@
 <macros>
     <xml name="bamCorrelate_mode_actions">
-        <param name="region" type="text" value=""
-            label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+
+        <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -37,6 +36,13 @@
             </when>
         </conditional>
     </xml>
+    
+    <xml name="region_limit_operation">
+        <param name="region" type="text" value=""
+            label="Region of the genome to limit the operation to"
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+    </xml>
+    
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <xml name="requirements">
         <requirements>
@@ -44,7 +50,7 @@
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.4_b2b025a382f00f05c46cabc16d2cbe90dbb5d63a">deepTools</requirement>
+            <requirement type="package" version="1.5.4_3268f7e1458f3a520ab6fea3039971ee9d7a6d5b">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
@@ -61,7 +67,7 @@
 
         <conditional name="used_multiple_regions">
             <param name="used_multiple_regions_options" type="select" 
-                label="Did you used multiple regions in ComputeMatrix?"
+                label="Did you use multiple regions in computeMatrix?"
                 help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                 <option value="yes">Yes, I used multiple regions.</option>
                 <option value="no">No, I used only one region.</option>
@@ -194,7 +200,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
-                <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" />
+                <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
             </when>
             <when value="2150570000" />
             <when value="2451960000" />
