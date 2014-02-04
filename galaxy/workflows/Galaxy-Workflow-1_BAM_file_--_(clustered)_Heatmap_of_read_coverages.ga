@@ -1,0 +1,262 @@
+{
+    "a_galaxy_workflow": "true", 
+    "annotation": "1 BAM file from D.melanogaster will be normalized to 1x sequencing depth and a heatmap can be generated for a user-specified BED file (with genes being scaled to a length of 1.5kb)", 
+    "format-version": "0.1", 
+    "name": "1 BAM file -->(clustered) Heatmap of read coverages", 
+    "steps": {
+        "0": {
+            "annotation": "sorted BAM file, e.g. Input from Data Library", 
+            "id": 0, 
+            "input_connections": {}, 
+            "inputs": [
+                {
+                    "description": "sorted BAM file, e.g. Input from Data Library", 
+                    "name": "file of mapped reads"
+                }
+            ], 
+            "name": "Input dataset", 
+            "outputs": [], 
+            "position": {
+                "left": 257.5, 
+                "top": 480
+            }, 
+            "tool_errors": null, 
+            "tool_id": null, 
+            "tool_state": "{\"name\": \"file of mapped reads\"}", 
+            "tool_version": null, 
+            "type": "data_input", 
+            "user_outputs": []
+        }, 
+        "1": {
+            "annotation": "BED or INTERVAL file of genome regions to plot the read coverage for", 
+            "id": 1, 
+            "input_connections": {}, 
+            "inputs": [
+                {
+                    "description": "BED or INTERVAL file of genome regions to plot the read coverage for", 
+                    "name": "regions"
+                }
+            ], 
+            "name": "Input dataset", 
+            "outputs": [], 
+            "position": {
+                "left": 583.5, 
+                "top": 234
+            }, 
+            "tool_errors": null, 
+            "tool_id": null, 
+            "tool_state": "{\"name\": \"regions\"}", 
+            "tool_version": null, 
+            "type": "data_input", 
+            "user_outputs": []
+        }, 
+        "2": {
+            "annotation": "this will generate a coverage file normalized to 1x sequencing depth (for D.melanogaster!)", 
+            "id": 2, 
+            "input_connections": {
+                "bamInput": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool bamCoverage", 
+                    "name": "region"
+                }, 
+                {
+                    "description": "runtime parameter for tool bamCoverage", 
+                    "name": "fragmentLength"
+                }
+            ], 
+            "name": "bamCoverage", 
+            "outputs": [
+                {
+                    "name": "outFileName", 
+                    "type": "bigwig"
+                }
+            ], 
+            "position": {
+                "left": 491.6166687011719, 
+                "top": 474.11669921875
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutFileName": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileName"
+                }, 
+                "RenameDatasetActionoutFileName": {
+                    "action_arguments": {
+                        "newname": "Drosophila coverage file"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "outFileName"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/deeptools/deeptools_bamCoverage/1.0.3", 
+            "tool_state": "{\"__page__\": 0, \"outFileFormat\": \"\\\"bigwig\\\"\", \"region\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\", \"bamInput\": \"null\", \"binSize\": \"\\\"50\\\"\", \"scaling\": \"{\\\"effectiveGenomeSize\\\": {\\\"effectiveGenomeSize_opt\\\": \\\"121400000\\\", \\\"__current_case__\\\": 3}, \\\"type\\\": \\\"1x\\\", \\\"__current_case__\\\": 2}\", \"__rerun_remap_job_id__\": null, \"advancedOpt\": \"{\\\"ignoreDuplicates\\\": \\\"True\\\", \\\"doNotExtendPairedEnds\\\": \\\"False\\\", \\\"smoothLength\\\": \\\"150\\\", \\\"showAdvancedOpt\\\": \\\"yes\\\", \\\"__current_case__\\\": 1, \\\"minMappingQuality\\\": \\\"10\\\"}\", \"fragmentLength\": \"{\\\"__class__\\\": \\\"RuntimeValue\\\"}\"}", 
+            "tool_version": "1.0.3", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "3": {
+            "annotation": "", 
+            "id": 3, 
+            "input_connections": {
+                "regionsFiles_0|regionsFile": {
+                    "id": 1, 
+                    "output_name": "output"
+                }, 
+                "scoreFile": {
+                    "id": 2, 
+                    "output_name": "outFileName"
+                }
+            }, 
+            "inputs": [], 
+            "name": "computeMatrix", 
+            "outputs": [
+                {
+                    "name": "outFileName", 
+                    "type": "bgzip"
+                }, 
+                {
+                    "name": "outFileNameData", 
+                    "type": "tabular"
+                }, 
+                {
+                    "name": "outFileSortedRegions", 
+                    "type": "bed"
+                }, 
+                {
+                    "name": "outFileNameMatrix", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 828.6166687011719, 
+                "top": 358.1166687011719
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutFileNameData": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileNameData"
+                }, 
+                "HideDatasetActionoutFileNameMatrix": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileNameMatrix"
+                }, 
+                "HideDatasetActionoutFileSortedRegions": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileSortedRegions"
+                }, 
+                "RenameDatasetActionoutFileName": {
+                    "action_arguments": {
+                        "newname": "computeMatrix: matrix of coverage values for BED file"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "outFileName"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/deeptools/deeptools_computeMatrix/1.0.3", 
+            "tool_state": "{\"__page__\": 0, \"scoreFile\": \"null\", \"__rerun_remap_job_id__\": null, \"mode\": \"{\\\"startLabel\\\": \\\"TSS\\\", \\\"regionStartLength\\\": {\\\"afterRegionStartLength\\\": \\\"1000\\\", \\\"regionStartLength_select\\\": \\\"yes\\\", \\\"beforeRegionStartLength\\\": \\\"1000\\\", \\\"__current_case__\\\": 1}, \\\"__current_case__\\\": 0, \\\"endLabel\\\": \\\"TES\\\", \\\"regionBodyLength\\\": \\\"2000\\\", \\\"mode_select\\\": \\\"scale-regions\\\"}\", \"output\": \"{\\\"showOutputSettings\\\": \\\"no\\\", \\\"__current_case__\\\": 0}\", \"advancedOpt\": \"{\\\"averageTypeBins\\\": \\\"mean\\\", \\\"maxThreshold\\\": \\\"\\\", \\\"sortUsing\\\": \\\"mean\\\", \\\"skipZeros\\\": \\\"True\\\", \\\"binSize\\\": \\\"50\\\", \\\"showAdvancedOpt\\\": \\\"yes\\\", \\\"scale\\\": \\\"\\\", \\\"__current_case__\\\": 1, \\\"minThreshold\\\": \\\"\\\", \\\"sortRegions\\\": \\\"no\\\", \\\"missingDataAsZero\\\": \\\"True\\\"}\", \"regionsFiles\": \"[{\\\"__index__\\\": 0, \\\"regionsFile\\\": null, \\\"label\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}}]\"}", 
+            "tool_version": "1.0.3", 
+            "type": "tool", 
+            "user_outputs": []
+        }, 
+        "4": {
+            "annotation": "create a heatmap, if wanted, kmeans clustering can be performed", 
+            "id": 4, 
+            "input_connections": {
+                "matrixFile": {
+                    "id": 3, 
+                    "output_name": "outFileName"
+                }
+            }, 
+            "inputs": [
+                {
+                    "description": "runtime parameter for tool heatmapper", 
+                    "name": "output"
+                }, 
+                {
+                    "description": "runtime parameter for tool heatmapper", 
+                    "name": "advancedOpt"
+                }, 
+                {
+                    "description": "runtime parameter for tool heatmapper", 
+                    "name": "advancedOpt"
+                }, 
+                {
+                    "description": "runtime parameter for tool heatmapper", 
+                    "name": "advancedOpt"
+                }, 
+                {
+                    "description": "runtime parameter for tool heatmapper", 
+                    "name": "advancedOpt"
+                }, 
+                {
+                    "description": "runtime parameter for tool heatmapper", 
+                    "name": "advancedOpt"
+                }
+            ], 
+            "name": "heatmapper", 
+            "outputs": [
+                {
+                    "name": "outFileName", 
+                    "type": "png"
+                }, 
+                {
+                    "name": "outFileNameData", 
+                    "type": "tabular"
+                }, 
+                {
+                    "name": "outFileSortedRegions", 
+                    "type": "bed"
+                }, 
+                {
+                    "name": "outFileNameMatrix", 
+                    "type": "tabular"
+                }
+            ], 
+            "position": {
+                "left": 1139.5, 
+                "top": 392
+            }, 
+            "post_job_actions": {
+                "HideDatasetActionoutFileNameData": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileNameData"
+                }, 
+                "HideDatasetActionoutFileNameMatrix": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileNameMatrix"
+                }, 
+                "HideDatasetActionoutFileSortedRegions": {
+                    "action_arguments": {}, 
+                    "action_type": "HideDatasetAction", 
+                    "output_name": "outFileSortedRegions"
+                }, 
+                "RenameDatasetActionoutFileName": {
+                    "action_arguments": {
+                        "newname": "Heatmap of treatment_control_log2ratios"
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "outFileName"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/bgruening/deeptools/deeptools_heatmapper/1.0.3", 
+            "tool_state": "{\"__page__\": 0, \"output\": \"{\\\"outFileFormat\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"saveMatrix\\\": \\\"False\\\", \\\"showOutputSettings\\\": \\\"yes\\\", \\\"saveSortedRegions\\\": \\\"False\\\", \\\"__current_case__\\\": 1, \\\"saveData\\\": \\\"False\\\"}\", \"advancedOpt\": \"{\\\"used_multiple_regions\\\": {\\\"clustering\\\": {\\\"k_kmeans\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"__current_case__\\\": 0, \\\"clustering_options\\\": \\\"kmeans\\\"}, \\\"used_multiple_regions_options\\\": \\\"no\\\", \\\"__current_case__\\\": 0}, \\\"yAxisLabel\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"xAxisLabel\\\": \\\"\\\", \\\"zMax\\\": \\\"\\\", \\\"heatmapWidth\\\": \\\"7.5\\\", \\\"sortUsing\\\": \\\"mean\\\", \\\"zMin\\\": \\\"\\\", \\\"plotTitle\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"averageTypeSummaryPlot\\\": \\\"mean\\\", \\\"whatToShow\\\": \\\"plot, heatmap and colorbar\\\", \\\"missingDataColor\\\": \\\"black\\\", \\\"referencePointLabel\\\": \\\"TSS\\\", \\\"yMin\\\": \\\"\\\", \\\"onePlotPerGroup\\\": \\\"False\\\", \\\"regionsLabel\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"yMax\\\": \\\"\\\", \\\"endLabel\\\": \\\"TES\\\", \\\"sortRegions\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"startLabel\\\": \\\"TSS\\\", \\\"colorMap\\\": {\\\"__class__\\\": \\\"RuntimeValue\\\"}, \\\"showAdvancedOpt\\\": \\\"yes\\\", \\\"__current_case__\\\": 1, \\\"heatmapHeight\\\": \\\"15.0\\\"}\", \"__rerun_remap_job_id__\": null, \"matrixFile\": \"null\"}", 
+            "tool_version": "1.0.3", 
+            "type": "tool", 
+            "user_outputs": []
+        }
+    }
+}
