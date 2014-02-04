@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<repositories description="This requires the glimmer3 repository and the emboss5 tool suite.">
+    <repository name="deeptools" owner="bgruening" />
+</repositories>
