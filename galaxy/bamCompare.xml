@@ -74,10 +74,10 @@
     </command>
 
     <inputs>
-        <param name="bamFile1" format="bam" type="data" label="Treatment BAM file"
+        <param name="bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
             help="The BAM file must be sorted."/>
 
-        <param name="bamFile2" format="bam" type="data" label="BAM file"
+        <param name="bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
 
         <param name="fragmentLength" type="integer" value="300" min="1"
