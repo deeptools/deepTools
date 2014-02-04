@@ -1,4 +1,4 @@
-<tool id="deeptools_profiler" name="profiler" version="1.0.3">
+<tool id="deeptools_profiler" name="profiler" version="1.0.4">
     <description>
         creates a profile plot for a score associated to genomic regions
     </description>
