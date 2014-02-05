@@ -78,7 +78,7 @@ def parseArguments(args=None):
 
     parser.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. The default is '
-                        'to use half the maximun number of processors.',
+                        'to use half the maximum number of processors.',
                         metavar="INT",
                         type=numberOfProcessors,
                         default="max/2",

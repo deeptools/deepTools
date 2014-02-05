@@ -422,7 +422,7 @@ class heatmapper:
         """
         uses bigwig file reader from bx-python
         to query a region define by chrom and zones.
-        The ouput is an array that contains the bigwig
+        The output is an array that contains the bigwig
         value per base pair. The summary over bins is
         done in a later step when coverageFromArray is called.
         This method is more reliable than quering the bins

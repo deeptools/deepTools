@@ -45,7 +45,8 @@
         ##--correctedFile $newoutFileName;
         --correctedFile "corrected.bam";
 
-        mv $newoutFileName $outFileName
+        ##mv $newoutFileName $outFileName
+        mv "corrected.bam" $outFileName
     </command>
     <inputs>
         <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
@@ -71,7 +72,7 @@
             <when value="yes">
                 <param name="binSize" type="integer" value="50" min="1" 
                     label="Bin size in bp"
-                    help="Size of the bins in bp for the ouput of the bigwig/bedgraph file."/>
+                    help="Size of the bins in bp for the output of the bigwig/bedgraph file."/>
             </when>
         </conditional>
     </inputs>

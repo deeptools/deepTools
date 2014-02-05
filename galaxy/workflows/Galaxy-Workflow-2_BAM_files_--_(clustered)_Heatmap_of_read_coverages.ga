@@ -17,8 +17,8 @@
             "name": "Input dataset", 
             "outputs": [], 
             "position": {
-                "left": 257.5, 
-                "top": 480
+                "left": 181.5, 
+                "top": 459
             }, 
             "tool_errors": null, 
             "tool_id": null, 
@@ -28,31 +28,8 @@
             "user_outputs": []
         }, 
         "1": {
-            "annotation": "BED or INTERVAL file of genome regions to plot the read coverage for", 
-            "id": 1, 
-            "input_connections": {}, 
-            "inputs": [
-                {
-                    "description": "BED or INTERVAL file of genome regions to plot the read coverage for", 
-                    "name": "regions"
-                }
-            ], 
-            "name": "Input dataset", 
-            "outputs": [], 
-            "position": {
-                "left": 590.5, 
-                "top": 239
-            }, 
-            "tool_errors": null, 
-            "tool_id": null, 
-            "tool_state": "{\"name\": \"regions\"}", 
-            "tool_version": null, 
-            "type": "data_input", 
-            "user_outputs": []
-        }, 
-        "2": {
             "annotation": "sorted BAM file", 
-            "id": 2, 
+            "id": 1, 
             "input_connections": {}, 
             "inputs": [
                 {
@@ -63,12 +40,35 @@
             "name": "Input dataset", 
             "outputs": [], 
             "position": {
-                "left": 276.5, 
-                "top": 594.5
+                "left": 183.5, 
+                "top": 573
             }, 
             "tool_errors": null, 
             "tool_id": null, 
             "tool_state": "{\"name\": \"file 2 of mapped reads, e.g. control sample\"}", 
+            "tool_version": null, 
+            "type": "data_input", 
+            "user_outputs": []
+        }, 
+        "2": {
+            "annotation": "BED or INTERVAL file of genome regions to plot the read coverage for", 
+            "id": 2, 
+            "input_connections": {}, 
+            "inputs": [
+                {
+                    "description": "BED or INTERVAL file of genome regions to plot the read coverage for", 
+                    "name": "regions"
+                }
+            ], 
+            "name": "Input dataset", 
+            "outputs": [], 
+            "position": {
+                "left": 598.5, 
+                "top": 397.5
+            }, 
+            "tool_errors": null, 
+            "tool_id": null, 
+            "tool_state": "{\"name\": \"regions\"}", 
             "tool_version": null, 
             "type": "data_input", 
             "user_outputs": []
@@ -82,7 +82,7 @@
                     "output_name": "output"
                 }, 
                 "bamFile2": {
-                    "id": 2, 
+                    "id": 1, 
                     "output_name": "output"
                 }
             }, 
@@ -108,8 +108,8 @@
                 }
             ], 
             "position": {
-                "left": 476.5, 
-                "top": 486.5
+                "left": 479.5, 
+                "top": 488.5
             }, 
             "post_job_actions": {
                 "HideDatasetActionoutFileName": {
@@ -137,7 +137,7 @@
             "id": 4, 
             "input_connections": {
                 "regionsFiles_0|regionsFile": {
-                    "id": 1, 
+                    "id": 2, 
                     "output_name": "output"
                 }, 
                 "scoreFile": {
@@ -166,8 +166,8 @@
                 }
             ], 
             "position": {
-                "left": 835.61669921875, 
-                "top": 364.1166687011719
+                "left": 838.61669921875, 
+                "top": 366.1166687011719
             }, 
             "post_job_actions": {
                 "HideDatasetActionoutFileNameData": {
@@ -255,8 +255,8 @@
                 }
             ], 
             "position": {
-                "left": 1144.5, 
-                "top": 397
+                "left": 1147.5, 
+                "top": 399
             }, 
             "post_job_actions": {
                 "HideDatasetActionoutFileNameData": {

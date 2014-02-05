@@ -89,7 +89,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     p = np.sort(num_reads_per_bin[0, :]).cumsum()
     q = np.sort(num_reads_per_bin[1, :]).cumsum()
 
-    # p[-1] and q[-1] are the maximun values in the  arrays.
+    # p[-1] and q[-1] are the maximum values in the  arrays.
     # both p and q are normalized by this value
     diff = np.abs(p / p[-1] - q / q[-1])
     # get the lowest rank for wich the difference is the maximum
