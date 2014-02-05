@@ -15,7 +15,7 @@ def checkProgram(program, args, where_to_download):
         return
 
     try:
-        _out = subprocess.Popen([program, 'view'], stderr=subprocess.PIPE,
+        _out = subprocess.Popen([program, args], stderr=subprocess.PIPE,
                                 stdout=subprocess.PIPE)
         return True
     except OSError as e:

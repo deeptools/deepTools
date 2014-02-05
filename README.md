@@ -7,9 +7,7 @@ deepTools
 deepTools addresses the challenge of handling the large amounts of data 
 that are now routinely generated from DNA sequencing centers. To do so, deepTools contains useful modules to process the mapped reads data to create coverage files in standard bedGraph and bigWig file formats. By doing so, deepTools allows the creation of **normalized coverage files** or the comparison between two files (for example, treatment and control). Finally, using such normalized and standardized files, multiple
 **visualizations** can be created to identify enrichments with
-functional annotations of the genome. For a gallery of images that
-can be produced, see
-http://f1000.com/posters/browse/summary/1094053
+functional annotations of the genome.
 
 For support, questions, or feature requests contact: deeptools@googlegroups.com
 
@@ -31,53 +29,33 @@ deepTools are available for:
 
 Details on the installation routines can be found here.
 
-[Installation from source](#linux)
+[General Installation](#general)
 
 [Installation on a Mac](#mac)
-
-[Troubleshooting](#trouble)
 
 [Galaxy installation](#galaxy)
 
 
-<a name="linux"/></a>
-### Installation from source (Linux, command line)
+<a name="general"/></a>
+### General Installation
 
-The easiest way to install deepTools is by __downloading the source file and using python pip__ or easy_install tools:
+The easiest way to install deepTools is by using python `pip` or `easy_install tools`:
 
-Requirements: Python 2.7, numpy, scipy installed
+Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html) installed
 
 Commands:
 
-      $ cd ~
-      $ export PYTHONPATH=$PYTHONPATH:~/lib/python2.7/site-packages
-      $ export PATH=$PATH:~/bin:~/.local/bin
-
-If pip is not already available, install with:
-
-      $ easy_install --prefix=~ pip
-
-Install deepTools and dependencies with pip:
-
-      $ pip install --user deeptools
+      $ pip install deeptools
 Done.
 
 
-
-
-__Another option is to clone the repository:__
+__A second option is to clone the repository:__
 	
 	$ git clone https://github.com/fidelram/deepTools
-
-Then go to the deepTools directory, edit the `deepTools.cfg` 
-file and then run the install script a:
-
 	$ cd deepTools
-	$ vim deeptools/config/deepTools.cfg
 	$ python setup.py install
 	
-
-By default, the script will install python library and executable
+By default, the script will install the python library and executable
 codes globally, which means you need to be root or administrator of
 the machine to complete the installation. If you need to
 provide a nonstandard install prefix, or any other nonstandard
@@ -86,22 +64,16 @@ script.
 
 	$ python setup.py --help
 
-To install under a specific location use:
+For example, to install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
 
 <a name="mac"></a>
 ### Installation on a MAC
 
-Although the installation of deepTools itself is quite simple,
-the installation of the required modules SciPy and NumPy demand
-a bit of extra work.
-
-The easiest way to install them ois together with the
+The easiest way to get numpy and scipy dependencies is to install the
 [Anaconda Scientific Python Distribution][]. After installation, open
-a terminal ("Applications" --> "Terminal"): and type:
-
-     $ pip install deeptools
+a terminal ("Applications" → "Terminal") and follow the [General Installation](#general)
   	   
 If individual installation of the dependencies is preferred, follow 
 those steps:
@@ -112,35 +84,11 @@ Download the packages and install them using dmg images:
 - http://sourceforge.net/projects/numpy/files/NumPy/
 - http://sourceforge.net/projects/scipy/files/scipy/
 
-Then install deepTools via the terminal ("Applications" --> "Terminal"):
-
-     $ cd ~
-     $ export PYTHONPATH=$PYTHONPATH:~/lib/python2.7/site-packages
-     $ export PATH=$PATH:~/bin:~/.local/bin:~/Library/Python/2.7/bin
-
-If pip is not already available, install with:
-
-     $ easy_install --prefix=~ pip
-
-Install deepTools and dependencies with pip:
-
-     $ pip install --user deeptools
+Then open terminal ("Applications" → "Terminal")
+and follow the [General Installation](#general)
 
 
 <a name="trouble"/></a>
-##### Troubleshooting
-The easy_install command is provided by the python package setuptools.
-You can download the package from https://pypi.python.org/pypi/setuptools
-
-     $ wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py -O - | python
-     
-or the user-specific way:
-
-     $ wget https://bitbucket.org/pypa/setuptools/raw/bootstrap/ez_setup.py
-     $ python ez_setup.py --user
-
-Numpy/Scipy Installation:
-http://www.scipy.org/install.html
 
 <a name="galaxy"/></a>
 #### Galaxy Installation
