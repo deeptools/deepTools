@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import os
+import sys
 import subprocess
 import re
 
@@ -61,34 +62,65 @@ class sdist(_sdist):
 class install(_install):
     def run(self):
         _install.run(self)
-#        import ipdb;ipdb.set_trace()
-        # check the installation of UCSC tools
+        if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
+            return
+        self.config_file = self.install_platlib + \
+            "/deeptools/config/deeptools.cfg"
+
+       # check installation of several components
+        samtools_installed = self.checkProgramIsInstalled(
+            'samtools', 'view',
+            'http://samtools.sourceforge.net/',
+            'correctGCbias')
+
+        bedGraphToBigWig_installed = self.checkProgramIsInstalled(
+            'bedGraphToBigWig', '-h',
+            'http://hgdownload.cse.ucsc.edu/admin/exe/',
+            'bamCoverage, bamCompare, correctGCbias')
+
+        bigwigInfo_installed = self.checkProgramIsInstalled(
+            'bigWigInfo', '-h',
+            'http://hgdownload.cse.ucsc.edu/admin/exe/',
+            'bigwigCompare')
+
+        if not samtools_installed or not bedGraphToBigWig_installed \
+                or not bigwigInfo_installed:
+
+            msg = "\n##########\nSome tools were not fund.\n"\
+                "If you already have a copy of this programs installed\n"\
+                "please be sure that they are found in your PATH or\n"\
+                "that they referred in the configuration file of deepTools\n"\
+                "located at:\n\n {}\n\n".format(self.config_file)
+            sys.stderr.write(msg)
+
+    def checkProgramIsInstalled(self, program, args, where_to_download,
+                                affected_tools):
         try:
-            subprocess.call(["bedGraphToBigWig", "-h"])
+            _out = subprocess.Popen([program, args], stderr=subprocess.PIPE,
+                                    stdout=subprocess.PIPE)
+            return True
         except OSError as e:
             if e.errno == os.errno.ENOENT:
                 # handle file not found error.
-                import warnings
                 # the config file is installed in:
-                config_file = self.install_platlib + \
-                    "/deeptools/config/deeptools.cfg"
-                msg = "\n#############################################\n\n"\
-                      "Your computer does not have the UCSC program \n" \
-                      "bedGraphToBigWig installed or configured in the \n" \
-                      "deepTools config file. In order to output bigwig \n" \
-                      "files this program needs to be installed and "\
-                      "referred in the \n"\
-                      "configuration file located at:\n\n{}\n\n" \
-                      "The program can be downloaded from here: " \
-                      "http://hgdownload.cse.ucsc.edu/admin/exe/ \n\n" \
-                      "The output is set by default to 'bedgraph'\n\n "\
-                      "\n#############################################"\
-                      "\n\n".format(config_file)
-                warnings.warn(msg)
+                msg = "\n**{0} not found. This " \
+                      "program is needed for the following "\
+                      "tools to work properly:\n"\
+                      " {1}\n"\
+                      "{0} can be downloaded from here:\n " \
+                      " {2}\n".format(program, affected_tools,
+                                      where_to_download)
+                sys.stderr.write(msg)
             else:
                 # Something else went wrong while
-                # trying to run `bedGraphToBigWig`
+                # trying to run `program`
                 raise
+
+        except Exception as e:
+            sys.stderr.write("Error: {}".format(e))
+
+
+########
 
 setup(
     name='deepTools',

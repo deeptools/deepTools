@@ -1,4 +1,5 @@
 import sys
+import os
 
 debug = 0
 
@@ -113,22 +114,24 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
     # bam files
     chrSizes = []
     for i in range(0, len(bamFileHandlers[0].references)):
-       if "{}|{}".format(bamFileHandlers[0].references[i], 
-                         bamFileHandlers[0].lengths[i]) in commonChr:
+        if "{}|{}".format(bamFileHandlers[0].references[i],
+                          bamFileHandlers[0].lengths[i]) in commonChr:
 
-          chrSizes.append( (bamFileHandlers[0].references[i], bamFileHandlers[0].lengths[i] ) )
+            chrSizes.append((bamFileHandlers[0].references[i],
+                             bamFileHandlers[0].lengths[i]))
 
-    outMessage.append( "\nUsing the following set of common chromosome names and lengths:\n" )
+    outMessage.append("\nUsing the following set of common chromosome "
+                      "names and lengths:\n")
     for chrSize in chrSizes:
-       outMessage.append( "{0:>15}\t{1:>10}\n".format(chrSize[0], chrSize[1]) )
+        outMessage.append("{0:>15}\t{1:>10}\n".format(chrSize[0], chrSize[1]))
 
     if verbose:
-       sys.stderr.write("".join(outMessage) )
+        sys.stderr.write("".join(outMessage))
     return chrSizes
-   
+
 
 def copyFileInMemory(filePath, suffix=''):
-    """ 
+    """
     copies a file into the special /dev/shm device which
     moves the file into memory.
     This process speeds ups the multiprocessor access to such files
@@ -138,14 +141,56 @@ def copyFileInMemory(filePath, suffix=''):
     if os.name == 'nt':
         return filePath
 
-    import tempfile
+    memFileName = getTempFileName(suffix=suffix)
     import shutil
-    _tempFile = tempfile.NamedTemporaryFile( prefix="_corr_", 
-                                             suffix=suffix,
-                                             dir='/dev/shm',
-                                             delete=False)
+    shutil.copyfile(filePath, memFileName)
+
+    return memFileName
+
+
+def getTempFileName(suffix=''):
+    """
+    returns a temporary file name.
+    If the special /dev/shm device is available,
+    the temporary file would be located in that folder.
+    /dv/shm is a folder that resides in memory and
+    which has much faster accession.
+    """
+    import tempfile
+    # is /dev/shm available?
+    try:
+        _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                                suffix=suffix,
+                                                dir='/dev/shm',
+                                                delete=False)
+    except OSError:
+        _tempFile = tempfile.NamedTemporaryFile(suffix=".sam",
+                                                delete=False)
 
     memFileName = _tempFile.name
     _tempFile.close()
-    shutil.copyfile( filePath, memFileName )
     return memFileName
+
+
+def which(program):
+    """ method to identify if a program
+    is on the user PATH variable.
+    From: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
+    """
+    import os
+
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None

@@ -18,79 +18,108 @@ from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools.countReadsPerBin import getFragmentFromRead
 from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
+from deeptools import utilities
 
 debug = 0
-
 samtools = cfg.config.get('external_tools', 'samtools')
 global_vars = dict()
 
+
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()
+    requiredArgs = getRequiredArgs()
     parser = argparse.ArgumentParser(
-        parents=[parentParser],
+        parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Corrects the GC bias using Benjamini\'s method '
         '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
-        'The tool computeGC bias needs to be run first.')
-
-    # define the arguments
-    parser.add_argument('--bamfile', '-b',
-                        metavar='bam file',
-                        help='Sorted Bam file to correct.',
-                        required=True)
-
-    parser.add_argument('--effectiveGenomeSize',
-                        help='The effective genome size is the portion '
-                        'of the genome that is mappable. Large fractions of '
-                        'the genome are stretches of NNNN that should be '
-                        'discarded. Also, if repetitive regions were not '
-                        'included in the mapping of reads, the effective '
-                        'genome size needs to be adjusted accordingly. '
-                        'Common values are: mm9: 2150570000, '
-                        'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                        'See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 ' 
-                        'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                        'for several effective genome sizes.',
-                        default=None,
-                        type=int,
-                        required=False)
-
-    parser.add_argument('--genome', '-g',
-                        help='Genome in two bit format. Most genomes can be '
-                        'found here: http://hgdownload.cse.ucsc.edu/gbdb/  '
-                        'Search for the .2bit ending. Otherwise, fasta '
-                        'files can be converted to 2bit using the UCSC '
-                        'programm called faToTwoBit available for different '
-                        'plattforms at '
-                        'http://hgdownload.cse.ucsc.edu/admin/exe/',
-                        metavar='two bit file',
-                        required=True)
-
-
-    group = parser.add_argument_group('Output options')
-
-    group.add_argument('--GCbiasFrequenciesFile', '-freq',
-                       help='Indicate the output file from '
-                       'computeGCBias containing, '
-                       'the observed and expected read frequencies per GC '
-                       'content.',
-                       type=argparse.FileType('r'),
-                       metavar='FILE',
-                       required=True)
-
-    group.add_argument('--correctedFile', '-o',
-                       help='Name of the corrected file. The ending will '
-                       'be used to decide the output file format. The options '
-                       'are ".bam", ".bw" for a bigWig file, ".bg" for a '
-                       'bedgraph file.',
-                       metavar='FILE',
-                       type=argparse.FileType('w'),
-                       required=True)
-
+        'The tool computeGC bias needs to be run first.',
+        usage='An example usage is:\n %(prog)s '
+        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit '
+        '-l 200 --GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '
+        '[options]',
+        conflict_handler='resolve',
+        add_help=False)
 
     args = parser.parse_args(args)
+    if args.correctedFile.name.endswith('bam'):
+        if not cfg.checkProgram(samtools, 'view',
+                                'http://samtools.sourceforge.net/'):
+            exit(1)
+    if args.correctedFile.name.endswith('bw'):
+        if not cfg.checkProgram('bedGraphToBigWig', '-h',
+                                'http://hgdownload.cse.ucsc.edu/admin/exe/'):
+            exit(1)
 
     return(args)
+
+
+def getRequiredArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+
+    required = parser.add_argument_group('Required arguments')
+
+    # define the arguments
+    required.add_argument('--bamfile', '-b',
+                          metavar='bam file',
+                          help='Sorted Bam file to correct.',
+                          required=True)
+
+    required.add_argument('--effectiveGenomeSize',
+                          help='The effective genome size is the portion '
+                          'of the genome that is mappable. Large fractions of '
+                          'the genome are stretches of NNNN that should be '
+                          'discarded. Also, if repetitive regions were not '
+                          'included in the mapping of reads, the effective '
+                          'genome size needs to be adjusted accordingly. '
+                          'Common values are: mm9: 2150570000, '
+                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
+                          'See Table 2 of '
+                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
+                          'for several effective genome sizes. This value is '
+                          'needed to detect enriched regions that, if not '
+                          'discarded can bias the results.',
+                          default=None,
+                          type=int,
+                          required=True)
+
+    required.add_argument('--genome', '-g',
+                          help='Genome in two bit format. Most genomes can be '
+                          'found here: http://hgdownload.cse.ucsc.edu/gbdb/  '
+                          'Search for the .2bit ending. Otherwise, fasta '
+                          'files can be converted to 2bit using the UCSC '
+                          'programm called faToTwoBit available for different '
+                          'plattforms at '
+                          'http://hgdownload.cse.ucsc.edu/admin/exe/',
+                          metavar='two bit file',
+                          required=True)
+
+    required.add_argument('--GCbiasFrequenciesFile', '-freq',
+                          help='Indicate the output file from '
+                          'computeGCBias containing, '
+                          'the observed and expected read frequencies per GC '
+                          'content.',
+                          type=argparse.FileType('r'),
+                          metavar='FILE',
+                          required=True)
+
+    output = parser.add_argument_group('Output options')
+    output.add_argument('--correctedFile', '-o',
+                        help='Name of the corrected file. The ending will '
+                        'be used to decide the output file format. The options '
+                        'are ".bam", ".bw" for a bigWig file, ".bg" for a '
+                        'bedgraph file.',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        required=True)
+
+    # define the optional arguments
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument("--help", "-h", action="help",
+                          help="show this help message and exit")
+
+    return parser
 
 
 def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
@@ -149,6 +178,7 @@ def writeCorrected_wrapper(args):
 def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     r"""writes a bedgraph file containing the GC correction of
     a region from the genome
+
     >>> test = Tester()
     >>> tempFile = writeCorrected_worker(*test.testWriteCorrectedChunk())
     >>> open(tempFile, 'r').readlines()
@@ -221,7 +251,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     if i == 0:
         return None
 
-    _file = tempfile.NamedTemporaryFile(delete=False)
+    _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
     # save in bedgraph format
     for bin in xrange(0, len(cvg_corr), step):
         value = np.mean(cvg_corr[bin:min(bin + step, end)])
@@ -267,6 +297,9 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     r"""
     Writes a SAM file, deleting and adding some reads in order to compensate
     for the GC bias. **This is a stochastic method.**
+
+    First, check if samtools can be executed, otherwise the test will fail
+    >>> resp = cfg.checkProgram(samtools, 'view', '')
     >>> np.random.seed(1)
     >>> test = Tester()
     >>> args = test.testWriteCorrectedSam()
@@ -297,16 +330,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
 
     bam = pysam.Samfile(global_vars['bam'])
-    # is /dev/shm available?
-    # working in this directory speeds the process
-    try:
-        _file = tempfile.NamedTemporaryFile(suffix=".sam",
-                                            dir='/dev/shm', delete=False)
-    except OSError:
-        _file = tempfile.NamedTemporaryFile(suffix=".sam", delete=False)
-
-    tempFileName = _file.name
-    _file.close()
+    tempFileName = utilities.getTempFileName(suffix='.sam')
 
     outfile = pysam.Samfile(tempFileName, 'wh', template=bam)
     startTime = time.time()
@@ -519,29 +543,32 @@ def main(args):
     if args.correctedFile.name.endswith('bg') or \
             args.correctedFile.name.endswith('bw'):
 
-        _temp_bg_file = tempfile.NamedTemporaryFile()
+        _temp_bg_file_name = utilities.getTempFileName(suffix='_all.bg')
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
 
             res = pool.map_async(writeCorrected_wrapper, mp_args).get(9999999)
         else:
             res = map(writeCorrected_wrapper, mp_args)
+
         # concatenate intermediary bedgraph files
+        _temp_bg_file = open(_temp_bg_file_name, 'w')
         for tempFileName in res:
             if tempFileName:
                 # concatenate all intermediate tempfiles into one
                 # bedgraph file
                 shutil.copyfileobj(open(tempFileName, 'rb'), _temp_bg_file)
                 os.remove(tempFileName)
-
-        args.correctedFile.close()
-        chromSizes = [(x, bit[x].size) for x in bit.keys()]
-        if args.correctedFile.name.endswith('bg'):
-            os.system("mv {} {}".format(_temp_bg_file, 
-                                        args.correctedFile.name))
-        else:
-            writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file.name,
-                                           args.correctedFile.name)
         _temp_bg_file.close()
+        args.correctedFile.close()
+
+        if args.correctedFile.name.endswith('bg'):
+            shutil.move(_temp_bg_file_name, args.correctedFile.name)
+
+        else:
+            chromSizes = [(x, bit[x].size) for x in bit.keys()]
+            writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file_name,
+                                           args.correctedFile.name)
+            os.remove(_temp_bg_file)
 
 
 class Tester():

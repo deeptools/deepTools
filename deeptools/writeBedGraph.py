@@ -1,6 +1,5 @@
 import os
 import shutil
-import tempfile
 import numpy as np
 
 # own modules
@@ -8,6 +7,7 @@ from deeptools import mapReduce
 from deeptools.utilities import getCommonChrNames
 from deeptools.countReadsPerBin import getCoverageOfRegion, getSmoothRange
 from deeptools import bamHandler
+from deeptools import utilities
 import config as cfg
 
 debug = 0
@@ -94,14 +94,7 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                 fragmentFromRead_func=fragmentFromRead_func))
         bamHandle.close()
 
-    # is /dev/shm available?
-    # working in this directory speeds the process
-    try:
-        _file = tempfile.NamedTemporaryFile(dir="/dev/shm",
-                                            suffix=".bg", delete=False)
-    except OSError:
-        _file = tempfile.NamedTemporaryFile(suffix=".bg", delete=False)
-
+    _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
     previousValue = None
 
     lengthCoverage = len(coverage[0])
@@ -248,6 +241,7 @@ def writeBedGraph(bamFilesList, outputFileName, fragmentLength,
     and that is related to the coverage underlying the tile.
 
     >>> test = Tester()
+    >>> import tempfile
     >>> outFile = tempfile.NamedTemporaryFile()
     >>> funcArgs = {'scaleFactor': 1.0}
     >>> writeBedGraph( [test.bamFile1], outFile.name,
