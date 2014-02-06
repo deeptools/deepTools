@@ -13,7 +13,7 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 
 ![gallery](https://raw.github.com/fidelram/deepTools/master/examples/collage.png)
 
-Our [wiki page](https://github.com/fidelram/deepTools/wiki) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. It also contains an [FAQ section](FAQ) that we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
+Our [wiki page](https://github.com/fidelram/deepTools/wiki) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. It also contains an [FAQ][] section that we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -135,6 +135,7 @@ remember: for support, questions, or feature requests contact: deeptools@googleg
 [computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
 [heatmapper]: https://github.com/fidelram/deepTools/wiki/Visualizations
 [profiler]: https://github.com/fidelram/deepTools/wiki/Visualizations
+[FAQ]: https://github.com/fidelram/deepTools/wiki/FAQ
 
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
 [Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
