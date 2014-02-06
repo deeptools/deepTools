@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-
-
 import argparse  # to parse command line arguments
 import numpy as np
 
@@ -19,10 +16,13 @@ debug = 0
 
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()
+    requiredArgs = getRequiredArgs()
+    optionalArgs = getOptionalArgs()
     bamParser = parserCommon.bam()
     outputParser = parserCommon.output()
     parser = argparse.ArgumentParser(
-        parents=[parentParser, bamParser, outputParser],
+        parents=[requiredArgs, outputParser, optionalArgs, parentParser,
+                 bamParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two BAM files based on the number of '
         'mapped reads. To compare the BAM files, the genome is partitioned '
@@ -37,116 +37,11 @@ def parseArguments(args=None):
         'is also available. The output is either a bedgraph or a bigwig file '
         'containing the bin location and the resulting comparison values. By '
         'default, if reads are mated, the fragment length reported in the BAM '
-        'file is used.')
+        'file is used.',
+        usage='An example usage is:\n %(prog)s '
+        '-b1 treatment.bam -b2 control.bam -o log2ratio.bw',
 
-    # define the arguments
-    parser.add_argument('--bamfile1', '-b1',
-                        metavar='BAM file',
-                        help='Sorted BAM file 1. Usually the BAM file '
-                        'for the treatment.',
-                        required=True)
-
-    parser.add_argument('--bamIndex1', '-bai1',
-                        help='Index for the bam file1 . Default is '
-                        'to consider a the path of the bam file adding '
-                        'the .bai suffix.',
-                        metavar='bam file index')
-
-    parser.add_argument('--bamfile2', '-b2',
-                        metavar='BAM file',
-                        help='Sorted BAM file 2. Usually the BAM '
-                        'file for the control.',
-                        required=True)
-
-    parser.add_argument('--bamIndex2', '-bai2',
-                        help='Index for the bam file1. Default is to consider '
-                        'the path of the bam file adding the .bai suffix.',
-                        metavar='bam file index')
-
-    parser.add_argument('--scaleFactorsMethod',
-                        help='Method to use to scale the samples. '
-                        'Default "readCount".',
-                        choices=['readCount', 'SES'],
-                        default='readCount')
-
-    parser.add_argument('--sampleLength', '-l',
-                        help='Length in base pairs used to sample the genome '
-                        'and compute the size or scaling factors to compare '
-                        'the two BAM files',
-                        default=1000,
-                        type=int)
-
-    parser.add_argument('--scaleFactors',
-                        help='Set this parameter to avoid the computation of '
-                        'scaleFactors. The format is '
-                        'scaleFactor1:scaleFactor2. For example 0.7:1 to '
-                        'scale the first BAM file by 0.7 while not scaling '
-                        'the second BAM file',
-                        default=None,
-                        required=False)
-
-    parser.add_argument('--pseudocount',
-                        help='small number to avoid log2(x/0)',
-                        default=1,
-                        type=float,
-                        required=False)
-
-    parser.add_argument('--ratio',
-                        help='The default is to output the log2ratio between the '
-                        'two samples. The reciprocal ratio returns the '
-                        'the negative of the inverse of the ratio '
-                        'if the ratio is less than 0. The resulting '
-                        'values are interpreted as negative fold changes. ',
-                        default='log2',
-                        choices=['log2', 'ratio', 'subtract', 'add',
-                                 'reciprocal_ratio'],
-                        required=False)
-
-    parser.add_argument('--normalizeTo1x',
-                        help='(only when --ratio subtract) Report normalized '
-                        'coverage to 1x sequencing depth. Sequencing depth is '
-                        'defined as the total number of mapped reads*fragment '
-                        'length / effective genome size. To use this option, '
-                        'the effective genome size has to be given. Common '
-                        'values are: mm9: 2150570000, hg19:2451960000, '
-                        'dm3:121400000 and ce10:93260000. The default is '
-                        'not to use any normalization.',
-                        default=None,
-                        type=int,
-                        required=False)
-
-    parser.add_argument('--normalizeUsingRPKM',
-                        help='*only when --ratio subtract* Use RPKM to '
-                        'normalize the number of reads per bin. The formula '
-                        'is: RPKM (per bin)=#reads per bin / ( # of mapped '
-                        'reads (millions) * bin length (KB) ). This is the '
-                        'default normalization method.',
-                        action='store_true',
-                        required=False)
-
-    parser.add_argument('--numberOfSamples', '-n',
-                        help='Number of samplings taken from the genome '
-                        'to compute the scaling factors',
-                        default=1e5,
-                        type=int)
-
-    parser.add_argument('--missingDataAsZero',
-                        default="yes",
-                        choices=["yes", "no"],
-                        help='Default is "yes". This parameter determines '
-                        'if missing data should be treated as zeros. '
-                        'If set to "no", missing data will be ignored '
-                        'and not included in the output file. Missing '
-                        'data is defined as those regions for which '
-                        'both BAM files have 0 reads.')
-
-    parser.add_argument('--ignoreForNormalization', '-ignore',
-                        help='A list of chromosome names '
-                        'separated by comma and limited by quotes, '
-                        'containing those '
-                        'chromosomes that you want to be excluded '
-                        'for computing the normalization. For example, '
-                        ' --ignoreForNormalization "chrX, chrM" ')
+        add_help=False)
 
     args = parser.parse_args(args)
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
@@ -157,13 +52,143 @@ def parseArguments(args=None):
     else:
         args.ignoreForNormalization = []
 
-    if args.smoothLength <= args.binSize:
+    if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will be done".format(args.smoothLength,
-                                                              args.binSize)
+            "size ({}).\n\n No smoothing will be "\
+            "done".format(args.smoothLength,
+                          args.binSize)
         args.smoothLength = None
 
     return(args)
+
+
+def getRequiredArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+
+    required = parser.add_argument_group('Required arguments')
+
+    # define the arguments
+    required.add_argument('--bamfile1', '-b1',
+                          metavar='BAM file',
+                          help='Sorted BAM file 1. Usually the BAM file '
+                          'for the treatment.',
+                          required=True)
+
+    required.add_argument('--bamfile2', '-b2',
+                          metavar='BAM file',
+                          help='Sorted BAM file 2. Usually the BAM '
+                          'file for the control.',
+                          required=True)
+
+    return parser
+
+
+def getOptionalArgs():
+
+    parser = argparse.ArgumentParser(add_help=False)
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument("--help", "-h", action="help",
+                          help="show this help message and exit")
+
+    optional.add_argument('--bamIndex1', '-bai1',
+                          help='Index for the bam file1 . Default is '
+                          'to consider a the path of the bam file adding '
+                          'the .bai suffix.',
+                          metavar='bam file index')
+
+    optional.add_argument('--bamIndex2', '-bai2',
+                          help='Index for the bam file1. Default is to '
+                          'consider the path of the bam file adding the .bai '
+                          'suffix.',
+                          metavar='bam file index')
+
+    optional.add_argument('--scaleFactorsMethod',
+                          help='Method to use to scale the samples. '
+                          'Default "readCount".',
+                          choices=['readCount', 'SES'],
+                          default='readCount')
+
+    optional.add_argument('--sampleLength', '-l',
+                          help='Length in base pairs used to sample the genome '
+                          'and compute the size or scaling factors to compare '
+                          'the two BAM files',
+                          default=1000,
+                          type=int)
+
+    optional.add_argument('--scaleFactors',
+                          help='Set this parameter to avoid the computation of '
+                          'scaleFactors. The format is '
+                          'scaleFactor1:scaleFactor2. For example 0.7:1 to '
+                          'scale the first BAM file by 0.7 while not scaling '
+                          'the second BAM file',
+                          default=None,
+                          required=False)
+
+    optional.add_argument('--pseudocount',
+                          help='small number to avoid log2(x/0)',
+                          default=1,
+                          type=float,
+                          required=False)
+
+    optional.add_argument('--ratio',
+                          help='The default is to output the log2ratio between the '
+                          'two samples. The reciprocal ratio returns the '
+                          'the negative of the inverse of the ratio '
+                          'if the ratio is less than 0. The resulting '
+                          'values are interpreted as negative fold changes. ',
+                          default='log2',
+                          choices=['log2', 'ratio', 'subtract', 'add',
+                                   'reciprocal_ratio'],
+                          required=False)
+
+    optional.add_argument('--normalizeTo1x',
+                          help='(only when --ratio subtract) Report '
+                          ' normalized coverage to 1x sequencing depth. '
+                          'Sequencing depth is defined '
+                          'as the total number of mapped reads*fragment '
+                          'length / effective genome size. To use this option, '
+                          'the effective genome size has to be given. Common '
+                          'values are: mm9: 2150570000, hg19:2451960000, '
+                          'dm3:121400000 and ce10:93260000. The default is '
+                          'not to use any normalization.',
+                          default=None,
+                          type=int,
+                          required=False)
+
+    optional.add_argument('--normalizeUsingRPKM',
+                          help='*only when --ratio subtract* Use RPKM to '
+                          'normalize the number of reads per bin. The formula '
+                          'is: RPKM (per bin)=#reads per bin / ( # of mapped '
+                          'reads (millions) * bin length (KB) ). This is the '
+                          'default normalization method.',
+                          action='store_true',
+                          required=False)
+
+    optional.add_argument('--numberOfSamples', '-n',
+                          help='Number of samplings taken from the genome '
+                          'to compute the scaling factors',
+                          default=1e5,
+                          type=int)
+
+    optional.add_argument('--missingDataAsZero',
+                          default="yes",
+                          choices=["yes", "no"],
+                          help='Default is "yes". This parameter determines '
+                          'if missing data should be treated as zeros. '
+                          'If set to "no", missing data will be ignored '
+                          'and not included in the output file. Missing '
+                          'data is defined as those regions for which '
+                          'both BAM files have 0 reads.')
+
+    optional.add_argument('--ignoreForNormalization', '-ignore',
+                          help='A list of chromosome names '
+                          'separated by comma and limited by quotes, '
+                          'containing those '
+                          'chromosomes that you want to be excluded '
+                          'for computing the normalization. For example, '
+                          ' --ignoreForNormalization "chrX, chrM" ')
+    return parser
 
 ########################################
 # MAIN

@@ -49,17 +49,16 @@ def bam(args=None):
                        default='200')
 
     group.add_argument('--smoothLength',
-                        metavar="INT bp",
-                        help='The smooth length defines a window, larger than '
-                        'the binSize, to average the number of reads. For '
-                        'example, if the --binSize is set to 20 bp and the '
-                        '--smoothLength is set to 60 bp, then, for each '
-                        'binSize the average of it and its left and right '
-                        'neighbors is considered. Any value smaller than the '
-                        '--binSize will be ignored and no smoothing will be '
-                        'applied.',
-                        type=int,
-                        required=False)
+                       metavar="INT bp",
+                       help='The smooth length defines a window, larger than '
+                       'the binSize, to average the number of reads. For '
+                       'example, if the --binSize is set to 20 bp and the '
+                       '--smoothLength is set to 60 bp, then, for each '
+                       'binSize the average of it and its left and right '
+                       'neighbors is considered. Any value smaller than the '
+                       '--binSize will be ignored and no smoothing will be '
+                       'applied.',
+                       type=int)
 
     group.add_argument('--doNotExtendPairedEnds',
                        help='If set, reads are not extended to match the '
