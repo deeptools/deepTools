@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import sys
-
-
 # own tools
 import argparse
 from deeptools import writeBedGraph
@@ -16,10 +13,13 @@ debug = 0
 def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()
     bamParser = parserCommon.bam()
+    requiredArgs = getRequiredArgs()
+    optionalArgs = getOptionalArgs()
     outputParser = parserCommon.output()
     parser = \
         argparse.ArgumentParser(
-            parents=[parentParser, bamParser, outputParser],
+            parents=[requiredArgs, outputParser, optionalArgs,
+                     parentParser, bamParser],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             description='Given a BAM file, this tool generates a bigWig or '
             'bedGraph file of fragment or read coverages. The way the method '
@@ -28,66 +28,8 @@ def parseArguments(args=None):
             'bin in the genome\nThe resulting read counts can be '
             'normalized using either a given scaling factor, the RPKM formula '
             'or to get a 1x depth of coverage (RPGC).\n',
-            epilog='Example usage: %(prog)s -b test.bam')
-
-    # define the arguments
-    parser.add_argument('--bam', '-b',
-                        help='Bam file to process',
-                        metavar='bam file',
-                        required=True)
-
-    parser.add_argument('--bamIndex', '-bai',
-                        help='Index for the bam file. Default is to consider '
-                        'the path of the bam file adding the .bai suffix.',
-                        metavar='bam file index')
-
-    parser.add_argument('--scaleFactor',
-                        help='Indicate a number that you would like to use '
-                        'as a fixed scaling factor instead of the scaling '
-                        'factor calculated by the '
-                        '--normalizeUsingSequencingDepth option.',
-                        default=1,
-                        type=float,
-                        required=False)
-
-    parser.add_argument('--normalizeTo1x',
-                        help='Report read coverage normalized to 1x '
-                        'sequencing depth (also known as Reads Per Genomic '
-                        'Content (RPGC)). Sequencing depth is defined as: '
-                        '(total number of mapped reads * fragment length) / '
-                        'effective genome size.\nTo use this option, the '
-                        'effective genome size has to be indicated after the '
-                        'command. The effective genome size is the portion '
-                        'of the genome that is mappable. Large fractions of '
-                        'the genome are stretches of NNNN that should be '
-                        'discarded. Also, if repetitive regions were not '
-                        'included in the mapping of reads, the effective '
-                        'genome size needs to be adjusted accordingly. '
-                        'Common values are: mm9: 2150570000, '
-                        'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                        'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
-                        'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                        'for several effective genome sizes.',
-                        default=None,
-                        type=int,
-                        required=False)
-
-    parser.add_argument('--normalizeUsingRPKM',
-                        help='Use Reads Per Kilobase per Million reads to '
-                        'normalize the number of reads per bin. The formula '
-                        'is: RPKM (per bin) =  number of reads per bin / '
-                        '( number of mapped reads ( in millions) * bin length '
-                        '(kp) )',
-                        action='store_true',
-                        required=False)
-
-    parser.add_argument('--ignoreForNormalization', '-ignore',
-                        help='A list of chromosome names '
-                        'separated by comma and limited by quotes, '
-                        'containing those '
-                        'chromosomes that want to be excluded '
-                        'for computing the normalization. For example, '
-                        ' --ignoreForNormalization "chrX, chrM" ')
+            usage='An example usage is: %(prog)s -b signal.bam -o signal.bw',
+            add_help=False)
 
     args = parser.parse_args(args)
 
@@ -95,8 +37,9 @@ def parseArguments(args=None):
     if args.scaleFactor != 1: args.normalizeTo1x = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will be done".format(args.smoothLength,
-                                                              args.binSize)
+            "size ({}).\n\n No smoothing will "\
+            "be done".format(args.smoothLength,
+                             args.binSize)
         args.smoothLength = None
 
     if args.ignoreForNormalization:
@@ -106,6 +49,84 @@ def parseArguments(args=None):
         args.ignoreForNormalization = []
 
     return(args)
+
+
+def getRequiredArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+
+    required = parser.add_argument_group('Required arguments')
+
+    # define the arguments
+    required.add_argument('--bam', '-b',
+                          help='Bam file to process',
+                          metavar='bam file',
+                          required=True)
+
+    return parser
+
+
+def getOptionalArgs():
+
+    parser = argparse.ArgumentParser(add_help=False)
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument("--help", "-h", action="help",
+                          help="show this help message and exit")
+
+    optional.add_argument('--bamIndex', '-bai',
+                          help='Index for the bam file. Default is to consider '
+                          'the path of the bam file adding the .bai suffix.',
+                          metavar='bam file index')
+
+    optional.add_argument('--scaleFactor',
+                          help='Indicate a number that you would like to use '
+                          'as a fixed scaling factor instead of the scaling '
+                          'factor calculated by the '
+                          '--normalizeUsingSequencingDepth option.',
+                          default=1,
+                          type=float,
+                          required=False)
+
+    optional.add_argument('--normalizeTo1x',
+                          help='Report read coverage normalized to 1x '
+                          'sequencing depth (also known as Reads Per Genomic '
+                          'Content (RPGC)). Sequencing depth is defined as: '
+                          '(total number of mapped reads * fragment length) / '
+                          'effective genome size.\nTo use this option, the '
+                          'effective genome size has to be indicated after the '
+                          'command. The effective genome size is the portion '
+                          'of the genome that is mappable. Large fractions of '
+                          'the genome are stretches of NNNN that should be '
+                          'discarded. Also, if repetitive regions were not '
+                          'included in the mapping of reads, the effective '
+                          'genome size needs to be adjusted accordingly. '
+                          'Common values are: mm9: 2150570000, '
+                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
+                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
+                          'for several effective genome sizes.',
+                          default=None,
+                          type=int,
+                          required=False)
+
+    optional.add_argument('--normalizeUsingRPKM',
+                          help='Use Reads Per Kilobase per Million reads to '
+                          'normalize the number of reads per bin. The formula '
+                          'is: RPKM (per bin) =  number of reads per bin / '
+                          '( number of mapped reads ( in millions) * bin '
+                          'length (kb) )',
+                          action='store_true',
+                          required=False)
+
+    optional.add_argument('--ignoreForNormalization', '-ignore',
+                          help='A list of chromosome names '
+                          'separated by comma and limited by quotes, '
+                          'containing those '
+                          'chromosomes that want to be excluded '
+                          'for computing the normalization. For example, '
+                          ' --ignoreForNormalization "chrX, chrM" ')
+
+    return parser
 
 
 def scaleFactor(string):

@@ -36,3 +36,5 @@ nosetests.xml
 .project
 .pydevproject
 
+# Ignore all emacs backup files
+*~
