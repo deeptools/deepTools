@@ -65,6 +65,72 @@ def parseArguments(args=None):
     return(args)
 
 
+def getNumIndividualMatrixCols(hm):
+    """
+    returns the number of columns based that
+    each matrix should have. This is done because
+    the final matrix that is plotted can be composed
+    of smaller matrices that are merge one after
+    the other.
+    """
+    matrixCols = ((hm.parameters['downstream'] +
+                   hm.parameters['upstream'] + hm.parameters['body']) /
+                  hm.parameters['bin size'])
+
+#    totalNumCols = hm.matrixDict[hm.matrixDict.keys()[0]].shape[1]
+#    numMergedMatrices = totalNumCols / matrixCols
+
+#    return numMergedMatrices
+
+    return matrixCols
+
+
+def getHeatmapTicks(hm, referencePointLabel, startLabel, endLabel):
+    """
+    returns the position and labelling of the xticks that
+    correspond to the heatmap
+    """
+    w = hm.parameters['bin size']
+    b = hm.parameters['upstream']
+    a = hm.parameters['downstream']
+    m = hm.parameters['body']
+
+    if b < 1e5:
+        quotient = 1000
+        symbol = 'Kb'
+    if b >= 1e5:
+        quotient = 1e6
+        symbol = 'Mb'
+
+    if m == 0:
+        xTicks = [k / w for k in [0, b, b  + a]]
+        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
+                       referencePointLabel,
+                       '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+
+    else:
+        xticks_values = [0]
+        xTicksLabel = []
+
+        # only if upstream region is set, add a x tick
+        if hm.parameters['upstream'] > 0:
+            xticks_values.append(b)
+            xTicksLabel.append('{0:.1f}'.format(-(float(b) / quotient)))
+
+        # set the x tick for the body parameter, regardless if
+        # upstream is 0 (not set)
+        xticks_values.append(b + a)
+        xTicksLabel.append(startLabel)
+        xTicksLabel.append(endLabel)
+        if a > 0:
+            xticks_values.append(b + a + a)
+            xTicksLabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+
+        xTicks = [k / w for k in xticks_values]
+
+    return xTicks, xTicksLabel
+
+
 def plot_profile(ax, ma, average_type, color, label,
                  plot_type='simple'):
 
@@ -187,7 +253,8 @@ def plotMatrix(hm, outFileName,
         figHeight = topBorder + bottomBorder + numGroups * \
             (sumFigHeightInches + sumFigSpacer) + heatmapHeightInches
     else:
-        figHeight = topBorder + bottomBorder + (np.ceil(float(numGroups) / 2)) * \
+        figHeight = topBorder + bottomBorder + \
+            (np.ceil(float(numGroups) / 2)) * \
             spaceBetweenClusterNames + sumFigHeightInches + sumFigSpacer + \
             heatmapHeightInches
 
@@ -326,13 +393,15 @@ def plotMatrix(hm, outFileName,
 
             ax.axes.set_ylabel(yAxisLabel)
 
-    ###### plot heatmap plot ###########
+    ###### plot heatmap  ###########
     if showHeatmap:
         startHeatmap = heatFracHeight + bottomBorderFrac
         groupLengths = np.array([len(x) for x in hm.matrixDict.values()],
                                 dtype='float64')
         groupLengthsFrac = groupLengths / sum(groupLengths)
         index = -1
+
+        # iterate per group/cluster present
         for label, ma in hm.matrixDict.iteritems():
 #        for index in range(0, numGroups):
             index += 1
@@ -372,6 +441,19 @@ def plotMatrix(hm, outFileName,
             axHeat.axes.set_ylabel(label)
             axHeat.axes.set_yticks([])
 
+            # if multiple plots are merged, draw a line to separate them
+            matrixCols = getNumIndividualMatrixCols(hm)
+            line_x_position = range(matrixCols, ma.shape[1], matrixCols)
+            axHeat.vlines(line_x_position, 0, ma.shape[0], 'black')
+
+        # add xticks and labels to the last plot
+        # define the xticks
+        xTicks, xTicksLabel = getHeatmapTicks(hm, referencePointLabel,
+                                              startLabel, endLabel)
+        axHeat.axes.get_xaxis().set_visible(True)
+        axHeat.axes.set_xticks(xTicks)
+        axHeat.axes.set_xticklabels(xTicksLabel, size=8)
+
     ###### add heatmap colorbar ###########
     if showColorbar:
         # this is the case when only the colorbar wants to be
@@ -405,6 +487,7 @@ def flattenMatrix(matrixDict):
     matrixFlatten = np.concatenate([x for x in matrixDict.values()]).flatten()
     # nans are removed from the flattened array
     return matrixFlatten[np.isnan(matrixFlatten) == False]
+
 
 def mergeSmallGroups(matrixDict):
     groupLengths = [len(x) for x in matrixDict.values()]
@@ -503,9 +586,7 @@ def main(args):
         hm.matrixDict = _matrixDict
         hm.regionsDict = _regionsDict
 
-    # check if maybe some group is too small to be plotted
-    # this causes a segmentation fault so is better to
-    # try catch the problem and return a meaningful output
+    
     total_regions = 0
     for group_matrix in hm.matrixDict.values():
         total_regions += group_matrix.shape[0]

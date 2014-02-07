@@ -227,7 +227,7 @@ class heatmapper:
                                                    feature['chrom'],
                                                    feature['start'],
                                                    feature['end']))
-            coverage = None
+            coverage = []
             if score_file.endswith(".bam"):
                 for bamfile in bamfile_list:
                     cov = heatmapper.coverageFromBam(
@@ -894,7 +894,7 @@ class heatmapper:
 
         if verbose and duplicates > 0:
             sys.stderr.write(
-                "{} ({:.2f}) regions covering the exact same interval\n"
+                "{} ({:.2f}) regions covering the exact same interval "
                 "were found".format(duplicates,
                                     float(duplicates) * 100 / totalIntervals))
 
