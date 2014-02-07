@@ -60,8 +60,9 @@ For detailed help type:
                  parentParser,
                  bamParser,
                  ],
-        help="In the bins mode, the correlation is computed based on randomly chosen "
-        " genomic regions of the same size (= bins). The number of bins to be used has to be specified.",
+        help="In the bins mode, the correlation is computed based on "
+        "randomly chosen genomic regions of the same size (= bins). "
+        "The number of bins to be used has to be specified.",
         add_help=False,
         usage='An example usage is:\n  %(prog)s '
         '-b treatment.bam input.bam '
