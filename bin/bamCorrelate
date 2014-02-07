@@ -60,7 +60,7 @@ For detailed help type:
                  parentParser,
                  bamParser,
                  ],
-        help="In the bins mode, the correlation is computed based on randomly chosen
+        help="In the bins mode, the correlation is computed based on randomly chosen "
         " genomic regions of the same size (= bins). The number of bins to be used has to be specified.",
         add_help=False,
         usage='An example usage is:\n  %(prog)s '
@@ -110,10 +110,10 @@ def bamCorrelateArgs(case='bins'):
     required.add_argument('--plotFile', '-o',
                        help='File name to save the file containing the heatmap '
                        'of the correlation. The given file ending will be used '
-                       ' to determine the image format, for example:
-                       'correlation.pdf will save the heatmap in pdf format.'
+                       ' to determine the image format, for example: '
+                       'correlation.pdf will save the heatmap in pdf format. '
                         'The available options are: .png, .emf, '
-                        '.eps, .pdf and .svg.'
+                        '.eps, .pdf and .svg.',
                        type=argparse.FileType('w'),
                        metavar = 'file name',
                        required=True)
@@ -143,7 +143,7 @@ def bamCorrelateArgs(case='bins'):
 
         optional.add_argument('--numberOfSamples', '-n',
                               metavar='',
-                              help = 'Number of random genome places to count reads for
+                              help = 'Number of random genome places to count reads for '
                               'the correlation computation.',
                               default=int(1e6),
                               type=int)
