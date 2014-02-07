@@ -195,7 +195,9 @@ def checkBigWig(string):
     is installed and is executable.
     """
     if string == 'bigwig':
-        if not cfg.checkProgram('bedGraphToBigWig', 'h',
+        bedgraph_to_bigwig = cfg.config.get('external_tools',
+                                            'bedgraph_to_bigwig')
+        if not cfg.checkProgram(bedgraph_to_bigwig, 'h',
                                 'http://hgdownload.cse.ucsc.edu/admin/exe/'):
             msg = "The output is set by default to 'bedgraph'\n"
             sys.stderr.write(msg)
