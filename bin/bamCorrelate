@@ -22,12 +22,12 @@ def parseArguments(args=None):
 bamCorrelate can be run in two modes: bins and BED-file.
 
 In the bins mode, the correlation is computed based on randomly
-sampled bins of equal length. The user has to specify the number of
-bins. This is useful to assess the overall similarity of BAM files.
+sampled bins of equal length. The user has to specify how many bins should
+be sampled. This is useful to assess the overall similarity of BAM files.
 
 In the BED-file options, the user supplies a list of genomic regions
 in BED format in addition to the list of BAM files. bamCorrelate
-subsequently uses this list to compare the read coverages for these
+subsequently uses the BED file to compare the read coverages for these
 regions only. This can be used, for example, to compare the ChIP-seq
 coverages of two different samples for a set of peak regions.
 
@@ -60,8 +60,8 @@ For detailed help type:
                  parentParser,
                  bamParser,
                  ],
-        help="In the bins mode, the correlation is computed based on equal "
-        "length bins. The number of bins to be used has to be specified.",
+        help="In the bins mode, the correlation is computed based on randomly chosen
+        " genomic regions of the same size (= bins). The number of bins to be used has to be specified.",
         add_help=False,
         usage='An example usage is:\n  %(prog)s '
         '-b treatment.bam input.bam '
@@ -110,9 +110,10 @@ def bamCorrelateArgs(case='bins'):
     required.add_argument('--plotFile', '-o',
                        help='File name to save the file containing the heatmap '
                        'of the correlation. The given file ending will be used '
-                       ' to determine the image '
-                        'format. The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg", e. g. correlation.pdf',
+                       ' to determine the image format, for example:
+                       'correlation.pdf will save the heatmap in pdf format.'
+                        'The available options are: .png, .emf, '
+                        '.eps, .pdf and .svg.'
                        type=argparse.FileType('w'),
                        metavar = 'file name',
                        required=True)
@@ -129,8 +130,8 @@ def bamCorrelateArgs(case='bins'):
     optional.add_argument('--labels', '-l',
                         metavar = '',
                         help = 'List of labels to use in the image. '
-                        'If not given the file names will be used instead. '
-                        'Separate the labels by space.',
+                        'If no labels are given, the file names will be used instead. '
+                        'Separate the labels by space, e.g. --labels sample1 sample2 sample3',
                         nargs = '+')
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
@@ -142,8 +143,8 @@ def bamCorrelateArgs(case='bins'):
 
         optional.add_argument('--numberOfSamples', '-n',
                               metavar='',
-                              help = 'Number of places to sample to compute '
-                              'the correlation',
+                              help = 'Number of random genome places to count reads for
+                              'the correlation computation.',
                               default=int(1e6),
                               type=int)
 
@@ -162,8 +163,8 @@ def bamCorrelateArgs(case='bins'):
                             type=int)
 
         required.add_argument('--BED', 
-                           help = '*If* the correlation wants to be limited to '
-                               'certain regions a BED file can be given. If this '
+                           help = '*If* the correlation of read counts should be limited to '
+                               'certain regions, a BED file can be given. If this '
                                'is the case, then the correlation is computed for '
                                'the number of reads that overlap such regions and '
                                'the values set for binSize and numberOfSamples are ' 
@@ -222,8 +223,8 @@ def bamCorrelateArgs(case='bins'):
                        metavar='',
                        help='image format type. If given, this option overrides the '
                        'image format based on the plotFile ending. '
-                       'The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg"',
+                       'The available options are: png, emf, '
+                        'eps, pdf and svg.',
                        choices=['png','pdf', 'svg','eps', 'emf'])
     return parser
 
@@ -287,8 +288,8 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
 
 def main(args):
     """
-    1. get read counts at different positions eigher 
-    all of same length or from bed regions
+    1. get read counts at different positions either 
+    all of same length or from genomic regions from the BED file
     
     2. compute  correlation
 
