@@ -99,22 +99,17 @@ class install(_install):
             _out = subprocess.Popen([program, args], stderr=subprocess.PIPE,
                                     stdout=subprocess.PIPE)
             return True
-        except OSError as e:
-            if e.errno == os.errno.ENOENT:
-                # handle file not found error.
-                # the config file is installed in:
-                msg = "\n**{0} not found. This " \
-                      "program is needed for the following "\
-                      "tools to work properly:\n"\
-                      " {1}\n"\
-                      "{0} can be downloaded from here:\n " \
-                      " {2}\n".format(program, affected_tools,
-                                      where_to_download)
-                sys.stderr.write(msg)
-            else:
-                # Something else went wrong while
-                # trying to run `program`
-                raise
+        except EnvironmentError:
+            # handle file not found error.
+            # the config file is installed in:
+            msg = "\n**{0} not found. This " \
+                  "program is needed for the following "\
+                  "tools to work properly:\n"\
+                  " {1}\n"\
+                  "{0} can be downloaded from here:\n " \
+                  " {2}\n".format(program, affected_tools,
+                                  where_to_download)
+            sys.stderr.write(msg)
 
         except Exception as e:
             sys.stderr.write("Error: {}".format(e))
