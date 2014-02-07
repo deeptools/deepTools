@@ -26,7 +26,7 @@ class heatmapper:
         self.lengthDict = None
         self.matrixAvgsDict = None
 
-    def computeMatrix(self, score_file, regions_file, parameters,
+    def computeMatrix(self, score_file_list, regions_file, parameters,
                       verbose=False):
         """
         Splits into
@@ -60,12 +60,6 @@ class heatmapper:
                     parameters['upstream']))
             exit(1)
 
-        # determine the number of matrix columns based on the lengths
-        # given by the user
-        matrixCols = ((parameters['downstream'] +
-                       parameters['upstream'] + parameters['body']) /
-                      parameters['bin size'])
-
         regionsDict = self.getRegionsAndGroups(regions_file, verbose=verbose)
         group_len = [len(x) for x in regionsDict]
         # check if a given group is too small. Groups that
@@ -88,8 +82,8 @@ class heatmapper:
             # prepare groups of 400 regions to send to workers.
             for index in range(0, len(regions), 400):
                 index_end = min(len(regions), index + 400 )
-                mp_args.append((score_file, regions[index:index_end],
-                                matrixCols, parameters))
+                mp_args.append((score_file_list, regions[index:index_end],
+                                parameters))
 
             if len(mp_args) > 1 and parameters['proc number'] > 1:
                 pool = multiprocessing.Pool(parameters['proc number'])
@@ -123,7 +117,7 @@ class heatmapper:
                      "the bigWig file correspond to each other\n")
                 exit(1)
             if regions_no_score > len(regions) * 0.75 or len(regionList) == 0:
-                file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
+                file_type = 'bigwig' if score_file_list[0].endswith(".bw") else "BAM"
                 prcnt = 100 * float(regions_no_score) / len(regions)
                 sys.stderr.write(
                     "\n\nWarning: {:.2f}% of regions are *not* associated\n"
@@ -144,13 +138,26 @@ class heatmapper:
         self.matrixAvgsDict = matrixAvgsDict
 
     @staticmethod
-    def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
+    def compute_sub_matrix_worker(score_file_list, regions,
+                                  parameters):
         # read BAM or scores file
-        if score_file.endswith(".bam"):
-            bamfile = pysam.Samfile(score_file, 'rb')
+        if score_file_list[0].endswith(".bam"):
+            bamfile_list = []
+            for score_file in score_file_list:
+                bamfile_list.append(pysam.Samfile(score_file, 'rb'))
         else:
+            bigwig_list = []
             from bx.bbi.bigwig_file import BigWigFile
-            bigwig = BigWigFile(file=open(score_file, 'r' ))
+            for score_file in score_file_list:
+                bigwig_list.append(BigWigFile(file=open(score_file, 'r' )))
+
+        # determine the number of matrix columns based on the lengths
+        # given by the user, times the number of score files
+        matrixCols = len(score_file_list) * \
+            ((parameters['downstream'] +
+              parameters['upstream'] + parameters['body']) /
+             parameters['bin size'])
+
         # create an empty matrix to store the values
         subMatrix = np.zeros((len(regions), matrixCols))
         subMatrix[:] = np.NAN
@@ -222,17 +229,25 @@ class heatmapper:
                                                    feature['end']))
             coverage = None
             if score_file.endswith(".bam"):
-                coverage = heatmapper.coverageFromBam(
-                    bamfile, feature['chrom'], zones,
-                    parameters['bin size'],
-                    parameters['bin avg type'])
+                for bamfile in bamfile_list:
+                    cov = heatmapper.coverageFromBam(
+                        bamfile, feature['chrom'], zones,
+                        parameters['bin size'],
+                        parameters['bin avg type'])
+                    if feature['strand'] == "-":
+                        cov = cov[::-1]
+                    coverage = np.hstack([coverage, cov])
 
             else:
-                coverage = heatmapper.coverageFromBigWig(
-                    bigwig, feature['chrom'], zones,
-                    parameters['bin size'],
-                    parameters['bin avg type'],
-                    parameters['missing data as zero'])
+                for bigwig in bigwig_list:
+                    cov = heatmapper.coverageFromBigWig(
+                        bigwig, feature['chrom'], zones,
+                        parameters['bin size'],
+                        parameters['bin avg type'],
+                        parameters['missing data as zero'])
+                    if feature['strand'] == "-":
+                        cov = cov[::-1]
+                    coverage = np.hstack([coverage, cov])
 
             """ 
             if coverage is None:
@@ -298,10 +313,7 @@ class heatmapper:
             if parameters['scale'] != 1:
                 coverage = parameters['scale'] * coverage
 
-            if feature['strand'] == "-":
-                subMatrix[j, :] = coverage[::-1]
-            else:
-                subMatrix[j, :] = coverage
+            subMatrix[j, :] = coverage
 
             if parameters['nan after end'] and parameters['body'] == 0 \
                     and parameters['ref point'] == 'TSS':
