@@ -1,6 +1,6 @@
 import sys
 import argparse
-import config as cfg
+import deeptools.config as cfg
 from deeptools._version import __version__
 
 
@@ -22,13 +22,14 @@ def output(args=None):
     return parser
 
 
-def bam(args=None):
+def bam():
     """
-    common bam processing options
+    common bam processing options when converting a bam to a bedgraph/
+    bigwig file
     """
     parser = argparse.ArgumentParser(add_help=False)
-    group = parser.add_argument_group('Bam to bedgraph/bigwig processing '
-                                      'options')
+    group = parser.add_argument_group(
+        'Bam to bedgraph/bigwig processing options')
 
     group.add_argument('--fragmentLength', '-f',
                        help='Length of the average fragment size. Reads will '
@@ -84,6 +85,56 @@ def bam(args=None):
                        type=int,
                        )
 
+    return parser
+
+
+def read_options():
+    """
+    This options are used by bamCorrelate and
+    bamFingerprint. They are similar to the options
+    used to process bam to bedgraph (see def bam)
+    but without smoothlength and with a different
+    help message for fragment length
+    """
+    parser = argparse.ArgumentParser(add_help=False)
+    group = parser.add_argument_group('Read processing options')
+
+    group.add_argument('--fragmentLength', '-f',
+                       help='Length of the average fragment size. Reads will '
+                       'be extended to match this length unless they are '
+                       'paired-end, in which case they will be extended to '
+                       'match the fragment length. If this value is set to '
+                       'the read length or smaller, the read will not be '
+                       'extended.*NOTE*: If the BAM files contain mated and '
+                       'unmated paired-end reads, unmated reads will be '
+                       'extended to match the --fragmentLength.',
+                       type=int,
+                       metavar="INT bp",
+                       default='200')
+
+    group.add_argument('--doNotExtendPairedEnds',
+                       help='If set, reads are not extended to match the '
+                       'fragment length reported in the BAM file, instead '
+                       'they will be extended to match the --fragmentLength. '
+                       'Default is to extend the reads if paired end '
+                       'information is available.',
+                       action='store_true')
+
+    group.add_argument('--ignoreDuplicates',
+                       help='If set, reads that have the same orientation '
+                       'and start position will be considered only '
+                       'once. If reads are paired, the mate position '
+                       'also has to coincide to ignore a read.',
+                       action='store_true'
+                       )
+
+    group.add_argument('--minMappingQuality',
+                       metavar='INT',
+                       help='If set, only reads that have a mapping '
+                       'quality score higher than --minMappingQuality are '
+                       'considered.',
+                       type=int,
+                       )
     return parser
 
 
