@@ -16,7 +16,11 @@ def countReadsInRegions_wrapper(args):
 
 def countReadsInRegions_worker(chrom, start, end, bamFilesList,
                                stepSize, binLength, defaultFragmentLength,
-                               skipZeros=False, bedRegions=None):
+                               skipZeros=False,
+                               extendPairedEnds=True,
+                               minMappingQuality=None,
+                               ignoreDuplicates=False,
+                               bedRegions=None):
     """ counts the reads in each bam file at each 'stepSize' position
     within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
@@ -47,6 +51,18 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     ... [test.bamFile1, test.bamFile2], 200, 200, 0))
     array([[ 2.],
            [ 4.]])
+
+    Test min mapping quality
+    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bamFile1, test.bamFile2], 50, 25, 0, minMappingQuality=40))
+    array([[ 0.,  0.,  0.,  1.],
+           [ 0.,  0.,  0.,  1.]])
+
+    Test ignore duplicates
+    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bamFile1, test.bamFile2], 50, 25, 0, ignoreDuplicates=True))
+    array([[ 0.,  0.,  1.,  1.],
+           [ 0.,  1.,  1.,  1.]])
 
     Test bed regions:
     >>> bedRegions = [(test.chrom, 10, 20), (test.chrom, 150, 160)]
@@ -90,7 +106,10 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
                                     binLength,
                                     defaultFragmentLength,
                                     extendPairedEnds,
-                                    zerosToNans )[0])
+                                    zerosToNans,
+                                    minMappingQuality=minMappingQuality,
+                                    ignoreDuplicates=ignoreDuplicates,
+                                    )[0])
         # skip if any of the bam files returns a NaN
         if np.isnan(sum(avgReadsArray)):
             continue
@@ -113,7 +132,9 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
 def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                       defaultFragmentLength, numberOfProcessors=1,
                       skipZeros=True, verbose=False, region=None,
-                      bedFile=None,
+                      bedFile=None, extendPairedEnds=True,
+                      minMappingQuality=None,
+                      ignoreDuplicates=False,
                       chrsToSkip=[]):
 
     r"""
@@ -178,7 +199,9 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
         region += ":{}".format(binLength)
 
     imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength,
-                                     defaultFragmentLength, skipZeros),
+                                     defaultFragmentLength, skipZeros,
+                                     extendPairedEnds, minMappingQuality,
+                                     ignoreDuplicates),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
