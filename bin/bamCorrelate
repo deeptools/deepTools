@@ -51,13 +51,16 @@ For detailed help type:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
+    read_options_parser = parserCommon.read_options()
+    heatmap_parser = heatmap_options()
 
     # bins mode options
     bins_mode = subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamCorrelateArgs(case='bins'),
-                 parent_parser,
+                 parent_parser, read_options_parser,
+                 heatmap_parser
                  ],
         help="In the bins mode, the correlation is computed based on "
         "randomly chosen genomic regions of the same size (= bins). "
@@ -72,7 +75,8 @@ For detailed help type:
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamCorrelateArgs(case='BED-file'),
-                 parent_parser,
+                 parent_parser, read_options_parser,
+                 heatmap_parser
                  ],
         help="In the BED-file options, as list of genomic regions in BED "
         "format has to be given. For each region in the BED file the "
@@ -95,7 +99,6 @@ For detailed help type:
     return args
 
 
-######
 def bamCorrelateArgs(case='bins'):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
@@ -182,45 +185,34 @@ def bamCorrelateArgs(case='bins'):
                         action='store_true',
                         required=False)
 
-    group = parser.add_argument_group('Read processing options')
+    group = parser.add_argument_group('Output optional options')
 
-    group.add_argument('--fragmentLength', '-f',
-                       help='Length of the average fragment size. Reads will '
-                       'be extended to match this length unless they are '
-                       'paired-end, in which case they will be extended to '
-                       'match the fragment length. If this value is set to '
-                       'the read length or smaller, the read will not be '
-                       'extended.*NOTE*: If the BAM files contain mated and '
-                       'unmated paired-end reads, unmated reads will be '
-                       'extended to match the --fragmentLength.',
-                       type=int,
-                       metavar="INT bp",
-                       default='200')
+    group.add_argument('--outFileCorMatrix',
+                        help='Output file name for the correlation matrix.',
+                        metavar='',
+                        type=argparse.FileType('w'))
 
-    group.add_argument('--doNotExtendPairedEnds',
-                       help='If set, reads are not extended to match the '
-                       'fragment length reported in the BAM file, instead '
-                       'they will be extended to match the --fragmentLength. '
-                       'Default is to extend the reads if paired end '
-                       'information is available.',
-                       action='store_true')
+    group.add_argument('--outRawCounts',
+                        help='Output file name to save the bin counts',
+                        metavar='',
+                        type=argparse.FileType('w'))
 
-    group.add_argument('--ignoreDuplicates',
-                       help='If set, reads that have the same orientation '
-                       'and start position will be considered only '
-                       'once. If reads are paired, the mate position '
-                       'also has to coincide to ignore a read.',
-                       action='store_true'
-                       )
+    group.add_argument('--plotFileFormat',
+                       metavar='',
+                       help='image format type. If given, this option '
+                       'overrides the image format based on the plotFile '
+                       'ending. The available options are: png, emf, '
+                        'eps, pdf and svg.',
+                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
-    group.add_argument('--minMappingQuality',
-                       metavar='INT',
-                       help='If set, only reads that have a mapping '
-                       'quality score higher than --minMappingQuality are '
-                       'considered.',
-                       type=int,
-                       )
+    return parser
 
+
+def heatmap_options():
+    """
+    Options for generating the correlation heatmap
+    """
+    parser = argparse.ArgumentParser(add_help=False)
     heatmap = parser.add_argument_group('Heatmap options')
 
     heatmap.add_argument('--zMin', '-min',
@@ -246,27 +238,6 @@ def bamCorrelateArgs(case='bins'):
         'http://www.astro.lsa.umich.edu/~msshin/science/code/'
         'matplotlib_cm/ The available options are: \'' +
         color_options + '\'')
-
-        ####
-    group = parser.add_argument_group('Output optional options')
-
-    group.add_argument('--outFileCorMatrix',
-                        help='Output file name for the correlation matrix.',
-                        metavar='',
-                        type=argparse.FileType('w'))
-
-    group.add_argument('--outRawCounts',
-                        help='Output file name to save the bin counts',
-                        metavar='',
-                        type=argparse.FileType('w'))
-
-    group.add_argument('--plotFileFormat',
-                       metavar='',
-                       help='image format type. If given, this option '
-                       'overrides the image format based on the plotFile '
-                       'ending. The available options are: png, emf, '
-                        'eps, pdf and svg.',
-                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
     return parser
 

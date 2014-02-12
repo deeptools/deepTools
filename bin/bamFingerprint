@@ -17,9 +17,10 @@ def parseArguments(args=None):
     requiredArgs = getRequiredArgs()
     outputArgs = getOutputArgs()
     optionalArgs = getOptionalArgs()
-
+    read_options_parser = parserCommon.read_options()
     parser = argparse.ArgumentParser(
-        parents=[requiredArgs, outputArgs, optionalArgs, parentParser],
+        parents=[requiredArgs, outputArgs, read_options_parser,
+                 optionalArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Samples indexed bam files '
         'and plots a profile for each bam file. '
@@ -38,6 +39,8 @@ def parseArguments(args=None):
     if args.labels and len(args.bamfiles) != len(args.labels):
         print "The number of does not match the number of bam files."
         exit(0)
+
+    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
 
     if not args.labels:
         args.labels = args.bamfiles
@@ -136,8 +139,18 @@ def main(args):
         numberOfProcessors=args.numberOfProcessors,
         skipZeros=args.skipZeros,
         verbose=args.verbose,
-        region=args.region)
+        region=args.region,
+        extendPairedEnds=args.extendPairedEnds,
+        minMappingQuality=args.minMappingQuality,
+        ignoreDuplicates=args.ignoreDuplicates)
 
+    if num_reads_per_bin.sum() == 0:
+        import sys
+        sys.stderr.write(
+            "\nNo reads were found in {} regions sampled. Check that the\n"
+            "min mapping quality is over the the chromosome names between\n"
+            "bam files correspond.\n\n".format(num_reads_per_bin.shape[0]))
+        exit(1)
     total = len(num_reads_per_bin[:, 0])
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
