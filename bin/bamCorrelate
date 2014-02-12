@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import sys
 import argparse
 import numpy as np
 from matplotlib import use as mplt_use
@@ -38,8 +39,8 @@ For detailed help type:
 
 """,
             epilog='An example usage is:\n  %(prog)s bins '
-            '-b treatment.bam input.bam \ \n'
-            '-o correlation.png -f 200 -method pearson\n \n',
+            '-b treatment.bam input.bam\n'
+            '-o correlation.png -f 200 --corMethod pearson\n \n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
@@ -49,31 +50,29 @@ For detailed help type:
         dest='command',
         metavar='')
 
-    parentParser = parserCommon.getParentArgParse(binSize=False)
-    bamParser = parserCommon.bam()
+    parent_parser = parserCommon.getParentArgParse(binSize=False)
 
     # bins mode options
-    binsMode = subparsers.add_parser(
+    bins_mode = subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamCorrelateArgs(case='bins'),
-                 parentParser,
-                 bamParser,
+                 parent_parser,
                  ],
-        help="In the bins mode, the correlation is computed based on randomly chosen "
-        " genomic regions of the same size (= bins). The number of bins to be used has to be specified.",
+        help="In the bins mode, the correlation is computed based on "
+        "randomly chosen genomic regions of the same size (= bins). "
+        "The number of bins to be used has to be specified.",
         add_help=False,
         usage='An example usage is:\n  %(prog)s '
         '-b treatment.bam input.bam '
-        '-o correlation.png -f 200 -method pearson\n \n')
+        '-o correlation.png -f 200 --corMethod pearson\n \n')
 
     # BED file arguments
-    BEDmode = subparsers.add_parser(
+    bed_mode = subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamCorrelateArgs(case='BED-file'),
-                 parentParser,
-                 bamParser,
+                 parent_parser,
                  ],
         help="In the BED-file options, as list of genomic regions in BED "
         "format has to be given. For each region in the BED file the "
@@ -81,7 +80,7 @@ For detailed help type:
         "files. Then the correlation is computed.",
         usage='An example usage is:\n %(prog)s '
         '--BED genes.bed -b treatment.bam input.bam '
-        '-o correlation.png -f 200 -method pearson\n \n',
+        '-o correlation.png -f 200 --corMethod pearson\n \n',
         add_help=False)
 
     args = parser.parse_args(args)
@@ -92,7 +91,8 @@ For detailed help type:
         exit(0)
     if not args.labels:
         args.labels = args.bamfiles
-    return(args)
+
+    return args
 
 
 ######
@@ -102,10 +102,10 @@ def bamCorrelateArgs(case='bins'):
 
     # define the arguments
     required.add_argument('--bamfiles', '-b',
-                          metavar = 'list of bam files',
-                          help = 'List of indexed bam files separated by space',
-                          nargs = '+',
-                          required = True)
+                          metavar='list of bam files',
+                          help='List of indexed bam files separated by space',
+                          nargs='+',
+                          required=True)
 
     required.add_argument('--plotFile', '-o',
                        help='File name to save the file containing the heatmap '
@@ -115,12 +115,12 @@ def bamCorrelateArgs(case='bins'):
                         'The available options are: .png, .emf, '
                         '.eps, .pdf and .svg.',
                        type=argparse.FileType('w'),
-                       metavar = 'file name',
+                       metavar='file name',
                        required=True)
 
     required.add_argument('--corMethod', '-c',
-                          help = 'correlation method to use',
-                          choices = ['pearson', 'spearman'],
+                          help='correlation method to use',
+                          choices=['pearson', 'spearman'],
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -128,23 +128,24 @@ def bamCorrelateArgs(case='bins'):
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
     optional.add_argument('--labels', '-l',
-                        metavar = '',
-                        help = 'List of labels to use in the image. '
-                        'If no labels are given, the file names will be used instead. '
-                        'Separate the labels by space, e.g. --labels sample1 sample2 sample3',
-                        nargs = '+')
+                        metavar='',
+                        help='List of labels to use in the image. '
+                          'If no labels are given, the file names will be used '
+                          'instead. Separate the labels by space, e.g. '
+                          '--labels sample1 sample2 sample3',
+                        nargs='+')
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                               metavar='',
-                              help = 'Length in base pairs for a window used '
+                              help='Length in base pairs for a window used '
                               'to sample the genome.',
-                              default = 10000,
-                              type = int)
+                              default=10000,
+                              type=int)
 
         optional.add_argument('--numberOfSamples', '-n',
                               metavar='',
-                              help = 'Number of random genome places to count reads for '
-                              'the correlation computation.',
+                              help='Number of random genome places to count '
+                              'reads for the correlation computation.',
                               default=int(1e6),
                               type=int)
 
@@ -162,23 +163,63 @@ def bamCorrelateArgs(case='bins'):
                             default=int(1e5),
                             type=int)
 
-        required.add_argument('--BED', 
-                           help = '*If* the correlation of read counts should be limited to '
-                               'certain regions, a BED file can be given. If this '
-                               'is the case, then the correlation is computed for '
-                               'the number of reads that overlap such regions and '
-                               'the values set for binSize and numberOfSamples are ' 
-                               'ignored.',
-                           metavar='FILE',
-                           type=argparse.FileType('r'),
-                           required=True)
+        required.add_argument(
+            '--BED',
+            help='*If* the correlation of read counts should be limited to '
+            'certain regions, a BED file can be given. If this '
+            'is the case, then the correlation is computed for '
+            'the number of reads that overlap such regions and '
+            'the values set for binSize and numberOfSamples are '
+            'ignored.',
+            metavar='FILE',
+            type=argparse.FileType('r'),
+            required=True)
 
     optional.add_argument('--includeZeros',
-                        help = 'If set, then zero counts that happen for '
+                        help='If set, then zero counts that happen for '
                         '*all* bam files given are included. The default '
                         'behavior is to ignore those cases ',
-                        action = 'store_true',
-                        required = False)
+                        action='store_true',
+                        required=False)
+
+    group = parser.add_argument_group('Read processing options')
+
+    group.add_argument('--fragmentLength', '-f',
+                       help='Length of the average fragment size. Reads will '
+                       'be extended to match this length unless they are '
+                       'paired-end, in which case they will be extended to '
+                       'match the fragment length. If this value is set to '
+                       'the read length or smaller, the read will not be '
+                       'extended.*NOTE*: If the BAM files contain mated and '
+                       'unmated paired-end reads, unmated reads will be '
+                       'extended to match the --fragmentLength.',
+                       type=int,
+                       metavar="INT bp",
+                       default='200')
+
+    group.add_argument('--doNotExtendPairedEnds',
+                       help='If set, reads are not extended to match the '
+                       'fragment length reported in the BAM file, instead '
+                       'they will be extended to match the --fragmentLength. '
+                       'Default is to extend the reads if paired end '
+                       'information is available.',
+                       action='store_true')
+
+    group.add_argument('--ignoreDuplicates',
+                       help='If set, reads that have the same orientation '
+                       'and start position will be considered only '
+                       'once. If reads are paired, the mate position '
+                       'also has to coincide to ignore a read.',
+                       action='store_true'
+                       )
+
+    group.add_argument('--minMappingQuality',
+                       metavar='INT',
+                       help='If set, only reads that have a mapping '
+                       'quality score higher than --minMappingQuality are '
+                       'considered.',
+                       type=int,
+                       )
 
     heatmap = parser.add_argument_group('Heatmap options')
 
@@ -210,60 +251,63 @@ def bamCorrelateArgs(case='bins'):
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outFileCorMatrix',
-                        help = 'Output file name for the correlation matrix.',
-                        metavar = '',
+                        help='Output file name for the correlation matrix.',
+                        metavar='',
                         type=argparse.FileType('w'))
 
     group.add_argument('--outRawCounts',
-                        help = 'Output file name to save the bin counts',
-                        metavar = '',
+                        help='Output file name to save the bin counts',
+                        metavar='',
                         type=argparse.FileType('w'))
 
     group.add_argument('--plotFileFormat',
                        metavar='',
-                       help='image format type. If given, this option overrides the '
-                       'image format based on the plotFile ending. '
-                       'The available options are: png, emf, '
+                       help='image format type. If given, this option '
+                       'overrides the image format based on the plotFile '
+                       'ending. The available options are: png, emf, '
                         'eps, pdf and svg.',
-                       choices=['png','pdf', 'svg','eps', 'emf'])
+                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+
     return parser
+
 
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                     vmin=None, colormap='Reds', image_format=None):
     import scipy.cluster.hierarchy as sch
-    M = corr_matrix.shape[0]
+    num_rows = corr_matrix.shape[0]
 
     # set the minimum and maximum values
     if vmax is None:
         vmax = 1
     if vmin is None:
-        vmin = 0 if corr_matrix.min()>=0 else -1
+        vmin = 0 if corr_matrix.min() >= 0 else -1
 
     # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(10.5,9.5))
-    axdendro = fig.add_axes([0.02,0.1,0.1,0.7])
+    fig = plt.figure(figsize=(10.5, 9.5))
+    axdendro = fig.add_axes([0.02, 0.1, 0.1, 0.7])
     axdendro.set_axis_off()
-    Y = sch.linkage(corr_matrix, method='complete')
-#    Y = sch.linkage(corr_matrix, method='centroid')
-    Z = sch.dendrogram(Y, orientation='right', link_color_func=lambda k: 'black')
+    y_var = sch.linkage(corr_matrix, method='complete')
+    z_var = sch.dendrogram(y_var, orientation='right',
+                           link_color_func=lambda k: 'black')
     axdendro.set_xticks([])
     axdendro.set_yticks([])
     cmap = plt.get_cmap(colormap)
+
     # this line simply makes a new cmap, based on the original
     # colormap that goes from 0.0 to 0.9
     # This is done to avoid colors that
     # are too dark at the end of the range that do not offer
-    # a good contrast between the correlation numbers that are 
-    # plotted on black. 
-    # 
+    # a good contrast between the correlation numbers that are
+    # plotted on black.
     cmap = cmap.from_list(colormap + "clipped", cmap([0.0, 0.8]))
     # Plot distance matrix.
-    axmatrix = fig.add_axes([0.13,0.1,0.6,0.7])
-    index = Z['leaves']
-    corr_matrix = corr_matrix[index,:]
-    corr_matrix = corr_matrix[:,index]
-    im = axmatrix.matshow(corr_matrix, aspect='equal', origin='lower', 
-                          cmap=cmap, extent=(0, M, 0, M), vmax=vmax, vmin=vmin)
+    axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
+    index = z_var['leaves']
+    corr_matrix = corr_matrix[index, :]
+    corr_matrix = corr_matrix[:, index]
+    img_mat = axmatrix.matshow(corr_matrix, aspect='equal', origin='lower',
+                               cmap=cmap, extent=(0, num_rows, 0, num_rows),
+                               vmax=vmax, vmin=vmin)
     axmatrix.yaxis.tick_right()
     axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
     axmatrix.set_yticklabels(np.array(labels).astype('str')[index],
@@ -277,20 +321,22 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
 
 #    axmatrix.set_xticks([])
     # Plot colorbar.
-    axcolor = fig.add_axes([0.13,0.065,0.6, 0.02])
-    plt.colorbar(im, cax=axcolor,  orientation='horizontal')
-    for row in range(M):
-        for col in range(M):
-            axmatrix.text(row+0.5, col+0.5, "{:.2f}".format(corr_matrix[row,col]),
+    axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
+    plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
+    for row in range(num_rows):
+        for col in range(num_rows):
+            axmatrix.text(row+0.5, col+0.5,
+                          "{:.2f}".format(corr_matrix[row, col]),
                           ha='center', va='center')
 
     fig.savefig(plotFileName, format=image_format)
 
+
 def main(args):
     """
-    1. get read counts at different positions either 
+    1. get read counts at different positions either
     all of same length or from genomic regions from the BED file
-    
+
     2. compute  correlation
 
     """
@@ -299,41 +345,47 @@ def main(args):
         exit(1)
 
     if args.includeZeros:
-        skipZeros = False
+        skip_zeros = False
     else:
-        skipZeros = True
+        skip_zeros = True
 
     if args.colorMap:
         try:
-            cmap = plt.get_cmap(args.colorMap)
-        except ValueError as e:
-            print e
+            plt.get_cmap(args.colorMap)
+        except ValueError as error:
+            sys.stderr.write(
+                "A problem was found. Message: {}\n".format(error))
             exit()
 
     if 'BED' in args:
-        BED_regions = args.BED
+        bed_regions = args.BED
     else:
-        BED_regions = None
+        bed_regions = None
 
-    num_reads_per_bin = countR.getNumReadsPerBin(args.bamfiles, 
-                                                 args.binSize, args.numberOfSamples, 
-                                                 args.fragmentLength, 
-                                                 numberOfProcessors=args.numberOfProcessors, 
-                                                 skipZeros=skipZeros,
-                                                 verbose=args.verbose,
-                                                 region=args.region,
-                                                 bedFile=BED_regions)
+    num_reads_per_bin = countR.getNumReadsPerBin(
+        args.bamfiles,
+        args.binSize,
+        args.numberOfSamples,
+        args.fragmentLength,
+        numberOfProcessors=args.numberOfProcessors,
+        skipZeros=skip_zeros,
+        verbose=args.verbose,
+        region=args.region,
+        bedFile=bed_regions,
+        extendPairedEnds=args.extendPairedEnds,
+        minMappingQuality=args.minMappingQuality,
+        ignoreDuplicates=args.ignoreDuplicates)
 
     if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
+        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
 
 
     # remove outliers, which will spoil pearson correlation.
-    # for each data set (cols) the values above the 99.9 
-    # percentile are identified. Such values are removed from 
+    # for each data set (cols) the values above the 99.9
+    # percentile are identified. Such values are removed from
     # the num_reads_per_bin matrix if they occour in the
     # same rows
     to_remove = None
@@ -346,39 +398,45 @@ def main(args):
     if len(to_remove):
         to_keep = [x for x in range(num_reads_per_bin.shape[0])
                    if x not in to_remove]
-        num_reads_per_bin = num_reads_per_bin[to_keep,:]
-    
+        num_reads_per_bin = num_reads_per_bin[to_keep, :]
 
     # num_reads_per_bin: rows correspond to  bins, cols to  samples
-    M = len(args.bamfiles)
+    num_files = len(args.bamfiles)
     #initialize correlation matrix
-    corr_matrix = np.zeros( (M,M), dtype='float')
+    corr_matrix = np.zeros((num_files, num_files), dtype='float')
     options = {'spearman': spearmanr,
                'pearson': pearsonr}
     # do an all vs all correlation using the
     # indices of the upper triangle
-    rows, cols = np.triu_indices(M)
+    rows, cols = np.triu_indices(num_files)
     for index in xrange(len(rows)):
         row = rows[index]
         col = cols[index]
-        corr_matrix[row, col] = options[args.corMethod](num_reads_per_bin[:,row],
-                                                        num_reads_per_bin[:,col])[0]
+        corr_matrix[row, col] = options[args.corMethod](
+            num_reads_per_bin[:, row],
+            num_reads_per_bin[:, col])[0]
     # make the matrix symetric
     corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
-    
+
     if args.outFileCorMatrix:
-        args.outFileCorMatrix.write("\t'"+ "'\t'".join(args.labels) + "'\n" )
+        args.outFileCorMatrix.write("\t'"+ "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', num_reads_per_bin.shape[1])) + "\n"
         i = 0
         for row in corr_matrix:
-            args.outFileCorMatrix.write("'%s'\t" % args.labels[i] + fmt % tuple(row))
-            i += 1    
+            args.outFileCorMatrix.write(
+                "'%s'\t" % args.labels[i] + fmt % tuple(row))
+            i += 1
 
-    plotFileName = args.plotFile.name
+    plot_file_name = args.plotFile.name
     args.plotFile.close()
-    plotCorrelation(corr_matrix, args.labels, plotFileName, args.zMax, args.zMin, 
-                    args.colorMap, image_format=args.plotFileFormat)
+    plotCorrelation(corr_matrix,
+                    args.labels,
+                    plot_file_name,
+                    args.zMax,
+                    args.zMin,
+                    args.colorMap,
+                    image_format=args.plotFileFormat)
 
 if __name__ == "__main__":
-    args = parseArguments()
-    main(args)
+    ARGS = parseArguments()
+    main(ARGS)
