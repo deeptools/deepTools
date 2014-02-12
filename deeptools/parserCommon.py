@@ -1,6 +1,6 @@
 import sys
 import argparse
-import config as cfg
+import deeptools.config as cfg
 from deeptools._version import __version__
 
 
@@ -22,13 +22,14 @@ def output(args=None):
     return parser
 
 
-def bam(args=None):
+def bam():
     """
-    common bam processing options
+    common bam processing options when converting a bam to a bedgraph/
+    bigwig file
     """
     parser = argparse.ArgumentParser(add_help=False)
-    group = parser.add_argument_group('Bam to bedgraph/bigwig processing '
-                                      'options')
+    group = parser.add_argument_group(
+        'Bam to bedgraph/bigwig processing options')
 
     group.add_argument('--fragmentLength', '-f',
                        help='Length of the average fragment size. Reads will '
