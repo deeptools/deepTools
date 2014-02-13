@@ -270,7 +270,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     # are too dark at the end of the range that do not offer
     # a good contrast between the correlation numbers that are
     # plotted on black.
-    cmap = cmap.from_list(colormap + "clipped", cmap([0.0, 0.8]))
+    cmap = cmap.from_list(colormap + "clipped", cmap(np.linspace(0, 0.9, 10)))
     # Plot distance matrix.
     axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
     index = z_var['leaves']
