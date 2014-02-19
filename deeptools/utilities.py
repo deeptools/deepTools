@@ -164,7 +164,7 @@ def getTempFileName(suffix=''):
                                                 dir='/dev/shm',
                                                 delete=False)
     except OSError:
-        _tempFile = tempfile.NamedTemporaryFile(suffix=".sam",
+        _tempFile = tempfile.NamedTemporaryFile(suffix=suffix,
                                                 delete=False)
 
     memFileName = _tempFile.name
