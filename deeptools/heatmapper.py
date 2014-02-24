@@ -855,15 +855,15 @@ class heatmapper:
             # consider a fraction of the data
             if totalIntervals % onlyMultiplesOf != 0:
                 continue
-            # skip regions that have the same position as the previous.
+            # check for regions that have the same position as the previous.
             # This assumes that the regions file given is sorted
             if prevInterval and prevInterval.chrom == ginterval.chrom and \
                     prevInterval.start == ginterval.start and \
                     prevInterval.end == ginterval.end and \
                     prevInterval.strand == ginterval.strand:
                 if verbose:
-                    sys.stderr.write("Gene in same region already included: "
-                                     "{} {}:{}-{}. Skipping...\n".format(
+                    sys.stderr.write("*Warning* Duplicated region: "
+                                     "{} {}:{}-{}.\n".format(
                             ginterval.fields[3],
                             ginterval.chrom, ginterval.start,
                             ginterval.end))
