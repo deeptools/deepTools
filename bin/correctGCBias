@@ -5,6 +5,8 @@ import os
 import tempfile
 import shutil
 import time
+import subprocess
+import sys
 
 from bx.seq import twobit
 import pysam
@@ -440,15 +442,32 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         print "duplicated reads removed %d of %d (%.2f) " % \
             (removed_duplicated_reads, len(reads), percentage)
 
-    if verbose: print tempFileName
     # convert sam to bam.
-    os.system("{} view -bS {} 2> /dev/null > {}.bam".format(samtools,
-                                                            tempFileName,
-                                                            tempFileName))
+    command = '{0} view -bS {1} 2> /dev/null > {1}.bam'.format(samtools,
+                                                               tempFileName)
+    if verbose:
+        sys.stderr.write("running {}\n".format(command))
+
+    run_shell_command(command)
 
     os.remove(tempFileName)
     return tempFileName + ".bam"
 
+
+def run_shell_command(command):
+    """
+    Runs the given shell command. Report
+    any errors found.
+    """
+    try:
+        subprocess.check_call(command, shell=True)
+
+    except subprocess.CalledProcessError as error:
+        sys.stderr.write('Error{}\n'.format(error))
+        exit(1)
+    except Exception as error:
+        sys.stderr.write('Error: {}\n'.format(error))
+        exit(1)
 
 #############
 def main(args):
@@ -533,20 +552,23 @@ def main(args):
                                             len(mp_args)))
 
             res = pool.map_async(
-                writeCorrectedSam_wrapper, mp_args ).get(9999999)
+                writeCorrectedSam_wrapper, mp_args).get(9999999)
         else:
             res = map(writeCorrectedSam_wrapper, mp_args)
 
         if len(res) == 1:
-            os.system("cp {} {}".format(res[0], args.correctedFile.name))
+            command = "cp {} {}".format(res[0], args.correctedFile.name)
         else:
             print "concatenating intermediary bams"
-            os.system("{} cat -o {} {} ".format(samtools,
+            command = "{} cat -o {} {} ".format(samtools,
                                                 args.correctedFile.name,
-                                                " ".join(res)))
+                                                " ".join(res))
+
+        run_shell_command(command)
 
         print "indexing bam"
-        os.system("{} index {} ".format(samtools, args.correctedFile.name))
+        run_shell_command("{} index {} ".format(samtools,
+                                                args.correctedFile.name))
         for tempFileName in res:
             os.remove(tempFileName)
 
