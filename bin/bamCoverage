@@ -92,7 +92,10 @@ def getOptionalArgs():
                           'sequencing depth (also known as Reads Per Genomic '
                           'Content (RPGC)). Sequencing depth is defined as: '
                           '(total number of mapped reads * fragment length) / '
-                          'effective genome size.\nTo use this option, the '
+                          'effective genome size.\nThe scaling factor used '
+                          'is the inverse of the sequencing depth computed '
+                          'for the sample to match the 1x coverage. '
+                          'To use this option, the '
                           'effective genome size has to be indicated after the '
                           'command. The effective genome size is the portion '
                           'of the genome that is mappable. Large fractions of '
@@ -105,6 +108,7 @@ def getOptionalArgs():
                           'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
+                          metavar= 'EFFECTIVE GENOME SIZE LENGTH',
                           default=None,
                           type=int,
                           required=False)
