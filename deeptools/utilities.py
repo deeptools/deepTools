@@ -31,21 +31,22 @@ def tbitToBamChrName(tbitNames, bamNames):
 
     chrNameBitToBam = dict((x, x) for x in tbitNames)
     if set(bamNames) != set(tbitNames):
-        if debug:
-            print "Index and reference do not have matching chromosome names"
+        sys.stderr.write("Bam and 2bit do not have matching "
+                         "chromosome names:\n2bit:{}\n\nbam:{}"
+                         "\n\n".format(tbitNames, bamNames))
+
         if set(["chr" + x if x != 'dmel_mitochondrion_genome'
                 else 'chrM' for x in bamNames]) == set(tbitNames):
-            if debug:
-                print "Adding chr seems to solve the problem, this means we "
-                "are dealing with Drosophila  data. Continuing ..."
+            sys.stderr.write("Adding 'chr' seems to solve the problem. "
+                             "Continuing ...")
             chrNameBitToBam = dict([("chr" + x
                                      if x != 'dmel_mitochondrion_genome'
                                      else 'chrM', x) for x in bamNames ])
         elif set([x for x in tbitNames if x.count('random') == 0
                   and x.count('chrM') == 0]) == set(bamNames):
             if debug:
-                print "Removing random and mitochondrial chromosomes"
-                "fixes the problem"
+                print "Removing random and mitochondrial chromosomes"\
+                    "fixes the problem"
             chrNameBitToBam = dict([(x, x) for x in tbitNames
                                     if x.count('random') == 0 and
                                     x.count('chrM') == 0])

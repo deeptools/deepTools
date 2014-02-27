@@ -202,7 +202,14 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     startTime = time.time()
 
     # caching seems to be faster
-    reads = [r for r in bam.fetch(chrNameBam, start, end)]
+    # r.flag & 4 == 0 is to skip unmapped
+    # reads that nevertheless are asigned
+    # to a genomic position
+    reads = [r for r in bam.fetch(chrNameBam, start, end)
+             if r.flag & 4 == 0]
+
+    import ipdb;ipdb.set_trace()
+
     bam.close()
     r_index = -1
     for read in reads:
@@ -341,7 +348,10 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     read_repetitions = 0
     removed_duplicated_reads = 0
     # cache data
-    reads = [r for r in bam.fetch(chrNameBam, start, end) if r.pos > start]
+    # r.flag & 4 == 0 is to filter unmapped reads that
+    # have a genomic position
+    reads = [r for r in bam.fetch(chrNameBam, start, end) 
+             if r.pos > start and r.flag & 4 == 0]
 
     r_index = -1
     for read in reads:
@@ -494,13 +504,12 @@ def main(args):
 
     print "genome partition size for multiprocessing: %s" % (chunkSize)
     print "using region {}".format(args.region)
-
     mp_args = []
     bedGraphStep = args.binSize
 
     chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
-
+    print chrNameBitToBam, chrNameBamToBit
     c = 1
     for chrom, size in chromSizes:
         start = 0 if regionStart == 0 else regionStart
