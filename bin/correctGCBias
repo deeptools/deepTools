@@ -208,8 +208,6 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     reads = [r for r in bam.fetch(chrNameBam, start, end)
              if r.flag & 4 == 0]
 
-    import ipdb;ipdb.set_trace()
-
     bam.close()
     r_index = -1
     for read in reads:
@@ -327,7 +325,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> res = os.system("{} index {}".format(test.samtools, tempFile))
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch('chr2L', 0, 50)]
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
     """
@@ -542,7 +540,7 @@ def main(args):
         if len(res) == 1:
             os.system("cp {} {}".format(res[0], args.correctedFile.name))
         else:
-            print "concatenating intemerdiary bams"
+            print "concatenating intermediary bams"
             os.system("{} cat -o {} {} ".format(samtools,
                                                 args.correctedFile.name,
                                                 " ".join(res)))
