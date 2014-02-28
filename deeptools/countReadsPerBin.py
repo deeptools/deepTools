@@ -341,18 +341,22 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     if length % tileSize > 0:
         newLength = length - (length % tileSize)
         if debug:
-            print  "length of region ({}) is not a multiple of tileSize {}\nThe region is being chopped to length {} bp".format(length, tileSize, newLength)
+            print  "length of region ({}) is not a multiple of "\
+                "tileSize {}\nThe region is being chopped to length "\
+                "{} bp".format(length, tileSize, newLength)
 
-    vectorLength = length/tileSize
-    coverage   = np.zeros( vectorLength, dtype='float64' )
+    vectorLength = length / tileSize
+    coverage = np.zeros(vectorLength, dtype='float64')
 
     startTime = time.time()
-    #caching seems faster. TODO: profile the function
+    # caching seems faster. TODO: profile the function
     c = 0
     if chrom in bamHandle.references:
-        reads = [ r for r in bamHandle.fetch( chrom, start, end )]
+        # r.flag & 4 == 0 is to skip unmapped reads
+        reads = [r for r in bamHandle.fetch(chrom, start, end)
+                 if r.flag & 4 == 0]
     else:
-        raise NameError( "chromosome {} not found in bam file".format(chrom) )
+        raise NameError("chromosome {} not found in bam file".format(chrom))
 
     prev_start_pos = None # to store the start positions
                           # of previous processed read pair
@@ -361,16 +365,18 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
         if minMappingQuality and read.mapq < minMappingQuality:
             continue
 
-        # get rid of duplicate reads that have same position on each of the 
+        # get rid of duplicate reads that have same position on each of the
         # pairs
         if ignoreDuplicates and prev_start_pos  \
                 and prev_start_pos == (read.pos, read.pnext, read.is_reverse):
             continue
 
         try:
-            fragmentStart, fragmentEnd = fragmentFromRead_func(read, defaultFragmentLength, 
-                                                               extendPairedEnds,
-                                                               maxPairedFragmentLength=maxPairedFragmentLength)
+            fragmentStart, fragmentEnd = \
+                fragmentFromRead_func(read, defaultFragmentLength,
+                                      extendPairedEnds,
+                                      maxPairedFragmentLength=maxPairedFragmentLength)
+
             fragmentLength = fragmentEnd - fragmentStart
             if fragmentLength == 0:
                 fragmentLength = defaultFragmentLength
