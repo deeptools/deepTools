@@ -11,6 +11,7 @@ use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib import colors as pltcolors
+import matplotlib.gridspec as gridspec
 
 # own modules
 from deeptools import parserCommon
@@ -23,8 +24,8 @@ plt.ioff()
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
-                 parserCommon.heatmapperOutputArgs( mode='profile' ),
-                 parserCommon.heatmapperOptionalArgs( mode='profile' )],
+                 parserCommon.heatmapperOutputArgs(mode='profile'),
+                 parserCommon.heatmapperOptionalArgs(mode='profile')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool creates a profile plot for a '
         'score associated to genomic regions. '
@@ -106,69 +107,17 @@ def plot_single(ax, ma, average_type, color, label,
     ax.set_xlim(0, max(x))
 
 
-def plotProfile(hm, outFileName,
-                plotTitle='',
-                xAxisLabel='', yAxisLabel='',
-                yMin=None, yMax=None,
-                averageType='median',
-                referencePointLabel='TSS',
-                startLabel='TSS', endLabel="TES",
-                plotHeight=5,
-                plotWidth=8,
-                onePlotPerGroup=False,
-                plotType='simple',
-                image_format=None,
-                color_list=None):
-
+def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
     """
-    Using the hm matrix, makes a line plot per group 
-    using the specified parameters.
+    returns the position and labelling of the xticks that
+    correspond to the heatmap
     """
-    tickPlotAdj = 0.5
-    plt.rcParams['font.size'] = 10.0
-    fontP = FontProperties()
-    fontP.set_size('small')
-#    rcParams['font.size'] = 9.0
-
-    # convert cm values to inches
-    plotHeightInches = float(plotHeight) / 2.54
-    figWidth = float(plotWidth) / 2.54
-
-    # measures are in inches
-    topBorder = 0.36
-    spacer = 0.25
-    bottomBorder = 0.3
-
-    numGroups = len(hm.matrixDict)
-
-    if numGroups == 1:
-        # when the number of regions is just one, is better
-        # to use the defaults for one plot per group, because
-        # it does not tries to plot a legend below the plot,
-        # which for one region is unecesary
-        onePlotPerGroup = True
-
-    # plotHeightInches  height of plot plus bottom spacing
-    if not onePlotPerGroup:
-        figHeight = topBorder + bottomBorder + (numGroups / 2) * \
-            spacer + plotHeightInches
-    else:
-        figHeight = plotHeightInches
-
-    sumFracHeight = float(plotHeightInches) / figHeight
-    # fraction of the height for summary plots
-
-    topBorderFrac = topBorder / figHeight
-
-    if debug:
-        print (figWidth, figHeight)
-    # figsize: w,h tuple in inches
-    fig = plt.figure(figsize=(figWidth, figHeight))
-
+    w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
     m = hm.parameters['body']
-    w = hm.parameters['bin size']
+
+    tickPlotAdj = 0.5
 
     if b < 1e5:
         quotient = 1000
@@ -178,46 +127,87 @@ def plotProfile(hm, outFileName,
         symbol = 'Mb'
 
     if m == 0:
-        xTicks = [int(k / float(w)) - tickPlotAdj for k in [0, b, b  + a]]
-        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
+        xticks = [(k / w) - tickPlotAdj for k in [0, b, b  + a]]
+        xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+
     else:
         xticks_values = [0]
-        xTicksLabel = []
+        xtickslabel = []
 
-        # if no upstream region is set, do not set a x tick
+        # only if upstream region is set, add a x tick
         if hm.parameters['upstream'] > 0:
-            xticks_values.append( hm.parameters['upstream'] )
-            xTicksLabel.append( '{0:.1f}'.format(-(float(b) / quotient)) )
-        # set the x tick for the body parameter, regardless if upstream is 0 (not set)
-        xticks_values.append( hm.parameters['upstream'] + hm.parameters['body'] )
-        xTicksLabel.append( startLabel )
-        xTicksLabel.append( endLabel )
-        if hm.parameters['downstream'] > 0:
-            xticks_values.append( hm.parameters['upstream'] + hm.parameters['body'] + hm.parameters['downstream'] )
-            xTicksLabel.append( '{0:.1f}{1}'.format(float(a) / quotient, symbol) )
+            xticks_values.append(b)
+            xtickslabel.append('{0:.1f}'.format(-(float(b) / quotient)))
 
-        xTicks = [int(k / float(w)) - tickPlotAdj
-                  for k in xticks_values]
+        # set the x tick for the body parameter, regardless if
+        # upstream is 0 (not set)
+        xticks_values.append(b + a)
+        xtickslabel.append(startLabel)
+        xtickslabel.append(endLabel)
+        if a > 0:
+            xticks_values.append(b + a + a)
+            xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
-        """
-        xTicks = [int(k / float(w)) - tickPlotAdj
-                  for k in [0, b, b + m, b + m + a]]
-        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
-                       startLabel, endLabel,
-                       '{0:.1f}kb'.format(float(a) / quotient, symbol)]
-        """
+        xticks = [(k / w) - tickPlotAdj for k in xticks_values]
 
-    fig.suptitle(plotTitle, y=1 - (0.06 / figHeight))
+    return xticks, xtickslabel
+
+
+def plotProfile(hm, outFileName,
+                plotTitle='',
+                xAxislabel='', yAxislabel='',
+                yMin=None, yMax=None,
+                averagetype='median',
+                referencePointLabel='TSS',
+                startLabel='TSS', endLabel="TES",
+                plotHeight=5,
+                plotWidth=8,
+                perGroup=False,
+                plotType='simple',
+                image_format=None,
+                color_list=None):
+
+    """
+    Using the hm matrix, makes a line plot
+    either per group or per sample
+    using the specified parameters.
+    """
+
+    # decide how many plots are needed
+    if perGroup:
+        numplots = hm.matrix.get_num_groups()
+        numlines = hm.matrix.get_num_samples()
+    else:
+        numplots = hm.matrix.get_num_samples()
+        numlines = hm.matrix.get_num_groups()
+
+    grids = gridspec.GridSpec(1, numplots)
+
+    plt.rcParams['font.size'] = 10.0
+    fontP = FontProperties()
+    fontP.set_size('small')
+#    rcParams['font.size'] = 9.0
+
+    # convert cm values to inches
+    plotHeightInches = float(plotHeight) / 2.54
+    figWidth = numplots * float(plotWidth) / 2.54 
+
+    fig = plt.figure(figsize=(figWidth, plotHeightInches))
+
+    # add xticks and labels to the last plot
+    # define the xticks
+
+    fig.suptitle(plotTitle, y=(1 - (0.06 / plotHeightInches)))
 
     if not color_list:
         cmap_plot = plt.get_cmap('jet')
-        color_list = cmap_plot(np.arange(numGroups)/numGroups)
+        color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
     else:
-        if len(color_list) < numGroups:
+        if len(color_list) < numlines:
             sys.stderr.write("\nThe given list of colors is too small, "
-                       "at least {} colors are needed\n".format(numGroups))
+                       "at least {} colors are needed\n".format(numlines))
             exit(1)
         for color in color_list:
             if not pltcolors.is_color_like(color):
@@ -226,35 +216,61 @@ def plotProfile(hm, outFileName,
                                  "for example #eeff22".format(color))
 
                 exit(1)
-                
-    # add_axes( rect ) where rect is [left, bottom, width, height] and
-    # all quantities are in fractions of figure width and height.
-    # summary plot
-    # each group needs its axe
-    left = 0.45 / figWidth
-    width = 0.7
 
-    # i.e if multipleLines in one plot:
-    if not onePlotPerGroup:
-        bottom = 1 - (topBorderFrac + sumFracHeight)
-        if debug:
-            print ([left, bottom, width, sumFracHeight, figHeight])
-        ax = fig.add_axes([left, bottom, width, sumFracHeight])
+    xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
+                                          startLabel, endLabel)
+    for plot in range(numplots):
+        ax = fig.add_subplot(grids[plot])
+        if perGroup:
+            title = hm.matrix.group_labels[plot]
+        else:
+            title = hm.matrix.sample_labels[plot]
+        ax.set_title(title)
+        for data_idx in range(numlines):
+            if perGroup:
+                row, col = plot, data_idx
+            else:
+                row, col = data_idx, plot
 
-    index = -1
+            sub_matrix = hm.matrix.get_matrix(row, col)
+
+            if perGroup:
+                label = sub_matrix['sample']
+            else:
+                label = sub_matrix['group']
+
+            plot_single(ax, sub_matrix['matrix'],
+                        averagetype,
+                        color_list[data_idx],
+                        label,
+                        plot_type=plotType)
+
+        ax.set_ylim(yMin, yMax)
+        ax.axes.set_xticks(xticks)
+        ax.axes.set_xticklabels(xtickslabel)
+        ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
+                  loc='upper center',
+                  ncol=1, mode="expand", prop=fontP,
+                  frameon=False, markerscale=0.5)
+
+        # reduce the number of yticks by half
+        num_ticks = len(ax.get_yticks())
+        yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
+        ax.set_yticks(yticks)
+
+        ax.axes.set_ylabel(yAxislabel)
+
+    """
     for label, ma in hm.matrixDict.iteritems():
         index += 1
-        if onePlotPerGroup:
+        if perGroup:
             # create an axis for each sub plot
             bottom = 1 - topBorderFrac - (index + 1) * sumFracHeight
-            ax = fig.add_subplot(numGroups, 1, index + 1, label=label)
+            ax = fig.add_subplot(numlines, 1, index + 1, label=label)
 #            ax = fig.add_axes([left, bottom, width, sumFracHeight])
             plot_single(ax, ma, averageType,
                          color_list[index], label,
                          plot_type=plotType)
-            ax.set_ylim(yMin, yMax)
-            ax.axes.set_xticks(xTicks)
-            ax.axes.set_xticklabels(xTicksLabel)
             # reduce the number of yticks by half
             if index == 0:
                 #ax.axes.set_title(plotTitle, weight='bold');
@@ -262,39 +278,30 @@ def plotProfile(hm, outFileName,
                 yTicks = [ax.get_yticks()[i]
                           for i in range(1, numTicks, 2)]
             ax.set_yticks(yTicks)
-            ax.axes.set_ylabel(yAxisLabel)
+            ax.axes.set_ylabel(yAxislabel)
 
             ax.legend(loc='upper right', prop=fontP,
                       frameon=False, markerscale=0.5)
 
         else:
             # add new lines to existing plot
-            plot_single(ax, ma, averageType,
-                         color_list[index], label,
-                         plot_type=plotType)
+            for ind_matrix in hm.getIndividualmatrices(ma):
+                plot_single(ax, ind_matrix, averageType,
+                             color_list[index], label,
+                             plot_type=plotType)
 
     # i.e if multipleLines in one plot:
-    if not onePlotPerGroup:
+    if not perGroup:
         # in the case of one box with all plots the
         #font of the legend and the positions
         # are changed.
         ax.set_ylim(yMin, yMax)
         ax.axes.set_xticks(xTicks)
-        ax.axes.set_xticklabels(xTicksLabel)
+        ax.axes.set_xticklabels(xTickslabel)
         #ax.axes.set_title(plotTitle, weight='bold');
         # the legend shows in a box below the plot
-        ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
-                  loc='upper center',
-                  ncol=2, mode="expand", prop=fontP,
-                  frameon=False, markerscale=0.5)
 
-        # reduce the number of yticks by half
-        numTicks = len(ax.get_yticks())
-        yTicks = [ax.get_yticks()[i] for i in range(1, numTicks, 2)]
-        ax.set_yticks(yTicks)
-
-        ax.axes.set_ylabel(yAxisLabel)
-
+    """
     # for some reason if the bbox_inches is used
     # then the legend for the summary plot is omited
     plt.savefig(outFileName, bbox_inches='tight', 
@@ -325,26 +332,7 @@ def main(args):
                       default_group_name=args.regionsLabel)
 
     if args.kmeans is not None:
-        k = args.kmeans
-        idx = hm.hmcluster(hm.matrixDict[hm.matrixDict.keys()[0]], 
-                           k,
-                           method='kmeans')
-
-        # split the matrix, region and averages in to clusters
-        label = hm.matrixDict.keys()[0]
-        _matrixDict = {}
-        _regionsDict = {}
-        _avgDict = {}
-        for cluster in range(k):
-            c_label = "cluster {}".format(cluster+1)
-            cluster_ids = np.flatnonzero(idx==cluster)
-            _matrixDict[c_label] = \
-                hm.matrixDict[label][cluster_ids,]
-            _regionsDict[c_label] = \
-                hm.regionsDict[label][cluster_ids]
-
-        hm.matrixDict = _matrixDict
-        hm.regionsDict = _regionsDict
+        hm.matrix.hmcluster(args.kmeans, method='kmeans')
 
     if len(args.regionsLabel):
         hm.reLabelGroups(args.regionsLabel)
@@ -366,11 +354,10 @@ def main(args):
                 args.endLabel,
                 args.plotHeight,
                 args.plotWidth,
-                args.onePlotPerGroup,
+                args.perGroup,
                 plotType=args.plotType,
                 image_format=args.plotFileFormat,
                 color_list=args.colors)
-
 
 if __name__ == "__main__":
     args = parseArguments()

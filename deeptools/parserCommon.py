@@ -523,12 +523,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           default=None,
                           help='Maximum value for the Y-axis.')
 
-    optional.add_argument('--onePlotPerGroup',
-                          help='When the region file contains groups separated'
-                          ' by "#", the default is to plot the averages for '
-                          'the distinct plots in one plot. If this option is '
-                          'set, each group will get its own plot, stacked on '
-                          'top of each other.',
+    optional.add_argument('--perGroup',
+                          help='The default is to combine all group '
+                          'plots into one. If multiple samples are '
+                          'present, then for each sample a new plot is '
+                          'made. If --perGroup is set, then, for each '
+                          'group, all data from different samples '
+                          'is combined in to one plot.',
                           action='store_true')
 
     optional.add_argument('--plotFileFormat',
