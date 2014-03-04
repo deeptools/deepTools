@@ -943,15 +943,19 @@ class _matrix(object):
 
         # order per group
         _sorted_regions = []
+        _sorted_matrix = []
         for idx in range(len(self.group_labels)):
             start = self.group_boundaries[idx]
             end = self.group_boundaries[idx+1]
             order = matrix_avgs[start:end].argsort()
             if sort_method == 'descend':
                 order = order[::-1]
-            self.matrix[start:end, :] = self.matrix[order, :]
+            _sorted_matrix.append(self.matrix[start:end, :][order, :])
+            _reg = self.regions[start:end]
             for idx in order:
-                _sorted_regions.append(self.regions[idx])
+                _sorted_regions.append(_reg[idx])
+
+        self.matrix = np.vstack(_sorted_matrix)
         self.regions = _sorted_regions
 
     def hmcluster(self, k, method='kmeans'):
@@ -967,7 +971,7 @@ class _matrix(object):
             # order the centroids in an attempt to
             # get the same cluster order
             order = np.argsort(centroids.mean(axis=1))
-            cluster_labels,_ = vq(matrix, centroids[order, ])
+            cluster_labels,_ = vq(matrix, centroids[order, :])
 
         if method == 'hierarchical':
             # normally too slow for large data sets
@@ -975,20 +979,20 @@ class _matrix(object):
             Z = linkage(matrix, method='ward')
             cluster_labels = fcluster(Z, k, criterion='maxclust')
 
-        # create groups using the clustering 
+        # create groups using the clustering
         self.group_labels = []
         self.group_boundaries = [0]
-        _sorted_regions = []
-        _sorted_matrix = []
+        _clustered_regions = []
+        _clustered_matrix = []
         for cluster in range(k):
             self.group_labels.append("cluster {}".format(cluster+1))
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))
-            _sorted_matrix.append(self.matrix[cluster_ids, :])
+            _clustered_matrix.append(self.matrix[cluster_ids, :])
             for idx in cluster_ids:
-                _sorted_regions.append(self.regions[idx])
+                _clustered_regions.append(self.regions[idx])
 
-        self.regions = _sorted_regions
-        self.matrix = np.vstack(_sorted_matrix)
+        self.regions = _clustered_regions
+        self.matrix = np.vstack(_clustered_matrix)
         return idx
