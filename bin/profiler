@@ -335,7 +335,7 @@ def main(args):
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
 
     if len(args.regionsLabel):
-        hm.reLabelGroups(args.regionsLabel)
+        hm.matrix.set_group_labels(args.regionsLabel)
 
     if args.outFileNameData:
         hm.saveTabulatedValues(args.outFileNameData)
