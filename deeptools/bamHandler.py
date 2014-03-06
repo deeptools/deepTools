@@ -25,8 +25,8 @@ def openBam(bamFile, bamIndex=None):
         tmpf0bam_name = '%s.bam' % tmpf0_name
         tmpf0bambai_name = '%s.bam.bai' % tmpf0_name
 
-        os.symlink(bamFile, tmpf0bam_name)
-        os.symlink(bamIndex, tmpf0bambai_name)
+        os.symlink(os.path.abspath(bamFile), tmpf0bam_name)
+        os.symlink(os.path.abspath(bamIndex), tmpf0bambai_name)
         bamFile = tmpf0bam_name
 
     else:
