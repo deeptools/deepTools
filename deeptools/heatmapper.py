@@ -644,8 +644,10 @@ class heatmapper(object):
         # print a header telling the group names and their length
         fh = open(file_name, 'w')
         info = []
-        for label, regions in self.regionsDict.iteritems():
-            info.append("{}:{}".format(label, len(regions)))
+        groups_len = np.diff(self.matrix.group_boundaries)
+        for i in range(len(self.matrix.group_labels)):
+            info.append("{}:{}".format(self.matrix.group_labels[i],
+                                       groups_len[i]))
         fh.write("#{}\n".format("\t".join(info)))
         # add to header the x axis values
         fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
@@ -657,50 +659,31 @@ class heatmapper(object):
         fh.close()
         # reopen again using append mode
         fh = open(file_name, 'a')
-        for key in self.matrixDict:
-            np.savetxt(fh, self.matrixDict[key], fmt="%.3g")
+        np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
         fh.close()
 
     def saveBED(self, file_handle):
-        for label, regions in self.regionsDict.iteritems():
-            cluster = label.find('cluster') != -1
-            j = 0
-            for region in regions:
-                score = 0
-                if self.matrixAvgsDict is not None:
-                    try:
-                        if self.matrixAvgsDict[label][j] is np.ma.masked:
-                            score = 'nan'
-                        else:
-                            score = np.float(self.matrixAvgsDict[label][j])
-                    except KeyError:
-                        pass
-                # If the label is from clustering, we add an additional column
-                # TODO: we need to decide if you want to go with an additional column
-                # also for other labels. Comment lines are not in the BED specification
-                # and can cause additional errors.
-                if cluster:
-                    file_handle.write(
-                        '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                            region['chrom'],
-                            region['start'],
-                            region['end'],
-                            region['name'],
-                            score,
-                            region['strand'],
-                            label))
-                else:
-                    file_handle.write(
-                        '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                            region['chrom'],
-                            region['start'],
-                            region['end'],
-                            region['name'],
-                            score,
-                            region['strand']))
-                j += 1
-            if not cluster:
-                file_handle.write('#{}\n'.format(label))
+        boundaries = np.array(self.matrix.group_boundaries)
+        for idx, region in enumerate(self.matrix.regions):
+            # the label id corresponds to the last boundary
+            # that is smaller than the region index.
+            # for example for a boundary array = [0, 10, 20]
+            # and labels ['a', 'b', 'c'],
+            # for index 5, the label is 'a', for
+            # index 10, the label is 'b' etc
+            if idx == 0:
+                label_idx = 0
+            else:
+                label_idx = np.flatnonzero(boundaries < idx)[-1]
+            file_handle.write(
+                '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                    region['chrom'],
+                    region['start'],
+                    region['end'],
+                    region['name'],
+                    0,
+                    region['strand'],
+                    self.matrix.group_labels[label_idx]))
         file_handle.close()
 
     @staticmethod
