@@ -78,10 +78,10 @@ class heatmapper(object):
 
         # args to pass to the multiprocessing workers
         mp_args = []
-
-        # prepare groups of 400 regions to send to workers.
-        for index in range(0, len(regions), 400):
-            index_end = min(len(regions), index + 400)
+        # prepare groups of regions to send to workers.
+        regions_per_worker = 400 / len(score_file_list)
+        for index in range(0, len(regions), regions_per_worker):
+            index_end = min(len(regions), index + regions_per_worker)
             mp_args.append((score_file_list, regions[index:index_end],
                             parameters))
 
@@ -924,6 +924,14 @@ class _matrix(object):
         if len(new_labels) != len(self.group_labels):
             raise ValueError("length new labels != length original labels")
         self.group_labels = new_labels
+
+
+    def set_sample_labels(self, new_labels):
+        """ sets new labels for groups
+        """
+        if len(new_labels) != len(self.sample_labels):
+            raise ValueError("length new labels != length original labels")
+        self.sample_labels = new_labels
 
     def sort_groups(self, sort_using='mean', sort_method='no'):
         """

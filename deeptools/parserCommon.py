@@ -503,6 +503,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           ' --regionsLabel "label1, label2". '
                           'Default is "genes".')
 
+    optional.add_argument('--samplesLabel',
+                          help='Labels for the samples plotted. The '
+                          'default is to use the file name of the '
+                          'sample. E.g.'
+                          ' --samplesLabel "label1, label2".',
+                          nargs='+')
+
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
                           'the generated image. Leave blank for no title.',

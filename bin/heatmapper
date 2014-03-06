@@ -783,6 +783,9 @@ def main(args):
     if len(args.regionsLabel):
         hm.matrix.set_group_labels(args.regionsLabel)
 
+    if args.samplesLabel and len(args.samplesLabel):
+        hm.matrix.set_sample_labels(args.samplesLabel)
+
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing,
                       sort_method=args.sortRegions)
