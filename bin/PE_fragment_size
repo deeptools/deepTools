@@ -57,7 +57,7 @@ def main(args):
         return
 
     print "Sample size: {}\n".format(fragLength['sample_size'])
-    print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
+    print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n" \
     "3rd Qu.: {}\nMax.: {}\nStd: {}".format(
         fragLength['min'],
         fragLength['qtile25'],
