@@ -437,7 +437,11 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument(
             '--colorList',
-            help='List of color to create a colormap.',
+            help='List of color to create a colormap. For example if  '
+            '--colorList black yellow blue is set (colors separated by '
+            'spaces) then a color map that starts with black, continues '
+            'to yellow and finishes in blue is created. If this option is'
+            'selected, it overrides the --colorMap selected.',
             nargs='+')
 
         optional.add_argument(
