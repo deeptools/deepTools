@@ -172,7 +172,7 @@ def prepare_layout(hm_matrix, figsize, showSummaryPlot, showColorbar):
     return grids
 
 def plotMatrix(hm, outFileName,
-               colorMap='binary', missingDataColor='black',
+               colorMapDict={'colorMap':'binary', 'missingDataColor':'black'},
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -251,12 +251,17 @@ def plotMatrix(hm, outFileName,
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
 
     # colormap for the heatmap
-    cmap = plt.get_cmap(colorMap)
+    if colorMapDict['colorMap']:
+        cmap = plt.get_cmap(colorMapDict['colorMap'])
+    if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
+        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+            'my_cmap', colorMapDict['colorList'], N=colorMapDict['colorNumber'])
+
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
     numgroups = hm.matrix.get_num_groups()
     color_list = cmap_plot(np.arange(numgroups) / numgroups)
-    cmap.set_bad(missingDataColor)  # nans are printed using this color
+    cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
 
     first_group = 0 # helper variable to place the title per sample
     for sample in range(hm.matrix.get_num_samples()):
@@ -292,7 +297,7 @@ def plotMatrix(hm, outFileName,
                             origin='upper',
                             vmin=zMin,
                             vmax=zMax,
-                            cmap=colorMap,
+                            cmap=cmap,
                             extent=[0, cols, rows, 0])
 
             # plot a line showing the border of the gene length
@@ -618,7 +623,7 @@ def plotMatrix_old(hm, outFileName,
                                 origin='upper',
                                 vmin=zMin,
                                 vmax=zMax,
-                                cmap=colorMap,
+                                cmap=cmap,
                                 extent=[0, ma.shape[1], ma.shape[0], 0])
 
             # plot a line showing the border of the gene length
@@ -799,9 +804,14 @@ def main(args):
     if args.outFileSortedRegions:
         hm.saveBED(args.outFileSortedRegions)
 
+    colormap_dict = {'colorMap': args.colorMap,
+                     'colorList': args.colorList,
+                     'colorNumber': args.colorNumber,
+                     'missingDataColor': args.missingDataColor}
+
     plotMatrix(hm,
                args.outFileName,
-               args.colorMap, args.missingDataColor, args.plotTitle,
+               colormap_dict, args.plotTitle,
                args.xAxisLabel, args.yAxisLabel, args.regionsLabel,
                args.zMin, args.zMax,
                args.yMin, args.yMax,

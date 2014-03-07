@@ -435,6 +435,20 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'matplotlib_cm/ The available options are: \'' +
             color_options + '\'')
 
+        optional.add_argument(
+            '--colorList',
+            help='List of color to create a colormap.',
+            nargs='+')
+
+        optional.add_argument(
+            '--colorNumber',
+            help='if --colorList is given, colorNumber controls the number of '
+            'transitions from one color to the other. If --colorNumber is set '
+            'to the same number of colors as in --colorList, then per each '
+            'color a discrete interval  is shown (i.e. no transitions)',
+            type=int,
+            default=256)
+
         optional.add_argument('--zMin', '-min',
                               default=None,
                               help='Minimum value for the heatmap intensities.')
