@@ -1,4 +1,4 @@
-<tool id="deeptools_bamFingerprint" name="bamFingerprint" version="1.0.4">
+<tool id="deeptools_bamFingerprint" name="bamFingerprint" version="1.0.5">
     <description>plots profiles of BAM files; useful for assesing ChIP signal strength</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
