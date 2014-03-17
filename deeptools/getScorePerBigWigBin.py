@@ -1,79 +1,195 @@
+from bx.bbi.bigwig_file import BigWigFile
 import numpy as np
-import time
-import multiprocessing
+import os
+import sys
+import warnings
 
 # deepTools packages
 import mapReduce
-from bx.bbi.bigwig_file import BigWigFile
 
-debug = 0
+#debug = 0
 
 
 def countReadsInRegions_wrapper(args):
-    return countReadsInRegions_worker(*args)
+    # Using arguments unpacking!
+    return countFragmentsInRegions_worker(*args)
 
 
-def countReadsInRegions_worker(chrom, start, end, bigwigFilesList,
+def countFragmentsInRegions_worker(chrom, start, end,
+                               bigwigFilesList,
+                               stepSize, binLength,     #staticArgs
+                               skipZeros=False,
                                bedRegions=None):
-    """ returns the average score in each bigwig file at each
-    'stepSize' position
-    within the interval start, end for a 'binLength' window.
+    """ returns the average score in each bigwig file at each 'stepSize'
+    position within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
     different positions for sampling the bins are equally spaced
-    between each other and are  not one directly next *after* the other.
+    between each other and are not one directly next *after* the other.
 
     If a list of bedRegions is given, then the number of reads
     that overlaps with each region is counted.
 
+    Test dataset with two samples covering 200 bp.
+    >>> test = Tester()
+
+    Fragment coverage.
+    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bwFile1, test.bwFile2], 50, 25))
+    array([[ 1.,  1.,  2.,  2.],
+           [ 1.,  1.,  1.,  3.]])
+
+    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bwFile1, test.bwFile2], 200, 200))
+    array([[ 1.5],
+           [ 1.5]])
+
+    BED regions:
+    >>> bedRegions = [(test.chrom, 45, 55), (test.chrom, 95, 105),
+    ... (test.chrom, 145, 155)]
+    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,
+    ... [test.bwFile1, test.bwFile2], 200, 200, bedRegions=bedRegions))
+    array([[ 1. ,  1.5,  2. ],
+           [ 1. ,  1. ,  2. ]])
     """
 
     assert start < end, "start {} bigger that end {}".format(start, end)
 
-    # array to keep the read counts for the regions
-    subNum_reads_per_bin = []
+    # array to keep the scores for the regions
+    sub_score_per_bin = []
 
     rows = 0
 
-    bigWigHandlers = [BigWig(file=open(bw, 'r')) for bw in bigWigFilesList]
-                      
-    regionsToConsider = []
+    bigWigHandlers = [BigWigFile(open(bw, "rb")) for bw in bigwigFilesList]
 
+    regionsToConsider = []
     if bedRegions:
         for chrom, start, end in bedRegions:
             regionsToConsider.append((chrom, start, end, end - start))
     else:
         for i in xrange(start, end, stepSize):
-            if i + binLength > end:
+            if (i + binLength) > end:
                 break
             regionsToConsider.append((chrom, i, i + binLength, binLength))
 
+    #print "\nNumber of regions: {}".format(len(regionsToConsider))
+
+    warnings.simplefilter("default")
+    i = 0
+
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
-        for bigWig in bigWigHandlers:
-            score = bigWig.query(chrom, start, end, 1)[0]
-            avgReadsArray.append(score['mean'])
+        i += 1
+        for bwh in bigWigHandlers:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                score = bwh.query(chrom, start, end, 1)[0]
+            if np.isnan(score['mean']) or score is None:
+                sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score['mean'], chrom, start, end))
+                score['mean'] = 0.0
+            avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
+        #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
+
+        if skipZeros and sum(avgReadsArray) == 0:
+            continue
         sub_score_per_bin.extend(avgReadsArray)
         rows += 1
+    warnings.resetwarnings()
 
     # the output is a matrix having as many rows as the variable 'row'
     # and as many columns as bigwig files. The rows correspond to
     # each of the regions processed by the worker.
     # np.array([[score1_1, score1_2],
     #           [score2_1, score2_2]]
-    return np.array(sub_score_per_bin).reshape(rows, len(bigWigFilesList))
+
+    return np.array(sub_score_per_bin).reshape(rows, len(bigwigFilesList))
+
+
+def getChromSizes(bigwigFilesList):
+    """
+    Get chromosome sizes from bigWig file by shell calling bigWigInfo
+    (UCSC tools).
+
+    Test dataset with two samples covering 200 bp.
+    >>> test = Tester()
+
+    Chromosome name(s) and size(s).
+    >>> getChromSizes([test.bwFile1, test.bwFile2])
+    [('3R', 200)]
+    """
+    #The following lines are - with one exception ("bigWigInfo") -
+    #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
+    cCommon = []
+    chromNamesAndSize = {}
+    for bw in bigwigFilesList:
+        inBlock = False
+        for line in os.popen("{} -chroms {}".format("bigWigInfo", bw)).readlines():
+            if line[0:10] == "chromCount":
+                inBlock = True
+                continue
+            if line[0:5] == "bases":
+                break
+            if inBlock:
+                chromName, id, size = line.strip().split(" ")
+                size = int(size)
+                if chromName in chromNamesAndSize:
+                    cCommon.append(chromName)
+                    if chromNamesAndSize[chromName] != size:
+                        print "\nWARNING\n" \
+                            "Chromosome {} length reported in the " \
+                            "bigwig files differ.\n{} for {}\n" \
+                            "{} for {}.\n\nThe smallest " \
+                            "length will be used".format(
+                            chromName, chromNamesAndSize[chromName],
+                            bw[0], size, bw[1])
+                        chromNamesAndSize[chromName] = min(
+                            chromNamesAndSize[chromName], size)
+                else:
+                    chromNamesAndSize[chromName] = size
+    # get the list of common chromosome names and sizes
+    chromSizes = sorted([(k, v) for k, v in chromNamesAndSize.iteritems() \
+                         if k in cCommon])
+    return chromSizes
+
+
+def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
+    """
+    Get the number of all mapped fragments per region in all chromosomes
+    from a bigWig. Utilizing bx-python.
+
+    Test dataset with two samples covering 200 bp.
+    >>> test = Tester()
+
+    Get number of fragments in sample.
+    >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile1, [('3R', 200)])
+    3.0
+    >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile2, [('3R', 200)])
+    4.0
+    """
+    bwh = BigWigFile(open(bw, "rb"))
+    mapped = 0
+    for cname, csize in chromSizes:
+        regions = bwh.get(cname, 0, csize) # region = bwh.get(chrom_name, start, end)
+        for region in regions:
+            mapped += region[2]
+    return mapped
 
 
 def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
-                   numberOfProcessors=1,
+                   numberOfProcessors=1, skipZeros=True,
                    verbose=False, region=None,
                    bedFile=None,
                    chrsToSkip=[]):
+    """
+    This function returns a matrix containing scores (median) for the coverage
+    of fragments within a region. Each row corresponds to a sampled region.
+    Likewise, each column corresponds to a bigwig file.
 
-    r"""
-    This function visits a number of sites and returs a matrix containing read
-    counts. Each row to one sampled site and each column correspond to each of
-    the bigwig files.
+    Test dataset with two samples covering 200 bp.
+    >>> test = Tester()
 
+    >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 20, 5,))
+    array([[ 1.,  1.,  1.,  2.,  2.],
+           [ 1.,  1.,  1.,  1.,  3.]])
     """
 
     # Try to determine an optimal fraction of the genome (chunkSize)
@@ -82,31 +198,22 @@ def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
     # if too long, some processors end up free.
     # the following values are empirical
 
-    bigWigFilesHandlers = [BigWigFile(file=open(x, 'r'))
-                           for x in bigWigFilesList]
-
-    chromSizes = getCommonChrNames(bamFilesHandlers, verbose=verbose)
+    # get list of common chromosome names and sizes
+    chromSizes = getChromSizes(bigwigFilesList)
 
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
     # Also the skip may contain heterochromatic regions and
     # mitochondrial DNA
-    if len(chrsToSkip):
-        chromSizes = [ x for x in chromSizes if x[0] not in chrsToSkip ]
+    if len(chrsToSkip): chromSizes = [ x for x in chromSizes if x[0] not in chrsToSkip ]
 
     chrNames, chrLengths = zip(*chromSizes)
-
     genomeSize = sum(chrLengths)
-    max_mapped = max([x.mapped for x in  bigwigFilesList])
-
+    max_mapped = max( map(lambda x: getNumberOfFragmentsPerRegionFromBigWig(x, chromSizes), bigwigFilesList) )
     reads_per_bp = float(max_mapped) / genomeSize
-#    chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
-
     stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
-
     chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bigwigFilesList)) )
-    [bam_h.close() for bam_h in bigwigFilesList]
 
     if verbose:
         print "step size is {}".format(stepSize)
@@ -115,7 +222,8 @@ def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
 
-    imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength),
+    # mapReduce( (staticArgs), func, chromSize, etc. )
+    imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength, skipZeros),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
@@ -127,202 +235,28 @@ def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
     return score_per_bin
 
 
-def getReadLength(read):
-    return len(read)
-
-
-def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
-                        defaultFragmentLength, extendPairedEnds=True, 
-                        zerosToNans=True, maxPairedFragmentLength=None,
-                        minMappingQuality=None, ignoreDuplicates=False,
-                        fragmentFromRead_func = getFragmentFromRead):
-    """
-    Returns a numpy array that corresponds to the number of reads 
-    that overlap with each tile.
-
-    >>> test = Tester()
-    >>> import pysam
-
-    For this case the reads are length 36. For the positions given
-    the number of overlapping read fragments is 4 and 5
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000833, 5000835, 1, 0, False)
-    array([ 4.,  5.])
-
-    In the following example a paired read is extended to the fragment length wich is 100
-    The first mate starts at 5000000 and the second at 5000064. Each mate is
-    extended to the fragment length *independently*
-    At position 500090-500100 one fragment  of length 100 overlap, and after position 5000101  
-    there should be zero reads
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000090, 5000110, 10, 0, True)
-    array([  1.,  nan])
-
-    In the following  case the reads length is 50
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 148, 154, 2, 0, False)
-    array([ 1.,  2.,  2.])
-
-    Test ignore duplicates
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 50, 0, False, ignoreDuplicates=True)
-    array([ nan,   1.,   1.,   1.])
-
-    Test long regions
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 200, 0, False)
-    array([ 4.])
-    """
-    if not fragmentFromRead_func:
-        fragmentFromRead_func = getFragmentFromRead
-    length = end - start
-    if length % tileSize > 0:
-        newLength = length - (length % tileSize)
-        if debug:
-            print  "length of region ({}) is not a multiple of "\
-                "tileSize {}\nThe region is being chopped to length "\
-                "{} bp".format(length, tileSize, newLength)
-
-    vectorLength = length / tileSize
-    coverage = np.zeros(vectorLength, dtype='float64')
-
-    startTime = time.time()
-    # caching seems faster. TODO: profile the function
-    c = 0
-    if chrom in bamHandle.references:
-        # r.flag & 4 == 0 is to skip unmapped reads
-        reads = [r for r in bamHandle.fetch(chrom, start, end)
-                 if r.flag & 4 == 0]
-    else:
-        raise NameError("chromosome {} not found in bam file".format(chrom))
-
-    prev_start_pos = None # to store the start positions
-                          # of previous processed read pair
-
-    for read in reads:
-        if minMappingQuality and read.mapq < minMappingQuality:
-            continue
-
-        # get rid of duplicate reads that have same position on each of the
-        # pairs
-        if ignoreDuplicates and prev_start_pos  \
-                and prev_start_pos == (read.pos, read.pnext, read.is_reverse):
-            continue
-
-        try:
-            fragmentStart, fragmentEnd = \
-                fragmentFromRead_func(read, defaultFragmentLength,
-                                      extendPairedEnds,
-                                      maxPairedFragmentLength=maxPairedFragmentLength)
-
-            fragmentLength = fragmentEnd - fragmentStart
-            if fragmentLength == 0:
-                fragmentLength = defaultFragmentLength
-
-            vectorStart = max( (fragmentStart - start)/tileSize, 0)
-            vectorEnd   = min( np.ceil(float(fragmentEnd   - start)/tileSize).astype('int'), 
-                               vectorLength)
-
-            coverage[vectorStart:vectorEnd] +=  1
-        except TypeError:
-            # the getFragmentFromRead functions returns None in some cases.
-            # Those cases are to be skiped, hence the continue line.
-            continue
-
-        prev_start_pos = (read.pos, read.pnext, read.is_reverse)
-        c += 1
-
-    if debug:
-        endTime = time.time()
-        print "%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (multiprocessing.current_process().name, c, c / (endTime - startTime) ,chrom, start, end)
-
-    # change zeros to NAN
-    if zerosToNans:
-        coverage[coverage == 0] = np.nan
-
-    return coverage 
-
-def getSmoothRange(tileIndex, tileSize, smoothRange, maxPosition):
-    
-    """
-    Given a tile index position and a tile size (length), return the a new indices
-    over a larger range, called the smoothRange.
-    This region is centered in the tileIndex  an spans on both sizes
-    to cover the smoothRange. The smoothRange is trimed in case it is less
-    than cero or greater than  maxPosition
-
-
-     ---------------|==================|------------------
-                tileStart
-           |--------------------------------------|
-           |    <--      smoothRange     -->      |
-           |        
-     tileStart - (smoothRange-tileSize)/2
-
-    Test for a smooth range that spans 3 tiles
-    >>> getSmoothRange(5, 1, 3, 10)
-    (4, 7)
-    
-    Test smooth range truncated on start
-    >>> getSmoothRange(0, 10, 30, 200)
-    (0, 2)
-
-    Test smooth range truncated on start
-    >>> getSmoothRange(1, 10, 30, 4)
-    (0, 3)
-
-    Test smooth range truncated on end
-    >>> getSmoothRange(5, 1, 3, 5)
-    (4, 5)
-
-    Test smooth range not multiple of tileSize
-    >>> getSmoothRange(5, 10, 24, 10)
-    (4, 6)
-    """
-    smoothTiles = int(smoothRange/tileSize)
-    if smoothTiles == 1:
-        return (tileIndex, tileIndex + 1)
-
-    smoothTilesSide = float(smoothTiles - 1) / 2
-    smoothTilesLeft = int(np.ceil(smoothTilesSide))
-    smoothTilesRight = int(np.floor(smoothTilesSide)) + 1
-
-    indexStart = max( tileIndex - smoothTilesLeft, 0 )
-    indexEnd   = min( maxPosition, tileIndex + smoothTilesRight )
-    return (indexStart, indexEnd)
-
 class Tester():
     def __init__( self ):
         """
-        The distribution of reads between the two bam files is as follows.
+        The distribution of reads (and fragments) in the two bigWig
+        files is as follows.
 
-        They cover 200 bp
+        They cover 200 bp.
 
           0                              100                           200
           |------------------------------------------------------------|
-        A                                ===============
-                                                        ===============
+        A                                ==============>- - - - - - - -
+          - - - - - - - - - - - - - - - - - - - - - - - <==============
 
 
-        B                 ===============               ===============                           
-                                         ===============
-                                                        ===============
+        B - - - - - - - - <==============               ==============>
+                                         ==============>- - - - - - - -
+                                                        ==============>
         """
         self.root = "./test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
-        self.bamFile_PE  = self.root + "test_paired2.bam"
+        self.bwFile1  = self.root + "testA.bw"
+        self.bwFile2  = self.root + "testB.bw"
+        self.bwFile_PE  = self.root + "test_paired2.bw"
         self.chrom = '3R'
-        global debug
-        debug = 0
-
-    def getRead( self, readType ):
-        """ prepare arguments for test
-        """
-        bam = bamHandler.openBam(self.bamFile_PE)
-        if readType == 'paired-reverse':
-            read = [x for x in bam.fetch('chr2', 5000081,5000082 )][0]
-        elif readType == 'single-forward':
-            read = [x for x in bam.fetch('chr2', 5001491, 5001492 )][0]
-        elif readType == 'single-reverse':
-            read = [x for x in bam.fetch('chr2', 5001700, 5001701 )][0]
-        else: # by default a forward paired read is returned
-            read = [x for x in bam.fetch('chr2', 5000027,5000028 )][0]
-        return read
-
-
+        #global debug
+        #debug = 0
