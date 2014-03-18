@@ -68,8 +68,9 @@ def countFragmentsInRegions_worker(chrom, start, end,
     else:
         for i in xrange(start, end, stepSize):
             if (i + binLength) > end:
-                break
-            regionsToConsider.append((chrom, i, i + binLength, binLength))
+                regionsToConsider.append((chrom, i, end, end-i)) #last bin (may be smaller)
+            else:
+                regionsToConsider.append((chrom, i, i + binLength, binLength))
 
     #print "\nNumber of regions: {}".format(len(regionsToConsider))
 
@@ -174,7 +175,7 @@ def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
     return mapped
 
 
-def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
+def getScorePerBin(bigwigFilesList, binLength,
                    numberOfProcessors=1, skipZeros=True,
                    verbose=False, region=None,
                    bedFile=None,
@@ -187,9 +188,10 @@ def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
 
-    >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 20, 5,))
-    array([[ 1.,  1.,  1.,  2.,  2.],
-           [ 1.,  1.,  1.,  1.,  3.]])
+    >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 50, 5,))
+    array([[ 1.,  1.,  2.,  2.],
+           [ 1.,  1.,  1.,  3.]])
+
     """
 
     # Try to determine an optimal fraction of the genome (chunkSize)
@@ -212,8 +214,8 @@ def getScorePerBin(bigwigFilesList, binLength, numberOfSamples,
     genomeSize = sum(chrLengths)
     max_mapped = max( map(lambda x: getNumberOfFragmentsPerRegionFromBigWig(x, chromSizes), bigwigFilesList) )
     reads_per_bp = float(max_mapped) / genomeSize
-    stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
-    chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bigwigFilesList)) )
+    stepSize = binLength    #for consecutive bins
+    chunkSize = int(stepSize * 1e3 / ( reads_per_bp  * len(bigwigFilesList)) )
 
     if verbose:
         print "step size is {}".format(stepSize)
