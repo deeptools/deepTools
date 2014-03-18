@@ -94,8 +94,11 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     else:
         for i in xrange(start, end, stepSize):
             if i + binLength > end:
-                break
-            regionsToConsider.append((chrom, i, i + binLength, binLength))
+                #break
+            #regionsToConsider.append((chrom, i, i + binLength, binLength))
+                regionsToConsider.append((chrom, i, end, end-i)) #last bin (may be smaller)
+            else:
+                regionsToConsider.append((chrom, i, i + binLength, binLength))
 
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
@@ -184,9 +187,10 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     max_mapped = max( [ x.mapped for x in  bamFilesHandlers ] )
 
     reads_per_bp = float(max_mapped) / genomeSize
-#    chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
+    #chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
 
-    stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
+    stepSize = binLength     #for consecutive bins
+    #stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
 
     chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bamFilesHandlers)) )
     [ bam_h.close() for bam_h in bamFilesHandlers]
