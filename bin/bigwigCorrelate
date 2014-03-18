@@ -143,7 +143,7 @@ def bigwigCorrelateArgs(case='bins'):
                                'Multiple labels have to be separated by space, e.g. '
                                '--labels sample1 sample2 sample3',
                           nargs='+')
-    optional.add_argument('--filterPercentile', '-f',
+    optional.add_argument('--filterPercentile',
                           metavar='FLOAT',
                           help='Percentile used to filter out extreme outliers. '
                                'If not specified, it is automatically set to 99.9 in analyses '
