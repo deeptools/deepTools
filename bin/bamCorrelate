@@ -95,7 +95,6 @@ For detailed help type:
         print "The number of does not match the number of bam files."
         exit(0)
     if not args.labels:
-        #args.labels = args.bamfiles
         args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
 
     return args
@@ -139,6 +138,18 @@ def bamCorrelateArgs(case='bins'):
                           'instead. Separate the labels by space, e.g. '
                           '--labels sample1 sample2 sample3',
                         nargs='+')
+    optional.add_argument('--filterPercentile',
+                      metavar='FLOAT',
+                      help='Percentile used to filter out extreme outliers. '
+                           'If not specified, it is automatically set to 99.9 in analyses '
+                           'using Pearson correlation! This means that values above that '
+                           'threshold, which consistently occur in all datasets, will not be '
+                           'taken into account for the correlation analysis. This behavior can '
+                           'be overridden by a user specified value from within the 0.0 to 100.0 '
+                           'range.',
+                      default=None,
+                      type=float)
+
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                               metavar='',
@@ -322,6 +333,16 @@ def main(args):
     else:
         skip_zeros = True
 
+    # default for pearson is 99.9 percentile filtering
+    if args.filterPercentile and not 0.0 <= args.filterPercentile <= 100.0:
+        sys.stderr.write("ERROR! Invalid filter percentile value: {}".format(
+            args.filterPercentile))
+        exit(1)
+    if not args.filterPercentile and args.corMethod == "pearson":
+        args.filterPercentile = 99.9
+        print "Automatic {} percentile filtering enabled before Pearson correlation.".format(
+            args.filterPercentile)
+
     if args.colorMap:
         try:
             plt.get_cmap(args.colorMap)
@@ -361,17 +382,24 @@ def main(args):
     # percentile are identified. Such values are removed from
     # the num_reads_per_bin matrix if they occour in the
     # same rows
-    to_remove = None
-    for col in num_reads_per_bin.T:
-        outliers = np.flatnonzero(col > np.percentile(col, 99.9))
-        if to_remove is None:
-            to_remove = set(outliers)
-        else:
-            to_remove = to_remove.intersection(outliers)
-    if len(to_remove):
-        to_keep = [x for x in range(num_reads_per_bin.shape[0])
-                   if x not in to_remove]
-        num_reads_per_bin = num_reads_per_bin[to_keep, :]
+    if args.filterPercentile:
+        unfiltered = len(num_reads_per_bin)
+        to_remove = None
+        for col in num_reads_per_bin.T:
+            outliers = np.flatnonzero(
+                col > np.percentile(col, args.filterPercentile))
+            if to_remove is None:
+                to_remove = set(outliers)
+            else:
+                to_remove = to_remove.intersection(outliers)
+        if len(to_remove):
+            to_keep = [x for x in range(num_reads_per_bin.shape[0])
+                       if x not in to_remove]
+            num_reads_per_bin = num_reads_per_bin[to_keep, :]
+            if args.verbose:
+                print "{} percentile filtering (total/filtered/left): {}/{}/{}".format(
+                    args.filterPercentile, unfiltered,
+                    unfiltered - len(to_keep), len(to_keep))
 
     # num_reads_per_bin: rows correspond to  bins, cols to  samples
     num_files = len(args.bamfiles)
