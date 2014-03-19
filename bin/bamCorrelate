@@ -21,33 +21,31 @@ def parseArguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-bamCorrelate can be run in two modes: bins and BED-file.
+bamCorrelate computes the overall similarity between two or more BAM
+files based on read coverage (number of reads) within genomic regions.
+The correlation analysis is performed for the entire genome by running
+the program in 'bins' mode, or for certain regions only in 'BED-file'
+mode. Pearson or Spearman analyses are available to compute correlation
+coefficients. Results are saved to a heat map file. Further output files
+are optional.
 
-In the bins mode, the correlation is computed based on randomly
-sampled bins of equal length. The user has to specify how many bins should
-be sampled. This is useful to assess the overall similarity of BAM files.
+detailed help:
 
-In the BED-file options, the user supplies a list of genomic regions
-in BED format in addition to the list of BAM files. bamCorrelate
-subsequently uses the BED file to compare the read coverages for these
-regions only. This can be used, for example, to compare the ChIP-seq
-coverages of two different samples for a set of peak regions.
-
-For detailed help type:
-
-%(prog)s bins -h or
-%(prog)s BED-file -h
+  %(prog)s bins -h
+  %(prog)s BED-file -h
 
 """,
-            epilog='An example usage is:\n  %(prog)s bins '
-            '-b treatment.bam input.bam\n'
-            '-o correlation.png -f 200 --corMethod pearson\n \n',
+           epilog='example usages:\n%(prog)s bins '
+           '-b file1.bam file2.bam -o heatmap.png --corMethod pearson\n\n'
+           '%(prog)s BED-file -b file1.bam file2.bam -o heatmap.png --corMethod pearson\n'
+           '--BED selection.bed '
+           ' \n\n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers(
-        title="Commands",
+        title="commands",
         dest='command',
         metavar='')
 
@@ -63,13 +61,15 @@ For detailed help type:
                  parent_parser, read_options_parser,
                  heatmap_parser
                  ],
-        help="In the bins mode, the correlation is computed based on "
-        "randomly chosen genomic regions of the same size (= bins). "
-        "The number of bins to be used has to be specified.",
+        help="The correlation is based on arbitrary bins of similar "
+             "size (10k bp by default), which consecutively cover the "
+             "entire genome. The only exception is the last bin, which "
+             "is regularly smaller. This mode is useful to assess the "
+             "overall similarity of BAM files.",
         add_help=False,
-        usage='An example usage is:\n  %(prog)s '
-        '-b treatment.bam input.bam '
-        '-o correlation.png -f 200 --corMethod pearson\n \n')
+        usage='%(prog)s '
+              '-b file1.bw file2.bw '
+              '-o heatmap.png --corMethod pearson\n')
 
     # BED file arguments
     bed_mode = subparsers.add_parser(
@@ -79,13 +79,13 @@ For detailed help type:
                  parent_parser, read_options_parser,
                  heatmap_parser
                  ],
-        help="In the BED-file options, as list of genomic regions in BED "
-        "format has to be given. For each region in the BED file the "
-        "number of overlapping reads is counted in each of the BAM "
-        "files. Then the correlation is computed.",
-        usage='An example usage is:\n %(prog)s '
-        '--BED genes.bed -b treatment.bam input.bam '
-        '-o correlation.png -f 200 --corMethod pearson\n \n',
+        help="The user provides a BED file that contains all regions "
+             "that should be considered for the correlation analysis. A "
+             "common use is to compare ChIP-seq coverages between two "
+             "different samples for a set of peak regions.",
+        usage='%(prog)s '
+              '-b file1.bw file2.bw '
+              '-o heatmap.png --corMethod pearson --BED selection.bed \n',
         add_help=False)
 
     args = parser.parse_args(args)
@@ -106,138 +106,138 @@ def bamCorrelateArgs(case='bins'):
 
     # define the arguments
     required.add_argument('--bamfiles', '-b',
-                          metavar='list of bam files',
-                          help='List of indexed bam files separated by space',
-                          nargs='+',
-                          required=True)
+                        metavar='FILE1 FILE2',
+                        help='List of indexed bam files separated by spaces.',
+                        nargs='+',
+                        required=True)
 
     required.add_argument('--plotFile', '-o',
-                       help='File name to save the file containing the heatmap '
-                       'of the correlation. The given file ending will be used '
-                       ' to determine the image format, for example: '
-                       'correlation.pdf will save the heatmap in pdf format. '
+                        help='File name to save the file containing the heatmap '
+                        'of the correlation. The given file ending will be used '
+                        ' to determine the image format, for example: '
+                        'heatmap.pdf will save the heatmap in PDF format. '
                         'The available options are: .png, .emf, '
                         '.eps, .pdf and .svg.',
-                       type=argparse.FileType('w'),
-                       metavar='file name',
-                       required=True)
+                        type=argparse.FileType('w'),
+                        metavar='FILE',
+                        required=True)
 
     required.add_argument('--corMethod', '-c',
-                          help='correlation method to use',
-                          choices=['pearson', 'spearman'],
-                          required=True)
+                        help="Correlation method. For Pearson correlation only, "
+                            "automatic 99.9 percentile filtering is enabled by "
+                            "default in order to reduce the influence of extreme "
+                            "outliers.",
+                        choices=['pearson', 'spearman'],
+                        required=True)
 
     optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument("--help", "-h", action="help",
-                          help="show this help message and exit")
+                        help="show this help message and exit")
     optional.add_argument('--labels', '-l',
-                        metavar='',
-                        help='List of labels to use in the image. '
-                          'If no labels are given, the file names will be used '
-                          'instead. Separate the labels by space, e.g. '
-                          '--labels sample1 sample2 sample3',
+                        metavar='sample1 sample2',
+                        help='User defined labels instead of default labels from '
+                            'file names. '
+                            'Multiple labels have to be separated by space, e.g. '
+                            '--labels sample1 sample2 sample3',
                         nargs='+')
     optional.add_argument('--filterPercentile',
-                      metavar='FLOAT',
-                      help='Percentile used to filter out extreme outliers. '
-                           'If not specified, it is automatically set to 99.9 in analyses '
-                           'using Pearson correlation! This means that values above that '
-                           'threshold, which consistently occur in all datasets, will not be '
-                           'taken into account for the correlation analysis. This behavior can '
-                           'be overridden by a user specified value from within the 0.0 to 100.0 '
-                           'range.',
-                      default=None,
-                      type=float)
+                        metavar='FLOAT',
+                        help='Percentile used to filter out extreme outliers. '
+                            'If not specified, it is automatically set to 99.9 in analyses '
+                            'using Pearson correlation! This means that values above that '
+                            'threshold, which consistently occur in all datasets, will not be '
+                            'taken into account for the correlation analysis. This behavior can '
+                            'be overridden by a user specified value from within the 0.0 to 100.0 '
+                            'range.',
+                        default=None,
+                        type=float)
 
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
-                              metavar='',
-                              help='Length in base pairs for a window used '
-                              'to sample the genome.',
-                              default=10000,
-                              type=int)
+                        metavar='INT',
+                        help='Length in base pairs for a window used '
+                            'to sample the genome.',
+                        default=10000,
+                        type=int)
 
         optional.add_argument('--numberOfSamples', '-n',
-                              metavar='',
-                              help='Number of random genome places to count '
-                              'reads for the correlation computation.',
-                              default=int(1e6),
-                              type=int)
+                        metavar='INT',
+                        help='Number of random genomic regions considered. '
+                            'By default, all available regions are used. '
+                            'Only use this option to compute a fraction of '
+                            'the dataset!',
+                        default=None,   #int(1e6),
+                        type=int)
 
         required.add_argument('--BED',
-                              help=argparse.SUPPRESS,
-                              default=None)
+                        help=argparse.SUPPRESS,
+                        default=None)
     else:
         optional.add_argument('--binSize', '-bs',
-                            help=argparse.SUPPRESS,
-                            default=10000,
-                            type=int)
+                        help=argparse.SUPPRESS,
+                        default=10000,
+                        type=int)
 
         optional.add_argument('--numberOfSamples', '-n',
-                            help=argparse.SUPPRESS,
-                            default=int(1e5),
-                            type=int)
+                        help=argparse.SUPPRESS,
+                        default=None,   #int(1e5),
+                        type=int)
 
-        required.add_argument(
-            '--BED',
-            help='*If* the correlation of read counts should be limited to '
-            'certain regions, a BED file can be given. If this '
-            'is the case, then the correlation is computed for '
-            'the number of reads that overlap such regions and '
-            'the values set for binSize and numberOfSamples are '
-            'ignored.',
-            metavar='FILE',
-            type=argparse.FileType('r'),
-            required=True)
+        required.add_argument('--BED',
+                        help='Limits the correlation analysis to '
+                             'the regions specified in this file.',
+                        metavar='bedfile',
+                        type=argparse.FileType('r'),
+                        required=True)
 
     optional.add_argument('--includeZeros',
-                        help='If set, then zero counts that happen for '
-                        '*all* bam files given are included. The default '
-                        'behavior is to ignore those cases ',
+                        help='Genomic regions that have zero values only '
+                            'are included. The default behavior is to ignore these '
+                            'regions. ',
                         action='store_true',
                         required=False)
 
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outFileCorMatrix',
-                        help='Output file name for the correlation matrix.',
-                        metavar='',
+                        help='Save correlation matrix to file.',
+                        metavar='FILE',
                         type=argparse.FileType('w'))
 
     group.add_argument('--outRawCounts',
-                        help='Output file name to save the bin counts',
-                        metavar='',
+                        help='Save raw counts (coverages) to file.',
+                        metavar='FILE',
                         type=argparse.FileType('w'))
 
     group.add_argument('--plotFileFormat',
-                       metavar='',
-                       help='image format type. If given, this option '
-                       'overrides the image format based on the plotFile '
-                       'ending. The available options are: png, emf, '
-                        'eps, pdf and svg.',
-                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                        metavar='FILETYPE',
+                        help='Image format type. If given, this option '
+                            'overrides the image format based on the plotFile '
+                            'ending. The available options are: png, emf, '
+                            'eps, pdf and svg.',
+                        choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
     return parser
 
 
 def heatmap_options():
     """
-    Options for generating the correlation heatmap
+    Options for generating the correlation heat map
     """
     parser = argparse.ArgumentParser(add_help=False)
-    heatmap = parser.add_argument_group('Heatmap options')
+    heatmap = parser.add_argument_group('Heat map options')
 
     heatmap.add_argument('--zMin', '-min',
-                         metavar='',
-                         default=None,
-                         help='Minimum value for the heatmap intensities. '
-                         'If not specified the value is set automatically')
+                        #metavar='',
+                        default=None,
+                        help='Minimum value for the heat map intensities. '
+                            'If not specified the value is set automatically')
     heatmap.add_argument('--zMax', '-max',
-                         metavar='',
-                         default=None,
-                         help='Maximum value for the heatmap intensities.'
-                         'If not specified the value is set automatically')
+                        #metavar='',
+                        default=None,
+                        help='Maximum value for the heat map intensities.'
+                            'If not specified the value is set automatically')
 
     from matplotlib import cm
     color_options = "', '".join([m for m in cm.datad
@@ -247,9 +247,9 @@ def heatmap_options():
         '--colorMap', default='Reds',
         metavar='',
         help='Color map to use for the heatmap. Available values can be '
-        'seen here: '
-        'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-        'matplotlib_cm/ The available options are: \'' +
+            'seen here: '
+            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
+            'matplotlib_cm/ The available options are: \'' +
         color_options + '\'')
 
     return parser
@@ -258,6 +258,7 @@ def heatmap_options():
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                     vmin=None, colormap='Reds', image_format=None):
     import scipy.cluster.hierarchy as sch
+
     num_rows = corr_matrix.shape[0]
 
     # set the minimum and maximum values
@@ -303,7 +304,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                              rotation=45,
                              ha='left')
 
-#    axmatrix.set_xticks([])
+    #    axmatrix.set_xticks([])
     # Plot colorbar.
     axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
     plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
@@ -380,7 +381,7 @@ def main(args):
     # remove outliers, which will spoil pearson correlation.
     # for each data set (cols) the values above the 99.9
     # percentile are identified. Such values are removed from
-    # the num_reads_per_bin matrix if they occour in the
+    # the num_reads_per_bin matrix if they occur in the
     # same rows
     if args.filterPercentile:
         unfiltered = len(num_reads_per_bin)
@@ -416,11 +417,11 @@ def main(args):
         corr_matrix[row, col] = options[args.corMethod](
             num_reads_per_bin[:, row],
             num_reads_per_bin[:, col])[0]
-    # make the matrix symetric
+    # make the matrix symmetric
     corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
 
     if args.outFileCorMatrix:
-        args.outFileCorMatrix.write("\t'"+ "'\t'".join(args.labels) + "'\n")
+        args.outFileCorMatrix.write("\t'" + "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', num_reads_per_bin.shape[1])) + "\n"
         i = 0
         for row in corr_matrix:

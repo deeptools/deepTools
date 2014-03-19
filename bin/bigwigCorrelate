@@ -108,117 +108,116 @@ def bigwigCorrelateArgs(case='bins'):
 
     # define the arguments
     required.add_argument('--bwfiles', '-b',
-                          metavar='FILE1 FILE2',
-                          help='List of indexed bigWig files separated by spaces.',
-                          nargs='+',
-                          required=True)
+                        metavar='FILE1 FILE2',
+                        help='List of bigWig files separated by spaces.',
+                        nargs='+',
+                        required=True)
 
     required.add_argument('--plotFile', '-o',
-                          help='File name to save the file containing the heat map '
-                               'of the correlation. The given file ending will be used '
-                               ' to determine the image format, for example: '
-                               'heatmap.pdf will save the heat map in PDF format. '
-                               'The available options are: .png, .emf, '
-                               '.eps, .pdf and .svg.',
-                          type=argparse.FileType('w'),
-                          metavar='FILE',
-                          required=True)
+                        help='File name to save the file containing the heat map '
+                            'of the correlation. The given file ending will be used '
+                            ' to determine the image format, for example: '
+                            'heatmap.pdf will save the heat map in PDF format. '
+                            'The available options are: .png, .emf, '
+                            '.eps, .pdf and .svg.',
+                        type=argparse.FileType('w'),
+                        metavar='FILE',
+                        required=True)
 
     required.add_argument('--corMethod', '-c',
-                          help="Correlation method. For Pearson correlation only, "
-                               "automatic 99.9 percentile filtering is enabled by "
-                               "default in order to reduce the influence of extreme "
-                               "outliers.",
-                          choices=['pearson', 'spearman'],
-                          required=True)
+                        help="Correlation method. For Pearson correlation only, "
+                            "automatic 99.9 percentile filtering is enabled by "
+                            "default in order to reduce the influence of extreme "
+                            "outliers.",
+                        choices=['pearson', 'spearman'],
+                        required=True)
 
     optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument("--help", "-h", action="help",
-                          help="show this help message and exit")
+                        help="show this help message and exit")
     optional.add_argument('--labels', '-l',
-                          metavar='data1 data2',
-                          help='List of labels to be used in the image. '
-                               'File names are used by default. '
-                               'Multiple labels have to be separated by space, e.g. '
-                               '--labels sample1 sample2 sample3',
-                          nargs='+')
+                        metavar='sample1 sample2',
+                        help='User defined labels instead of default labels from '
+                            'file names. '
+                            'Multiple labels have to be separated by space, e.g. '
+                            '--labels sample1 sample2 sample3',
+                        nargs='+')
     optional.add_argument('--filterPercentile',
-                          metavar='FLOAT',
-                          help='Percentile used to filter out extreme outliers. '
-                               'If not specified, it is automatically set to 99.9 in analyses '
-                               'using Pearson correlation! This means that values above that '
-                               'threshold, which consistently occur in all datasets, will not be '
-                               'taken into account for the correlation analysis. This behavior can '
-                               'be overridden by a user specified value from within the 0.0 to 100.0 '
-                               'range.',
-                          default=None,
-                          type=float)
+                        metavar='FLOAT',
+                        help='Percentile used to filter out extreme outliers. '
+                            'If not specified, it is automatically set to 99.9 in analyses '
+                            'using Pearson correlation! This means that values above that '
+                            'threshold, which consistently occur in all datasets, will not be '
+                            'taken into account for the correlation analysis. This behavior can '
+                            'be overridden by a user specified value from within the 0.0 to 100.0 '
+                            'range.',
+                        default=None,
+                        type=float)
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
-                              metavar='',
-                              help='Length in base pairs for a window used '
-                                   'to sample the genome.',
-                              default=10000,
-                              type=int)
+                        metavar='INT',
+                        help='Length in base pairs for a window used '
+                            'to sample the genome.',
+                        default=10000,
+                        type=int)
 
         optional.add_argument('--numberOfSamples', '-n',
-                              metavar='',
-                              help='Number of random genomic regions considered. '
-                                   'By default, all available regions are used. '
-                                   'Only use this option to compute a fraction of '
-                                   'the dataset!',
-                              default=None,  #int(1e6),
-                              type=int)
+                        metavar='INT',
+                        help='Number of random genomic regions considered. '
+                            'By default, all available regions are used. '
+                            'Only use this option to compute a fraction of '
+                            'the dataset!',
+                        default=None,  #int(1e6),
+                        type=int)
 
         required.add_argument('--BED',
-                              help=argparse.SUPPRESS,
-                              default=None)
+                        help=argparse.SUPPRESS,
+                        default=None)
     else:
         optional.add_argument('--binSize', '-bs',
-                              help=argparse.SUPPRESS,
-                              default=10000,
-                              type=int)
+                        help=argparse.SUPPRESS,
+                        default=10000,
+                        type=int)
 
         optional.add_argument('--numberOfSamples', '-n',
-                              help=argparse.SUPPRESS,
-                              default=None,  #int(1e5),
-                              type=int)
+                        help=argparse.SUPPRESS,
+                        default=None,  #int(1e5),
+                        type=int)
 
-        required.add_argument(
-            '--BED',
-            help='This file limits the correlation analysis to '
-                 'the regions specified in this file.',
-            metavar='bedfile',
-            type=argparse.FileType('r'),
-            required=True)
+        required.add_argument('--BED',
+                        help='Limits the correlation analysis to '
+                            'the regions specified in this file.',
+                        metavar='bedfile',
+                        type=argparse.FileType('r'),
+                        required=True)
 
     optional.add_argument('--includeZeros',
-                          help='Genomic regions that have zero values only '
-                               'are included. The default behavior is to ignore these '
-                               'regions. ',
-                          action='store_true',
-                          required=False)
+                        help='Genomic regions that have zero values only '
+                            'are included. The default behavior is to ignore these '
+                            'regions. ',
+                        action='store_true',
+                        required=False)
 
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outFileCorMatrix',
-                       help='Save correlation matrix to file.',
-                       metavar='FILE',
-                       type=argparse.FileType('w'))
+                        help='Save correlation matrix to file.',
+                        metavar='FILE',
+                        type=argparse.FileType('w'))
 
     group.add_argument('--outRawCounts',
-                       help='Save raw counts (coverages) to file.',
-                       metavar='FILE',
-                       type=argparse.FileType('w'))
+                        help='Save raw counts (coverages) to file.',
+                        metavar='FILE',
+                        type=argparse.FileType('w'))
 
     group.add_argument('--plotFileFormat',
-                       metavar='FILETYPE',
-                       help='Image format type. If given, this option '
+                        metavar='FILETYPE',
+                        help='Image format type. If given, this option '
                             'overrides the image format based on the plotFile '
                             'ending. The available options are: png, emf, '
                             'eps, pdf and svg.',
-                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                        choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
     return parser
 
@@ -231,15 +230,15 @@ def heatmap_options():
     heatmap = parser.add_argument_group('Heat map options')
 
     heatmap.add_argument('--zMin', '-min',
-                         #metavar='',
-                         default=None,
-                         help='Minimum value for the heat map intensities. '
-                              'If not specified the value is set automatically')
+                        #metavar='',
+                        default=None,
+                        help='Minimum value for the heat map intensities. '
+                            'If not specified the value is set automatically')
     heatmap.add_argument('--zMax', '-max',
-                         #metavar='',
-                         default=None,
-                         help='Maximum value for the heat map intensities.'
-                              'If not specified the value is set automatically')
+                        #metavar='',
+                        default=None,
+                        help='Maximum value for the heat map intensities.'
+                            'If not specified the value is set automatically')
 
     from matplotlib import cm
 
