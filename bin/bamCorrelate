@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import os
+import random
 import sys
 import argparse
 import numpy as np
@@ -370,6 +371,17 @@ def main(args):
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
         ignoreDuplicates=args.ignoreDuplicates)
+
+    # Randomly delete rows until the specified number of samples is reached.
+    # This is a bad solution as the number of regions is limited after the
+    # time consuming num_reads_per_bin step!!!
+    if args.numberOfSamples and args.numberOfSamples < len(num_reads_per_bin):
+        random.seed(12345)
+        idx_list = range(len(num_reads_per_bin))
+        random.shuffle(idx_list)
+        idx_delete = random.sample(idx_list, len(
+            num_reads_per_bin) - args.numberOfSamples)
+        num_reads_per_bin = np.delete(num_reads_per_bin, idx_delete, 0)
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
