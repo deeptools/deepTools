@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import os
 import sys
 import argparse
 import numpy as np
@@ -94,7 +95,8 @@ For detailed help type:
         print "The number of does not match the number of bam files."
         exit(0)
     if not args.labels:
-        args.labels = args.bamfiles
+        #args.labels = args.bamfiles
+        args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
 
     return args
 
