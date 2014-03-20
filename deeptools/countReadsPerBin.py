@@ -132,7 +132,7 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     return np.array(subNum_reads_per_bin).reshape(rows, len(bamFilesList))
 
 
-def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
+def getNumReadsPerBin(bamFilesList, binLength,
                       defaultFragmentLength, numberOfProcessors=1,
                       skipZeros=True, verbose=False, region=None,
                       bedFile=None, extendPairedEnds=True,
@@ -190,7 +190,6 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     #chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
 
     stepSize = binLength     #for consecutive bins
-    #stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
 
     chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bamFilesHandlers)) )
     [ bam_h.close() for bam_h in bamFilesHandlers]
