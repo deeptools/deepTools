@@ -162,15 +162,6 @@ def bigwigCorrelateArgs(case='bins'):
                         default=10000,
                         type=int)
 
-        optional.add_argument('--numberOfSamples', '-n',
-                        metavar='INT',
-                        help='Number of random genomic regions considered. '
-                            'By default, all available regions are used. '
-                            'Only use this option to compute a fraction of '
-                            'the dataset!',
-                        default=None,  #int(1e6),
-                        type=int)
-
         required.add_argument('--BED',
                         help=argparse.SUPPRESS,
                         default=None)
@@ -178,11 +169,6 @@ def bigwigCorrelateArgs(case='bins'):
         optional.add_argument('--binSize', '-bs',
                         help=argparse.SUPPRESS,
                         default=10000,
-                        type=int)
-
-        optional.add_argument('--numberOfSamples', '-n',
-                        help=argparse.SUPPRESS,
-                        default=None,  #int(1e5),
                         type=int)
 
         required.add_argument('--BED',
@@ -367,15 +353,6 @@ def main(args):
         verbose=args.verbose,
         region=args.region,
         bedFile=bed_regions)
-
-    # randomly delete rows until the specified number of samples is reached
-    if args.numberOfSamples and args.numberOfSamples < len(num_reads_per_bin):
-        random.seed(12345)
-        idx_list = range(len(num_reads_per_bin))
-        random.shuffle(idx_list)
-        idx_delete = random.sample(idx_list, len(
-            num_reads_per_bin) - args.numberOfSamples)
-        num_reads_per_bin = np.delete(num_reads_per_bin, idx_delete, 0)
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
