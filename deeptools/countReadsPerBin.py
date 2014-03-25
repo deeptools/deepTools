@@ -138,7 +138,8 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                       bedFile=None, extendPairedEnds=True,
                       minMappingQuality=None,
                       ignoreDuplicates=False,
-                      chrsToSkip=[]):
+                      chrsToSkip=[],
+                      stepSize=None):
 
     r"""
     This function visits a number of sites and returs a matrix containing read
@@ -189,8 +190,9 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     reads_per_bp = float(max_mapped) / genomeSize
     #chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
 
-    stepSize = binLength     #for consecutive bins
-    #stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
+    # if stepSize is given, this overrides the numberOfSamples
+    if stepSize is None:
+        stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
 
     chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bamFilesHandlers)) )
     [ bam_h.close() for bam_h in bamFilesHandlers]

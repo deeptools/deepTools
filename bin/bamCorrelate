@@ -124,12 +124,13 @@ def bamCorrelateArgs(case='bins'):
                         required=True)
 
     required.add_argument('--corMethod', '-c',
-                        help="Correlation method. For Pearson correlation only, "
-                            "automatic 99.9 percentile filtering is enabled by "
-                            "default in order to reduce the influence of extreme "
-                            "outliers.",
-                        choices=['pearson', 'spearman'],
-                        required=True)
+                          help="Correlation method. If pearson correlation is "
+                          "chosen, outliers are remove by filtering bins with "
+                          "counts over the the 99.9 percentile. This behavior "
+                          "can be modified using the --filterPercentile "
+                          "parameter.",
+                          choices=['spearman', 'pearson'],
+                          required=True)
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -145,12 +146,13 @@ def bamCorrelateArgs(case='bins'):
     optional.add_argument('--filterPercentile',
                         metavar='FLOAT',
                         help='Percentile used to filter out extreme outliers. '
-                            'If not specified, it is automatically set to 99.9 in analyses '
-                            'using Pearson correlation! This means that values above that '
-                            'threshold, which consistently occur in all datasets, will not be '
-                            'taken into account for the correlation analysis. This behavior can '
-                            'be overridden by a user specified value from within the 0.0 to 100.0 '
-                            'range.',
+                          'If not specified, it is automatically set to 99.9 '
+                          'for pearson correlations. This means '
+                          'that values above that threshold, occurring in '
+                          '*all* samples will not be taken into account '
+                          'for the correlation analysis. This behavior can '
+                          'be overridden by a user specified value in the '
+                          '0.0 to 100.0 range.',
                         default=None,
                         type=float)
 
@@ -162,13 +164,14 @@ def bamCorrelateArgs(case='bins'):
                         default=10000,
                         type=int)
 
-        optional.add_argument('--numberOfSamples', '-n',
-                        metavar='INT',
-                        help='Number of random genomic regions considered. '
-                            'By default, all available regions are used. '
-                            'Only use this option to compute a fraction of '
-                            'the dataset!',
-                        default=None,   #int(1e6),
+        optional.add_argument('--distanceBetweenBins', '-n',
+                              metavar='INT',
+                              help='By default, bamCorrelate considers consecutive '
+                              'bins of the specified --binSize. However, to '
+                              'reduce the computation time, a larger distance '
+                              'between bins can by given. Larger distances '
+                              'result in less bins being considered. ',
+                        default=0,
                         type=int)
 
         required.add_argument('--BED',
@@ -180,10 +183,11 @@ def bamCorrelateArgs(case='bins'):
                         default=10000,
                         type=int)
 
-        optional.add_argument('--numberOfSamples', '-n',
-                        help=argparse.SUPPRESS,
-                        default=None,   #int(1e5),
-                        type=int)
+        optional.add_argument('--distanceBetweenBins', '-n',
+                              help=argparse.SUPPRESS,
+                              metavar='INT',
+                              default=0,
+                              type=int)
 
         required.add_argument('--BED',
                         help='Limits the correlation analysis to '
@@ -194,8 +198,8 @@ def bamCorrelateArgs(case='bins'):
 
     optional.add_argument('--includeZeros',
                         help='Genomic regions that have zero values only '
-                            'are included. The default behavior is to ignore these '
-                            'regions. ',
+                          'are included. The default behavior is to '
+                          'ignore these regions. ',
                         action='store_true',
                         required=False)
 
@@ -342,8 +346,9 @@ def main(args):
         exit(1)
     if not args.filterPercentile and args.corMethod == "pearson":
         args.filterPercentile = 99.9
-        print "Automatic {} percentile filtering enabled before Pearson correlation.".format(
-            args.filterPercentile)
+        sys.stderr.write("Automatic {} percentile filtering enabled "
+                         "before Pearson correlation.\n".format(
+                args.filterPercentile))
 
     if args.colorMap:
         try:
@@ -358,10 +363,11 @@ def main(args):
     else:
         bed_regions = None
 
+    stepsize = args.binSize + args.distanceBetweenBins
     num_reads_per_bin = countR.getNumReadsPerBin(
         args.bamfiles,
         args.binSize,
-        args.numberOfSamples,
+        0,
         args.fragmentLength,
         numberOfProcessors=args.numberOfProcessors,
         skipZeros=skip_zeros,
@@ -370,18 +376,8 @@ def main(args):
         bedFile=bed_regions,
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
-        ignoreDuplicates=args.ignoreDuplicates)
-
-    # Randomly delete rows until the specified number of samples is reached.
-    # This is a bad solution as the number of regions is limited after the
-    # time consuming num_reads_per_bin step!!!
-    if args.numberOfSamples and args.numberOfSamples < len(num_reads_per_bin):
-        random.seed(12345)
-        idx_list = range(len(num_reads_per_bin))
-        random.shuffle(idx_list)
-        idx_delete = random.sample(idx_list, len(
-            num_reads_per_bin) - args.numberOfSamples)
-        num_reads_per_bin = np.delete(num_reads_per_bin, idx_delete, 0)
+        ignoreDuplicates=args.ignoreDuplicates,
+        stepSize=stepsize)
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
