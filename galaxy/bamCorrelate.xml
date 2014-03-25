@@ -74,8 +74,8 @@
             help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
 
         <param name="corMethod" type="select" label="Correlation method">
-            <option value="pearson">Pearson</option>
             <option value="spearman">Spearman</option>
+            <option value="pearson">Pearson</option>
         </param>
 
         <conditional name="mode">
