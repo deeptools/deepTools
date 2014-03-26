@@ -123,11 +123,7 @@ def bamCorrelateArgs(case='bins'):
                         required=True)
 
     required.add_argument('--corMethod', '-c',
-                          help="Correlation method. If pearson correlation is "
-                          "chosen, outliers are remove by filtering bins with "
-                          "counts over the the 99.9 percentile. This behavior "
-                          "can be modified using the --filterPercentile "
-                          "parameter.",
+                          help="Correlation method.",
                           choices=['spearman', 'pearson'],
                           required=True)
 
@@ -142,20 +138,6 @@ def bamCorrelateArgs(case='bins'):
                             'Multiple labels have to be separated by space, e.g. '
                             '--labels sample1 sample2 sample3',
                         nargs='+')
-    optional.add_argument('--filterPercentile',
-                        metavar='FLOAT',
-                        help='Percentile used to filter out extreme outliers. '
-                          'If not specified, this value automatically set to '
-                          '99.9 for pearson correlations. This means '
-                          'that values above this threshold, occurring in '
-                          '*all* samples will not be taken into account '
-                          'for the correlation analysis. This behavior can '
-                          'be overridden by a user specified value in the '
-                          '0.0 to 100.0 range. Setting any value here will '
-                          'filter regions for any of the correlations methods '
-                          'used.',
-                        default=None,
-                        type=float)
 
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
@@ -174,6 +156,21 @@ def bamCorrelateArgs(case='bins'):
                               'result in less bins being considered.',
                         default=0,
                         type=int)
+
+        optional.add_argument(
+            '--doNotRemoveOutliers',
+            help='By default, bins with very large counts are removed. '
+            'By setting this option outliers will not be removed. '
+            'Bins with unusually large counts normally correspond '
+            'to regions in the '
+            'genome that accumulate lot of reads, like satellites. '
+            'If outliers are not removed the pearson correlation '
+            'will wrongly report a very high correlation; that\'s '
+            'why, by default, bamCorrelate tries to remove outliers '
+            'using the median absolute deviation (MAD) '
+            'method applying a threshold of 200 to only consider '
+            'extremely large deviations from the median.',
+            action='store_true')
 
         required.add_argument('--BED',
                         help=argparse.SUPPRESS,
@@ -261,7 +258,7 @@ def heatmap_options():
     return parser
 
 
-def getOutlierIndices(data, max_deviation=3.5):
+def getOutlierIndices(data, max_deviation=200):
     """
     The method is based on the median absolute deviation. See
     Boris Iglewicz and David Hoaglin (1993),
@@ -270,6 +267,11 @@ def getOutlierIndices(data, max_deviation=3.5):
     Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
 
     returns the list, without the outliers
+
+    The max_deviation=200 is like selecting a z-score
+    larger than 200, just that it is based on the median
+    and the median absolute deviation instead of the 
+    mean and the standard deviation.
     """
     median = np.median(data)
     b_value = 1.4826 # value set for a normal distribution
@@ -282,7 +284,7 @@ def getOutlierIndices(data, max_deviation=3.5):
         print "outliers removed {}".format(len(outliers))
         print outliers
         """
-        outliers = np.flatnonzero(data > max_deviation)
+        outliers = np.flatnonzero(deviation > max_deviation)
     return outliers
 
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
@@ -364,17 +366,6 @@ def main(args):
     else:
         skip_zeros = True
 
-    # default for pearson is 99.9 percentile filtering
-    if args.filterPercentile and not 0.0 <= args.filterPercentile <= 100.0:
-        sys.stderr.write("ERROR! Invalid filter percentile value: {}".format(
-            args.filterPercentile))
-        exit(1)
-    if not args.filterPercentile and args.corMethod == "pearson":
-        args.filterPercentile = 99.9
-        sys.stderr.write("Automatic {} percentile filtering enabled "
-                         "before Pearson correlation.\n".format(
-                args.filterPercentile))
-
     if args.colorMap:
         try:
             plt.get_cmap(args.colorMap)
@@ -411,12 +402,9 @@ def main(args):
             args.outRawCounts.write(fmt % tuple(row))
 
 
-    # remove outliers, which will produce very high pearson correlation.
-    # for each data set (cols) the values above the 99.9
-    # percentile are identified. Such values are removed from
-    # the num_reads_per_bin matrix if they occur in the
-    # same rows
-    if args.doNotRemoveOutliers is False:
+    # remove outliers, otherwise outliers will produce a very
+    # high pearson correlation. Only for the bins option
+    if 'bins' in args and args.doNotRemoveOutliers is False:
         unfiltered = len(num_reads_per_bin)
         to_remove = None
         for col in num_reads_per_bin.T:
@@ -426,6 +414,9 @@ def main(args):
             if to_remove is None:
                 to_remove = set(outliers)
             else:
+                # only set to remove those bins in which
+                # the outliers are present in all cases (colums)
+                # that's why the intersection is used
                 to_remove = to_remove.intersection(outliers)
         if len(to_remove):
             to_keep = [x for x in range(num_reads_per_bin.shape[0])
@@ -433,11 +424,9 @@ def main(args):
             num_reads_per_bin = num_reads_per_bin[to_keep, :]
             if args.verbose:
                 sys.stderr.write(
-                    "{} percentile filtering (total/filtered/left): "
-                    "{}/{}/{}\n".format(
-                        args.filterPercentile, unfiltered,
-                        unfiltered - len(to_keep), len(to_keep))
-
+                    "total/filtered/left: "
+                    "{}/{}/{}\n".format(unfiltered,
+                                        unfiltered - len(to_keep), len(to_keep)))
 
     # num_reads_per_bin: rows correspond to  bins, cols to  samples
     num_files = len(args.bamfiles)

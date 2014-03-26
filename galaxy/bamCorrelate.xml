@@ -22,10 +22,7 @@
         --labels #echo " ".join($labels)
         --fragmentLength $fragmentLength
         --corMethod $corMethod
-	
-	#if $filterBins.checked="true"
-	    --filterPercentile $filterPercentile
-	
+		
         --plotFile $outFileName
 
         #if $output.showOutputSettings == "yes"
@@ -39,6 +36,8 @@
         #if $mode.modeOpt == "bins":
             --binSize '$mode.binSize'
             --distanceBetweenBins '$mode.distanceBetweenBins'
+            $mode.doNotExtendPairedEnds
+
         #else:
             --BED $mode.region_file
         #end if
@@ -81,23 +80,6 @@
             <option value="pearson">Pearson</option>
         </param>
 
-	<param name="filterBins" type="boolean" label="Filter outliers"
-	       help="Check the box if outlier removal based on a percentile 
-		     threshold is wanted. By default if the correlation method used is 
-		     pearson, and automatic filtering of the bin counts above the 
-		     99.9 percentile is done. Otherwise, not filtering happends"/>
-
-        <param name="filterPercentile" type="float" value="100" min="1"
-            label="Input percentile to filter outliers"
-            help ="Percentile used to filter out extreme outliers. If not
-                   specified, this value is automatically set to 99.9 for pearson
-                   correlations. This means that values above this
-                   threshold, occurring in *all* samples will not be
-                   taken into account for the correlation analysis. This
-                   behavior can be overridden by setting here the desired
-		   percentile. 
-                   in the 0.0 to 100.0 range."/>
-
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode" 
                 help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
@@ -119,6 +101,20 @@
                         computation time, a larger distance between bins can
                         by given. Larger distances result in less bins being
                         considered"/>
+		<param name="doNotRemoveOutliers" type="boolean"
+		       truevalue="--doNotRemoveOutliers" label="Do not filter outliers"
+		       help="By default, bins with very large counts are removed.
+                        By setting this option, outliers will not be
+                        removed. Bins with unusually large counts normally
+                        correspond to regions in the genome that accumulate
+                        lot of reads like satellite regions. If outliers are not
+                        removed the pearson correlation will wrongly report a
+                        very high correlation; that's why, by default,
+                        bamCorrelate tries to remove outliers using
+                        the median absolute deviation (MAD) method applying a
+                        threshold of 200 to only consider extremely large
+                        deviations from the median."/>
+
                 <expand macro="bamCorrelate_mode_actions" />
             </when>
             <when value="BED-file">
