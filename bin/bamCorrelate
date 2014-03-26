@@ -70,7 +70,7 @@ detailed help:
         add_help=False,
         usage='%(prog)s '
               '-b file1.bw file2.bw '
-              '-o heatmap.png --corMethod spearman\n')
+              '-o heatmap.png --corMethod \n')
 
     # BED file arguments
     bed_mode = subparsers.add_parser(
