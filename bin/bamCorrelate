@@ -64,8 +64,7 @@ detailed help:
                  ],
         help="The correlation is based on arbitrary bins of similar "
              "size (10k bp by default), which consecutively cover the "
-             "entire genome. The only exception is the last bin, which "
-             "is regularly smaller. This mode is useful to assess the "
+             "entire genome. This mode is useful to assess the "
              "overall similarity of BAM files.",
         add_help=False,
         usage='%(prog)s '
@@ -86,7 +85,7 @@ detailed help:
              "different samples for a set of peak regions.",
         usage='%(prog)s '
               '-b file1.bw file2.bw '
-              '-o heatmap.png --corMethod pearson --BED selection.bed \n',
+              '-o heatmap.png --corMethod pearson --BED selection.bed\n',
         add_help=False)
 
     args = parser.parse_args(args)
@@ -146,13 +145,15 @@ def bamCorrelateArgs(case='bins'):
     optional.add_argument('--filterPercentile',
                         metavar='FLOAT',
                         help='Percentile used to filter out extreme outliers. '
-                          'If not specified, it is automatically set to 99.9 '
-                          'for pearson correlations. This means '
-                          'that values above that threshold, occurring in '
+                          'If not specified, this value automatically set to '
+                          '99.9 for pearson correlations. This means '
+                          'that values above this threshold, occurring in '
                           '*all* samples will not be taken into account '
                           'for the correlation analysis. This behavior can '
                           'be overridden by a user specified value in the '
-                          '0.0 to 100.0 range.',
+                          '0.0 to 100.0 range. Setting any value here will '
+                          'filter regions for any of the correlations methods '
+                          'used.',
                         default=None,
                         type=float)
 
@@ -170,7 +171,7 @@ def bamCorrelateArgs(case='bins'):
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can by given. Larger distances '
-                              'result in less bins being considered. ',
+                              'result in less bins being considered.',
                         default=0,
                         type=int)
 
@@ -199,7 +200,7 @@ def bamCorrelateArgs(case='bins'):
     optional.add_argument('--includeZeros',
                         help='Genomic regions that have zero values only '
                           'are included. The default behavior is to '
-                          'ignore these regions. ',
+                          'ignore these regions.',
                         action='store_true',
                         required=False)
 
@@ -259,6 +260,30 @@ def heatmap_options():
 
     return parser
 
+
+def getOutlierIndices(data, max_deviation=3.5):
+    """
+    The method is based on the median absolute deviation. See
+    Boris Iglewicz and David Hoaglin (1993),
+    "Volume 16: How to Detect and Handle Outliers",
+    The ASQC Basic References in Quality Control:
+    Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
+
+    returns the list, without the outliers
+    """
+    median = np.median(data)
+    b_value = 1.4826 # value set for a normal distribution
+    mad = b_value * np.median(np.abs(data-median))
+    outliers = []
+    if mad > 0:
+        deviation = abs(data - median) / mad
+        """
+        outliers = data[deviation > max_deviation]
+        print "outliers removed {}".format(len(outliers))
+        print outliers
+        """
+        outliers = np.flatnonzero(data > max_deviation)
+    return outliers
 
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                     vmin=None, colormap='Reds', image_format=None):
@@ -386,17 +411,18 @@ def main(args):
             args.outRawCounts.write(fmt % tuple(row))
 
 
-    # remove outliers, which will spoil pearson correlation.
+    # remove outliers, which will produce very high pearson correlation.
     # for each data set (cols) the values above the 99.9
     # percentile are identified. Such values are removed from
     # the num_reads_per_bin matrix if they occur in the
     # same rows
-    if args.filterPercentile:
+    if args.doNotRemoveOutliers is False:
         unfiltered = len(num_reads_per_bin)
         to_remove = None
         for col in num_reads_per_bin.T:
-            outliers = np.flatnonzero(
-                col > np.percentile(col, args.filterPercentile))
+            # get the outliers per colum using the median absolute
+            # deviation method
+            outliers = getOutlierIndices(col)
             if to_remove is None:
                 to_remove = set(outliers)
             else:
@@ -406,9 +432,12 @@ def main(args):
                        if x not in to_remove]
             num_reads_per_bin = num_reads_per_bin[to_keep, :]
             if args.verbose:
-                print "{} percentile filtering (total/filtered/left): {}/{}/{}".format(
-                    args.filterPercentile, unfiltered,
-                    unfiltered - len(to_keep), len(to_keep))
+                sys.stderr.write(
+                    "{} percentile filtering (total/filtered/left): "
+                    "{}/{}/{}\n".format(
+                        args.filterPercentile, unfiltered,
+                        unfiltered - len(to_keep), len(to_keep))
+
 
     # num_reads_per_bin: rows correspond to  bins, cols to  samples
     num_files = len(args.bamfiles)
