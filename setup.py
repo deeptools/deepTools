@@ -126,7 +126,7 @@ setup(
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/PE_fragment_size', 'bin/computeMatrix', 'bin/profiler',
-             'bin/computeGCBias', 'bin/correctGCBias',
+             'bin/computeGCBias', 'bin/correctGCBias', 'bin/bigwigCorrelate',
              'bin/bigwigCompare'],
     include_package_data=True,
     package_data={'': ['config/deeptools.cfg']},
