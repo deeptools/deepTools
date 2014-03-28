@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import os
 import random
 import sys
 import argparse
+import os.path
 import numpy as np
 from matplotlib import use as mplt_use
+
 mplt_use('Agg')
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr, spearmanr
 
-import deeptools.countReadsPerBin as countR
+import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
 from deeptools._version import __version__
 
@@ -22,67 +23,64 @@ def parseArguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-bamCorrelate computes the overall similarity between two or more BAM
-files based on read coverage (number of reads) within genomic regions.
-The correlation analysis is performed for the entire genome by running
-the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Pearson or Spearman methods are available to compute correlation
-coefficients. Results are saved into a heat map image and further output files
-are optional. NOTE: bamCorrelate usually takes a long time to finish, thus it 
-is adivsable to run the tool for a tiny region (using the --region option)
-to adjust plotting parameters like colors and labels before running the
-whole computation.
+bigwigCorrelate computes the overall similarity between two or more bigWig
+files based on coverage means of genomic regions. The correlation analysis
+is performed for the entire genome by running the program in 'bins' mode,
+or for certain regions only in 'BED-file' mode. Pearson or Spearman analyses
+are available to compute correlation coefficients. Results are saved to a
+heat map file. Further output files are optional.
 
 detailed help:
-
   %(prog)s bins -h
   %(prog)s BED-file -h
 
 """,
-           epilog='example usages:\n%(prog)s bins '
-           '-b file1.bam file2.bam -o heatmap.png --corMethod pearson\n\n'
-           '%(prog)s BED-file -b file1.bam file2.bam -o heatmap.png --corMethod spearman\n'
-           '--BED selection.bed '
-           ' \n\n',
+            epilog='example usages:\n%(prog)s bins '
+                   '-b file1.bw file2.bw -o heatmap.png --corMethod pearson\n\n'
+                   '%(prog)s BED-file -b file1.bw file2.bw -o heatmap.png --corMethod pearson\n'
+                   '--BED selection.bed '
+                   ' \n\n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(__version__))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
-    read_options_parser = parserCommon.read_options()
+    #read_options_parser = parserCommon.read_options()
     heatmap_parser = heatmap_options()
 
     # bins mode options
     bins_mode = subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[bamCorrelateArgs(case='bins'),
-                 parent_parser, read_options_parser,
+        parents=[bigwigCorrelateArgs(case='bins'),
+                 parent_parser,
+                 #read_options_parser,
                  heatmap_parser
-                 ],
-        help="The correlation is based on read coverage over "
-             "consecutive bins of equal "
-             "size (10k bp by default). This mode is useful to assess the "
-             "overall similarity of BAM files. The bin size and the "
-             "distance between bins can be adjusted.",
+        ],
+        help="The correlation is based on arbitrary bins of similar "
+             "size (10k bp by default), which consecutively cover the "
+             "entire genome. The only exception is the last bin, which "
+             "is regularly smaller. This mode is useful to assess the "
+             "overall similarity of bigWig files.",
         add_help=False,
         usage='%(prog)s '
               '-b file1.bw file2.bw '
-              '-o heatmap.png --corMethod spearman\n')
+              '-o heatmap.png --corMethod pearson\n')
 
     # BED file arguments
     bed_mode = subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[bamCorrelateArgs(case='BED-file'),
-                 parent_parser, read_options_parser,
+        parents=[bigwigCorrelateArgs(case='BED-file'),
+                 parent_parser,
+                 #read_options_parser,
                  heatmap_parser
-                 ],
+        ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the correlation analysis. A "
              "common use is to compare ChIP-seq coverages between two "
@@ -93,43 +91,46 @@ detailed help:
         add_help=False)
 
     args = parser.parse_args(args)
-    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
+    #args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
 
-    if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of does not match the number of bam files."
+    if args.labels and len(args.bwfiles) != len(args.labels):
+        print "The number of labels does not match the number of bigWig files."
         exit(0)
     if not args.labels:
-        args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
+        args.labels = map(lambda x: os.path.basename(x), args.bwfiles)
 
     return args
 
 
-def bamCorrelateArgs(case='bins'):
+def bigwigCorrelateArgs(case='bins'):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
 
     # define the arguments
-    required.add_argument('--bamfiles', '-b',
+    required.add_argument('--bwfiles', '-b',
                         metavar='FILE1 FILE2',
-                        help='List of indexed bam files separated by spaces.',
+                        help='List of bigWig files separated by spaces.',
                         nargs='+',
                         required=True)
 
     required.add_argument('--plotFile', '-o',
-                        help='File name to save the file containing the heatmap '
-                        'of the correlation. The given file ending will be used '
-                        ' to determine the image format, for example: '
-                        'heatmap.pdf will save the heatmap in PDF format. '
-                        'The available options are: .png, .emf, '
-                        '.eps, .pdf and .svg.',
+                        help='File name to save the file containing the heat map '
+                            'of the correlation. The given file ending will be used '
+                            ' to determine the image format, for example: '
+                            'heatmap.pdf will save the heat map in PDF format. '
+                            'The available options are: .png, .emf, '
+                            '.eps, .pdf and .svg.',
                         type=argparse.FileType('w'),
                         metavar='FILE',
                         required=True)
 
     required.add_argument('--corMethod', '-c',
-                          help="Correlation method.",
-                          choices=['spearman', 'pearson'],
-                          required=True)
+                        help="Correlation method. For Pearson correlation only, "
+                            "automatic 99.9 percentile filtering is enabled by "
+                            "default in order to reduce the influence of extreme "
+                            "outliers.",
+                        choices=['pearson', 'spearman'],
+                        required=True)
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -142,7 +143,17 @@ def bamCorrelateArgs(case='bins'):
                             'Multiple labels have to be separated by space, e.g. '
                             '--labels sample1 sample2 sample3',
                         nargs='+')
-
+    optional.add_argument('--filterPercentile',
+                        metavar='FLOAT',
+                        help='Percentile used to filter out extreme outliers. '
+                            'If not specified, it is automatically set to 99.9 in analyses '
+                            'using Pearson correlation! This means that values above that '
+                            'threshold, which consistently occur in all datasets, will not be '
+                            'taken into account for the correlation analysis. This behavior can '
+                            'be overridden by a user specified value from within the 0.0 to 100.0 '
+                            'range.',
+                        default=None,
+                        type=float)
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                         metavar='INT',
@@ -150,29 +161,6 @@ def bamCorrelateArgs(case='bins'):
                             'to sample the genome.',
                         default=10000,
                         type=int)
-
-        optional.add_argument('--distanceBetweenBins', '-n',
-                              metavar='INT',
-                              help='By default, bamCorrelate considers consecutive '
-                              'bins of the specified --binSize. However, to '
-                              'reduce the computation time, a larger distance '
-                              'between bins can by given. Larger distances '
-                              'result in less bins being considered.',
-                        default=0,
-                        type=int)
-
-        optional.add_argument(
-            '--doNotRemoveOutliers',
-            help='By default, bins with very large counts are removed. '
-            'By setting this option outliers will not be removed. '
-            'Bins with abnormally high reads counts artificially increase '
-            'pearson correlation; that\'s why, by default, bamCorrelate tries '
-            'to remove outliers using the median absolute deviation (MAD) '
-            'method applying a threshold of 200 to only consider extremely '
-            'large deviations from the median. ENCODE blacklist page '
-            '(https://sites.google.com/site/anshulkundaje/projects/blacklists) '
-            'contains useful information about regions with unusually high counts.',
-            action='store_true')
 
         required.add_argument('--BED',
                         help=argparse.SUPPRESS,
@@ -183,23 +171,17 @@ def bamCorrelateArgs(case='bins'):
                         default=10000,
                         type=int)
 
-        optional.add_argument('--distanceBetweenBins', '-n',
-                              help=argparse.SUPPRESS,
-                              metavar='INT',
-                              default=0,
-                              type=int)
-
         required.add_argument('--BED',
                         help='Limits the correlation analysis to '
-                             'the regions specified in this file.',
+                            'the regions specified in this file.',
                         metavar='bedfile',
                         type=argparse.FileType('r'),
                         required=True)
 
     optional.add_argument('--includeZeros',
                         help='Genomic regions that have zero values only '
-                          'are included. The default behavior is to '
-                          'ignore these regions.',
+                            'are included. The default behavior is to ignore these '
+                            'regions. ',
                         action='store_true',
                         required=False)
 
@@ -228,7 +210,7 @@ def bamCorrelateArgs(case='bins'):
 
 def heatmap_options():
     """
-    Options for generating the correlation heat map
+    Options for generating the correlation heat map.
     """
     parser = argparse.ArgumentParser(add_help=False)
     heatmap = parser.add_argument_group('Heat map options')
@@ -245,49 +227,21 @@ def heatmap_options():
                             'If not specified the value is set automatically')
 
     from matplotlib import cm
+
     color_options = "', '".join([m for m in cm.datad
                                  if not m.endswith('_r')])
 
     heatmap.add_argument(
         '--colorMap', default='Reds',
-        metavar='',
-        help='Color map to use for the heatmap. Available values can be '
-            'seen here: '
-            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/ The available options are: \'' +
-        color_options + '\'')
+        #metavar='',
+        help='Color map to use for the heat map. Available values can be '
+             'seen here: '
+             'http://www.astro.lsa.umich.edu/~msshin/science/code/'
+             'matplotlib_cm/ The available options are: \'' +
+             color_options + '\'')
 
     return parser
 
-
-def getOutlierIndices(data, max_deviation=200):
-    """
-    The method is based on the median absolute deviation. See
-    Boris Iglewicz and David Hoaglin (1993),
-    "Volume 16: How to Detect and Handle Outliers",
-    The ASQC Basic References in Quality Control:
-    Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
-
-    returns the list, without the outliers
-
-    The max_deviation=200 is like selecting a z-score
-    larger than 200, just that it is based on the median
-    and the median absolute deviation instead of the 
-    mean and the standard deviation.
-    """
-    median = np.median(data)
-    b_value = 1.4826 # value set for a normal distribution
-    mad = b_value * np.median(np.abs(data-median))
-    outliers = []
-    if mad > 0:
-        deviation = abs(data - median) / mad
-        """
-        outliers = data[deviation > max_deviation]
-        print "outliers removed {}".format(len(outliers))
-        print outliers
-        """
-        outliers = np.flatnonzero(deviation > max_deviation)
-    return outliers
 
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                     vmin=None, colormap='Reds', image_format=None):
@@ -328,11 +282,11 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                                cmap=cmap, extent=(0, num_rows, 0, num_rows),
                                vmax=vmax, vmin=vmin)
     axmatrix.yaxis.tick_right()
-    axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
+    axmatrix.set_yticks(np.arange(corr_matrix.shape[0]) + 0.5)
     axmatrix.set_yticklabels(np.array(labels).astype('str')[index],
                              fontsize=14)
 
-    axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
+    axmatrix.set_xticks(np.arange(corr_matrix.shape[0]) + 0.5)
     axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
                              fontsize=14,
                              rotation=45,
@@ -344,7 +298,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
     plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
     for row in range(num_rows):
         for col in range(num_rows):
-            axmatrix.text(row+0.5, col+0.5,
+            axmatrix.text(row + 0.5, col + 0.5,
                           "{:.2f}".format(corr_matrix[row, col]),
                           ha='center', va='center')
 
@@ -359,14 +313,24 @@ def main(args):
     2. compute  correlation
 
     """
-    if len(args.bamfiles) < 2:
-        print "Please input at least two bam files to compare"
+    if len(args.bwfiles) < 2:
+        print "Please input at least two bigWig (.bw) files to compare"
         exit(1)
 
     if args.includeZeros:
         skip_zeros = False
     else:
         skip_zeros = True
+
+    # default for pearson is 99.9 percentile filtering
+    if args.filterPercentile and not 0.0 <= args.filterPercentile <= 100.0:
+        sys.stderr.write("ERROR! Invalid filter percentile value: {}".format(
+            args.filterPercentile))
+        exit(1)
+    if not args.filterPercentile and args.corMethod == "pearson":
+        args.filterPercentile = 99.9
+        print "Automatic {} percentile filtering enabled before Pearson correlation.".format(
+            args.filterPercentile)
 
     if args.colorMap:
         try:
@@ -381,21 +345,14 @@ def main(args):
     else:
         bed_regions = None
 
-    stepsize = args.binSize + args.distanceBetweenBins
-    num_reads_per_bin = countR.getNumReadsPerBin(
-        args.bamfiles,
+    num_reads_per_bin = score_bw.getScorePerBin(
+        args.bwfiles,
         args.binSize,
-        0,
-        args.fragmentLength,
         numberOfProcessors=args.numberOfProcessors,
         skipZeros=skip_zeros,
         verbose=args.verbose,
         region=args.region,
-        bedFile=bed_regions,
-        extendPairedEnds=args.extendPairedEnds,
-        minMappingQuality=args.minMappingQuality,
-        ignoreDuplicates=args.ignoreDuplicates,
-        stepSize=stepsize)
+        bedFile=bed_regions)
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
@@ -403,35 +360,32 @@ def main(args):
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
 
-
-    # remove outliers, otherwise outliers will produce a very
-    # high pearson correlation. Only for the bins option
-    if 'bins' in args and args.doNotRemoveOutliers is False:
+    # remove outliers, which will spoil pearson correlation.
+    # for each data set (cols) the values above the 99.9
+    # percentile are identified. Such values are removed from
+    # the num_reads_per_bin matrix if they occur in the
+    # same rows
+    if args.filterPercentile:
         unfiltered = len(num_reads_per_bin)
         to_remove = None
         for col in num_reads_per_bin.T:
-            # get the outliers per colum using the median absolute
-            # deviation method
-            outliers = getOutlierIndices(col)
+            outliers = np.flatnonzero(
+                col > np.percentile(col, args.filterPercentile))
             if to_remove is None:
                 to_remove = set(outliers)
             else:
-                # only set to remove those bins in which
-                # the outliers are present in all cases (colums)
-                # that's why the intersection is used
                 to_remove = to_remove.intersection(outliers)
         if len(to_remove):
             to_keep = [x for x in range(num_reads_per_bin.shape[0])
                        if x not in to_remove]
             num_reads_per_bin = num_reads_per_bin[to_keep, :]
             if args.verbose:
-                sys.stderr.write(
-                    "total/filtered/left: "
-                    "{}/{}/{}\n".format(unfiltered,
-                                        unfiltered - len(to_keep), len(to_keep)))
+                print "{} percentile filtering (total/filtered/left): {}/{}/{}".format(
+                    args.filterPercentile, unfiltered,
+                    unfiltered - len(to_keep), len(to_keep))
 
-    # num_reads_per_bin: rows correspond to  bins, cols to  samples
-    num_files = len(args.bamfiles)
+    # num_reads_per_bin: rows correspond to bins, cols to samples
+    num_files = len(args.bwfiles)
     #initialize correlation matrix
     corr_matrix = np.zeros((num_files, num_files), dtype='float')
     options = {'spearman': spearmanr,
@@ -466,6 +420,7 @@ def main(args):
                     args.zMin,
                     args.colorMap,
                     image_format=args.plotFileFormat)
+
 
 if __name__ == "__main__":
     ARGS = parseArguments()
