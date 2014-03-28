@@ -26,10 +26,10 @@ bamCorrelate computes the overall similarity between two or more BAM
 files based on read coverage (number of reads) within genomic regions.
 The correlation analysis is performed for the entire genome by running
 the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Pearson or Spearman analyses are available to compute correlation
+mode. Pearson or Spearman methods are available to compute correlation
 coefficients. Results are saved into a heat map image and further output files
-are optional. bamCorrelate usually takes a long time to finish, thus it 
-is adivisable to run the tool for a tiny region (using the --region option)
+are optional. NOTE: bamCorrelate usually takes a long time to finish, thus it 
+is adivsable to run the tool for a tiny region (using the --region option)
 to adjust plotting parameters like colors and labels before running the
 whole computation.
 
@@ -66,7 +66,7 @@ detailed help:
                  heatmap_parser
                  ],
         help="The correlation is based on read coverage over "
-             "consequitive bins of equal "
+             "consecutive bins of equal "
              "size (10k bp by default). This mode is useful to assess the "
              "overall similarity of BAM files. The bin size and the "
              "distance between bins can be adjusted.",
@@ -165,15 +165,13 @@ def bamCorrelateArgs(case='bins'):
             '--doNotRemoveOutliers',
             help='By default, bins with very large counts are removed. '
             'By setting this option outliers will not be removed. '
-            'Bins with unusually large counts normally correspond '
-            'to regions in the '
-            'genome that accumulate lot of reads, like satellites. '
-            'If outliers are not removed the pearson correlation '
-            'will wrongly report a very high correlation; that\'s '
-            'why, by default, bamCorrelate tries to remove outliers '
-            'using the median absolute deviation (MAD) '
-            'method applying a threshold of 200 to only consider '
-            'extremely large deviations from the median.',
+            'Bins with abnormally high reads counts artificially increase '
+            'pearson correlation; that\'s why, by default, bamCorrelate tries '
+            'to remove outliers using the median absolute deviation (MAD) '
+            'method applying a threshold of 200 to only consider extremely '
+            'large deviations from the median. ENCODE blacklist page '
+            '(https://sites.google.com/site/anshulkundaje/projects/blacklists) '
+            'contains useful information about regions with unusually high counts.',
             action='store_true')
 
         required.add_argument('--BED',
