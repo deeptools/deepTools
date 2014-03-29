@@ -22,7 +22,7 @@
         --labels #echo " ".join($labels)
         --fragmentLength $fragmentLength
         --corMethod $corMethod
-		
+
         --plotFile $outFileName
 
         #if $output.showOutputSettings == "yes"
@@ -36,7 +36,7 @@
         #if $mode.modeOpt == "bins":
             --binSize '$mode.binSize'
             --distanceBetweenBins '$mode.distanceBetweenBins'
-            $mode.doNotExtendPairedEnds
+            $mode.doNotRemoveOutliers
 
         #else:
             --BED $mode.region_file
@@ -76,7 +76,7 @@
             help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
 
         <param name="corMethod" type="select" label="Correlation method">
-            <option value="spearman">Spearman</option>
+            <option value="spearman" selected="True">Spearman</option>
             <option value="pearson">Pearson</option>
         </param>
 
@@ -91,19 +91,17 @@
                     label="Bin size in bp"
                     help="Length in base pairs for a window used to sample the genome."/>
 
-                <param name="numberOfSamples" type="integer" value="100000" min="1" 
-                    label="Number of samples"
-                    help="Number of samples taken from the genome to compute the scaling factors"/>
-                <param name="distanceBetweenBins" type="integer" value="0" min="0" 
+                <param name="distanceBetweenBins" type="integer" value="0" min="0"
                     label="Distance between bins"
                     help="By default, bamCorrelate considers consecutive bins of
                         the specified 'Bin size'. However, to reduce the
                         computation time, a larger distance between bins can
                         by given. Larger distances result in less bins being
                         considered"/>
-		<param name="doNotRemoveOutliers" type="boolean"
-		       truevalue="--doNotRemoveOutliers" label="Do not filter outliers"
-		       help="By default, bins with very large counts are removed.
+
+                <param name="doNotRemoveOutliers" type="boolean"
+                    truevalue="--doNotRemoveOutliers" falsevalue="" label="Do not filter outliers"
+                    help="By default, bins with very large counts are removed.
                         By setting this option, outliers will not be
                         removed. Bins with unusually large counts normally
                         correspond to regions in the genome that accumulate
