@@ -44,6 +44,7 @@
     </xml>
     
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
+    <token name="@WRAPPER_VERSION@">1.1</token>
     <xml name="requirements">
         <requirements>
             <requirement type="binary">@BINARY@</requirement>
@@ -64,7 +65,6 @@
     </xml>
 
     <xml name="kmeans_clustering">
-
         <conditional name="used_multiple_regions">
             <param name="used_multiple_regions_options" type="select" 
                 label="Did you use multiple regions in computeMatrix?"
