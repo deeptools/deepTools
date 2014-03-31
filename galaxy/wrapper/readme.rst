@@ -25,6 +25,16 @@ deeptools is developed under here:
 For support, questions, or feature requests contact: deeptools@googlegroups.com
 
 
+============
+Installation
+============
+
+Requirements: python-2.7
+
+Galaxy should be able to automatically install all other dependencies, such as numpy or scipy.
+
+
+
 ========
 Citation
 ========
