@@ -44,6 +44,9 @@ def openBam(bamFile, bamIndex=None):
         sys.exit("The file {} does not have BAM format ".format(bamFile))
 
     if bam.mapped == 0:
-        sys.exit("The file {} does have any mapped reads. ".format(bamFile))
+        sys.exit("Samtools reports that the number of mapped "
+                 "reads is zero for the file {}. Please check "
+                 "that the file is properly indexed and that "
+                 "it contains mapped reads.".format(bamFile))
 
     return bam
