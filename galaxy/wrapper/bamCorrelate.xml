@@ -1,4 +1,4 @@
-<tool id="deeptools_bamCorrelate" name="bamCorrelate" version="1.0.5">
+<tool id="deeptools_bamCorrelate" name="bamCorrelate" version="@WRAPPER_VERSION@">
     <description>correlates pairs of BAM files</description>
     <expand macro="requirements" />
     <expand macro="stdio" />
