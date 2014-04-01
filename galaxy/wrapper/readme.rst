@@ -33,6 +33,8 @@ Requirements: python-2.7
 
 Galaxy should be able to automatically install all other dependencies, such as numpy or scipy.
 
+For the best performance we recommend to install blas/lapack/atlas in your environment before
+installing deepTools from the Tool Shed.
 
 
 ========
