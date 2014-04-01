@@ -142,7 +142,7 @@ setup(
         "numpy >= 1.6.2",
         "scipy >= 0.10.0",
         "matplotlib >= 1.2",
-        "pysam >= 0.7.1",
+        "pysam >= 0.7.7",
         "bx-python >= 0.5.0",
     ],
     cmdclass={'sdist': sdist, 'install': install}
