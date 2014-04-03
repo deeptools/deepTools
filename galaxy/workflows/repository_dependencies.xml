@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
-<repositories description="These workflows requires the deepTools repositoryÃ.">
+<repositories description="These workflows requires the deepTools repository.">
     <repository name="deeptools" owner="bgruening" />
 </repositories>
