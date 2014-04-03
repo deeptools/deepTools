@@ -5,12 +5,12 @@
     "name": "Add 'chr' to first column of a BED file (must have 6 columns)", 
     "steps": {
         "0": {
-            "annotation": "The BED file MUST have 6 columns. Otherwise this workflow will fail.", 
+            "annotation": "", 
             "id": 0, 
             "input_connections": {}, 
             "inputs": [
                 {
-                    "description": "The BED file MUST have 6 columns. Otherwise this workflow will fail.", 
+                    "description": "", 
                     "name": "BED file"
                 }
             ], 
