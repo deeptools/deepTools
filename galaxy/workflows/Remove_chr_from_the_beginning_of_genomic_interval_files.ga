@@ -1,0 +1,68 @@
+{
+    "a_galaxy_workflow": "true", 
+    "annotation": "", 
+    "format-version": "0.1", 
+    "name": "Remove 'chr' from the beginning of genomic interval files", 
+    "steps": {
+        "0": {
+            "annotation": "", 
+            "id": 0, 
+            "input_connections": {}, 
+            "inputs": [
+                {
+                    "description": "", 
+                    "name": "any column-based file of genomic intervals"
+                }
+            ], 
+            "name": "Input dataset", 
+            "outputs": [], 
+            "position": {
+                "left": 268.5, 
+                "top": 182.5
+            }, 
+            "tool_errors": null, 
+            "tool_id": null, 
+            "tool_state": "{\"name\": \"any column-based file of genomic intervals\"}", 
+            "tool_version": null, 
+            "type": "data_input", 
+            "user_outputs": []
+        }, 
+        "1": {
+            "annotation": "", 
+            "id": 1, 
+            "input_connections": {
+                "input1": {
+                    "id": 0, 
+                    "output_name": "output"
+                }
+            }, 
+            "inputs": [], 
+            "name": "Trim", 
+            "outputs": [
+                {
+                    "name": "out_file1", 
+                    "type": "input"
+                }
+            ], 
+            "position": {
+                "left": 552, 
+                "top": 168
+            }, 
+            "post_job_actions": {
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "removed \"chr\""
+                    }, 
+                    "action_type": "RenameDatasetAction", 
+                    "output_name": "out_file1"
+                }
+            }, 
+            "tool_errors": null, 
+            "tool_id": "trimmer", 
+            "tool_state": "{\"__page__\": 0, \"input1\": \"null\", \"end\": \"\\\"0\\\"\", \"fastq\": \"\\\"\\\"\", \"ignore\": \"\\\"35\\\"\", \"start\": \"\\\"4\\\"\", \"__rerun_remap_job_id__\": null, \"chromInfo\": \"\\\"/data2/galaxy/galaxy-dist/tool-data/shared/ucsc/chrom/mm9.len\\\"\", \"col\": \"\\\"1\\\"\"}", 
+            "tool_version": "0.0.1", 
+            "type": "tool", 
+            "user_outputs": []
+        }
+    }
+}
