@@ -22,7 +22,8 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                          smoothLength=0, zerosToNans=True,
                          minMappingQuality=None,
                          ignoreDuplicates=False,
-                         fragmentFromRead_func=None):
+                         fragmentFromRead_func=None,
+                         centerRead=False):
 
     r"""
     Writes a bedgraph having as base a number of bam files.
@@ -91,7 +92,9 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                 bamHandle, chrom, start, end, tileSize,
                 defaultFragmentLength, extendPairedEnds, zerosToNans,
                 ignoreDuplicates=ignoreDuplicates,
-                fragmentFromRead_func=fragmentFromRead_func))
+                minMappingQuality=minMappingQuality,
+                fragmentFromRead_func=fragmentFromRead_func,
+                centerRead=centerRead))
         bamHandle.close()
 
     _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
@@ -231,7 +234,8 @@ def writeBedGraph(bamFilesList, outputFileName, fragmentLength,
                   numberOfProcessors=None, format="bedgraph",
                   extendPairedEnds=True, zerosToNans=True, smoothLength=0,
                   minMappingQuality=None, ignoreDuplicates=False,
-                  fragmentFromRead_func=None):
+                  fragmentFromRead_func=None,
+                  centerRead=False):
 
     r"""
     Given a list of bamfiles, a function and a function arguments,
@@ -265,7 +269,7 @@ def writeBedGraph(bamFilesList, outputFileName, fragmentLength,
                                func, funcArgs, extendPairedEnds, smoothLength,
                                zerosToNans, minMappingQuality,
                                ignoreDuplicates,
-                               fragmentFromRead_func),
+                               fragmentFromRead_func, centerRead),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,
