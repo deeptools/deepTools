@@ -99,8 +99,8 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
 
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
-        for bam in bamHandlers: 
-           avgReadsArray.append(
+        for bam in bamHandlers:
+            avgReadsArray.append(
                 getCoverageOfRegion(bam,
                                     chrom, start, end,
                                     binLength,
@@ -124,7 +124,7 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
         print "%s countReadsInRegions_worker: processing %d " \
             "(%.1f per sec) @ %s:%s-%s"  % \
             (multiprocessing.current_process().name,
-             rows, rows / (endTime - startTime), chrom, start, end)
+             rows, rows / (endTime - startTime), chrom, start, end )
 
     return np.array(subNum_reads_per_bin).reshape(rows, len(bamFilesList))
 
@@ -135,8 +135,7 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                       bedFile=None, extendPairedEnds=True,
                       minMappingQuality=None,
                       ignoreDuplicates=False,
-                      chrsToSkip=[],
-                      stepSize=None):
+                      chrsToSkip=[]):
 
     r"""
     This function visits a number of sites and returs a matrix containing read
@@ -182,16 +181,14 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     chrNames, chrLengths = zip(*chromSizes)
 
     genomeSize = sum(chrLengths)
-    max_mapped = max([ x.mapped for x in  bamFilesHandlers ])
+    max_mapped = max( [ x.mapped for x in  bamFilesHandlers ] )
 
     reads_per_bp = float(max_mapped) / genomeSize
-    #chunkSize =  int(100 / (reads_per_bp  * len(bamFilesList)) )
+#    chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
 
-    # if stepSize is given, this overrides the numberOfSamples
-    if stepSize is None:
-        stepSize = max(int(float(genomeSize) / numberOfSamples), 1)
+    stepSize = max(int( float(genomeSize) / numberOfSamples ), 1 )
 
-    chunkSize =  int (stepSize * 1e3 / (reads_per_bp  * len(bamFilesHandlers)))
+    chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bamFilesHandlers)) )
     [ bam_h.close() for bam_h in bamFilesHandlers]
 
     if verbose:
@@ -201,7 +198,7 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
 
-    imap_res = mapReduce.mapReduce((bamFilesList, stepSize, binLength,
+    imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength,
                                      defaultFragmentLength, skipZeros,
                                      extendPairedEnds, minMappingQuality,
                                      ignoreDuplicates),
@@ -221,7 +218,7 @@ def getReadLength(read):
 
 
 def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True, 
-                        maxPairedFragmentLength=None):
+                        maxPairedFragmentLength=None, centerRead=False):
     """
     The read has to be pysam object.
 
@@ -232,7 +229,7 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True,
          |-- read.alen --|
     -----|===============>------------<==============|----
          |               |            |
-      read.pos      read.aend      read.pnext    
+      read.pos      read.aend      read.pnext
 
 
       and for reverse reads
@@ -264,6 +261,14 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True,
     (5001491, 5001527L)
     >>> getFragmentFromRead(test.getRead("paired-forward"), 0, False)
     (5000000, 5000036L)
+
+    Tests for read centering. 
+    >>> getFragmentFromRead(test.getRead("paired-forward"), 200,
+    ... True, centerRead=True)
+    (5000032, 5000068)
+    >>> getFragmentFromRead(test.getRead("single-reverse"), 200,
+    ... centerRead=True)
+    (5001618L, 5001654L)
     """
     # convert reads to fragments
 
@@ -298,6 +303,11 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True,
                 fragmentStart = read.pos
                 fragmentEnd   = read.pos + defaultFragmentLength
 
+    if centerRead == True:
+        fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart)/2
+        fragmentStart = fragmentCenter - read.alen/2
+        fragmentEnd   = fragmentStart + read.alen
+
     return (fragmentStart, fragmentEnd)
 
 
@@ -305,7 +315,8 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
                         defaultFragmentLength, extendPairedEnds=True, 
                         zerosToNans=True, maxPairedFragmentLength=None,
                         minMappingQuality=None, ignoreDuplicates=False,
-                        fragmentFromRead_func = getFragmentFromRead):
+                        fragmentFromRead_func=getFragmentFromRead,
+                        centerRead=False):
     """
     Returns a numpy array that corresponds to the number of reads 
     that overlap with each tile.
@@ -378,14 +389,15 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
             fragmentStart, fragmentEnd = \
                 fragmentFromRead_func(read, defaultFragmentLength,
                                       extendPairedEnds,
-                                      maxPairedFragmentLength=maxPairedFragmentLength)
+                                      maxPairedFragmentLength=maxPairedFragmentLength,
+                                      centerRead=centerRead)
 
             fragmentLength = fragmentEnd - fragmentStart
             if fragmentLength == 0:
                 fragmentLength = defaultFragmentLength
 
-            vectorStart = max((fragmentStart - start)/tileSize, 0)
-            vectorEnd   = min(np.ceil(float(fragmentEnd   - start)/tileSize).astype('int'), 
+            vectorStart = max( (fragmentStart - start)/tileSize, 0)
+            vectorEnd   = min( np.ceil(float(fragmentEnd   - start)/tileSize).astype('int'), 
                                vectorLength)
 
             coverage[vectorStart:vectorEnd] +=  1
@@ -452,12 +464,12 @@ def getSmoothRange(tileIndex, tileSize, smoothRange, maxPosition):
     smoothTilesLeft = int(np.ceil(smoothTilesSide))
     smoothTilesRight = int(np.floor(smoothTilesSide)) + 1
 
-    indexStart = max(tileIndex - smoothTilesLeft, 0)
-    indexEnd   = min(maxPosition, tileIndex + smoothTilesRight)
+    indexStart = max( tileIndex - smoothTilesLeft, 0 )
+    indexEnd   = min( maxPosition, tileIndex + smoothTilesRight )
     return (indexStart, indexEnd)
 
 class Tester():
-    def __init__(self):
+    def __init__( self ):
         """
         The distribution of reads between the two bam files is as follows.
 
@@ -481,18 +493,18 @@ class Tester():
         global debug
         debug = 0
 
-    def getRead(self, readType):
+    def getRead( self, readType ):
         """ prepare arguments for test
         """
         bam = bamHandler.openBam(self.bamFile_PE)
         if readType == 'paired-reverse':
-            read = [x for x in bam.fetch('chr2', 5000081,5000082)][0]
+            read = [x for x in bam.fetch('chr2', 5000081,5000082 )][0]
         elif readType == 'single-forward':
-            read = [x for x in bam.fetch('chr2', 5001491, 5001492)][0]
+            read = [x for x in bam.fetch('chr2', 5001491, 5001492 )][0]
         elif readType == 'single-reverse':
-            read = [x for x in bam.fetch('chr2', 5001700, 5001701)][0]
+            read = [x for x in bam.fetch('chr2', 5001700, 5001701 )][0]
         else: # by default a forward paired read is returned
-            read = [x for x in bam.fetch('chr2', 5000027,5000028)][0]
+            read = [x for x in bam.fetch('chr2', 5000027,5000028 )][0]
         return read
 
 
