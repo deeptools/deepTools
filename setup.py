@@ -26,7 +26,7 @@ def update_version_py():
                               "--tags", "--always"],
                              stdout=subprocess.PIPE)
     except EnvironmentError:
-        print "unable to run git, leaving ecdsa/_version.py alone"
+        print "unable to run git, leaving deeptools/_version.py alone"
         return
     stdout = p.communicate()[0]
     if p.returncode != 0:

@@ -48,14 +48,14 @@
 
             --colorMap '$advancedOpt.colorMap'
 
-            #if $advancedOpt.zMin:
+            #if str($advancedOpt.zMin).strip() != "":
                 --zMin $advancedOpt.zMin
             #end if
             #if $advancedOpt.zMax:
                 --zMax $advancedOpt.zMax
             #end if
 
-            #if $advancedOpt.yMin:
+            #if str($advancedOpt.yMin).strip() != "":
                 --yMin $advancedOpt.yMin
             #end if
             #if $advancedOpt.yMax:
