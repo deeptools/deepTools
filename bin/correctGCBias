@@ -40,7 +40,7 @@ def parseArguments(args=None):
         'The tool computeGC bias needs to be run first.',
         usage='An example usage is:\n %(prog)s '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit '
-        '-l 200 --GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '
+        '--GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '
         '[options]',
         conflict_handler='resolve',
         add_help=False)
