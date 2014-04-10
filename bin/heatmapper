@@ -56,11 +56,6 @@ def parseArguments(args=None):
         args.regionsLabel = \
             [x.strip() for x in args.regionsLabel.split(',')]
 
-        if len(set(args.regionsLabel)) != len(args.regionsLabel):
-            print "The group labels given contain repeated names. Please "
-            "give a unique name to each value. The values given are "
-            "{}\n".format(args.regionsLabel)
-            exit(1)
     else:
         args.regionsLabel = []
 
@@ -85,7 +80,7 @@ def getHeatmapTicks(hm, referencePointLabel, startLabel, endLabel):
         symbol = 'Mb'
 
     if m == 0:
-        xTicks = [k / w for k in [0, b, b  + a]]
+        xTicks = [(k / w)  for k in [0, b, b  + a]]
         xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
@@ -205,9 +200,9 @@ def plotMatrix(hm, outFileName,
         if np.isnan(zMax):
             zMax = None
 
-    plt.rcParams['font.size'] = 10.0
+    plt.rcParams['font.size'] = 8.0
     fontP = FontProperties()
-    fontP.set_size('small')
+#    fontP.set_size('small')
 
     showSummaryPlot = False
     showHeatmap = False
@@ -333,6 +328,18 @@ def plotMatrix(hm, outFileName,
         ax.axes.get_xaxis().set_visible(True)
         ax.axes.set_xticks(xticks_heat)
         ax.axes.set_xticklabels(xtickslabel_heat, size=8)
+        
+        # align the first and last label
+        # such that they don't fall off 
+        # the heatmap sides
+        ticks = ax.xaxis.get_major_ticks()
+        ticks[0].label1.set_horizontalalignment('left')
+        ticks[-1].label1.set_horizontalalignment('right')
+
+        ax.get_xaxis().set_tick_params(
+            which='both',
+            top='off',
+            direction='out')
 
         if showSummaryPlot:
             ax_profile.set_ylim(yMin, yMax)
@@ -354,10 +361,10 @@ def plotMatrix(hm, outFileName,
         ax = fig.add_subplot(grids[grid_start:, -1])
         fig.colorbar(img, cax=ax)
 
-    """
-    plt.subplots_adjust(wspace=0, hspace=0.1, top=0.85,
+
+    plt.subplots_adjust(wspace=0.03, hspace=0.02, top=0.85,
                         bottom=0, left=0.04, right=0.96)
-    """
+
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
 
