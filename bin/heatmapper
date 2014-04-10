@@ -14,6 +14,7 @@ import matplotlib.gridspec as gridspec
 # own modules
 from deeptools import parserCommon
 from deeptools import heatmapper
+from deeptools.heatmapper_utilities import plot_single, getProfileTicks
 
 debug = 0
 plt.ioff()
@@ -249,7 +250,6 @@ def plotMatrix(hm, outFileName,
     m = hm.parameters['body']
     w = hm.parameters['bin size']
 
-    from profiler import getProfileTicks, plot_single
     xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
                                           startLabel, endLabel)
 
