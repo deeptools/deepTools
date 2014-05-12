@@ -292,9 +292,18 @@ def getOutlierIndices(data, max_deviation=200):
 def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                     vmin=None, colormap='Reds', image_format=None):
     import scipy.cluster.hierarchy as sch
+    from matplotlib import rcParams
 
     num_rows = corr_matrix.shape[0]
 
+    # set a font size according to figure length
+    if num_rows < 6:
+        font_size = 14
+    elif num_rows > 40:
+        font_size = 5
+    else:
+        font_size = int(15 - 0.25*num_rows)
+    rcParams.update({'font.size': font_size})
     # set the minimum and maximum values
     if vmax is None:
         vmax = 1
@@ -303,7 +312,7 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
 
     # Compute and plot dendrogram.
     fig = plt.figure(figsize=(10.5, 9.5))
-    axdendro = fig.add_axes([0.02, 0.1, 0.1, 0.7])
+    axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
     axdendro.set_axis_off()
     y_var = sch.linkage(corr_matrix, method='complete')
     z_var = sch.dendrogram(y_var, orientation='right',
@@ -329,14 +338,24 @@ def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
                                vmax=vmax, vmin=vmin)
     axmatrix.yaxis.tick_right()
     axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
-    axmatrix.set_yticklabels(np.array(labels).astype('str')[index],
-                             fontsize=14)
+    axmatrix.set_yticklabels(np.array(labels).astype('str')[index])
 
     axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
     axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
-                             fontsize=14,
                              rotation=45,
                              ha='left')
+
+    axmatrix.tick_params(\
+        axis='x',
+        which='both',
+        bottom='off',
+        top='off')
+
+    axmatrix.tick_params(\
+        axis='y',
+        which='both',
+        left='off',
+        right='off')
 
     #    axmatrix.set_xticks([])
     # Plot colorbar.

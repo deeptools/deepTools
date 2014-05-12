@@ -753,9 +753,13 @@ class heatmapper(object):
                     previnterval.end == ginterval.end and \
                     previnterval.strand == ginterval.strand:
                 if verbose:
+                    try:
+                        genename = ginterval.fields[3]
+                    except:
+                        genename = ''
                     sys.stderr.write("*Warning* Duplicated region: "
                                      "{} {}:{}-{}.\n".format(
-                            ginterval.fields[3],
+                            genename,
                             ginterval.chrom, ginterval.start,
                             ginterval.end))
                 duplicates += 1
