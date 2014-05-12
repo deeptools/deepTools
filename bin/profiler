@@ -88,6 +88,9 @@ def plotProfile(hm, outFileName,
     either per group or per sample
     using the specified parameters.
     """
+    # the following line is to temporary compute the log
+    # of the matrix
+    #hm.matrix.matrix = np.log(hm.matrix.matrix)
 
     # decide how many plots are needed
     if perGroup:
