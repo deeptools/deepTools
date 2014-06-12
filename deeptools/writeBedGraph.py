@@ -78,6 +78,16 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
     >>> open(tempFile, 'r').readlines()
     ['3R\t100\t150\t1.00\n', '3R\t150\t200\t0.5\n']
     >>> os.remove(tempFile)
+
+
+    Test minMapping quality
+    >>> funcArgs = {'scaleFactor': 1.0}
+    >>> tempFile = writeBedGraph_worker( '3R', 0, 200, 50, 0,
+    ... [test.bamFile2], scaleCoverage, funcArgs, minMappingQuality=40)
+    >>> open(tempFile, 'r').readlines()
+    ['3R\t150\t200\t1.0\n']
+    >>> os.remove(tempFile)
+
     """
     if start > end:
         raise NameError("start position ({0}) bigger "
@@ -91,6 +101,7 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                 bamHandle, chrom, start, end, tileSize,
                 defaultFragmentLength, extendPairedEnds, zerosToNans,
                 ignoreDuplicates=ignoreDuplicates,
+                minMappingQuality=minMappingQuality,
                 fragmentFromRead_func=fragmentFromRead_func))
         bamHandle.close()
 
