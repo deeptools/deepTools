@@ -123,7 +123,7 @@ def main(args):
         funcArgs, tileSize=args.binSize, region=args.region,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
-        zerosToNans=False,
+        missingDataAsZero=args.missingDataAsZero,
         smoothLength=False,
         extendPairedEnds=False)
 
