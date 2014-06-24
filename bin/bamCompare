@@ -121,7 +121,7 @@ def getOptionalArgs():
                           'If you do not have a good sequencing depth for '
                           'your samples consider increasing the sampling '
                           'regions\' size to minimize the probability '
-                          'that zero-coverage regions are used.'
+                          'that zero-coverage regions are used.',
                           default=1000,
                           type=int)
 
