@@ -144,9 +144,28 @@ class heatmapper(object):
                               group_labels,
                               sample_labels)
 
+
+        if parameters['skip zeros']:
+            self.matrix.removeempty()
+
     @staticmethod
     def compute_sub_matrix_worker(score_file_list, regions,
                                   parameters):
+
+        """
+        Args:
+         score_file_list (list of str): Contains the list of
+           bam or bigwig files to be used.
+         regions (list of dictionaries): Each item in the list is a dictionary
+          containing containing the fields: 'chrom', 'start', 'end', 'name'
+          and 'strand.
+        parameters (dict): Contains values that specify the length
+         of bins, the number of bp after a reference point etc.
+
+        Returns:
+        a matrix that contains per each row the values found 
+        """
+
         # read BAM or scores file
         if score_file_list[0].endswith(".bam"):
             bamfile_list = []
@@ -183,80 +202,83 @@ class heatmapper(object):
                             (feature['end'] - feature['start']),
                             feature['name'], feature['chrom'],
                             feature['start'], feature['end']))
-                continue
 
-            if feature['strand'] == '-':
-                a = parameters['upstream'] / parameters['bin size']
-                b = parameters['downstream']  / parameters['bin size']
-                start = feature['end']
-                end = feature['start']
-            else:
-                b = parameters['upstream'] / parameters['bin size']
-                a = parameters['downstream'] / parameters['bin size']
-                start = feature['start']
-                end = feature['end']
-
-            # build zones:
-            #  zone0: region before the region start,
-            #  zone1: the body of the region (not always present)
-            #  zone2: the region from the end of the region downstream
-            #  the format for each zone is: start, end, number of bins
-            if parameters['body'] > 0:
-                zones = \
-                    [(feature['start'] - b * parameters['bin size'],
-                      feature['start'], b ),
-                     (feature['start'],
-                      feature['end'],
-                      #feature['end'] - parameters['body'] /
-                      #parameters['bin size'],
-                      parameters['body'] / parameters['bin size']),
-                     (feature['end'],
-                      feature['end'] + a * parameters['bin size'], a)]
-            elif parameters['ref point'] == 'TES':  # around TES
-                zones = [(end - b * parameters['bin size'], end, b ),
-                         (end, end + a * parameters['bin size'], a )]
-            elif parameters['ref point'] == 'center':  # at the region center
-                middlePoint = feature['start'] + (feature['end'] -
-                                                  feature['start']) / 2
-                zones = [(middlePoint - b * parameters['bin size'],
-                          middlePoint, b),
-                         (middlePoint,
-                          middlePoint + a * parameters['bin size'], a)]
-            else:  # around TSS
-                zones = [(start - b * parameters['bin size'], start, b ),
-                         (start, start + a * parameters['bin size'], a )]
-
-            if feature['start'] - b * parameters['bin size'] < 0:
-                if parameters['verbose']:
-                    sys.stderr.write(
-                        "Warning:region too close to chromosome start "
-                        "for {} {}:{}:{}.\n".format(feature['name'],
-                                                   feature['chrom'],
-                                                   feature['start'],
-                                                   feature['end']))
-            coverage = []
-            if score_file.endswith(".bam"):
-                for bamfile in bamfile_list:
-                    cov = heatmapper.coverageFromBam(
-                        bamfile, feature['chrom'], zones,
-                        parameters['bin size'],
-                        parameters['bin avg type'])
-                    if feature['strand'] == "-":
-                        cov = cov[::-1]
-                    coverage = np.hstack([coverage, cov])
+                coverage = np.zeros(matrixCols)
+                coverage[:] = np.nan
 
             else:
-                for bigwig in bigwig_list:
-                    cov = heatmapper.coverageFromBigWig(
-                        bigwig, feature['chrom'], zones,
-                        parameters['bin size'],
-                        parameters['bin avg type'],
-                        parameters['missing data as zero'])
-                    if feature['strand'] == "-":
-                        cov = cov[::-1]
-                    coverage = np.hstack([coverage, cov])
+                if feature['strand'] == '-':
+                    a = parameters['upstream'] / parameters['bin size']
+                    b = parameters['downstream']  / parameters['bin size']
+                    start = feature['end']
+                    end = feature['start']
+                else:
+                    b = parameters['upstream'] / parameters['bin size']
+                    a = parameters['downstream'] / parameters['bin size']
+                    start = feature['start']
+                    end = feature['end']
 
-            """ 
+                # build zones:
+                #  zone0: region before the region start,
+                #  zone1: the body of the region (not always present)
+                #  zone2: the region from the end of the region downstream
+                #  the format for each zone is: start, end, number of bins
+                if parameters['body'] > 0:
+                    zones = \
+                        [(feature['start'] - b * parameters['bin size'],
+                          feature['start'], b ),
+                         (feature['start'],
+                          feature['end'],
+                          #feature['end'] - parameters['body'] /
+                          #parameters['bin size'],
+                          parameters['body'] / parameters['bin size']),
+                         (feature['end'],
+                          feature['end'] + a * parameters['bin size'], a)]
+                elif parameters['ref point'] == 'TES':  # around TES
+                    zones = [(end - b * parameters['bin size'], end, b ),
+                             (end, end + a * parameters['bin size'], a )]
+                elif parameters['ref point'] == 'center':  # at the region center
+                    middlePoint = feature['start'] + (feature['end'] -
+                                                      feature['start']) / 2
+                    zones = [(middlePoint - b * parameters['bin size'],
+                              middlePoint, b),
+                             (middlePoint,
+                              middlePoint + a * parameters['bin size'], a)]
+                else:  # around TSS
+                    zones = [(start - b * parameters['bin size'], start, b ),
+                             (start, start + a * parameters['bin size'], a )]
+
+                if feature['start'] - b * parameters['bin size'] < 0:
+                    if parameters['verbose']:
+                        sys.stderr.write(
+                            "Warning:region too close to chromosome start "
+                            "for {} {}:{}:{}.\n".format(feature['name'],
+                                                       feature['chrom'],
+                                                       feature['start'],
+                                                       feature['end']))
+                coverage = []
+                if score_file.endswith(".bam"):
+                    for bamfile in bamfile_list:
+                        cov = heatmapper.coverageFromBam(
+                            bamfile, feature['chrom'], zones,
+                            parameters['bin size'],
+                            parameters['bin avg type'])
+                        if feature['strand'] == "-":
+                            cov = cov[::-1]
+                        coverage = np.hstack([coverage, cov])
+
+                else:
+                    for bigwig in bigwig_list:
+                        cov = heatmapper.coverageFromBigWig(
+                            bigwig, feature['chrom'], zones,
+                            parameters['bin size'],
+                            parameters['bin avg type'],
+                            parameters['missing data as zero'])
+                        if feature['strand'] == "-":
+                            cov = cov[::-1]
+                        coverage = np.hstack([coverage, cov])
+
+
             if coverage is None:
                 regions_no_score += 1
                 if parameters['verbose']:
@@ -269,12 +291,10 @@ class heatmapper(object):
                 coverage = np.zeros(matrixCols)
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
-                continue
-            """
+
             try:
                 temp = coverage.copy()
                 temp[np.isnan(temp)] = 0
-                totalScore = np.sum(temp)
             except:
                 if parameters['verbose']:
                     sys.stderr.write(
@@ -286,30 +306,7 @@ class heatmapper(object):
                 coverage = np.zeros(matrixCols)
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
-                # to induce skipping if zero regions are omited this
-                # variable is set to zero
-                totalScore = 0
 
-            if totalScore == 0:
-                regions_no_score += 1
-                if parameters['skip zeros']:
-                    if parameters['verbose']:
-                        sys.stderr.write(
-                            "Skipping region with all scores equal to zero "
-                            "for\n'{}' {}:{}-{}.\n\n".format(feature['name'],
-                                                             feature['chrom'],
-                                                             feature['start'],
-                                                             feature['end']))
-                    continue
-                elif parameters['verbose']:
-                    sys.stderr.write(
-                        "Warning: All values are zero for "
-                        "{} {}:{}-{}.\n".format(feature['name'],
-                                                feature['chrom'],
-                                                feature['start'],
-                                                feature['end']))
-                    sys.stderr.write(
-                        "add --skipZeros to exclude such regions\n")
 
             if parameters['min threshold'] and \
                     coverage.min() <= parameters['min threshold']:
@@ -555,12 +552,14 @@ class heatmapper(object):
             # split the line into bed interval and matrix values
             region = line.split('\t')
             chrom, start, end, name, mean, strand = region[0:6]
-            matrix_rows.append(np.fromiter(region[6:], np.float))
+            matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
+            matrix_rows.append(matrix_row)
             regions.append({'chrom': chrom, 'start': int(start),
                             'end': int(end), 'name': name, 'mean': float(mean),
                             'strand': strand})
 
-        matrix = np.ma.masked_invalid(np.vstack(matrix_rows))
+        #matrix = np.ma.masked_invalid(np.vstack(matrix_rows))
+        matrix = np.vstack(matrix_rows)
         self.matrix = _matrix(regions, matrix, self.parameters['group_boundaries'],
                          self.parameters['sample_boundaries'],
                          group_labels=self.parameters['group_labels'],
@@ -621,6 +620,9 @@ class heatmapper(object):
                     self.parameters['body'] + self.parameters['downstream'],
                     self.parameters['bin size'])
 
+        # this function must be updated
+        print "save tabulated values is not yet implemented."
+        """
         avgDict = OrderedDict()
         stdDict = OrderedDict()
 
@@ -639,6 +641,7 @@ class heatmapper(object):
             file_handle.write('\n')
 
         file_handle.close()
+        """
 
     def saveMatrixValues(self, file_name):
         # print a header telling the group names and their length
@@ -988,3 +991,10 @@ class _matrix(object):
         self.regions = _clustered_regions
         self.matrix = np.vstack(_clustered_matrix)
         return idx
+
+
+    def removeempty(self):
+        """
+        removes matrix rows containing only zeros
+        """
+        print "skip zeros not fully implemented yet (for the developer: fix me)" 
