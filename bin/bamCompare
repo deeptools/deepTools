@@ -114,9 +114,14 @@ def getOptionalArgs():
                           default='readCount')
 
     optional.add_argument('--sampleLength', '-l',
-                          help='Length in base pairs used to sample the genome '
-                          'and compute the size or scaling factors to compare '
-                          'the two BAM files',
+                          help='*Only relevant when SES is chosen for the '
+                          'scaleFactorsMethod.* To compute the SES, specify '
+                          'the length (in bp) of the regions (see --numberOfSamples) '
+                          'which will be randomly sampled to calculate the scaling factors. '
+                          'If you do not have a good sequencing depth for '
+                          'your samples consider increasing the sampling '
+                          'regions\' size to minimize the probability '
+                          'that zero-coverage regions are used.',
                           default=1000,
                           type=int)
 
@@ -182,8 +187,9 @@ def getOptionalArgs():
                           required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of samplings taken from the genome '
-                          'to compute the scaling factors',
+                          help='*Only relevant when SES is chosen for the '
+                          'scaleFactorsMethod.* Number of samplings taken '
+                          'from the genome to compute the scaling factors',
                           default=1e5,
                           type=int)
 

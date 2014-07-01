@@ -26,7 +26,7 @@ def getCoverageFromBam(bamHandle, chrom, start, end, tileSize,
 
 
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
-                          zerosToNans=True):
+                          missingDataAsZero=False):
     try:
         coverage = bigwigHandle.get_as_array(chrom, start, end)
     except TypeError:
@@ -35,13 +35,12 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
         return []
     if coverage is None:
         return []
+    if missingDataAsZero is True:
+        coverage[np.isnan(coverage)] = 0
     # average the values per bin
     cov = np.array(
         [np.mean(coverage[x:x + tileSize])
          for x in range(0, len(coverage), tileSize)])
-    if zerosToNans:
-        cov[cov == 0] = np.nan
-
     return cov
 
 
@@ -52,7 +51,7 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        zerosToNans=True, fixed_step=False):
+        missingDataAsZero=False, fixed_step=False):
 
     r"""
     Writes a bedgraph having as base a number of bam files.
@@ -67,7 +66,7 @@ def writeBedGraph_worker(
     ... '3R', 0, 200, 50, 0, [(test.bamFile1,'bam')],
     ... scaleCoverage, funcArgs, True, 0, False)
     >>> open(tempFile, 'r').readlines()
-    ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.0\n']
+    ['3R\t100\t200\t1.0\n']
     >>> os.remove(tempFile)
 
     Test the file being writen for single end reads with no
@@ -117,14 +116,16 @@ def writeBedGraph_worker(
             bamHandle = openBam(indexFile)
             coverage.append(getCoverageFromBam(
                 bamHandle, chrom, start, end, tileSize,
-                defaultFragmentLength, extendPairedEnds, zerosToNans))
+                defaultFragmentLength, extendPairedEnds,
+                True))
             bamHandle.close()
         elif fileFormat == 'bigwig':
             fileHandle = open(indexFile, 'r')
             bigwigHandle = BigWigFile(file=fileHandle)
             coverage.append(
                 getCoverageFromBigwig(
-                    bigwigHandle, chrom, start, end, tileSize, zerosToNans))
+                    bigwigHandle, chrom, start, end,
+                    tileSize, missingDataAsZero))
             fileHandle.close()
 
     # is /dev/shm available?
@@ -202,7 +203,7 @@ def writeBedGraph_worker(
 def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, numberOfProcessors=None,
-        format="bedgraph", extendPairedEnds=True, zerosToNans=True,
+        format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
         smoothLength=0, fixed_step=False):
 
     r"""
@@ -278,7 +279,7 @@ def writeBedGraph(
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,
-                               zerosToNans, fixed_step),
+                               missingDataAsZero, fixed_step),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,
