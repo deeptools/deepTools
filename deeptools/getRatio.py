@@ -33,13 +33,10 @@ def getRatio(tileCoverage, args):
     >>> getRatio([10,20], funcArgs)
     -2.0
     """
-
-
     if not args['missingDataAsZero']:
         if np.isnan(args['scaleFactors'][0]) or \
                 np.isnan(args['scaleFactors'][1]):
             return np.nan
-
 
     value1 = args['scaleFactors'][0] * tileCoverage[0]
     value2 = args['scaleFactors'][1] * tileCoverage[1]

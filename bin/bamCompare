@@ -210,6 +210,16 @@ def getOptionalArgs():
                           'chromosomes that you want to be excluded '
                           'for computing the normalization. For example, '
                           ' --ignoreForNormalization "chrX, chrM" ')
+
+    optional.add_argument('--centerReads',
+                          help='By adding this option reads are centered with '
+                          'respect to the fragment length. For paired-end data '
+                          'the read is centered at the fragment length defined '
+                          'by the two fragment ends. For single-end data, the '
+                          'given fragment length is used. This option is '
+                          'useful to get a sharper signal around enriched '
+                          'regions.',
+                          action='store_true')
     return parser
 
 ########################################
@@ -324,7 +334,7 @@ def main(args):
                 if args.verbose:
                     print "scale factor for   "
                     "RPKM is {0}".format(scaleFactor)
-    
+
     if args.verbose:
         print "Individual scale factors are {0}".format(scaleFactors)
 
@@ -357,7 +367,8 @@ def main(args):
         smoothLength=args.smoothLength,
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
-        ignoreDuplicates=args.ignoreDuplicates)
+        ignoreDuplicates=args.ignoreDuplicates,
+        centerRead=args.centerReads)
 
 if __name__ == "__main__":
     args = parseArguments()

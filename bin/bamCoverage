@@ -134,6 +134,15 @@ def getOptionalArgs():
                           'for computing the normalization. For example, '
                           ' --ignoreForNormalization "chrX, chrM" ')
 
+    optional.add_argument('--centerReads',
+                          help='By adding this option reads are centered with '
+                          'respect to the fragment length. For paired-end data '
+                          'the read is centered at the fragment length defined '
+                          'by the two fragment ends. For single-end data, the '
+                          'given fragment length is used. This option is '
+                          'useful to get a sharper signal around enriched '
+                          'regions.',
+                          action='store_true')
     return parser
 
 
@@ -207,7 +216,8 @@ def main(args):
                                 zerosToNans=False,
                                 smoothLength=args.smoothLength,
                                 minMappingQuality=args.minMappingQuality,
-                                ignoreDuplicates=args.ignoreDuplicates)
+                                ignoreDuplicates=args.ignoreDuplicates,
+                                centerRead=args.centerReads)
 
 if __name__ == "__main__":
     args = parseArguments()
