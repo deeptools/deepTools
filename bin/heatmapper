@@ -293,7 +293,6 @@ def plotMatrix(hm, outFileName,
             rows, cols = sub_matrix['matrix'].shape
             interpolation_type = 'bicubic' if rows > 200 and \
                 cols > 1000 else 'nearest'
-            import ipdb;ipdb.set_trace()
             img = ax.imshow(sub_matrix['matrix'],
                             aspect='auto',
                             interpolation=interpolation_type,
