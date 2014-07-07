@@ -103,12 +103,8 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                 defaultFragmentLength, extendPairedEnds, zerosToNans,
                 ignoreDuplicates=ignoreDuplicates,
                 minMappingQuality=minMappingQuality,
-<<<<<<< HEAD
                 fragmentFromRead_func=fragmentFromRead_func,
                 centerRead=centerRead))
-=======
-                fragmentFromRead_func=fragmentFromRead_func))
->>>>>>> 26d5a22d23b748142525000a94783a484ee5d360
         bamHandle.close()
 
     _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
