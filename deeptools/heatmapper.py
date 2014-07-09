@@ -73,8 +73,8 @@ class heatmapper(object):
                 sys.stderr.write(
                     "One of the groups defined in the bed file is "
                     "too small.\nGroups that are too small can't be plotted. "
-                    "Please remove the group to continue.\n")
-                exit(1)
+                    "\n")
+#                exit(1)
 
         # args to pass to the multiprocessing workers
         mp_args = []
