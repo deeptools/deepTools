@@ -17,7 +17,11 @@
         --outFileName '$outFileName'
         --outFileFormat '$outFileFormat'
 
-        --ratio $comparison_type
+        --ratio $comparison.type
+
+        #if $comparison.type in ['ratio','log2']:
+            --pseudocount $comparison.pseudocount
+        #end if
 
         #if str($region).strip() != '':
             --region '$region'
@@ -27,7 +31,6 @@
 
           --missingDataAsZero $advancedOpt.missingDataAsZero
           --scaleFactors '$advancedOpt.scaleFactor1:$advancedOpt.scaleFactor2'
-          --pseudocount '$advancedOpt.pseudocount'
           --binSize $advancedOpt.binSize
 
         #end if
@@ -36,15 +39,26 @@
         <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file" />
         <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
 
-        <param name="comparison_type" type="select" 
-                label="How to compare the two files"
-                help="The reciprocal ratio returns the negative of the inverse of the ratio if the ratio is less than 0. The resulting values are interpreted as negative fold changes." >
-            <option value="log2" selected="true">log2 ratio</option>
-            <option value="ratio">simple ratio</option>
-            <option value="subtract">difference (subtract input from treatment)</option>
-            <option value="add">sum</option>
-            <option value="reciprocal_ratio">reciprocal ratio</option>
-        </param>
+
+        <conditional name="comparison">
+            <param name="type" type="select" 
+                label="How to compare the two files">
+                <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
+                <option value="ratio">compute the ratio of the number of reads</option>
+                <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
+                <option value="add">compute the sum over all reads</option>
+                <option value="reciprocal_ratio">compute the reciprocal ratio of the number of reads</option>
+            </param>
+            <when value="log2">
+                <expand macro="pseudocount" />
+            </when>
+            <when value="ratio">
+                <expand macro="pseudocount" />
+            </when>
+            <when value="subtract" />
+            <when value="add" />
+            <when value="reciprocal_ratio" />
+        </conditional>
 
         <param name="outFileFormat" type="select" label="Coverage file format">
             <option value="bigwig" selected="true">bigwig</option>
@@ -70,7 +84,6 @@
 
                 <param name="scaleFactor1" type="float" value="1" label="Scale factor for treatment"/>
                 <param name="scaleFactor2" type="float" value="1" label="Scale factor for input"/>
-                <param name="pseudocount" type="float" value="1" label="Pseudocount" help="Small number to avoid dividing by zero."/>
             </when>
         </conditional>
     </inputs>
@@ -99,4 +112,5 @@ number of reads per bin, the log2 of the ratio, the sum or the difference.
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

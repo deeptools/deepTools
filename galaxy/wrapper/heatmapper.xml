@@ -207,4 +207,5 @@ You can find more details on the tool itself on the heatmapper wiki page: https:
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

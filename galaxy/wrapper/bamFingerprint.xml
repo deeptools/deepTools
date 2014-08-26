@@ -148,4 +148,5 @@ You can find more details on the bamFingerprint wiki page: https://github.com/fi
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

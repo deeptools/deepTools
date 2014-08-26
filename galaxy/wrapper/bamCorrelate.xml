@@ -185,4 +185,5 @@ You can find more details on the bamCorrelate wiki page: https://github.com/fide
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

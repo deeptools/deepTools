@@ -152,4 +152,5 @@ You can find more details on the computeGCBias wiki page: computeGCBias wiki: ht
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

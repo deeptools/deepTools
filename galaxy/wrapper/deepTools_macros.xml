@@ -36,7 +36,7 @@
             </when>
         </conditional>
     </xml>
-    
+
     <xml name="region_limit_operation">
         <param name="region" type="text" value=""
             label="Region of the genome to limit the operation to"
@@ -44,14 +44,14 @@
     </xml>
     
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">1.1</token>
+    <token name="@WRAPPER_VERSION@">1.5.8.2</token>
     <xml name="requirements">
         <requirements>
             <requirement type="binary">@BINARY@</requirement>
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.8_09023018b96c23f922aa2ea553090e9df8ecf41e">deepTools</requirement>
+            <requirement type="package" version="1.5.8.2">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
@@ -109,6 +109,9 @@
             <regex match="Traceback" />
         </stdio>
     </xml>
+    <xml name="pseudocount">
+        <param name="pseudocount" type="float" value="1" label="Pseudocount" help="Small number to avoid dividing by zero."/>
+    </xml>
     <token name="@REFERENCES@">
 
 .. class:: infomark
@@ -119,23 +122,22 @@ If you would like to give us feedback or you run into any trouble, please send a
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
+.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
+.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
+.. _help site: https://github.com/fidelram/deepTools/wiki/
 
 **References**
 
 If you use this Galaxy tool in work leading to a scientific publication please
 cite the following paper:
 
-deepTools: a flexible platform for exploring deep-sequencing data Fidel Ramirez; Friederike Dundar; Sarah Diehl; Bjorn A. Gruning; Thomas Manke
-Nucleic Acids Research 2014; doi: `10.1093/nar/gku365`_
-
-
-.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
-.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _help site: https://github.com/fidelram/deepTools/wiki/
-.. _10.1093/nar/gku365: http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.full
-
-
     </token>
+    <xml name="citations">
+        <citations>
+            <citation type="doi">10.1093/nar/gku365</citation>
+            <yield />
+        </citations>
+    </xml>
 
     <xml name="multiple_input_bams">
         <repeat name="input_files" title="BAM files" min="2">

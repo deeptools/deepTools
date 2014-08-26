@@ -105,4 +105,5 @@ You can find more details on the correctGCBias wiki page: https://github.com/fid
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>
