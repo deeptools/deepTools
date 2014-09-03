@@ -362,7 +362,7 @@ def main(args):
         funcArgs, tileSize=args.binSize, region=args.region,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
-        zerosToNans=False,
+        zerosToNans=True,
         smoothLength=args.smoothLength,
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
