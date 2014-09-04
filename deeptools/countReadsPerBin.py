@@ -193,8 +193,8 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bamFilesHandlers)) )
     [ bam_h.close() for bam_h in bamFilesHandlers]
 
-    if verbose:
-        print "step size is {}".format(stepSize)
+    if verbose: 
+       print "step size is {}".format(stepSize)
 
     if region:
         # in case a region is used, append the tilesize

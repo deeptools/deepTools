@@ -684,6 +684,8 @@ class heatmapper(object):
                     0,
                     region['strand'],
                     self.matrix.group_labels[label_idx]))
+            if idx + 1 in boundaries:
+                file_handle.write('# ' + self.matrix.group_labels[label_idx])
         file_handle.close()
 
     @staticmethod
