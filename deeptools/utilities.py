@@ -35,7 +35,15 @@ def tbitToBamChrName(tbitNames, bamNames):
                          "chromosome names:\n2bit:{}\n\nbam:{}"
                          "\n\n".format(tbitNames, bamNames))
 
-        if set(["chr" + x if x != 'dmel_mitochondrion_genome'
+        if len(set(bamNames).intersection(set(tbitNames))) > 0:
+            sys.stderr.write("Using the following common chromosomes between "
+                             "bam chromosome names  and 2bit chromosome "
+                             "names:\n")
+            for item in set(bamNames).intersection(set(tbitNames)):
+                sys.stderr.write(item + "\n")
+            chrNameBitToBam = dict([(x, x) for x in
+                                    set(bamNames).intersection(set(tbitNames))])
+        elif set(["chr" + x if x != 'dmel_mitochondrion_genome'
                 else 'chrM' for x in bamNames]) == set(tbitNames):
             sys.stderr.write("Adding 'chr' seems to solve the problem. "
                              "Continuing ...")
@@ -50,13 +58,6 @@ def tbitToBamChrName(tbitNames, bamNames):
             chrNameBitToBam = dict([(x, x) for x in tbitNames
                                     if x.count('random') == 0 and
                                     x.count('chrM') == 0])
-        elif len(set(bamNames).intersection(set(tbitNames)) ) > 0:
-            if debug:
-                print "Using only common chromosomes between between "
-                "index and reference:"
-                print set(bamNames).intersection(set(tbitNames))
-            chrNameBitToBam = dict([(x, x) for x in
-                                    set(bamNames).intersection(set(tbitNames))])
         else:
             if debug:
                 print "Index and reference do not have matching "

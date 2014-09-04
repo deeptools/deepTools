@@ -160,4 +160,5 @@ You can find more details on the profiler wiki page: https://github.com/fidelram
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

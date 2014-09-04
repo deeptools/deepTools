@@ -45,6 +45,8 @@
             #end if
 
           #end if
+      #elif $comparison.type in ['ratio','log2']:
+          --pseudocount $comparison.pseudocount
       #end if
 
       #if str($region).strip() != '':
@@ -117,8 +119,12 @@
                 <option value="ratio">compute the ratio of the number of reads</option>
                 <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
             </param>
-            <when value="log2" />
-            <when value="ratio" />
+            <when value="log2">
+                <expand macro="pseudocount" />
+            </when>
+            <when value="ratio">
+                <expand macro="pseudocount" />
+            </when>
             <when value="subtract">
                 <conditional name="normalization">
                     <param name="type" type="select" label="Normalization method" >
@@ -222,4 +228,5 @@ You can find more details on the bamCompare wiki page: https://github.com/fidelr
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

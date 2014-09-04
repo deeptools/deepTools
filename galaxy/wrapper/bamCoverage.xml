@@ -158,4 +158,5 @@ You can find more details on the bamCoverage wiki page: https://github.com/fidel
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

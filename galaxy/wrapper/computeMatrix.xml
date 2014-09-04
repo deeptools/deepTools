@@ -219,4 +219,5 @@ You can find more details on the computeMatrix wiki page: https://github.com/fid
 @REFERENCES@
 
     </help>
+    <expand macro="citations" />
 </tool>

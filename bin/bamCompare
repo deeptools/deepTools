@@ -135,7 +135,8 @@ def getOptionalArgs():
                           required=False)
 
     optional.add_argument('--pseudocount',
-                          help='small number to avoid log2(x/0)',
+                          help='small number to avoid x/0. Only useful '
+                          'when ratio = log2 or ratio',
                           default=1,
                           type=float,
                           required=False)
@@ -230,7 +231,8 @@ def main(args):
     """
     The algorithm is composed of two parts.
 
-    1. Using the SES or mapped reads method, appropiate scaling factors are determined.
+    1. Using the SES or mapped reads method, appropiate scaling
+       factors are determined.
 
     2. The genome is transversed, scaling the BAM files, and computing
        the log ratio/ratio/difference for bins of fixed width
@@ -342,9 +344,6 @@ def main(args):
 
     scaling = float(scaleFactors[0]) / scaleFactors[1]
 
-    p1 = args.pseudocount * 1.0 / (1 + scaling)
-    p2 = args.pseudocount * float(scaling) / (1 + scaling)
-
     print "The scaling factors are:"
     print scaleFactors
 
@@ -354,8 +353,8 @@ def main(args):
     funcArgs = {'missingDataAsZero': args.missingDataAsZero,
                 'valueType': args.ratio,
                 'scaleFactors': scaleFactors,
-                'p1': p1,
-                'p2': p2}
+                'pseudocount': args.pseudocount
+                }
 
     writeBedGraph.writeBedGraph(
         [bam1.filename, bam2.filename],
@@ -363,7 +362,7 @@ def main(args):
         funcArgs, tileSize=args.binSize, region=args.region,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
-        zerosToNans=False,
+        zerosToNans=True,
         smoothLength=args.smoothLength,
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
