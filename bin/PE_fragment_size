@@ -4,7 +4,7 @@
 import argparse
 
 # own tools
-from deeptools.PE_fragment_size import peFragmentSize
+from deeptools.bamPEFragmentSize import peFragmentSize
 from deeptools._version import __version__
 
 

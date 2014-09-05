@@ -15,7 +15,7 @@ from bx.seq import twobit
 
 from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import parserCommon, mapReduce
-from deeptools.PE_fragment_size import peFragmentSize
+from deeptools.bamPEFragmentSize import peFragmentSize
 from deeptools import config as cfg
 from deeptools import bamHandler
 
