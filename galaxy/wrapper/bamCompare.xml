@@ -172,9 +172,7 @@
                     label="Minimum mapping quality (e.g. BOWTIE2 measures)"
                     help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
 
-                <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
-                    label ="Treat missing data as zero"
-                    help  ="This parameter determines if missing data should be treated as zeros. If unchecked, missing data will be ignored and not included in the output file. Missing data is defined as those regions for which both BAM files have 0 reads." />
+                <expand macro="missingDataAsZero" />
 
                 <param name="ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"

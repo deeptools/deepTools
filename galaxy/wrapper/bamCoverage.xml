@@ -47,6 +47,8 @@
                 --minMappingQuality '$advancedOpt.minMappingQuality'
             #end if
 
+            --missingDataAsZero $advancedOpt.missingDataAsZero
+
             ##if str($advancedOpt.ignoreForNormalization).strip() != '':
             ##    --ignoreForNormalization $advancedOpt.ignoreForNormalization
             ##end if
@@ -113,6 +115,8 @@
                 <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
                     label="Minimum mapping quality"
                     help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
+
+                <expand macro="missingDataAsZero" />
 
              <!--   <param name="ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"

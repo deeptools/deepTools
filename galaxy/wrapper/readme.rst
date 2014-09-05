@@ -48,7 +48,8 @@ deeptools are currently under review. In the meantime please refere to https://g
 History
 =======
 
-- v1.0: Initial public release
+ * v1.0:        Initial public release
+ * v1.5.8.2:    Include new citation tag, update version to 1.5.8.2 and change wrapper version
 
 
 Licence (MIT)
