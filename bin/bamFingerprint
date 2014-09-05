@@ -148,8 +148,9 @@ def main(args):
         import sys
         sys.stderr.write(
             "\nNo reads were found in {} regions sampled. Check that the\n"
-            "min mapping quality is over the the chromosome names between\n"
-            "bam files correspond.\n\n".format(num_reads_per_bin.shape[0]))
+            "min mapping quality is not overly high and that the \n"
+            "chromosome names between bam files correspond.\n"
+            "\n".format(num_reads_per_bin.shape[0]))
         exit(1)
     total = len(num_reads_per_bin[:, 0])
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
