@@ -1,0 +1,7 @@
+1.5.9: 
+* Fixed problem with pseudocounts. The original implementation was scaling pseudocounts twice, which resulted in unexpected results for regions with zero reads.
+* The tools bigWigCorrelate and bamPEFragmentSize where added to galaxy.
+* Added parameter missingDataAsZero to bamCoverage. The default behaviour is unchanged.
+* Improved error reporting of bamCorrelate when few bins are computed.
+
+       
