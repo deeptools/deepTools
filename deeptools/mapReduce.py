@@ -96,9 +96,9 @@ def mapReduce(staticArgs, func, chromSize,
                     # with two genomeChunks to be counted twice. Such region
                     # is only added for the genomeChunk that contains the start
                     # of the bed region.
-
-                    bed_regions_list.append([chrom, bed_region.start,
-                                             bed_region.start + 1])
+                    if bed_region.start + 1 < endPos:
+                        bed_regions_list.append([chrom, bed_region.start,
+                                                 bed_region.end])
                 if len(bed_regions_list) == 0:
                     continue
                 # add to argument list, the position of the bed regions to use
