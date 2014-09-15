@@ -1,24 +1,24 @@
 import numpy as np
+from matplotlib import colors as pltcolors
 
 def plot_single(ax, ma, average_type, color, label,
-                 plot_type='simple'):
+                plot_type='simple'):
 
     """
     Adds a line to the plot using the specified metod
     """
-
     sumry = np.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     if plot_type != 'overlapped_lines':
-        ax.plot(sumry, color=color, label=label, alpha=0.9)
         x = np.arange(len(sumry))
+        ax.plot(x, sumry, color=color, label=label, alpha=0.9)
     if plot_type == 'fill':
         ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
 
     elif plot_type == 'se':  #standard error
         std = np.std(ma, axis=0)/np.sqrt(ma.shape[0])
         alpha = 0.2
-        if type(color) == type((0,0)):  # check of color is tuple
+        if type(color) == type((0, 0)):  # check if color is tuple
             # add the alpha channed to the color tuple
             f_color = [c for c in color[:-1]] + [alpha]
         else:
@@ -38,6 +38,7 @@ def plot_single(ax, ma, average_type, color, label,
         x = np.arange(len(row))
     ax.set_xlim(0, max(x))
 
+    return ax
 
 def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
     """

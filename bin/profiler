@@ -76,12 +76,13 @@ def plotProfile(hm, outFileName,
                 averagetype='median',
                 referencePointLabel='TSS',
                 startLabel='TSS', endLabel="TES",
-                plotHeight=5,
-                plotWidth=8,
+                plotHeight=7,
+                plotWidth=11,
                 perGroup=False,
                 plotType='simple',
                 image_format=None,
-                color_list=None):
+                color_list=None,
+                legend_location='upper-left'):
 
     """
     Using the hm matrix, makes a line plot
@@ -117,7 +118,6 @@ def plotProfile(hm, outFileName,
     # convert cm values to inches
     plotHeightInches = rows * float(plotHeight) / 2.54
     figWidth = cols * float(plotWidth) / 2.54 
-    print figWidth, plotHeightInches
     fig = plt.figure(figsize=(figWidth, plotHeightInches))
 
     # add xticks and labels to the last plot
@@ -143,12 +143,18 @@ def plotProfile(hm, outFileName,
 
     xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
                                           startLabel, endLabel)
+    first = True
+    sample_ymax = None
+    sample_ymin = None
+    ax_list = []
     for plot in range(numplots):
         col = plot % plots_per_row
         row = int(plot / plots_per_row)
-        print plot,row,col
-#        ax = fig.add_subplot(grids[plot])
-        ax = fig.add_subplot(grids[row, col])
+        if row == 0 and col == 0:
+            ax = fig.add_subplot(grids[row, col])
+        else:
+            ax = fig.add_subplot(grids[row, col], sharey=ax_list[0])
+
         if perGroup:
             title = hm.matrix.group_labels[plot]
         else:
@@ -173,22 +179,41 @@ def plotProfile(hm, outFileName,
                         label,
                         plot_type=plotType)
 
-        ax.set_ylim(yMin, yMax)
+        if col != 0:
+            plt.setp(ax.get_yticklabels(), visible=False)
+
         ax.axes.set_xticks(xticks)
         ax.axes.set_xticklabels(xtickslabel)
+        # align the first and last label
+        # such that they don't fall off 
+        # the heatmap sides
+        ticks = ax.xaxis.get_major_ticks()
+        ticks[0].label1.set_horizontalalignment('left')
+        ticks[-1].label1.set_horizontalalignment('right')
+
+        if first:
+            ax.legend(loc=legend_location.replace('-',' '),
+                      ncol=1, prop=fontP,
+                      frameon=False, markerscale=0.5)
+            first = False
+        """
         ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
                   loc='upper center',
                   ncol=1, mode="expand", prop=fontP,
                   frameon=False, markerscale=0.5)
+        """
 
-        # reduce the number of yticks by half
-        num_ticks = len(ax.get_yticks())
-        yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
-        ax.set_yticks(yticks)
+        ax_list.append(ax)
 
-        ax.axes.set_ylabel(yAxislabel)
+    # reduce the number of yticks by half
+    num_ticks = len(ax.get_yticks())
+    yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
+    ax.set_yticks(yticks)
 
-    plt.subplots_adjust(wspace=0.1, hspace=0.3)
+    ax.axes.set_ylabel(yAxislabel)
+    
+    ax.set_ylim(yMin, yMax)
+    plt.subplots_adjust(wspace=0.05, hspace=0.3)
 
     plt.savefig(outFileName, dpi=200, format=image_format)
 
@@ -245,7 +270,8 @@ def main(args):
                 args.perGroup,
                 plotType=args.plotType,
                 image_format=args.plotFileFormat,
-                color_list=args.colors)
+                color_list=args.colors,
+                legend_location=args.legendLocation)
 
 if __name__ == "__main__":
     args = parseArguments()
