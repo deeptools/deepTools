@@ -108,28 +108,6 @@ def getHeatmapTicks(hm, referencePointLabel, startLabel, endLabel):
     return xTicks, xTicksLabel
 
 
-def plot_profile(ax, ma, average_type, color, label,
-                 plot_type='simple'):
-
-    sumry = np.__getattribute__(average_type)(ma, axis=0)
-    # only plot the average profiles without error regions
-    if plot_type != 'overlapped_lines':
-        ax.plot(sumry, color=color, label=label, alpha=0.6)
-        x = np.arange(len(sumry))
-    if plot_type == 'fill':
-        ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
-
-    elif plot_type == 'std':
-        std = np.std(ma, axis=0)
-        ax.fill_between(x, sumry, sumry + std, facecolor=color, alpha=0.2)
-        ax.fill_between(x, sumry, sumry - std, facecolor=color, alpha=0.2)
-
-    elif plot_type == 'overlapped_lines':
-        ax.patch.set_facecolor('black')
-        for row in ma:
-            ax.plot(row, 'yellow', alpha=0.1)
-
-
 def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar):
     """
     prepare the plot layout
