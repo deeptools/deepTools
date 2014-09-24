@@ -232,6 +232,12 @@ cite the following paper:
         </param>
     </xml>
 
+    <xml name="missingDataAsZero">
+                <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
+                    label ="Treat missing data as zero"
+                    help  ="This parameter determines if missing data should be treated as zeros. If unchecked, missing data will be ignored and not included in the output file. Missing data is defined as those regions for which both BAM files have 0 reads." />
+    </xml>
+
     <xml name="input_save_matrix_values">
         <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>

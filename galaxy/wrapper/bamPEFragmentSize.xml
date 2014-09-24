@@ -1,0 +1,50 @@
+<tool id="deeptools_bamPEFragmentSize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
+    <description>Given a BAM file it samples several regions to estimate the paird-end fragment length</description>
+    <expand macro="requirements" />
+    <expand macro="stdio" />
+    <macros>
+        <token name="@BINARY@">bamPEFragmentSize</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <command>
+<![CDATA[
+        bamPEFragmentSize
+
+        @THREADS@
+
+        --bam '$bamInput'
+        --bamIndex ${bamInput.metadata.bam_index}
+        #if $histogram:
+            --histogram $histogram_outfile
+        #end if
+        > $outfile
+
+]]>
+    </command>
+
+    <inputs>
+        <param name="bamInput" format="bam" type="data" label="BAM file"
+            help="The BAM file must be sorted."/>
+        <param name="histogram" type="boolean" truevalue="--histogram" falsevalue=""
+            label="Get the distribion of fragment length as histogram"
+            help="(--histogram)"/>
+    </inputs>
+    <outputs>
+        <data format="txt" name="outfile" label="${tool.name} on ${on_string}" />
+        <data name="histogram_outfile" format="tabular" from_work_dir="quant_bias_corrected.sf" label="${tool.name} on ${on_string} (Bias corrected Quantification)">
+            <filter>histogram == '--histogram'</filter>
+        </data>
+    </outputs>
+    <help>
+
+**What it does**
+
+Given a BAM file it samples several regions to estimate the paird-end fragment length.
+
+-----
+
+@REFERENCES@
+
+    </help>
+    <expand macro="citations" />
+</tool>

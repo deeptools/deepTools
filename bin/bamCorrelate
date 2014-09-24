@@ -416,6 +416,15 @@ def main(args):
         ignoreDuplicates=args.ignoreDuplicates,
         stepSize=stepsize)
 
+    sys.stderr.write("Number of non zero bins "
+                     "found: {}\n".format(num_reads_per_bin.shape[0]))
+
+    if num_reads_per_bin.shape[0] < 2:
+        exit("ERROR: too few non zero bins found.\n"
+             "If using --region please check that this "
+             "region is covered by reads.\n")
+        
+
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
