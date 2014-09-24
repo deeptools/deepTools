@@ -897,7 +897,7 @@ class _matrix(object):
         sample_start = self.sample_boundaries[sample]
         sample_end = self.sample_boundaries[sample+1]
 
-        return {'matrix': self.matrix[group_start:group_end, :][:, sample_start:sample_end],
+        return {'matrix': np.ma.masked_invalid(self.matrix[group_start:group_end, :][:, sample_start:sample_end]),
                 'group': self.group_labels[group],
                 'sample': self.sample_labels[sample]}
 
@@ -959,8 +959,10 @@ class _matrix(object):
     def hmcluster(self, k, method='kmeans'):
 
         matrix = np.asarray(self.matrix)
-        # replace nans for 0 otherwise kmeans produces a weird behaviour
-        matrix[np.isnan(matrix)] = 0
+        if np.any(np.isnan(matrix)):
+            # replace nans for 0 otherwise kmeans produces a weird behaviour
+            sys.stderr.write("Warning nan values replaced by zeros\n")
+            matrix[np.isnan(matrix)] = 0
 
         if method == 'kmeans':
             from scipy.cluster.vq import vq, kmeans

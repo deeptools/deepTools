@@ -249,7 +249,6 @@ def plotMatrix(hm, outFileName,
 
     first_group = 0 # helper variable to place the title per sample
     for sample in range(hm.matrix.get_num_samples()):
-        title = hm.matrix.sample_labels[sample]
         for group in range(numgroups):
             # add the respective profile to the
             # summary plot
@@ -260,6 +259,7 @@ def plotMatrix(hm, outFileName,
                                     
             ax = fig.add_subplot(grids[group, sample])
             if group == first_group and not showSummaryPlot:
+                title = hm.matrix.sample_labels[sample]
                 ax.set_title(title)
 
             rows, cols = sub_matrix['matrix'].shape
@@ -313,12 +313,14 @@ def plotMatrix(hm, outFileName,
             top='off',
             direction='out')
 
+    ## plot the profiles on top of the heatmaps
     if showSummaryPlot:
         ax_list = []
         sample_ymax = None
         sample_ymin = None
         # plot each of the profiles
         for sample_id in range(hm.matrix.get_num_samples()):
+            title = hm.matrix.sample_labels[sample_id]
             if sample_id > 0:
                 ax_profile = fig.add_subplot(grids[0, sample_id],
                                              sharey=ax_list[0])
