@@ -82,7 +82,8 @@ def plotProfile(hm, outFileName,
                 plotType='simple',
                 image_format=None,
                 color_list=None,
-                legend_location='upper-left'):
+                legend_location='upper-left',
+                plots_per_row=8):
 
     """
     Using the hm matrix, makes a line plot
@@ -101,7 +102,6 @@ def plotProfile(hm, outFileName,
         numplots = hm.matrix.get_num_samples()
         numlines = hm.matrix.get_num_groups()
 
-    plots_per_row = 8
     if numplots > plots_per_row:
         rows = np.ceil(numplots / plots_per_row).astype(int)
         cols = plots_per_row
@@ -271,7 +271,8 @@ def main(args):
                 plotType=args.plotType,
                 image_format=args.plotFileFormat,
                 color_list=args.colors,
-                legend_location=args.legendLocation)
+                legend_location=args.legendLocation,
+                plots_per_row=args.numPlotsPerRow)
 
 if __name__ == "__main__":
     args = parseArguments()

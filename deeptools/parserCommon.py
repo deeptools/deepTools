@@ -221,7 +221,7 @@ def genomicRegion(string):
         return None
     # remove undesired characters that may be present and
     # replace - by :
-    region = region.translate(None, ",.;|!{}()").replace("-", ":")
+    region = region.translate(None, ",;|!{}()").replace("-", ":")
     if len(region) == 0:
         raise argparse.ArgumentTypeError(
             "{} is not a valid region".format(string))
@@ -383,6 +383,11 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'be given separated by spaces. For example '
                               '--colors red blue green ',
                               nargs='+')
+
+        optional.add_argument('--numPlotsPerRow',
+                              help='Number of plots to plot in a row',
+                              type=int,
+                              default=8)
 
     elif mode == 'heatmap':
         optional.add_argument('--sortRegions',
