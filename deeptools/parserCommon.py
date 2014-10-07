@@ -221,7 +221,7 @@ def genomicRegion(string):
         return None
     # remove undesired characters that may be present and
     # replace - by :
-    region = region.translate(None, ",.;|!{}()").replace("-", ":")
+    region = region.translate(None, ",;|!{}()").replace("-", ":")
     if len(region) == 0:
         raise argparse.ArgumentTypeError(
             "{} is not a valid region".format(string))
