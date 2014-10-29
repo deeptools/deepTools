@@ -40,9 +40,10 @@ detailed help:
 
 """,
            epilog='example usages:\n%(prog)s bins '
-           '-b file1.bam file2.bam -o heatmap.png --corMethod pearson\n\n'
-           '%(prog)s BED-file -b file1.bam file2.bam -o heatmap.png --corMethod spearman\n'
-           '--BED selection.bed '
+           '--bamfiles file1.bam file2.bam --corMethod pearson -o heatmap.png\n\n'
+           '%(prog)s BED-file --BED selection.bed \n'
+           '--bamfiles file1.bam file2.bam --corMethod spearman\n'
+           '-o heatmap.png'
            ' \n\n',
             conflict_handler='resolve')
 
@@ -73,7 +74,7 @@ detailed help:
         add_help=False,
         usage='%(prog)s '
               '---bamfiles file1.bam file2.bam '
-              '-o heatmap.png --corMethod spearman\n')
+              '--corMethod spearman -o heatmap.png \n')
 
     # BED file arguments
     bed_mode = subparsers.add_parser(
@@ -87,9 +88,9 @@ detailed help:
              "that should be considered for the correlation analysis. A "
              "common use is to compare ChIP-seq coverages between two "
              "different samples for a set of peak regions.",
-        usage='%(prog)s '
-              '-b file1.bw file2.bw '
-              '-o heatmap.png --corMethod pearson --BED selection.bed\n',
+        usage='%(prog)s --BED selection.bed'
+              '--bamfiles file1.bam file2.bam '
+              '-o heatmap.png --corMethod pearson\n',
         add_help=False)
 
     args = parser.parse_args(args)
