@@ -267,7 +267,7 @@ def computeMatrixRequiredArgs(args=None):
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--regionsFileName', '-R',
                           metavar='File',
-                          help='File name, in BED or GFF format, containing '
+                          help='File name, in BED format, containing '
                           'the regions to plot.',
                           type=argparse.FileType('r'),
                           required=True)
