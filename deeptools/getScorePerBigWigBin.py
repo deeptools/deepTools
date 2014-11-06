@@ -212,18 +212,15 @@ def getScorePerBin(bigwigFilesList, binLength,
 
     chrNames, chrLengths = zip(*chromSizes)
     genomeSize = sum(chrLengths)
-    max_mapped = max( map(lambda x: getNumberOfFragmentsPerRegionFromBigWig(x, chromSizes), bigwigFilesList) )
-    reads_per_bp = float(max_mapped) / genomeSize
     stepSize = binLength    #for consecutive bins
-    chunkSize = int(stepSize * 1e3 / ( reads_per_bp  * len(bigwigFilesList)) )
-
+    chunkSize = int(stepSize * 1e3 / len(bigwigFilesList))
+    print binLength, stepSize, chunkSize
     if verbose:
         print "step size is {}".format(stepSize)
 
     if region:
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
-
     # mapReduce( (staticArgs), func, chromSize, etc. )
     imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength, skipZeros),
                                     countReadsInRegions_wrapper,
