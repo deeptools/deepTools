@@ -19,7 +19,7 @@ def parseArguments(args=None):
 This tool summarizes and prepares an intermediary file containing
 scores associated with genomic regions that can be used afterwards to
 plot a heatmap or a profile.  Typically, these genoic regions are
-genes, but any other regions defined in a BED or GFF format can be
+genes, but any other regions defined in a BED format can be
 used. This tool can also be used to filter and sort regions according
 to their score.
 
@@ -47,7 +47,7 @@ To learn more about the specific parameters type:
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='scale-regions')],
-        help="In the scale-regions mode, all regions in the BED/GFF file are "
+        help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunk to the same length (bp) that is indicated by "
         "the user.",
         usage='An example usage is:\n  %(prog)s -S '
@@ -61,7 +61,7 @@ To learn more about the specific parameters type:
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='reference-point')],
-        help="Reference-point refers to a position within the BED/GFF regions "
+        help="Reference-point refers to a position within the BED regions "
         "(e.g start of region). In the reference-point, mode only those "
         "genomic positions before (downstream) and/or after (upstream) the "
         "reference point will be plotted.",
@@ -94,7 +94,7 @@ def computeMatrixRequiredArgs(args=None):
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--regionsFileName', '-R',
                           metavar='File',
-                          help='File name, in BED or GFF format, containing '
+                          help='File name, in BED format, containing '
                           'the regions to plot.',
                           type=argparse.FileType('r'),
                           required=True)

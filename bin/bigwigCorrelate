@@ -6,14 +6,13 @@ import sys
 import argparse
 import os.path
 import numpy as np
-from matplotlib import use as mplt_use
-
-mplt_use('Agg')
 import matplotlib.pyplot as plt
+
 from scipy.stats import pearsonr, spearmanr
 
 import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
+from deeptools.correlation_heatmap import plot_correlation
 from deeptools._version import __version__
 
 
@@ -197,6 +196,12 @@ def bigwigCorrelateArgs(case='bins'):
                         metavar='FILE',
                         type=argparse.FileType('w'))
 
+    group.add_argument('--plotNumbers',
+                        help='If set, then the correlation number is plotted '
+                          'on top of the heatmap.',
+                        action='store_true',
+                        required=False)
+
     group.add_argument('--plotFileFormat',
                         metavar='FILETYPE',
                         help='Image format type. If given, this option '
@@ -232,7 +237,7 @@ def heatmap_options():
                                  if not m.endswith('_r')])
 
     heatmap.add_argument(
-        '--colorMap', default='Reds',
+        '--colorMap', default='jet',
         #metavar='',
         help='Color map to use for the heat map. Available values can be '
              'seen here: '
@@ -241,68 +246,6 @@ def heatmap_options():
              color_options + '\'')
 
     return parser
-
-
-def plotCorrelation(corr_matrix, labels, plotFileName, vmax=None,
-                    vmin=None, colormap='Reds', image_format=None):
-    import scipy.cluster.hierarchy as sch
-
-    num_rows = corr_matrix.shape[0]
-
-    # set the minimum and maximum values
-    if vmax is None:
-        vmax = 1
-    if vmin is None:
-        vmin = 0 if corr_matrix.min() >= 0 else -1
-
-    # Compute and plot dendrogram.
-    fig = plt.figure(figsize=(10.5, 9.5))
-    axdendro = fig.add_axes([0.02, 0.1, 0.1, 0.7])
-    axdendro.set_axis_off()
-    y_var = sch.linkage(corr_matrix, method='complete')
-    z_var = sch.dendrogram(y_var, orientation='right',
-                           link_color_func=lambda k: 'black')
-    axdendro.set_xticks([])
-    axdendro.set_yticks([])
-    cmap = plt.get_cmap(colormap)
-
-    # this line simply makes a new cmap, based on the original
-    # colormap that goes from 0.0 to 0.9
-    # This is done to avoid colors that
-    # are too dark at the end of the range that do not offer
-    # a good contrast between the correlation numbers that are
-    # plotted on black.
-    cmap = cmap.from_list(colormap + "clipped", cmap(np.linspace(0, 0.9, 10)))
-    # Plot distance matrix.
-    axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
-    index = z_var['leaves']
-    corr_matrix = corr_matrix[index, :]
-    corr_matrix = corr_matrix[:, index]
-    img_mat = axmatrix.matshow(corr_matrix, aspect='equal', origin='lower',
-                               cmap=cmap, extent=(0, num_rows, 0, num_rows),
-                               vmax=vmax, vmin=vmin)
-    axmatrix.yaxis.tick_right()
-    axmatrix.set_yticks(np.arange(corr_matrix.shape[0]) + 0.5)
-    axmatrix.set_yticklabels(np.array(labels).astype('str')[index],
-                             fontsize=14)
-
-    axmatrix.set_xticks(np.arange(corr_matrix.shape[0]) + 0.5)
-    axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
-                             fontsize=14,
-                             rotation=45,
-                             ha='left')
-
-    #    axmatrix.set_xticks([])
-    # Plot colorbar.
-    axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
-    plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
-    for row in range(num_rows):
-        for col in range(num_rows):
-            axmatrix.text(row + 0.5, col + 0.5,
-                          "{:.2f}".format(corr_matrix[row, col]),
-                          ha='center', va='center')
-
-    fig.savefig(plotFileName, format=image_format)
 
 
 def main(args):
@@ -413,13 +356,14 @@ def main(args):
 
     plot_file_name = args.plotFile.name
     args.plotFile.close()
-    plotCorrelation(corr_matrix,
+    plot_correlation(corr_matrix,
                     args.labels,
                     plot_file_name,
                     args.zMax,
                     args.zMin,
                     args.colorMap,
-                    image_format=args.plotFileFormat)
+                    image_format=args.plotFileFormat,
+                    plot_numbers=args.plotNumbers)
 
 
 if __name__ == "__main__":
