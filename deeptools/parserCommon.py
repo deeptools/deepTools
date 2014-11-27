@@ -347,14 +347,12 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '"sum" and "std".')
 
         optional.add_argument('--plotHeight',
-                              help='height in cm. The default for the plot '
-                              'height is 5 centimeters.',
+                              help='height in cm.',
                               type=float,
                               default=7)
 
         optional.add_argument('--plotWidth',
-                              help='Width in cm. The default value is 8 '
-                              'centimeters. The minimum value is 1 cm.',
+                              help='Width in cm.  The minimum value is 1 cm.',
                               type=float,
                               default=11)
 
@@ -554,11 +552,18 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           help='Maximum value for the Y-axis.')
 
     optional.add_argument('--legendLocation',
-                          default='upper-left',
-                          choices=['upper-right',
+                          default='best',
+                          choices=['best',
+                                   'upper-right',
                                    'upper-left',
+                                   'upper-center',
                                    'lower-left',
-                                   'lower-right'],
+                                   'lower-right',
+                                   'lower-center',
+                                   'center',
+                                   'center-left',
+                                   'center-right',
+                                   ],
                           help='Location for the legend in the summary plot')
 
     optional.add_argument('--perGroup',
