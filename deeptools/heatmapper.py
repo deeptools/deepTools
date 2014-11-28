@@ -144,7 +144,6 @@ class heatmapper(object):
                               group_labels,
                               sample_labels)
 
-
         if parameters['skip zeros']:
             self.matrix.removeempty()
 
@@ -1000,6 +999,19 @@ class _matrix(object):
 
     def removeempty(self):
         """
-        removes matrix rows containing only zeros
+        removes matrix rows containing only zeros or nans
         """
-        print "skip zeros not fully implemented yet (for the developer: fix me)" 
+        to_keep = []
+        score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
+        for idx, region in enumerate(self.regions):
+            score = self.matrix[idx, :]
+            if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
+                continue
+            else:
+                to_keep.append(idx)
+        self.regions = [self.regions[x] for x in to_keep]
+        self.matrix = self.matrix[to_keep,:]
+        # adjust sample boundaries
+        to_keep = np.array(to_keep)
+        self.group_boundaries = [len(to_keep[to_keep<x]) for x in self.group_boundaries]
+
