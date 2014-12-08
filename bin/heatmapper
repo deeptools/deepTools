@@ -339,7 +339,7 @@ def plotMatrix(hm, outFileName,
             if sample_id > 0:
                 plt.setp(ax_profile.get_yticklabels(), visible=False)
 
-            if yAxisLabel != '':
+            if sample_id == 0 and yAxisLabel != '':
                 ax_profile.set_ylabel(yAxisLabel)
             ax_profile.axes.set_xticks(xticks)
             ax_profile.axes.set_xticklabels(xtickslabel)
