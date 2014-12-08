@@ -563,6 +563,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                    'center',
                                    'center-left',
                                    'center-right',
+                                   'none'
                                    ],
                           help='Location for the legend in the summary plot')
 

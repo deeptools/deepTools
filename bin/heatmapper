@@ -339,6 +339,8 @@ def plotMatrix(hm, outFileName,
             if sample_id > 0:
                 plt.setp(ax_profile.get_yticklabels(), visible=False)
 
+            if yAxisLabel != '':
+                ax_profile.set_ylabel(yAxisLabel)
             ax_profile.axes.set_xticks(xticks)
             ax_profile.axes.set_xticklabels(xtickslabel)
             ax_list.append(ax_profile)
@@ -355,9 +357,10 @@ def plotMatrix(hm, outFileName,
         yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
         ax_list[0].set_yticks(yticks)
         ax_list[0].set_ylim(yMin, yMax)
-        ax_list[-1].legend(loc=legend_location.replace('-',' '),
-                           ncol=1, prop=fontP,
-                           frameon=False, markerscale=0.5)
+        if legend_location != 'none':
+            ax_list[-1].legend(loc=legend_location.replace('-',' '),
+            ncol=1, prop=fontP,
+            frameon=False, markerscale=0.5)
             
     if showColorbar:
         if showSummaryPlot:
@@ -369,7 +372,6 @@ def plotMatrix(hm, outFileName,
 
         ax = fig.add_subplot(grids[grid_start:, -1])
         fig.colorbar(img, cax=ax)
-
 
     plt.subplots_adjust(wspace=0.05, hspace=0.025, top=0.85,
                         bottom=0, left=0.04, right=0.96)
