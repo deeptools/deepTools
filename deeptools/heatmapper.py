@@ -366,7 +366,7 @@ class heatmapper(object):
             for pos in np.floor(posArray):
                 indexStart = int(pos - start)
                 #indexEnd   = int(indexStart + binSize)
-                indexEnd   = int(indexStart + stepSize + 1)
+                indexEnd   = int(indexStart + stepSize)
                 try:
                     countsList.append(
                         heatmapper.myAverage(valuesArray[indexStart:indexEnd],
@@ -463,6 +463,7 @@ class heatmapper(object):
             bw_array = bigwig.get_as_array(chrom,
                                            max(0, zones[0][0]),
                                            zones[-1][1])
+
         except Exception as detail:
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
