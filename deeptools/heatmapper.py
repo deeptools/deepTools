@@ -448,6 +448,7 @@ class heatmapper:
             bw_array = bigwig.get_as_array(chrom,
                                            max(0, zones[0][0]),
                                            zones[-1][1])
+
         except Exception as detail:
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
