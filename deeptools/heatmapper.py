@@ -351,7 +351,7 @@ class heatmapper:
             for pos in np.floor(posArray):
                 indexStart = int(pos - start)
                 #indexEnd   = int(indexStart + binSize)
-                indexEnd   = int(indexStart + stepSize + 1)
+                indexEnd   = int(indexStart + stepSize)
                 try:
                     countsList.append(
                         heatmapper.myAverage(valuesArray[indexStart:indexEnd],
