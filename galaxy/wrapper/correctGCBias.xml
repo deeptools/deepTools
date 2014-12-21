@@ -7,6 +7,7 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         #import tempfile
         #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
 
@@ -47,10 +48,12 @@
 
         ##mv $newoutFileName $outFileName
         mv "corrected.bam" $outFileName
+]]>
     </command>
     <inputs>
         <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
-        <param name="bamInput" format="bam" type="data" label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
+        <param name="bamInput" format="bam" type="data"
+            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
 
@@ -72,7 +75,7 @@
             <when value="yes">
                 <param name="binSize" type="integer" value="50" min="1" 
                     label="Bin size in bp"
-                    help="Size of the bins in bp for the output of the bigwig/bedgraph file."/>
+                    help="Size of the bins in bp for the output of the bigwig/bedgraph file. (--binSize)"/>
             </when>
         </conditional>
     </inputs>
@@ -86,7 +89,7 @@
         </data>
     </outputs>
     <help>
-
+<![CDATA[
 **What it does**
 
 This tool requires the output from computeGCBias to correct a given BAM file according to the method proposed by
@@ -103,7 +106,7 @@ You can find more details on the correctGCBias wiki page: https://github.com/fid
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

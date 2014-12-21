@@ -10,27 +10,17 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-                    label="Do not extend paired ends"
-                    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
-
-                <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
-                    label="Ignore duplicates"
-                    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
-
-                <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-                    label="Minimum mapping quality"
-                    help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
-
+                <expand macro="doNotExtendPairedEnds" />
+                <expand macro="ignoreDuplicates" />
+                <expand macro="minMappingQuality" />
                 <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
-                    label ="Include zeros"
-                    help  ="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+                    label="Include zeros"
+                    help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases. (--includeZeros)" />
 
                 <param name="zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
-                    help="If not specified the value is set automatically."/>
-
+                    help="If not specified the value is set automatically. (--zMin)"/>
                 <param name="zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
-                    help="If not specified the value is set automatically."/>
+                    help="If not specified the value is set automatically. (--zMax)"/>
 
                 <expand macro="colormap" />
             </when>
@@ -40,18 +30,17 @@
     <xml name="region_limit_operation">
         <param name="region" type="text" value=""
             label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;" />
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;. (--region)" />
     </xml>
-    
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">1.5.8.2</token>
+    <token name="@WRAPPER_VERSION@">1.5.9.1</token>
     <xml name="requirements">
         <requirements>
             <requirement type="binary">@BINARY@</requirement>
             <requirement type="package" >samtools</requirement>
             <requirement type="package" >deepTools</requirement>
             <requirement type="package" >ucsc_tools</requirement>
-            <requirement type="package" version="1.5.8.2">deepTools</requirement>
+            <requirement type="package" version="1.5.9.1">deepTools</requirement>
             <requirement type="package" version="0.1">ucsc_tools</requirement>
             <requirement type="package" version="1.7.1">numpy</requirement>
             <requirement type="package" version="0.7.7">pysam</requirement>
@@ -89,7 +78,7 @@
         </conditional>
 
     </xml>
-    <token name="@kmeans_clusterin@">
+    <token name="@KMEANS_CLUSTERING@">
         #if $advancedOpt.used_multiple_regions.used_multiple_regions_options == 'no':
             #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
                 #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
@@ -98,7 +87,26 @@
             #end if
         #end if
     </token>
-
+    <xml name="doNotExtendPairedEnds">
+        <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
+            label="Do not extend paired ends"
+            help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available. (--doNotExtendPairedEnds)"/>
+    </xml>
+    <xml name="ignoreDuplicates">
+        <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+            label="Ignore duplicates"
+            help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read. (--ignoreDuplicates)" />
+    </xml>
+    <xml name="minMappingQuality">
+        <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+            label="Minimum mapping quality"
+            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere. (--minMappingQuality)"/>
+    </xml>
+    <xml name="skipZeros">
+        <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
+            label ="Include zeros"
+            help  ="If set, then zero counts that happen for *all* BAM files given are ignored. This might have the effect that fewer regions are considered than indicated in the option where the number of samples is defined. (--skipZeros)" />
+    </xml>
     <xml name="stdio">
         <stdio>
             <exit_code range="1:" />

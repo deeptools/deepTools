@@ -31,12 +31,13 @@
     </inputs>
     <outputs>
         <data format="txt" name="outfile" label="${tool.name} on ${on_string}" />
-        <data name="histogram_outfile" format="tabular" from_work_dir="quant_bias_corrected.sf" label="${tool.name} on ${on_string} (Bias corrected Quantification)">
+        <data name="histogram_outfile" format="tabular" from_work_dir="quant_bias_corrected.sf"
+            label="${tool.name} on ${on_string} (Bias corrected Quantification)">
             <filter>histogram == '--histogram'</filter>
         </data>
     </outputs>
     <help>
-
+<![CDATA[
 **What it does**
 
 Given a BAM file it samples several regions to estimate the paird-end fragment length.
@@ -44,7 +45,7 @@ Given a BAM file it samples several regions to estimate the paird-end fragment l
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

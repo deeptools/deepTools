@@ -7,6 +7,7 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         bigwigCompare
 
         @THREADS@
@@ -34,11 +35,11 @@
           --binSize $advancedOpt.binSize
 
         #end if
+]]>
     </command>
     <inputs>
         <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file" />
         <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
-
 
         <conditional name="comparison">
             <param name="type" type="select" 
@@ -76,14 +77,12 @@
             <when value="yes">
                 <param name="binSize" type="integer" value="50" min="1" 
                     label="Bin size in bp"
-                    help="Size of the bins in bp for the output of the bigwig/bedgraph file "/>
-
+                    help="Size of the bins in bp for the output of the bigwig/bedgraph file. (--binSize)"/>
                 <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
                     label ="Treat missing data as zero"
-                    help  ="This parameter determines if missing data should be replaced with a zero. If set to &quot;no&quot;, missing data will be ignored and will not be included in the output file at all. Missing data is defined as those regions for which no value exists in *any* of the bigwig files. The decision to include or exclude missing data depends on the interpretation of the data. Missing data in a bigwig file may mean that there is no information available for certain regions, for example a repetitive region that is not being considered. In the same file regions with low coverage may get zero read counts. If missing data is replaced by zero, this would convert the excluded repetitive regions into regions of low coverage." />
-
-                <param name="scaleFactor1" type="float" value="1" label="Scale factor for treatment"/>
-                <param name="scaleFactor2" type="float" value="1" label="Scale factor for input"/>
+                    help  ="This parameter determines if missing data should be replaced with a zero. If set to &quot;no&quot;, missing data will be ignored and will not be included in the output file at all. Missing data is defined as those regions for which no value exists in *any* of the bigwig files. The decision to include or exclude missing data depends on the interpretation of the data. Missing data in a bigwig file may mean that there is no information available for certain regions, for example a repetitive region that is not being considered. In the same file regions with low coverage may get zero read counts. If missing data is replaced by zero, this would convert the excluded repetitive regions into regions of low coverage. (--missingDataAsZero)" />
+                <param name="scaleFactor1" type="float" value="1" label="Scale factor for treatment" help="(--scaleFactors)"/>
+                <param name="scaleFactor2" type="float" value="1" label="Scale factor for input" help="(--scaleFactors)"/>
             </when>
         </conditional>
     </inputs>
@@ -95,9 +94,8 @@
         </change_format>
         </data>
     </outputs>
-
-  <help>
-
+    <help>
+<![CDATA[
 **What it does**
 
 This tool compares two bigwig files based on the number of mapped reads. To
@@ -110,7 +108,7 @@ number of reads per bin, the log2 of the ratio, the sum or the difference.
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

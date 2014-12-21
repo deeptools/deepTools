@@ -7,176 +7,205 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         #import tempfile
 
-    #set $temp_input_handle = tempfile.NamedTemporaryFile()
-    #set $temp_input_path = $temp_input_handle.name
-    #silent $temp_input_handle.close()
+        #set $temp_input_handle = tempfile.NamedTemporaryFile()
+        #set $temp_input_path = $temp_input_handle.name
+        #silent $temp_input_handle.close()
 
-    #for $rf in $regionsFiles:
-        cat "$rf.regionsFile" >> $temp_input_path;
-        #if str($rf.label.value).strip():
-            echo "\#$rf.label.value" >> $temp_input_path;
-        #else:
-            echo "\#$rf.regionsFile.name" >> $temp_input_path;
-        #end if
-    #end for
+        #for $rf in $regionsFiles:
+            cat "$rf.regionsFile" >> $temp_input_path;
+            #if str($rf.label.value).strip():
+                echo "\#$rf.label.value" >> $temp_input_path;
+            #else:
+                echo "\#$rf.regionsFile.name" >> $temp_input_path;
+            #end if
+        #end for
 
+        computeMatrix
 
-  computeMatrix
+            $mode.mode_select
+            --regionsFileName '$temp_input_path'
+            --scoreFileName '$scoreFile'
+            --outFileName '$outFileName'
 
-  $mode.mode_select
-  --regionsFileName '$temp_input_path'
-  --scoreFileName '$scoreFile'
-  --outFileName '$outFileName'
+            @THREADS@
 
-    @THREADS@
+            #if $output.showOutputSettings == "yes"
+                #if $output.saveData:
+                    --outFileNameData '$outFileNameData' 
+                #end if
+                #if $output.saveMatrix:
+                --outFileNameMatrix '$outFileNameMatrix'
+                #end if
 
-  #if $output.showOutputSettings == "yes"
-      #if $output.saveData:
-        --outFileNameData '$outFileNameData' 
-      #end if
-      #if $output.saveMatrix:
-      --outFileNameMatrix '$outFileNameMatrix'
-      #end if
+                #if $output.saveSortedRegions:
+                    --outFileSortedRegions '$outFileSortedRegions'
+                #end if
+            #end if
 
-      #if $output.saveSortedRegions:
-        --outFileSortedRegions '$outFileSortedRegions'
-      #end if
-  #end if
+            #if $mode.mode_select == "reference-point":
+                --referencePoint $mode.referencePoint
+                $mode.nanAfterEnd
+                --beforeRegionStartLength $mode.beforeRegionStartLength
+                --afterRegionStartLength $mode.afterRegionStartLength
+            #else
+                --regionBodyLength $mode.regionBodyLength
+                --startLabel "$mode.startLabel"
+                --endLabel "$mode.endLabel"
+                #if $mode.regionStartLength.regionStartLength_select == "yes":
+                    --beforeRegionStartLength $mode.regionStartLength.beforeRegionStartLength
+                    --afterRegionStartLength $mode.regionStartLength.afterRegionStartLength
+                #end if
+            #end if
 
-  #if $mode.mode_select == "reference-point":
-    --referencePoint $mode.referencePoint
-    $mode.nanAfterEnd
-    --beforeRegionStartLength $mode.beforeRegionStartLength
-    --afterRegionStartLength $mode.afterRegionStartLength
-  #else
-    --regionBodyLength $mode.regionBodyLength
-    --startLabel "$mode.startLabel"
-    --endLabel "$mode.endLabel"
-    #if $mode.regionStartLength.regionStartLength_select == "yes":
-      --beforeRegionStartLength $mode.regionStartLength.beforeRegionStartLength
-      --afterRegionStartLength $mode.regionStartLength.afterRegionStartLength
-    #end if
-  #end if
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                --sortRegions '$advancedOpt.sortRegions'
+                --sortUsing '$advancedOpt.sortUsing'
+                --averageTypeBins '$advancedOpt.averageTypeBins'
+                $advancedOpt.missingDataAsZero
+                $advancedOpt.skipZeros
+                --binSize $advancedOpt.binSize
 
-  #if $advancedOpt.showAdvancedOpt == "yes":
-    --sortRegions '$advancedOpt.sortRegions'
-    --sortUsing '$advancedOpt.sortUsing'
-    --averageTypeBins '$advancedOpt.averageTypeBins'
-    $advancedOpt.missingDataAsZero
-    $advancedOpt.skipZeros
-    --binSize $advancedOpt.binSize
+                #if $advancedOpt.minThreshold:
+                    --minThreshold $advancedOpt.minThreshold
+                #end if
+                #if $advancedOpt.maxThreshold:
+                    --maxThreshold $advancedOpt.maxThreshold
+                #end if
+                #if $advancedOpt.scale:
+                    --scale $advancedOpt.scale
+                #end if
 
-    #if $advancedOpt.minThreshold:
-    --minThreshold $advancedOpt.minThreshold
-    #end if
-    #if $advancedOpt.maxThreshold:
-    --maxThreshold $advancedOpt.maxThreshold
-    #end if
-    #if $advancedOpt.scale:
-    --scale $advancedOpt.scale
-    #end if
+            #end if
+        ; rm $temp_input_path
+]]>
+    </command>
+    <inputs>
 
-  #end if
-  ; rm $temp_input_path
+        <repeat name="regionsFiles" title="regions to plot" min="1">
+            <param name="regionsFile" format="bed" type="data" label="Regions to plot" help="File, in BED format, containing the regions to plot."/>
+            <param name="label" type="text" size="30" optional="true" value="" label="Label" help="Label to use in the output."/>
+        </repeat>
 
-  </command>
-  <inputs>
+        <param name="scoreFile" format="bigwig" type="data"
+            label="Score file"
+            help="Should be a bigWig file (containing a score, usually covering the whole genome). You can generate a bigWig file either from a bedGraph or WIG file using UCSC tools or from a BAM file using the deepTool bamCoverage. (-scoreFile)"/>
 
-    <repeat name="regionsFiles" title="regions to plot" min="1">
-        <param name="regionsFile" format="bed" type="data" label="Regions to plot" help="File, in BED format, containing the regions to plot."/>
-        <param name="label" type="text" size="30" optional="true" value="" label="Label" help="Label to use in the output."/>
-    </repeat>
+        <conditional name="mode" >
+            <param name="mode_select" type="select"
+                label="computeMatrix has two main output options"
+                help="In the scale-regions mode, all regions in the BED file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
+                <option value="scale-regions" selected="true">scale-regions</option>
+                <option value="reference-point">reference-point</option>
+            </param>
 
-    <param name="scoreFile" format="bigwig" type="data" label="Score file" help="Should be a bigWig file (containing a score, usually covering the whole genome). You can generate a bigWig file either from a bedGraph or WIG file using UCSC tools or from a BAM file using the deepTool bamCoverage."/>
-
-    <conditional name="mode" >
-      <param name="mode_select" type="select" label="computeMatrix has two main output options" help="In the scale-regions mode, all regions in the BED file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
-        <option value="scale-regions" selected="true">scale-regions</option>
-        <option value="reference-point">reference-point</option>
-      </param>
-
-      <when value="scale-regions" >
-        <param name="regionBodyLength" type="integer" value="500" label="Distance in bp to which all regions are going to be fitted"/>
-        <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
-        <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="Label shown in the plot for the region end. Default is TES (transcription end site)."/>
-            <conditional name="regionStartLength">
-                <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
-                    <option value="no" selected="true">no</option>
-                    <option value="yes">yes</option>
+            <when value="scale-regions" >
+                <param name="regionBodyLength" type="integer" value="500"
+                    label="Distance in bp to which all regions are going to be fitted" help="(--regionBodyLength)"/>
+                <param name="startLabel" type="text" value="TSS" size="10"
+                    label="Label for the region start"
+                    help ="Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;. (--startLabel)" />
+                <param name="endLabel" type="text" value="TES" size="10"
+                    label="Label for the region end"
+                    help="Label shown in the plot for the region end. Default is TES (transcription end site). (--endLabel)"/>
+                <conditional name="regionStartLength">
+                    <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
+                        <option value="no" selected="true">no</option>
+                        <option value="yes">yes</option>
+                    </param>
+                    <when value="no" />
+                    <when value="yes">
+                        <param name="beforeRegionStartLength" type="integer" value="1000" min="1"
+                            label="Distance upstream of the start site of the regions defined in the region file"
+                            help="If the regions are genes, this would be the distance upstream of the transcription start site. (--beforeRegionStartLength)"/>
+                        <param name="afterRegionStartLength" type="integer" value="1000" min="1"
+                            label="Distance downstream of the end site of the given regions"
+                            help="If the regions are genes, this would be the distance downstream of the transcription end site. (--afterRegionStartLength)"/>
+                    </when>
+                </conditional>
+            </when>
+            <when value="reference-point">
+                <param name="referencePoint" type="select" label="The reference point for the plotting">
+                    <option value="TSS" selected="true">beginning of region (e.g. TSS)</option>
+                    <option	 value="TES">end of region (e.g. TES)</option>
+                    <option value="center">center of region</option>
                 </param>
-                <when value="no" />
-                <when value="yes">
-                    <param name="beforeRegionStartLength" type="integer" value="1000" min="1" optional="true" label="Distance upstream of the start site of the regions defined in the region file" help="If the regions are genes, this would be the distance upstream of the transcription start site."/>
-                    <param name="afterRegionStartLength" type="integer" value="1000" min="1" optional="true" label="Distance downstream of the end site of the given regions" help="If the regions are genes, this would be the distance downstream of the transcription end site."/>
-                </when>
-            </conditional>
-      </when>
-      
-      <when value="reference-point">
-        <param name="referencePoint" type="select" label="The reference point for the plotting">
-            <option value="TSS" selected="true">beginning of region (e.g. TSS)</option>
-            <option	 value="TES">end of region (e.g. TES)</option>
-            <option value="center">center of region</option>
-        </param>
-        <param name="nanAfterEnd" type="boolean" truevalue="--nanAfterEnd" falsevalue="" label="Discard any values after the region end" help="This is useful to visualize the region end when not using the scale-regions mode and when the reference-point is set to the TSS."/>
-        <param name="beforeRegionStartLength" type="integer" value="1000" min="1" label="Distance upstream of the start site of the regions defined in the region file" help="If the regions are genes, this would be the distance upstream of the transcription start site."/>
-        <param name="afterRegionStartLength" type="integer" value="1000" min="1" label="Distance downstream of the end site of the given regions" help="If the regions are genes, this would be the distance downstream of the transcription end site."/>
-      </when>
-    </conditional>
+                <param name="nanAfterEnd" type="boolean" truevalue="--nanAfterEnd" falsevalue=""
+                    label="Discard any values after the region end"
+                    help="This is useful to visualize the region end when not using the scale-regions mode and when the reference-point is set to the TSS. (--nanAfterEnd)"/>
+                <param name="beforeRegionStartLength" type="integer" value="1000" min="1"
+                    label="Distance upstream of the start site of the regions defined in the region file"
+                    help="If the regions are genes, this would be the distance upstream of the transcription start site. (--beforeRegionStartLength)"/>
+                <param name="afterRegionStartLength" type="integer" value="1000" min="1"
+                    label="Distance downstream of the end site of the given regions"
+                    help="If the regions are genes, this would be the distance downstream of the transcription end site. (--afterRegionStartLength)"/>
+            </when>
+        </conditional>
 
-    <expand macro="input_graphic_output_settings">
-        <expand macro="input_save_matrix_values" />
-    </expand>
+        <expand macro="input_graphic_output_settings">
+            <expand macro="input_save_matrix_values" />
+        </expand>
 
-    <conditional name="advancedOpt" >
-      <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-        <option value="no" selected="true">no</option>
-        <option value="yes">yes</option>
-      </param>
-      <when value="no" />
-      <when value="yes">
-        <param name="binSize" type="integer" value="100" min="1" optional="true" label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length" />
-        <param name="sortRegions" type="select" label="Sort regions"
-           help="Whether the output file should present the regions sorted.">
-          <option value="no" selected="true">no ordering</option>
-          <option value="descend">descending order</option>
-          <option value="ascend">ascending order</option>
-        </param>
+        <conditional name="advancedOpt" >
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param name="binSize" type="integer" value="100" min="1"
+                    label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
+                    help="(--binSize)"/>
+                <param name="sortRegions" type="select" label="Sort regions"
+                    help="Whether the output file should present the regions sorted.">
+                    <option value="no" selected="true">no ordering</option>
+                    <option value="descend">descending order</option>
+                    <option value="ascend">ascending order</option>
+                </param>
 
-        <param name="sortUsing" type="select" label="Method used for sorting." help="The value is computed for each row." >
-          <option value="mean" selected="true">mean</option>
-          <option value="median">median</option>
-          <option value="min">min</option>
-          <option value="max">max</option>
-          <option value="sum">sum</option>
-          <option value="region_length">region length</option>
-        </param>
+                <param name="sortUsing" type="select" label="Method used for sorting." help="The value is computed for each row." >
+                    <option value="mean" selected="true">mean</option>
+                    <option value="median">median</option>
+                    <option value="min">min</option>
+                    <option value="max">max</option>
+                    <option value="sum">sum</option>
+                    <option value="region_length">region length</option>
+                </param>
 
-        <param name="averageTypeBins" type="select" label="Define the type of statistic that should be displayed." help="The value is computed for each bin.">
-          <option value="mean" selected="true">mean</option>
-          <option value="median">median</option>
-          <option value="min">min</option>
-          <option value="max">max</option>
-          <option value="sum">sum</option>
-          <option value="std">std</option>
-        </param>
+                <param name="averageTypeBins" type="select"
+                    label="Define the type of statistic that should be displayed."
+                    help="The value is computed for each bin. (--averageTypeBins)">
+                    <option value="mean" selected="true">mean</option>
+                    <option value="median">median</option>
+                    <option value="min">min</option>
+                    <option value="max">max</option>
+                    <option value="sum">sum</option>
+                    <option value="std">std</option>
+                </param>
 
-        <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" label="Indicate missing data as zero" help="Set to &quot;yes&quot;, if missing data should be indicated as zeros. Default is to ignore such cases which will be depicted as black areas in the heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options)."/>
-        <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue="" label="Skip zeros" help="Whether regions with only scores of zero should be included or not. Default is to include them."/>
-        <param name="minThreshold" type="float" optional="true" label="Minimum threshold" help="Any region containing a value that is equal or less than this numeric value will be skipped. This is useful to skip, for example, genes where the read count is zero for any of the bins. This could be the result of unmappable areas and can bias the overall results."/>
-        <param name="maxThreshold" type="float" optional="true" label="Maximum threshold" help="Any region containing a value that is equal or higher that this numeric value will be skipped. The max threshold is useful to skip those few regions with very high read counts (e.g. major satellites) that may bias the average values."/>
-        <param name="scale" type="float" optional="true" label="Scale" help="If set, all values are multiplied by this number."/>
-      </when>
-    </conditional>
-    
+                <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue=""
+                    label="Indicate missing data as zero"
+                    help="Set to &quot;yes&quot;, if missing data should be indicated as zeros. Default is to ignore such cases which will be depicted as black areas in the heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options). (--missingDataAsZero)"/>
+                <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
+                    label="Skip zeros"
+                    help="Whether regions with only scores of zero should be included or not. Default is to include them. (--skipZeros)"/>
+                <param name="minThreshold" type="float"
+                    label="Minimum threshold"
+                    help="Any region containing a value that is equal or less than this numeric value will be skipped. This is useful to skip, for example, genes where the read count is zero for any of the bins. This could be the result of unmappable areas and can bias the overall results. (--minThreshold)"/>
+                <param name="maxThreshold" type="float" 
+                    label="Maximum threshold"
+                    help="Any region containing a value that is equal or higher that this numeric value will be skipped. The max threshold is useful to skip those few regions with very high read counts (e.g. major satellites) that may bias the average values. (--maxThreshold)"/>
+                <param name="scale" type="float" label="Scale" help="If set, all values are multiplied by this number. (--scale)"/>
+            </when>
+        </conditional>
     </inputs>
-  <outputs>
-    <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: Matrix" />
-    <expand macro="output_graphic_outputs" />
-    <expand macro="output_save_matrix_values" />
-  </outputs>
+    <outputs>
+        <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: Matrix" />
+        <expand macro="output_graphic_outputs" />
+        <expand macro="output_save_matrix_values" />
+    </outputs>
     <!--
     computeMatrix -S test.bw -R test2.bed -a 100 -b 100 -bs 1 
     -->
@@ -191,7 +220,7 @@
         </test>
     </tests>
   <help>
-
+<![CDATA[
 **What it does**
 
 This tool prepares an intermediary file (a gzipped table of values)
@@ -217,7 +246,7 @@ You can find more details on the computeMatrix wiki page: https://github.com/fid
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

@@ -3,14 +3,14 @@
     <package name="samtools" version="0.1.19">
         <repository name="package_samtools_0_1_19" owner="iuc" prior_installation_required="True" />
     </package>
-    <package name="numpy" version="1.7.1">
-        <repository name="package_numpy_1_7" owner="iuc" prior_installation_required="True" />
+    <package name="numpy" version="1.9">
+        <repository name="package_numpy_1_9" owner="iuc" prior_installation_required="True" />
     </package>
-    <package name="matplotlib" version="1.2.1">
-        <repository name="package_matplotlib_1_2" owner="iuc" prior_installation_required="True" />
+    <package name="matplotlib" version="1.4">
+        <repository name="package_matplotlib_1_4" owner="iuc" prior_installation_required="True" />
     </package>
-    <package name="scipy" version="0.12.0">
-        <repository name="package_scipy_0_12" owner="iuc" prior_installation_required="True" />
+    <package name="scipy" version="0.14">
+        <repository name="package_scipy_0_14" owner="iuc" prior_installation_required="True" />
     </package>
     <package name="pysam" version="0.7.7">
         <repository name="package_pysam_0_7_7" owner="iuc" prior_installation_required="True" />
@@ -18,7 +18,9 @@
     <package name="bx-python" version="12-2013">
         <repository name="package_bx_python_12_2013" owner="iuc" prior_installation_required="True" />
     </package>
-
+    <package name="python" version="2.7">
+        <repository name="package_python_2_7" owner="iuc" prior_installation_required="True" />
+    </package>
     <package name="ucsc_tools" version="0.1">
         <install version="1.0">
             <actions>
@@ -57,11 +59,9 @@
          <readme>The tools downloaded by this dependency definition are free for academic use. TODO: UCSC tools are only available with their latest version. That is not good for reproducibility.</readme>
      </package>
 
-    <package name="deepTools" version="1.5.8.2">
+    <package name="deepTools" version="1.5.9.1">
         <install version="1.0">
             <actions>
-                <action type="shell_command">git clone --recursive https://github.com/fidelram/deepTools.git</action>
-                <!-- populate the environment variables from the dependend repos -->
                 <action type="set_environment_for_install">
                     <repository name="package_pysam_0_7_7" owner="iuc">
                         <package name="pysam" version="0.7.7" />
@@ -69,22 +69,24 @@
                     <repository name="package_bx_python_12_2013" owner="iuc">
                         <package name="bx-python" version="12-2013" />
                     </repository>
-                    <repository name="package_numpy_1_7" owner="iuc">
-                        <package name="numpy" version="1.7.1" />
+                    <repository name="package_numpy_1_9" owner="iuc">
+                        <package name="numpy" version="1.9" />
                     </repository>
-                    <repository name="package_matplotlib_1_2" owner="iuc">
-                        <package name="matplotlib" version="1.2.1" />
+                    <repository name="package_matplotlib_1_4" owner="iuc">
+                        <package name="matplotlib" version="1.4" />
                     </repository>
-                    <repository name="package_scipy_0_12" owner="iuc">
-                        <package name="scipy" version="0.12.0" />
+                    <repository name="package_scipy_0_14" owner="iuc">
+                        <package name="scipy" version="0.14" />
                     </repository>
                 </action>
-                <action type="shell_command">git reset --hard ae9c18b3b7e79d0d1077f636168ac24baeb7b184</action>
-                <action type="make_directory">$INSTALL_DIR/lib/python</action>
-                <action type="shell_command">
-                    export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/lib/python &amp;&amp; 
-                    python setup.py install --install-lib $INSTALL_DIR/lib/python --install-scripts $INSTALL_DIR/bin
+                <action type="setup_python_environment">
+                   <repository name="package_python_2_7" owner="iuc">
+                       <package name="python" version="2.7" />
+                   </repository>
+                    <!-- allow downloading and installing an Python package from https://pypi.org/ -->
+                    <package>https://pypi.python.org/packages/source/d/deepTools/deepTools-1.5.9.1.tar.gz</package>
                 </action>
+
                 <action type="set_environment">
                     <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
                     <environment_variable name="PYTHONPATH" action="prepend_to" >$INSTALL_DIR/lib/python</environment_variable>
