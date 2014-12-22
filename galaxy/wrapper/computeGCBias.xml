@@ -56,11 +56,7 @@
 
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
-
-        <param name="fragmentLength" type="integer" value="300" min="1"
-            label="Fragment length used for the sequencing"
-            help ="If paired-end reads are used, the fragment length is computed from the BAM file. (--fragmentLength)"/>
-
+        <expand macro="fragmentLength" />
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">

@@ -80,13 +80,13 @@
             help="The BAM file must be sorted."/>
         <param name="bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
-        <param name="fragmentLength" type="integer" value="300" min="1"
+        <param name="fragmentLength" type="integer" value="200" min="1"
             label="Length of the average fragment size"
             help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 
         <param name="binSize" type="integer" value="50" min="1" 
             label="Bin size in bp"
-            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. "/>
+            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. (--binSize)"/>
 
         <conditional name="scaling">
             <param name="method" type="select" 
@@ -102,10 +102,7 @@
             </when>
             <when value="readCount" />
             <when value="own">
-                <param name="scaleFactor1" type="float" value="1"
-                    label="Scale factor for treatment" help="(--scaleFactors)"/>
-                <param name="scaleFactor2" type="float" value="1"
-                    label="Scale factor for input" help="(--scaleFactors)"/>
+                <expand macro="scaleFactor" />
             </when>
         </conditional>
 

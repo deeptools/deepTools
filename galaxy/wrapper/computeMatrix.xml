@@ -155,7 +155,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="binSize" type="integer" value="100" min="1"
+                <param name="binSize" type="integer" value="10" min="1"
                     label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
                     help="(--binSize)"/>
                 <param name="sortRegions" type="select" label="Sort regions"

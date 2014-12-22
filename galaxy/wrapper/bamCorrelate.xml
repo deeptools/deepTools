@@ -73,7 +73,7 @@
     <inputs>
         <expand macro="multiple_input_bams" />
 
-        <param name="fragmentLength" type="integer" value="300" min="1"
+        <param name="fragmentLength" type="integer" value="200" min="1"
             label="Length of the average fragment size"
             help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 

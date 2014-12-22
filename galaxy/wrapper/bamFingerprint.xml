@@ -54,10 +54,7 @@
 
     <inputs>
         <expand macro="multiple_input_bams" />
-
-        <param name="fragmentLength" type="integer" value="200" min="1"
-           label="Length of the average fragment size" help="(--fragmentLength)"/>
-
+        <expand macro="fragmentLength" />
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
@@ -67,7 +64,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="binSize" type="integer" value="10000" min="1" 
+                <param name="binSize" type="integer" value="500" min="1" 
                    label="Bin size in bp"
                    help="Length in base pairs for a window used to sample the genome."/>
                 <param name="numberOfSamples" type="integer" value="100000" min="1" 

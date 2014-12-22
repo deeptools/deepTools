@@ -62,7 +62,7 @@
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
 
-        <param name="fragmentLength" type="integer" value="300" min="1"
+        <param name="fragmentLength" type="integer" value="200" min="1"
             label="Length of the average fragment size"
             help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). Sequencing depth is defined as: (total number of mapped reads * fragment length) / effective genome size. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 
