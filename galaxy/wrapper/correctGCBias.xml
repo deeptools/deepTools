@@ -8,46 +8,26 @@
     </macros>
     <command>
 <![CDATA[
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
-
-        #set $temp_bam_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-        #set $temp_bam_path = $temp_bam_handle.name + '.bam'
-        #silent $temp_bam_handle.close()
-        #silent os.system("ln -s %s %s" % (str($bamInput), $temp_bam_path))
-        #silent os.system("ln -s %s %s.bai" % (str($bamInput.metadata.bam_index), $temp_bam_path))
-
+        ln -s $bamInput local_bamInput.bam;
+        ln -s $bamInput.metadata.bam_index local_bamInput.bam.bai;
 
         correctGCBias
+            @THREADS@
+            --bamfile local_bamInput.bam
+            --GCbiasFrequenciesFile $GCbiasFrequenciesFile
 
-        @THREADS@
+            @reference_genome_source@
 
-        --bamfile '$temp_bam_path'
-        --GCbiasFrequenciesFile $GCbiasFrequenciesFile
+            #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+                --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
+            #else:
+                --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
+            #end if
 
-        @reference_genome_source@
-
-
-        #if $effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-            --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize
-        #else:
-            --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
-        #end if
-
-        #if str($region).strip() != '':
-            --region '$region'
-        #end if
-
-        #if $advancedOpt.showAdvancedOpt == "yes":
-            --binSize '$advancedOpt.binSize'  
-        #end if
-
-        ###set newoutFileName="corrected."+str($outFileFormat)
-        ##--correctedFile $newoutFileName;
-        --correctedFile "corrected.bam";
-
-        ##mv $newoutFileName $outFileName
-        mv "corrected.bam" $outFileName
+            #if str($region).strip() != '':
+                --region '$region'
+            #end if
+            --correctedFile $outFileName
 ]]>
     </command>
     <inputs>
@@ -56,38 +36,22 @@
             label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
-
-        <!--
-        <param name="outFileFormat" type="select" label="File format of the output">
-            <option value="bam">bam</option>
-            <option value="bw">bigwig</option>
-            <option value="bg">bedgraph</option>
-        </param>
-        -->
         <expand macro="region_limit_operation" />
-
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <param name="binSize" type="integer" value="50" min="1" 
-                    label="Bin size in bp"
-                    help="Size of the bins in bp for the output of the bigwig/bedgraph file. (--binSize)"/>
-            </when>
-        </conditional>
     </inputs>
     <outputs>
-        <data format="bam" name="outFileName">
-            <!--<change_format>
-                <when input="outFileFormat" value="bw" format="bigwig" />
-                <when input="outFileFormat" value="bam" format="bam" />
-                <when input="outFileFormat" value="bg" format="bedgraph" />
-            </change_format>-->
-        </data>
+        <data format="bam" name="outFileName" />
     </outputs>
+    <tests>
+        <test>
+            <param name="GCbiasFrequenciesFile" value="computeGCBias_result1.tabular" ftype="tabular" />
+            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="ref_source" value="history" />
+            <param name="input1" value="phiX.2bit" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="5386" />
+            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" compare="sim_size" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
 **What it does**

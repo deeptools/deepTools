@@ -158,6 +158,20 @@
             </filter>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <repeat name="input_files">
+                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+            </repeat>
+            <repeat name="input_files">
+                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+            </repeat>
+            <param name="modeOpt" value="bins" />
+            <param name="binSize" value="10" />
+            <param name="showOutputSettings" value="no" />
+            <output name="outFileName" file="bamCorrelate_result1.png" ftype="png" compare="sim_size" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
 **What it does**

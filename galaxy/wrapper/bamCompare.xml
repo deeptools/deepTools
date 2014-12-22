@@ -142,9 +142,7 @@
             <option value="bigwig" selected="true">bigwig</option>
             <option value="bedgraph">bedgraph</option>
         </param>
-
         <expand macro="region_limit_operation" />
-
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -152,16 +150,13 @@
             </param>
             <when value="no" />
             <when value="yes">
-
                 <param name="smoothLength" type="integer" value="1" optional="true" min="1"
                     label="Smooth values using the following length (in bp)"
                     help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied. (--smoothLength)"/>
-
                 <expand macro="doNotExtendPairedEnds" />
                 <expand macro="ignoreDuplicates" />
                 <expand macro="minMappingQuality" />
                 <expand macro="missingDataAsZero" />
-
                 <param name="ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
@@ -176,6 +171,19 @@
         </change_format>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <param name="bamFile1" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="bamFile2" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="fragmentLength" value="100" />
+            <param name="outFileFormat" value="bedgraph" />
+            <param name="binSize" value="5" />
+            <param name="type" value="ratio" />
+            <output name="outFileName" file="bamCompare_result1.bg" ftype="bedgraph" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
 **What it does**

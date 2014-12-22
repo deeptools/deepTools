@@ -18,9 +18,9 @@
         --outFileName '$outFileName'
         --outFileFormat '$outFileFormat'
 
-        --ratio $comparison.type
+        --ratio $comparison.comparison_select
 
-        #if $comparison.type in ['ratio','log2']:
+        #if $comparison.comparison_select in ['ratio','log2']:
             --pseudocount $comparison.pseudocount
         #end if
 
@@ -42,8 +42,8 @@
         <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
 
         <conditional name="comparison">
-            <param name="type" type="select" 
-                label="How to compare the two files">
+            <param name="comparison_select" type="select" 
+                label="How to compare the two files" help="(--ratio)">
                 <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
                 <option value="ratio">compute the ratio of the number of reads</option>
                 <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
@@ -88,12 +88,32 @@
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
-        <change_format>
-            <when input="outFileFormat" value="bigwig" format="bigwig" />
-            <when input="outFileFormat" value="bedgraph" format="bedgraph" />
-        </change_format>
+            <change_format>
+                <when input="outFileFormat" value="bigwig" format="bigwig" />
+                <when input="outFileFormat" value="bedgraph" format="bedgraph" />
+            </change_format>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="5" />
+            <param name="comparison_select" value="ratio" />
+            <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" />
+        </test>
+        <test>
+            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="outFileFormat" value="bedgraph" />
+            <param name="binSize" value="10" />
+            <param name="comparison_select" value="ratio" />
+            <output name="outFileName" file="bigwigCompare_result2.bg" ftype="bedgraph" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
 **What it does**

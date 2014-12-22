@@ -106,6 +106,20 @@
             </filter>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <repeat name="input_files">
+                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+            </repeat>
+            <repeat name="input_files">
+                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+            </repeat>
+            <param name="fragmentLength" value="200" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="showOutputSettings" value="no" />
+            <output name="outFileName" file="bamFingerprint_result1.png" ftype="png" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
 **What it does**

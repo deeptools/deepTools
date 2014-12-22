@@ -184,7 +184,6 @@
                     help="When computeMatrix was used on more than one group of genes, the average plots for all the groups will be drawn in one panel by default. If this option is set, each group will get its own plot, stacked on top of each other."/>
 
                 <expand macro="kmeans_clustering" />
-
             </when>
         </conditional>
     </inputs>
@@ -195,8 +194,8 @@
     </outputs>
     <tests>
         <test>
-            <param name="matrixFile" value="master.mat.gz" ftype="bgzip" />
-            <output name="outFileName" file="master.png" ftype="png" compare="sim_size" delta="100" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="bgzip" />
+            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>

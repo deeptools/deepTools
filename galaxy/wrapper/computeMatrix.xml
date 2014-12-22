@@ -165,7 +165,8 @@
                     <option value="ascend">ascending order</option>
                 </param>
 
-                <param name="sortUsing" type="select" label="Method used for sorting." help="The value is computed for each row." >
+                <param name="sortUsing" type="select" label="Method used for sorting"
+                    help="The value is computed for each row. (--sortUsing)" >
                     <option value="mean" selected="true">mean</option>
                     <option value="median">median</option>
                     <option value="min">min</option>
@@ -191,13 +192,14 @@
                 <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
                     label="Skip zeros"
                     help="Whether regions with only scores of zero should be included or not. Default is to include them. (--skipZeros)"/>
-                <param name="minThreshold" type="float"
+                <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"
                     help="Any region containing a value that is equal or less than this numeric value will be skipped. This is useful to skip, for example, genes where the read count is zero for any of the bins. This could be the result of unmappable areas and can bias the overall results. (--minThreshold)"/>
-                <param name="maxThreshold" type="float" 
+                <param name="maxThreshold" type="float" optional="True"
                     label="Maximum threshold"
                     help="Any region containing a value that is equal or higher that this numeric value will be skipped. The max threshold is useful to skip those few regions with very high read counts (e.g. major satellites) that may bias the average values. (--maxThreshold)"/>
-                <param name="scale" type="float" label="Scale" help="If set, all values are multiplied by this number. (--scale)"/>
+                <param name="scale" type="float" optional="True" label="Scaling factor"
+                    help="If set, all values are multiplied by this number. (--scale)"/>
             </when>
         </conditional>
     </inputs>
@@ -211,12 +213,27 @@
     -->
     <tests>
         <test>
-            <param name="regionsFile" value="test2.bed" ftype="bed" />
-            <param name="scoreFile" value="test.bw" ftype="bigwig" />
-            <param name="advancedOpt.binSize" value="1" />
-            <param name="mode.beforeRegionStartLength" value="100" />
-            <param name="mode.afterRegionStartLength" value="100" />
-            <output name="outFileName" file="master.mat.gz" ftype="bgzip" compare="sim_size" delta="100" />
+            <param name="regionsFile" value="computeMatrix1.bed" ftype="bed" />
+            <param name="scoreFile" value="bamCoverage_result4.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="mode_select" value="reference-point" />
+            <param name="binSize" value="10" />
+            <param name="sortUsing" value="sum" />
+            <param name="averageTypeBins" value="sum" />
+            <param name="missingDataAsZero" value="True" />
+            <param name="beforeRegionStartLength" value="10" />
+            <param name="afterRegionStartLength" value="10" />
+            <output name="outFileName" file="computeMatrix_result1.gz" ftype="bgzip" compare="sim_size" />
+        </test>
+        <test>
+            <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
+            <param name="scoreFile" value="computeMatrix2.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="mode_select" value="reference-point" />
+            <param name="binSize" value="10" />
+            <param name="beforeRegionStartLength" value="10" />
+            <param name="afterRegionStartLength" value="10" />
+            <output name="outFileName" file="computeMatrix_result2.gz" ftype="bgzip" compare="sim_size" />
         </test>
     </tests>
   <help>
