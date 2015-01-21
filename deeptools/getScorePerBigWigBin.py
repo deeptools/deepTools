@@ -213,7 +213,7 @@ def getScorePerBin(bigwigFilesList, binLength,
     chrNames, chrLengths = zip(*chromSizes)
     genomeSize = sum(chrLengths)
     stepSize = binLength    #for consecutive bins
-    chunkSize = int(stepSize * 1e3 / len(bigwigFilesList))
+    chunkSize = int(stepSize * 500 / len(bigwigFilesList))
     print binLength, stepSize, chunkSize
     if verbose:
         print "step size is {}".format(stepSize)
