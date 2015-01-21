@@ -30,8 +30,8 @@
         #end if
 
         #if $scaleRegions.showScaleRegionsOpt == "yes":
-            --startLabel $scaleRegions.startLabel
-            --endLabel $scaleRegions.endLabel
+            --startLabel '$scaleRegions.startLabel'
+            --endLabel '$scaleRegions.endLabel'
         #end if
 
         #if $advancedOpt.showAdvancedOpt == "yes":
