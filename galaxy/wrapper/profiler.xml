@@ -9,6 +9,7 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         profiler
 
         --matrixFile $matrixFile
@@ -29,8 +30,8 @@
         #end if
 
         #if $scaleRegions.showScaleRegionsOpt == "yes":
-            --startLabel $scaleRegions.startLabel
-            --endLabel $scaleRegions.endLabel
+            --startLabel '$scaleRegions.startLabel'
+            --endLabel '$scaleRegions.endLabel'
         #end if
 
         #if $advancedOpt.showAdvancedOpt == "yes":
@@ -65,9 +66,10 @@
                 --yAxisLabel '$advancedOpt.yAxisLabel'
             #end if
 
-            @kmeans_clusterin@
+            @KMEANS_CLUSTERING@
 
         #end if
+]]>
     </command>
     <inputs>
         <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
@@ -78,8 +80,12 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="startLabel" type="text" value="TSS" size="10" label="Label for the region start" help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
-                <param name="endLabel" type="text" value="TES" size="10" label="Label for the region end" help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
+                <param name="startLabel" type="text" value="TSS" size="10"
+                    label="Label for the region start"
+                    help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
+                <param name="endLabel" type="text" value="TES" size="10"
+                    label="Label for the region end"
+                    help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
             </when>
         </conditional>
 
@@ -115,17 +121,30 @@
                     <option value="se">add standard error</option>
                     <option value="overlapped_lines">overlapped lines</option>
                 </param>
-                <param name="regionsLabel" type="text" value="genes" size="30" label="Labels for the regions plotted in the heatmap" help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
-                <param name="plotTitle" type="text" value="" size="30" label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
-                <param name="colors" type="text" value="" size="40" label="List of colors to use for the plotted lines" help="Color names and html hex strings (e.g. #eeff22) are accepted. The color names should be given separated by spaces. (--colors red blue green)">
-                    <validator type="expression" message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
+                <param name="regionsLabel" type="text" value="genes" size="30"
+                    label="Labels for the regions plotted in the heatmap"
+                    help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
+                <param name="plotTitle" type="text" value="" size="30"
+                    label="Title of the plot"
+                    help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
+                <param name="colors" type="text" value="" size="40"
+                    label="List of colors to use for the plotted lines"
+                    help="Color names and html hex strings (e.g. #eeff22) are accepted. The color names should be given separated by spaces. (--colors red blue green)">
+                    <validator type="expression"
+                        message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
 
-                <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" label="Do one plot per group" help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
-                <param name="yMin" type="float" value="" size="3" label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
-                <param name="yMax" type="float" value="" size="3" label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" optional="true"/>
-                <param name="xAxisLabel" type="text" value="gene distance (bp)" size="50" label="Description for the x-axis label" />
-                <param name="yAxisLabel" type="text" value="" size="50" label="Description for the y-axis label for the top panel" />
+                <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
+                    label="Do one plot per group"
+                    help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
+                <param name="yMin" type="float" value="" size="3" optional="true"
+                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
+                <param name="yMax" type="float" value="" size="3" optional="true"
+                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" />
+                <param name="xAxisLabel" type="text" value="gene distance (bp)" size="50"
+                    label="Description for the x-axis label" />
+                <param name="yAxisLabel" type="text" value="" size="50"
+                    label="Description for the y-axis label for the top panel" />
 
                 <expand macro="kmeans_clustering" />
 
@@ -137,7 +156,7 @@
         <expand macro="output_graphic_outputs" />
     </outputs>
     <help>
-
+<![CDATA[
 **What it does**
 
 This tool plots the average enrichments over all genomic
@@ -158,7 +177,7 @@ You can find more details on the profiler wiki page: https://github.com/fidelram
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>
