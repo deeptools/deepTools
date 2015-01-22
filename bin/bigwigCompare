@@ -33,7 +33,7 @@ def parseArguments(args=None):
                         required=True)
 
     parser.add_argument('--bigwig2', '-b2',
-                        metavar='Bigwib file',
+                        metavar='Bigwig file',
                         help='Bigwig file 2. Usually the file for the '
                         'control.',
                         required=True)
