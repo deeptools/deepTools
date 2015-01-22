@@ -22,12 +22,11 @@ files based on read coverage (number of reads) within genomic regions.
 The correlation analysis is performed for the entire genome by running
 the program in 'bins' mode, or for certain user selected regions in 'BED-file'
 mode. Because the computation of the coverage is time consuming the program
-outputs an intermediary file that can then be used for visualizing the
-correlation.
+outputs an intermediary file that can then be used with the 'plotCorrelation' tool
+for visualizing the correlation.
 
 
 detailed help:
-
   %(prog)s bins -h
   %(prog)s BED-file -h
 
@@ -49,7 +48,6 @@ detailed help:
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
     read_options_parser = parserCommon.read_options()
-    heatmap_parser = heatmap_options()
 
     # bins mode options
     bins_mode = subparsers.add_parser(
@@ -57,7 +55,6 @@ detailed help:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamCorrelateArgs(case='bins'),
                  parent_parser, read_options_parser,
-                 heatmap_parser
                  ],
         help="The correlation is based on read coverage over "
              "consecutive bins of equal "
@@ -67,15 +64,14 @@ detailed help:
         add_help=False,
         usage='%(prog)s '
               '---bamfiles file1.bam file2.bam '
-              '--corMethod spearman -o heatmap.png \n')
+              '--out results.npz \n')
 
-    # BED file arguments
+    # BED file argumentsdi
     bed_mode = subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamCorrelateArgs(case='BED-file'),
                  parent_parser, read_options_parser,
-                 heatmap_parser
                  ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the correlation analysis. A "
@@ -83,7 +79,7 @@ detailed help:
              "different samples for a set of peak regions.",
         usage='%(prog)s --BED selection.bed'
               '--bamfiles file1.bam file2.bam '
-              '-o heatmap.png --corMethod pearson\n',
+              '-out results.npz\n',
         add_help=False)
 
     args = parser.parse_args(args)
@@ -112,7 +108,7 @@ def bamCorrelateArgs(case='bins'):
     required.add_argument('--outFileName', '-out',
                         help='File name to save the gzipped matrix file '
                         'needed by the "heatmapper" and "profiler" tools.',
-                        type=parserCommon.writableFile,
+                        type=argparse.FileType('w'),
                         required=True)
 
 
@@ -134,7 +130,7 @@ def bamCorrelateArgs(case='bins'):
                         help='Length in base pairs for a window used '
                             'to sample the genome.',
                         default=10000,
-                        type=int)
+                        ditype=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
@@ -243,77 +239,10 @@ def main(args):
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
 
-
-
-    np.savez(args.outFileName,
+    np.savez_compressed(args.outFileName,
              matrix=num_reads_per_bin,
              labels=args.labels)
 
-    """
-    # remove outliers, otherwise outliers will produce a very
-    # high pearson correlation. Only for the bins option
-    if 'bins' in args and args.doNotRemoveOutliers is False:
-        unfiltered = len(num_reads_per_bin)
-        to_remove = None
-        for col in num_reads_per_bin.T:
-            # get the outliers per column using the median absolute
-            # deviation method
-            outliers = getOutlierIndices(col)
-            if to_remove is None:
-                to_remove = set(outliers)
-            else:
-                # only set to remove those bins in which
-                # the outliers are present in all cases (columns)
-                # that's why the intersection is used
-                to_remove = to_remove.intersection(outliers)
-        if len(to_remove):
-            to_keep = [x for x in range(num_reads_per_bin.shape[0])
-                       if x not in to_remove]
-            num_reads_per_bin = num_reads_per_bin[to_keep, :]
-            if args.verbose:
-                sys.stderr.write(
-                    "total/filtered/left: "
-                    "{}/{}/{}\n".format(unfiltered,
-                                        unfiltered - len(to_keep), len(to_keep)))
-
-    # num_reads_per_bin: rows correspond to  bins, cols to  samples
-    num_files = len(args.bamfiles)
-    #initialize correlation matrix
-    corr_matrix = np.zeros((num_files, num_files), dtype='float')
-    options = {'spearman': spearmanr,
-               'pearson': pearsonr}
-    # do an all vs all correlation using the
-    # indices of the upper triangle
-    rows, cols = np.triu_indices(num_files)
-    for index in xrange(len(rows)):
-        row = rows[index]
-        col = cols[index]
-        corr_matrix[row, col] = options[args.corMethod](
-            num_reads_per_bin[:, row],
-            num_reads_per_bin[:, col])[0]
-    # make the matrix symmetric
-    corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
-
-    if args.outFileCorMatrix:
-        args.outFileCorMatrix.write("\t'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('%.4f', num_reads_per_bin.shape[1])) + "\n"
-        i = 0
-        for row in corr_matrix:
-            args.outFileCorMatrix.write(
-                "'%s'\t" % args.labels[i] + fmt % tuple(row))
-            i += 1
-
-    plot_file_name = args.plotFile.name
-    args.plotFile.close()
-    plot_correlation(corr_matrix,
-                    args.labels,
-                    plot_file_name,
-                    args.zMax,
-                    args.zMin,
-                    args.colorMap,
-                    image_format=args.plotFileFormat,
-                    plot_numbers=args.plotNumbers)
-    """
 
 if __name__ == "__main__":
     ARGS = parseArguments()

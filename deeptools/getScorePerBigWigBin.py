@@ -179,6 +179,7 @@ def getScorePerBin(bigwigFilesList, binLength,
                    numberOfProcessors=1, skipZeros=True,
                    verbose=False, region=None,
                    bedFile=None,
+                   stepSize=None,
                    chrsToSkip=[]):
     """
     This function returns a matrix containing scores (median) for the coverage
@@ -212,7 +213,8 @@ def getScorePerBin(bigwigFilesList, binLength,
 
     chrNames, chrLengths = zip(*chromSizes)
     genomeSize = sum(chrLengths)
-    stepSize = binLength    #for consecutive bins
+    if stepSize is None:
+        stepSize = binLength    #for consecutive bins
     chunkSize = int(stepSize * 500 / len(bigwigFilesList))
     print binLength, stepSize, chunkSize
     if verbose:

@@ -39,10 +39,7 @@ class Correlation:
             # remove outliers, otherwise outliers will produce a very
             # high pearson correlation. Unnecessary for spearman correlation
             self.remove_outliers()
-        elif corr_method=='pearson':
-            # test if there are outliers, write a message recommending the removal
-            import ipdb;ipdb.set_trace()
-#            if len(get_outlier_indices())
+
         if log1p is True:
             self.matrix  = np.log1p(self.matrix )
 

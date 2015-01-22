@@ -9,7 +9,6 @@ import numpy as np
 from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
-from scipy.stats import pearsonr, spearmanr
 
 from deeptools.correlation import Correlation
 from deeptools._version import __version__
@@ -20,10 +19,10 @@ def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
-TODO:finish description
-Pearson or Spearman methods are available to compute correlation
-coefficients. Results are saved into a heat map image and further output files
-are optional.
+Tool for visualizing a correlation using either bamCorrelate or
+bigwigCorrelate. Pearson or Spearman methods are available to compute correlation
+coefficients. Results can be saved into a heat map image or as multiple
+scatter plots. Further output files are optional.
 
 
 detailed help:
@@ -67,6 +66,11 @@ def plotCorrelationArgs():
     required.add_argument('--corMethod', '-c',
                           help="Correlation method.",
                           choices=['spearman', 'pearson'],
+                          required=True)
+
+    required.add_argument('--whatToPlot', '-p',
+                          help="Choose between a heatmap or a scatter plot",
+                          choices=['heatmap', 'scatterplot'],
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -118,14 +122,13 @@ def heatmap_options():
     heatmap = parser.add_argument_group('Heat map options')
 
     heatmap.add_argument('--zMin', '-min',
-                        #metavar='',
-                        default=None,
-                        help='Minimum value for the heat map intensities. '
+                         default=None,
+                         help='Minimum value for the heat map intensities. '
                             'If not specified the value is set automatically')
+
     heatmap.add_argument('--zMax', '-max',
-                        #metavar='',
-                        default=None,
-                        help='Maximum value for the heat map intensities.'
+                         default=None,
+                         help='Maximum value for the heat map intensities.'
                             'If not specified the value is set automatically')
 
     from matplotlib import cm
@@ -157,6 +160,13 @@ def main(args):
                         remove_outliers=args.removeOutliers,
                         log1p=None)
 
+    if args.corMethod=='pearson':
+        # test if there are outliers and write a message recommending the removal
+        if len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0:
+            sys.stderr.write("\nOutliers were detected in the data. Consider "
+                "using the --removeOutliers parameter to avoid a bias "
+                "in the pearson correlation.\n")
+
     if args.colorMap:
         try:
             plt.get_cmap(args.colorMap)
@@ -170,17 +180,15 @@ def main(args):
         corr.save_corr_matrix(args.outFileCorMatrix)
 
     args.plotFile.close()
-
-    corr.plot_scatter(args.plotFile.name)
-    """
-    corr.plot_correlation(args.plotFile.name,
-                          args.zMax,
-                          args.zMin,
-                          args.colorMap,
-                          image_format=args.plotFileFormat,
-                          plot_numbers=args.plotNumbers)
-    """
-
+    if args.whatToPlot == 'scatter':
+        corr.plot_scatter(args.plotFile.name)
+    else:
+        corr.plot_correlation(args.plotFile.name,
+                              args.zMax,
+                              args.zMin,
+                              args.colorMap,
+                              image_format=args.plotFileFormat,
+                              plot_numbers=args.plotNumbers)
 
 
 if __name__ == "__main__":
