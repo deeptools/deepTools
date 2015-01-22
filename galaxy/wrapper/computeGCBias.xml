@@ -7,6 +7,7 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         ln -s $bamInput local_bamInput.bam;
         ln -s $bamInput.metadata.bam_index local_bamInput.bam.bai;
 
@@ -47,6 +48,7 @@
                 --biasPlot $outImageName
                 --plotFileFormat $image_format
             #end if
+]]>
     </command>
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
@@ -54,11 +56,7 @@
 
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
-
-        <param name="fragmentLength" type="integer" value="300" min="1"
-            label="Fragment length used for the sequencing"
-            help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
-
+        <expand macro="fragmentLength" />
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
@@ -69,21 +67,21 @@
             <when value="no" />
             <when value="yes">
                 <param name="sampleSize" type="integer" value="50000000" min="1"
-                    label="Number of sampling points to be considered" />
-
+                    label="Number of sampling points to be considered" help="(--sampleSize)" />
                 <param name="regionSize" type="integer" value="300" min="1"
                     label="Region size"
-                    help ="To plot the reads per GC over a region, the size of the region is required (see below for more details of the mthod). By default, the bin size is set to 300 bp, which is close to the standard fragment size many sequencing applications. However, if the depth of sequencing is low, a larger bin size will be required, otherwise many bins will not overlap with any read."/>
-
+                    help ="To plot the reads per GC over a region, the size of the region is required (see below for more details of the mthod). By default, the bin size is set to 300 bp, which is close to the standard fragment size many sequencing applications. However, if the depth of sequencing is low, a larger bin size will be required, otherwise many bins will not overlap with any read. (--regionSize)"/>
                 <param name="filterOut" type="data" format="bed" optional="true"
                     label="BED file containing genomic regions to be excluded from the estimation of the correction"
-                    help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks." />
+                    help="Such regions  usually contain repetitive regions and peaks that if included will bias the correction. It is recommended to filter out known repetitive regions if multi-reads (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data, it is recommended to first use a peak caller to identify and filter out the identified peaks. (--filterOut)" />
                 <param name="extraSampling" type="data" format="bed" optional="true"
                     label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
-                    help="" />
+                    help="(--extraSampling)" />
             </when>
         </conditional>
-        <param name="image_format" type="select" label="GC bias plot" help="If given, a diagnostic image summarizing the GC bias found on the sample will be created.">
+        <param name="image_format" type="select"
+            label="GC bias plot"
+            help="If given, a diagnostic image summarizing the GC bias found on the sample will be created. (--plotFileFormat)">
             <option value="none">No image</option>
             <option value="png" selected="true">Image in png format</option>
             <option value="pdf">Image in pdf format</option>
@@ -93,8 +91,8 @@
         </param>
     </inputs>
     <outputs>
-        <data format="tabular" name="outFileName" />
-        <data format="png" name="outImageName" label="${tool.name} GC-bias Plot">
+        <data name="outFileName" format="tabular" />
+        <data name="outImageName" format="png" label="${tool.name} GC-bias Plot">
             <filter>
             ((
                 image_format != 'none'
@@ -108,8 +106,21 @@
             </change_format>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="image_format" value="png" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="regionSize" value="1" />
+            <param name="fragmentLength" value="100" />
+            <param name="ref_source" value="history" />
+            <param name="input1" value="phiX.2bit" />
+            <output name="outFileName" file="computeGCBias_result1.tabular" ftype="tabular" />
+            <output name="outImageName" file="computeGCBias_result1.png" ftype="png" />
+        </test>
+    </tests>
     <help>
-
+<![CDATA[
 **What it does**
 
 This tool computes the GC bias using the method proposed by Benjamini and Speed (2012) Nucleic Acids Res. (see below for more explanations)
@@ -150,7 +161,7 @@ You can find more details on the computeGCBias wiki page: computeGCBias wiki: ht
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

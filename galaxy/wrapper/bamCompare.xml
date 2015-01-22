@@ -7,53 +7,54 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         bamCompare
 
         @THREADS@
 
-      --bamfile1 '$bamFile1'
-      -bai1 '${bamFile1.metadata.bam_index}'
-      --bamfile2 '$bamFile2'
-      -bai2 '${bamFile2.metadata.bam_index}'
+        --bamfile1 '$bamFile1'
+        -bai1 '${bamFile1.metadata.bam_index}'
+        --bamfile2 '$bamFile2'
+        -bai2 '${bamFile2.metadata.bam_index}'
 
-      --outFileName '$outFileName'
-      --outFileFormat '$outFileFormat'
+        --outFileName '$outFileName'
+        --outFileFormat '$outFileFormat'
 
-      --fragmentLength $fragmentLength
-      --binSize $binSize
+        --fragmentLength $fragmentLength
+        --binSize $binSize
 
-      #if $scaling.method == 'SES':
-        --scaleFactorsMethod SES
-        --sampleLength $scaling.sampleLength
-      #elif $scaling.method == 'readCount':
-        --scaleFactorsMethod readCount
-      #elif $scaling.method == 'own':
-        --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
-      #end if
+        #if $scaling.method == 'SES':
+            --scaleFactorsMethod SES
+            --sampleLength $scaling.sampleLength
+        #elif $scaling.method == 'readCount':
+            --scaleFactorsMethod readCount
+        #elif $scaling.method == 'own':
+            --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
+        #end if
 
-      --ratio $comparison.type
+        --ratio $comparison.type
 
-      #if $comparison.type=='subtract':
-          #if $comparison.normalization.type=='rpkm':
-            --normalizeUsingRPKM
-          #elif $comparison.normalization.type=='1x':
+        #if $comparison.type=='subtract':
+            #if $comparison.normalization.type=='rpkm':
+                --normalizeUsingRPKM
+            #elif $comparison.normalization.type=='1x':
 
-            #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
-            #else:
-                --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
+                #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+                    --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
+                #else:
+                    --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
+                #end if
+
             #end if
+        #elif $comparison.type in ['ratio','log2']:
+            --pseudocount $comparison.pseudocount
+        #end if
 
-          #end if
-      #elif $comparison.type in ['ratio','log2']:
-          --pseudocount $comparison.pseudocount
-      #end if
+        #if str($region).strip() != '':
+            --region '$region'
+        #end if
 
-      #if str($region).strip() != '':
-          --region '$region'
-      #end if
-
-      #if $advancedOpt.showAdvancedOpt == "yes":
+        #if $advancedOpt.showAdvancedOpt == "yes":
             #if $advancedOpt.smoothLength:
             --smoothLength '$advancedOpt.smoothLength'
             #end if
@@ -68,27 +69,24 @@
             --missingDataAsZero $advancedOpt.missingDataAsZero
 
             #if str($advancedOpt.ignoreForNormalization).strip() != '':
-                --ignoreForNormalization $advancedOpt.ignoreForNormalization
+                --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
             #end if
 
-      #end if
-
+        #end if
+]]>
     </command>
-
     <inputs>
         <param name="bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
             help="The BAM file must be sorted."/>
-
         <param name="bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
-
-        <param name="fragmentLength" type="integer" value="300" min="1"
+        <param name="fragmentLength" type="integer" value="200" min="1"
             label="Length of the average fragment size"
-            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 
         <param name="binSize" type="integer" value="50" min="1" 
             label="Bin size in bp"
-            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. "/>
+            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. (--binSize)"/>
 
         <conditional name="scaling">
             <param name="method" type="select" 
@@ -104,20 +102,16 @@
             </when>
             <when value="readCount" />
             <when value="own">
-                <param name="scaleFactor1" type="float" value="1"
-                    label="Scale factor for treatment"/>
-
-                <param name="scaleFactor2" type="float" value="1"
-                    label="Scale factor for input"/>
+                <expand macro="scaleFactor" />
             </when>
         </conditional>
 
         <conditional name="comparison">
             <param name="type" type="select" 
                 label="How to compare the two files">
-                <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
-                <option value="ratio">compute the ratio of the number of reads</option>
-                <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
+                <option value="log2" selected="true">Compute log2 of the number of reads ratio</option>
+                <option value="ratio">Compute the ratio of the number of reads</option>
+                <option value="subtract">Compute difference (subtract input from treatment) of the number of reads</option>
             </param>
             <when value="log2">
                 <expand macro="pseudocount" />
@@ -145,9 +139,7 @@
             <option value="bigwig" selected="true">bigwig</option>
             <option value="bedgraph">bedgraph</option>
         </param>
-
         <expand macro="region_limit_operation" />
-
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -155,32 +147,18 @@
             </param>
             <when value="no" />
             <when value="yes">
-
                 <param name="smoothLength" type="integer" value="1" optional="true" min="1"
                     label="Smooth values using the following length (in bp)"
-                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
-
-                <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-                    label="Do not extend paired ends"
-                    help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available."/>
-
-                <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
-                    label="Ignore duplicates"
-                    help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." /> 
-
-                <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
-                    label="Minimum mapping quality (e.g. BOWTIE2 measures)"
-                    help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
-
+                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied. (--smoothLength)"/>
+                <expand macro="doNotExtendPairedEnds" />
+                <expand macro="ignoreDuplicates" />
+                <expand macro="minMappingQuality" />
                 <expand macro="missingDataAsZero" />
-
                 <param name="ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
-
             </when>
         </conditional>
-
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
@@ -190,8 +168,21 @@
         </change_format>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <param name="bamFile1" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="bamFile2" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="fragmentLength" value="100" />
+            <param name="outFileFormat" value="bedgraph" />
+            <param name="binSize" value="5" />
+            <param name="type" value="ratio" />
+            <output name="outFileName" file="bamCompare_result1.bg" ftype="bedgraph" />
+        </test>
+    </tests>
     <help>
-
+<![CDATA[
 **What it does**
 
 This tool compares two BAM files based on the number of mapped reads. To
@@ -224,7 +215,7 @@ You can find more details on the bamCompare wiki page: https://github.com/fidelr
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

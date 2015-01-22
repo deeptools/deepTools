@@ -7,6 +7,7 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         #set files=[]
         #set labels=[]
 
@@ -66,14 +67,15 @@
             --colorMap '$mode.advancedOpt.colorMap'
 
         #end if
+]]>
     </command>
 
     <inputs>
         <expand macro="multiple_input_bams" />
 
-        <param name="fragmentLength" type="integer" value="300" min="1"
+        <param name="fragmentLength" type="integer" value="200" min="1"
             label="Length of the average fragment size"
-            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length."/>
+            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 
         <param name="corMethod" type="select" label="Correlation method">
             <option value="spearman" selected="True">Spearman</option>
@@ -116,10 +118,11 @@
                 <expand macro="bamCorrelate_mode_actions" />
             </when>
             <when value="BED-file">
-                <param name="region_file" type="data" format="bed" label="Region file in BED format" help="Correlation is computed for the number of reads that overlap such regions."/>
+                <param name="region_file" type="data" format="bed"
+                    label="Region file in BED format"
+                    help="Correlation is computed for the number of reads that overlap such regions."/>
                 <expand macro="bamCorrelate_mode_actions" />
             </when>
-
         </conditional>
 
         <conditional name="output">
@@ -155,8 +158,22 @@
             </filter>
         </data>
     </outputs>
+    <tests>
+        <test>
+            <repeat name="input_files">
+                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+            </repeat>
+            <repeat name="input_files">
+                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+            </repeat>
+            <param name="modeOpt" value="bins" />
+            <param name="binSize" value="10" />
+            <param name="showOutputSettings" value="no" />
+            <output name="outFileName" file="bamCorrelate_result1.png" ftype="png" compare="sim_size" />
+        </test>
+    </tests>
     <help>
-
+<![CDATA[
 **What it does**
 
 This tool is useful to assess the overall similarity of different BAM files. A typical application
@@ -183,7 +200,7 @@ You can find more details on the bamCorrelate wiki page: https://github.com/fide
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>
