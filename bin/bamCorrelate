@@ -130,7 +130,7 @@ def bamCorrelateArgs(case='bins'):
                         help='Length in base pairs for a window used '
                             'to sample the genome.',
                         default=10000,
-                        ditype=int)
+                        type=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',

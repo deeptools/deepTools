@@ -31,7 +31,7 @@ detailed help:
 
 """,
            epilog='example usages:\n%(prog)s '
-           '--results results_file --corMethod pearson -o heatmap.png\n\n'
+           '--results results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
            ' \n\n',
         parents=[basic_args, heatmap_parser])
 
@@ -146,7 +146,7 @@ def heatmap_options():
 
     heatmap.add_argument('--plotNumbers',
                         help='If set, then the correlation number is plotted '
-                          'on top of the heatmap.',
+                          'on top of the heatmap. This option is only valid when plotting a heatmap.',
                         action='store_true',
                         required=False)
 
@@ -180,7 +180,7 @@ def main(args):
         corr.save_corr_matrix(args.outFileCorMatrix)
 
     args.plotFile.close()
-    if args.whatToPlot == 'scatter':
+    if args.whatToPlot == 'scatterplot':
         corr.plot_scatter(args.plotFile.name)
     else:
         corr.plot_correlation(args.plotFile.name,

@@ -10,6 +10,8 @@ import numpy as np
 import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
 from deeptools._version import __version__
+import deeptools.config
+
 
 
 def parseArguments(args=None):
