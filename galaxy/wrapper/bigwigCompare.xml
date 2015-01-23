@@ -7,6 +7,7 @@
         <import>deepTools_macros.xml</import>
     </macros>
     <command>
+<![CDATA[
         bigwigCompare
 
         @THREADS@
@@ -17,9 +18,9 @@
         --outFileName '$outFileName'
         --outFileFormat '$outFileFormat'
 
-        --ratio $comparison.type
+        --ratio $comparison.comparison_select
 
-        #if $comparison.type in ['ratio','log2']:
+        #if $comparison.comparison_select in ['ratio','log2']:
             --pseudocount $comparison.pseudocount
         #end if
 
@@ -34,15 +35,15 @@
           --binSize $advancedOpt.binSize
 
         #end if
+]]>
     </command>
     <inputs>
         <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file" />
         <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
 
-
         <conditional name="comparison">
-            <param name="type" type="select" 
-                label="How to compare the two files">
+            <param name="comparison_select" type="select" 
+                label="How to compare the two files" help="(--ratio)">
                 <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
                 <option value="ratio">compute the ratio of the number of reads</option>
                 <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
@@ -75,29 +76,45 @@
             <when value="no" />
             <when value="yes">
                 <param name="binSize" type="integer" value="50" min="1" 
-                    label="Bin size in bp"
-                    help="Size of the bins in bp for the output of the bigwig/bedgraph file "/>
-
+                    label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
+                    help="Size of the bins in bp for the output of the bigwig/bedgraph file. (--binSize)"/>
                 <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
                     label ="Treat missing data as zero"
-                    help  ="This parameter determines if missing data should be replaced with a zero. If set to &quot;no&quot;, missing data will be ignored and will not be included in the output file at all. Missing data is defined as those regions for which no value exists in *any* of the bigwig files. The decision to include or exclude missing data depends on the interpretation of the data. Missing data in a bigwig file may mean that there is no information available for certain regions, for example a repetitive region that is not being considered. In the same file regions with low coverage may get zero read counts. If missing data is replaced by zero, this would convert the excluded repetitive regions into regions of low coverage." />
-
-                <param name="scaleFactor1" type="float" value="1" label="Scale factor for treatment"/>
-                <param name="scaleFactor2" type="float" value="1" label="Scale factor for input"/>
+                    help  ="This parameter determines if missing data should be replaced with a zero. If set to &quot;no&quot;, missing data will be ignored and will not be included in the output file at all. Missing data is defined as those regions for which no value exists in *any* of the bigwig files. The decision to include or exclude missing data depends on the interpretation of the data. Missing data in a bigwig file may mean that there is no information available for certain regions, for example a repetitive region that is not being considered. In the same file regions with low coverage may get zero read counts. If missing data is replaced by zero, this would convert the excluded repetitive regions into regions of low coverage. (--missingDataAsZero)" />
+                <expand macro="scaleFactor" />
             </when>
         </conditional>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
-        <change_format>
-            <when input="outFileFormat" value="bigwig" format="bigwig" />
-            <when input="outFileFormat" value="bedgraph" format="bedgraph" />
-        </change_format>
+            <change_format>
+                <when input="outFileFormat" value="bigwig" format="bigwig" />
+                <when input="outFileFormat" value="bedgraph" format="bedgraph" />
+            </change_format>
         </data>
     </outputs>
-
-  <help>
-
+    <tests>
+        <test>
+            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="5" />
+            <param name="comparison_select" value="ratio" />
+            <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" />
+        </test>
+        <test>
+            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="no" />
+            <param name="outFileFormat" value="bedgraph" />
+            <param name="binSize" value="10" />
+            <param name="comparison_select" value="ratio" />
+            <output name="outFileName" file="bigwigCompare_result2.bg" ftype="bedgraph" />
+        </test>
+    </tests>
+    <help>
+<![CDATA[
 **What it does**
 
 This tool compares two bigwig files based on the number of mapped reads. To
@@ -110,7 +127,7 @@ number of reads per bin, the log2 of the ratio, the sum or the difference.
 -----
 
 @REFERENCES@
-
+]]>
     </help>
     <expand macro="citations" />
 </tool>

@@ -1,4 +1,5 @@
 import sys
+from os.path import splitext, basename
 import gzip
 from collections import OrderedDict
 import numpy as np
@@ -13,20 +14,19 @@ def compute_sub_matrix_wrapper(args):
     return heatmapper.compute_sub_matrix_worker(*args)
 
 
-class heatmapper:
+class heatmapper(object):
     """
     Class to handle the reading and
     plotting of matrices.
     """
 
     def __init__(self):
-        self.regionsDict = None
-        self.matrixDict = None
         self.parameters = None
         self.lengthDict = None
-        self.matrixAvgsDict = None
+        self.matrix = None
+        self.regions = None
 
-    def computeMatrix(self, score_file, regions_file, parameters,
+    def computeMatrix(self, score_file_list, regions_file, parameters,
                       verbose=False):
         """
         Splits into
@@ -60,16 +60,12 @@ class heatmapper:
                     parameters['upstream']))
             exit(1)
 
-        # determine the number of matrix columns based on the lengths
-        # given by the user
-        matrixCols = ((parameters['downstream'] +
-                       parameters['upstream'] + parameters['body']) /
-                      parameters['bin size'])
+        regions, group_labels, group_boundaries = \
+            self.getRegionsAndGroups(regions_file, verbose=verbose)
+        group_len = np.diff(group_boundaries)
 
-        regionsDict = self.getRegionsAndGroups(regions_file, verbose=verbose)
-        group_len = [len(x) for x in regionsDict]
         # check if a given group is too small. Groups that
-        # are too small can be plotted and an error is shown.
+        # are too small can't be plotted and an exception is thrown.
         if len(group_len) > 1:
             sum_len = sum(group_len)
             group_frac = [float(x)/sum_len for x in group_len]
@@ -77,80 +73,116 @@ class heatmapper:
                 sys.stderr.write(
                     "One of the groups defined in the bed file is "
                     "too small.\nGroups that are too small can't be plotted. "
-                    "Please remove the group to continue.\n")
-                exit(1)
-        matrixDict = OrderedDict()
-        matrixAvgsDict = OrderedDict()
-        for label, regions in regionsDict.iteritems():
-            # args to pass to the multiprocessing workers
-            mp_args = []
+                    "\n")
+#                exit(1)
 
-            # prepare groups of 400 regions to send to workers.
-            for index in range(0, len(regions), 400):
-                index_end = min(len(regions), index + 400 )
-                mp_args.append((score_file, regions[index:index_end],
-                                matrixCols, parameters))
+        # args to pass to the multiprocessing workers
+        mp_args = []
+        # prepare groups of regions to send to workers.
+        regions_per_worker = 400 / len(score_file_list)
+        for index in range(0, len(regions), regions_per_worker):
+            index_end = min(len(regions), index + regions_per_worker)
+            mp_args.append((score_file_list, regions[index:index_end],
+                            parameters))
 
-            if len(mp_args) > 1 and parameters['proc number'] > 1:
-                pool = multiprocessing.Pool(parameters['proc number'])
-                res = pool.map_async(compute_sub_matrix_wrapper,
-                                     mp_args).get(9999999)
-            else:
-                res = map(compute_sub_matrix_wrapper, mp_args)
+        if len(mp_args) > 1 and parameters['proc number'] > 1:
+            pool = multiprocessing.Pool(parameters['proc number'])
+            res = pool.map_async(compute_sub_matrix_wrapper,
+                                 mp_args).get(9999999)
+        else:
+            res = map(compute_sub_matrix_wrapper, mp_args)
 
-            # each worker in the pools returns a tuple containing
-            # the submatrix data and the regions that correspond to the
-            # submatrix
+        # each worker in the pools returns a tuple containing
+        # the submatrix data and the regions that correspond to the
+        # submatrix
 
-            # merge all the submatrices into matrix
-            matrix = np.concatenate([r[0] for r in res], axis=0)
-            # mask invalid (nan) values
-            matrix = np.ma.masked_invalid(matrix)
-            # merge all valid regions
-            regionList = np.concatenate([r[1] for r in res], axis=0)
+        # merge all the submatrices into matrix
+        matrix = np.concatenate([r[0] for r in res], axis=0)
+        # mask invalid (nan) values
+        matrix = np.ma.masked_invalid(matrix)
 
-            regions_no_score = sum([r[2] for r in res])
-            if len(regions) == 0:
-                sys.stderr.write(
-                    "\nERROR: BED file does not contain any valid regions. "
-                    "Please check\n")
-                exit(1)
-            if regions_no_score == len(regions):
-                sys.stderr.write(
-                    "\nERROR: None of the BED regions could be found in the bigWig"
-                     "file.\nPlease check that the bigwig file is valid and "
-                     "that the chromosome names between the BED file and "
-                     "the bigWig file correspond to each other\n")
-                exit(1)
-            if regions_no_score > len(regions) * 0.75 or len(regionList) == 0:
-                file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
-                prcnt = 100 * float(regions_no_score) / len(regions)
-                sys.stderr.write(
-                    "\n\nWarning: {:.2f}% of regions are *not* associated\n"
-                    "to any score in the given {} file. Check that the\n"
-                    "chromosome names from the BED file are consistent with\n"
-                    "the chromosome names in the given {} file and that both\n"
-                    "files refer to the same species\n\n".format(prcnt,
-                                                                 file_type,
-                                                                 file_type))
+        assert matrix.shape[0] == len(regions), \
+            "matrix length does not match regions length"
 
-            matrixAvgsDict[label] = np.mean(matrix, axis=1)
-            matrixDict[label] = matrix
-            regionsDict[label] = regionList
+        regions_no_score = sum([r[2] for r in res])
+        if len(regions) == 0:
+            sys.stderr.write(
+                "\nERROR: BED file does not contain any valid regions. "
+                "Please check\n")
+            exit(1)
+        if regions_no_score == len(regions):
+            sys.stderr.write(
+                "\nERROR: None of the BED regions could be found in the bigWig"
+                 "file.\nPlease check that the bigwig file is valid and "
+                 "that the chromosome names between the BED file and "
+                 "the bigWig file correspond to each other\n")
+            exit(1)
+        if regions_no_score > len(regions) * 0.75:
+            file_type = 'bigwig' if score_file_list[0].endswith(".bw") \
+                else "BAM"
+            prcnt = 100 * float(regions_no_score) / len(regions)
+            sys.stderr.write(
+                "\n\nWarning: {:.2f}% of regions are *not* associated\n"
+                "to any score in the given {} file. Check that the\n"
+                "chromosome names from the BED file are consistent with\n"
+                "the chromosome names in the given {} file and that both\n"
+                "files refer to the same species\n\n".format(prcnt,
+                                                             file_type,
+                                                             file_type))
 
-        self.matrixDict = matrixDict
-        self.regionsDict = regionsDict
+
         self.parameters = parameters
-        self.matrixAvgsDict = matrixAvgsDict
+
+        numcols = matrix.shape[1]
+        num_ind_cols = self.getNumIndividualMatrixCols()
+        sample_boundaries = range(0, numcols + num_ind_cols, num_ind_cols)
+        sample_labels = [splitext(basename(x))[0] for x in score_file_list]
+
+        self.matrix = _matrix(regions, matrix,
+                              group_boundaries,
+                              sample_boundaries,
+                              group_labels,
+                              sample_labels)
+
+        if parameters['skip zeros']:
+            self.matrix.removeempty()
 
     @staticmethod
-    def compute_sub_matrix_worker(score_file, regions, matrixCols, parameters):
+    def compute_sub_matrix_worker(score_file_list, regions,
+                                  parameters):
+
+        """
+        Args:
+         score_file_list (list of str): Contains the list of
+           bam or bigwig files to be used.
+         regions (list of dictionaries): Each item in the list is a dictionary
+          containing containing the fields: 'chrom', 'start', 'end', 'name'
+          and 'strand.
+        parameters (dict): Contains values that specify the length
+         of bins, the number of bp after a reference point etc.
+
+        Returns:
+        a matrix that contains per each row the values found 
+        """
+
         # read BAM or scores file
-        if score_file.endswith(".bam"):
-            bamfile = pysam.Samfile(score_file, 'rb')
+        if score_file_list[0].endswith(".bam"):
+            bamfile_list = []
+            for score_file in score_file_list:
+                bamfile_list.append(pysam.Samfile(score_file, 'rb'))
         else:
+            bigwig_list = []
             from bx.bbi.bigwig_file import BigWigFile
-            bigwig = BigWigFile(file=open(score_file, 'r' ))
+            for score_file in score_file_list:
+                bigwig_list.append(BigWigFile(file=open(score_file, 'r' )))
+
+        # determine the number of matrix columns based on the lengths
+        # given by the user, times the number of score files
+        matrixCols = len(score_file_list) * \
+            ((parameters['downstream'] +
+              parameters['upstream'] + parameters['body']) /
+             parameters['bin size'])
+
         # create an empty matrix to store the values
         subMatrix = np.zeros((len(regions), matrixCols))
         subMatrix[:] = np.NAN
@@ -169,72 +201,83 @@ class heatmapper:
                             (feature['end'] - feature['start']),
                             feature['name'], feature['chrom'],
                             feature['start'], feature['end']))
-                continue
 
-            if feature['strand'] == '-':
-                a = parameters['upstream'] / parameters['bin size']
-                b = parameters['downstream']  / parameters['bin size']
-                start = feature['end']
-                end = feature['start']
-            else:
-                b = parameters['upstream'] / parameters['bin size']
-                a = parameters['downstream'] / parameters['bin size']
-                start = feature['start']
-                end = feature['end']
-
-            # build zones:
-            #  zone0: region before the region start,
-            #  zone1: the body of the region (not always present)
-            #  zone2: the region from the end of the region downstream
-            #  the format for each zone is: start, end, number of bins
-            if parameters['body'] > 0:
-                zones = \
-                    [(feature['start'] - b * parameters['bin size'],
-                      feature['start'], b ),
-                     (feature['start'],
-                      feature['end'],
-                      #feature['end'] - parameters['body'] /
-                      #parameters['bin size'],
-                      parameters['body'] / parameters['bin size']),
-                     (feature['end'],
-                      feature['end'] + a * parameters['bin size'], a)]
-            elif parameters['ref point'] == 'TES':  # around TES
-                zones = [(end - b * parameters['bin size'], end, b ),
-                         (end, end + a * parameters['bin size'], a )]
-            elif parameters['ref point'] == 'center':  # at the region center
-                middlePoint = feature['start'] + (feature['end'] -
-                                                  feature['start']) / 2
-                zones = [(middlePoint - b * parameters['bin size'],
-                          middlePoint, b),
-                         (middlePoint,
-                          middlePoint + a * parameters['bin size'], a)]
-            else:  # around TSS
-                zones = [(start - b * parameters['bin size'], start, b ),
-                         (start, start + a * parameters['bin size'], a )]
-
-            if feature['start'] - b * parameters['bin size'] < 0:
-                if parameters['verbose']:
-                    sys.stderr.write(
-                        "Warning:region too close to chromosome start "
-                        "for {} {}:{}:{}.\n".format(feature['name'],
-                                                   feature['chrom'],
-                                                   feature['start'],
-                                                   feature['end']))
-            coverage = None
-            if score_file.endswith(".bam"):
-                coverage = heatmapper.coverageFromBam(
-                    bamfile, feature['chrom'], zones,
-                    parameters['bin size'],
-                    parameters['bin avg type'])
+                coverage = np.zeros(matrixCols)
+                coverage[:] = np.nan
 
             else:
-                coverage = heatmapper.coverageFromBigWig(
-                    bigwig, feature['chrom'], zones,
-                    parameters['bin size'],
-                    parameters['bin avg type'],
-                    parameters['missing data as zero'])
+                if feature['strand'] == '-':
+                    a = parameters['upstream'] / parameters['bin size']
+                    b = parameters['downstream']  / parameters['bin size']
+                    start = feature['end']
+                    end = feature['start']
+                else:
+                    b = parameters['upstream'] / parameters['bin size']
+                    a = parameters['downstream'] / parameters['bin size']
+                    start = feature['start']
+                    end = feature['end']
 
-            """ 
+                # build zones:
+                #  zone0: region before the region start,
+                #  zone1: the body of the region (not always present)
+                #  zone2: the region from the end of the region downstream
+                #  the format for each zone is: start, end, number of bins
+                if parameters['body'] > 0:
+                    zones = \
+                        [(feature['start'] - b * parameters['bin size'],
+                          feature['start'], b ),
+                         (feature['start'],
+                          feature['end'],
+                          #feature['end'] - parameters['body'] /
+                          #parameters['bin size'],
+                          parameters['body'] / parameters['bin size']),
+                         (feature['end'],
+                          feature['end'] + a * parameters['bin size'], a)]
+                elif parameters['ref point'] == 'TES':  # around TES
+                    zones = [(end - b * parameters['bin size'], end, b ),
+                             (end, end + a * parameters['bin size'], a )]
+                elif parameters['ref point'] == 'center':  # at the region center
+                    middlePoint = feature['start'] + (feature['end'] -
+                                                      feature['start']) / 2
+                    zones = [(middlePoint - b * parameters['bin size'],
+                              middlePoint, b),
+                             (middlePoint,
+                              middlePoint + a * parameters['bin size'], a)]
+                else:  # around TSS
+                    zones = [(start - b * parameters['bin size'], start, b ),
+                             (start, start + a * parameters['bin size'], a )]
+
+                if feature['start'] - b * parameters['bin size'] < 0:
+                    if parameters['verbose']:
+                        sys.stderr.write(
+                            "Warning:region too close to chromosome start "
+                            "for {} {}:{}:{}.\n".format(feature['name'],
+                                                       feature['chrom'],
+                                                       feature['start'],
+                                                       feature['end']))
+                coverage = []
+                if score_file.endswith(".bam"):
+                    for bamfile in bamfile_list:
+                        cov = heatmapper.coverageFromBam(
+                            bamfile, feature['chrom'], zones,
+                            parameters['bin size'],
+                            parameters['bin avg type'])
+                        if feature['strand'] == "-":
+                            cov = cov[::-1]
+                        coverage = np.hstack([coverage, cov])
+
+                else:
+                    for bigwig in bigwig_list:
+                        cov = heatmapper.coverageFromBigWig(
+                            bigwig, feature['chrom'], zones,
+                            parameters['bin size'],
+                            parameters['bin avg type'],
+                            parameters['missing data as zero'])
+                        if feature['strand'] == "-":
+                            cov = cov[::-1]
+                        coverage = np.hstack([coverage, cov])
+
+
             if coverage is None:
                 regions_no_score += 1
                 if parameters['verbose']:
@@ -247,12 +290,10 @@ class heatmapper:
                 coverage = np.zeros(matrixCols)
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
-                continue
-            """
+
             try:
                 temp = coverage.copy()
                 temp[np.isnan(temp)] = 0
-                totalScore = np.sum(temp)
             except:
                 if parameters['verbose']:
                     sys.stderr.write(
@@ -264,30 +305,7 @@ class heatmapper:
                 coverage = np.zeros(matrixCols)
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
-                # to induce skipping if zero regions are omited this
-                # variable is set to zero
-                totalScore = 0
 
-            if totalScore == 0:
-                regions_no_score += 1
-                if parameters['skip zeros']:
-                    if parameters['verbose']:
-                        sys.stderr.write(
-                            "Skipping region with all scores equal to zero "
-                            "for\n'{}' {}:{}-{}.\n\n".format(feature['name'],
-                                                             feature['chrom'],
-                                                             feature['start'],
-                                                             feature['end']))
-                    continue
-                elif parameters['verbose']:
-                    sys.stderr.write(
-                        "Warning: All values are zero for "
-                        "{} {}:{}-{}.\n".format(feature['name'],
-                                                feature['chrom'],
-                                                feature['start'],
-                                                feature['end']))
-                    sys.stderr.write(
-                        "add --skipZeros to exclude such regions\n")
 
             if parameters['min threshold'] and \
                     coverage.min() <= parameters['min threshold']:
@@ -298,10 +316,7 @@ class heatmapper:
             if parameters['scale'] != 1:
                 coverage = parameters['scale'] * coverage
 
-            if feature['strand'] == "-":
-                subMatrix[j, :] = coverage[::-1]
-            else:
-                subMatrix[j, :] = coverage
+            subMatrix[j, :] = coverage
 
             if parameters['nan after end'] and parameters['body'] == 0 \
                     and parameters['ref point'] == 'TSS':
@@ -351,7 +366,7 @@ class heatmapper:
             for pos in np.floor(posArray):
                 indexStart = int(pos - start)
                 #indexEnd   = int(indexStart + binSize)
-                indexEnd   = int(indexStart + stepSize + 1)
+                indexEnd   = int(indexStart + stepSize)
                 try:
                     countsList.append(
                         heatmapper.myAverage(valuesArray[indexStart:indexEnd],
@@ -448,6 +463,7 @@ class heatmapper:
             bw_array = bigwig.get_as_array(chrom,
                                            max(0, zones[0][0]),
                                            zones[-1][1])
+
         except Exception as detail:
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
@@ -518,105 +534,39 @@ class heatmapper:
         # file, this is considered as a delimiter
         # to split the heatmap into groups
 
+        import json
         regions = []
         matrix_rows = []
-        regionsDict = OrderedDict()
-        matrixDict = OrderedDict()
-        matrixAvgsDict = OrderedDict()
-        regionGroups = [(0, '')]
-        parameters = dict()
-        totalIntervals = 0
-        includedIntervals = 0
 
         fh = gzip.open(matrix_file)
         for line in fh:
             line = line.strip()
-            totalIntervals += 1
             # read the header file containing the parameters
             # used
             if line.startswith("@"):
-                # the parameters used are saved using the
-                # a key1:value1\tkey2:value2 format
-                for p in line[1:].strip().split('\t'):
-                    key, value = p.split(":")
-                    try:
-                        value = int(value)
-                    except ValueError:
-                        pass
-                    if value == 'True':
-                        value = True
-                    elif value == 'False':
-                        value = False
-                    elif value == 'None':
-                        value = None
-                    parameters[key] = value
+                # the parameters used are saved using
+                # json
+                self.parameters = json.loads(line[1:].strip())
                 continue
-            if line.startswith('#'):
-                if includedIntervals > 0 and  \
-                        includedIntervals - regionGroups[-1][0] > 0:
-                    label = line[1:]
-                    regionsDict[label] = np.array(regions[:])
-                    matrixDict[label] = \
-                        np.ma.masked_invalid(np.vstack(matrix_rows))
-                    # be default compute the mean average
-                    # this will be rewritten in case the user
-                    # has choosen to sort the matrix
-                    matrixAvgsDict[label] = np.mean(matrixDict[label], axis=1)
-                    regions = []
-                    matrix_rows = []
-                continue
+
+            # split the line into bed interval and matrix values
             region = line.split('\t')
             chrom, start, end, name, mean, strand = region[0:6]
-            matrix_rows.append(np.fromiter(region[6:], np.float))
+            matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
+            matrix_rows.append(matrix_row)
             regions.append({'chrom': chrom, 'start': int(start),
                             'end': int(end), 'name': name, 'mean': float(mean),
                             'strand': strand})
-            includedIntervals += 1
 
-        if len(regions):
-            regionsDict[default_group_name] = np.array(regions)
-            matrixDict[default_group_name] = \
-                np.ma.masked_invalid(np.vstack(matrix_rows))
-            matrixAvgsDict[label] = np.mean(matrixDict[default_group_name],
-                                            axis=1)
+        #matrix = np.ma.masked_invalid(np.vstack(matrix_rows))
+        matrix = np.vstack(matrix_rows)
+        self.matrix = _matrix(regions, matrix, self.parameters['group_boundaries'],
+                         self.parameters['sample_boundaries'],
+                         group_labels=self.parameters['group_labels'],
+                         sample_labels=self.parameters['sample_labels'])
 
-        self.regionsDict = regionsDict
-        self.matrixDict = matrixDict
-        self.parameters = parameters
-        self.lengthDict = OrderedDict()
-        self.matrixAvgsDict = OrderedDict()
 
         return
-
-    def sortMatrix(self, sort_using='mean', sort_method='no'):
-        # sort the matrix using the average of values per row
-        self.matrixAvgsDict = OrderedDict()
-        self.lengthDict = OrderedDict()
-        for label in self.matrixDict.keys():
-            if sort_method != 'no':
-                if sort_using == 'region_length':
-                    matrixAvgs = np.array([x['end'] - x['start']
-                                           for x in self.regionsDict[label]])
-                    b = self.parameters['upstream'] / \
-                        self.parameters['bin size']
-                    # for plotting I add the upstream
-                    # distance
-                    self.lengthDict[label] = \
-                        b + (matrixAvgs / self.parameters['bin size'])
-                else:
-                    matrixAvgs = np.__getattribute__(sort_using)(
-                        self.matrixDict[label], axis=1)
-                SS = matrixAvgs.argsort()
-
-                if sort_method == 'descend':
-                    SS = SS[::-1]
-                self.matrixDict[label] = self.matrixDict[label][SS, :]
-                self.regionsDict[label] = self.regionsDict[label][SS]
-                self.matrixAvgsDict[label] = matrixAvgs[SS]
-            try:
-                self.lengthDict[label] = self.lengthDict[label][SS]
-            except:
-                self.lengthDict[label] = None
 
     def saveMatrix(self, file_name):
         """
@@ -634,35 +584,35 @@ class heatmapper:
 
         The file is gzipped.
         """
+        import json
+        self.parameters['sample_labels'] = self.matrix.sample_labels
+        self.parameters['group_labels'] = self.matrix.group_labels
+        self.parameters['sample_boundaries'] = self.matrix.sample_boundaries
+        self.parameters['group_boundaries'] = self.matrix.group_boundaries
+
         fh = gzip.open(file_name, 'wb')
-        params_str = '\t'.join(["{}:{}".format(key, value)
-                                for key, value in self.parameters.iteritems()])
+        params_str = json.dumps(self.parameters, separators=(',', ':'))
         fh.write("@" + params_str + "\n")
-        for label, regions in self.regionsDict.iteritems():
-            j = 0
-            for region in regions:
-                # this method to join np_array values
-                # keeps nans while converting them to strings
-                score = 0
-                # score = region['mean']
-                if self.matrixAvgsDict is not None:
-                    if np.ma.is_masked(self.matrixAvgsDict[label][j]):
-                        score = 'nan'
-                    else:
-                        score = np.float(self.matrixAvgsDict[label][j])
-                matrix_values = "\t".join(
-                    np.char.mod('%f', self.matrixDict[label][j]))
-                fh.write(
-                    '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                        region['chrom'],
-                        region['start'],
-                        region['end'],
-                        region['name'],
-                        score,
-                        region['strand'],
-                        matrix_values))
-                j += 1
-            fh.write('#{}\n'.format(label))
+        score_list = np.ma.masked_invalid(np.mean(self.matrix.matrix, axis=1))
+        for idx, region in enumerate(self.matrix.regions):
+            # join np_array values
+            # keeping nans while converting them to strings
+            score = self.matrix.matrix[idx, :]
+            if np.ma.is_masked(score_list[idx]):
+                score = 'nan'
+            else:
+                score = np.float(score_list[idx])
+            matrix_values = "\t".join(
+                np.char.mod('%f', self.matrix.matrix[idx, :]))
+            fh.write(
+                '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                    region['chrom'],
+                    region['start'],
+                    region['end'],
+                    region['name'],
+                    score,
+                    region['strand'],
+                    matrix_values))
         fh.close()
 
     def saveTabulatedValues(self, file_handle):
@@ -670,6 +620,9 @@ class heatmapper:
                     self.parameters['body'] + self.parameters['downstream'],
                     self.parameters['bin size'])
 
+        # this function must be updated
+        print "save tabulated values is not yet implemented."
+        """
         avgDict = OrderedDict()
         stdDict = OrderedDict()
 
@@ -688,56 +641,16 @@ class heatmapper:
             file_handle.write('\n')
 
         file_handle.close()
-
-    def reLabelGroups(self, group_labels):
         """
-        changes the labels of the groups
-        """
-        if len(group_labels) != len(self.matrixDict):
-            sys.stderr.write(
-                "The number of groups does not match the number of labels\n"
-                "given. Please define {} different labels.\nThe labels\n"
-                "given were: {}\n.".format(len(self.matrixDict), group_labels))
-            exit(1)
-        elif len(set(group_labels)) != len(group_labels):
-            sys.stderr.write(
-                "The group labels given contain repeated names. Please\n"
-                "give a unique name to each value. The values given are\n"
-                "{} \n".format(group_labels))
-            exit(1)
-
-        matrixDict = OrderedDict()
-        regionsDict = OrderedDict()
-        lengthDict = OrderedDict()
-        matrixAvgsDict = OrderedDict()
-        old_labels = self.matrixDict.keys()
-        for index in range(len(group_labels)):
-            matrixDict[group_labels[index]] = \
-                self.matrixDict[old_labels[index]]
-            regionsDict[group_labels[index]] = \
-                self.regionsDict[old_labels[index]]
-            try:
-                lengthDict[group_labels[index]] = \
-                    self.lengthDict[old_labels[index]]
-            except KeyError:
-                pass
-            try:
-                matrixAvgsDict[group_labels[index]] = \
-                    self.matrixAvgsDict[old_labels[index]]
-            except KeyError:
-                pass
-
-        self.matrixDict = matrixDict
-        self.regionsDict = regionsDict
-        self.lengthDict = lengthDict
-        self.matrixAvgsDict = matrixAvgsDict
 
     def saveMatrixValues(self, file_name):
         # print a header telling the group names and their length
         fh = open(file_name, 'w')
         info = []
-        for label, regions in self.regionsDict.iteritems():
-            info.append("{}:{}".format(label, len(regions)))
+        groups_len = np.diff(self.matrix.group_boundaries)
+        for i in range(len(self.matrix.group_labels)):
+            info.append("{}:{}".format(self.matrix.group_labels[i],
+                                       groups_len[i]))
         fh.write("#{}\n".format("\t".join(info)))
         # add to header the x axis values
         fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
@@ -749,50 +662,31 @@ class heatmapper:
         fh.close()
         # reopen again using append mode
         fh = open(file_name, 'a')
-        for key in self.matrixDict:
-            np.savetxt(fh, self.matrixDict[key], fmt="%.3g")
+        np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
         fh.close()
 
     def saveBED(self, file_handle):
-        for label, regions in self.regionsDict.iteritems():
-            cluster = label.find('cluster') != -1
-            j = 0
-            for region in regions:
-                score = 0
-                if self.matrixAvgsDict is not None:
-                    try:
-                        if self.matrixAvgsDict[label][j] is np.ma.masked:
-                            score = 'nan'
-                        else:
-                            score = np.float(self.matrixAvgsDict[label][j])
-                    except KeyError:
-                        pass
-                # If the label is from clustering, we add an additional column
-                # TODO: we need to decide if you want to go with an additional column
-                # also for other labels. Comment lines are not in the BED specification
-                # and can cause additional errors.
-                if cluster:
-                    file_handle.write(
-                        '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                            region['chrom'],
-                            region['start'],
-                            region['end'],
-                            region['name'],
-                            score,
-                            region['strand'],
-                            label))
-                else:
-                    file_handle.write(
-                        '{}\t{}\t{}\t{}\t{}\t{}\n'.format(
-                            region['chrom'],
-                            region['start'],
-                            region['end'],
-                            region['name'],
-                            score,
-                            region['strand']))
-                j += 1
-            if not cluster:
-                file_handle.write('#{}\n'.format(label))
+        boundaries = np.array(self.matrix.group_boundaries)
+        for idx, region in enumerate(self.matrix.regions):
+            # the label id corresponds to the last boundary
+            # that is smaller than the region index.
+            # for example for a boundary array = [0, 10, 20]
+            # and labels ['a', 'b', 'c'],
+            # for index 5, the label is 'a', for
+            # index 10, the label is 'b' etc
+            label_idx = np.flatnonzero(boundaries <= idx)[-1]
+            file_handle.write(
+                '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                    region['chrom'],
+                    region['start'],
+                    region['end'],
+                    region['name'],
+                    0,
+                    region['strand'],
+                    self.matrix.group_labels[label_idx]))
+            if idx + 1 in boundaries:
+                file_handle.write('#{}\n'.format(
+                        self.matrix.group_labels[label_idx]))
         file_handle.close()
 
     @staticmethod
@@ -815,52 +709,55 @@ class heatmapper:
     def getRegionsAndGroups(regions_file, onlyMultiplesOf=1,
                             default_group_name='genes',
                             verbose=None):
-        # reads a bed file containing the position
-        # of genomic intervals
-        # In case is hash sign '#' is found in the
-        # file, this is considered as a delimiter
-        # to split the heatmap into groups
+        """
+        Reads a bed file.
+        In case is hash sign '#' is found in the
+        file, this is considered as a delimiter
+        to split the heatmap into groups
+
+        Returns a list of regions, a list of labels
+        and a list of places to split the regions
+        """
 
         regions = []
-        regionsDict = OrderedDict()
-        regionGroups = [(0, '')]
-
-        prevInterval = None
+        previnterval = None
         duplicates = 0
-        totalIntervals = 0
-        includedIntervals = 0
+        totalintervals = 0
+        includedintervals = 0
+        group_labels = []
+        group_boundaries = [0]
         for ginterval in GenomicIntervalReader(
             heatmapper.filterGenomicIntervalFile(regions_file),
             fix_strand=True):
 
-            totalIntervals += 1
+            totalintervals += 1
             if ginterval.__str__().startswith('#'):
-                if includedIntervals > 1 and  \
-                        includedIntervals - regionGroups[-1][0] > 1:
-                    label = ginterval.__str__()[1:]
-                    newLabel = label
-                    if label in regionsDict.keys():
+                if includedintervals > 1 and  \
+                        includedintervals - group_boundaries[-1] > 1:
+                    label = ginterval.__str__()[1:].strip()
+                    newlabel = label
+                    if label in group_labels:
                        # loop to find a unique label name
                         i = 0
                         while True:
                             i += 1
-                            newLabel = label + "_r" + str(i)
-                            if newLabel not in regionsDict.keys():
+                            newlabel = label + "_r" + str(i)
+                            if newlabel not in group_labels:
                                 break
 
-                    regionsDict[newLabel] = np.array(regions[:])
-                    regions = []
+                    group_labels.append(label)
+                    group_boundaries.append(includedintervals)
                 continue
             # if the list of regions is to big, only
             # consider a fraction of the data
-            if totalIntervals % onlyMultiplesOf != 0:
+            if totalintervals % onlyMultiplesOf != 0:
                 continue
             # check for regions that have the same position as the previous.
             # This assumes that the regions file given is sorted
-            if prevInterval and prevInterval.chrom == ginterval.chrom and \
-                    prevInterval.start == ginterval.start and \
-                    prevInterval.end == ginterval.end and \
-                    prevInterval.strand == ginterval.strand:
+            if previnterval and previnterval.chrom == ginterval.chrom and \
+                    previnterval.start == ginterval.start and \
+                    previnterval.end == ginterval.end and \
+                    previnterval.strand == ginterval.strand:
                 if verbose:
                     try:
                         genename = ginterval.fields[3]
@@ -872,25 +769,26 @@ class heatmapper:
                             ginterval.chrom, ginterval.start,
                             ginterval.end))
                 duplicates += 1
-            else:
-                prevInterval = ginterval
+
+            previnterval = ginterval
 
             regions.append(heatmapper.ginterval2dict(ginterval))
-            includedIntervals += 1
+            includedintervals += 1
 
         # in case we reach the end of the file
         # without encountering a hash,
         # a default name is given to regions
-        if len(regions):
-            regionsDict[default_group_name] = np.array(regions)
+        if len(regions) > group_boundaries[-1]:
+            group_labels.append(default_group_name)
+            group_boundaries.append(includedintervals)
 
         if verbose and duplicates > 0:
             sys.stderr.write(
-                "{} ({:.2f}) regions covering the exact same interval\n"
+                "{} ({:.2f}) regions covering the exact same interval "
                 "were found".format(duplicates,
-                                    float(duplicates) * 100 / totalIntervals))
+                                    float(duplicates) * 100 / totalintervals))
 
-        return regionsDict
+        return regions, group_labels, group_boundaries
 
     @staticmethod
     def ginterval2dict(genomicInterval):
@@ -908,12 +806,163 @@ class heatmapper:
             region['name'] = "No name"
         return region
 
-    @staticmethod
-    def hmcluster(matrix, k, method='kmeans'):
+    def getIndividualmatrices(self, matrix):
+        """In case multiple matrices are saved one after the other
+        this method splits them appart.
+        Returns a list containing the matrices
+        """
+        num_cols = matrix.shape[1]
+        num_ind_cols = self.getNumIndividualMatrixCols()
+        matrices_list = []
+        for i in range(0, num_cols, num_ind_cols):
+            if i + num_ind_cols > num_cols:
+                break
+            matrices_list.append(matrix[:, i:i+num_ind_cols])
+        return matrices_list
 
-        matrix = np.asarray(matrix)
-        # replace nans for 0 otherwise kmeans produces a weird behaviour
-        matrix[np.isnan(matrix)] = 0
+    def getNumIndividualMatrixCols(self):
+        """
+        returns the number of columns  that
+        each matrix should have. This is done because
+        the final matrix that is plotted can be composed
+        of smaller matrices that are merged one after
+        the other.
+        """
+        matrixCols = ((self.parameters['downstream'] +
+                       self.parameters['upstream'] + 
+                       self.parameters['body']) /
+                      self.parameters['bin size'])
+
+        return matrixCols
+
+
+class _matrix(object):
+    """
+    class to hold heatmapper matrices
+    The base data is a large matrix
+    with definition to know the boundaries for row and col divisions.
+    Col divisions represent groups within a subset, e.g. Active and
+    inactive from PolII bigwig data.
+
+    Row division represent different samples, for example
+    PolII in males vs. PolII in females.
+
+    This is an internal class of the heatmapper class
+    """
+
+
+    def __init__(self, regions, matrix, group_boundaries, sample_boundaries,
+                 group_labels=None, sample_labels=None):
+
+        # simple checks
+        assert matrix.shape[0] == group_boundaries[-1], \
+            "row max do not match matrix shape"
+        assert matrix.shape[1] == sample_boundaries[-1], \
+            "col max do not match matrix shape"
+
+        self.regions = regions
+        self.matrix = matrix
+        self.group_boundaries = group_boundaries
+        self.sample_boundaries = sample_boundaries
+        if group_labels is None:
+            self.group_labels = ['group {}'.format(x)
+                                 for x in range(len(group_boundaries)-1)]
+        else:
+            assert len(group_labels) == len(group_boundaries) - 1, \
+                "number of group labels does not match number of groups"
+            self.group_labels = group_labels
+
+        if sample_labels is None:
+            self.sample_labels = ['sample {}'.format(x)
+                                 for x in range(len(sample_boundaries)-1)]
+        else:
+            assert len(sample_labels) == len(sample_boundaries) - 1, \
+                "number of sample labels does not match number of samples"
+            self.sample_labels = sample_labels
+
+    def get_matrix(self, group, sample):
+        """
+        Returns a sub matrix from the large
+        matrix. Group and sample are ids,
+        thus, row = 0, col=0 get the first group
+        of the first sample.
+
+        Returns
+        -------
+        dictionary containing the matrix,
+        the group label and the sample label
+        """
+        group_start = self.group_boundaries[group]
+        group_end = self.group_boundaries[group+1]
+        sample_start = self.sample_boundaries[sample]
+        sample_end = self.sample_boundaries[sample+1]
+
+        return {'matrix': np.ma.masked_invalid(self.matrix[group_start:group_end, :][:, sample_start:sample_end]),
+                'group': self.group_labels[group],
+                'sample': self.sample_labels[sample]}
+
+
+    def get_num_samples(self):
+        return len(self.sample_labels)
+
+    def get_num_groups(self):
+        return len(self.group_labels)
+
+    def set_group_labels(self, new_labels):
+        """ sets new labels for groups
+        """
+        if len(new_labels) != len(self.group_labels):
+            raise ValueError("length new labels != length original labels")
+        self.group_labels = new_labels
+
+
+    def set_sample_labels(self, new_labels):
+        """ sets new labels for groups
+        """
+        if len(new_labels) != len(self.sample_labels):
+            raise ValueError("length new labels != length original labels")
+        self.sample_labels = new_labels
+
+    def sort_groups(self, sort_using='mean', sort_method='no'):
+        """
+        Sorts and rearanges the submatrices according to the
+        sorting method given.
+        """
+        if sort_method == 'no':
+            return
+
+        # compute the row average:
+        if sort_using == 'region_length':
+            matrix_avgs = np.array([x['end'] - x['start']
+                                   for x in self.regions])
+        else:
+            matrix_avgs = np.__getattribute__(sort_using)(
+                self.matrix, axis=1)
+
+        # order per group
+        _sorted_regions = []
+        _sorted_matrix = []
+        for idx in range(len(self.group_labels)):
+            start = self.group_boundaries[idx]
+            end = self.group_boundaries[idx+1]
+            order = matrix_avgs[start:end].argsort()
+            if sort_method == 'descend':
+                order = order[::-1]
+            _sorted_matrix.append(self.matrix[start:end, :][order, :])
+            _reg = self.regions[start:end]
+            for idx in order:
+                _sorted_regions.append(_reg[idx])
+
+        self.matrix = np.vstack(_sorted_matrix)
+        self.regions = _sorted_regions
+
+    def hmcluster(self, k, method='kmeans'):
+
+        matrix = np.asarray(self.matrix)
+        if np.any(np.isnan(matrix)):
+            # replace nans for 0 otherwise kmeans produces a weird behaviour
+            sys.stderr.write("Warning nan values replaced by zeros\n")
+            matrix[np.isnan(matrix)] = 0
 
         if method == 'kmeans':
             from scipy.cluster.vq import vq, kmeans
@@ -922,11 +971,48 @@ class heatmapper:
             # order the centroids in an attempt to
             # get the same cluster order
             order = np.argsort(centroids.mean(axis=1))
-            idx,_ = vq(matrix, centroids[order,])
+            cluster_labels,_ = vq(matrix, centroids[order, :])
 
         if method == 'hierarchical':
+            # normally too slow for large data sets
             from scipy.cluster.hierarchy import fcluster, linkage
             Z = linkage(matrix, method='ward')
-            idx = fcluster(Z, k, criterion='maxclust')
+            cluster_labels = fcluster(Z, k, criterion='maxclust')
 
+        # create groups using the clustering
+        self.group_labels = []
+        self.group_boundaries = [0]
+        _clustered_regions = []
+        _clustered_matrix = []
+        for cluster in range(k):
+            self.group_labels.append("cluster {}".format(cluster+1))
+            cluster_ids = np.flatnonzero(cluster_labels == cluster)
+            self.group_boundaries.append(self.group_boundaries[-1] +
+                                         len(cluster_ids))
+            _clustered_matrix.append(self.matrix[cluster_ids, :])
+            for idx in cluster_ids:
+                _clustered_regions.append(self.regions[idx])
+
+        self.regions = _clustered_regions
+        self.matrix = np.vstack(_clustered_matrix)
         return idx
+
+
+    def removeempty(self):
+        """
+        removes matrix rows containing only zeros or nans
+        """
+        to_keep = []
+        score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
+        for idx, region in enumerate(self.regions):
+            score = self.matrix[idx, :]
+            if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
+                continue
+            else:
+                to_keep.append(idx)
+        self.regions = [self.regions[x] for x in to_keep]
+        self.matrix = self.matrix[to_keep,:]
+        # adjust sample boundaries
+        to_keep = np.array(to_keep)
+        self.group_boundaries = [len(to_keep[to_keep<x]) for x in self.group_boundaries]
+

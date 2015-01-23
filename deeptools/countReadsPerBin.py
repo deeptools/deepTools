@@ -193,8 +193,8 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     chunkSize =  int (stepSize * 1e3 / ( reads_per_bp  * len(bamFilesHandlers)) )
     [ bam_h.close() for bam_h in bamFilesHandlers]
 
-    if verbose:
-        print "step size is {}".format(stepSize)
+    if verbose: 
+       print "step size is {}".format(stepSize)
 
     if region:
         # in case a region is used, append the tilesize
@@ -211,7 +211,17 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                                     region=region,
                                     numberOfProcessors=numberOfProcessors)
 
-    num_reads_per_bin = np.concatenate(imap_res, axis=0)
+    try:
+        num_reads_per_bin = np.concatenate(imap_res, axis=0)
+    except ValueError:
+        if bedFile:
+            exit('\nNo coverage values could be computed.\n\n'
+                 'Please check that the chromosome names in the BED file are found on the bam files.\n\n'
+                 'The valid chromosome names are:\n{}'.format(chrNames))
+        else:
+            exit('\nNo coverage values could be computed.\n\nCheck that all bam files are valid and '
+                 'contain mapped reads.')
+
     return num_reads_per_bin
 
 

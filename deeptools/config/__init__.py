@@ -3,7 +3,6 @@ import sys
 import ConfigParser
 import subprocess
 
-
 def checkProgram(program, args, where_to_download):
     """
     deeptools relies on some command line programs
@@ -58,12 +57,10 @@ if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
 
 else:
     import pkg_resources
-
     # load the deepTools configuration file
     # that should be located under the root folder
     # of the deepTools instalation
     config_file = pkg_resources.resource_filename(__name__,
-                                                  'config/deeptools.cfg')
+                                                  'deeptools.cfg')
     config = ConfigParser.ConfigParser()
     config.readfp(open(config_file, 'r'))
-
