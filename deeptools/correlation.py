@@ -54,7 +54,7 @@ class Correlation:
         #load data to correlate
         _ma = np.load(matrix_file)
         # matrix:  cols to  samples
-        self.matrix  = np.asmatrix(_ma['matrix'].tolist())
+        self.matrix  = np.asarray(_ma['matrix'].tolist())
         self.labels = _ma['labels']
 
 
@@ -341,12 +341,12 @@ class Correlation:
             else:
                 ax.set_xticklabels([])
 
+            ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
             # downsample for plotting
-            choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
-
-            ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
-                        alpha=0.3, color='darkblue',
-                        markeredgecolor=None)
+    #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
+    #        ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
+    #                    alpha=0.3, color='darkblue',
+    #                    markeredgecolor=None)
 
     #        ax.set_ylim(min_value, max_value)
     #        ax.set_xlim(min_value,max_value)
