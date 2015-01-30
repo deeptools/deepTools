@@ -248,10 +248,9 @@ def countReadsPerGC_worker(chromNameBam,
                                                start, end, stepSize)
 
     for index in xrange(len(positions_to_sample)):
-#    for i in xrange(start, end, step):
         i = positions_to_sample[index]
         # stop if region extends over the chromosome end
-        if tbit[chromNameBit].size < start + regionSize:
+        if tbit[chromNameBit].size < i + regionSize:
             break
 
         try:
@@ -353,7 +352,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
 
     read_counts = []
     # Optimize IO.
-    # if the sample regions are far appart from each
+    # if the sample regions are far apart from each
     # other is faster to go to each location and fetch
     # the reads found there.
     # Otherwise, if the regions to sample are close to
@@ -478,6 +477,7 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
         except NameError:
             F_gc = subF_gc
             N_gc = subN_gc
+
 
     scaling = sum(N_gc) / sum(F_gc)
 
@@ -698,7 +698,7 @@ def main(args):
     chromSizes = [(bam.references[i], bam.lengths[i])
                   for i in range(len(bam.references))]
 
-    # use possion distribution to identify peaks that should be discarted.
+    # use poisson distribution to identify peaks that should be discarted.
     # I multiply by 4, because the real distribution of reads
     # vary depending on the gc content
     # and the global number of reads per bp may a be too low.
@@ -720,7 +720,7 @@ def main(args):
     print "computing frequencies"
     # the GC of the genome is sampled each stepSize bp.
     stepSize = max(int(global_vars['genome_size'] / args.sampleSize ), 1)
-
+    print "stepSize: {}".format(stepSize)
     data = \
         tabulateGCcontent(fragmentLength,
                           chrNameBitToBam, stepSize,
