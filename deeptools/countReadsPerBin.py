@@ -20,7 +20,9 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
                                extendPairedEnds=True,
                                minMappingQuality=None,
                                ignoreDuplicates=False,
-                               bedRegions=None):
+                               samFlag=None,
+                               bedRegions=None
+                               ):
     """ counts the reads in each bam file at each 'stepSize' position
     within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
@@ -109,6 +111,7 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
                                     zerosToNans,
                                     minMappingQuality=minMappingQuality,
                                     ignoreDuplicates=ignoreDuplicates,
+                                    samFlag=samFlag
                                     )[0])
         # skip if any of the bam files returns a NaN
         if np.isnan(sum(avgReadsArray)):
@@ -136,7 +139,8 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                       minMappingQuality=None,
                       ignoreDuplicates=False,
                       chrsToSkip=[],
-                      stepSize=None):
+                      stepSize=None,
+                      samFlag=None):
 
     r"""
     This function visits a number of sites and returs a matrix containing read
@@ -203,7 +207,7 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength,
                                      defaultFragmentLength, skipZeros,
                                      extendPairedEnds, minMappingQuality,
-                                     ignoreDuplicates),
+                                     ignoreDuplicates, samFlag),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
@@ -328,7 +332,7 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
                         zerosToNans=True, maxPairedFragmentLength=None,
                         minMappingQuality=None, ignoreDuplicates=False,
                         fragmentFromRead_func=getFragmentFromRead,
-                        centerRead=False):
+                        centerRead=False, samFlag=None):
     """
     Returns a numpy array that corresponds to the number of reads 
     that overlap with each tile.
@@ -336,12 +340,13 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     >>> test = Tester()
     >>> import pysam
 
-    For this case the reads are length 36. For the positions given
-    the number of overlapping read fragments is 4 and 5
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000833, 5000835, 1, 0, False)
+    For this case the reads are length 36. The number of overlapping
+    read fragments is 4 and 5 for the positions tested
+    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2',
+    ... 5000833, 5000835, 1, 0, False)
     array([ 4.,  5.])
 
-    In the following example a paired read is extended to the fragment length wich is 100
+    In the following example a paired read is extended to the fragment length which is 100
     The first mate starts at 5000000 and the second at 5000064. Each mate is
     extended to the fragment length *independently*
     At position 500090-500100 one fragment  of length 100 overlap, and after position 5000101  
@@ -354,12 +359,19 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     array([ 1.,  2.,  2.])
 
     Test ignore duplicates
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 50, 0, False, ignoreDuplicates=True)
+    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 50, 0,
+    ... False, ignoreDuplicates=True)
     array([ nan,   1.,   1.,   1.])
 
     Test long regions
     >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 200, 0, False)
     array([ 4.])
+
+    Test sam flag with value = 64 which means only first mate
+    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000833,
+    ... 5000835, 1, 0, False, samFlag=64)
+    array([ nan,   1.])
+
     """
     if not fragmentFromRead_func:
         fragmentFromRead_func = getFragmentFromRead
@@ -380,7 +392,7 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     if chrom in bamHandle.references:
         # r.flag & 4 == 0 is to skip unmapped reads
         reads = [r for r in bamHandle.fetch(chrom, start, end)
-                 if r.flag & 4 == 0]
+                 if r.flag & 4 == 0 ]
     else:
         raise NameError("chromosome {} not found in bam file".format(chrom))
 
@@ -389,6 +401,10 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
 
     for read in reads:
         if minMappingQuality and read.mapq < minMappingQuality:
+            continue
+
+        # filter reads based on SAM flag
+        if samFlag and read.flag & samFlag == 0:
             continue
 
         # get rid of duplicate reads that have same position on each of the
