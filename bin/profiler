@@ -160,6 +160,7 @@ def plotProfile(hm, outFileName,
         else:
             title = hm.matrix.sample_labels[plot]
         ax.set_title(title)
+        mat = [] # when drawing a heatmap (in contrast to drawing lines)
         for data_idx in range(numlines):
             if perGroup:
                 row, col = plot, data_idx
@@ -173,11 +174,20 @@ def plotProfile(hm, outFileName,
             else:
                 label = sub_matrix['group']
 
-            plot_single(ax, sub_matrix['matrix'],
-                        averagetype,
-                        color_list[data_idx],
-                        label,
-                        plot_type=plotType)
+            if plotType == 'heatmap':
+                # if plotting a heatmap, the individual rows
+                # need to be collected before plotting
+                mat.append(np.__getattribute__(averagetype)(sub_matrix['matrix'],
+                                                            axis=0))
+            else:
+                plot_single(ax, sub_matrix['matrix'],
+                            averagetype,
+                            color_list[data_idx],
+                            label,
+                            plot_type=plotType)
+
+        if plotType == 'heatmap':
+            ax.imshow(np.asmatrix(mat), interpolation='nearest', cmap='seismic_r')
 
         if col != 0:
             plt.setp(ax.get_yticklabels(), visible=False)

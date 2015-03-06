@@ -31,6 +31,22 @@ def plot_single(ax, ma, average_type, color, label,
         ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
                         edgecolor=f_color, lw=0.01)
 
+    elif plot_type == 'std':  #standard deviation
+        std = np.std(ma, axis=0)
+        alpha = 0.2
+        if type(color) == type((0, 0)):  # check if color is tuple
+            # add the alpha channed to the color tuple
+            f_color = [c for c in color[:-1]] + [alpha]
+        else:
+            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
+        # ideally the edgecolor should be None,
+        # but when generating a pdf image an edge is still
+        # drawn.
+        ax.fill_between(x, sumry, sumry + std, facecolor=f_color,
+                        edgecolor=f_color, lw=0.01)
+        ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
+                        edgecolor=f_color, lw=0.01)
+
     elif plot_type == 'overlapped_lines':
         ax.patch.set_facecolor('black')
         for row in ma:

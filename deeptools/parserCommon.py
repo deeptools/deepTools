@@ -363,14 +363,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'on the average type selected. The "fill" option '
             'fills the region between zero and the profile '
             'curve. The fill in color is semi transparent to '
-            'distinguish different profiles. The "se" option '
+            'distinguish different profiles. The "se" and "std" options '
             'colors the region between the profile and the '
-            'standard error of the data. As in the case of '
+            'standard error or standard deviation of the data. '
+            'As in the case of '
             'fill, a semi-transparent color is used. The option '
             '"overlapped_lines" plots each region values, one on '
             'top of the other; this option only works if '
-            '--onePlotPerGroup is set.',
-            choices=['lines', 'fill', 'se', 'overlapped_lines'],
+            '--onePlotPerGroup is set. The option "heatmap" plots a '
+            'summary heatmap.',
+            choices=['lines', 'fill', 'se', 'std', 'overlapped_lines', 'heatmap'],
             default='lines')
 
         optional.add_argument('--colors',
