@@ -447,6 +447,13 @@ class heatmapper(object):
         on the bigwig file, produces a result. In other words
         no regions are skipped.
 
+        zones: array as follows zone0: region before the region start,
+                                zone1: the body of the region (not always present)
+                                zone2: the region from the end of the region downstream
+
+               each zone is a tuple containing start, end, and number of bins
+
+
         This is useful if several matrices wants to be merged
         or if the sorted BED output of one computeMatrix operation
         needs to be used for other cases
@@ -463,7 +470,8 @@ class heatmapper(object):
             bw_array = bigwig.get_as_array(chrom,
                                            max(0, zones[0][0]),
                                            zones[-1][1])
-
+#            print chrom, zones[1]
+#            print bigwig.get_as_array(chrom, zones[1][0], zones[1][1])
         except Exception as detail:
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
