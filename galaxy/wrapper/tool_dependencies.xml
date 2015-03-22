@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <tool_dependency>
     <package name="samtools" version="0.1.19">
-        <repository name="package_samtools_0_1_19" owner="iuc" prior_installation_required="True" />
+        <repository name="package_samtools_0_1_19" owner="devteam" prior_installation_required="True" />
     </package>
     <package name="numpy" version="1.9">
         <repository name="package_numpy_1_9" owner="iuc" prior_installation_required="True" />
