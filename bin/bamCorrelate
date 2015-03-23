@@ -63,8 +63,8 @@ detailed help:
              "distance between bins can be adjusted.",
         add_help=False,
         usage='%(prog)s '
-              '---bamfiles file1.bam file2.bam '
-              '--out results.npz \n')
+              '--bamfiles file1.bam file2.bam '
+              '-out results.npz \n')
 
     # BED file argumentsdi
     bed_mode = subparsers.add_parser(
