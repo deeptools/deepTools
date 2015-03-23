@@ -354,3 +354,30 @@ class Correlation:
             ax.set_xlim(min_value, ax.get_xlim()[1])
         fig.tight_layout()
         fig.savefig(plot_fiilename, format=image_format)
+
+
+    # def similar(self, a, b):
+    #     from difflib import SequenceMatcher
+    #     return SequenceMatcher(None, a, b).ratio()
+
+    def plot_pca(self, plot_filename, image_format=None, log1p=False):
+        """
+        Plot the PCA of a matrix
+        """
+        from itertools import cycle
+        from matplotlib.mlab import PCA
+        import matplotlib.markers
+        mlab_pca = PCA(self.matrix)
+        n = len(self.labels)
+        colors = cycle(plt.cm.gist_rainbow(np.linspace(0,1,n)))
+        markers = cycle(matplotlib.markers.MarkerStyle.filled_markers)
+        plt.axhline(y=0, color="lightgrey", linestyle="solid", zorder=1)
+        plt.axvline(x=0, color="lightgrey", linestyle="solid", zorder=2)
+        for i in range(n):
+            print i
+            plt.scatter(mlab_pca.Y[0,i], mlab_pca.Y[1,i], marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
+        plt.title('PCA')
+        plt.xlabel('PC1')
+        plt.ylabel('PC2')
+        lgd = plt.legend(scatterpoints=1, loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
