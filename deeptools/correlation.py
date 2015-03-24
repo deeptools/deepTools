@@ -20,7 +20,7 @@ class Correlation:
     """
 
     def __init__(self, matrix_file,
-                 corr_method,
+                 corr_method=None,
                  labels=None,
                  remove_outliers=False,
                  log1p=False):
@@ -43,7 +43,8 @@ class Correlation:
         if log1p is True:
             self.matrix  = np.log1p(self.matrix )
 
-        self.compute_correlation()
+        if corr_method:
+            self.compute_correlation()
 
     def load_matrix(self, matrix_file):
         """
