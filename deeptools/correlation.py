@@ -374,10 +374,9 @@ class Correlation:
         plt.axhline(y=0, color="lightgrey", linestyle="solid", zorder=1)
         plt.axvline(x=0, color="lightgrey", linestyle="solid", zorder=2)
         for i in range(n):
-            print i
             plt.scatter(mlab_pca.Y[0,i], mlab_pca.Y[1,i], marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
         plt.title('PCA')
         plt.xlabel('PC1')
         plt.ylabel('PC2')
-        lgd = plt.legend(scatterpoints=1, loc='center left', bbox_to_anchor=(1, 0.5))
+        lgd = plt.legend(scatterpoints=1, loc='center left', bbox_to_anchor=(1, 0.5), prop={'size':12}, markerscale=0.9)
         plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
