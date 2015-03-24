@@ -69,8 +69,8 @@ def plotCorrelationArgs():
                           required=True)
 
     required.add_argument('--whatToPlot', '-p',
-                          help="Choose between a heatmap, scatter plot, or pca",
-                          choices=['heatmap', 'scatterplot', 'pca'],
+                          help="Choose between a heatmap or scatter plot",
+                          choices=['heatmap', 'scatterplot'],
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -182,17 +182,13 @@ def main(args):
     args.plotFile.close()
     if args.whatToPlot == 'scatterplot':
         corr.plot_scatter(args.plotFile.name)
-    elif args.whatToPlot == 'heatmap':
+    else:
         corr.plot_correlation(args.plotFile.name,
                               args.zMax,
                               args.zMin,
                               args.colorMap,
                               image_format=args.plotFileFormat,
                               plot_numbers=args.plotNumbers)
-    elif args.whatToPlot == 'pca':
-        corr.plot_pca(args.plotFile.name)
-    else:
-        pass
 
 
 if __name__ == "__main__":
