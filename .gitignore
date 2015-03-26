@@ -36,5 +36,13 @@ nosetests.xml
 .project
 .pydevproject
 
+# sphinx build folder
+_build
+_modules
+_sources
+_static
+_templates
+
+
 # Ignore all emacs backup files
 *~
