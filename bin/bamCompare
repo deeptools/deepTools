@@ -183,8 +183,21 @@ def getOptionalArgs():
                           'normalize the number of reads per bin. The formula '
                           'is: RPKM (per bin)=#reads per bin / ( # of mapped '
                           'reads (millions) * bin length (KB) ). This is the '
-                          'default normalization method.',
+                          'default normalization method.  Each read is considered independently,'
+                          'if you want to only count either of the mate pairs in'
+                          'paired-end data use the --samFlag',
                           action='store_true',
+                          required=False)
+
+    optional.add_argument('--samFlag',
+                          help='Filter reads based on the SAM flag. For example,'
+                               'to get only reads that are the first mate use a flag of 64.'
+                               'This is useful to count properly paired reads only once,'
+                               'otherwise the second mate will be also considered for the '
+                               'coverage.',
+                          metavar= 'INT',
+                          default=None,
+                          type=int,
                           required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
@@ -367,7 +380,8 @@ def main(args):
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
         ignoreDuplicates=args.ignoreDuplicates,
-        centerRead=args.centerReads)
+        centerRead=args.centerReads,
+        samFlag=args.samFlag)
 
 if __name__ == "__main__":
     args = parseArguments()
