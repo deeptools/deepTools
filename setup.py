@@ -144,6 +144,7 @@ setup(
         "matplotlib >= 1.2",
         "pysam >= 0.7.7",
         "bx-python >= 0.5.0",
+        "numpydoc >=0.5"
     ],
     cmdclass={'sdist': sdist, 'install': install}
 )
