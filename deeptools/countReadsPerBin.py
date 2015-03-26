@@ -11,6 +11,12 @@ debug = 0
 
 
 def countReadsInRegions_wrapper(args):
+    """
+    Passes the arguments to countReadsInRegions_worker.
+    This is a step to make the code more readable, given
+    the constrains from the multiprocessing module.
+    """
+
     return countReadsInRegions_worker(*args)
 
 
@@ -20,56 +26,73 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
                                extendPairedEnds=True,
                                minMappingQuality=None,
                                ignoreDuplicates=False,
-                               bedRegions=None):
-    """ counts the reads in each bam file at each 'stepSize' position
-    within the interval start, end for a 'binLength' window.
-    Because the idea is to get counts for window positions at
-    different positions for sampling the bins are equally spaced
-    between each other and are  not one directly next *after* the other.
+                               samFlag=None,
+                               bedRegions=None
+                               ):
+    """Counts the reads in each bam file at each 'stepSize' position
+    within the interval (start, end) for a window or bin of size binLength.
+    Because the idea is to get counts for window/bin positions at
+
+    The stepSize controls the distance between bins. For example,
+    a step size of 20 and a bin size of 20 will create bins next to
+    each other. if the step size is smaller than the bin size the
+    bins will overlap.
+
 
     If a list of bedRegions is given, then the number of reads
     that overlaps with each region is counted.
 
-    The result is a list of tuples.
+
+    Parameters
+    ----------
+    chrom : str
+        Chrom name
+    start : int
+        start coordinate
+    end : int
+        end coordinate
+    bamFileList : list
+        List of name of indexed bam files.
+    stepSize : int
+        the positions for which the coverage is computed are defined as follows:
+        ``range(start, end, stepSize)``. Thus, a stepSize of 1, will compute
+        the coverage at each base pair. If the stepSize is equal to the
+        binLength then the coverage is computed for consecutive bins. If seepSize is
+        smaller than the binLength, then teh bins will overlap.
+    binLength : int
+        length of the window/bin
+    defaultFragmentLength : in
+        see :meth:`deepTools.countReadsPerBin.getFragmentFromRead` method
+
+    Returns
+    -------
+    numpy array
+        The result is a numpy array that as rows each bin
+        and as columns each bam file.
+
+
+    Examples
+    --------
+    Initialize some useful values
+
     >>> test = Tester()
 
-    The transpose is used to get better looking numbers. the first line
+    The transpose is used to get better looking numbers. The first line
     corresponds to the number of reads per bin in the first bamfile.
+
     >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
     ... [test.bamFile1, test.bamFile2], 50, 25, 0))
     array([[ 0.,  0.,  1.,  1.],
            [ 0.,  1.,  1.,  2.]])
 
     When skipZeros is set to true, those cases in which *all* of the
-    bamfiles have zero counts for a certain bin are ignored
+    bamfiles have zero counts for a certain bin are ignored.
+
     >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
     ... [test.bamFile1, test.bamFile2], 50, 25, 0, skipZeros=True))
     array([[ 0.,  1.,  1.],
            [ 1.,  1.,  2.]])
 
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bamFile1, test.bamFile2], 200, 200, 0))
-    array([[ 2.],
-           [ 4.]])
-
-    Test min mapping quality
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bamFile1, test.bamFile2], 50, 25, 0, minMappingQuality=40))
-    array([[ 0.,  0.,  0.,  1.],
-           [ 0.,  0.,  0.,  1.]])
-
-    Test ignore duplicates
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bamFile1, test.bamFile2], 50, 25, 0, ignoreDuplicates=True))
-    array([[ 0.,  0.,  1.,  1.],
-           [ 0.,  1.,  1.,  1.]])
-
-    Test bed regions:
-    >>> bedRegions = [(test.chrom, 10, 20), (test.chrom, 150, 160)]
-    >>> np.transpose(countReadsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bamFile1, test.bamFile2], 0, 200, 0, bedRegions=bedRegions))
-    array([[ 0.,  1.],
-           [ 0.,  2.]])
 
     """
 
@@ -87,7 +110,6 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
     bamHandlers = [bamHandler.openBam(bam) for bam in bamFilesList]
 
     regionsToConsider = []
-
     if bedRegions:
         for chrom, start, end in bedRegions:
             regionsToConsider.append((chrom, start, end, end - start))
@@ -109,6 +131,7 @@ def countReadsInRegions_worker(chrom, start, end, bamFilesList,
                                     zerosToNans,
                                     minMappingQuality=minMappingQuality,
                                     ignoreDuplicates=ignoreDuplicates,
+                                    samFlag=samFlag
                                     )[0])
         # skip if any of the bam files returns a NaN
         if np.isnan(sum(avgReadsArray)):
@@ -136,32 +159,102 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
                       minMappingQuality=None,
                       ignoreDuplicates=False,
                       chrsToSkip=[],
-                      stepSize=None):
+                      stepSize=None,
+                      samFlag=None):
 
     r"""
-    This function visits a number of sites and returs a matrix containing read
-    counts. Each row to one sampled site and each column correspond to each of
-    the bamFiles.
+    This function collects read counts (coverage) from several bam files and returns
+    an numpy array with the results. This function does not explicitly do the
+    coverage computation, instead divides the work into smaller chunks that are
+    sent to individual processors.
 
-    If the chrsToSkip is given, then counts are filter out from this
-    chromosome which, unless a female sample is used, the counts are less
-    compared to autosomes. For most applications this is irrelevant but for
-    other cases, like when stimating the best scaling factor, this is
-    important.
+    Parameters
+    ----------
+    bamFilesList : list
+        List containing the names of indexed bam files. E.g. ['file1.bam', 'file2.bam']
 
-    The test data contains reads for 200 bp
+    binLength : int
+        Length of the window/bin. This value is overruled by ``bedFile`` if present.
+
+    numberOfSamples : int
+        Total number of samples. The genome is divided into ``numberOfSamples``, each
+        with a window/bin length equal to ``binLength``. This value is overruled
+        by ``stepSize`` in case such value is present and by ``bedFile`` in which
+        case the number of samples and bins are defined in the bed file
+
+    defaultFragmentLength : int
+        fragment length to extend reads that are not paired. Paired reads are extended to
+        the fragment length defined by the mate distance. For Illumina reads, usual values
+        are around 300. This value can be determined using the peak caller MACS2 or can be
+        approximated by the fragment lengths computed when preparing the library for sequencing.
+
+    numberOfProcessors : int
+        Number of processors to use. Default is 4
+
+    skipZeros : bool
+        Default is True. This option decides if regions having zero coverage in all bam files
+        should be skipped or kept.
+
+    verbose : bool
+        Output messages. Default: False
+
+    region : str
+        Region to limit the computation in the form chrom:start:end.
+
+    bedFile : str
+        Name of a bed file containing the regions for wich to compute the coverage. This option
+        overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
+    extendPairedEnds : bool
+        Whether coverage should be computed for the extended read length (i.e. the region covered
+        by the two mates or the regions expected to be covered by single-reads). Default: true
+
+    minMappingQuality : int
+        Reads of a mapping quality less than the give value are not considered. Default: None
+
+    ignoreDuplicates : bool
+        Whether read duplicates (same start, end position. If paired-end, same start-end for mates) are
+        to be excluded. Default: false
+
+    chrToSkip: list
+        List with names of chromosomes that do not want to be included in the coverage computation.
+        This is useful to remove unwanted chromosomes (e.g. 'random' or 'Het').
+
+    stepSize : int
+        the positions for which the coverage is computed are defined as follows:
+        ``range(start, end, stepSize)``. Thus, a stepSize of 1, will compute
+        the coverage at each base pair. If the stepSize is equal to the
+        binLength then the coverage is computed for consecutive bins. If seepSize is
+        smaller than the binLength, then teh bins will overlap.
+
+    samFlag : int
+        If given, only reads having such flag are considered. For example, to get only
+        reads that are the first mates a samFlag of 64 could be used. Similarly, the
+        samFlag can be used to select only reads mapping on the forward (or reverse) strand
+        or to get only properly paired reads.
+
+    Returns
+    -------
+    numpy array
+
+        Each row correspond to each bin/bed region and each column correspond to each of
+        the bamFiles. If ``skipZeros`` is used, then the result may have less rows
+        than expected
+
+
+    Examples
+    --------
+
+    The test data contains reads for 200 bp.
+
     >>> test = Tester()
 
     The transpose function is used to get a nicer looking output.
     The first line corresponds to the number of reads per bin in bam file 1
+
     >>> np.transpose(getNumReadsPerBin([test.bamFile1, test.bamFile2],
     ... 50, 4, 0, skipZeros=True))
     array([[ 0.,  1.,  1.],
            [ 1.,  1.,  2.]])
-
-    >>> aa = np.transpose(getNumReadsPerBin([test.bamFile1, test.bamFile2],
-    ... 50, 4, 0, skipZeros=True))
-    >>> np.savez('/tmp/aa', aa)
     """
 
     # Try to determine an optimal fraction of the genome (chunkSize) that is sent to 
@@ -203,7 +296,7 @@ def getNumReadsPerBin(bamFilesList, binLength, numberOfSamples,
     imap_res = mapReduce.mapReduce( (bamFilesList, stepSize, binLength,
                                      defaultFragmentLength, skipZeros,
                                      extendPairedEnds, minMappingQuality,
-                                     ignoreDuplicates),
+                                     ignoreDuplicates, samFlag),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
@@ -234,31 +327,32 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True,
     """
     The read has to be pysam object.
 
-    The following values are defined (for forward reads)
+    The following values are defined (for forward reads)::
 
 
-         |--          -- read.tlen --              --|
-         |-- read.alen --|
-    -----|===============>------------<==============|----
-         |               |            |
-      read.pos      read.aend      read.pnext
+             |--          -- read.tlen --              --|
+             |-- read.alen --|
+        -----|===============>------------<==============|----
+             |               |            |
+          read.pos      read.aend      read.pnext
 
 
-      and for reverse reads
+          and for reverse reads
 
 
-         |--             -- read.tlen --           --|
-                                     |-- read.alen --|
-    -----|===============>-----------<===============|----
-         |                           |               |
-      read.pnext                   read.pos      read.aend
+             |--             -- read.tlen --           --|
+                                         |-- read.alen --|
+        -----|===============>-----------<===============|----
+             |                           |               |
+          read.pnext                   read.pos      read.aend
 
     this is a sketch of a pair-end reads
 
     The function returns the fragment start and end, either
     using the paired end information (if available) or
     extending the read in the appropriate direction if this
-    is single-end
+    is single-end.
+
     >>> test = Tester()
     >>> 
     >>> getFragmentFromRead(test.getRead("paired-forward"), 200)
@@ -274,7 +368,8 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True,
     >>> getFragmentFromRead(test.getRead("paired-forward"), 0, False)
     (5000000, 5000036L)
 
-    Tests for read centering. 
+    Tests for read centering.
+
     >>> getFragmentFromRead(test.getRead("paired-forward"), 200,
     ... True, centerRead=True)
     (5000032, 5000068)
@@ -328,7 +423,7 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
                         zerosToNans=True, maxPairedFragmentLength=None,
                         minMappingQuality=None, ignoreDuplicates=False,
                         fragmentFromRead_func=getFragmentFromRead,
-                        centerRead=False):
+                        centerRead=False, samFlag=None):
     """
     Returns a numpy array that corresponds to the number of reads 
     that overlap with each tile.
@@ -336,30 +431,44 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     >>> test = Tester()
     >>> import pysam
 
-    For this case the reads are length 36. For the positions given
-    the number of overlapping read fragments is 4 and 5
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000833, 5000835, 1, 0, False)
+    For this case the reads are length 36. The number of overlapping
+    read fragments is 4 and 5 for the positions tested.
+
+    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2',
+    ... 5000833, 5000835, 1, 0, False)
     array([ 4.,  5.])
 
-    In the following example a paired read is extended to the fragment length wich is 100
+    In the following example a paired read is extended to the fragment length which is 100
     The first mate starts at 5000000 and the second at 5000064. Each mate is
     extended to the fragment length *independently*
     At position 500090-500100 one fragment  of length 100 overlap, and after position 5000101  
-    there should be zero reads
+    there should be zero reads.
+
     >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000090, 5000110, 10, 0, True)
     array([  1.,  nan])
 
-    In the following  case the reads length is 50
+    In the following  case the reads length is 50.
+
     >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 148, 154, 2, 0, False)
     array([ 1.,  2.,  2.])
 
-    Test ignore duplicates
-    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 50, 0, False, ignoreDuplicates=True)
+    Test ignore duplicates.
+
+    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 50, 0,
+    ... False, ignoreDuplicates=True)
     array([ nan,   1.,   1.,   1.])
 
-    Test long regions
+    Test long regions.
+
     >>> getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 200, 0, False)
     array([ 4.])
+
+    Test sam flag with value = 64 which means only first mate.
+
+    >>> getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000833,
+    ... 5000835, 1, 0, False, samFlag=64)
+    array([ nan,   1.])
+
     """
     if not fragmentFromRead_func:
         fragmentFromRead_func = getFragmentFromRead
@@ -380,7 +489,7 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
     if chrom in bamHandle.references:
         # r.flag & 4 == 0 is to skip unmapped reads
         reads = [r for r in bamHandle.fetch(chrom, start, end)
-                 if r.flag & 4 == 0]
+                 if r.flag & 4 == 0 ]
     else:
         raise NameError("chromosome {} not found in bam file".format(chrom))
 
@@ -389,6 +498,10 @@ def getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
 
     for read in reads:
         if minMappingQuality and read.mapq < minMappingQuality:
+            continue
+
+        # filter reads based on SAM flag
+        if samFlag and read.flag & samFlag == 0:
             continue
 
         # get rid of duplicate reads that have same position on each of the
@@ -438,33 +551,38 @@ def getSmoothRange(tileIndex, tileSize, smoothRange, maxPosition):
     over a larger range, called the smoothRange.
     This region is centered in the tileIndex  an spans on both sizes
     to cover the smoothRange. The smoothRange is trimed in case it is less
-    than cero or greater than  maxPosition
+    than zero or greater than  maxPosition ::
 
 
-     ---------------|==================|------------------
-                tileStart
-           |--------------------------------------|
-           |    <--      smoothRange     -->      |
-           |        
-     tileStart - (smoothRange-tileSize)/2
+         ---------------|==================|------------------
+                    tileStart
+               |--------------------------------------|
+               |    <--      smoothRange     -->      |
+               |
+         tileStart - (smoothRange-tileSize)/2
 
-    Test for a smooth range that spans 3 tiles
+    Test for a smooth range that spans 3 tiles.
+
     >>> getSmoothRange(5, 1, 3, 10)
     (4, 7)
     
-    Test smooth range truncated on start
+    Test smooth range truncated on start.
+
     >>> getSmoothRange(0, 10, 30, 200)
     (0, 2)
 
-    Test smooth range truncated on start
+    Test smooth range truncated on start.
+
     >>> getSmoothRange(1, 10, 30, 4)
     (0, 3)
 
-    Test smooth range truncated on end
+    Test smooth range truncated on end.
+
     >>> getSmoothRange(5, 1, 3, 5)
     (4, 5)
 
-    Test smooth range not multiple of tileSize
+    Test smooth range not multiple of tileSize.
+
     >>> getSmoothRange(5, 10, 24, 10)
     (4, 6)
     """
