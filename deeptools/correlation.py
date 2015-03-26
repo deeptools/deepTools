@@ -11,6 +11,12 @@ import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import FixedLocator
 
+from itertools import cycle
+from matplotlib.mlab import PCA
+import matplotlib.markers
+import os
+
+
 class Correlation:
     """
     class to work with matrices 
@@ -365,15 +371,16 @@ class Correlation:
         """
         Plot the PCA of a matrix
         """
-        from itertools import cycle
-        from matplotlib.mlab import PCA
-        import matplotlib.markers
+
+        ## PCA
         mlab_pca = PCA(self.matrix)
         n = len(self.labels)
+        #print self.matrix
+        #print type(self.matrix)
         colors = cycle(plt.cm.gist_rainbow(np.linspace(0,1,n)))
         markers = cycle(matplotlib.markers.MarkerStyle.filled_markers)
-        plt.axhline(y=0, color="lightgrey", linestyle="solid", zorder=1)
-        plt.axvline(x=0, color="lightgrey", linestyle="solid", zorder=2)
+        plt.axhline(y=0, color="black", linestyle="dotted", zorder=1)
+        plt.axvline(x=0, color="black", linestyle="dotted", zorder=2)
         for i in range(n):
             plt.scatter(mlab_pca.Y[0,i], mlab_pca.Y[1,i], marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
         plt.title('PCA')
@@ -381,3 +388,34 @@ class Correlation:
         plt.ylabel('PC2')
         lgd = plt.legend(scatterpoints=1, loc='center left', bbox_to_anchor=(1, 0.5), prop={'size':12}, markerscale=0.9)
         plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+
+
+        #Scree plot
+        eigenvalues = map(lambda x: x*n, mlab_pca.fracs)
+
+        cumulative = []
+        c = 0
+        for x in mlab_pca.fracs:
+            c += x
+            cumulative.append(c)
+
+        ind = np.arange(n)  # the x locations for the groups
+        width = 0.35         # the width of the bars
+
+        fig, ax1 = plt.subplots()
+        ax1.bar(width+ind, eigenvalues, width*2)
+        ax1.set_ylabel('Eigenvalue')
+        ax1.set_xlabel('Factors')
+        ax1.set_title('Scree plot')
+        ax1.set_xticks(ind+width*2)
+        ax1.set_xticklabels(ind+1)
+
+        ax2 = ax1.twinx()
+        ax2.axhline(y=1, color="black", linestyle="dotted")
+        ax2.plot(width*2+ind, cumulative[0:], "r-")
+        ax2.plot(width*2+ind, cumulative[0:], "wo")
+        ax2.set_ylim([0,1.05])
+        ax2.set_ylabel('Cumulative variability')
+
+        bname, ext = os.path.splitext(plot_filename)
+        fig.savefig(bname+".scree"+ext, format=image_format, bbox_inches='tight')
