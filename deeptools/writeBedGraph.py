@@ -23,7 +23,7 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                          minMappingQuality=None,
                          ignoreDuplicates=False,
                          fragmentFromRead_func=None,
-                         centerRead=False):
+                         centerRead=False, samFlag=None):
 
     r"""
     Writes a bedgraph having as base a number of bam files.
@@ -104,7 +104,7 @@ def writeBedGraph_worker(chrom, start, end, tileSize, defaultFragmentLength,
                 ignoreDuplicates=ignoreDuplicates,
                 minMappingQuality=minMappingQuality,
                 fragmentFromRead_func=fragmentFromRead_func,
-                centerRead=centerRead))
+                centerRead=centerRead, samFlag=samFlag))
         bamHandle.close()
 
     _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
@@ -245,7 +245,7 @@ def writeBedGraph(bamFilesList, outputFileName, fragmentLength,
                   extendPairedEnds=True, zerosToNans=True, smoothLength=0,
                   minMappingQuality=None, ignoreDuplicates=False,
                   fragmentFromRead_func=None,
-                  centerRead=False):
+                  centerRead=False, samFlag=None):
 
     r"""
     Given a list of bamfiles, a function and a function arguments,
@@ -279,7 +279,7 @@ def writeBedGraph(bamFilesList, outputFileName, fragmentLength,
                                func, funcArgs, extendPairedEnds, smoothLength,
                                zerosToNans, minMappingQuality,
                                ignoreDuplicates,
-                               fragmentFromRead_func, centerRead),
+                               fragmentFromRead_func, centerRead, samFlag),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,
