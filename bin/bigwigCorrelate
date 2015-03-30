@@ -225,9 +225,9 @@ def main(args):
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
+        fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
-            args.outRawCounts.write(fmt % tuple(row))
+            args.outRawCounts.write(fmt.format(*tuple(row)))
 
     np.savez_compressed(args.outFileName,
              matrix=num_reads_per_bin,
