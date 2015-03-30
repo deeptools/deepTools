@@ -201,7 +201,7 @@ def main(args):
     else:
         bam_mapped = bamHandle.mapped
 
-    tileSize = args.binSize if args.binSize > 0 else 50
+    binSize = args.binSize if args.binSize > 0 else 50
     fragmentLength = \
         args.fragmentLength if args.fragmentLength > 0 else 300
 
@@ -231,19 +231,20 @@ def main(args):
 
     funcArgs = {'scaleFactor': args.scaleFactor}
     zerosToNans = True if args.missingDataAsZero == 'no' else False
-    writeBedGraph.writeBedGraph([bamHandle.filename], args.outFileName,
-                                fragmentLength, writeBedGraph.scaleCoverage,
-                                funcArgs, tileSize=tileSize,
-                                region=args.region,
-                                numberOfProcessors=args.numberOfProcessors,
-                                format=args.outFileFormat,
-                                extendPairedEnds=args.extendPairedEnds,
-                                zerosToNans=zerosToNans,
-                                smoothLength=args.smoothLength,
-                                minMappingQuality=args.minMappingQuality,
-                                ignoreDuplicates=args.ignoreDuplicates,
-                                centerRead=args.centerReads,
-                                samFlag=args.samFlag)
+    wr = writeBedGraph.WriteBedGraph([bamHandle.filename], binSize, 0,
+                                    fragmentLength,
+                                    stepSize=binSize,
+                                    region=args.region,
+                                    numberOfProcessors=args.numberOfProcessors,
+                                    extendPairedEnds=args.extendPairedEnds,
+                                    minMappingQuality=args.minMappingQuality,
+                                    ignoreDuplicates=args.ignoreDuplicates,
+                                    center_read=args.centerReads,
+                                    zerosToNans=zerosToNans,
+                                    samFlag=args.samFlag)
+
+    wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
+            format=args.outFileFormat, smooth_length=args.smoothLength)
 
 if __name__ == "__main__":
     args = parseArguments()

@@ -209,7 +209,7 @@ def main(args):
         bed_regions = None
 
     stepsize = args.binSize + args.distanceBetweenBins
-    num_reads_per_bin = countR.getNumReadsPerBin(
+    c = countR.CountReadsPerBin(
         args.bamfiles,
         args.binSize,
         0,
@@ -223,6 +223,7 @@ def main(args):
         minMappingQuality=args.minMappingQuality,
         ignoreDuplicates=args.ignoreDuplicates,
         stepSize=stepsize)
+    num_reads_per_bin = c.run()
 
     sys.stderr.write("Number of non zero bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))

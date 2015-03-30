@@ -90,7 +90,7 @@ def bam():
 
 def read_options():
     """
-    This options are used by bamCorrelate and
+    These options are used by bamCorrelate and
     bamFingerprint. They are similar to the options
     used to process bam to bedgraph (see def bam)
     but without smoothlength and with a different
@@ -135,6 +135,17 @@ def read_options():
                        'considered.',
                        type=int,
                        )
+
+    group.add_argument('--samFlag',
+                      help='Filter reads based on the SAM flag. For example,'
+                           'to get only reads that are the first mate use a flag of 64.'
+                           'This is useful to count properly paired reads only once,'
+                           'otherwise the second mate will be also considered for the '
+                           'coverage.',
+                      metavar= 'INT',
+                      default=None,
+                      type=int,
+                      required=False)
     return parser
 
 

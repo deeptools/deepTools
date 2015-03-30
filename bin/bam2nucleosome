@@ -93,7 +93,7 @@ def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True,
 def main(args):
     bamFile = args.bam
     bamHandle = bamHandler.openBam(args.bam, args.bamIndex)
-    tileSize = args.binSize if args.binSize > 0 else 50
+    binSize = args.binSize if args.binSize > 0 else 50
     fragmentLength = args.fragmentLength if args.fragmentLength >0 else 300
 
     chunkSize = int(50e6)
@@ -127,15 +127,21 @@ def main(args):
 
     funcArgs = {'scaleFactor': args.scaleFactor}
 
-    writeBedGraph.writeBedGraph( [bamHandle.filename], args.outFileName, 
-                                 fragmentLength, writeBedGraph.scaleCoverage, 
-                                 funcArgs, tileSize=tileSize, region=args.region,
-                                 numberOfProcessors=args.numberOfProcessors,
-                                 format=args.outFileFormat,
-                                 extendPairedEnds=args.extendPairedEnds,
-                                 minMappingQuality=args.minMappingQuality,
-                                 ignoreDuplicates=args.ignoreDuplicates,
-                                 fragmentFromRead_func = getFragmentCenter)
+
+    wr = writeBedGraph.WriteBedGraph([bamHandle.filename], binSize, 0,
+                                    fragmentLength,
+                                    stepSize=binSize,
+                                    region=args.region,
+                                    numberOfProcessors=args.numberOfProcessors,
+                                    extendPairedEnds=args.extendPairedEnds,
+                                    minMappingQuality=args.minMappingQuality,
+                                    ignoreDuplicates=args.ignoreDuplicates,
+                                    center_read=args.centerReads,
+                                    zerosToNans=True,
+                                    samFlag=args.samFlag)
+
+    wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
+            format=args.outFileFormat, smooth_length=args.smoothLength)
 
     
 if __name__ == "__main__":

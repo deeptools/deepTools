@@ -369,19 +369,20 @@ def main(args):
                 'pseudocount': args.pseudocount
                 }
 
-    writeBedGraph.writeBedGraph(
-        [bam1.filename, bam2.filename],
-        args.outFileName, args.fragmentLength, FUNC,
-        funcArgs, tileSize=args.binSize, region=args.region,
-        numberOfProcessors=args.numberOfProcessors,
-        format=args.outFileFormat,
-        zerosToNans=True,
-        smoothLength=args.smoothLength,
-        extendPairedEnds=args.extendPairedEnds,
-        minMappingQuality=args.minMappingQuality,
-        ignoreDuplicates=args.ignoreDuplicates,
-        centerRead=args.centerReads,
-        samFlag=args.samFlag)
+    wr = writeBedGraph.WriteBedGraph([bam1.filename, bam2.filename], args.binSize, 0,
+                                    args.fragmentLength,
+                                    stepSize=args.binSize,
+                                    region=args.region,
+                                    numberOfProcessors=args.numberOfProcessors,
+                                    extendPairedEnds=args.extendPairedEnds,
+                                    minMappingQuality=args.minMappingQuality,
+                                    ignoreDuplicates=args.ignoreDuplicates,
+                                    center_read=args.centerReads,
+                                    zerosToNans=True,
+                                    samFlag=args.samFlag)
+
+    wr.run(FUNC, funcArgs,  args.outFileName,
+            format=args.outFileFormat, smooth_length=args.smoothLength)
 
 if __name__ == "__main__":
     args = parseArguments()

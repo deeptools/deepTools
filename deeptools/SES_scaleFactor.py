@@ -6,7 +6,7 @@ import numpy as np
 # own packages
 from deeptools.utilities import *
 from deeptools import bamHandler
-from deeptools.countReadsPerBin import getNumReadsPerBin
+import deeptools.countReadsPerBin as countR
 
 debug = 0
 
@@ -46,6 +46,10 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     are 0 are not taken into  account
 
     The test data contains reads for 200 bp
+
+    Example
+    ------
+
     >>> test = Tester()
 
     >>> dict = estimateScaleFactor([test.bamFile1, test.bamFile2], 50, 4, 0, 1)
@@ -65,13 +69,14 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     sizeFactorBasedOnMappedReads = \
         sizeFactorBasedOnMappedReads.min() / sizeFactorBasedOnMappedReads
 
-    num_reads_per_bin = getNumReadsPerBin(bamFilesList, binLength,
-                                          numberOfSamples,
-                                          defaultFragmentLength,
-                                          numberOfProcessors=numberOfProcessors,
-                                          verbose=verbose,
-                                          chrsToSkip=chrsToSkip)
+    cr = countR.CountReadsPerBin(bamFilesList, binLength,
+                                 numberOfSamples,
+                                 defaultFragmentLength,
+                                 numberOfProcessors=numberOfProcessors,
+                                 verbose=verbose,
+                                 chrsToSkip=chrsToSkip)
 
+    num_reads_per_bin = cr.run()
     sitesSampled = len(num_reads_per_bin)
 
     # the transpose is taken to easily iterate by columns which are now

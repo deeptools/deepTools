@@ -17,7 +17,6 @@ import argparse
 from scipy.stats import binom
 
 from deeptools.utilities import getGC_content, tbitToBamChrName
-from deeptools.countReadsPerBin import getFragmentFromRead
 from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
@@ -129,18 +128,19 @@ def getRequiredArgs():
 
 def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
     """
-    The fragments for forward and reverse reads are defined as follows
+    The fragments for forward and reverse reads are defined as follows::
 
-       |- read.pos       |- read.aend
-    ---+=================>-----------------------+---------    Forward strand
+           |- read.pos       |- read.aend
+        ---+=================>-----------------------+---------    Forward strand
 
-       |-fragStart                               |-fragEnd
+           |-fragStart                               |-fragEnd
 
-    ---+-----------------------<=================+---------    Reverse strand
-                               |-read.pos        |-read.aend
+        ---+-----------------------<=================+---------    Reverse strand
+                                   |-read.pos        |-read.aend
 
-       |-----------------------------------------|
-                        read.tlen
+           |-----------------------------------------|
+                            read.tlen
+
     """
     fragStart = None
     fragEnd = None
@@ -167,10 +167,7 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
                            as_fraction=True)
     except Exception:
         return None
-        """
-        print "getReadGCcontent exception."
-        print detail
-        """
+
     # match the gc to the given fragmentLength
     gc = int(np.round(gc * fragmentLength))
     return gc
@@ -246,7 +243,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
             vectorEnd   = min(fragmentEnd   - start, end - start)
         except TypeError:
             # the getFragmentFromRead functions returns None in some cases.
-            # Those cases are to be skiped, hence the continue line.
+            # Those cases are to be skipped, hence the continue line.
             continue
 
         cvg_corr[vectorStart:vectorEnd] += float(1) / R_gc[gc]
@@ -453,6 +450,78 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     os.remove(tempFileName)
     return tempFileName + ".bam"
 
+def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True):
+    """
+    The read has to be pysam object.
+
+    The following values are defined (for forward reads)::
+
+
+             |--          -- read.tlen --              --|
+             |-- read.alen --|
+        -----|===============>------------<==============|----
+             |               |            |
+          read.pos      read.aend      read.pnext
+
+
+          and for reverse reads
+
+
+             |--             -- read.tlen --           --|
+                                         |-- read.alen --|
+        -----|===============>-----------<===============|----
+             |                           |               |
+          read.pnext                   read.pos      read.aend
+
+    this is a sketch of a pair-end reads
+
+    The function returns the fragment start and end, either
+    using the paired end information (if available) or
+    extending the read in the appropriate direction if this
+    is single-end.
+
+    Parameters
+    ----------
+    read : pysam read object
+
+
+    Returns
+    -------
+    tuple
+        (fragment start, fragment end)
+
+    """
+    # convert reads to fragments
+
+    # this option indicates that the paired ends correspond
+    # to the fragment ends
+    # condition read.tlen < maxPairedFragmentLength is added to avoid read pairs
+    # that span thousands of base pairs
+
+    if extendPairedEnds == True and read.is_paired \
+            and abs(read.tlen) < 1000 \
+            and abs(read.tlen) > 0:
+        if read.is_reverse:
+            fragmentStart = read.pnext
+            fragmentEnd = read.aend
+        else:
+            fragmentStart = read.pos
+            # the end of the fragment is defined as
+            # the start of the forward read plus the insert length
+            fragmentEnd = read.pos + read.tlen
+    else:
+        if defaultFragmentLength <= read.aend - read.pos:
+            fragmentStart = read.pos
+            fragmentEnd = read.aend
+        else:
+            if read.is_reverse:
+                fragmentStart = read.aend - defaultFragmentLength
+                fragmentEnd = read.aend
+            else:
+                fragmentStart = read.pos
+                fragmentEnd = read.pos + defaultFragmentLength
+
+    return (fragmentStart, fragmentEnd)
 
 def run_shell_command(command):
     """
@@ -523,7 +592,6 @@ def main(args):
     print "using region {}".format(args.region)
     mp_args = []
     bedGraphStep = args.binSize
-
     chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
     print chrNameBitToBam, chrNameBamToBit
