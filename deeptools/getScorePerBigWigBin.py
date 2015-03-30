@@ -85,7 +85,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 warnings.simplefilter("ignore")
                 score = bwh.query(chrom, start, end, 1)[0]
             if np.isnan(score['mean']) or score is None:
-                sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score['mean'], chrom, start, end))
+                #sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score['mean'], chrom, start, end))
                 score['mean'] = 0.0
             avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
@@ -179,6 +179,7 @@ def getScorePerBin(bigwigFilesList, binLength,
                    numberOfProcessors=1, skipZeros=True,
                    verbose=False, region=None,
                    bedFile=None,
+                   stepSize=None,
                    chrsToSkip=[]):
     """
     This function returns a matrix containing scores (median) for the coverage
@@ -212,9 +213,9 @@ def getScorePerBin(bigwigFilesList, binLength,
 
     chrNames, chrLengths = zip(*chromSizes)
     genomeSize = sum(chrLengths)
-    stepSize = binLength    #for consecutive bins
-    chunkSize = int(stepSize * 1e3 / len(bigwigFilesList))
-    print binLength, stepSize, chunkSize
+    if stepSize is None:
+        stepSize = binLength    #for consecutive bins
+    chunkSize = int(stepSize * 500 / len(bigwigFilesList))
     if verbose:
         print "step size is {}".format(stepSize)
 
@@ -240,17 +241,17 @@ class Tester():
         The distribution of reads (and fragments) in the two bigWig
         files is as follows.
 
-        They cover 200 bp.
+        They cover 200 bp::
 
-          0                              100                           200
-          |------------------------------------------------------------|
-        A                                ==============>- - - - - - - -
-          - - - - - - - - - - - - - - - - - - - - - - - <==============
+              0                              100                           200
+              |------------------------------------------------------------|
+            A                                ==============>- - - - - - - -
+              - - - - - - - - - - - - - - - - - - - - - - - <==============
 
 
-        B - - - - - - - - <==============               ==============>
-                                         ==============>- - - - - - - -
-                                                        ==============>
+            B - - - - - - - - <==============               ==============>
+                                             ==============>- - - - - - - -
+                                                            ==============>
         """
         self.root = "./test/test_data/"
         self.bwFile1  = self.root + "testA.bw"

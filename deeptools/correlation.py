@@ -1,0 +1,356 @@
+import sys
+from matplotlib import use as mplt_use
+mplt_use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.cluster.hierarchy as sch
+from scipy.stats import pearsonr, spearmanr
+
+from matplotlib import rcParams
+import matplotlib.colors as colors
+import matplotlib.gridspec as gridspec
+from matplotlib.ticker import FixedLocator
+
+class Correlation:
+    """
+    class to work with matrices 
+    having sample data 
+    to compute correlations, plot
+    them and make scatter plots
+    """
+
+    def __init__(self, matrix_file,
+                 corr_method,
+                 labels=None,
+                 remove_outliers=False,
+                 log1p=False):
+
+        self.load_matrix(matrix_file)
+        self.corr_method = corr_method
+        self.corr_matrix = None # correlation matrix
+        if labels is not None:
+            # test that the length of labels
+            # corresponds to the length of
+            # samples
+
+            self.labels = labels
+
+        if remove_outliers is True:
+            # remove outliers, otherwise outliers will produce a very
+            # high pearson correlation. Unnecessary for spearman correlation
+            self.remove_outliers()
+
+        if log1p is True:
+            self.matrix  = np.log1p(self.matrix )
+
+        self.compute_correlation()
+
+    def load_matrix(self, matrix_file):
+        """
+        loads a matrix file saved using the numpy
+        savez method. Two keys are expected:
+        'matrix' and 'labels'
+        """
+        #load data to correlate
+        _ma = np.load(matrix_file)
+        # matrix:  cols to  samples
+        self.matrix  = np.asarray(_ma['matrix'].tolist())
+        self.labels = _ma['labels']
+
+
+    @staticmethod
+    def get_outlier_indices(data, max_deviation=200):
+        """
+        The method is based on the median absolute deviation. See
+        Boris Iglewicz and David Hoaglin (1993),
+        "Volume 16: How to Detect and Handle Outliers",
+        The ASQC Basic References in Quality Control:
+        Statistical Techniques, Edward F. Mykytka, Ph.D., Editor.
+
+        returns the list, without the outliers
+
+        The max_deviation=200 is like selecting a z-score
+        larger than 200, just that it is based on the median
+        and the median absolute deviation instead of the
+        mean and the standard deviation.
+        """
+        median = np.median(data)
+        b_value = 1.4826 # value set for a normal distribution
+        mad = b_value * np.median(np.abs(data-median))
+        outliers = []
+        if mad > 0:
+            deviation = abs(data - median) / mad
+            """
+            outliers = data[deviation > max_deviation]
+            print "outliers removed {}".format(len(outliers))
+            print outliers
+            """
+            outliers = np.flatnonzero(deviation > max_deviation)
+        return outliers
+
+    def remove_outliers(self, verbose=True):
+        """
+        get the outliers *per column* using the median absolute
+        deviation method
+
+        Returns the filtered matrix
+        """
+
+        unfiltered = len(self.matrix)
+        to_remove = None
+        for col in self.matrix.T:
+            outliers = self.get_outlier_indices(col)
+            if to_remove is None:
+                to_remove = set(outliers)
+            else:
+                # only set to remove those bins in which
+                # the outliers are present in all cases (colums)
+                # that's why the intersection is used
+                to_remove = to_remove.intersection(outliers)
+        if len(to_remove):
+            to_keep = [x for x in range(self.matrix.shape[0])
+                       if x not in to_remove]
+            self.matrix = self.matrix[to_keep, :]
+            if verbose:
+                sys.stderr.write(
+                    "total/filtered/left: "
+                    "{}/{}/{}\n".format(unfiltered,
+                                        unfiltered - len(to_keep),
+                                        len(to_keep)))
+
+        return self.matrix
+
+    def save_corr_matrix(self, file_handle):
+        """
+        saves the correlation matrix
+        """
+        file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
+        fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
+        i = 0
+        for row in self.corr_matrix:
+            file_handle.write(
+                "'%s'\t" % self.labels[i] + fmt % tuple(row))
+            i += 1
+
+    def compute_correlation(self):
+        """
+        computes spearman of pearson
+        correlation for the samples in the matrix
+        """
+        if self.corr_matrix is not None:
+            return self.corr_matrix
+
+        num_samples = len(self.labels)
+        # initialize correlation matrix
+        corr_matrix = np.zeros((num_samples, num_samples), dtype='float')
+        options = {'spearman': spearmanr,
+                   'pearson': pearsonr}
+        # do an all vs all correlation using the
+        # indices of the upper triangle
+        rows, cols = np.triu_indices(num_samples)
+
+        for index in xrange(len(rows)):
+            row = rows[index]
+            col = cols[index]
+            corr_matrix[row, col] = options[self.corr_method](
+                self.matrix[:, row],
+                self.matrix[:, col])[0]
+        # make the matrix symmetric
+        self.corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
+        return self.corr_matrix
+
+    def plot_correlation(self, plot_fiilename, vmax=None,
+                         vmin=None, colormap='jet', image_format=None,
+                         plot_numbers=False):
+        """
+        plots a correlation using a symmetric heatmap
+        """
+        num_rows = len(self.labels)
+        corr_matrix = self.compute_correlation()
+        # set a font size according to figure length
+        if num_rows < 6:
+            font_size = 14
+        elif num_rows > 40:
+            font_size = 5
+        else:
+            font_size = int(14 - 0.25*num_rows)
+        rcParams.update({'font.size': font_size})
+        # set the minimum and maximum values
+        if vmax is None:
+            vmax = 1
+        if vmin is None:
+            vmin = 0 if corr_matrix .min() >= 0 else -1
+
+        # Compute and plot dendrogram.
+        fig = plt.figure(figsize=(11, 9.5))
+        axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
+        axdendro.set_axis_off()
+        y_var = sch.linkage(corr_matrix, method='complete')
+        z_var = sch.dendrogram(y_var, orientation='right',
+                               link_color_func=lambda k: 'darkred')
+        axdendro.set_xticks([])
+        axdendro.set_yticks([])
+        cmap = plt.get_cmap(colormap)
+
+        # this line simply makes a new cmap, based on the original
+        # colormap that goes from 0.0 to 0.9
+        # This is done to avoid colors that
+        # are too dark at the end of the range that do not offer
+        # a good contrast between the correlation numbers that are
+        # plotted on black.
+        if plot_numbers:
+            cmap = cmap.from_list(colormap + "clipped",
+                                  cmap(np.linspace(0, 0.9, 10)))
+
+        cmap.set_under((0., 0., 1.))
+        # Plot distance matrix.
+        axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
+        index = z_var['leaves']
+        corr_matrix = corr_matrix[index, :]
+        corr_matrix = corr_matrix[:, index]
+        img_mat = axmatrix.pcolormesh(corr_matrix,
+                                      edgecolors='black',
+                                      cmap=cmap,
+                                      vmax=vmax,
+                                      vmin=vmin)
+        axmatrix.set_xlim(0, num_rows)
+        axmatrix.set_ylim(0, num_rows)
+
+        axmatrix.yaxis.tick_right()
+        axmatrix.set_yticks(np.arange(corr_matrix .shape[0])+0.5)
+        axmatrix.set_yticklabels(np.array(self.labels).astype('str')[index])
+
+    #    axmatrix.xaxis.set_label_position('top')
+        axmatrix.xaxis.set_tick_params(labeltop='on')
+        axmatrix.xaxis.set_tick_params(labelbottom='off')
+        axmatrix.set_xticks(np.arange(corr_matrix .shape[0])+0.5)
+        axmatrix.set_xticklabels(np.array(self.labels).astype('str')[index],
+                                 rotation=45,
+                                 ha='left')
+
+        axmatrix.tick_params(
+                axis='x',
+                which='both',
+                bottom='off',
+                top='off')
+
+        axmatrix.tick_params(
+                axis='y',
+                which='both',
+                left='off',
+                right='off')
+
+        #    axmatrix.set_xticks([])
+        # Plot colorbar.
+        axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
+        cobar = plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
+        cobar.solids.set_edgecolor("face")
+        if plot_numbers:
+            for row in range(num_rows):
+                for col in range(num_rows):
+                    axmatrix.text(row+0.5, col+0.5,
+                                  "{:.2f}".format(corr_matrix[row, col]),
+                                  ha='center', va='center')
+
+        fig.savefig(plot_fiilename, format=image_format)
+
+
+    def plot_scatter(self, plot_fiilename, image_format=None, log1p=False):
+        """
+        Plot the scatter plots of a matrix
+        in which each row is a sample
+        """
+
+        num_samples = self.matrix.shape[1]
+        corr_matrix = self.compute_correlation()
+        grids = gridspec.GridSpec(num_samples, num_samples)
+        grids.update(wspace=0, hspace=0)
+        fig = plt.figure(figsize=(2*num_samples, 2*num_samples))
+        plt.rcParams['font.size'] = 8.0
+
+        min_value = self.matrix.min()
+        max_value = self.matrix.max()
+        if (min_value % 2 == 0 and max_value % 2 == 0) or \
+                (min_value % 1 == 0 and max_value % 2 == 1):
+            # make one value odd and the other even
+            max_value = max_value + 1
+
+        if log1p:
+            majorLocator = FixedLocator(range(min_value, max_value, 2))
+            minorLocator = FixedLocator(range(min_value, max_value, 1))
+
+
+        rows, cols = np.triu_indices(num_samples)
+        for index in xrange(len(rows)):
+            row = rows[index]
+            col = cols[index]
+            if row == col:
+                # add titles as
+                # empty plot in the diagonal
+                ax = fig.add_subplot(grids[row, col])
+                ax.text(0.5, 0.5, self.labels[row],
+                        verticalalignment='center',
+                        horizontalalignment='center',
+                        fontsize=10, fontweight='bold',
+                        transform=ax.transAxes) 
+                ax.set_axis_off()
+                continue
+
+
+            ax = fig.add_subplot(grids[row, col])
+            if log1p:
+                ax.xaxis.set_major_locator(majorLocator)
+                ax.xaxis.set_minor_locator(minorLocator)
+                ax.yaxis.set_major_locator(majorLocator)
+                ax.yaxis.set_minor_locator(minorLocator)
+
+            vector1, vector2 = self.matrix[:, row], self.matrix[:, col]
+
+            ax.text(0.2, 0.8, "{}={:.2f}".format(self.corr_method,
+                                                 corr_matrix[row, col]),
+                    horizontalalignment='left',
+                    transform=ax.transAxes)
+            ax.get_yaxis().set_tick_params(
+                which='both',
+                left='off',
+                right='off',
+                direction='out')
+
+            ax.get_xaxis().set_tick_params(
+                which='both',
+                top='off',
+                bottom='off',
+                direction='out')
+
+            if col != num_samples - 1:
+                ax.set_yticklabels([])
+            else:
+                ax.yaxis.tick_right()
+                ax.get_yaxis().set_tick_params(
+                    which='both',
+                    left='off',
+                    right='on',
+                    direction='out')
+            if col - row == 1:
+                ax.xaxis.tick_bottom()
+                ax.get_xaxis().set_tick_params(
+                    which='both',
+                    top='off',
+                    bottom='on',
+                    direction='out')
+            else:
+                ax.set_xticklabels([])
+
+            ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
+            # downsample for plotting
+    #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
+    #        ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
+    #                    alpha=0.3, color='darkblue',
+    #                    markeredgecolor=None)
+
+    #        ax.set_ylim(min_value, max_value)
+    #        ax.set_xlim(min_value,max_value)
+            ax.set_ylim(min_value, ax.get_ylim()[1])
+            ax.set_xlim(min_value, ax.get_xlim()[1])
+        fig.tight_layout()
+        fig.savefig(plot_fiilename, format=image_format)

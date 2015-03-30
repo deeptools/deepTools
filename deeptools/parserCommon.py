@@ -90,7 +90,7 @@ def bam():
 
 def read_options():
     """
-    This options are used by bamCorrelate and
+    These options are used by bamCorrelate and
     bamFingerprint. They are similar to the options
     used to process bam to bedgraph (see def bam)
     but without smoothlength and with a different
@@ -135,6 +135,17 @@ def read_options():
                        'considered.',
                        type=int,
                        )
+
+    group.add_argument('--samFlag',
+                      help='Filter reads based on the SAM flag. For example,'
+                           'to get only reads that are the first mate use a flag of 64.'
+                           'This is useful to count properly paired reads only once,'
+                           'otherwise the second mate will be also considered for the '
+                           'coverage.',
+                      metavar= 'INT',
+                      default=None,
+                      type=int,
+                      required=False)
     return parser
 
 
@@ -262,224 +273,6 @@ Arguments used by heatmapper and profiler
 """
 
 
-def computeMatrixRequiredArgs(args=None):
-    parser = argparse.ArgumentParser(add_help=False)
-    required = parser.add_argument_group('Required arguments')
-    required.add_argument('--regionsFileName', '-R',
-                          metavar='File',
-                          help='File name, in BED format, containing '
-                          'the regions to plot.',
-                          type=argparse.FileType('r'),
-                          required=True)
-    required.add_argument('--scoreFileName', '-S',
-                          help='bigWig file containing '
-                          'the scores to be plotted. BigWig '
-                          'files can be obtained by using the bamCoverage '
-                          'or bamCompare tools. More information about '
-                          'the bigWig file format can be found at '
-                          'http://genome.ucsc.edu/goldenPath/help/bigWig.html ',
-                          metavar='File',
-                          type=argparse.FileType('r'),
-                          required=True)
-    return parser
-
-
-def computeMatrixOutputArgs(args=None):
-    parser = argparse.ArgumentParser(add_help=False)
-    output = parser.add_argument_group('Output options')
-    output.add_argument('--outFileName', '-out',
-                        help='File name to save the gzipped matrix file '
-                        'needed by the "heatmapper" and "profiler" tools.',
-                        type=writableFile,
-                        required=True)
-    output.add_argument('--outFileNameData',
-                        help='Name to save the averages per matrix '
-                        'column into a text file. This corresponds to '
-                        'the underlying data used to '
-                        'plot a summary profile. Example: myProfile.tab',
-                        type=argparse.FileType('w'))
-
-    output.add_argument('--outFileNameMatrix',
-                        help='If this option is given, then the matrix '
-                        'of values underlying the heatmap will be saved '
-                        'using the indicated name, e.g. IndividualValues.tab.'
-                        'This matrix can easily be loaded into R or '
-                        'other programs.',
-                        metavar='FILE',
-                        type=writableFile)
-    output.add_argument('--outFileSortedRegions',
-                        help='File name in which the regions are saved '
-                        'after skiping zeros or min/max threshold values. The '
-                        'order of the regions in the file follows the sorting '
-                        'order selected. This is useful, for example, to '
-                        'generate other heatmaps keeping the sorting of the '
-                        'first heatmap. Example: Heatmap1sortedRegions.bed',
-                        metavar='BED file',
-                        type=argparse.FileType('w'))
-    return parser
-
-
-def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
-
-    parser = argparse.ArgumentParser(add_help=False)
-    optional = parser.add_argument_group('Optional arguments')
-    optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
-
-    if case == 'scale-regions':
-        optional.add_argument('--regionBodyLength', '-m',
-                              default=1000,
-                              type=int,
-                              help='Distance in bp to which all regions are '
-                              'going to be fitted.')
-        optional.add_argument('--startLabel',
-                              default='TSS',
-                              help='Label shown in the plot for the start of '
-                              'the region. Default is TSS (transcription '
-                              'start site), but could be changed to anything, '
-                              'e.g. "peak start".'
-                              'Same for the --endLabel option. See below.')
-        optional.add_argument('--endLabel',
-                              default='TES',
-                              help='Label shown in the plot for the region '
-                              'end. Default is TES (transcription end site).')
-        optional.add_argument('--beforeRegionStartLength', '-b', '--upstream',
-                              default=0,
-                              type=int,
-                              help='Distance upstream of the start site of '
-                              'the regions defined in the region file. If the '
-                              'regions are genes, this would be the distance '
-                              'upstream of the transcription start site.')
-        optional.add_argument('--afterRegionStartLength', '-a', '--downstream',
-                              default=0,
-                              type=int,
-                              help='Distance downstream of the end site '
-                              'of the given regions. If the '
-                              'regions are genes, this would be the distance '
-                              'downstream of the transcription end site.')
-
-    elif case == 'reference-point':
-        optional.add_argument('--referencePoint',
-                              default='TSS',
-                              choices=['TSS', 'TES', 'center'],
-                              help='The reference point for the plotting '
-                              'could be either the region start (TSS), the '
-                              'region end (TES) or the center of the region. ')
-
-        # set region body length to zero for reference point mode
-        optional.add_argument('--regionBodyLength', help=argparse.SUPPRESS,
-                              default=0, type=int)
-        optional.add_argument('--beforeRegionStartLength', '-b', '--upstream',
-                              default=500,
-                              type=int,
-                              metavar='INT bp',
-                              help='Distance upstream of the reference-point '
-                              'selected.')
-        optional.add_argument('--afterRegionStartLength', '-a', '--downstream',
-                              default=1500,
-                              metavar='INT bp',
-                              type=int,
-                              help='Distance downstream of the '
-                              'reference-point selected.')
-        optional.add_argument('--nanAfterEnd',
-                              action='store_true',
-                              help='If set, any values after the region end '
-                              'are discarted. This is useful to visualize '
-                              'the region end when not using the '
-                              'scale-regions mode and when the reference-'
-                              'point is set to the TSS.')
-
-    optional.add_argument('--binSize', '-bs',
-                          help='Length, in base pairs, of the non-overlapping '
-                          'bin for averaging the score over the '
-                          'regions length.',
-                          type=int,
-                          default=10)
-
-    optional.add_argument('--sortRegions',
-                          help='Whether the output file should present the '
-                          'regions sorted. The default is to sort in '
-                          'descending order based on '
-                          'the mean value per region.',
-                          choices=["descend", "ascend", "no"],
-                          default='no')
-
-    optional.add_argument('--sortUsing',
-                          help='Indicate which method should be used for '
-                          'sorting. The value is computed for each row.',
-                          choices=["mean", "median", "max", "min", "sum",
-                                   "region_length"],
-                          default='mean')
-
-    optional.add_argument('--averageTypeBins',
-                          default='mean',
-                          choices=["mean", "median", "min",
-                                   "max", "std", "sum"],
-                          help='Define the type of statistic that should be '
-                          'used over the bin size range. The '
-                          'options are: "mean", "median", "min", "max", "sum" '
-                          'and "std". The default is "mean".')
-
-    optional.add_argument('--missingDataAsZero',
-                          help='[only for bigwig input] Set to "yes", if '
-                          'missing data should be indicated as zeros. Default '
-                          'is to ignore such cases which will be depicted as '
-                          'black areas in the heatmap. (see '
-                          '--missingDataColor argument of the heatmapper '
-                          'for additional options).',
-                          action='store_true')
-
-    optional.add_argument('--skipZeros',
-                          help='Whether regions with only scores of zero '
-                          'should be included or not. Default is to include '
-                          'them.',
-                          action='store_true')
-
-    optional.add_argument('--minThreshold',
-                          default=None,
-                          type=float,
-                          help='Numeric value. Any region containing a '
-                          'value that is equal or less than this numeric '
-                          'value will be skipped. This is useful to skip, '
-                          'for example, genes where the read count is zero '
-                          'for any of the bins. This could be the result of '
-                          'unmappable areas and can bias the overall results.')
-
-    optional.add_argument('--maxThreshold',
-                          default=None,
-                          type=float,
-                          help='Numeric value. Any region containing a value '
-                          'that is equal or higher that this numeric value '
-                          'will be skipped. The maxThreshold is useful to '
-                          'skip those few regions with very high read counts '
-                          '(e.g. major satellites) that may bias the average '
-                          'values.')
-
-    # in contrast to other tools,
-    # computeMatrix by default outputs
-    # messages and the --quiet flag supresses them
-    optional.add_argument('--quiet', '-q',
-                          help='Set to remove any warning or processing '
-                          'messages.',
-                          action='store_true')
-
-    optional.add_argument('--scale',
-                          help='If set, all values are multiplied by '
-                          'this number.',
-                          type=float,
-                          default=1)
-    optional.add_argument('--numberOfProcessors', '-p',
-                          help='Number of processors to use. Type "max/2" to '
-                          'use half the maximum number of processors or "max" '
-                          'to use all available processors.',
-                          metavar="INT",
-                          type=numberOfProcessors,
-                          default=cfg.config.get('general',
-                                                 'default_proc_number'),
-                          required=False)
-    return parser
-
-
 def heatmapperMatrixArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
@@ -565,16 +358,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '"sum" and "std".')
 
         optional.add_argument('--plotHeight',
-                              help='height in cm. The default for the plot '
-                              'height is 5 centimeters.',
+                              help='height in cm.',
                               type=float,
-                              default=5)
+                              default=7)
 
         optional.add_argument('--plotWidth',
-                              help='Width in cm. The default value is 8 '
-                              'centimeters. The minimum value is 1 cm.',
+                              help='Width in cm.  The minimum value is 1 cm.',
                               type=float,
-                              default=8)
+                              default=11)
 
         optional.add_argument(
             '--plotType',
@@ -583,14 +374,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'on the average type selected. The "fill" option '
             'fills the region between zero and the profile '
             'curve. The fill in color is semi transparent to '
-            'distinguish different profiles. The "se" option '
+            'distinguish different profiles. The "se" and "std" options '
             'colors the region between the profile and the '
-            'standard error of the data. As in the case of '
+            'standard error or standard deviation of the data. '
+            'As in the case of '
             'fill, a semi-transparent color is used. The option '
             '"overlapped_lines" plots each region values, one on '
             'top of the other; this option only works if '
-            '--onePlotPerGroup is set.',
-            choices=['lines', 'fill', 'se', 'overlapped_lines'],
+            '--onePlotPerGroup is set. The option "heatmap" plots a '
+            'summary heatmap.',
+            choices=['lines', 'fill', 'se', 'std', 'overlapped_lines', 'heatmap'],
             default='lines')
 
         optional.add_argument('--colors',
@@ -601,6 +394,11 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'be given separated by spaces. For example '
                               '--colors red blue green ',
                               nargs='+')
+
+        optional.add_argument('--numPlotsPerRow',
+                              help='Number of plots to plot in a row',
+                              type=int,
+                              default=8)
 
     elif mode == 'heatmap':
         optional.add_argument('--sortRegions',
@@ -652,6 +450,24 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'http://www.astro.lsa.umich.edu/~msshin/science/code/'
             'matplotlib_cm/ The available options are: \'' +
             color_options + '\'')
+
+        optional.add_argument(
+            '--colorList',
+            help='List of color to create a colormap. For example if  '
+            '--colorList black yellow blue is set (colors separated by '
+            'spaces) then a color map that starts with black, continues '
+            'to yellow and finishes in blue is created. If this option is'
+            'selected, it overrides the --colorMap selected.',
+            nargs='+')
+
+        optional.add_argument(
+            '--colorNumber',
+            help='if --colorList is given, colorNumber controls the number of '
+            'transitions from one color to the other. If --colorNumber is set '
+            'to the same number of colors as in --colorList, then per each '
+            'color a discrete interval  is shown (i.e. no transitions)',
+            type=int,
+            default=256)
 
         optional.add_argument('--zMin', '-min',
                               default=None,
@@ -721,6 +537,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           ' --regionsLabel "label1, label2". '
                           'Default is "genes".')
 
+    optional.add_argument('--samplesLabel',
+                          help='Labels for the samples plotted. The '
+                          'default is to use the file name of the '
+                          'sample. E.g.'
+                          ' --samplesLabel "label1, label2".',
+                          nargs='+')
+
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
                           'the generated image. Leave blank for no title.',
@@ -741,12 +564,29 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           default=None,
                           help='Maximum value for the Y-axis.')
 
-    optional.add_argument('--onePlotPerGroup',
-                          help='When the region file contains groups separated'
-                          ' by "#", the default is to plot the averages for '
-                          'the distinct plots in one plot. If this option is '
-                          'set, each group will get its own plot, stacked on '
-                          'top of each other.',
+    optional.add_argument('--legendLocation',
+                          default='best',
+                          choices=['best',
+                                   'upper-right',
+                                   'upper-left',
+                                   'upper-center',
+                                   'lower-left',
+                                   'lower-right',
+                                   'lower-center',
+                                   'center',
+                                   'center-left',
+                                   'center-right',
+                                   'none'
+                                   ],
+                          help='Location for the legend in the summary plot')
+
+    optional.add_argument('--perGroup',
+                          help='The default is to combine all group '
+                          'plots into one. If multiple samples are '
+                          'present, then for each sample a new plot is '
+                          'made. If --perGroup is set, then, for each '
+                          'group, all data from different samples '
+                          'is combined in to one plot.',
                           action='store_true')
 
     optional.add_argument('--plotFileFormat',

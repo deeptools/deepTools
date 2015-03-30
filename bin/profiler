@@ -11,10 +11,12 @@ use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib import colors as pltcolors
+import matplotlib.gridspec as gridspec
 
 # own modules
 from deeptools import parserCommon
 from deeptools import heatmapper
+from deeptools.heatmapper_utilities import plot_single, getProfileTicks
 
 debug = 0
 plt.ioff()
@@ -23,8 +25,8 @@ plt.ioff()
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
-                 parserCommon.heatmapperOutputArgs( mode='profile' ),
-                 parserCommon.heatmapperOptionalArgs( mode='profile' )],
+                 parserCommon.heatmapperOutputArgs(mode='profile'),
+                 parserCommon.heatmapperOptionalArgs(mode='profile')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool creates a profile plot for a '
         'score associated to genomic regions. '
@@ -67,157 +69,69 @@ def parseArguments(args=None):
     return(args)
 
 
-def plot_single(ax, ma, average_type, color, label,
-                 plot_type='simple'):
-
-    """
-    Adds a line to the plot using the specified metod
-    """
-
-    sumry = np.__getattribute__(average_type)(ma, axis=0)
-    # only plot the average profiles without error regions
-    if plot_type != 'overlapped_lines':
-        ax.plot(sumry, color=color, label=label, alpha=0.9)
-        x = np.arange(len(sumry))
-    if plot_type == 'fill':
-        ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
-
-    elif plot_type == 'se':  #standard error
-        std = np.std(ma, axis=0)/np.sqrt(ma.shape[0])
-        alpha = 0.2
-        if type(color) == type((0,0)):  # check of color is tuple
-            # add the alpha channed to the color tuple
-            f_color = [c for c in color[:-1]] + [alpha]
-        else:
-            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
-        # ideally the edgecolor should be None,
-        # but when generating a pdf image an edge is still
-        # drawn.
-        ax.fill_between(x, sumry, sumry + std, facecolor=f_color,
-                        edgecolor=f_color, lw=0.01)
-        ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
-                        edgecolor=f_color, lw=0.01)
-
-    elif plot_type == 'overlapped_lines':
-        ax.patch.set_facecolor('black')
-        for row in ma:
-            ax.plot(row, 'yellow', alpha=0.1)
-        x = np.arange(len(row))
-    ax.set_xlim(0, max(x))
-
-
 def plotProfile(hm, outFileName,
                 plotTitle='',
-                xAxisLabel='', yAxisLabel='',
+                xAxislabel='', yAxislabel='',
                 yMin=None, yMax=None,
-                averageType='median',
+                averagetype='median',
                 referencePointLabel='TSS',
                 startLabel='TSS', endLabel="TES",
-                plotHeight=5,
-                plotWidth=8,
-                onePlotPerGroup=False,
+                plotHeight=7,
+                plotWidth=11,
+                perGroup=False,
                 plotType='simple',
                 image_format=None,
-                color_list=None):
+                color_list=None,
+                legend_location='auto',
+                plots_per_row=8):
 
     """
-    Using the hm matrix, makes a line plot per group 
+    Using the hm matrix, makes a line plot
+    either per group or per sample
     using the specified parameters.
     """
-    tickPlotAdj = 0.5
+    # the following line is to temporary compute the log
+    # of the matrix
+    #hm.matrix.matrix = np.log(hm.matrix.matrix)
+
+    # decide how many plots are needed
+    if perGroup:
+        numplots = hm.matrix.get_num_groups()
+        numlines = hm.matrix.get_num_samples()
+    else:
+        numplots = hm.matrix.get_num_samples()
+        numlines = hm.matrix.get_num_groups()
+
+    if numplots > plots_per_row:
+        rows = np.ceil(numplots / plots_per_row).astype(int)
+        cols = plots_per_row
+    else:
+        rows = 1
+        cols = numplots
+    grids = gridspec.GridSpec(rows, cols)
+
     plt.rcParams['font.size'] = 10.0
     fontP = FontProperties()
     fontP.set_size('small')
 #    rcParams['font.size'] = 9.0
 
     # convert cm values to inches
-    plotHeightInches = float(plotHeight) / 2.54
-    figWidth = float(plotWidth) / 2.54
+    plotHeightInches = rows * float(plotHeight) / 2.54
+    figWidth = cols * float(plotWidth) / 2.54 
+    fig = plt.figure(figsize=(figWidth, plotHeightInches))
 
-    # measures are in inches
-    topBorder = 0.36
-    spacer = 0.25
-    bottomBorder = 0.3
+    # add xticks and labels to the last plot
+    # define the xticks
 
-    numGroups = len(hm.matrixDict)
-
-    if numGroups == 1:
-        # when the number of regions is just one, is better
-        # to use the defaults for one plot per group, because
-        # it does not tries to plot a legend below the plot,
-        # which for one region is unecesary
-        onePlotPerGroup = True
-
-    # plotHeightInches  height of plot plus bottom spacing
-    if not onePlotPerGroup:
-        figHeight = topBorder + bottomBorder + (numGroups / 2) * \
-            spacer + plotHeightInches
-    else:
-        figHeight = plotHeightInches
-
-    sumFracHeight = float(plotHeightInches) / figHeight
-    # fraction of the height for summary plots
-
-    topBorderFrac = topBorder / figHeight
-
-    if debug:
-        print (figWidth, figHeight)
-    # figsize: w,h tuple in inches
-    fig = plt.figure(figsize=(figWidth, figHeight))
-
-    b = hm.parameters['upstream']
-    a = hm.parameters['downstream']
-    m = hm.parameters['body']
-    w = hm.parameters['bin size']
-
-    if b < 1e5:
-        quotient = 1000
-        symbol = 'Kb'
-    if b >= 1e5:
-        quotient = 1e6
-        symbol = 'Mb'
-
-    if m == 0:
-        xTicks = [int(k / float(w)) - tickPlotAdj for k in [0, b, b  + a]]
-        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
-                       referencePointLabel,
-                       '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
-    else:
-        xticks_values = [0]
-        xTicksLabel = []
-
-        # if no upstream region is set, do not set a x tick
-        if hm.parameters['upstream'] > 0:
-            xticks_values.append( hm.parameters['upstream'] )
-            xTicksLabel.append( '{0:.1f}'.format(-(float(b) / quotient)) )
-        # set the x tick for the body parameter, regardless if upstream is 0 (not set)
-        xticks_values.append( hm.parameters['upstream'] + hm.parameters['body'] )
-        xTicksLabel.append( startLabel )
-        xTicksLabel.append( endLabel )
-        if hm.parameters['downstream'] > 0:
-            xticks_values.append( hm.parameters['upstream'] + hm.parameters['body'] + hm.parameters['downstream'] )
-            xTicksLabel.append( '{0:.1f}{1}'.format(float(a) / quotient, symbol) )
-
-        xTicks = [int(k / float(w)) - tickPlotAdj
-                  for k in xticks_values]
-
-        """
-        xTicks = [int(k / float(w)) - tickPlotAdj
-                  for k in [0, b, b + m, b + m + a]]
-        xTicksLabel = ['{0:.1f}'.format(-(float(b) / quotient)),
-                       startLabel, endLabel,
-                       '{0:.1f}kb'.format(float(a) / quotient, symbol)]
-        """
-
-    fig.suptitle(plotTitle, y=1 - (0.06 / figHeight))
+    fig.suptitle(plotTitle, y=(1 - (0.06 / plotHeightInches)))
 
     if not color_list:
         cmap_plot = plt.get_cmap('jet')
-        color_list = cmap_plot(np.arange(numGroups)/numGroups)
+        color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
     else:
-        if len(color_list) < numGroups:
+        if len(color_list) < numlines:
             sys.stderr.write("\nThe given list of colors is too small, "
-                       "at least {} colors are needed\n".format(numGroups))
+                       "at least {} colors are needed\n".format(numlines))
             exit(1)
         for color in color_list:
             if not pltcolors.is_color_like(color):
@@ -226,79 +140,92 @@ def plotProfile(hm, outFileName,
                                  "for example #eeff22".format(color))
 
                 exit(1)
-                
-    # add_axes( rect ) where rect is [left, bottom, width, height] and
-    # all quantities are in fractions of figure width and height.
-    # summary plot
-    # each group needs its axe
-    left = 0.45 / figWidth
-    width = 0.7
 
-    # i.e if multipleLines in one plot:
-    if not onePlotPerGroup:
-        bottom = 1 - (topBorderFrac + sumFracHeight)
-        if debug:
-            print ([left, bottom, width, sumFracHeight, figHeight])
-        ax = fig.add_axes([left, bottom, width, sumFracHeight])
-
-    index = -1
-    for label, ma in hm.matrixDict.iteritems():
-        index += 1
-        if onePlotPerGroup:
-            # create an axis for each sub plot
-            bottom = 1 - topBorderFrac - (index + 1) * sumFracHeight
-            ax = fig.add_subplot(numGroups, 1, index + 1, label=label)
-#            ax = fig.add_axes([left, bottom, width, sumFracHeight])
-            plot_single(ax, ma, averageType,
-                         color_list[index], label,
-                         plot_type=plotType)
-            ax.set_ylim(yMin, yMax)
-            ax.axes.set_xticks(xTicks)
-            ax.axes.set_xticklabels(xTicksLabel)
-            # reduce the number of yticks by half
-            if index == 0:
-                #ax.axes.set_title(plotTitle, weight='bold');
-                numTicks = len(ax.get_yticks())
-                yTicks = [ax.get_yticks()[i]
-                          for i in range(1, numTicks, 2)]
-            ax.set_yticks(yTicks)
-            ax.axes.set_ylabel(yAxisLabel)
-
-            ax.legend(loc='upper right', prop=fontP,
-                      frameon=False, markerscale=0.5)
-
+    xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
+                                          startLabel, endLabel)
+    first = True
+    sample_ymax = None
+    sample_ymin = None
+    ax_list = []
+    for plot in range(numplots):
+        col = plot % plots_per_row
+        row = int(plot / plots_per_row)
+        if row == 0 and col == 0:
+            ax = fig.add_subplot(grids[row, col])
         else:
-            # add new lines to existing plot
-            plot_single(ax, ma, averageType,
-                         color_list[index], label,
-                         plot_type=plotType)
+            ax = fig.add_subplot(grids[row, col], sharey=ax_list[0])
 
-    # i.e if multipleLines in one plot:
-    if not onePlotPerGroup:
-        # in the case of one box with all plots the
-        #font of the legend and the positions
-        # are changed.
-        ax.set_ylim(yMin, yMax)
-        ax.axes.set_xticks(xTicks)
-        ax.axes.set_xticklabels(xTicksLabel)
-        #ax.axes.set_title(plotTitle, weight='bold');
-        # the legend shows in a box below the plot
+        if perGroup:
+            title = hm.matrix.group_labels[plot]
+        else:
+            title = hm.matrix.sample_labels[plot]
+        ax.set_title(title)
+        mat = [] # when drawing a heatmap (in contrast to drawing lines)
+        for data_idx in range(numlines):
+            if perGroup:
+                row, col = plot, data_idx
+            else:
+                row, col = data_idx, plot
+
+            sub_matrix = hm.matrix.get_matrix(row, col)
+
+            if perGroup:
+                label = sub_matrix['sample']
+            else:
+                label = sub_matrix['group']
+
+            if plotType == 'heatmap':
+                # if plotting a heatmap, the individual rows
+                # need to be collected before plotting
+                mat.append(np.__getattribute__(averagetype)(sub_matrix['matrix'],
+                                                            axis=0))
+            else:
+                plot_single(ax, sub_matrix['matrix'],
+                            averagetype,
+                            color_list[data_idx],
+                            label,
+                            plot_type=plotType)
+
+        if plotType == 'heatmap':
+            ax.imshow(np.asmatrix(mat), interpolation='nearest', cmap='seismic_r')
+
+        if col != 0:
+            plt.setp(ax.get_yticklabels(), visible=False)
+
+        ax.axes.set_xticks(xticks)
+        ax.axes.set_xticklabels(xtickslabel)
+        # align the first and last label
+        # such that they don't fall off 
+        # the heatmap sides
+        ticks = ax.xaxis.get_major_ticks()
+        ticks[0].label1.set_horizontalalignment('left')
+        ticks[-1].label1.set_horizontalalignment('right')
+
+        if first:
+            ax.legend(loc=legend_location.replace('-',' '),
+                      ncol=1, prop=fontP,
+                      frameon=False, markerscale=0.5)
+            first = False
+        """
         ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
                   loc='upper center',
-                  ncol=2, mode="expand", prop=fontP,
+                  ncol=1, mode="expand", prop=fontP,
                   frameon=False, markerscale=0.5)
+        """
 
-        # reduce the number of yticks by half
-        numTicks = len(ax.get_yticks())
-        yTicks = [ax.get_yticks()[i] for i in range(1, numTicks, 2)]
-        ax.set_yticks(yTicks)
+        ax_list.append(ax)
 
-        ax.axes.set_ylabel(yAxisLabel)
+    # reduce the number of yticks by half
+    num_ticks = len(ax.get_yticks())
+    yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
+    ax.set_yticks(yticks)
 
-    # for some reason if the bbox_inches is used
-    # then the legend for the summary plot is omited
-    plt.savefig(outFileName, bbox_inches='tight', 
-        pdd_inches=0, dpi=200, format=image_format)
+    ax.axes.set_ylabel(yAxislabel)
+    
+    ax.set_ylim(yMin, yMax)
+    plt.subplots_adjust(wspace=0.05, hspace=0.3)
+    plt.tight_layout()
+    plt.savefig(outFileName, dpi=200, format=image_format)
 
 
 def main(args):
@@ -325,29 +252,13 @@ def main(args):
                       default_group_name=args.regionsLabel)
 
     if args.kmeans is not None:
-        k = args.kmeans
-        idx = hm.hmcluster(hm.matrixDict[hm.matrixDict.keys()[0]], 
-                           k,
-                           method='kmeans')
-
-        # split the matrix, region and averages in to clusters
-        label = hm.matrixDict.keys()[0]
-        _matrixDict = {}
-        _regionsDict = {}
-        _avgDict = {}
-        for cluster in range(k):
-            c_label = "cluster {}".format(cluster+1)
-            cluster_ids = np.flatnonzero(idx==cluster)
-            _matrixDict[c_label] = \
-                hm.matrixDict[label][cluster_ids,]
-            _regionsDict[c_label] = \
-                hm.regionsDict[label][cluster_ids]
-
-        hm.matrixDict = _matrixDict
-        hm.regionsDict = _regionsDict
+        hm.matrix.hmcluster(args.kmeans, method='kmeans')
 
     if len(args.regionsLabel):
-        hm.reLabelGroups(args.regionsLabel)
+        hm.matrix.set_group_labels(args.regionsLabel)
+
+    if args.samplesLabel and len(args.samplesLabel):
+        hm.matrix.set_sample_labels(args.samplesLabel)
 
     if args.outFileNameData:
         hm.saveTabulatedValues(args.outFileNameData)
@@ -366,11 +277,12 @@ def main(args):
                 args.endLabel,
                 args.plotHeight,
                 args.plotWidth,
-                args.onePlotPerGroup,
+                args.perGroup,
                 plotType=args.plotType,
                 image_format=args.plotFileFormat,
-                color_list=args.colors)
-
+                color_list=args.colors,
+                legend_location=args.legendLocation,
+                plots_per_row=args.numPlotsPerRow)
 
 if __name__ == "__main__":
     args = parseArguments()

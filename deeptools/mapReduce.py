@@ -8,7 +8,8 @@ def mapReduce(staticArgs, func, chromSize,
               region=None,
               bedFile=None,
               numberOfProcessors=4,
-              verbose=False):
+              verbose=False,
+              self_=None):
 
     """
     Split the genome into parts that are sent to workers using a defined
@@ -28,17 +29,19 @@ def mapReduce(staticArgs, func, chromSize,
     Depending on the type of process a larger or shorter regions may be
     preferred
 
-    :param chromSize: A list of duples containing the chromome
+    :param chromSize: A list of duples containing the chromosome
                       name and its length
     :param region: The format is chr:start:end:tileSize (see function
                    getUserRegion)
     :param staticArgs: tuple of arguments that are sent to the given 'func'
 
     :param func: function to call. The function is called using the
-                 followin parameters (chor, start, end, staticArgs)
+                 following parameters (chrom, start, end, staticArgs)
     :param bedFile: Is a bed file is given, the args to the func to be
                     called are extended to include a list of bed
                     defined regions.
+    :param self_: In case mapreduce should make a call to an object
+                the self variable has to be passed.
     """
 
     if not genomeChunkLength:
@@ -51,7 +54,7 @@ def mapReduce(staticArgs, func, chromSize,
     regionStart = 0
 
     # if a region is set, that means that the task should be only cover
-    # the given genomic possition
+    # the given genomic position
 
     if region:
         chromSize, regionStart, regionEnd, genomeChunkLength = \
@@ -72,7 +75,11 @@ def mapReduce(staticArgs, func, chromSize,
         start = 0 if regionStart == 0 else regionStart
         for startPos in xrange(start, size, genomeChunkLength):
             endPos = min(size, startPos + genomeChunkLength)
-            argsList = [chrom, startPos, endPos]
+            if self_ is not None:
+                argsList = [self_]
+            else:
+                argsList = []
+            argsList.extend([chrom, startPos, endPos])
             # add to argument list the static list received the the function
             argsList.extend(staticArgs)
 
