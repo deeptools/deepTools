@@ -159,15 +159,25 @@ def getTempFileName(suffix=''):
     which has much faster accession.
     """
     import tempfile
-    # is /dev/shm available?
-    try:
+    import config as cfg
+    # get temp dir from configuration file
+    tmp_dir =  cfg.config.get('general', 'tmp_dir')
+    if tmp_dir == 'default':
         _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
                                                 suffix=suffix,
-                                                dir='/dev/shm',
                                                 delete=False)
-    except OSError:
-        _tempFile = tempfile.NamedTemporaryFile(suffix=suffix,
-                                                delete=False)
+
+    else:
+        try:
+            _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                                    suffix=suffix,
+                                                    dir=tmp_dir,
+                                                    delete=False)
+        # fall back to system tmp file
+        except OSError:
+            _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                                    suffix=suffix,
+                                                    delete=False)
 
     memFileName = _tempFile.name
     _tempFile.close()
