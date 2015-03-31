@@ -36,7 +36,7 @@ class CountReadsPerBin(object):
     bamFilesList : list
         List containing the names of indexed bam files. E.g. ['file1.bam', 'file2.bam']
 
-    self.binLength : int
+    binLength : int
         Length of the window/bin. This value is overruled by ``bedFile`` if present.
 
     numberOfSamples : int
@@ -128,8 +128,8 @@ class CountReadsPerBin(object):
            [ 1.,  1.,  2.]])
     """
 
-    def __init__(self, bamFilesList, binLength, numberOfSamples,
-                 defaultFragmentLength, numberOfProcessors=1,
+    def __init__(self, bamFilesList, binLength=50, numberOfSamples=10,
+                 defaultFragmentLength=300, numberOfProcessors=1,
                  skipZeros=True, verbose=False, region=None,
                  bedFile=None, extendPairedEnds=True,
                  minMappingQuality=None,

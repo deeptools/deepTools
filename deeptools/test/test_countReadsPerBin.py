@@ -31,11 +31,11 @@ class TestCountReadsPerBin(object):
         self.chrom = '3R'
         step_size = 50
         bin_length = 25
-        num_samples = 0 # replaced by step size
         default_frag_length = 0 # replaced by read length
 
         self.c = cr.CountReadsPerBin([self.bamFile1, self.bamFile2],
-                             bin_length, num_samples, default_frag_length,
+                             binLength = bin_length,
+                             defaultFragmentLength=default_frag_length,
                              stepSize=step_size)
 
     def test_countReadsInRegions_worker(self):
