@@ -245,11 +245,29 @@ def plotMatrix(hm, outFileName,
     color_list = cmap_plot(np.arange(numgroups) / numgroups)
     cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
 
-        
+    # check if matrix is reference-point based using the upstream >0 value
+    # and is sorted by region length. If this is
+    # the case, prepare the data to plot a border at the regions end
+    if hm.parameters['upstream'] > 0 and \
+            hm.matrix.sort_using == 'region_length' and \
+            hm.matrix.sort_method != 'no':
+
+            _regions = hm.matrix.get_regions()
+            regions_length_in_bins = []
+            for _group in _regions:
+                _reg_len = []
+                for ind_reg in _group:
+                    _len = ind_reg['end']-ind_reg['start']
+                    _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
+#                    print hm.parameters['upstream'] + (_len / hm.parameters['bin size'])
+                regions_length_in_bins.append(_reg_len)
+    else:
+        regions_length_in_bins = None
 
     first_group = 0 # helper variable to place the title per sample
     for sample in range(hm.matrix.get_num_samples()):
         for group in range(numgroups):
+            group_idx = group
             # add the respective profile to the
             # summary plot
             sub_matrix = hm.matrix.get_matrix(group, sample)
@@ -273,22 +291,18 @@ def plotMatrix(hm, outFileName,
                             vmax=zMax,
                             cmap=cmap,
                             extent=[0, cols, rows, 0])
-
-            # plot a line showing the border of the gene length
-            # only if the matrix is using reference-point (b>0)
-            # The lengthDict is set to none if the matrix is
-            # not ordered according to region length
-            """
-            if b > 0 and label in hm.lengthDict.keys() and \
-                    hm.lengthDict[label] is not None:
+            # plot border at the end of the regions
+            # if ordered by length
+            if regions_length_in_bins is not None:
                 x_lim = ax.get_xlim()
                 y_lim = ax.get_ylim()
-                ax.plot(hm.lengthDict[label],
-                            np.arange(len(hm.lengthDict[label])),
-                            '--', color='black', linewidth=0.5, dashes=(3, 2))
+
+                ax.plot(regions_length_in_bins[group_idx],
+                        np.arange(len(regions_length_in_bins[group_idx])),
+                        '--', color='black', linewidth=0.5, dashes=(3, 2))
                 ax.set_xlim(x_lim)
                 ax.set_ylim(y_lim)
-            """
+
 
             ax.axes.get_xaxis().set_visible(False)
             ax.axes.set_xlabel(xAxisLabel)

@@ -351,6 +351,8 @@ def main(args):
                   'skip zeros': args.skipZeros,
                   'nan after end': args.nanAfterEnd,
                   'proc number': args.numberOfProcessors,
+                  'sort regions': args.sortRegions,
+                  'sort using': args.sortUsing
                   }
 
     hm = heatmapper.heatmapper()

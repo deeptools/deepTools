@@ -8,6 +8,7 @@ import multiprocessing
 # NGS packages
 import pysam
 from bx.intervals.io import GenomicIntervalReader
+from bx.bbi.bigwig_file import BigWigFile
 
 
 def compute_sub_matrix_wrapper(args):
@@ -152,20 +153,32 @@ class heatmapper(object):
                                   parameters):
 
         """
-        Args:
-         score_file_list (list of str): Contains the list of
-           bam or bigwig files to be used.
-         regions (list of dictionaries): Each item in the list is a dictionary
-          containing containing the fields: 'chrom', 'start', 'end', 'name'
-          and 'strand.
-        parameters (dict): Contains values that specify the length
-         of bins, the number of bp after a reference point etc.
+        Parameters
+        ----------
+        score_file_list : list
+            List of strings. Contains the list of
+            bam or bigwig files to be used.
+        regions : list of dictionaries
+            Each item in the list is a dictionary
+            containing containing the fields: 'chrom', 'start', 'end', 'name' and 'strand.
+        parameters : dict
+            Contains values that specify the length of bins, the number of bp after a reference point etc.
 
-        Returns:
-        a matrix that contains per each row the values found 
+        Returns
+        -------
+        numpy matrix
+            A numpy matrix that contains per each row the values found per each of the regions given
         """
 
         # read BAM or scores file
+        score_file_handlers = []
+        for sc_file in score_file_list:
+            if sc_file.endswith(".bam"):
+                score_file_handlers.append(pysam.Samfile(sc_file, 'rb'))
+            else:
+                score_file_handlers.append(BigWigFile(file=open(sc_file, 'r' )))
+
+        """
         if score_file_list[0].endswith(".bam"):
             bamfile_list = []
             for score_file in score_file_list:
@@ -175,6 +188,7 @@ class heatmapper(object):
             from bx.bbi.bigwig_file import BigWigFile
             for score_file in score_file_list:
                 bigwig_list.append(BigWigFile(file=open(score_file, 'r' )))
+        """
 
         # determine the number of matrix columns based on the lengths
         # given by the user, times the number of score files
@@ -256,16 +270,40 @@ class heatmapper(object):
                                                        feature['start'],
                                                        feature['end']))
                 coverage = []
-                if score_file.endswith(".bam"):
-                    for bamfile in bamfile_list:
+                # compute the values (coverage in the case of bam files)
+                # for each of the files being processed.
+                for idx, sc_handler in enumerate(score_file_handlers):
+                    #check if the file is bam or bigwig
+                    if score_file_list[idx].endswith(".bam"):
                         cov = heatmapper.coverageFromBam(
-                            bamfile, feature['chrom'], zones,
+                            sc_handler, feature['chrom'], zones,
                             parameters['bin size'],
                             parameters['bin avg type'])
-                        if feature['strand'] == "-":
-                            cov = cov[::-1]
-                        coverage = np.hstack([coverage, cov])
+                    else:
+                        cov = heatmapper.coverageFromBigWig(
+                            sc_handler, feature['chrom'], zones,
+                            parameters['bin size'],
+                            parameters['bin avg type'],
+                            parameters['missing data as zero'])
 
+
+                    if feature['strand'] == "-":
+                        cov = cov[::-1]
+
+                    if parameters['nan after end'] and parameters['body'] == 0 \
+                            and parameters['ref point'] == 'TSS':
+                        # convert the gene length to bin length
+                        region_length_in_bins = \
+                            (feature['end'] - feature['start']) / \
+                            parameters['bin size']
+                        b = parameters['upstream'] / parameters['bin size']
+                        # convert to nan any region after the end of the region
+                        cov[b + region_length_in_bins :] = np.nan
+
+                    coverage = np.hstack([coverage, cov])
+
+
+                """
                 else:
                     for bigwig in bigwig_list:
                         cov = heatmapper.coverageFromBigWig(
@@ -276,6 +314,7 @@ class heatmapper(object):
                         if feature['strand'] == "-":
                             cov = cov[::-1]
                         coverage = np.hstack([coverage, cov])
+                """
 
 
             if coverage is None:
@@ -317,16 +356,6 @@ class heatmapper(object):
                 coverage = parameters['scale'] * coverage
 
             subMatrix[j, :] = coverage
-
-            if parameters['nan after end'] and parameters['body'] == 0 \
-                    and parameters['ref point'] == 'TSS':
-                # convert the gene length to bin length
-                region_length_in_bins = \
-                    (feature['end'] - feature['start']) / \
-                    parameters['bin size']
-                b = parameters['upstream'] / parameters['bin size']
-                # convert to nan any region after the end of the region
-                subMatrix[j, b + region_length_in_bins:] = np.nan
 
             subRegions.append(feature)
             j += 1
@@ -573,7 +602,9 @@ class heatmapper(object):
                          group_labels=self.parameters['group_labels'],
                          sample_labels=self.parameters['sample_labels'])
 
-
+        if 'sort regions' in self.parameters:
+            self.matrix.set_sorting_method(self.parameters['sort regions'],
+                                        self.parameters['sort using'])
         return
 
     def saveMatrix(self, file_name):
@@ -872,6 +903,9 @@ class _matrix(object):
         self.matrix = matrix
         self.group_boundaries = group_boundaries
         self.sample_boundaries = sample_boundaries
+        self.sort_method = None
+        self.sort_using = None
+
         if group_labels is None:
             self.group_labels = ['group {}'.format(x)
                                  for x in range(len(group_boundaries)-1)]
@@ -931,9 +965,35 @@ class _matrix(object):
             raise ValueError("length new labels != length original labels")
         self.sample_labels = new_labels
 
+    def set_sorting_method(self, sort_method, sort_using):
+        self.sort_method = sort_method
+        self.sort_using = sort_using
+
+    def get_regions(self):
+        """Returns the regions per group
+
+        Returns
+        ------
+        list
+
+            Each element of the list is itself a list
+            of dictionaries containing the regions info:
+            chrom, start, end, strand, name etc.
+
+            Each element of the list corresponds to each
+            of the groups
+        """
+        regions = []
+        for idx in range(len(self.group_labels)):
+            start = self.group_boundaries[idx]
+            end = self.group_boundaries[idx+1]
+            regions.append(self.regions[start:end])
+
+        return regions
+
     def sort_groups(self, sort_using='mean', sort_method='no'):
         """
-        Sorts and rearanges the submatrices according to the
+        Sorts and rearranges the submatrices according to the
         sorting method given.
         """
         if sort_method == 'no':
@@ -957,12 +1017,14 @@ class _matrix(object):
             if sort_method == 'descend':
                 order = order[::-1]
             _sorted_matrix.append(self.matrix[start:end, :][order, :])
+            # sort the regions
             _reg = self.regions[start:end]
             for idx in order:
                 _sorted_regions.append(_reg[idx])
 
         self.matrix = np.vstack(_sorted_matrix)
         self.regions = _sorted_regions
+        self.set_sorting_method(sort_method, sort_using)
 
     def hmcluster(self, k, method='kmeans'):
 
