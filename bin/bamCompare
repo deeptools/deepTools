@@ -18,7 +18,7 @@ def parseArguments(args=None):
     parentParser = parserCommon.getParentArgParse()
     requiredArgs = getRequiredArgs()
     optionalArgs = getOptionalArgs()
-    bamParser = parserCommon.bam()
+    bamParser = parserCommon.read_options()
     outputParser = parserCommon.output()
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, outputParser, optionalArgs, parentParser,
@@ -189,17 +189,6 @@ def getOptionalArgs():
                           action='store_true',
                           required=False)
 
-    optional.add_argument('--samFlag',
-                          help='Filter reads based on the SAM flag. For example,'
-                               'to get only reads that are the first mate use a flag of 64.'
-                               'This is useful to count properly paired reads only once,'
-                               'otherwise the second mate will be also considered for the '
-                               'coverage.',
-                          metavar= 'INT',
-                          default=None,
-                          type=int,
-                          required=False)
-
     optional.add_argument('--numberOfSamples', '-n',
                           help='*Only relevant when SES is chosen for the '
                           'scaleFactorsMethod.* Number of samplings taken '
@@ -225,15 +214,18 @@ def getOptionalArgs():
                           'for computing the normalization. For example, '
                           ' --ignoreForNormalization "chrX, chrM" ')
 
-    optional.add_argument('--centerReads',
-                          help='By adding this option reads are centered with '
-                          'respect to the fragment length. For paired-end data '
-                          'the read is centered at the fragment length defined '
-                          'by the two fragment ends. For single-end data, the '
-                          'given fragment length is used. This option is '
-                          'useful to get a sharper signal around enriched '
-                          'regions.',
-                          action='store_true')
+    optional.add_argument('--smoothLength',
+                           metavar="INT bp",
+                           help='The smooth length defines a window, larger than '
+                           'the binSize, to average the number of reads. For '
+                           'example, if the --binSize is set to 20 bp and the '
+                           '--smoothLength is set to 60 bp, then, for each '
+                           'binSize the average of it and its left and right '
+                           'neighbors is considered. Any value smaller than the '
+                           '--binSize will be ignored and no smoothing will be '
+                           'applied.',
+                           type=int)
+
     return parser
 
 ########################################
@@ -379,7 +371,9 @@ def main(args):
                                     ignoreDuplicates=args.ignoreDuplicates,
                                     center_read=args.centerReads,
                                     zerosToNans=True,
-                                    samFlag=args.samFlag)
+                                    samFlag_include=args.samFlagInclude,
+                                    samFlag_exclude=args.samFlagExclude,
+                                    )
 
     wr.run(FUNC, funcArgs,  args.outFileName,
             format=args.outFileFormat, smooth_length=args.smoothLength)

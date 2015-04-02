@@ -20,7 +20,7 @@ def countReadsInRegions_wrapper(args):
     from the countReadsPerBin object
 
     """
-    return CountReadsPerBin.countReadsInRegions_worker(*args)
+    return CountReadsPerBin.count_reads_in_region(*args)
 
 
 class CountReadsPerBin(object):
@@ -92,11 +92,16 @@ class CountReadsPerBin(object):
     center_read : bool
         Determines if reads should be centered with respect to the fragment length.
 
-    samFlag : int
-        If given, only reads having such flag are considered. For example, to get only
+    samFlag_include : int
+        Extracts only those reads having the SAM flag. For example, to get only
         reads that are the first mates a samFlag of 64 could be used. Similarly, the
-        samFlag can be used to select only reads mapping on the forward (or reverse) strand
+        samFlag_include can be used to select only reads mapping on the reverse strand
         or to get only properly paired reads.
+
+    samFlag_exclude : int
+        Removes reads that match the SAM flag. For example to get all reads
+        that map to the forward strand a samFlag_exlude 16 should be used. Which
+        translates into exclude all reads that map to the reverse strand.
 
     zerosToNans : bool
         If true, zero values encountered are transformed to Nans. Default false.
@@ -128,16 +133,18 @@ class CountReadsPerBin(object):
            [ 1.,  1.,  2.]])
     """
 
-    def __init__(self, bamFilesList, binLength=50, numberOfSamples=10,
+    def __init__(self, bamFilesList, binLength=50, numberOfSamples=None,
                  defaultFragmentLength=300, numberOfProcessors=1,
-                 skipZeros=True, verbose=False, region=None,
+                 skipZeros=False, verbose=False, region=None,
                  bedFile=None, extendPairedEnds=True,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
                  chrsToSkip=[],
                  stepSize=None,
                  center_read=False,
-                 samFlag=None, zerosToNans=False,
+                 samFlag_include=None,
+                 samFlag_exclude=None,
+                 zerosToNans=False,
                  smoothLength=0):
 
 
@@ -156,11 +163,17 @@ class CountReadsPerBin(object):
         self.chrsToSkip =  chrsToSkip
         self.stepSize = stepSize
         self.center_read = center_read
-        self.samFlag = samFlag
+        self.samFlag_include = samFlag_include
+        self.samFlag_exclude = samFlag_exclude
         self.zerosToNans = zerosToNans
         self.smoothLength=smoothLength
 
-        self.maxPairedFragmentLength = 2 * self.defaultFragmentLength if self.defaultFragmentLength > 0 else 1000
+        # check that wither numberOfSamples or stepSize are set
+        if numberOfSamples is None and stepSize is None and bedFile is None:
+            raise ValueError("either stepSize, numberOfSamples or beFile has to be set")
+
+        self.maxPairedFragmentLength = 2 * self.defaultFragmentLength if \
+                                    self.defaultFragmentLength > 100 else 1000
 
     def run(self):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
@@ -181,13 +194,19 @@ class CountReadsPerBin(object):
         chrNames, chrLengths = zip(*chromSizes)
 
         genomeSize = sum(chrLengths)
+        if self.stepSize is None:
+            self.stepSize = max(int(float(genomeSize) / self.numberOfSamples), 1)
+
+        # number of samples is better if large
+        if np.mean(chrLengths) < self.stepSize:
+            min_num_of_samples = int(genomeSize / np.mean(chrLengths))
+            raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
+
         max_mapped = max([x.mapped for x in bamFilesHandlers])
 
         reads_per_bp = float(max_mapped) / genomeSize
         # chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
 
-        if self.stepSize is None:
-            self.stepSize = max(int(float(genomeSize) / self.numberOfSamples), 1)
 
         chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
         [bam_h.close() for bam_h in bamFilesHandlers]
@@ -209,18 +228,6 @@ class CountReadsPerBin(object):
                                        region=self.region,
                                        numberOfProcessors=self.numberOfProcessors)
 
-        """
-        imap_res = mapReduce.mapReduce((bamFilesList, stepSize, binLength,
-                                        defaultFragmentLength, skipZeros,
-                                        extendPairedEnds, minMappingQuality,
-                                        ignoreDuplicates, samFlag),
-                                       countReadsInRegions_wrapper,
-                                       chromSizes,
-                                       genomeChunkLength=chunkSize,
-                                       bedFile=bedFile,
-                                       region=region,
-                                       numberOfProcessors=numberOfProcessors)
-        """
 
         try:
             num_reads_per_bin = np.concatenate(imap_res, axis=0)
@@ -237,7 +244,7 @@ class CountReadsPerBin(object):
 
 
 
-    def countReadsInRegions_worker(self, chrom, start, end, bed_regions_list=None):
+    def count_reads_in_region(self, chrom, start, end, bed_regions_list=None):
 
         """Counts the reads in each bam file at each 'stepSize' position
         within the interval (start, end) for a window or bin of size binLength.
@@ -285,7 +292,7 @@ class CountReadsPerBin(object):
         The transpose is used to get better looking numbers. The first line
         corresponds to the number of reads per bin in the first bamfile.
 
-        >>> np.transpose(c.countReadsInRegions_worker(test.chrom, 0, 200))
+        >>> np.transpose(c.count_reads_in_region(test.chrom, 0, 200))
         array([[ 0.,  0.,  1.,  1.],
                [ 0.,  1.,  1.,  2.]])
 
@@ -294,7 +301,7 @@ class CountReadsPerBin(object):
 
         >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0, 0,
         ... skipZeros=True, stepSize=50)
-        >>> np.transpose(c.countReadsInRegions_worker(test.chrom, 0, 200))
+        >>> np.transpose(c.count_reads_in_region(test.chrom, 0, 200))
         array([[ 0.,  1.,  1.],
                [ 1.,  1.,  2.]])
 
@@ -304,6 +311,8 @@ class CountReadsPerBin(object):
         if start > end:
             raise NameError("start %d bigger that end %d" % (start, end))
 
+        if self.stepSize is None:
+            raise ValueError("stepSize is not set!")
         # array to keep the read counts for the regions
         subNum_reads_per_bin = []
 
@@ -313,7 +322,7 @@ class CountReadsPerBin(object):
         bamHandlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
 
         regionsToConsider = []
-        if bed_regions_list:
+        if bed_regions_list is not None:
             for chrom, start, end in bed_regions_list:
                 regionsToConsider.append((chrom, start, end, end - start))
         else:
@@ -326,7 +335,7 @@ class CountReadsPerBin(object):
             coverage_array = []
             for bam in bamHandlers:
                 coverage_array.append(
-                    self.getCoverageOfRegion(bam, chrom, start, end, region_length)[0])
+                    self.get_coverage_of_region(bam, chrom, start, end, region_length)[0])
 
             # skip if any of the bam files returns a NaN
             if np.isnan(sum(coverage_array)):
@@ -347,7 +356,7 @@ class CountReadsPerBin(object):
         return np.array(subNum_reads_per_bin).reshape(rows, len(self.bamFilesList))
 
 
-    def getCoverageOfRegion(self, bamHandle, chrom, start, end, tileSize,
+    def get_coverage_of_region(self, bamHandle, chrom, start, end, tileSize,
                             fragmentFromRead_func=None):
 
         """
@@ -356,13 +365,13 @@ class CountReadsPerBin(object):
 
         >>> test = Tester()
         >>> import pysam
-        >>> c = CountReadsPerBin([], 1, 1, 1, 0, extendPairedEnds=True)
+        >>> c = CountReadsPerBin([], stepSize=1,
+        ... defaultFragmentLength=300, extendPairedEnds=True)
 
         For this case the reads are length 36. The number of overlapping
         read fragments is 4 and 5 for the positions tested.
 
-        >>> c.zerosToNans = True
-        >>> c.getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2',
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
         ... 5000833, 5000835, 1)
         array([ 4.,  5.])
 
@@ -372,37 +381,21 @@ class CountReadsPerBin(object):
         At position 500090-500100 one fragment  of length 100 overlap, and after position 5000101
         there should be zero reads.
 
-        >>> c.getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000090, 5000110, 10)
+        >>> c.zerosToNans = True
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2', 5000090, 5000110, 10)
         array([  1.,  nan])
 
-        In the following  case the reads length is 50. Reads are not extended
+        In the following  case the reads length is 50. Reads are not extended.
 
         >>> c.extendPairedEnds=False
-        >>> c.getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 148, 154, 2)
+        >>> c.defaultFragmentLength=1
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', 148, 154, 2)
         array([ 1.,  2.,  2.])
 
-        Test ignore duplicates.
-
-        >>> c.ignoreDuplicates=True
-        >>> c.getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 50)
-        array([ nan,   1.,   1.,   1.])
-
-        Test long regions.
-
-        >>> c = CountReadsPerBin([], 1, 1, 1, 0, extendPairedEnds=False)
-        >>> c.zerosToNans = True
-        >>> c.getCoverageOfRegion(pysam.Samfile(test.bamFile2), '3R', 0, 200, 200, 0)
-        array([ 4.])
-
-        Test sam flag with value = 64 which means only first mate.
-
-        >>> c.samFlag = 64
-        >>> c.getCoverageOfRegion(pysam.Samfile(test.bamFile_PE), 'chr2', 5000833, 5000835, 1, 0)
-        array([ nan,   1.])
 
         """
         if not fragmentFromRead_func:
-            fragmentFromRead_func = self.getFragmentFromRead
+            fragmentFromRead_func = self.get_fragment_from_read
         length = end - start
         assert tileSize > 0, "bin length has to be an integer greater than zero. Current value {}".format(tileSize)
         if length % tileSize > 0:
@@ -432,34 +425,36 @@ class CountReadsPerBin(object):
                 continue
 
             # filter reads based on SAM flag
-            if self.samFlag and read.flag & self.samFlag == 0:
+            if self.samFlag_include and read.flag & self.samFlag_include == 0:
+                continue
+            if self.samFlag_exclude and read.flag & self.samFlag_exclude != 0:
                 continue
 
             # get rid of duplicate reads that have same position on each of the
             # pairs
             if self.ignoreDuplicates and prev_start_pos \
-                    and prev_start_pos == (read.pos, read.pnext, read.is_reverse):
+                    and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 continue
 
             try:
-                fragmentStart, fragmentEnd = \
-                    fragmentFromRead_func(read)
+                position_blocks = fragmentFromRead_func(read)
+            except TypeError:
+                # the get_fragment_from_read functions returns None in some cases.
+                # Those cases are to be skipped, hence the continue line.
+                continue
 
+            for fragmentStart, fragmentEnd in position_blocks:
                 fragmentLength = fragmentEnd - fragmentStart
                 if fragmentLength == 0:
-                    fragmentLength = self.defaultFragmentLength
+                    continue
 
                 vectorStart = max((fragmentStart - start) / tileSize, 0)
                 vectorEnd = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
                                 vectorLength)
 
                 coverage[vectorStart:vectorEnd] += 1
-            except TypeError:
-                # the getFragmentFromRead functions returns None in some cases.
-                # Those cases are to be skiped, hence the continue line.
-                continue
 
-            prev_start_pos = (read.pos, read.pnext, read.is_reverse)
+            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
             c += 1
 
         if debug:
@@ -476,9 +471,17 @@ class CountReadsPerBin(object):
     def getReadLength(self, read):
         return len(read)
 
-    def getFragmentFromRead(self, read):
-        """
-        The read has to be pysam object.
+
+    def get_fragment_from_read(self, read):
+        """Get read start and end position considering extension
+        for paired end reads or using a default fragment length.
+
+        When reads are extended the cigar information is
+        skipped.
+
+        Parameters
+        ----------
+        read: pysam object.
 
         The following values are defined (for forward reads)::
 
@@ -487,8 +490,8 @@ class CountReadsPerBin(object):
                  |-- read.alen --|
             -----|===============>------------<==============|----
                  |               |            |
-              read.pos      read.aend      read.pnext
-
+            read.reference_start
+                        read.reference_end  read.pnext
 
               and for reverse reads
 
@@ -497,7 +500,7 @@ class CountReadsPerBin(object):
                                              |-- read.alen --|
             -----|===============>-----------<===============|----
                  |                           |               |
-              read.pnext                   read.pos      read.aend
+              read.pnext           read.reference_start  read.reference_end
 
         this is a sketch of a pair-end reads
 
@@ -513,77 +516,78 @@ class CountReadsPerBin(object):
 
         Returns
         -------
-        tuple
-            (fragment start, fragment end)
+        list of tuples
+            [(fragment start, fragment end)]
 
 
         >>> test = Tester()
         >>> c = CountReadsPerBin([], 1, 1, 200)
 
         >>> c.extendPairedEnds = True
-        >>> c.getFragmentFromRead(test.getRead("paired-forward"))
-        (5000000, 5000100)
-        >>> c.getFragmentFromRead(test.getRead("paired-reverse"))
-        (5000000, 5000100L)
-        >>> c.getFragmentFromRead(test.getRead("single-forward"))
-        (5001491, 5001691)
-        >>> c.getFragmentFromRead(test.getRead("single-reverse"))
-        (5001536L, 5001736L)
-        >>> c.defaultFragmentLength = 20
-        >>> c.getFragmentFromRead(test.getRead("single-forward"))
-        (5001491, 5001527L)
+        >>> c.get_fragment_from_read(test.getRead("paired-forward"))
+        [(5000000, 5000100)]
+        >>> c.get_fragment_from_read(test.getRead("paired-reverse"))
+        [(5000000, 5000100)]
+        >>> c.get_fragment_from_read(test.getRead("single-forward"))
+        [(5001491, 5001691)]
+        >>> c.get_fragment_from_read(test.getRead("single-reverse"))
+        [(5001536, 5001736)]
+        >>> c.defaultFragmentLength = 0
+        >>> c.get_fragment_from_read(test.getRead("single-forward"))
+        [(5001491, 5001527)]
         >>> c.defaultFragmentLength = 0
         >>> c.extendPairedEnds = False
-        >>> c.getFragmentFromRead(test.getRead("paired-forward"))
-        (5000000, 5000036L)
+        >>> c.get_fragment_from_read(test.getRead("paired-forward"))
+        [(5000000, 5000036)]
 
         Tests for read centering.
 
         >>> c.extendPairedEnds = True
         >>> c.center_read = True
         >>> c.defaultFragmentLength = 200
-        >>> c.getFragmentFromRead(test.getRead("paired-forward"))
-        (5000032, 5000068)
-        >>> c.getFragmentFromRead(test.getRead("single-reverse"))
-        (5001618L, 5001654L)
+        >>> c.get_fragment_from_read(test.getRead("paired-forward"))
+        [(5000032, 5000068)]
+        >>> c.get_fragment_from_read(test.getRead("single-reverse"))
+        [(5001618, 5001654)]
         """
-        # convert reads to fragments
-
-        # this option indicates that the paired ends correspond
-        # to the fragment ends
-        # condition read.tlen < maxPairedFragmentLength is added to avoid read pairs
-        # that span thousands of base pairs
+        # if no extension is needed, use pysam get_blocks
+        # to identify start and end reference positions.
+        # get_blocks return a list of start and end positions
+        # based on the CIGAR if skipped regions are found.
+        # E.g for a cigar of 40M260N22M
+        # get blocks return two elements for the first 40 matches
+        # and the for the last 22 matches.
+        if read.is_paired and self.extendPairedEnds == False:
+            return read.get_blocks()
+        if not read.is_paired and self.defaultFragmentLength <= 1:
+            return read.get_blocks()
 
         if self.extendPairedEnds == True and read.is_paired \
                 and abs(read.tlen) < self.maxPairedFragmentLength \
                 and abs(read.tlen) > 0:
             if read.is_reverse:
                 fragmentStart = read.pnext
-                fragmentEnd = read.aend
+                fragmentEnd = read.reference_end
             else:
-                fragmentStart = read.pos
+                fragmentStart = read.reference_start
                 # the end of the fragment is defined as
                 # the start of the forward read plus the insert length
-                fragmentEnd = read.pos + read.tlen
+                fragmentEnd = read.reference_start + read.tlen
+
         else:
-            if self.defaultFragmentLength <= read.aend - read.pos:
-                fragmentStart = read.pos
-                fragmentEnd = read.aend
+            if read.is_reverse:
+                fragmentStart = read.reference_end - self.defaultFragmentLength
+                fragmentEnd = read.reference_end
             else:
-                if read.is_reverse:
-                    fragmentStart = read.aend - self.defaultFragmentLength
-                    fragmentEnd = read.aend
-                else:
-                    fragmentStart = read.pos
-                    fragmentEnd = read.pos + self.defaultFragmentLength
+                fragmentStart = read.reference_start
+                fragmentEnd = read.reference_start + self.defaultFragmentLength
 
         if self.center_read == True:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
             fragmentStart = fragmentCenter - read.alen / 2
             fragmentEnd = fragmentStart + read.alen
 
-        return (fragmentStart, fragmentEnd)
-
+        return [(fragmentStart, fragmentEnd)]
 
     def getSmoothRange(self, tileIndex, tileSize, smoothRange, maxPosition):
 

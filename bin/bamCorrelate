@@ -222,7 +222,11 @@ def main(args):
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
         ignoreDuplicates=args.ignoreDuplicates,
+        center_read=args.centerReads,
+        samFlag_include=args.samFlagInclude,
+        samFlag_exclude=args.samFlagExclude,
         stepSize=stepsize)
+
     num_reads_per_bin = c.run()
 
     sys.stderr.write("Number of non zero bins "

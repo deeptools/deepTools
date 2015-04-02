@@ -5,6 +5,7 @@ import os
 import shutil
 import tempfile
 import numpy as np
+import tempfile
 
 # NGS packages
 from bx.bbi.bigwig_file import BigWigFile
@@ -14,7 +15,7 @@ import mapReduce
 from utilities import getCommonChrNames
 from writeBedGraph import *
 import config as cfg
-
+from deeptools import bamHandler
 
 def getCoverageFromBam(bamHandle, chrom, start, end, tileSize,
                        defaultFragmentLength, extendPairedEnds=True,
@@ -113,7 +114,7 @@ def writeBedGraph_worker(
 
     for indexFile, fileFormat in bamOrBwFileList:
         if fileFormat == 'bam':
-            bamHandle = openBam(indexFile)
+            bamHandle = bamHandler.openBam(indexFile)
             coverage.append(getCoverageFromBam(
                 bamHandle, chrom, start, end, tileSize,
                 defaultFragmentLength, extendPairedEnds,
@@ -226,7 +227,7 @@ def writeBedGraph(
     """
 
     bigwig_info = cfg.config.get('external_tools', 'bigwig_info')
-    bamHandlers = [openBam(indexedFile) for
+    bamHandlers = [bamHandler.openBam(indexedFile) for
                    indexedFile,
                    fileFormat in bamOrBwFileList if fileFormat == 'bam']
     if len(bamHandlers):
@@ -337,7 +338,7 @@ class Tester():
     def getRead(self, readType):
         """ prepare arguments for test
         """
-        bam = openBam(self.bamFile_PE)
+        bam = bamHandler.openBam(self.bamFile_PE)
         if readType == 'paired-reverse':
             read = [x for x in bam.fetch('chr2', 5000081, 5000082 )][0]
         elif readType == 'single-forward':

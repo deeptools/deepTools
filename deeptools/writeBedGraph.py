@@ -75,7 +75,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
     >>> num_sample_sites = 0 #overruled by step_size
     >>> fragment_length = 0 # if less thatn read length, then read length will be used instead
 
-    >>> c = WriteBedGraph([bam_file], bin_length, num_sample_sites, fragment_length,
+    >>> c = WriteBedGraph([bam_file], binLength=bin_length, defaultFragmentLength=fragment_length,
     ... region=region, stepSize=step_size)
     >>> c.run(function_to_call, funcArgs, outFile.name)
     >>> open(outFile.name, 'r').readlines()
@@ -128,6 +128,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
             # in case a region is used, append the tilesize
             self.region += ":{}".format(self.binLength)
 
+        print [(x, self.__getattribute__(x)) for x in self.__dict__.keys()]
         res = mapReduce.mapReduce([func_to_call, func_args],
                                   writeBedGraph_wrapper,
                                   chromNamesAndSize,
@@ -221,7 +222,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         bamHandlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
         for bam in bamHandlers:
             coverage.append(
-                self.getCoverageOfRegion(bam, chrom, start, end, self.binLength))
+                self.get_coverage_of_region(bam, chrom, start, end, self.binLength))
             bam.close()
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')

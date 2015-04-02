@@ -143,7 +143,9 @@ def main(args):
         extendPairedEnds=args.extendPairedEnds,
         minMappingQuality=args.minMappingQuality,
         ignoreDuplicates=args.ignoreDuplicates,
-        samFlag=args.samFlag)
+        center_read=args.centerReads,
+        samFlag_include=args.samFlagInclude,
+        samFlag_exclude=args.samFlagExclude)
 
     num_reads_per_bin = cr.run()
     if num_reads_per_bin.sum() == 0:
