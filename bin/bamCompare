@@ -277,7 +277,7 @@ def main(args):
             scaleFactorsDict = estimateScaleFactor(
                 [bam1.filename, bam2.filename],
                 args.sampleLength, args.numberOfSamples,
-                args.fragmentLength, 1,
+                1,
                 numberOfProcessors=args.numberOfProcessors,
                 verbose=args.verbose,
                 chrsToSkip=args.ignoreForNormalization)

@@ -12,7 +12,7 @@ debug = 0
 
 
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
-                        defaultFragmentLength, normalizationLength,
+                        normalizationLength,
                         avg_method='median', numberOfProcessors=1,
                         verbose=False, chrsToSkip=[]):
     r"""
@@ -21,45 +21,62 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     workers that compute fragment counts (coverage) for different
     regions and then collect and integrates the results.
 
+    Parameters
+    ----------
+    bamFilesList : list
+        list of bam files to normalize
 
-    The arguments are:
-         'bamFilesList', list of bam files to normalize
-         'binLength', the window size in bp, where reads are going to be
+    binLength : int
+        the window size in bp, where reads are going to be
                          counted.
-         'numberOfSamples', Number of sites to sample.
+    numberOfSamples : int
+        number of sites to sample from the genome. For more info see
+        the documentation of the CountReadsPerBin class
 
-         'defaultFragmentLength', if the reads are not paired, this value
-                      is used extend the reads.
-         'normalizationLength', length, in bp, to normalize the data.
-                        For a value of 1, are given such that on average
-                        1 fragment per base pair is found
-         'avg_method', defines how the different values are to be summarized.
-                       The options are 'mean' and 'median'
+    normalizationLength : int
+        length, in bp, to normalize the data.
+        For a value of 1, on average
+        1 read per base pair is found
 
-         'chrsToSkip', name of the chromosomes to be excluded from the
-                       scale stimation. Usually the chrX is included.
+    avg_method : str
+        defines how the different values are to be summarized.
+        The options are 'mean' and 'median'
 
-    For example, to test about 1 million regions of length 500 bp,
-    the binLength will be 500 and the numberOfSamples is going
-    to be the size of the genome divided by the 1 million. This number
-    is not exact because regions in which all counts
-    are 0 are not taken into  account
+    chrsToSkip : list
+        name of the chromosomes to be excluded from the
+        scale estimation. Usually the chrX is included.
 
-    The test data contains reads for 200 bp
+    Returns
+    -------
+    dict
+        Dictionary with the following keys::
+            'size_factors'
+            'size_factors_based_on_mapped_reads'
+            'size_factors_SES'
+            'size_factors_based_on_mean':
+            'size_factors_based_on_median':
+            'mean':
+            'meanSES'
+            'median'
+            'reads_per_bin'
+            'std':
+            'sites_sampled'
+
 
     Example
     ------
 
     >>> test = Tester()
-
-    >>> dict = estimateScaleFactor([test.bamFile1, test.bamFile2], 50, 4, 0, 1)
+    >>> bin_length = 50
+    >>> num_samples = 4
+    >>> dict = estimateScaleFactor([test.bamFile1, test.bamFile2], bin_length, num_samples,  1)
     >>> dict['size_factors']
     array([ 1. ,  0.5])
     >>> dict['size_factors_based_on_mean']
     array([ 1. ,  0.5])
     """
-    if len(bamFilesList) > 2:
-        raise NameError("SES scale factors are only defined for 2 files")
+
+    assert len(bamFilesList) == 2, "SES scale factors are only defined for 2 files"
 
     bamFilesHandlers = [bamHandler.openBam(x) for x in bamFilesList]
     mappedReads = [x.mapped for x in bamFilesHandlers]
@@ -69,9 +86,11 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     sizeFactorBasedOnMappedReads = \
         sizeFactorBasedOnMappedReads.min() / sizeFactorBasedOnMappedReads
 
-    cr = countR.CountReadsPerBin(bamFilesList, binLength,
-                                 numberOfSamples,
-                                 defaultFragmentLength,
+    cr = countR.CountReadsPerBin(bamFilesList,
+                                 binLength=binLength,
+                                 numberOfSamples=numberOfSamples,
+                                 defaultFragmentLength=0,
+                                 extendPairedEnds=False,
                                  numberOfProcessors=numberOfProcessors,
                                  verbose=verbose,
                                  chrsToSkip=chrsToSkip)

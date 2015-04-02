@@ -32,10 +32,6 @@ def parseArguments(args=None):
                         type=fileType,
                         required=True)
 
-    parser.add_argument('--fragmentLength', '-f',
-                        help='Length of the average fragment size',
-                        type=int,
-                        required=True)
 
     parser.add_argument('--ignoreForNormalization', '-ignore',
                         help='A list of chromosome names '
