@@ -53,13 +53,13 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
             'size_factors'
             'size_factors_based_on_mapped_reads'
             'size_factors_SES'
-            'size_factors_based_on_mean':
-            'size_factors_based_on_median':
-            'mean':
+            'size_factors_based_on_mean'
+            'size_factors_based_on_median'
+            'mean'
             'meanSES'
             'median'
             'reads_per_bin'
-            'std':
+            'std'
             'sites_sampled'
 
 
