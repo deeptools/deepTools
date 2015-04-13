@@ -38,3 +38,6 @@ nosetests.xml
 
 # Ignore all emacs backup files
 *~
+
+#ignore pycharm
+.idea
