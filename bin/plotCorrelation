@@ -69,7 +69,7 @@ def plotCorrelationArgs():
                           required=True)
 
     required.add_argument('--whatToPlot', '-p',
-                          help="Choose between a heatmap or a scatter plot",
+                          help="Choose between a heatmap or scatter plot",
                           choices=['heatmap', 'scatterplot'],
                           required=True)
 

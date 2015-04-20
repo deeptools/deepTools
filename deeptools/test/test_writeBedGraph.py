@@ -10,6 +10,22 @@ __author__ = 'fidel'
 
 class TestWriteBedGraph(TestCase):
     def setUp(self):
+        """
+        The distribution of reads between the two bam files is as follows.
+
+        They cover 200 bp::
+
+              0                              100                           200
+              |------------------------------------------------------------|
+            A                                ==============>
+                                                            <==============
+
+
+            B                 <==============               ==============>
+                                             ==============>
+                                                            ==============>
+        """
+
         self.root = "./test/test_data/"
         self.bamFile1  = self.root + "testA.bam"
         self.bamFile2  = self.root + "testB.bam"
@@ -18,15 +34,14 @@ class TestWriteBedGraph(TestCase):
 
         self.step_size = 50
         self.bin_length = 50
-        self.num_samples = 0 # replaced by step size
         default_frag_length = 0 # replaced by read length
 
         self.func_args =  {'scaleFactor': 1.0}
 
         self.c = wr.WriteBedGraph([self.bamFile1],
-                                   self.bin_length,
-                                   self.num_samples, default_frag_length,
-                                   stepSize=self.step_size)
+                                  binLength=self.bin_length,
+                                  defaultFragmentLength=default_frag_length,
+                                  stepSize=self.step_size)
 
 
     def test_writeBedGraph_worker(self):
@@ -55,7 +70,8 @@ class TestWriteBedGraph(TestCase):
 
     def test_writeBedGraph_worker_ignore_duplicates(self):
         self.c = wr.WriteBedGraph([self.bamFile2],
-                                   self.bin_length, self.num_samples, 0,
+                                   binLength=self.bin_length,
+                                   defaultFragmentLength=0,
                                    stepSize=self.step_size, ignoreDuplicates=True)
         self.c.zerosToNans = True
 
@@ -77,9 +93,32 @@ class TestWriteBedGraph(TestCase):
         from deeptools.writeBedGraph_dev import ratio
         funcArgs = {}
         self.c = wr.WriteBedGraph([self.bamFile1, self.bamFile2],
-                                   self.bin_length, self.num_samples, 0,
+                                   binLength=self.bin_length,
+                                   defaultFragmentLength=0,
                                    stepSize=self.step_size)
         tempFile = self.c.writeBedGraph_worker( '3R', 100, 200, ratio, funcArgs)
         assert_equal(open(tempFile, 'r').readlines(),
                      ['3R\t100\t150\t1.00\n', '3R\t150\t200\t0.5\n'])
+        os.remove(tempFile)
+
+    def test_writeBedGraph_cigar(self):
+        """
+        The bamFile1 contains a read at position 10
+        with the following CIGAR: 10S20M10N10M10S
+        that maps to a chromosome named chr_cigar.
+        """
+
+        # turn of read extension
+        self.c.extendPairedEnds = False
+        self.c.defaultFragmentLength = 0
+        self.c.binLength = 10
+        self.c.stepSize = 10
+        tempFile = self.c.writeBedGraph_worker( 'chr_cigar', 0, 100, scaleCoverage, self.func_args)
+        res = open(tempFile, 'r').readlines()
+
+        # the sigle read is split into bin 10-30, and then 40-50
+        assert_equal(res,['chr_cigar\t0\t10\t0.00\n',
+                          'chr_cigar\t10\t30\t1.00\n',
+                          'chr_cigar\t30\t40\t0.00\n',
+                          'chr_cigar\t40\t50\t1.00\n'])
         os.remove(tempFile)

@@ -22,79 +22,9 @@ def output(args=None):
     return parser
 
 
-def bam():
-    """
-    common bam processing options when converting a bam to a bedgraph/
-    bigwig file
-    """
-    parser = argparse.ArgumentParser(add_help=False)
-    group = parser.add_argument_group(
-        'Bam to bedgraph/bigwig processing options')
-
-    group.add_argument('--fragmentLength', '-f',
-                       help='Length of the average fragment size. Reads will '
-                       'be extended to match this length unless they are '
-                       'paired-end, in which case they will be extended to '
-                       'match the fragment length. If this value is set to '
-                       'the read length or smaller, the read will not be '
-                       'extended. *Warning* the fragment length affects the '
-                       'normalization to 1x '
-                       '(see --normalizeUsingSequencingDepth). The formula '
-                       'to normalize using the sequencing depth is '
-                       'genomeSize/(number of mapped reads * fragmentLength). '
-                       '*NOTE*: If the BAM files contain mated and unmated '
-                       'paired-end reads, unmated reads will be extended to '
-                       'match the --fragmentLength.',
-                       type=int,
-                       metavar="INT bp",
-                       default='200')
-
-    group.add_argument('--smoothLength',
-                       metavar="INT bp",
-                       help='The smooth length defines a window, larger than '
-                       'the binSize, to average the number of reads. For '
-                       'example, if the --binSize is set to 20 bp and the '
-                       '--smoothLength is set to 60 bp, then, for each '
-                       'binSize the average of it and its left and right '
-                       'neighbors is considered. Any value smaller than the '
-                       '--binSize will be ignored and no smoothing will be '
-                       'applied.',
-                       type=int)
-
-    group.add_argument('--doNotExtendPairedEnds',
-                       help='If set, reads are not extended to match the '
-                       'fragment length reported in the BAM file, instead '
-                       'they will be extended to match the --fragmentLength. '
-                       'Default is to extend the reads if paired end '
-                       'information is available.',
-                       action='store_true')
-
-    group.add_argument('--ignoreDuplicates',
-                       help='If set, reads that have the same orientation '
-                       'and start position will be considered only '
-                       'once. If reads are paired, the mate position '
-                       'also has to coincide to ignore a read.',
-                       action='store_true'
-                       )
-
-    group.add_argument('--minMappingQuality',
-                       metavar='INT',
-                       help='If set, only reads that have a mapping '
-                       'quality score higher than --minMappingQuality are '
-                       'considered.',
-                       type=int,
-                       )
-
-    return parser
-
-
 def read_options():
-    """
-    These options are used by bamCorrelate and
-    bamFingerprint. They are similar to the options
-    used to process bam to bedgraph (see def bam)
-    but without smoothlength and with a different
-    help message for fragment length
+    """Common arguments related to bam files and the interpretation
+    of the read coverage
     """
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Read processing options')
@@ -136,16 +66,37 @@ def read_options():
                        type=int,
                        )
 
-    group.add_argument('--samFlag',
-                      help='Filter reads based on the SAM flag. For example,'
-                           'to get only reads that are the first mate use a flag of 64.'
-                           'This is useful to count properly paired reads only once,'
-                           'otherwise the second mate will be also considered for the '
-                           'coverage.',
-                      metavar= 'INT',
-                      default=None,
-                      type=int,
-                      required=False)
+    group.add_argument('--centerReads',
+                       help='By adding this option reads are centered with '
+                       'respect to the fragment length. For paired-end data '
+                       'the read is centered at the fragment length defined '
+                       'by the two fragment ends. For single-end data, the '
+                       'given fragment length is used. This option is '
+                       'useful to get a sharper signal around enriched '
+                       'regions.',
+                       action='store_true')
+
+    group.add_argument('--samFlagInclude',
+                       help='Include reads based on the SAM flag. For example, '
+                       'to get only reads that are the first mate use a flag of 64. '
+                       'This is useful to count properly paired reads only once, '
+                       'otherwise the second mate will be also considered for the '
+                       'coverage.',
+                       metavar= 'INT',
+                       default=None,
+                       type=int,
+                       required=False)
+
+    group.add_argument('--samFlagExclude',
+                       help='Exclude reads based on the SAM flag. For example, '
+                       'to get only reads that map to the forward strand, use '
+                       '--samFlagExclude 16. Where 16 is the sam flag for reads '
+                       'that map to the reverse strand.',
+                       metavar= 'INT',
+                       default=None,
+                       type=int,
+                       required=False)
+
     return parser
 
 
