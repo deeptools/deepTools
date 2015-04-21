@@ -1,6 +1,3 @@
-deeptools.getRatio module
-=========================
-
 .. automodule:: deeptools.getRatio
     :members:
     :undoc-members:

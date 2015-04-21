@@ -2,7 +2,7 @@ deepTools
 =========
 
 user-friendly tools for the normalization and visualization of deep-sequencing data
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------------------------------------------------
 
 deepTools addresses the challenge of handling the large amounts of
 data that are now routinely generated from DNA sequencing centers. To do
@@ -20,9 +20,9 @@ deeptools@googlegroups.com
 Citation
 --------
 deepTools can be referenced as follows:
-	  Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke. `*deepTools: a flexible platform for
+	  Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke. `deepTools: a flexible platform for
 	  exploring deep-sequencing
-	  data.* <http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract>`__
+	  data. <http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract>`__
 	  Nucl. Acids Res. first published online May 5, 2014
 	  doi:10.1093/nar/gku365
 
@@ -39,8 +39,8 @@ suggestions, contact us via deeptools@googlegroups.com
 
 
 
- Installation
----------------
+Installation
+------------
 
 deepTools are available for:
 
@@ -58,17 +58,18 @@ Details on the installation routines can be found here.
 General Installation
 ~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to install deepTools is by using python ``pip`` or
-``easy_install tools``:
+The easiest way to install deepTools is by using python ``pip``:
 
 Requirements: Python 2.7, numpy, scipy
-(http://www.scipy.org/install.html) installed
+(http://www.scipy.org/install.html) installed. Furthermore
+pysam >= 0.8 and bx-python are required.
 
 Commands:
 
 ::
 
-      $ pip install deeptools
+      $ pip install git+https://github.com/fidelram/deepTools.git
+
 
 Done.
 
@@ -162,7 +163,8 @@ Installation via webbrowser
 remember: for support, questions, or feature requests contact:
 deeptools@googlegroups.com
 
---------------
+About
+-----
 
 This tool suite is developed by the `Bioinformatics
 Facility <http://www1.ie-freiburg.mpg.de/bioinformaticsfac>`__ at the
@@ -176,11 +178,12 @@ Freiburg <http://www1.ie-freiburg.mpg.de/>`__.
 .. |gallery| image:: https://raw.github.com/fidelram/deepTools/master/examples/collage.png
 
 Contents:
-
+--------
 .. toctree::
    :glob:
    :maxdepth: 2
 
+   api_tutorial
    *
    Help/*
    technical_documentation/*
