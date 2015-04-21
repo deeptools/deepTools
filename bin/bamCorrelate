@@ -213,7 +213,7 @@ def main(args):
         args.bamfiles,
         args.binSize,
         0,
-        args.fragmentLength,
+        defaultFragmentLength=args.fragmentLength,
         numberOfProcessors=args.numberOfProcessors,
         skipZeros=skip_zeros,
         verbose=args.verbose,
