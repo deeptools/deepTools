@@ -33,10 +33,10 @@ be indexed to allow quick access to the reads falling into the regions of intere
     bam_file = "file.bam"
 
 Now, the countReadsPerBin object can be initialized.
-The first argument of the constructor is a list of bam files, which in this case is
-just one. We are going to use a
-binLength of 50 bp that is computed every 50 bp pairs, in other words, in
-consecutive bins of 50bp. Overlapping bin
+The first argument of the constructor is a list of bam files,
+which in this case is just one.
+We are going to use a binLength of 50 bp that is computed every 50 bp pairs,
+in other words, in consecutive bins of 50bp. Overlapping bin 
 coverages can be used by setting a `stepSize` smaller than the bin length.
 
 .. code:: python
@@ -76,10 +76,12 @@ to a bam file. In this case only one bam file was used.
 Filtering regions
 -----------------
 
-If reads want to be filtered the relevant options simply
+If reads should be filtered, the relevant options simply
 need to be passed to the constructor. In the following code, the reads are filtered
 using a minimum mapping quality of 20, and by including only reads that map to the forward
-strand using a sam flag (samFlag_exclude=16, where 16 is the value for reverse reads).
+strand using a sam flag (samFlag_exclude=16, where 16 is the value for reverse reads, see
+the [SAM Flag Calculator](http://broadinstitute.github.io/picard/explain-flags.html)
+for more info).
 Furthermore, duplicated reads are ignored.
 
 .. code:: python
@@ -120,7 +122,7 @@ Sampling the genome
 Instead of consecutive bins as in the previous cases, a genome can
 simply be sampled. This is useful to estimate some values,
 like depth of sequencing, without having to look at the complete genome. In the following example,
-10.000 positions of size 1 bp are going to be queried from three bam files to compute the average depth of sequencing.
+10,000 positions of size 1 bp are going to be queried from three bam files to compute the average depth of sequencing.
 For this we set the numberOfSamples parameter in the object constructor. The `skipZeros` parameter
 is added such that regions that in all bam files do not have any reads are excluded. Usually, those
 regions are repetive which are often excluded from the read mapping. The `run()` method is
