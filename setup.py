@@ -62,6 +62,7 @@ class sdist(_sdist):
 class install(_install):
     def run(self):
         _install.run(self)
+        return
         if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
             return
         self.config_file = self.install_platlib + \
