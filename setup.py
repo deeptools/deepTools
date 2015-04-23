@@ -61,6 +61,8 @@ class sdist(_sdist):
 
 class install(_install):
     def run(self):
+        update_version_py()
+        self.distribution.metadata.version = get_version()
         _install.run(self)
         if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
             return
@@ -122,7 +124,7 @@ setup(
     version=get_version(),
     author='Fidel Ramirez, Friederike Dündar, Björn Grüning, Sarah Diehl',
     author_email='deeptools@googlegroups.com',
-    packages=['deeptools', 'deeptools.test'],
+    packages=['deeptools', 'deeptools/config', 'deeptools.test'],
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/profiler',
@@ -139,9 +141,9 @@ setup(
     'BAM format.',
     long_description=open('README.txt').read(),
     install_requires=[
-        "numpy >= 1.6.2",
-        "scipy >= 0.10.0",
-        "matplotlib >= 1.2",
+        "numpy >= 1.8.0",
+        "scipy >= 0.15.0",
+        "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
         "bx-python >= 0.5.0",
     ],
