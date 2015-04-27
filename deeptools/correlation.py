@@ -166,7 +166,7 @@ class Correlation:
         self.corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
         return self.corr_matrix
 
-    def plot_correlation(self, plot_fiilename, vmax=None,
+    def plot_correlation(self, plot_fiilename, plot_title='', vmax=None,
                          vmin=None, colormap='jet', image_format=None,
                          plot_numbers=False):
         """
@@ -190,6 +190,8 @@ class Correlation:
 
         # Compute and plot dendrogram.
         fig = plt.figure(figsize=(11, 9.5))
+        plt.suptitle(plot_title)
+
         axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
         axdendro.set_axis_off()
         y_var = sch.linkage(corr_matrix, method='complete')
@@ -262,7 +264,7 @@ class Correlation:
         fig.savefig(plot_fiilename, format=image_format)
 
 
-    def plot_scatter(self, plot_fiilename, image_format=None, log1p=False):
+    def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
         """
         Plot the scatter plots of a matrix
         in which each row is a sample
@@ -274,7 +276,7 @@ class Correlation:
         grids.update(wspace=0, hspace=0)
         fig = plt.figure(figsize=(2*num_samples, 2*num_samples))
         plt.rcParams['font.size'] = 8.0
-
+        plt.suptitle(plot_title)
         min_value = self.matrix.min()
         max_value = self.matrix.max()
         if (min_value % 2 == 0 and max_value % 2 == 0) or \
@@ -359,19 +361,21 @@ class Correlation:
     #        ax.set_xlim(min_value,max_value)
             ax.set_ylim(min_value, ax.get_ylim()[1])
             ax.set_xlim(min_value, ax.get_xlim()[1])
-        fig.tight_layout()
-        fig.savefig(plot_fiilename, format=image_format)
+
+    #    plt.tight_layout() # if set spoils the title position
+        plt.savefig(plot_fiilename, format=image_format)
 
 
     # def similar(self, a, b):
     #     from difflib import SequenceMatcher
     #     return SequenceMatcher(None, a, b).ratio()
 
-    def plot_pca(self, plot_filename, image_format=None, log1p=False):
+    def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False):
         """
         Plot the PCA of a matrix
         """
 
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 10))
         ## PCA
         mlab_pca = PCA(self.matrix)
         n = len(self.labels)
@@ -379,15 +383,22 @@ class Correlation:
         #print type(self.matrix)
         colors = cycle(plt.cm.gist_rainbow(np.linspace(0,1,n)))
         markers = cycle(matplotlib.markers.MarkerStyle.filled_markers)
-        plt.axhline(y=0, color="black", linestyle="dotted", zorder=1)
-        plt.axvline(x=0, color="black", linestyle="dotted", zorder=2)
+
+        ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
+        ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
         for i in range(n):
-            plt.scatter(mlab_pca.Y[0,i], mlab_pca.Y[1,i], marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
-        plt.title('PCA')
-        plt.xlabel('PC1')
-        plt.ylabel('PC2')
-        lgd = plt.legend(scatterpoints=1, loc='center left', bbox_to_anchor=(1, 0.5), prop={'size':12}, markerscale=0.9)
-        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+            ax1.scatter(mlab_pca.Y[0,i], mlab_pca.Y[1,i],
+                        marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
+        if plot_title == '':
+            ax1.set_title('PCA')
+        else:
+            ax1.set_title(plot_title)
+        ax1.set_xlabel('PC1')
+        ax1.set_ylabel('PC2')
+        lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
+                         bbox_to_anchor=(1, 0.5),
+                         prop={'size':12}, markerscale=0.9)
+#        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
         #Scree plot
@@ -402,20 +413,24 @@ class Correlation:
         ind = np.arange(n)  # the x locations for the groups
         width = 0.35         # the width of the bars
 
-        fig, ax1 = plt.subplots()
-        ax1.bar(width+ind, eigenvalues, width*2)
-        ax1.set_ylabel('Eigenvalue')
-        ax1.set_xlabel('Factors')
-        ax1.set_title('Scree plot')
-        ax1.set_xticks(ind+width*2)
-        ax1.set_xticklabels(ind+1)
+        #fig, ax2 = plt.subplots()
+        ax2.bar(width+ind, eigenvalues, width*2)
+        ax2.set_ylabel('Eigenvalue')
+        ax2.set_xlabel('Factors')
+        ax2.set_title('Scree plot')
+        ax2.set_xticks(ind+width*2)
+        ax2.set_xticklabels(ind+1)
 
-        ax2 = ax1.twinx()
-        ax2.axhline(y=1, color="black", linestyle="dotted")
-        ax2.plot(width*2+ind, cumulative[0:], "r-")
-        ax2.plot(width*2+ind, cumulative[0:], "wo")
-        ax2.set_ylim([0,1.05])
-        ax2.set_ylabel('Cumulative variability')
+        ax3 = ax2.twinx()
+        ax3.axhline(y=1, color="black", linestyle="dotted")
+        ax3.plot(width*2+ind, cumulative[0:], "r-")
+        ax3.plot(width*2+ind, cumulative[0:], "wo")
+        ax3.set_ylim([0,1.05])
+        ax3.set_ylabel('Cumulative variability')
+
 
         bname, ext = os.path.splitext(plot_filename)
-        fig.savefig(bname+".scree"+ext, format=image_format, bbox_inches='tight')
+        plt.subplots_adjust(top=3.85)
+        plt.tight_layout()
+        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+#        fig.savefig(bname+".scree"+ext, format=image_format, bbox_inches='tight')

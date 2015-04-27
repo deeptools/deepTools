@@ -61,6 +61,11 @@ def plotCorrelationArgs():
                             '--labels sample1 sample2 sample3',
                         nargs='+')
 
+    optional.add_argument('--plotTitle', '-T',
+                          help='Title of the plot, to be printed on top of '
+                          'the generated image. Leave blank for no title.',
+                          default='')
+
     optional.add_argument('--plotFileFormat',
                         metavar='FILETYPE',
                         help='Image format type. If given, this option '
@@ -91,7 +96,9 @@ def main(args):
 
     args.plotFile.close()
 
-    corr.plot_pca(args.plotFile.name, image_format=args.plotFileFormat)
+    corr.plot_pca(args.plotFile.name,
+                  plot_title=args.plotTitle,
+                  image_format=args.plotFileFormat)
 
 
 if __name__ == "__main__":

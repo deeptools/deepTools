@@ -65,7 +65,7 @@ def required_args():
                           nargs='+',
                           required=True)
 
-    required.add_argument('--plotName', '-o',
+    required.add_argument('--plotFile', '-o',
                           help='File name to save the plot',
                           type=argparse.FileType('w'),
                           required=True)
@@ -82,12 +82,23 @@ def required_args():
                                '--labels sample1 sample2 sample3',
                           nargs='+')
 
+    optional.add_argument('--plotTitle', '-T',
+                          help='Title of the plot, to be printed on top of '
+                          'the generated image. Leave blank for no title.',
+                          default='')
+
     optional.add_argument('--includeZeros',
                           help='Genomic regions that have zero values only '
                           'are included. The default behavior is to '
                           'ignore these regions.',
                           action='store_true',
                           required=False)
+
+    optional.add_argument('--numberOfSamples', '-n',
+                          help='Number of 1bp regions to sample. Default 1 million',
+                          required=False,
+                          type=int,
+                          default=1000000)
 
     optional.add_argument('--outRawCounts',
                           help='Save raw counts (coverages) to file.',
@@ -106,7 +117,7 @@ def main(args):
 
     cr = countR.CountReadsPerBin(args.bamfiles,
                                  binLength=1,
-                                 numberOfSamples=1000000,
+                                 numberOfSamples=args.numberOfSamples,
                                  defaultFragmentLength=args.fragmentLength,
                                  numberOfProcessors=args.numberOfProcessors,
                                  skipZeros=skip_zeros,
@@ -136,6 +147,7 @@ def main(args):
             args.outRawCounts.write(fmt % tuple(row))
 
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    plt.suptitle(args.plotTitle)
     # plot up to two std from mean
     sample_mean = num_reads_per_bin.mean(axis=0)
     std = max(num_reads_per_bin.std(axis=0))
@@ -158,7 +170,7 @@ def main(args):
     axs[1].set_xlabel('coverage')
     axs[1].set_ylabel('fraction of bases sampled >= coverage')
     axs[1].legend()
-    plt.savefig(args.plotName.name)
+    plt.savefig(args.plotFile.name)
 
 if __name__ == "__main__":
     ARGS = parse_arguments()

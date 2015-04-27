@@ -82,6 +82,11 @@ def plotCorrelationArgs():
                             '--labels sample1 sample2 sample3',
                         nargs='+')
 
+    optional.add_argument('--plotTitle', '-T',
+                          help='Title of the plot, to be printed on top of '
+                          'the generated image. Leave blank for no title.',
+                          default='')
+
     optional.add_argument('--plotFileFormat',
                         metavar='FILETYPE',
                         help='Image format type. If given, this option '
@@ -181,12 +186,15 @@ def main(args):
 
     args.plotFile.close()
     if args.whatToPlot == 'scatterplot':
-        corr.plot_scatter(args.plotFile.name)
+        corr.plot_scatter(args.plotFile.name,
+                          plot_title=args.plotTitle,
+                          image_format=args.plotFileFormat)
     else:
         corr.plot_correlation(args.plotFile.name,
-                              args.zMax,
-                              args.zMin,
-                              args.colorMap,
+                              vmax=args.zMax,
+                              vmin=args.zMin,
+                              colormap=args.colorMap,
+                              plot_title=args.plotTitle,
                               image_format=args.plotFileFormat,
                               plot_numbers=args.plotNumbers)
 
