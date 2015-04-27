@@ -10,7 +10,6 @@ import numpy as np
 import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
 from deeptools._version import __version__
-import deeptools.config
 
 
 
@@ -90,7 +89,7 @@ detailed help:
         print "The number of labels does not match the number of bigWig files."
         exit(0)
     if not args.labels:
-        args.labels = map(lambda x: os.path.basename(x), args.bwfiles)
+        args.labels = map(lambda x: os.path.basename(x.name), args.bwfiles)
 
     return args
 
@@ -104,6 +103,7 @@ def bigwigCorrelateArgs(case='bins'):
                         metavar='FILE1 FILE2',
                         help='List of bigWig files separated by spaces.',
                         nargs='+',
+                        type=argparse.FileType('r'),
                         required=True)
 
     required.add_argument('--outFileName', '-out',
@@ -205,8 +205,9 @@ def main(args):
     else:
         bed_regions = None
 
+
     num_reads_per_bin = score_bw.getScorePerBin(
-        args.bwfiles,
+        [f.name for f in args.bwfiles],
         args.binSize,
         numberOfProcessors=args.numberOfProcessors,
         skipZeros=skip_zeros,
