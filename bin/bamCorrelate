@@ -231,6 +231,11 @@ def bamCorrelateArgs(case='bins'):
                             'eps, pdf and svg.',
                         choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
+    optional.add_argument('--plotTitle', '-T',
+                          help='Title of the plot, to be printed on top of '
+                          'the generated image. Leave blank for no title.',
+                          default='')
+
     return parser
 
 
@@ -422,7 +427,8 @@ def main(args):
                     args.zMin,
                     args.colorMap,
                     image_format=args.plotFileFormat,
-                    plot_numbers=args.plotNumbers)
+                    plot_numbers=args.plotNumbers,
+                    plot_title=args.plotTitle)
 
 if __name__ == "__main__":
     ARGS = parseArguments()

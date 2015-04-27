@@ -9,7 +9,7 @@ import matplotlib.colors as colors
 
 def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
                      vmin=None, colormap='jet', image_format=None,
-                     plot_numbers=False):
+                     plot_numbers=False, plot_title=''):
 
     num_rows = corr_matrix.shape[0]
 
@@ -29,6 +29,8 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
 
     # Compute and plot dendrogram.
     fig = plt.figure(figsize=(11, 9.5))
+    if plot_title:
+        plt.suptitle(plot_title)
     axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
     axdendro.set_axis_off()
     y_var = sch.linkage(corr_matrix, method='complete')
