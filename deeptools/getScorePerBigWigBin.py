@@ -5,8 +5,8 @@ import sys
 import warnings
 
 # deepTools packages
-import mapReduce
-
+import deeptools.mapReduce as mapReduce
+import deeptools.config as cfg
 #debug = 0
 
 
@@ -119,11 +119,21 @@ def getChromSizes(bigwigFilesList):
     """
     #The following lines are - with one exception ("bigWigInfo") -
     #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
+
+
+    # check that the path to USCS bedGraphToBigWig as set in the config
+    # is installed and is executable.
+    bigwig_info_cmd = cfg.config.get('external_tools', 'bigwig_info')
+
+    if not cfg.checkProgram(bigwig_info_cmd, '-h',
+                            'http://hgdownload.cse.ucsc.edu/admin/exe/'):
+        exit()
+
     cCommon = []
     chromNamesAndSize = {}
     for bw in bigwigFilesList:
         inBlock = False
-        for line in os.popen("{} -chroms {}".format("bigWigInfo", bw)).readlines():
+        for line in os.popen("{} -chroms {}".format(bigwig_info_cmd, bw)).readlines():
             if line[0:10] == "chromCount":
                 inBlock = True
                 continue
