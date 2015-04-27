@@ -83,15 +83,15 @@ class install(_install):
         bigwigInfo_installed = self.checkProgramIsInstalled(
             'bigWigInfo', '-h',
             'http://hgdownload.cse.ucsc.edu/admin/exe/',
-            'bigwigCompare')
+            'bigwigCompare, bigwigCorrelate')
 
         if not samtools_installed or not bedGraphToBigWig_installed \
                 or not bigwigInfo_installed:
 
             msg = "\n##########\nSome tools were not fund.\n"\
-                "If you already have a copy of this programs installed\n"\
+                "If you already have a copy of these programs installed\n"\
                 "please be sure that they are found in your PATH or\n"\
-                "that they referred in the configuration file of deepTools\n"\
+                "that they are referred in the configuration file of deepTools\n"\
                 "located at:\n\n {}\n\n".format(self.config_file)
             sys.stderr.write(msg)
 
@@ -129,7 +129,7 @@ setup(
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/profiler',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/bigwigCorrelate',
-             'bin/bigwigCompare'],
+             'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'plotCorrelation'],
     include_package_data=True,
     package_data={'': ['config/deeptools.cfg']},
 #    data_files=[('deepTools', ['./deepTools.cfg'])],
