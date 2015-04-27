@@ -100,6 +100,11 @@ def getOptionalArgs():
                           '"eps", "pdf" and "svg"',
                           choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
+    optional.add_argument('--plotTitle', '-T',
+                          help='Title of the plot, to be printed on top of '
+                          'the generated image. Leave blank for no title.',
+                          default='')
+
     optional.add_argument('--skipZeros',
                           help='If set, then zero counts that happen '
                           'for *all* bam files given are ignored. This '
@@ -168,7 +173,7 @@ def main(args):
         plt.ylabel('fraction w.r.t. bin with highest coverage')
         i += 1
     plt.legend(loc='upper left')
-
+    plt.suptitle(args.plotTitle)
     # set the plotFileFormat explicitly to None to trigger the
     # format from the file-extension
     if not args.plotFileFormat:
