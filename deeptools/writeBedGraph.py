@@ -42,7 +42,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
     Given the following distribution of reads that cover 200 on
     a chromosome named '3R'::
 
-
           0                              100                           200
           |------------------------------------------------------------|
         A                                ===============

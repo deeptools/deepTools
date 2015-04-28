@@ -64,6 +64,7 @@ class install(_install):
         update_version_py()
         self.distribution.metadata.version = get_version()
         _install.run(self)
+        return
         if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
             return
         self.config_file = self.install_platlib + \
@@ -146,6 +147,7 @@ setup(
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
         "bx-python >= 0.5.0",
+        "numpydoc >=0.5"
     ],
     cmdclass={'sdist': sdist, 'install': install}
 )
