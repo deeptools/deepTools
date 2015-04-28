@@ -129,7 +129,7 @@ setup(
              'bin/heatmapper', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/profiler',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/bigwigCorrelate',
-             'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'plotCorrelation'],
+             'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation'],
     include_package_data=True,
     package_data={'': ['config/deeptools.cfg']},
 #    data_files=[('deepTools', ['./deepTools.cfg'])],
