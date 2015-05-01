@@ -83,7 +83,15 @@
                     help="Size of the bins in bp for the output of the bigwig/bedgraph file. (--binSize)"/>
                 <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
                     label ="Treat missing data as zero"
-                    help  ="This parameter determines if missing data should be replaced with a zero. If set to &quot;no&quot;, missing data will be ignored and will not be included in the output file at all. Missing data is defined as those regions for which no value exists in *any* of the bigwig files. The decision to include or exclude missing data depends on the interpretation of the data. Missing data in a bigwig file may mean that there is no information available for certain regions, for example a repetitive region that is not being considered. In the same file regions with low coverage may get zero read counts. If missing data is replaced by zero, this would convert the excluded repetitive regions into regions of low coverage. (--missingDataAsZero)" />
+                    help  ="This parameter determines if missing data should be replaced with a zero.
+                    If set to &quot;no&quot;, missing data will be ignored and will not be included in the
+                    output file at all. Missing data is defined as those regions for which no value exists in
+                    *any* of the bigwig files. The decision to include or exclude missing data depends on
+                    the interpretation of the data. Missing data in a bigwig file may mean that there is no
+                    information available for certain regions, for example a repetitive region that is not
+                    being considered. In the same file regions with low coverage may get zero read counts.
+                    If missing data is replaced by zero, this would convert the excluded repetitive regions
+                    into regions of low coverage. (--missingDataAsZero)" />
                 <expand macro="scaleFactor" />
                 <expand macro="plotTitle" />
             </when>

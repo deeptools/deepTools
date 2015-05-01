@@ -54,8 +54,7 @@
                 ##end if
                 #if $samFlag:
                     --samFlag $samFlag
-                #else
-
+                #end if
             #end if
 ]]>
     </command>

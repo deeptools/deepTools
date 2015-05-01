@@ -18,8 +18,8 @@
 
         @THREADS@
 
-        --bwfiles #echo " ".join($files)
-        --labels #echo " ".join($labels)
+        --bwfiles '#echo "' '".join($files)#'
+        --labels '#echo "' '".join($labels)#'
         #if $filterPercentile:
             --filterPercentile $filterPercentile
         #end if
@@ -72,29 +72,32 @@
 
         <param name="filterPercentile" type="float" optional="True" value="" min="0.0" max="100.0"
             label="Percentile used to filter out extreme outliers"
-            help ="If not specified, it is automatically set to 99.9 in analyses \
-                        using Pearson correlation! This means that values \
-                        above that threshold, which consistently occur in all \
-                        datasets, will not be taken into account for the \
-                        correlation analysis. This behavior can be overridden \
-                        by a user specified value from within the 0.0 to 100.0 \
-                        range. (--filterPercentile)"/>
+            help ="If not specified, it is automatically set to 99.9 in analyses
+                    using Pearson correlation! This means that values
+                    above that threshold, which consistently occur in all
+                    datasets, will not be taken into account for the
+                    correlation analysis. This behavior can be overridden
+                    by a user specified value from within the 0.0 to 100.0
+                    range. (--filterPercentile)"/>
 
-        <param name="corMethod" type="select" label="Correlation method">
+        <param name="corMethod" type="select" label="Correlation method" help="(--corMethod)">
             <option value="spearman" selected="True">Spearman</option>
             <option value="pearson">Pearson</option>
         </param>
 
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode" 
-                help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
+                help="In the bins mode, the correlation is computed based on equal length bins.
+                In the BED file mode, as list of genomic regions in BED format has to be given.
+                For each region in the BED file the number of overlapping reads is counted in
+                each of the BAM files. Then the correlation is computed.">
                 <option value="bins" selected="true">Bins</option>
                 <option value="BED-file">Limit correlation to certain regions (BED file)</option>
             </param>
             <when value="bins">
                 <param name="binSize" type="integer" value="10000" min="1" 
                     label="Bin size in bp"
-                    help="Length in base pairs for a window used to sample the genome."/>
+                    help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
             </when>
             <when value="BED-file">
                 <param name="region_file" type="data" format="bed"
@@ -141,9 +144,11 @@
         <test>
             <repeat name="input_files">
                 <param name="bigwigfile" value="1.bigwig" ftype="bigwig" />
+                <param name="label" value="first bigwig file" />
             </repeat>
             <repeat name="input_files">
                 <param name="bigwigfile" value="1.bigwig" ftype="bigwig" />
+                <param name="label" value="second bigwig file" />
             </repeat>
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
