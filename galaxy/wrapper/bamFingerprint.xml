@@ -46,6 +46,11 @@
                 #if $advancedOpt.minMappingQuality:
                 --minMappingQuality '$advancedOpt.minMappingQuality'
                 #end if
+
+                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
+                    --plotTitle '$advancedOpt.plotTitle'
+                #end if
+
             #end if
         ; mv $newoutFileName $outFileName
         ; rm $temp_dir -rf
@@ -74,7 +79,7 @@
                 <expand macro="ignoreDuplicates" />
                 <expand macro="minMappingQuality" />
                 <expand macro="skipZeros" />
-
+                <expand macro="plotTitle" />
             </when>
         </conditional>
         <conditional name="output">

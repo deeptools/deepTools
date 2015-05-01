@@ -44,7 +44,7 @@
 
             --regionsLabel '$advancedOpt.regionsLabel'
 
-            #if str($advancedOpt.plotTitle).strip() != "":
+            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
                 --plotTitle '$advancedOpt.plotTitle'
             #end if
 

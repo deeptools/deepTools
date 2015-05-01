@@ -76,7 +76,7 @@
             --refPointLabel '$advancedOpt.referencePointLabel'
             --regionsLabel '$advancedOpt.regionsLabel'
 
-            #if str($advancedOpt.plotTitle.value) != "None":
+            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                 --plotTitle '$advancedOpt.plotTitle'
             #end if
 
