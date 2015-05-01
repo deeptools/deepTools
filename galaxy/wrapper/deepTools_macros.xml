@@ -162,7 +162,13 @@ cite the following paper:
             <param name="label" type="text" size="30" optional="true" value=""
                 label="Label"
                 help="Label to use in the output. If not given the dataset name will be used instead."/>
-          </repeat>
+        </repeat>
+    </xml>
+
+    <xml name="plotTitle">
+        <param name="plotTitle" type="text" value="" size="30" optional="True"
+            label="Title of the plot"
+            help="Title of the plot, to be printed on top of the generated image. (--plotTitle)" />
     </xml>
 
     <token name="@multiple_input_bams@">

@@ -48,6 +48,10 @@
             --region '$mode.region'
         #end if
 
+        #if $plotTitle and str($plotTitle).strip() != "":
+            --plotTitle '$plotTitle'
+        #end if
+
         #if $mode.advancedOpt.showAdvancedOpt == "yes":
 
             $mode.advancedOpt.doNotExtendPairedEnds
@@ -124,7 +128,7 @@
                 <expand macro="bamCorrelate_mode_actions" />
             </when>
         </conditional>
-
+        <expand macro="plotTitle" />
         <conditional name="output">
             <param name="showOutputSettings" type="select" label="Show advanced output settings" >
                 <option value="no" selected="true">no</option>

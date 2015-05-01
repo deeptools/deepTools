@@ -177,8 +177,7 @@
                         </valid>
                     </sanitizer>
                 </param>
-                <param name="plotTitle" type="text" value="" size="30"
-                    label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title. (--plotTitle)" />
+                <expand macro="plotTitle" />
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" 
                     label="Do one plot per group" 
                     help="When computeMatrix was used on more than one group of genes, the average plots for all the groups will be drawn in one panel by default. If this option is set, each group will get its own plot, stacked on top of each other."/>

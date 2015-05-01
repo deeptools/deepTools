@@ -124,9 +124,8 @@
                 <param name="regionsLabel" type="text" value="genes" size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
-                <param name="plotTitle" type="text" value="" size="30"
-                    label="Title of the plot"
-                    help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
+
+                <expand macro="plotTitle" />
                 <param name="colors" type="text" value="" size="40"
                     label="List of colors to use for the plotted lines"
                     help="Color names and html hex strings (e.g. #eeff22) are accepted. The color names should be given separated by spaces. (--colors red blue green)">
