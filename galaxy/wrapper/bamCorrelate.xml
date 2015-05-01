@@ -51,7 +51,7 @@
         #if $plotTitle and str($plotTitle).strip() != "":
             --plotTitle '$plotTitle'
         #end if
-
+        $plotNumbers
         #if $mode.advancedOpt.showAdvancedOpt == "yes":
 
             $mode.advancedOpt.doNotExtendPairedEnds
@@ -129,6 +129,7 @@
             </when>
         </conditional>
         <expand macro="plotTitle" />
+        <expand macro="plotNumbers" />
         <conditional name="output">
             <param name="showOutputSettings" type="select" label="Show advanced output settings" >
                 <option value="no" selected="true">no</option>
