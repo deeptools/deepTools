@@ -77,6 +77,12 @@
         #end if
     </token>
 
+    <xml name="samFlag">
+        <param name="samFlag" type="integer" optional="true" value=""
+            label="Filter reads based on the SAM flag"
+            help= "For example to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage. (--samFlag)"/>
+    </xml>
+
     <xml name="doNotExtendPairedEnds">
         <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
             label="Do not extend paired ends"
