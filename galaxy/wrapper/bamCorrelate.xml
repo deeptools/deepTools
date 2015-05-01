@@ -1,11 +1,10 @@
 <tool id="deeptools_bamCorrelate" name="bamCorrelate" version="@WRAPPER_VERSION@.0">
     <description>correlates pairs of BAM files</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bamCorrelate</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         #set files=[]
@@ -29,7 +28,7 @@
         #if $output.showOutputSettings == "yes"
             --outRawCounts '$outFileRawCounts' 
             --outFileCorMatrix '$outFileCorMatrix'
-            --plotFileFormat $output.outFileFormat
+            --plotFileFormat '$output.outFileFormat'
         #else:
             --plotFileFormat 'png'
         #end if

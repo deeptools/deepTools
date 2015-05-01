@@ -1,11 +1,10 @@
 <tool id="deeptools_bigwigCompare" name="bigwigCompare" version="@WRAPPER_VERSION@.0">
     <description>normalizes and compares two bigWig files to obtain the ratio, log2ratio or difference</description>
-    <expand macro="requirements"/>
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bigwigCompare</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         bigwigCompare

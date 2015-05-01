@@ -1,11 +1,10 @@
 <tool id="deeptools_heatmapper" name="heatmapper" version="@WRAPPER_VERSION@.0">
     <description>creates a heatmap for a score associated to genomic regions</description>
-    <expand macro="requirements"/>
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">heatmapper</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         heatmapper

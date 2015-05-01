@@ -1,11 +1,10 @@
 <tool id="deeptools_bamPEFragmentSize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
     <description>Given a BAM file it samples several regions to estimate the paired-end fragment length</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bamPEFragmentSize</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         bamPEFragmentSize

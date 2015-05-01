@@ -1,11 +1,10 @@
 <tool id="deeptools_computeMatrix" name="computeMatrix" version="@WRAPPER_VERSION@.0">
     <description>summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">computeMatrix</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         #import tempfile
