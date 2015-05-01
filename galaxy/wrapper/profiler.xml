@@ -153,8 +153,15 @@
         <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
     </outputs>
+    <tests>
+        <test>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_matrix" />
+            <output name="outFileName" file="profiler_result1.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
+
 **What it does**
 
 This tool plots the average enrichments over all genomic
