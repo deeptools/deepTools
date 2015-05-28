@@ -76,16 +76,22 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     warnings.simplefilter("default")
     i = 0
-
+    num_warnings = 0
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         i += 1
         for bwh in bigWigHandlers:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                score = bwh.query(chrom, start, end, 1)[0]
-            if np.isnan(score['mean']) or score is None:
-                #sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score['mean'], chrom, start, end))
+                score = bwh.query(chrom, start, end, 1)
+                if score is not None and len(score) > 0:
+                    score = score[0]
+
+            if score is None or np.isnan(score['mean']):
+                if num_warnings < 10:
+                    sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score, chrom, start, end))
+                    num_warnings += 1
+                score = {}
                 score['mean'] = 0.0
             avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
