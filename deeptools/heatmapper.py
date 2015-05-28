@@ -1040,7 +1040,7 @@ class _matrix(object):
             centroids, _ = kmeans(matrix, k)
             # order the centroids in an attempt to
             # get the same cluster order
-            order = np.argsort(centroids.mean(axis=1))
+            order = np.argsort(centroids.mean(axis=1))[::-1]
             cluster_labels,_ = vq(matrix, centroids[order, :])
 
         if method == 'hierarchical':
