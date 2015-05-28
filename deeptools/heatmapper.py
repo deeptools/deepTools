@@ -7,9 +7,10 @@ import multiprocessing
 
 # NGS packages
 import pysam
-from bx.intervals.io import GenomicIntervalReader
+
 from bx.bbi.bigwig_file import BigWigFile
 
+import deeptools.readBed
 
 def compute_sub_matrix_wrapper(args):
     return heatmapper.compute_sub_matrix_worker(*args)
@@ -207,29 +208,29 @@ class heatmapper(object):
         for feature in regions:
            # print some information
             if parameters['body'] > 0 and \
-                    feature['end'] - feature['start'] < parameters['bin size']:
+                    feature.end - feature.start < parameters['bin size']:
                 if parameters['verbose']:
                     sys.stderr.write("A region that is shorter than "
                                      "then bin size was found: "
                                      "({}) {} {}:{}:{}. Skipping...\n".format(
-                            (feature['end'] - feature['start']),
-                            feature['name'], feature['chrom'],
-                            feature['start'], feature['end']))
+                            (feature.end - feature.start),
+                            feature.name, feature.chrom,
+                            feature.start, feature.end))
 
                 coverage = np.zeros(matrixCols)
                 coverage[:] = np.nan
 
             else:
-                if feature['strand'] == '-':
+                if feature.strand == '-':
                     a = parameters['upstream'] / parameters['bin size']
                     b = parameters['downstream']  / parameters['bin size']
-                    start = feature['end']
+                    start = feature.end
                     end = feature['start']
                 else:
                     b = parameters['upstream'] / parameters['bin size']
                     a = parameters['downstream'] / parameters['bin size']
                     start = feature['start']
-                    end = feature['end']
+                    end = feature.end
 
                 # build zones:
                 #  zone0: region before the region start,
@@ -238,21 +239,21 @@ class heatmapper(object):
                 #  the format for each zone is: start, end, number of bins
                 if parameters['body'] > 0:
                     zones = \
-                        [(feature['start'] - b * parameters['bin size'],
-                          feature['start'], b ),
-                         (feature['start'],
-                          feature['end'],
-                          #feature['end'] - parameters['body'] /
+                        [(feature.start - b * parameters['bin size'],
+                          feature.start, b ),
+                         (feature.start,
+                          feature.end,
+                          #feature.end - parameters['body'] /
                           #parameters['bin size'],
                           parameters['body'] / parameters['bin size']),
-                         (feature['end'],
-                          feature['end'] + a * parameters['bin size'], a)]
+                         (feature.end,
+                          feature.end + a * parameters['bin size'], a)]
                 elif parameters['ref point'] == 'TES':  # around TES
                     zones = [(end - b * parameters['bin size'], end, b ),
                              (end, end + a * parameters['bin size'], a )]
                 elif parameters['ref point'] == 'center':  # at the region center
-                    middlePoint = feature['start'] + (feature['end'] -
-                                                      feature['start']) / 2
+                    middlePoint = feature.start + (feature.end -
+                                                      feature.start) / 2
                     zones = [(middlePoint - b * parameters['bin size'],
                               middlePoint, b),
                              (middlePoint,
@@ -261,14 +262,14 @@ class heatmapper(object):
                     zones = [(start - b * parameters['bin size'], start, b ),
                              (start, start + a * parameters['bin size'], a )]
 
-                if feature['start'] - b * parameters['bin size'] < 0:
+                if feature.start - b * parameters['bin size'] < 0:
                     if parameters['verbose']:
                         sys.stderr.write(
                             "Warning:region too close to chromosome start "
-                            "for {} {}:{}:{}.\n".format(feature['name'],
-                                                       feature['chrom'],
-                                                       feature['start'],
-                                                       feature['end']))
+                            "for {} {}:{}:{}.\n".format(feature.name,
+                                                       feature.chrom,
+                                                       feature.start,
+                                                       feature.end))
                 coverage = []
                 # compute the values (coverage in the case of bam files)
                 # for each of the files being processed.
@@ -276,25 +277,25 @@ class heatmapper(object):
                     #check if the file is bam or bigwig
                     if score_file_list[idx].endswith(".bam"):
                         cov = heatmapper.coverageFromBam(
-                            sc_handler, feature['chrom'], zones,
+                            sc_handler, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'])
                     else:
                         cov = heatmapper.coverageFromBigWig(
-                            sc_handler, feature['chrom'], zones,
+                            sc_handler, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
                             parameters['missing data as zero'])
 
 
-                    if feature['strand'] == "-":
+                    if feature.strand == "-":
                         cov = cov[::-1]
 
                     if parameters['nan after end'] and parameters['body'] == 0 \
                             and parameters['ref point'] == 'TSS':
                         # convert the gene length to bin length
                         region_length_in_bins = \
-                            (feature['end'] - feature['start']) / \
+                            (feature.end - feature.start) / \
                             parameters['bin size']
                         b = parameters['upstream'] / parameters['bin size']
                         # convert to nan any region after the end of the region
@@ -307,11 +308,11 @@ class heatmapper(object):
                 else:
                     for bigwig in bigwig_list:
                         cov = heatmapper.coverageFromBigWig(
-                            bigwig, feature['chrom'], zones,
+                            bigwig, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
                             parameters['missing data as zero'])
-                        if feature['strand'] == "-":
+                        if feature.strand == "-":
                             cov = cov[::-1]
                         coverage = np.hstack([coverage, cov])
                 """
@@ -323,8 +324,8 @@ class heatmapper(object):
                     sys.stderr.write(
                         "No data was found for region "
                         "{} {}:{}-{}. Skipping...\n".format(
-                            feature['name'], feature['chrom'],
-                            feature['start'], feature['end']))
+                            feature.name, feature.chrom,
+                            feature.start, feature.end))
 
                 coverage = np.zeros(matrixCols)
                 if not parameters['missing data as zero']:
@@ -337,10 +338,10 @@ class heatmapper(object):
                 if parameters['verbose']:
                     sys.stderr.write(
                         "No scores defined for region "
-                        "{} {}:{}-{}. Skipping...\n".format(feature['name'],
-                                                            feature['chrom'],
-                                                            feature['start'],
-                                                            feature['end']))
+                        "{} {}:{}-{}. Skipping...\n".format(feature.name,
+                                                            feature.chrom,
+                                                            feature.start,
+                                                            feature.end))
                 coverage = np.zeros(matrixCols)
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
@@ -588,11 +589,11 @@ class heatmapper(object):
 
             # split the line into bed interval and matrix values
             region = line.split('\t')
-            chrom, start, end, name, mean, strand = region[0:6]
+            chrom, start, end, name, score, strand = region[0:6]
             matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
             matrix_rows.append(matrix_row)
             regions.append({'chrom': chrom, 'start': int(start),
-                            'end': int(end), 'name': name, 'mean': float(mean),
+                            'end': int(end), 'name': name, 'score': float(score),
                             'strand': strand})
 
         #matrix = np.ma.masked_invalid(np.vstack(matrix_rows))
@@ -649,7 +650,7 @@ class heatmapper(object):
                     region['start'],
                     region['end'],
                     region['name'],
-                    score,
+                    region['score'],
                     region['strand'],
                     matrix_values))
         fh.close()
@@ -720,7 +721,7 @@ class heatmapper(object):
                     region['start'],
                     region['end'],
                     region['name'],
-                    0,
+                    region['score'],
                     region['strand'],
                     self.matrix.group_labels[label_idx]))
             if idx + 1 in boundaries:
@@ -733,16 +734,6 @@ class heatmapper(object):
         matrix = np.ma.masked_invalid(matrix)
         return np.__getattribute__(avgType)(matrix, axis=0)
 
-    @staticmethod
-    def filterGenomicIntervalFile(file_handle):
-        """
-        Filter track lines out of a GenomicIntervalFile, normally from UCSC.
-        Return an iterator over the lines of file_handle.
-        """
-        for line in file_handle:
-            if line.startswith('browser') or line.startswith('track'):
-                continue
-            yield line
 
     @staticmethod
     def getRegionsAndGroups(regions_file, onlyMultiplesOf=1,
@@ -765,15 +756,16 @@ class heatmapper(object):
         includedintervals = 0
         group_labels = []
         group_boundaries = [0]
-        for ginterval in GenomicIntervalReader(
-            heatmapper.filterGenomicIntervalFile(regions_file),
-            fix_strand=True):
-
+        bed_file = deeptools.readBed.ReadBed(regions_file)
+        for ginterval in bed_file:
             totalintervals += 1
-            if ginterval.__str__().startswith('#'):
+            if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
+                continue
+
+            if ginterval.line.startswith('#'):
                 if includedintervals > 1 and  \
                         includedintervals - group_boundaries[-1] > 1:
-                    label = ginterval.__str__()[1:].strip()
+                    label = ginterval.line[1:].strip()
                     newlabel = label
                     if label in group_labels:
                        # loop to find a unique label name
@@ -789,29 +781,30 @@ class heatmapper(object):
                 continue
             # if the list of regions is to big, only
             # consider a fraction of the data
-            if totalintervals % onlyMultiplesOf != 0:
-                continue
+            #if totalintervals % onlyMultiplesOf != 0:
+            #    continue
             # check for regions that have the same position as the previous.
             # This assumes that the regions file given is sorted
-            if previnterval and previnterval.chrom == ginterval.chrom and \
+            if previnterval is not None:
+                if previnterval.chrom == ginterval.chrom and \
                     previnterval.start == ginterval.start and \
                     previnterval.end == ginterval.end and \
                     previnterval.strand == ginterval.strand:
-                if verbose:
-                    try:
-                        genename = ginterval.fields[3]
-                    except:
-                        genename = ''
-                    sys.stderr.write("*Warning* Duplicated region: "
-                                     "{} {}:{}-{}.\n".format(
-                            genename,
-                            ginterval.chrom, ginterval.start,
-                            ginterval.end))
-                duplicates += 1
+                    if verbose:
+                        try:
+                            genename = ginterval.name
+                        except:
+                            genename = ''
+                        sys.stderr.write("*Warning* Duplicated region: "
+                                         "{} {}:{}-{}.\n".format(
+                                genename,
+                                ginterval.chrom, ginterval.start,
+                                ginterval.end))
+                    duplicates += 1
 
             previnterval = ginterval
 
-            regions.append(heatmapper.ginterval2dict(ginterval))
+            regions.append(ginterval)
             includedintervals += 1
 
         # in case we reach the end of the file
@@ -827,23 +820,10 @@ class heatmapper(object):
                 "were found".format(duplicates,
                                     float(duplicates) * 100 / totalintervals))
 
+        if verbose:
+            sys.stderr.write("Found:\n\tintervals: {}\n\tgroups: {}\n\n".format(len(regions),
+                                                                          ", ".join(group_labels)))
         return regions, group_labels, group_boundaries
-
-    @staticmethod
-    def ginterval2dict(genomicInterval):
-        """
-        transforms a genomic interval from bx python
-        into a dictionary
-        """
-        region = {'chrom': genomicInterval.chrom,
-                  'start': genomicInterval.start,
-                  'end': genomicInterval.end,
-                  'strand': genomicInterval.strand}
-        try:
-            region['name'] = genomicInterval.fields[3]
-        except IndexError:
-            region['name'] = "No name"
-        return region
 
     def getIndividualmatrices(self, matrix):
         """In case multiple matrices are saved one after the other
