@@ -144,7 +144,7 @@ def getOptionalArgs():
     optional.add_argument('--ratio',
                           help='The default is to output the log2ratio between the '
                           'two samples. The reciprocal ratio returns the '
-                          'the negative of the inverse of the ratio '
+                          'negative of the inverse of the ratio '
                           'if the ratio is less than 0. The resulting '
                           'values are interpreted as negative fold changes. ',
                           default='log2',
