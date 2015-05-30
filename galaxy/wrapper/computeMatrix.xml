@@ -63,13 +63,13 @@
                 $advancedOpt.skipZeros
                 --binSize $advancedOpt.binSize
 
-                #if $advancedOpt.minThreshold:
+                #if $advancedOpt.minThreshold is not None:
                     --minThreshold $advancedOpt.minThreshold
                 #end if
-                #if $advancedOpt.maxThreshold:
+                #if $advancedOpt.maxThreshold is not None:
                     --maxThreshold $advancedOpt.maxThreshold
                 #end if
-                #if $advancedOpt.scale:
+                #if $advancedOpt.scale is not None:
                     --scale $advancedOpt.scale
                 #end if
 
