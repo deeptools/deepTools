@@ -48,7 +48,7 @@
                 label="Did you compute the matrix with more than one groups of regions?"
                 help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                 <option value="yes">Yes, I used multiple groups of regions</option>
-                <option value="no">No, I used only one region.</option>
+                <option value="no">No, I used only one group</option>
             </param>
             <when value="no">
                 <conditional name="clustering">
