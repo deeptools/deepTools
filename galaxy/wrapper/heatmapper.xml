@@ -102,13 +102,14 @@
             <when value="no" />
             <when value="yes">
                 <param name="sortRegions" type="select" label="Sort regions"
-                    help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
+                    help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region. (--sortRegions)">
                     <option value="no">no ordering</option>
                     <option value="descend" selected="true">descending order</option>
                     <option value="ascend">ascending order</option>
                 </param>
 
-                <param name="sortUsing" type="select" label="Method used for sorting" help="For each row the method is computed." help="(--sortUsing)">
+                <param name="sortUsing" type="select" label="Method used for sorting"
+                    help="For each row the method is computed. (--sortUsing)">
                     <option value="mean" selected="true">mean</option>
                     <option value="median">median</option>
                     <option value="min">min</option>
@@ -129,22 +130,25 @@
                 </param>
 
                 <param name="missingDataColor" type="text" value="black" optional="true" label="Missing data color" 
-                    help="If 'Represent missing data as zero' is not set, such cases will be colored in black by default. By using this parameter a different color can be set. A value between 0 and 1 will be used for a gray scale (black is 0). Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html. Alternatively colors can be specified using the #rrggbb notation." />
+                    help="If 'Represent missing data as zero' is not set, such cases will be colored in black by default.
+                    By using this parameter a different color can be set. A value between 0 and 1 will be used for a gray scale (black is 0).
+                    Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html.
+                    Alternatively colors can be specified using the #rrggbb notation. (--missingDataColor)" />
 
                 <expand macro="colormap" />
 
                 <param name="zMin" type="float" value="" size="3"
-                    label="Minimum value for the heatmap intensities. Leave empty for automatic values"/>
+                    label="Minimum value for the heatmap intensities. Leave empty for automatic values" help="(--zMin)"/>
                 <param name="zMax" type="float" value="" size="3"
-                    label="Maximum value for the heatmap intensities. Leave empty for automatic values"/>
+                    label="Maximum value for the heatmap intensities. Leave empty for automatic values" help="(--zMax)"/>
                 <param name="yMin" type="float" value="" size="3"
-                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
+                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help="(--yMin)"/>
                 <param name="yMax" type="float" value="" size="3"
-                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values"/>
+                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help="(--yMax)"/>
                 <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200"
-                    label="Description for the x-axis label" />
+                    label="Description for the x-axis label" help="(--xAxisLabel)"/>
                 <param name="yAxisLabel" type="text" value="genes" size="30"
-                    label="Description for the y-axis label for the top panel" />
+                    label="Description for the y-axis label for the top panel" help="(--yAxisLabel)"/>
 
                 <param name="heatmapWidth" type="float" value="7.5" min="1" max="100"
                     label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
@@ -152,7 +156,7 @@
                     label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
 
                 <param name="whatToShow" type="select" label="What to show"
-                    help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
+                    help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar. (--whatToShow)">
                     <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
                     <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
                     <option value="heatmap only">heatmap only</option>
@@ -162,17 +166,17 @@
 
                 <param name="startLabel" type="text" value="TSS" size="10"
                     label="Label for the region start"
-                    help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
+                    help ="Only for scale-regions mode. Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;. (--startLabel)" />
                 <param name="endLabel" type="text" value="TES" size="10"
                     label="Label for the region end"
-                    help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
+                    help="Only for scale-regions mode. Label shown in the plot for the region end. Default is TES (transcription end site). (--endLabel)"/>
 
                 <param name="referencePointLabel" type="text" value="TSS" size="10"
                     label="Reference point label"
-                    help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
+                    help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc. (--referencePointLabel)" />
                 <param name="regionsLabel" type="text" value="genes" size="30" 
                     label="Labels for the regions plotted in the heatmap" 
-                    help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, label1, label2.">
+                    help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, label1, label2. (--regionsLabel)">
                     <sanitizer>
                         <valid initial="string.printable">
                         </valid>
@@ -181,7 +185,8 @@
                 <expand macro="plotTitle" />
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" 
                     label="Do one plot per group" 
-                    help="When computeMatrix was used on more than one group of genes, the average plots for all the groups will be drawn in one panel by default. If this option is set, each group will get its own plot, stacked on top of each other."/>
+                    help="When computeMatrix was used on more than one group of genes, the average plots for all the groups will be drawn in one panel by default.
+                        If this option is set, each group will get its own plot, stacked on top of each other. (--onePlotPerGroup)"/>
 
                 <expand macro="kmeans_clustering" />
             </when>
@@ -194,7 +199,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_matrix" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
     </tests>

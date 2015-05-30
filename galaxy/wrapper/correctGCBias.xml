@@ -26,7 +26,9 @@
             #if str($region).strip() != '':
                 --region '$region'
             #end if
-            --correctedFile $outFileName
+            --correctedFile corrected.bam;
+
+        mv corrected.bam $outFileName;
 ]]>
     </command>
     <inputs>
@@ -43,12 +45,12 @@
     <tests>
         <test>
             <param name="GCbiasFrequenciesFile" value="computeGCBias_result1.tabular" ftype="tabular" />
-            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="bamInput" value="paired_chr2L.bam" ftype="bam" />
             <param name="ref_source" value="history" />
-            <param name="input1" value="phiX.2bit" />
+            <param name="input1" value="sequence.2bit" />
             <param name="effectiveGenomeSize_opt" value="specific" />
-            <param name="effectiveGenomeSize" value="5386" />
-            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" compare="sim_size" />
+            <param name="effectiveGenomeSize" value="23011544" />
+            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" />
         </test>
     </tests>
     <help>

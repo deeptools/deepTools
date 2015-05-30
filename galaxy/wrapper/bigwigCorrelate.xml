@@ -143,16 +143,17 @@
     <tests>
         <test>
             <repeat name="input_files">
-                <param name="bigwigfile" value="1.bigwig" ftype="bigwig" />
+                <param name="bigwigfile" value="test.bw" ftype="bigwig" />
                 <param name="label" value="first bigwig file" />
             </repeat>
             <repeat name="input_files">
-                <param name="bigwigfile" value="1.bigwig" ftype="bigwig" />
+                <param name="bigwigfile" value="test.bw" ftype="bigwig" />
                 <param name="label" value="second bigwig file" />
             </repeat>
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
             <param name="showOutputSettings" value="no" />
+            <param name="corMethod" value="spearman" />
             <output name="outFileName" file="bigwigCorrelate_result1.png" ftype="png" compare="sim_size" />
         </test>
     </tests>

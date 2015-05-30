@@ -35,7 +35,7 @@
             <param name="bamInput" value="bowtie2-test1.bam" ftype="bam" />
             <param name="histogram" value="True" />
             <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt" />
-            <output name="histogram_outfile" file="bamPEFragmentSize_histogram_result1.png" ftype="png" />
+            <output name="histogram_outfile" file="bamPEFragmentSize_histogram_result1.png" ftype="png" compare="sim_size" />
         </test>
     </tests>
     <help>

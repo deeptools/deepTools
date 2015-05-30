@@ -113,15 +113,19 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="bamInput" value="paired_chr2L.bam" ftype="bam" />
             <param name="image_format" value="png" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="regionSize" value="1" />
             <param name="fragmentLength" value="100" />
             <param name="ref_source" value="history" />
-            <param name="input1" value="phiX.2bit" />
+            <param name="input1" value="sequence.2bit" />
+            <param name="sampleSize" value="10" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="23011544" />
+            <param name="region" value="chr2L" />
+            <param name="image_format" value="none" />
             <output name="outFileName" file="computeGCBias_result1.tabular" ftype="tabular" />
-            <output name="outImageName" file="computeGCBias_result1.png" ftype="png" />
         </test>
     </tests>
     <help>

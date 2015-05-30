@@ -112,8 +112,8 @@
     </outputs>
     <tests>
         <test>
-            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
-            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="no" />
             <param name="outFileFormat" value="bigwig" />
             <param name="binSize" value="5" />
@@ -121,8 +121,8 @@
             <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" />
         </test>
         <test>
-            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
-            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="no" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="binSize" value="10" />

@@ -168,7 +168,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_matrix" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <output name="outFileName" file="profiler_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
     </tests>
