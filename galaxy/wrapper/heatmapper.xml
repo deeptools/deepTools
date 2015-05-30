@@ -108,7 +108,7 @@
                     <option value="ascend">ascending order</option>
                 </param>
 
-                <param name="sortUsing" type="select" label="Method used for sorting" help="For each row the method is computed." >
+                <param name="sortUsing" type="select" label="Method used for sorting" help="For each row the method is computed." help="(--sortUsing)">
                     <option value="mean" selected="true">mean</option>
                     <option value="median">median</option>
                     <option value="min">min</option>
@@ -117,7 +117,9 @@
                     <option value="region_length">region length</option>
                 </param>
 
-                <param name="averageTypeSummaryPlot" type="select" label="Type of statistic that should be plotted in the summary image above the heatmap">
+                <param name="averageTypeSummaryPlot" type="select"
+                    label="Type of statistic that should be plotted in the summary image above the heatmap"
+                    help="(--averageTypeSummaryPlot)">
                     <option value="mean" selected="true">mean</option>
                     <option value="median">median</option>
                     <option value="min">min</option>
@@ -167,7 +169,7 @@
 
                 <param name="referencePointLabel" type="text" value="TSS" size="10"
                     label="Reference point label"
-                    help ="[only for scale-regions mode] Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
+                    help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
                 <param name="regionsLabel" type="text" value="genes" size="30" 
                     label="Labels for the regions plotted in the heatmap" 
                     help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, label1, label2.">
