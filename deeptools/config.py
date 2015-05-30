@@ -12,7 +12,7 @@ def checkProgram(program, args, where_to_download):
 
     """
     if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
-        return
+        return True
 
     try:
         _out = subprocess.Popen([program, args], stderr=subprocess.PIPE,
