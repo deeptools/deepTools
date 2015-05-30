@@ -1,11 +1,10 @@
 <tool id="deeptools_correctGCBias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">correctGCBias</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         ln -s $bamInput local_bamInput.bam;
@@ -33,7 +32,7 @@
     <inputs>
         <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
         <param name="bamInput" format="bam" type="data"
-            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
+            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted. (--bamfile)" />
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
         <expand macro="region_limit_operation" />

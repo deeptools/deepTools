@@ -1,11 +1,10 @@
 <tool id="deeptools_heatmapper" name="heatmapper" version="@WRAPPER_VERSION@.0">
     <description>creates a heatmap for a score associated to genomic regions</description>
-    <expand macro="requirements"/>
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">heatmapper</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         heatmapper
@@ -76,7 +75,7 @@
             --refPointLabel '$advancedOpt.referencePointLabel'
             --regionsLabel '$advancedOpt.regionsLabel'
 
-            #if str($advancedOpt.plotTitle.value) != "None":
+            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                 --plotTitle '$advancedOpt.plotTitle'
             #end if
 
@@ -109,7 +108,7 @@
                     <option value="ascend">ascending order</option>
                 </param>
 
-                <param name="sortUsing" type="select" label="Method used for sorting" help="For each row the method is computed." >
+                <param name="sortUsing" type="select" label="Method used for sorting" help="For each row the method is computed." help="(--sortUsing)">
                     <option value="mean" selected="true">mean</option>
                     <option value="median">median</option>
                     <option value="min">min</option>
@@ -118,7 +117,9 @@
                     <option value="region_length">region length</option>
                 </param>
 
-                <param name="averageTypeSummaryPlot" type="select" label="Type of statistic that should be plotted in the summary image above the heatmap">
+                <param name="averageTypeSummaryPlot" type="select"
+                    label="Type of statistic that should be plotted in the summary image above the heatmap"
+                    help="(--averageTypeSummaryPlot)">
                     <option value="mean" selected="true">mean</option>
                     <option value="median">median</option>
                     <option value="min">min</option>
@@ -168,7 +169,7 @@
 
                 <param name="referencePointLabel" type="text" value="TSS" size="10"
                     label="Reference point label"
-                    help ="[only for scale-regions mode] Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
+                    help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
                 <param name="regionsLabel" type="text" value="genes" size="30" 
                     label="Labels for the regions plotted in the heatmap" 
                     help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, label1, label2.">
@@ -177,8 +178,7 @@
                         </valid>
                     </sanitizer>
                 </param>
-                <param name="plotTitle" type="text" value="" size="30"
-                    label="Title of the plot" help="Title of the plot, to be printed on top of the generated image. Leave blank for no title. (--plotTitle)" />
+                <expand macro="plotTitle" />
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue="" 
                     label="Do one plot per group" 
                     help="When computeMatrix was used on more than one group of genes, the average plots for all the groups will be drawn in one panel by default. If this option is set, each group will get its own plot, stacked on top of each other."/>
@@ -194,7 +194,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="bgzip" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_matrix" />
             <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
     </tests>

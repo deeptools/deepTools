@@ -1,11 +1,10 @@
 <tool id="deeptools_bamCompare" name="bamCompare" version="@WRAPPER_VERSION@.0">
     <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference. (bam2bigwig)</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         bamCompare
@@ -71,7 +70,9 @@
             #if str($advancedOpt.ignoreForNormalization).strip() != '':
                 --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
             #end if
-
+            #if $samFlag:
+                --samFlag $samFlag
+            #end if
         #end if
 ]]>
     </command>
@@ -166,6 +167,7 @@
                 <param name="ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
+                <expand macro="samFlag" />
             </when>
         </conditional>
     </inputs>
