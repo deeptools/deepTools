@@ -5,8 +5,8 @@ import sys
 import warnings
 
 # deepTools packages
-import mapReduce
-
+import deeptools.mapReduce as mapReduce
+import deeptools.config as cfg
 #debug = 0
 
 
@@ -76,16 +76,22 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     warnings.simplefilter("default")
     i = 0
-
+    num_warnings = 0
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         i += 1
         for bwh in bigWigHandlers:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                score = bwh.query(chrom, start, end, 1)[0]
-            if np.isnan(score['mean']) or score is None:
-                sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score['mean'], chrom, start, end))
+                score = bwh.query(chrom, start, end, 1)
+                if score is not None and len(score) > 0:
+                    score = score[0]
+
+            if score is None or np.isnan(score['mean']):
+                if num_warnings < 10:
+                    sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score, chrom, start, end))
+                    num_warnings += 1
+                score = {}
                 score['mean'] = 0.0
             avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
@@ -119,11 +125,21 @@ def getChromSizes(bigwigFilesList):
     """
     #The following lines are - with one exception ("bigWigInfo") -
     #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
+
+
+    # check that the path to USCS bedGraphToBigWig as set in the config
+    # is installed and is executable.
+    bigwig_info_cmd = cfg.config.get('external_tools', 'bigwig_info')
+
+    if not cfg.checkProgram(bigwig_info_cmd, '-h',
+                            'http://hgdownload.cse.ucsc.edu/admin/exe/'):
+        exit()
+
     cCommon = []
     chromNamesAndSize = {}
     for bw in bigwigFilesList:
         inBlock = False
-        for line in os.popen("{} -chroms {}".format("bigWigInfo", bw)).readlines():
+        for line in os.popen("{} -chroms {}".format(bigwig_info_cmd, bw)).readlines():
             if line[0:10] == "chromCount":
                 inBlock = True
                 continue
@@ -179,6 +195,7 @@ def getScorePerBin(bigwigFilesList, binLength,
                    numberOfProcessors=1, skipZeros=True,
                    verbose=False, region=None,
                    bedFile=None,
+                   stepSize=None,
                    chrsToSkip=[]):
     """
     This function returns a matrix containing scores (median) for the coverage
@@ -212,9 +229,9 @@ def getScorePerBin(bigwigFilesList, binLength,
 
     chrNames, chrLengths = zip(*chromSizes)
     genomeSize = sum(chrLengths)
-    stepSize = binLength    #for consecutive bins
-    chunkSize = int(stepSize * 1e3 / len(bigwigFilesList))
-    print binLength, stepSize, chunkSize
+    if stepSize is None:
+        stepSize = binLength    #for consecutive bins
+    chunkSize = int(stepSize * 500 / len(bigwigFilesList))
     if verbose:
         print "step size is {}".format(stepSize)
 
@@ -240,17 +257,17 @@ class Tester():
         The distribution of reads (and fragments) in the two bigWig
         files is as follows.
 
-        They cover 200 bp.
+        They cover 200 bp::
 
-          0                              100                           200
-          |------------------------------------------------------------|
-        A                                ==============>- - - - - - - -
-          - - - - - - - - - - - - - - - - - - - - - - - <==============
+              0                              100                           200
+              |------------------------------------------------------------|
+            A                                ==============>- - - - - - - -
+              - - - - - - - - - - - - - - - - - - - - - - - <==============
 
 
-        B - - - - - - - - <==============               ==============>
-                                         ==============>- - - - - - - -
-                                                        ==============>
+            B - - - - - - - - <==============               ==============>
+                                             ==============>- - - - - - - -
+                                                            ==============>
         """
         self.root = "./test/test_data/"
         self.bwFile1  = self.root + "testA.bw"
