@@ -2,12 +2,11 @@
     <description>
         creates a profile plot for a score associated to genomic regions
     </description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">profiler</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         profiler
@@ -44,7 +43,7 @@
 
             --regionsLabel '$advancedOpt.regionsLabel'
 
-            #if str($advancedOpt.plotTitle).strip() != "":
+            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
                 --plotTitle '$advancedOpt.plotTitle'
             #end if
 
@@ -82,7 +81,9 @@
             <when value="yes">
                 <param name="startLabel" type="text" value="TSS" size="10"
                     label="Label for the region start"
-                    help ="[only for scale-regions mode] Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
+                    help ="[only for scale-regions mode] Label shown in the plot
+                    for the start of the region. Default is TSS (transcription start site),
+                    but could be changed to anything, e.g. &quot;peak start&quot;." />
                 <param name="endLabel" type="text" value="TES" size="10"
                     label="Label for the region end"
                     help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
@@ -115,7 +116,14 @@
                     label="Plot width" 
                     help="Width in cm. The default value is 8 centimeters. The minimum value is 1 cm." />
                 <param name="plotType" type="select" label="Plot type"
-                    help="For the summary plot (profile) only. The &quot;lines&quot; option will plot the profile line based on the average type selected. The &quot;fill&quot; option fills the region between zero and the profile curve. The fill in color is semi transparent to distinguish different profiles. The &quot;add standard error&quot; option colors the region between the profile and the standard error of the data. As in the case of fill, a semi-transparent color is used. The option &quot;overlapped_lines&quot; plots each region values, one on top of the other; this option only works if &quot;one plot per proup&quot; is set.">
+                    help="For the summary plot (profile) only. The &quot;lines&quot; option will
+                    plot the profile line based on the average type selected. The &quot;fill&quot;
+                    option fills the region between zero and the profile curve. The fill in color is
+                    semi transparent to distinguish different profiles. The &quot;add standard error&quot;
+                    option colors the region between the profile and the standard error of the data.
+                    As in the case of fill, a semi-transparent color is used.
+                    The option &quot;overlapped_lines&quot; plots each region values, one on top of
+                    the other; this option only works if &quot;one plot per proup&quot; is set.">
                     <option value="lines" selected="true">lines</option>
                     <option value="fill">fill</option>
                     <option value="se">add standard error</option>
@@ -123,20 +131,23 @@
                 </param>
                 <param name="regionsLabel" type="text" value="genes" size="30"
                     label="Labels for the regions plotted in the heatmap"
-                    help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
-                <param name="plotTitle" type="text" value="" size="30"
-                    label="Title of the plot"
-                    help="Title of the plot, to be printed on top of the generated image. Leave blank for no title." />
+                    help="If more than one region is being plotted a list of labels separated
+                    by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
+
+                <expand macro="plotTitle" />
                 <param name="colors" type="text" value="" size="40"
                     label="List of colors to use for the plotted lines"
-                    help="Color names and html hex strings (e.g. #eeff22) are accepted. The color names should be given separated by spaces. (--colors red blue green)">
+                    help="Color names and html hex strings (e.g. #eeff22) are accepted.
+                    The color names should be given separated by spaces. (--colors red blue green)">
                     <validator type="expression"
                         message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
 
                 <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
                     label="Do one plot per group"
-                    help="When the region file contains groups separated by &quot;#&quot;, the default is to plot the averages for the distinct plots in one plot. If this option is set, each group will get its own plot, stacked on top of each other."/>
+                    help="When the region file contains groups separated by &quot;#&quot;, the default is
+                    to plot the averages for the distinct plots in one plot. If this option is set, each group
+                    will get its own plot, stacked on top of each other."/>
                 <param name="yMin" type="float" value="" size="3" optional="true"
                     label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
                 <param name="yMax" type="float" value="" size="3" optional="true"
@@ -155,8 +166,15 @@
         <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
     </outputs>
+    <tests>
+        <test>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <output name="outFileName" file="profiler_result1.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
     <help>
 <![CDATA[
+
 **What it does**
 
 This tool plots the average enrichments over all genomic

@@ -1,11 +1,10 @@
 <tool id="deeptools_bamCorrelate" name="bamCorrelate" version="@WRAPPER_VERSION@.0">
     <description>correlates pairs of BAM files</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bamCorrelate</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         #set files=[]
@@ -19,8 +18,8 @@
 
         @THREADS@
 
-        --bamfiles #echo " ".join($files)
-        --labels #echo " ".join($labels)
+        --bamfiles '#echo "' '".join($files)#'
+        --labels '#echo "' '".join($labels)#'
         --fragmentLength $fragmentLength
         --corMethod $corMethod
 
@@ -29,7 +28,7 @@
         #if $output.showOutputSettings == "yes"
             --outRawCounts '$outFileRawCounts' 
             --outFileCorMatrix '$outFileCorMatrix'
-            --plotFileFormat $output.outFileFormat
+            --plotFileFormat '$output.outFileFormat'
         #else:
             --plotFileFormat 'png'
         #end if
@@ -38,7 +37,6 @@
             --binSize '$mode.binSize'
             --distanceBetweenBins '$mode.distanceBetweenBins'
             $mode.doNotRemoveOutliers
-
         #else:
             --BED $mode.region_file
         #end if
@@ -48,6 +46,10 @@
             --region '$mode.region'
         #end if
 
+        #if $plotTitle and str($plotTitle).strip() != "":
+            --plotTitle '$plotTitle'
+        #end if
+        $plotNumbers
         #if $mode.advancedOpt.showAdvancedOpt == "yes":
 
             $mode.advancedOpt.doNotExtendPairedEnds
@@ -75,7 +77,10 @@
 
         <param name="fragmentLength" type="integer" value="200" min="1"
             label="Length of the average fragment size"
-            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
+            help ="Reads will be extended to match this length unless they are paired-end,
+            in which case they will be extended to match the fragment length.
+            *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will
+            be extended to match the fragment length. (--fragmentLength)"/>
 
         <param name="corMethod" type="select" label="Correlation method">
             <option value="spearman" selected="True">Spearman</option>
@@ -84,14 +89,18 @@
 
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode" 
-                help="In the bins mode, the correlation is computed based on equal length bins. In the BED file mode, as list of genomic regions in BED format has to be given. For each region in the BED file the number of overlapping reads is counted in each of the BAM files. Then the correlation is computed.">
+                help="In the bins mode, the correlation is computed based on equal
+                length bins. In the BED file mode, as list of genomic regions in BED
+                format has to be given. For each region in the BED file the number of
+                overlapping reads is counted in each of the BAM files.
+                Then the correlation is computed.">
                 <option value="bins" selected="true">Bins</option>
                 <option value="BED-file">Limit correlation to certain regions (BED file)</option>
             </param>
             <when value="bins">
                 <param name="binSize" type="integer" value="10000" min="1" 
                     label="Bin size in bp"
-                    help="Length in base pairs for a window used to sample the genome."/>
+                    help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
 
                 <param name="distanceBetweenBins" type="integer" value="0" min="0"
                     label="Distance between bins"
@@ -99,7 +108,7 @@
                         the specified 'Bin size'. However, to reduce the
                         computation time, a larger distance between bins can
                         by given. Larger distances result in less bins being
-                        considered"/>
+                        considered. (--distanceBetweenBins)"/>
 
                 <param name="doNotRemoveOutliers" type="boolean"
                     truevalue="--doNotRemoveOutliers" falsevalue="" label="Do not filter outliers"
@@ -113,7 +122,7 @@
                         bamCorrelate tries to remove outliers using
                         the median absolute deviation (MAD) method applying a
                         threshold of 200 to only consider extremely large
-                        deviations from the median."/>
+                        deviations from the median. (--doNotRemoveOutliers)"/>
 
                 <expand macro="bamCorrelate_mode_actions" />
             </when>
@@ -124,7 +133,8 @@
                 <expand macro="bamCorrelate_mode_actions" />
             </when>
         </conditional>
-
+        <expand macro="plotTitle" />
+        <expand macro="plotNumbers" />
         <conditional name="output">
             <param name="showOutputSettings" type="select" label="Show advanced output settings" >
                 <option value="no" selected="true">no</option>
@@ -162,9 +172,11 @@
         <test>
             <repeat name="input_files">
                 <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+                <param name="label" value="first BAM file" />
             </repeat>
             <repeat name="input_files">
                 <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
+                <param name="label" value="second BAM file" />
             </repeat>
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />

@@ -18,6 +18,8 @@ def parseArguments(args=None):
                         metavar='bam-file')
 
     parser.add_argument('-bai',
+                        '--bamIndex',
+                        dest='bai',
                         help='Index for the bam file. Default is to '
                         'consider a the path of the bam file adding '
                         'the .bai suffix.',

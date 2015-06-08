@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<datatypes>
+    <registration>
+        <datatype extension="deeptools_compute_matrix_archive" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>
+    </registration>
+</datatypes>
