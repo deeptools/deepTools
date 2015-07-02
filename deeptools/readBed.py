@@ -63,6 +63,7 @@ class ReadBed(object):
             # assume bed3
             self.file_type = 'bed3'
             sys.stderr.write("Number of fields in BED file is not standard. Assuming bed3")
+        return self.file_type
 
     def next(self):
         """
@@ -79,6 +80,8 @@ class ReadBed(object):
                 break
         if line.startswith("#") or line.startswith("track") or \
            line.startswith("browser"):
+            # heatmapper identifies clusters by looking at
+            # the '#' values
             return BedInterval(dict(), line.strip())
 
         line_data = line.strip().split("\t")
@@ -97,7 +100,14 @@ class ReadBed(object):
         if self.file_type is None:
             self.guess_file_type(line_values)
 
-        fields_dict = dict([(self.fields[index], value) for index, value in enumerate(line_values)])
+        if self.file_type == 'bed3':
+            line_values = line_values[0:3]
+        elif self.file_type == 'bed6':
+                line_values = line_values[0:6]
+        try:
+            fields_dict = dict([(self.fields[index], value) for index, value in enumerate(line_values)])
+        except:
+            import ipdb;ipdb.set_trace()
         return BedInterval(fields_dict, line)
 
 
