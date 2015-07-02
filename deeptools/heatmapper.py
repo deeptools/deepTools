@@ -81,6 +81,8 @@ class heatmapper:
                 exit(1)
         matrixDict = OrderedDict()
         matrixAvgsDict = OrderedDict()
+        regions_no_score = 0
+        total_regions = 0
         for label, regions in regionsDict.iteritems():
             # args to pass to the multiprocessing workers
             mp_args = []
@@ -109,18 +111,12 @@ class heatmapper:
             # merge all valid regions
             regionList = np.concatenate([r[1] for r in res], axis=0)
 
-            regions_no_score = sum([r[2] for r in res])
+            regions_no_score += sum([r[2] for r in res])
+            total_regions += len(regions)
             if len(regions) == 0:
                 sys.stderr.write(
                     "\nERROR: BED file does not contain any valid regions. "
                     "Please check\n")
-                exit(1)
-            if regions_no_score == len(regions):
-                sys.stderr.write(
-                    "\nERROR: None of the BED regions could be found in the bigWig"
-                     "file.\nPlease check that the bigwig file is valid and "
-                     "that the chromosome names between the BED file and "
-                     "the bigWig file correspond to each other\n")
                 exit(1)
             if regions_no_score > len(regions) * 0.75 or len(regionList) == 0:
                 file_type = 'bigwig' if score_file.endswith(".bw") else "BAM"
@@ -137,6 +133,15 @@ class heatmapper:
             matrixAvgsDict[label] = np.mean(matrix, axis=1)
             matrixDict[label] = matrix
             regionsDict[label] = regionList
+
+
+        if regions_no_score == total_regions:
+            sys.stderr.write(
+                "\nERROR: None of the BED regions could be found in the bigWig"
+                 "file.\nPlease check that the bigwig file is valid and "
+                 "that the chromosome names between the BED file and "
+                 "the bigWig file correspond to each other\n")
+            exit(1)
 
         self.matrixDict = matrixDict
         self.regionsDict = regionsDict
