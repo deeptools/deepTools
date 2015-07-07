@@ -106,8 +106,9 @@ def bamCorrelateArgs(case='bins'):
                         required=True)
 
     required.add_argument('--outFileName', '-out',
-                        help='File name to save the gzipped matrix file '
-                        'needed by the "heatmapper" and "profiler" tools.',
+                        help='File name to save the coverage matrix. This matrix '
+                             'can be subsequently plotted using plotCorrelation or '
+                             'or plotPCA.',
                         type=argparse.FileType('w'),
                         required=True)
 
