@@ -87,9 +87,9 @@ class install(_install):
                 or not bigwigInfo_installed:
 
             msg = "\n##########\nSome tools were not fund.\n"\
-                "If you already have a copy of this programs installed\n"\
+                "If you already have a copy of these programs installed\n"\
                 "please be sure that they are found in your PATH or\n"\
-                "that they referred in the configuration file of deepTools\n"\
+                "that they are referred to in the configuration file of deepTools\n"\
                 "located at:\n\n {}\n\n".format(self.config_file)
             sys.stderr.write(msg)
 
