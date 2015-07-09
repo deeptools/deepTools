@@ -25,7 +25,7 @@ def checkProgram(program, args, where_to_download):
               "order for deeptools to work properly this program needs\n"\
               "to be installed. If you already have a copy of this\n"\
               "program please be sure that it is found in your PATH or\n"\
-              "that is referred in the configuration file of deepTools\n"\
+              "that is referred to in the configuration file of deepTools\n"\
               "located at:\n\n{}\n\n" \
               "The program can be downloaded from here:\n " \
               " {}\n\n" \
