@@ -22,7 +22,7 @@ debug = 0
 plt.ioff()
 
 
-def parseArguments(args=None):
+def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parserCommon.heatmapperMatrixArgs(),
                  parserCommon.heatmapperOutputArgs(mode='profile'),
@@ -48,8 +48,7 @@ def parseArguments(args=None):
         except:
             args.__setattr__(attr, None)
 
-
-    if  args.plotHeight < 0.5:
+    if args.plotHeight < 0.5:
         args.plotHeight = 0.5
     elif args.plotHeight > 100:
         args.plotHeight = 100
@@ -66,7 +65,7 @@ def parseArguments(args=None):
     else:
         args.regionsLabel = []
 
-    return(args)
+    return args
 
 
 def plotProfile(hm, outFileName,
@@ -92,7 +91,7 @@ def plotProfile(hm, outFileName,
     """
     # the following line is to temporary compute the log
     # of the matrix
-    #hm.matrix.matrix = np.log(hm.matrix.matrix)
+    # hm.matrix.matrix = np.log(hm.matrix.matrix)
 
     # decide how many plots are needed
     if perGroup:
@@ -111,8 +110,8 @@ def plotProfile(hm, outFileName,
     grids = gridspec.GridSpec(rows, cols)
 
     plt.rcParams['font.size'] = 10.0
-    fontP = FontProperties()
-    fontP.set_size('small')
+    font_p = FontProperties()
+    font_p.set_size('small')
 #    rcParams['font.size'] = 9.0
 
     # convert cm values to inches
@@ -131,7 +130,7 @@ def plotProfile(hm, outFileName,
     else:
         if len(color_list) < numlines:
             sys.stderr.write("\nThe given list of colors is too small, "
-                       "at least {} colors are needed\n".format(numlines))
+                             "at least {} colors are needed\n".format(numlines))
             exit(1)
         for color in color_list:
             if not pltcolors.is_color_like(color):
@@ -157,10 +156,15 @@ def plotProfile(hm, outFileName,
 
         if perGroup:
             title = hm.matrix.group_labels[plot]
+            if row != 0:
+                plt.setp(ax.get_yticklabels(), visible=False)
         else:
             title = hm.matrix.sample_labels[plot]
+            if col != 0:
+                plt.setp(ax.get_yticklabels(), visible=False)
+
         ax.set_title(title)
-        mat = [] # when drawing a heatmap (in contrast to drawing lines)
+        mat = []  # when drawing a heatmap (in contrast to drawing lines)
         for data_idx in range(numlines):
             if perGroup:
                 row, col = plot, data_idx
@@ -189,8 +193,19 @@ def plotProfile(hm, outFileName,
         if plotType == 'heatmap':
             ax.imshow(np.asmatrix(mat), interpolation='nearest', cmap='seismic_r')
 
-        if col != 0:
+        if (perGroup and row > 0) or (perGroup is False and col > 0):
+            # remove the numbers of the y axis for all plots
+            # except the first one
             plt.setp(ax.get_yticklabels(), visible=False)
+        else:
+            # add the y axis label for the first plot
+            ax.axes.set_ylabel(yAxislabel)
+            """
+            # reduce the number of yticks by half
+            num_ticks = len(ax.get_yticks())
+            yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
+            ax.set_yticks(yticks)
+            """
 
         ax.axes.set_xticks(xticks)
         ax.axes.set_xticklabels(xtickslabel)
@@ -202,27 +217,21 @@ def plotProfile(hm, outFileName,
         ticks[-1].label1.set_horizontalalignment('right')
 
         if first:
-            ax.legend(loc=legend_location.replace('-',' '),
-                      ncol=1, prop=fontP,
+            ax.legend(loc=legend_location.replace('-', ' '),
+                      ncol=1, prop=font_p,
                       frameon=False, markerscale=0.5)
             first = False
         """
         ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
                   loc='upper center',
-                  ncol=1, mode="expand", prop=fontP,
+                  ncol=1, mode="expand", prop=font_p,
                   frameon=False, markerscale=0.5)
         """
 
+        ax.set_ylim(yMin, yMax)
+
         ax_list.append(ax)
 
-    # reduce the number of yticks by half
-    num_ticks = len(ax.get_yticks())
-    yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
-    ax.set_yticks(yticks)
-
-    ax.axes.set_ylabel(yAxislabel)
-    
-    ax.set_ylim(yMin, yMax)
     plt.subplots_adjust(wspace=0.05, hspace=0.3)
     plt.tight_layout()
     plt.savefig(outFileName, dpi=200, format=image_format)
@@ -285,5 +294,5 @@ def main(args):
                 plots_per_row=args.numPlotsPerRow)
 
 if __name__ == "__main__":
-    args = parseArguments()
-    main(args)
+    ARGS = parse_arguments()
+    main(ARGS)
