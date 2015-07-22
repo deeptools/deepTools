@@ -99,7 +99,7 @@ def computeMatrixRequiredArgs(args=None):
                           type=argparse.FileType('r'),
                           required=True)
     required.add_argument('--scoreFileName', '-S',
-                          help='bigWig file containing '
+                          help='bigWig file(s) containing '
                           'the scores to be plotted. BigWig '
                           'files can be obtained by using the bamCoverage '
                           'or bamCompare tools. More information about '
