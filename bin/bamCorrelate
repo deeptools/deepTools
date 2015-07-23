@@ -233,7 +233,7 @@ def main(args):
             args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
             fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
             for idx, row in enumerate(num_reads_per_bin):
-                args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].split("\t")[0:3]))
+                args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].strip().split("\t")[0:3]))
                 args.outRawCounts.write(fmt % tuple(row))
 
         else:
