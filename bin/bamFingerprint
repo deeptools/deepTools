@@ -25,7 +25,7 @@ def parseArguments(args=None):
         description='Samples indexed bam files '
         'and plots a profile for each bam file. '
         'At each sample position all reads '
-        'overlaping a window (bin) of '
+        'overlapping a window (bin) of '
         'specified length are counted. '
         'This counts are then sorted '
         'and the cumulative sum plotted ',
@@ -142,7 +142,6 @@ def main(args):
         args.numberOfSamples,
         args.fragmentLength,
         numberOfProcessors=args.numberOfProcessors,
-        skipZeros=args.skipZeros,
         verbose=args.verbose,
         region=args.region,
         extendPairedEnds=args.extendPairedEnds,
@@ -161,6 +160,10 @@ def main(args):
             "chromosome names between bam files correspond.\n"
             "\n".format(num_reads_per_bin.shape[0]))
         exit(1)
+
+    if args.skipZeros:
+        num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
+
     total = len(num_reads_per_bin[:, 0])
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 

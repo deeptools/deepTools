@@ -29,9 +29,11 @@ class Correlation:
                  corr_method=None,
                  labels=None,
                  remove_outliers=False,
+                 skip_zeros=False,
                  log1p=False):
 
         self.load_matrix(matrix_file)
+        self.skip_zeros = skip_zeros
         self.corr_method = corr_method
         self.corr_matrix = None # correlation matrix
         if labels is not None:
@@ -40,6 +42,11 @@ class Correlation:
             # samples
 
             self.labels = labels
+
+        if skip_zeros is True:
+            # remove rows containing only nans or zeros
+            # that could be unmappable regions.
+            self.remove_rows_of_zeros()
 
         if remove_outliers is True:
             # remove outliers, otherwise outliers will produce a very
@@ -127,6 +134,13 @@ class Correlation:
 
         return self.matrix
 
+    def remove_rows_of_zeros(self):
+        # remove rows containing all zeros or all nans
+        _mat = np.nan_to_num(self.matrix)
+        to_keep = _mat.sum(1) != 0
+
+        self.matrix = self.matrix[to_keep, :]
+
     def save_corr_matrix(self, file_handle):
         """
         saves the correlation matrix
@@ -174,6 +188,7 @@ class Correlation:
         """
         num_rows = len(self.labels)
         corr_matrix = self.compute_correlation()
+        print corr_matrix
         # set a font size according to figure length
         if num_rows < 6:
             font_size = 14

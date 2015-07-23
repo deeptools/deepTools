@@ -40,8 +40,6 @@ class TestCountReadsPerBin(object):
                              stepSize=step_size)
 
     def test_count_reads_in_region(self):
-        step_size = 50
-        bin_length = 25
         self.c.skipZeros = False
         resp = self.c.count_reads_in_region(self.chrom, 0, 200)
 
@@ -132,3 +130,14 @@ class TestCountReadsPerBin(object):
         resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile1),
                                              'chr_cigar', 0, 100, 10)
         nt.assert_array_equal(resp, np.array([ 0,  1,  1,  0,  1,  0,  0,  0,  0,  0]))
+
+    def test_get_coverage_of_region_zeros_to_nan(self):
+        step_size = 50
+        bin_length = 25
+        self.c.zerosToNans = True
+        resp = self.c.count_reads_in_region(self.chrom, 0, 200)
+
+        nt.assert_equal(resp, np.array([[ np.nan,  np.nan],
+                                        [ np.nan,  1],
+                                        [ 1,  1],
+                                        [ 1,  2]]))

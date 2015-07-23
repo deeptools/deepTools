@@ -12,8 +12,7 @@ from deeptools import parserCommon
 from deeptools._version import __version__
 
 
-
-def parseArguments(args=None):
+def parse_arguments(args=None):
     parser = \
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -47,7 +46,7 @@ detailed help:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
-    #read_options_parser = parserCommon.read_options()
+    # read_options_parser = parserCommon.read_options()
 
     # bins mode options
     bins_mode = subparsers.add_parser(
@@ -71,8 +70,7 @@ detailed help:
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bigwigCorrelateArgs(case='BED-file'),
-                 parent_parser,
-        ],
+                 parent_parser],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the correlation analysis. A "
              "common use is to compare ChIP-seq coverages between two "
@@ -83,7 +81,6 @@ detailed help:
         add_help=False)
 
     args = parser.parse_args(args)
-    #args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
 
     if args.labels and len(args.bwfiles) != len(args.labels):
         print "The number of labels does not match the number of bigWig files."
@@ -146,9 +143,9 @@ def bigwigCorrelateArgs(case='bins'):
                         default=None)
     else:
         optional.add_argument('--binSize', '-bs',
-                        help=argparse.SUPPRESS,
-                        default=10000,
-                        type=int)
+                            help=argparse.SUPPRESS,
+                            default=10000,
+                            type=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               help=argparse.SUPPRESS,
@@ -157,27 +154,18 @@ def bigwigCorrelateArgs(case='bins'):
                               type=int)
 
         required.add_argument('--BED',
-                        help='Limits the correlation analysis to '
-                            'the regions specified in this file.',
-                        metavar='bedfile',
-                        type=argparse.FileType('r'),
-                        required=True)
-
-    optional.add_argument('--includeZeros',
-                        help='Genomic regions that have zero values only '
-                            'are included. The default behavior is to ignore these '
-                            'regions. ',
-                        action='store_true',
-                        required=False)
+                              help='Limits the correlation analysis to '
+                                    'the regions specified in this file.',
+                              metavar='bedfile',
+                              type=argparse.FileType('r'),
+                              required=True)
 
     group = parser.add_argument_group('Output optional options')
-
 
     group.add_argument('--outRawCounts',
                        help='Save raw counts (coverages) to file.',
                        metavar='FILE',
                        type=argparse.FileType('w'))
-
 
     return parser
 
@@ -194,29 +182,21 @@ def main(args):
         print "Please input at least two bigWig (.bw) files to compare"
         exit(1)
 
-    if args.includeZeros:
-        skip_zeros = False
-    else:
-        skip_zeros = True
-
-
     if 'BED' in args:
         bed_regions = args.BED
     else:
         bed_regions = None
 
-
     num_reads_per_bin = score_bw.getScorePerBin(
         [f.name for f in args.bwfiles],
         args.binSize,
         numberOfProcessors=args.numberOfProcessors,
-        skipZeros=skip_zeros,
         stepSize=args.binSize + args.distanceBetweenBins,
         verbose=args.verbose,
         region=args.region,
         bedFile=bed_regions)
 
-    sys.stderr.write("Number of non zero bins "
+    sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))
 
     if num_reads_per_bin.shape[0] < 2:
@@ -225,10 +205,21 @@ def main(args):
              "region is covered by reads.\n")
 
     if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
-        for row in num_reads_per_bin:
-            args.outRawCounts.write(fmt.format(*tuple(row)))
+        if bed_regions:
+            bed_regions.seek(0)
+            reg_list = bed_regions.readlines()
+            args.outRawCounts.write("#'chr'\t'start'\t'end'\t")
+            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+            fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
+            for idx, row in enumerate(num_reads_per_bin):
+                args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].split("\t")[0:3]))
+                args.outRawCounts.write(fmt % tuple(row))
+
+        else:
+            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+            fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
+            for row in num_reads_per_bin:
+                args.outRawCounts.write(fmt.format(*tuple(row)))
 
     np.savez_compressed(args.outFileName,
              matrix=num_reads_per_bin,
@@ -236,5 +227,5 @@ def main(args):
 
 
 if __name__ == "__main__":
-    ARGS = parseArguments()
+    ARGS = parse_arguments()
     main(ARGS)

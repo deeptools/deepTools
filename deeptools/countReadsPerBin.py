@@ -27,9 +27,7 @@ class CountReadsPerBin(object):
     r"""Collects coverage over multiple bam files using multiprocessing
 
     This function collects read counts (coverage) from several bam files and returns
-    an numpy array with the results. This function does not explicitly do the
-    coverage computation, instead divides the work into smaller chunks that are
-    sent to individual processors.
+    an numpy array with the results. This class uses multiprocessing to compute the coverage.
 
     Parameters
     ----------
@@ -53,10 +51,6 @@ class CountReadsPerBin(object):
 
     numberOfProcessors : int
         Number of processors to use. Default is 4
-
-    skipZeros : bool
-        Default is True. This option decides if regions having zero coverage in all bam files
-        should be skipped or kept.
 
     verbose : bool
         Output messages. Default: False
@@ -112,8 +106,7 @@ class CountReadsPerBin(object):
     numpy array
 
         Each row correspond to each bin/bed region and each column correspond to each of
-        the bamFiles. If ``skipZeros`` is used, then the result may have less rows
-        than expected
+        the bamFiles.
 
 
     Examples
@@ -127,15 +120,15 @@ class CountReadsPerBin(object):
     The first line corresponds to the number of reads per bin in bam file 1
 
     >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2],
-    ... 50, 4, 0, skipZeros=True)
+    ... 50, 4, 0)
     >>> np.transpose(c.run())
-    array([[ 0.,  1.,  1.],
-           [ 1.,  1.,  2.]])
+    array([[ 0.,  0.,  1.,  1.],
+           [ 0.,  1.,  1.,  2.]])
     """
 
     def __init__(self, bamFilesList, binLength=50, numberOfSamples=None,
                  defaultFragmentLength=300, numberOfProcessors=1,
-                 skipZeros=False, verbose=False, region=None,
+                 verbose=False, region=None,
                  bedFile=None, extendPairedEnds=True,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
@@ -153,7 +146,6 @@ class CountReadsPerBin(object):
         self.numberOfSamples = numberOfSamples
         self.defaultFragmentLength = defaultFragmentLength
         self.numberOfProcessors = numberOfProcessors
-        self.skipZeros = skipZeros
         self.verbose = verbose
         self.region = region
         self.bedFile = bedFile
@@ -261,10 +253,8 @@ class CountReadsPerBin(object):
         each other. if the step size is smaller than the bin size the
         bins will overlap.
 
-
         If a list of bedRegions is given, then the number of reads
         that overlaps with each region is counted.
-
 
         Parameters
         ----------
@@ -293,7 +283,7 @@ class CountReadsPerBin(object):
 
         >>> test = Tester()
         >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0, 0,
-        ... stepSize=50, skipZeros=False)
+        ... stepSize=50)
 
         The transpose is used to get better looking numbers. The first line
         corresponds to the number of reads per bin in the first bamfile.
@@ -301,16 +291,6 @@ class CountReadsPerBin(object):
         >>> np.transpose(c.count_reads_in_region(test.chrom, 0, 200))
         array([[ 0.,  0.,  1.,  1.],
                [ 0.,  1.,  1.,  2.]])
-
-        When skipZeros is set to true, those cases in which *all* of the
-        bamfiles have zero counts for a certain bin are ignored.
-
-        >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0, 0,
-        ... skipZeros=True, stepSize=50)
-        >>> np.transpose(c.count_reads_in_region(test.chrom, 0, 200))
-        array([[ 0.,  1.,  1.],
-               [ 1.,  1.,  2.]])
-
 
         """
 
@@ -343,12 +323,6 @@ class CountReadsPerBin(object):
                 coverage_array.append(
                     self.get_coverage_of_region(bam, chrom, start, end, region_length)[0])
 
-            # skip if any of the bam files returns a NaN
-            if np.isnan(sum(coverage_array)):
-                continue
-
-            if self.skipZeros and sum(coverage_array) == 0:
-                continue
             subNum_reads_per_bin.extend(coverage_array)
             rows += 1
 
@@ -653,6 +627,12 @@ class CountReadsPerBin(object):
         indexEnd = min(maxPosition, tileIndex + smoothTilesRight)
         return (indexStart, indexEnd)
 
+
+def remove_row_of_zeros(matrix):
+    # remove rows containing all zeros or all nans
+    _mat = np.nan_to_num(matrix)
+    to_keep = _mat.sum(1) != 0
+    return matrix[to_keep, :]
 
 class Tester(object):
     def __init__(self):

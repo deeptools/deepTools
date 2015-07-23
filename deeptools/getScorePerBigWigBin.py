@@ -18,7 +18,6 @@ def countReadsInRegions_wrapper(args):
 def countFragmentsInRegions_worker(chrom, start, end,
                                bigwigFilesList,
                                stepSize, binLength,     #staticArgs
-                               skipZeros=False,
                                bedRegions=None):
     """ returns the average score in each bigwig file at each 'stepSize'
     position within the interval start, end for a 'binLength' window.
@@ -80,7 +79,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         i += 1
-        for bwh in bigWigHandlers:
+        for idx, bwh in enumerate(bigWigHandlers):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 score = bwh.query(chrom, start, end, 1)
@@ -89,15 +88,13 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
             if score is None or np.isnan(score['mean']):
                 if num_warnings < 10:
-                    sys.stderr.write("{}  {} found at {}:{:,}-{:,}\n".format(i, score, chrom, start, end))
+                    sys.stderr.write("NaN found in {} at {}:{:,}-{:,}\n".format(bigwigFilesList[idx], chrom, start, end))
                     num_warnings += 1
                 score = {}
-                score['mean'] = 0.0
+                score['mean'] = np.nan
             avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
 
-        if skipZeros and sum(avgReadsArray) == 0:
-            continue
         sub_score_per_bin.extend(avgReadsArray)
         rows += 1
     warnings.resetwarnings()
@@ -192,7 +189,7 @@ def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
 
 
 def getScorePerBin(bigwigFilesList, binLength,
-                   numberOfProcessors=1, skipZeros=True,
+                   numberOfProcessors=1,
                    verbose=False, region=None,
                    bedFile=None,
                    stepSize=None,
@@ -239,7 +236,7 @@ def getScorePerBin(bigwigFilesList, binLength,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
     # mapReduce( (staticArgs), func, chromSize, etc. )
-    imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength, skipZeros),
+    imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,

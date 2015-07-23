@@ -87,12 +87,12 @@ def required_args():
                           'the generated image. Leave blank for no title.',
                           default='')
 
-    optional.add_argument('--includeZeros',
-                          help='Genomic regions that have zero values only '
-                          'are included. The default behavior is to '
-                          'ignore these regions.',
-                          action='store_true',
-                          required=False)
+    optional.add_argument('--skipZeros',
+                        help='By setting this option, genomic regions '
+                             'that have zero or nan values only all samples '
+                             'are excluded.',
+                        action='store_true',
+                        required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
                           help='Number of 1bp regions to sample. Default 1 million',
@@ -110,17 +110,11 @@ def required_args():
 
 def main(args):
 
-    if args.includeZeros:
-        skip_zeros = False
-    else:
-        skip_zeros = True
-
     cr = countR.CountReadsPerBin(args.bamfiles,
                                  binLength=1,
                                  numberOfSamples=args.numberOfSamples,
                                  defaultFragmentLength=args.fragmentLength,
                                  numberOfProcessors=args.numberOfProcessors,
-                                 skipZeros=skip_zeros,
                                  verbose=args.verbose,
                                  region=args.region,
                                  extendPairedEnds=args.extendPairedEnds,
@@ -139,6 +133,9 @@ def main(args):
         exit("ERROR: too few non zero bins found.\n"
              "If using --region please check that this "
              "region is covered by reads.\n")
+
+    if args.skipZeros:
+        num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")

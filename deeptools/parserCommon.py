@@ -42,6 +42,14 @@ def read_options():
                        metavar="INT bp",
                        default='200')
 
+    group.add_argument('--extendPairedEnds',
+                       help='If set, reads are extended to match their '
+                       'fragment length reported in the BAM file, instead '
+                       'they will be extended to match the --fragmentLength. '
+                       'Default is to extend the reads if paired end '
+                       'information is available.',
+                       action='store_true')
+
     group.add_argument('--doNotExtendPairedEnds',
                        help='If set, reads are not extended to match the '
                        'fragment length reported in the BAM file, instead '
