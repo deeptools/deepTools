@@ -202,7 +202,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
         # temporary file to store sorted bedgraph file
         _file = NamedTemporaryFile(delete=False)
         tempFileName1 = _file.name
-        system("{} -k1,1 -k2,2n {} > {}".format(sort_cmd,
+        system("LC_COLLATE=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd,
                                                 bedGraphPath, tempFileName1))
         bedGraphPath = tempFileName1
 
