@@ -169,6 +169,7 @@ def getRequiredArgs():
 
     return parser
 
+
 def getPositionsToSample(chrom, start, end, stepSize):
     """
     check if the region submitted to the worker
@@ -257,6 +258,7 @@ def countReadsPerGC_worker(chromNameBam,
             gc = getGC_content(tbit[chromNameBit].get(i, i + regionSize))
         except Exception as detail:
             if verbose:
+                print "{}:{}-{}".format(chromNameBit, i, i + regionSize)
                 print detail
             continue
         numberReads = bam.count(chromNameBam, i, i + regionSize)
