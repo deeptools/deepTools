@@ -8,7 +8,7 @@ def getGC_content(dnaString, as_fraction=True):
     if len(dnaString) == 0:
         return None
     if dnaString.count('N') > len(dnaString) * 0.05:
-        raise Exception("too many NNNs in assembly sequence")
+        raise Exception("WARNING: too many NNNs present in sequence of length {}".format(len(dnaString)))
         return None
 
     gc = 0
