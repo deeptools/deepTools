@@ -61,12 +61,13 @@
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">1.5.9.2</token>
+    <token name="@WRAPPER_VERSION@">1.5.11</token>
     <xml name="requirements">
         <requirements>
+            <requirement type="package" version="2.7">python</requirement>
             <requirement type="binary">@BINARY@</requirement>
             <requirement type="package" >deepTools</requirement>
-            <requirement type="package" version="1.5.9">deepTools</requirement>
+            <requirement type="package" version="1.5.11">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -191,25 +192,15 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bams">
-        <repeat name="input_files" title="BAM files" min="2">
-            <param name="bamfile" type="data" format="bam" 
-                label="Bam file" 
-                help="The BAM file must be sorted."/>
-            <param name="label" type="text" size="30" optional="true" value=""
-                label="Label"
-                help="Label to use in the output. If not given the dataset name will be used instead."/>
-        </repeat>
+        <param name="bamfiles" type="data" format="bam"
+            label="Bam file" multiple="true"
+            help="The BAM file must be sorted."/>
     </xml>
 
     <xml name="multiple_input_bigwigs">
-        <repeat name="input_files" title="BigWig files" min="2">
-            <param name="bigwigfile" type="data" format="bigwig" 
-                label="Bigwig file" 
-                help="The Bigwig file must be sorted."/>
-            <param name="label" type="text" size="30" optional="true" value=""
-                label="Label"
-                help="Label to use in the output. If not given the dataset name will be used instead."/>
-        </repeat>
+        <param name="bigwigfiles" type="data" format="bigwig" multiple="True"
+            label="Bigwig file" 
+            help="The Bigwig file must be sorted."/>
     </xml>
 
     <xml name="plotTitle">
@@ -219,46 +210,28 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <token name="@multiple_input_bams@">
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+<![CDATA[
         #set files=[]
         #set labels=[]
-        #for $i in $input_files:
-            #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-            #set $temp_input_path = $temp_input_handle.name
-            #silent $temp_input_handle.close()
-            #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
-            #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
-            #silent $files.append('%s.bam' % $temp_input_path)
-
-            ##set $files += [str($i.bamfile)]
-            #if str($i.label.value) != "":
-                #set $labels += ["\"%s\"" % ($i.label.value)]
-            #else
-                #set $labels += ["\"%s\"" % ($i.bamfile.name)]
-            #end if
+        #for $counter, $bamfile in enumerate($bamfiles):
+            ln -s "${bamfile}" "./${counter}.bam" &&
+            ln -s "${bamfile}" "./${counter}.bam.bai" &&
+            #silent $files.append('%s.bam' % $counter)
+            #silent $labels.append("'%s'" % ($bamfile.display_name))
         #end for
+]]>
     </token>
 
     <token name="@multiple_input_bigwigs@">
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+<![CDATA[
         #set files=[]
         #set labels=[]
-        #for $i in $input_files:
-            #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-            #set $temp_input_path = $temp_input_handle.name
-            #silent $temp_input_handle.close()
-            #silent os.system("ln -s %s %s.bw" % (str($i.bigwigfile), $temp_input_path))
-            #silent $files.append('%s.bw' % $temp_input_path)
-
-            ##set $files += [str($i.bigwigfile)]
-            #if str($i.label.value) != "":
-                #set $labels += ["\"%s\"" % ($i.label.value)]
-            #else
-                #set $labels += ["\"%s\"" % ($i.bigwigfile.name)]
-            #end if
+        #for $counter, $bigwig in enumerate($bigwigfiles):
+            ln -s "${bigwig}" "${counter}.bw" &&
+            #silent $files.append('%s.bw' % $counter)
+            #silent $labels.append("'%s'" % ($bigwig.display_name))
         #end for
+]]>
     </token>
 
     <xml name="reference_genome_source">
