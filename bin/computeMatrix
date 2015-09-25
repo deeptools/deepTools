@@ -361,7 +361,8 @@ def main(args):
     hm.computeMatrix(scores_file_list, args.regionsFileName,
                      parameters, verbose=args.verbose)
     if args.sortRegions != 'no':
-        hm.sortMatrix(sort_using=args.sortUsing, sort_method=args.sortRegions)
+        hm.matrix.sort_groups(sort_using=args.sortUsing,
+                      sort_method=args.sortRegions)
 
     hm.saveMatrix(args.outFileName)
 
