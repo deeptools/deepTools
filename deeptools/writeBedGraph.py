@@ -127,7 +127,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
             # in case a region is used, append the tilesize
             self.region += ":{}".format(self.binLength)
 
-        print [(x, self.__getattribute__(x)) for x in self.__dict__.keys()]
+        for x in self.__dict__.keys():
+            print "{}: {}".format(x, self.__getattribute__(x))
+
         res = mapReduce.mapReduce([func_to_call, func_args],
                                   writeBedGraph_wrapper,
                                   chromNamesAndSize,
