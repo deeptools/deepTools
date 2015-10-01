@@ -246,11 +246,10 @@ class CountReadsPerBin(object):
 
         """Counts the reads in each bam file at each 'stepSize' position
         within the interval (start, end) for a window or bin of size binLength.
-        Because the idea is to get counts for window/bin positions at
 
         The stepSize controls the distance between bins. For example,
         a step size of 20 and a bin size of 20 will create bins next to
-        each other. if the step size is smaller than the bin size the
+        each other. If the step size is smaller than the bin size the
         bins will overlap.
 
         If a list of bedRegions is given, then the number of reads
@@ -416,6 +415,8 @@ class CountReadsPerBin(object):
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 continue
 
+            # since reads can be split (e.g. RNA-seq reads) each part of the
+            # read that maps is called a position block.
             try:
                 position_blocks = fragmentFromRead_func(read)
             except TypeError:
@@ -427,10 +428,16 @@ class CountReadsPerBin(object):
                 fragmentLength = fragmentEnd - fragmentStart
                 if fragmentLength == 0:
                     continue
+                # skip reads that are not in the region being
+                # evaluated.
+                if fragmentEnd < start or fragmentStart >= end:
+                    continue
 
                 vectorStart = max((fragmentStart - start) / tileSize, 0)
                 vectorEnd = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
                                 vectorLength)
+
+                assert vectorEnd > vectorStart, "Error, vector end < than vector start"
 
                 coverage[vectorStart:vectorEnd] += 1
 
@@ -453,9 +460,12 @@ class CountReadsPerBin(object):
 
 
     def get_fragment_from_read(self, read):
-        """Get read start and end position considering extension
-        for paired end reads or using a default fragment length.
-
+        """Get read start and end position of a read.
+        If given, the reads are extended as follows:
+        If reads are paired end, each read mate is extended to match
+        the fragment length, otherwise, a default fragment length
+        is used. If reads are split (give by the CIGAR string) then
+        the multiple positions of the read are returned.
         When reads are extended the cigar information is
         skipped.
 
@@ -539,7 +549,7 @@ class CountReadsPerBin(object):
         # and the for the last 22 matches.
         if read.is_paired and self.extendPairedEnds == False:
             return read.get_blocks()
-        if not read.is_paired and self.defaultFragmentLength <= 1:
+        if not read.is_paired and self.defaultFragmentLength <= read.alen:
             return read.get_blocks()
 
         if self.extendPairedEnds == True and read.is_paired \
