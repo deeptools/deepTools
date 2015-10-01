@@ -436,8 +436,10 @@ class CountReadsPerBin(object):
                 vectorStart = max((fragmentStart - start) / tileSize, 0)
                 vectorEnd = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
                                 vectorLength)
+                if vectorEnd == vectorStart:
+                    vectorEnd += 1
 
-                assert vectorEnd > vectorStart, "Error, vector end < than vector start"
+                assert vectorEnd > vectorStart, "Error, vector end < than vector start {}:{}:{}".format(chrom, start, end)
 
                 coverage[vectorStart:vectorEnd] += 1
 
