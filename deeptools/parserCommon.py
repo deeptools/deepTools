@@ -30,32 +30,27 @@ def read_options():
     group = parser.add_argument_group('Read processing options')
 
     group.add_argument('--fragmentLength', '-f',
-                       help='Length of the average fragment size. Reads will '
-                       'be extended to match this length unless they are '
-                       'paired-end, in which case they will be extended to '
-                       'match the fragment length. If this value is set to '
-                       'the read length or smaller, the read will not be '
-                       'extended.*NOTE*: If the BAM files contain mated and '
-                       'unmated paired-end reads, unmated reads will be '
-                       'extended to match the --fragmentLength.',
+                       help='Only when --extendPairedEnds is set. '
+                            'Length of the average fragment size. Reads will '
+                            'be extended to match this length unless they are '
+                            'paired-end, in which case they will be extended to '
+                            'match the fragment length. If this value is set to '
+                            'between 1 and the read length, the read will not be '
+                            'extended. *NOTE*: If the BAM files contain mated and '
+                            'unmated paired-end reads, unmated reads will be '
+                            'extended to match the --fragmentLength.',
                        type=int,
                        metavar="INT bp",
-                       default='200')
+                       default='1')
 
     group.add_argument('--extendPairedEnds',
-                       help='If set, reads are extended to match their '
-                       'fragment length reported in the BAM file, instead '
-                       'they will be extended to match the --fragmentLength. '
-                       'Default is to extend the reads if paired end '
-                       'information is available.',
-                       action='store_true')
-
-    group.add_argument('--doNotExtendPairedEnds',
-                       help='If set, reads are not extended to match the '
-                       'fragment length reported in the BAM file, instead '
-                       'they will be extended to match the --fragmentLength. '
-                       'Default is to extend the reads if paired end '
-                       'information is available.',
+                       help='If set, paired end reads are extended to match the '
+                            'fragment length between the mate reads. Be default'
+                            '*each* read mate is extended. This can be modified using'
+                            'the sam flags (see samFlagInclude and samFlagExclude '
+                            'options) to keep only the first or the second mate. Mate '
+                            'reads that are in different chromosomes or that are to far'
+                            'apart are extended to the given --fragmentLength',
                        action='store_true')
 
     group.add_argument('--ignoreDuplicates',

@@ -47,9 +47,7 @@ def parseArguments(args=None):
 
     args = parser.parse_args(args)
 
-            
-    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
-    
+
     return(args)
 
 def scaleFactor(string):
