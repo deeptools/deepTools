@@ -58,11 +58,11 @@ class ReadBed(object):
         elif len(line_values) > 6:
             # assume bed6
             self.file_type = 'bed6'
-            sys.stderr.write("Number of fields in BED file is not standard. Assuming bed6")
+            sys.stderr.write("Number of fields in BED file is not standard. Assuming bed6\n")
         else:
             # assume bed3
             self.file_type = 'bed3'
-            sys.stderr.write("Number of fields in BED file is not standard. Assuming bed3")
+            sys.stderr.write("Number of fields in BED file is not standard. Assuming bed3\n")
         return self.file_type
 
     def next(self):
@@ -87,8 +87,12 @@ class ReadBed(object):
         line_data = line.strip().split("\t")
 
         line_values = []
-        for r in line_data:
-            if r.isdigit():
+        for idx, r in enumerate(line_data):
+            # first field is always chromosome name
+            # or scaffold name and should be a string
+            if idx == 0:
+                line_values.append(r)
+            elif r.isdigit() and idx > 0:
                 line_values.append(int(r))
             else:
                 tmp = r

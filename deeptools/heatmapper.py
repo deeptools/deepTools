@@ -496,6 +496,7 @@ class heatmapper(object):
         valuesArray = np.zeros(zones[-1][1] - zones[0][0])
         if not nansAsZeros:
             valuesArray[:] = np.nan
+        bw_array = None
         try:
             bw_array = bigwig.get_as_array(chrom,
                                            max(0, zones[0][0]),
@@ -505,7 +506,7 @@ class heatmapper(object):
         except Exception as detail:
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
-
+                sys.stderr.write("Problematic region: {}:{}-{}\n".format(chrom, zones[-1][1], zones[0][0]))
         if bw_array is None:
             # When bigwig.get_as_array queries a
             # chromosome that is not known
