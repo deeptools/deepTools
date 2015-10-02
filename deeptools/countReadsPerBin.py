@@ -152,7 +152,7 @@ class CountReadsPerBin(object):
         self.extendPairedEnds = extendPairedEnds
         self.minMappingQuality = minMappingQuality
         self.ignoreDuplicates = ignoreDuplicates
-        self.chrsToSkip =  chrsToSkip
+        self.chrsToSkip = chrsToSkip
         self.stepSize = stepSize
         self.center_read = center_read
         self.samFlag_include = samFlag_include
@@ -378,16 +378,17 @@ class CountReadsPerBin(object):
         length = end - start
         assert tileSize > 0, "bin length has to be an integer greater than zero. Current value {}".format(tileSize)
         if length % tileSize > 0:
-            newLength = length - (length % tileSize)
+            new_length = length - (length % tileSize)
+            end = start + new_length
             if debug:
-                print  "length of region ({}) is not a multiple of " \
-                       "tileSize {}\nThe region is being chopped to length " \
-                       "{} bp".format(length, tileSize, newLength)
+                print "length of region ({}) is not a multiple of " \
+                      "tileSize {}\nThe region is being chopped to length " \
+                      "{} bp".format(length, tileSize, new_length)
 
-        vectorLength = length / tileSize
-        coverage = np.zeros(vectorLength, dtype='float64')
+        vector_length = length / tileSize
+        coverage = np.zeros(vector_length, dtype='float64')
 
-        startTime = time.time()
+        start_time = time.time()
         # caching seems faster. TODO: profile the function
         c = 0
         if chrom in bamHandle.references:
@@ -433,15 +434,26 @@ class CountReadsPerBin(object):
                 if fragmentEnd < start or fragmentStart >= end:
                     continue
 
-                vectorStart = max((fragmentStart - start) / tileSize, 0)
-                vectorEnd = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
-                                vectorLength)
-                if vectorEnd == vectorStart:
-                    vectorEnd += 1
+                vector_start = max((fragmentStart - start) / tileSize, 0)
+                # np.ceil is to consider the next closest start of a bin
+                # for example in the following situation:
+                #
+                # A  =======>
+                # B               ===>
+                # |------|------|------|------|------|------|------|
+                # 0      1      2      3      4      5      6      7 bin
+                # 0         10         20         30         40      genomic position
 
-                assert vectorEnd > vectorStart, "Error, vector end < than vector start {}:{}:{}".format(chrom, start, end)
+                # for the A case the vector_start is 0 and the vector_end should be 2
+                # while for the B case the vector_start is 2 and the vector_end is 3.
 
-                coverage[vectorStart:vectorEnd] += 1
+                vector_end = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
+                                vector_length)
+
+                assert vector_end > vector_start, "Error, vector end < " \
+                                                  "than vector start {}:{}:{}".format(chrom, start, end)
+
+                coverage[vector_start:vector_end] += 1
 
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
             c += 1
@@ -449,7 +461,7 @@ class CountReadsPerBin(object):
         if debug:
             endTime = time.time()
             print "%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
-                multiprocessing.current_process().name, c, c / (endTime - startTime), chrom, start, end)
+                multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, start, end)
 
         # change zeros to NAN
         if self.zerosToNans:
