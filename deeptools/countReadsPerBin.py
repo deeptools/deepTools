@@ -450,6 +450,8 @@ class CountReadsPerBin(object):
                 vector_end = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
                                 vector_length)
 
+                if vector_end <= vector_start:
+                    import ipdb;ipdb.set_trace()
                 assert vector_end > vector_start, "Error, vector end < " \
                                                   "than vector start {}:{}:{}".format(chrom, start, end)
 
@@ -563,20 +565,21 @@ class CountReadsPerBin(object):
         # and the for the last 22 matches.
         if read.is_paired and self.extendPairedEnds == False:
             return read.get_blocks()
+
         if not read.is_paired and self.defaultFragmentLength <= read.alen:
             return read.get_blocks()
 
-        if self.extendPairedEnds == True and read.is_paired \
-                and abs(read.tlen) < self.maxPairedFragmentLength \
-                and abs(read.tlen) > 0:
+        if self.extendPairedEnds == True and read.is_paired and \
+                read.is_proper_pair and \
+                self.maxPairedFragmentLength > abs(read.tlen) > 0:
             if read.is_reverse:
-                fragmentStart = read.pnext
+                fragmentStart = read.next_reference_start
                 fragmentEnd = read.reference_end
             else:
                 fragmentStart = read.reference_start
                 # the end of the fragment is defined as
                 # the start of the forward read plus the insert length
-                fragmentEnd = read.reference_start + read.tlen
+                fragmentEnd = read.reference_start + abs(read.tlen)
 
         else:
             if read.is_reverse:
@@ -591,6 +594,8 @@ class CountReadsPerBin(object):
             fragmentStart = fragmentCenter - read.alen / 2
             fragmentEnd = fragmentStart + read.alen
 
+        assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
+                                            "end for read {}".format(read.query_name)
         return [(fragmentStart, fragmentEnd)]
 
     def getSmoothRange(self, tileIndex, tileSize, smoothRange, maxPosition):
