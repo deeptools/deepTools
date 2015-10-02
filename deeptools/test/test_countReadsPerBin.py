@@ -49,14 +49,16 @@ class TestCountReadsPerBin(object):
                                         [ 1,  2.]]))
         
 
-        # step size = 200
-        # bin length = 200
-        # in other words, count the reads over the whole region
-        # 2 for the first case, and 4 for the other
+    def test_count_reads_in_region_total(self):
+        """ count the reads over the whole region
+        2 for the first case, and 4 for the second
+        """
+        self.c.skipZeros = False
         self.c.stepSize = 200
         self.c.binLength = 200
         resp = self.c.count_reads_in_region(self.chrom, 0, 200)
         nt.assert_equal(resp, np.array([[ 2, 4.]]))
+
 
     def test_countReadsInRegions_min_mapping_quality(self):
         # Test min mapping quality.
