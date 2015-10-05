@@ -431,7 +431,7 @@ class CountReadsPerBin(object):
                     continue
                 # skip reads that are not in the region being
                 # evaluated.
-                if fragmentEnd < start or fragmentStart >= end:
+                if fragmentEnd <= start or fragmentStart >= end:
                     continue
 
                 vector_start = max((fragmentStart - start) / tileSize, 0)
@@ -450,8 +450,6 @@ class CountReadsPerBin(object):
                 vector_end = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
                                 vector_length)
 
-                if vector_end <= vector_start:
-                    import ipdb;ipdb.set_trace()
                 assert vector_end > vector_start, "Error, vector end < " \
                                                   "than vector start {}:{}:{}".format(chrom, start, end)
 
