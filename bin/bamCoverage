@@ -82,11 +82,11 @@ def getOptionalArgs():
                           metavar='bam file index')
 
     optional.add_argument('--scaleFactor',
-                          help='Indicate a number that you would like to use '
-                          'as a fixed scaling factor instead of the scaling '
-                          'factor calculated by the '
-                          '--normalizeUsingSequencingDepth option.',
-                          default=1,
+                          help='Indicate a number that you would like to use. It can be used in combination'
+                               'with the --normalizeTo1x or --normalizeUsingRPKM. In that case the computed'
+                               'scaling factor will be multiplied by the given scale factor.  The default '
+                               'scale factor is one',
+                          default=1.0,
                           type=float,
                           required=False)
 
@@ -207,7 +207,7 @@ def main(args):
         current_coverage = \
             float(bam_mapped * fragmentLength) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
-        args.scaleFactor = 1.0 / current_coverage
+        args.scaleFactor *= 1.0 / current_coverage
         if debug:
             print "Estimated current coverage {}".format(current_coverage)
             print "Scaling factor {}".format(args.scaleFactor)
@@ -217,7 +217,9 @@ def main(args):
         #    ( total reads (in millions) * tile length in Kb)
         millionReadsMapped = float(bam_mapped)  / 1e6
         tileLengthInKb = float(args.binSize) / 1000
-        args.scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
+
+        args.scaleFactor *= 1.0 / (millionReadsMapped * tileLengthInKb)
+
         if debug:
             print "scale factor using RPKM is {0}".format(args.scaleFactor)
 
