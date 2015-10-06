@@ -28,8 +28,12 @@
         --plotFile $outFileName
 
         #if $output.showOutputSettings == "yes"
-            --outRawCounts '$outFileRawCounts' 
-            --outFileCorMatrix '$outFileCorMatrix'
+            #if $output.saveRawCounts:
+                --outRawCounts '$outFileRawCounts'
+            #end if
+            #if $output.saveCorMatrix:
+                --outFileCorMatrix '$outFileCorMatrix'
+            #end if
             --plotFileFormat '$output.outFileFormat'
         #else:
             --plotFileFormat 'png'
