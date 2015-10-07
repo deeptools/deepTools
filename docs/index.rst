@@ -183,12 +183,13 @@ Contents:
    :glob:
    :maxdepth: 2
 
-   api_tutorial
+   content/list_of_tools
    *
    Help/*
    technical_documentation/*
    tools_details/*
    example_workflows/*
+   api_tutorial
 
 
 Indices and tables
