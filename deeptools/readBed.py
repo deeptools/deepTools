@@ -84,16 +84,31 @@ class ReadBed(object):
             # the '#' values
             return BedInterval(dict(), line.strip())
 
-        line_data = line.strip().split("\t")
+        return BedInterval(self.get_values_from_line(line), line)
+
+    def get_values_from_line(self, bed_line):
+        """
+        Processes each bed line from a bed file
+        and casts the values
+
+        """
+
+        line_data = bed_line.strip().split("\t")
 
         line_values = []
         for idx, r in enumerate(line_data):
             # first field is always chromosome name
-            # or scaffold name and should be a string
-            if idx == 0:
+            # or scaffold name and should be cast as a string
+            # same for field 3 (name) and field 6 (strand)
+            if idx == 0 or idx == 3 or idx == 5:
                 line_values.append(r)
-            elif r.isdigit() and idx > 0:
-                line_values.append(int(r))
+            elif idx == 1 or idx == 2:
+                # start and end fields must be integers
+                try:
+                    line_values.append(int(r))
+                except ValueError:
+                    sys.stderr.write("Value: {} in field {} is not an integer".format(r, idx+1))
+                    return dict()
             else:
                 tmp = r
                 try:
@@ -102,17 +117,23 @@ class ReadBed(object):
                     tmp = r
                 line_values.append(tmp)
         if self.file_type is None:
-            self.guess_file_type(line_values)
+            self.file_type = self.guess_file_type(line_values)
 
         if self.file_type == 'bed3':
             line_values = line_values[0:3]
+            # in case of a bed3, the id, score and strand
+            # values are added as ".", 0, "." respectively
+            line_values.extend([".", 0, "."])
         elif self.file_type == 'bed6':
                 line_values = line_values[0:6]
+
+        fields_dict = {}
         try:
             fields_dict = dict([(self.fields[index], value) for index, value in enumerate(line_values)])
         except:
             import ipdb;ipdb.set_trace()
-        return BedInterval(fields_dict, line)
+
+        return fields_dict
 
 
 class BedInterval(object):
@@ -125,6 +146,13 @@ class BedInterval(object):
 
         :param field_data_dict: A dictionary of field values. E.g. {'chrom': 'chr1', 'start': 0 } etc.
         :param line: string of the file line.
+
+        >>> bed = BedInterval({'chrom': '1', 'start': 1, 'end': 10}, "")
+        >>> bed.start
+        1
+
+        >>> bed['start']
+        1
         """
         self.fields = {}
         for key, value in field_data_dict.iteritems():

@@ -594,7 +594,7 @@ class heatmapper(object):
             matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
             matrix_rows.append(matrix_row)
             regions.append({'chrom': chrom, 'start': int(start),
-                            'end': int(end), 'name': name, 'score': float(score),
+                            'end': int(end), 'name': name, 'score': score,
                             'strand': strand})
 
         #matrix = np.ma.masked_invalid(np.vstack(matrix_rows))
