@@ -434,14 +434,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'height is 25. The minimum value is '
                               '3 and the maximum is 100.',
                               type=float,
-                              default=25)
+                              default=22)
 
         optional.add_argument('--heatmapWidth',
                               help='Width in cm. The default value is 7.5 '
                               'The minimum value is 1 and the '
                               'maximum is 100.',
                               type=float,
-                              default=7.5)
+                              default=5.5)
         optional.add_argument(
             '--whatToShow',
             help='The default is to include a summary or profile plot on top '
@@ -494,8 +494,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     optional.add_argument('--samplesLabel',
                           help='Labels for the samples plotted. The '
                           'default is to use the file name of the '
-                          'sample. E.g.'
-                          ' --samplesLabel "label1, label2".',
+                          'sample. The sample names should be separated '
+                               'by spaces and quoted if they label itself'
+                               'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
     optional.add_argument('--plotTitle', '-T',
