@@ -1,4 +1,4 @@
-from bx.bbi.bigwig_file import BigWigFile
+import pyBigWig
 import numpy as np
 import os
 import sys
@@ -16,14 +16,14 @@ def countReadsInRegions_wrapper(args):
 
 
 def countFragmentsInRegions_worker(chrom, start, end,
-                               bigwigFilesList,
+                               bigWigFiles,
                                stepSize, binLength,     #staticArgs
                                bedRegions=None):
     """ returns the average score in each bigwig file at each 'stepSize'
     position within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
     different positions for sampling the bins are equally spaced
-    between each other and are not one directly next *after* the other.
+    and *not adjacent*.
 
     If a list of bedRegions is given, then the number of reads
     that overlaps with each region is counted.
@@ -58,8 +58,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigWigHandlers = [BigWigFile(open(bw, "rb")) for bw in bigwigFilesList]
-
     regionsToConsider = []
     if bedRegions:
         for chrom, start, end in bedRegions:
@@ -79,20 +77,15 @@ def countFragmentsInRegions_worker(chrom, start, end,
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         i += 1
-        for idx, bwh in enumerate(bigWigHandlers):
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                score = bwh.query(chrom, start, end, 1)
-                if score is not None and len(score) > 0:
-                    score = score[0]
+        for idx, bwh in enumerate(bigWigFiles):
+            score = bwh.stats(chrom, start, end) #The default is "mean" and 1 bin
 
-            if score is None or np.isnan(score['mean']):
+            if score is None or np.isnan(score):
                 if num_warnings < 10:
                     sys.stderr.write("NaN found in {} at {}:{:,}-{:,}\n".format(bigwigFilesList[idx], chrom, start, end))
                     num_warnings += 1
-                score = {}
-                score['mean'] = np.nan
-            avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
+                score = np.nan
+            avgReadsArray.append(score)     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
 
         sub_score_per_bin.extend(avgReadsArray)
@@ -108,10 +101,9 @@ def countFragmentsInRegions_worker(chrom, start, end,
     return np.array(sub_score_per_bin).reshape(rows, len(bigwigFilesList))
 
 
-def getChromSizes(bigwigFilesList):
+def getChromSizes(bigWigFiles):
     """
-    Get chromosome sizes from bigWig file by shell calling bigWigInfo
-    (UCSC tools).
+    Get chromosome sizes from bigWig files.
 
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
@@ -120,51 +112,27 @@ def getChromSizes(bigwigFilesList):
     >>> getChromSizes([test.bwFile1, test.bwFile2])
     [('3R', 200)]
     """
-    #The following lines are - with one exception ("bigWigInfo") -
-    #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
 
-
-    # check that the path to USCS bedGraphToBigWig as set in the config
-    # is installed and is executable.
-    bigwig_info_cmd = cfg.config.get('external_tools', 'bigwig_info')
-
-    if not cfg.checkProgram(bigwig_info_cmd, '-h',
-                            'http://hgdownload.cse.ucsc.edu/admin/exe/'):
-        exit()
-
-    cCommon = []
     chromNamesAndSize = {}
-    for bw in bigwigFilesList:
-        inBlock = False
-        for line in os.popen("{} -chroms {}".format(bigwig_info_cmd, bw)).readlines():
-            if line[0:10] == "chromCount":
-                inBlock = True
-                continue
-            if line[0:5] == "bases":
-                break
-            if inBlock:
-                chromName, id, size = line.strip().split(" ")
-                size = int(size)
-                if chromName in chromNamesAndSize:
-                    cCommon.append(chromName)
-                    if chromNamesAndSize[chromName] != size:
-                        print "\nWARNING\n" \
-                            "Chromosome {} length reported in the " \
-                            "bigwig files differ.\n{} for {}\n" \
-                            "{} for {}.\n\nThe smallest " \
-                            "length will be used".format(
-                            chromName, chromNamesAndSize[chromName],
-                            bw[0], size, bw[1])
-                        chromNamesAndSize[chromName] = min(
-                            chromNamesAndSize[chromName], size)
-                else:
-                    chromNamesAndSize[chromName] = size
+    for bw in bigWigFiles :
+        if(bw is None or !bw) :
+            return None
+
+        for k,v in bw.chroms() :
+            if(k not in chromNamesAndSize) :
+                chromNamesAndSize[k] = v
+            else if(chromNamesAndSize[k] != v) :
+                print "\nWARNING\n" \
+                "Chromosome {} length reported in the bigwig files differ.\n\n" \
+                "The smaller of the two will be used.".format(k, chomNamesAndSize[k], v)
+                if(chromNamesAndSize[k] >= v) :
+                    chromNamesAndSize[k] = v
     # get the list of common chromosome names and sizes
-    chromSizes = sorted([(k, v) for k, v in chromNamesAndSize.iteritems() \
-                         if k in cCommon])
+    chromSizes = sorted([(k, v) for k, v in chromNamesAndSize.iteritems() ])
     return chromSizes
 
 
+#This is a terribly inefficient way to get this.
 def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
     """
     Get the number of all mapped fragments per region in all chromosomes
@@ -179,16 +147,15 @@ def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
     >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile2, [('3R', 200)])
     4.0
     """
-    bwh = BigWigFile(open(bw, "rb"))
     mapped = 0
     for cname, csize in chromSizes:
-        regions = bwh.get(cname, 0, csize) # region = bwh.get(chrom_name, start, end)
+        regions = bw.intervals(cname, 0, csize) # region = bwh.get(chrom_name, start, end)
         for region in regions:
             mapped += region[2]
     return mapped
 
 
-def getScorePerBin(bigwigFilesList, binLength,
+def getScorePerBin(bigWigFiles, binLength,
                    numberOfProcessors=1,
                    verbose=False, region=None,
                    bedFile=None,
@@ -210,12 +177,12 @@ def getScorePerBin(bigwigFilesList, binLength,
 
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
-    # is spend loading the files
+    # is spent loading the files
     # if too long, some processors end up free.
-    # the following values are empirical
+    # the following is a heuristic
 
     # get list of common chromosome names and sizes
-    chromSizes = getChromSizes(bigwigFilesList)
+    chromSizes = getChromSizes(bigWigFiles)
 
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
@@ -227,8 +194,8 @@ def getScorePerBin(bigwigFilesList, binLength,
     chrNames, chrLengths = zip(*chromSizes)
     genomeSize = sum(chrLengths)
     if stepSize is None:
-        stepSize = binLength    #for consecutive bins
-    chunkSize = int(stepSize * 500 / len(bigwigFilesList))
+        stepSize = binLength    #for adjacent bins
+    chunkSize = int(stepSize * 500 / len(bigWigFiles))
     if verbose:
         print "step size is {}".format(stepSize)
 
@@ -236,7 +203,7 @@ def getScorePerBin(bigwigFilesList, binLength,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
     # mapReduce( (staticArgs), func, chromSize, etc. )
-    imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength),
+    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength),
                                     countReadsInRegions_wrapper,
                                     chromSizes,
                                     genomeChunkLength=chunkSize,
