@@ -60,6 +60,18 @@ filtering BAMs while processing
 
 why
 
++----------------------------------------------+
+| If you know that your files will be strongly |
+| affected by the filtering of duplicates or   |
+| reads of low quality, you should consider    |
+| removing those reads *before* using          |
+| bamCoverage or bamCompare as the filtering   |
+| by deepTools is done *after* the             |
+| scaling factors are calculated!              |
++----------------------------------------------+
+
+oh, why
+
 +------------------------------------------------------------------------+
 | Testtesttest                                          final test       |
 |and more test                                                           |
