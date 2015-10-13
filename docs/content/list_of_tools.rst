@@ -48,7 +48,16 @@ filtering BAMs while processing
 -  samFlagInclude
 -  samFlagExclude
 
-**If you use `bamCoverage <https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage>` or `bamCompare <https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare>` on samples that have many duplicates or many reads of low quality, it might be better to filter the BAM files *beforehand* as the filtering by deepTools is done *after* the scaling factors are calculated. If you know that your files will be strongly affected by the filtering, this might lead to non-optimal scaling factors!**
++---------------------------------------------------------------------------------------------------------------------------+
+  If you use `bamCoverage` or `bamCompare` on samples that have many duplicates or many reads of low quality, it might be better to filter the BAM files *beforehand* as the filtering by deepTools is done *after* the scaling factors are calculated. If you know that your files will be strongly affected by the filtering, this might lead to non-optimal scaling factors!**
++---------------------------------------------------------------------------------------------------------------------------+
+
+
++------------------------+
+|        !DANGER!        |
+|                        |
+| Beware killer rabbits! |
++------------------------+
 
 To tell a program to use a certain option (e.g. to ignore duplicate
 reads), you will have to give the option name preceded by two hyphens
