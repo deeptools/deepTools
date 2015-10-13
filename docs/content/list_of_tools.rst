@@ -60,9 +60,12 @@ filtering BAMs while processing
 | by deepTools is done *after* the scaling factors are calculated!       |
 +------------------------------------------------------------------------+
 
-| Testtesttest|
-|and more test|
-+-------------+
+why
+
++-----------------+
+| Testtesttest    |
+|and more test    |
++-----------------+
 
 To tell a program to use a certain option (e.g. to ignore duplicate
 reads), you will have to give the option name preceded by two hyphens
