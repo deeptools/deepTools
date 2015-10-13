@@ -62,10 +62,10 @@ filtering BAMs while processing
 
 why
 
-+-----------------+
-| Testtesttest    |
-|and more test    |
-+-----------------+
++------------------------------------------------------------------------+
+| Testtesttest                                          final test       |
+|and more test                                                           |
++------------------------------------------------------------------------+
 
 To tell a program to use a certain option (e.g. to ignore duplicate
 reads), you will have to give the option name preceded by two hyphens
