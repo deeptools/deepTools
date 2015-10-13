@@ -68,9 +68,9 @@ but it's not. why is this not working:
 | If you know that your files will be strongly |
 | affected by the filtering of duplicates or   |
 | reads of low quality, you should consider    |
-| removing those reads *before* using          |
+| removing those reads before using            |
 | bamCoverage or bamCompare as the filtering   |
-| by deepTools is done *after* the             |
+| by deepTools is done after the               |
 | scaling factors are calculated!              |
 +----------------------------------------------+
 
@@ -79,6 +79,13 @@ although this one does:
 +------------------------------------------------------------------------+
 | Testtesttest                                          final test       |
 |and more test                                                           |
++------------------------------------------------------------------------+
+
++------------------------------------------------------------------------+
+| Testtesttest teest test ttest                                          |
+| and more test                                                          |
+| can't stop testing because I really, really, really would like this    |
+| to work.                                                               |
 +------------------------------------------------------------------------+
 
 What about this, code-style?
