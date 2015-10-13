@@ -65,8 +65,10 @@ I thought this should do the trick:
 but it's not. why is this not working:
 
 +----------------------------------------------+
-| If you know that your files will be strongly |
+| If you know that your files will be strongly 
+| |
 | affected by the filtering of duplicates or   |
+| |
 | reads of low quality, you should consider    |
 | removing those reads before using            |
 | bamCoverage or bamCompare as the filtering   |
