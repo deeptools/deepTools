@@ -1,4 +1,4 @@
-DeepTools tools
+deepTools overview
 ===============
 
 Here, you will find all the options available for the command line
@@ -25,28 +25,28 @@ A typical deepTools command could look like this:
 general principles
 ^^^^^^^^^^^^^^^^^^
 
--  output format of plots should be indicted by the file ending, e.g.
+-  output format of plots should be indicated by the file ending, e.g.
    MyPlot.pdf will return a pdf, MyPlot.png a png-file
 -  all tools that produce plots can also output the underlying data -
-   this can be useful in case you don’t like the deepTools visualization
+   this can be useful in cases where you don't like the deepTools visualization
    as you can then use the data matrices produced by deepTools with your
    favorite plotting module, e.g. R or Excel
 
 Parameters to decrease the run time
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  numberOfProcessors
--  region - in case you're testing whether a certain plot works and
+-  `numberOfProcessors`
+-  `region` - in case you're testing whether a certain plot works and
    gives you the output you're hoping for, you can speed things up by
    focusing on a certain genome region, e.g. chr4 or chr2:100000200000
 
 filtering BAMs while processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ignoreDuplicates
--  minMappingQuality
--  samFlagInclude
--  samFlagExclude
+-  `ignoreDuplicates`
+-  `minMappingQuality`
+-  `samFlagInclude`
+-  `samFlagExclude`
 
 
     If you know that your files will be strongly affected by the filtering of duplicates or reads of low quality, you should consider removing those reads *before* using bamCoverage or bamCompare as the filtering by deepTools is done *after* the scaling factors are calculated!  
