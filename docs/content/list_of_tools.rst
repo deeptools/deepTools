@@ -52,7 +52,6 @@ filtering BAMs while processing
   If you use `bamCoverage` or `bamCompare` on samples that have many duplicates or many reads of low quality, it might be better to filter the BAM files *beforehand* as the filtering by deepTools is done *after* the scaling factors are calculated. If you know that your files will be strongly affected by the filtering, this might lead to non-optimal scaling factors!**
 +---------------------------------------------------------------------------------------------------------------------------+
 
-
 +------------------------+
 |        !DANGER!        |
 |                        |
