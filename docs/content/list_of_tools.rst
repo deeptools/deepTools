@@ -62,7 +62,14 @@ I thought this should do the trick:
 | by deepTools is done *after* the scaling factors are calculated!       |
 +------------------------------------------------------------------------+
 
-but it's not. why is this not working:
+but it's not. although this one does:
+
++------------------------------------------------------------------------+
+| Testtesttest                                          final test       |
+|and more test                                                           |
++------------------------------------------------------------------------+
+
+this is awful:
 
 +----------------------------------------------+
 | If you know that your files will be strongly |
@@ -79,13 +86,6 @@ but it's not. why is this not working:
 |                                              |
 | scaling factors are calculated!              |
 +----------------------------------------------+
-
-although this one does:
-
-+------------------------------------------------------------------------+
-| Testtesttest                                          final test       |
-|and more test                                                           |
-+------------------------------------------------------------------------+
 
 What about this one:
 
