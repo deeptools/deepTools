@@ -53,6 +53,11 @@ filtering BAMs while processing
     
 ..
 
++-------------+
+| Testtesttest|
+|and more test|
++-------------+
+
 To tell a program to use a certain option (e.g. to ignore duplicate
 reads), you will have to give the option name preceded by two hyphens
 (e.g. --ignoreDuplicates). In the tables on this page, we try to list:
