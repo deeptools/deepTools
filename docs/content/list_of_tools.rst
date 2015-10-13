@@ -35,18 +35,18 @@ general principles
 Parameters to decrease the run time
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  `numberOfProcessors`
--  `region` - in case you're testing whether a certain plot works and
+-  ``numberOfProcessors``
+-  ``region`` - in case you're testing whether a certain plot works and
    gives you the output you're hoping for, you can speed things up by
    focusing on a certain genome region, e.g. chr4 or chr2:100000200000
 
 filtering BAMs while processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  `ignoreDuplicates`
--  `minMappingQuality`
--  `samFlagInclude`
--  `samFlagExclude`
+-  ``ignoreDuplicates``
+-  ``minMappingQuality``
+-  ``samFlagInclude``
+-  ``samFlagExclude``
 
 
 This isn't quite what we want, although it seems to get closest:
