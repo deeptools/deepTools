@@ -49,8 +49,12 @@ filtering BAMs while processing
 -  `samFlagExclude`
 
 
-    If you know that your files will be strongly affected by the filtering of duplicates or reads of low quality, you should consider removing those reads *before* using bamCoverage or bamCompare as the filtering by deepTools is done *after* the scaling factors are calculated!  
+This isn't quite what we want, although it seems to get closest:
+
+    __If you know that your files will be strongly affected by the filtering of duplicates or reads of low quality, you should consider removing those reads *before* using bamCoverage or bamCompare as the filtering by deepTools is done *after* the scaling factors are calculated!__  
     
+I thought this should do the trick:
+
 +------------------------------------------------------------------------+
 | If you know that your files will be strongly affected by the filtering |
 | of duplicates or reads of low quality, you should consider removing    |
@@ -58,7 +62,7 @@ filtering BAMs while processing
 | by deepTools is done *after* the scaling factors are calculated!       |
 +------------------------------------------------------------------------+
 
-why
+but it's not. why is this not working:
 
 +----------------------------------------------+
 | If you know that your files will be strongly |
@@ -70,7 +74,7 @@ why
 | scaling factors are calculated!              |
 +----------------------------------------------+
 
-oh, why
+although this one does:
 
 +------------------------------------------------------------------------+
 | Testtesttest                                          final test       |
