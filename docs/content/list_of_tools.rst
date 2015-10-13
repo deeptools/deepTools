@@ -52,7 +52,7 @@ filtering BAMs while processing
 | If you know that your files will be strongly affected by the filtering |
 | of duplicates or reads of low quality, you should consider removing    |
 | those reads *before* using bamCoverage or bamCompare as the filtering  |
-| by deepTools is done *after* the scaling factors are calculated.       |
+| by deepTools is done *after* the scaling factors are calculated!       |
 +------------------------------------------------------------------------+
 
 To tell a program to use a certain option (e.g. to ignore duplicate
