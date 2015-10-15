@@ -36,6 +36,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinxarg.ext',
+    'sphinxcontrib.restbuilder',
     'numpydoc'
 ]
 
