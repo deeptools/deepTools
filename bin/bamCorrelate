@@ -98,7 +98,7 @@ detailed help:
     args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of does not match the number of bam files."
+        print "The number of labels (%s) does not match the number of bam files (%s)." % (len(args.labels),len(args.bamfiles))
         exit(0)
     if not args.labels:
         args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
