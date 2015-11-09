@@ -215,7 +215,6 @@ def getOptionalArgs():
 
 def process_args(args=None):
     args = parseArguments().parse_args(args)
-    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
     args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
 
     if args.smoothLength and args.smoothLength <= args.binSize:
