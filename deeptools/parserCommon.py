@@ -45,7 +45,7 @@ def read_options():
 
     group.add_argument('--extendPairedEnds',
                        help='If set, paired end reads are extended to match the '
-                            'fragment length between the mate reads. Be default'
+                            'fragment length between the mate reads. By default '
                             '*each* read mate is extended. This can be modified using'
                             'the sam flags (see samFlagInclude and samFlagExclude '
                             'options) to keep only the first or the second mate. Mate '
