@@ -228,7 +228,7 @@ def process_args(args=None):
     return args
 
 
-def main(args):
+def main(args=None):
     """
     The algorithm is composed of two parts.
 
