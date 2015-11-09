@@ -10,7 +10,7 @@ from deeptools import bamHandler
 debug = 0
 
 
-def parseArguments(args=None):
+def parseArguments():
     parentParser = parserCommon.getParentArgParse()
     bamParser = parserCommon.read_options()
     requiredArgs = getRequiredArgs()
@@ -67,9 +67,9 @@ def getOptionalArgs():
 
     optional.add_argument('--scaleFactor',
                           help='Indicate a number that you would like to use. It can be used in combination'
-                               'with the --normalizeTo1x or --normalizeUsingRPKM. In that case the computed'
-                               'scaling factor will be multiplied by the given scale factor.  The default '
-                               'scale factor is one',
+                          'with the --normalizeTo1x or --normalizeUsingRPKM. In that case the computed'
+                          'scaling factor will be multiplied by the given scale factor.  The default '
+                          'scale factor is one',
                           default=1.0,
                           type=float,
                           required=False)
@@ -95,11 +95,10 @@ def getOptionalArgs():
                           'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
-                          metavar= 'EFFECTIVE GENOME SIZE LENGTH',
+                          metavar='EFFECTIVE GENOME SIZE LENGTH',
                           default=None,
                           type=int,
                           required=False)
-
 
     optional.add_argument('--normalizeUsingRPKM',
                           help='Use Reads Per Kilobase per Million reads to '
@@ -112,15 +111,13 @@ def getOptionalArgs():
                           action='store_true',
                           required=False)
 
-
     optional.add_argument('--ignoreForNormalization', '-ignore',
-                          help='A list of chromosome names '
-                          'separated by comma and limited by quotes, '
-                          'containing those '
-                          'chromosomes that want to be excluded '
-                          'for computing the normalization. For example, '
-                          ' --ignoreForNormalization "chrX, chrM" ')
-
+                          help='A list of chromosome names separated by spaces '
+                          'containing those chromosomes that want to be excluded '
+                          'for computing the normalization. This is useful when considering '
+                          'samples with unequal coverage across chromosomes like male '
+                          'samples. An usage examples is  --ignoreForNormalization chrX chrM',
+                          nargs='+')
 
     optional.add_argument('--missingDataAsZero',
                           default="yes",
@@ -133,16 +130,16 @@ def getOptionalArgs():
                           'no overlapping reads are found.')
 
     optional.add_argument('--smoothLength',
-                           metavar="INT bp",
-                           help='The smooth length defines a window, larger than '
-                           'the binSize, to average the number of reads. For '
-                           'example, if the --binSize is set to 20 bp and the '
-                           '--smoothLength is set to 60 bp, then, for each '
-                           'binSize the average of it and its left and right '
-                           'neighbors is considered. Any value smaller than the '
-                           '--binSize will be ignored and no smoothing will be '
-                           'applied.',
-                           type=int)
+                          metavar="INT bp",
+                          help='The smooth length defines a window, larger than '
+                          'the binSize, to average the number of reads. For '
+                          'example, if the --binSize is set to 20 bp and the '
+                          '--smoothLength is set to 60 bp, then, for each '
+                          'binSize the average of it and its left and right '
+                          'neighbors is considered. Any value smaller than the '
+                          '--binSize will be ignored and no smoothing will be '
+                          'applied.',
+                          type=int)
 
     return parser
 
@@ -158,10 +155,11 @@ def scaleFactor(string):
     return scaleFactors
 
 
-def process_args():
-    args = parseArguments().parse_args()
+def process_args(args=None):
+    args = parseArguments().parse_args(args)
 
-    if args.scaleFactor != 1: args.normalizeTo1x = None
+    if args.scaleFactor != 1:
+        args.normalizeTo1x = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\
             "size ({}).\n\n No smoothing will "\
@@ -169,35 +167,17 @@ def process_args():
                              args.binSize)
         args.smoothLength = None
 
-    if args.ignoreForNormalization:
-        args.ignoreForNormalization = \
-            [x.strip() for x in args.ignoreForNormalization.split(',')]
-    else:
-        args.ignoreForNormalization = []
+    return args
 
-    return(args)
-
-
-def main():
-    args = process_args()
+def main(args=None):
+    args = process_args(args)
 
     bamHandle = bamHandler.openBam(args.bam, args.bamIndex)
 
-    # if a list of chromosomes to remove from normalization
-    # is given, remove their counts
-    if len(args.ignoreForNormalization) > 0:
-        import pysam
-        # get the number of mapped reads but excluding
-        # some undesired chromosomes
-        bam_mapped = sum([int(y[2]) for y in
-                           [x.split("\t") for x in
-                            pysam.idxstats(bamHandle.filename)]
-                           if y[0] not in args.ignoreForNormalization])
-    else:
-        bam_mapped = bamHandle.mapped
+    bam_mapped = parserCommon.bam_total_reads(bamHandle, args.ignoreForNormalization)
 
     binSize = args.binSize if args.binSize > 0 else 50
-    fragmentLength = \
+    fragment_length = \
         args.fragmentLength if args.fragmentLength > 0 else 300
 
     global debug
@@ -208,7 +188,7 @@ def main():
 
     if args.normalizeTo1x:
         current_coverage = \
-            float(bam_mapped * fragmentLength) / args.normalizeTo1x
+            float(bam_mapped * fragment_length) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
         args.scaleFactor *= 1.0 / current_coverage
         if debug:
@@ -218,7 +198,7 @@ def main():
     elif args.normalizeUsingRPKM:
         # the RPKM is the # reads per tile / \
         #    ( total reads (in millions) * tile length in Kb)
-        millionReadsMapped = float(bam_mapped)  / 1e6
+        millionReadsMapped = float(bam_mapped) / 1e6
         tileLengthInKb = float(args.binSize) / 1000
 
         args.scaleFactor *= 1.0 / (millionReadsMapped * tileLengthInKb)
@@ -229,19 +209,19 @@ def main():
     funcArgs = {'scaleFactor': args.scaleFactor}
     zerosToNans = True if args.missingDataAsZero == 'no' else False
     wr = writeBedGraph.WriteBedGraph([bamHandle.filename],
-                                    binLength=binSize,
-                                    defaultFragmentLength=fragmentLength,
-                                    stepSize=binSize,
-                                    region=args.region,
-                                    numberOfProcessors=args.numberOfProcessors,
-                                    extendPairedEnds=args.extendPairedEnds,
-                                    minMappingQuality=args.minMappingQuality,
-                                    ignoreDuplicates=args.ignoreDuplicates,
-                                    center_read=args.centerReads,
-                                    zerosToNans=zerosToNans,
-                                    samFlag_include=args.samFlagInclude,
-                                    samFlag_exclude=args.samFlagExclude,
-                                    )
+                                     binLength=binSize,
+                                     defaultFragmentLength=fragment_length,
+                                     stepSize=binSize,
+                                     region=args.region,
+                                     numberOfProcessors=args.numberOfProcessors,
+                                     extendPairedEnds=args.extendPairedEnds,
+                                     minMappingQuality=args.minMappingQuality,
+                                     ignoreDuplicates=args.ignoreDuplicates,
+                                     center_read=args.centerReads,
+                                     zerosToNans=zerosToNans,
+                                     samFlag_include=args.samFlagInclude,
+                                     samFlag_exclude=args.samFlagExclude,
+                                     )
 
     wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
-            format=args.outFileFormat, smooth_length=args.smoothLength)
+           format=args.outFileFormat, smooth_length=args.smoothLength)

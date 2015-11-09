@@ -558,3 +558,23 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'addition information are given.',
                           action='store_true')
     return parser
+
+
+def bam_total_reads(bam_handle, chroms_to_ignore):
+    """Count the total number of mapped reads in a BAM file, filtering
+    the chromosome given in chroms_to_ignore list
+    """
+    if chroms_to_ignore:
+        import pysam
+
+        lines = pysam.idxstats(bam_handle.filename)
+        tot_mapped_reads = 0
+        for line in lines:
+            chrom, _len, nmapped, _nunmapped = line.split('\t')
+            if chrom not in chroms_to_ignore:
+                tot_mapped_reads += int(nmapped)
+
+    else:
+        tot_mapped_reads = bam_handle.mapped
+
+    return tot_mapped_reads

@@ -14,7 +14,7 @@ from deeptools.getRatio import getRatio
 debug = 0
 
 
-def parseArguments(args=None):
+def parseArguments():
     parentParser = parserCommon.getParentArgParse()
     requiredArgs = getRequiredArgs()
     optionalArgs = getOptionalArgs()
@@ -47,23 +47,7 @@ def parseArguments(args=None):
 
         add_help=False)
 
-    args = parser.parse_args(args)
-    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
-    args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
-    if args.ignoreForNormalization:
-        args.ignoreForNormalization = \
-            [x.strip() for x in args.ignoreForNormalization.split(',')]
-    else:
-        args.ignoreForNormalization = []
-
-    if args.smoothLength and args.smoothLength <= args.binSize:
-        print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will be "\
-            "done".format(args.smoothLength,
-                          args.binSize)
-        args.smoothLength = None
-
-    return(args)
+    return parser
 
 
 def getRequiredArgs():
@@ -207,12 +191,12 @@ def getOptionalArgs():
                           'both BAM files have 0 reads.')
 
     optional.add_argument('--ignoreForNormalization', '-ignore',
-                          help='A list of chromosome names '
-                          'separated by comma and limited by quotes, '
-                          'containing those '
-                          'chromosomes that you want to be excluded '
-                          'for computing the normalization. For example, '
-                          ' --ignoreForNormalization "chrX, chrM" ')
+                          help='A list of chromosome names separated by spaces '
+                          'containing those chromosomes that want to be excluded '
+                          'for computing the normalization. This is useful when considering '
+                          'samples with unequal coverage across chromosomes like male '
+                          'samples. An usage examples is  --ignoreForNormalization chrX chrM',
+                          nargs='+')
 
     optional.add_argument('--smoothLength',
                            metavar="INT bp",
@@ -228,8 +212,20 @@ def getOptionalArgs():
 
     return parser
 
-########################################
-# MAIN
+
+def process_args(args=None):
+    args = parseArguments().parse_args(args)
+    args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
+    args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
+
+    if args.smoothLength and args.smoothLength <= args.binSize:
+        print "Warning: the smooth length given ({}) is smaller than the bin "\
+            "size ({}).\n\n No smoothing will be "\
+            "done".format(args.smoothLength,
+                          args.binSize)
+        args.smoothLength = None
+
+    return args
 
 
 def main(args):
@@ -244,28 +240,13 @@ def main(args):
        given by the user.
 
     """
+    args = process_args(args)
 
     bam1 = bamHandler.openBam(args.bamfile1, args.bamIndex1)
     bam2 = bamHandler.openBam(args.bamfile2, args.bamIndex2)
 
-    # if a list of chromosomes to remove from normalization
-    # is given, remove their counts
-    if len(args.ignoreForNormalization) > 0:
-        import pysam
-        # get the number of mapped reads but excluding
-        # some undesired chromosomes
-        bam1_mapped = sum([int(y[2]) for y in
-                           [x.split("\t") for x in
-                            pysam.idxstats(bam1.filename)]
-                           if y[0] not in args.ignoreForNormalization])
-
-        bam2_mapped = sum([int(y[2]) for y in
-                           [x.split("\t") for x in
-                            pysam.idxstats(bam2.filename)]
-                           if y[0] not in args.ignoreForNormalization])
-    else:
-        bam1_mapped = bam1.mapped
-        bam2_mapped = bam2.mapped
+    bam1_mapped = parserCommon.bam_total_reads(bam1, args.ignoreForNormalization)
+    bam2_mapped = parserCommon.bam_total_reads(bam2, args.ignoreForNormalization)
 
     ################# find scaling factor ##################
 
@@ -362,22 +343,20 @@ def main(args):
                 }
 
     wr = writeBedGraph.WriteBedGraph([bam1.filename, bam2.filename], args.binSize, 0,
-                                    args.fragmentLength,
-                                    stepSize=args.binSize,
-                                    region=args.region,
-                                    numberOfProcessors=args.numberOfProcessors,
-                                    extendPairedEnds=args.extendPairedEnds,
-                                    minMappingQuality=args.minMappingQuality,
-                                    ignoreDuplicates=args.ignoreDuplicates,
-                                    center_read=args.centerReads,
-                                    zerosToNans=True,
-                                    samFlag_include=args.samFlagInclude,
-                                    samFlag_exclude=args.samFlagExclude,
-                                    )
+                                     args.fragmentLength,
+                                     stepSize=args.binSize,
+                                     region=args.region,
+                                     numberOfProcessors=args.numberOfProcessors,
+                                     extendPairedEnds=args.extendPairedEnds,
+                                     minMappingQuality=args.minMappingQuality,
+                                     ignoreDuplicates=args.ignoreDuplicates,
+                                     center_read=args.centerReads,
+                                     zerosToNans=True,
+                                     samFlag_include=args.samFlagInclude,
+                                     samFlag_exclude=args.samFlagExclude,
+                                     )
 
-    wr.run(FUNC, funcArgs,  args.outFileName,
-            format=args.outFileFormat, smooth_length=args.smoothLength)
+    wr.run(FUNC, funcArgs,  args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
 
 if __name__ == "__main__":
-    args = parseArguments()
-    main(args)
+    main()
