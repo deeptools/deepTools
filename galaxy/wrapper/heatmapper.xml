@@ -137,13 +137,13 @@
 
                 <expand macro="colormap" />
 
-                <param name="zMin" type="float" value="" size="3"
+                <param name="zMin" type="float" value="" size="3" optional="True"
                     label="Minimum value for the heatmap intensities. Leave empty for automatic values" help="(--zMin)"/>
-                <param name="zMax" type="float" value="" size="3"
+                <param name="zMax" type="float" value="" size="3" optional="True"
                     label="Maximum value for the heatmap intensities. Leave empty for automatic values" help="(--zMax)"/>
-                <param name="yMin" type="float" value="" size="3"
+                <param name="yMin" type="float" value="" size="3" optional="True"
                     label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help="(--yMin)"/>
-                <param name="yMax" type="float" value="" size="3"
+                <param name="yMax" type="float" value="" size="3" optional="True"
                     label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help="(--yMax)"/>
                 <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200"
                     label="Description for the x-axis label" help="(--xAxisLabel)"/>
