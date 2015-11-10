@@ -227,6 +227,112 @@ def process_args(args=None):
     return args
 
 
+def get_scale_factors(args):
+
+    bam1 = bamHandler.openBam(args.bamfile1, args.bamIndex1)
+    bam2 = bamHandler.openBam(args.bamfile2, args.bamIndex2)
+
+    bam1_mapped = parserCommon.bam_total_reads(bam1, args.ignoreForNormalization)
+    bam2_mapped = parserCommon.bam_total_reads(bam2, args.ignoreForNormalization)
+
+    if args.scaleFactors:
+        scale_factors = map(float, args.scaleFactors.split(":"))
+    else:
+        if args.scaleFactorsMethod == 'SES':
+            scaleFactorsDict = estimateScaleFactor(
+                [bam1.filename, bam2.filename],
+                args.sampleLength, args.numberOfSamples,
+                1,
+                numberOfProcessors=args.numberOfProcessors,
+                verbose=args.verbose,
+                chrsToSkip=args.ignoreForNormalization)
+
+            scale_factors = scaleFactorsDict['size_factors']
+
+            if args.verbose:
+                print "Size factors using SES: {}".format(scale_factors)
+                print "%s regions of size %s where used " % \
+                    (scaleFactorsDict['sites_sampled'],
+                     args.sampleLength)
+
+                print "size factor if the number of mapped " \
+                    "reads would have been used:"
+                print tuple(
+                    float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped]))
+
+        elif args.scaleFactorsMethod == 'readCount':
+            scale_factors = \
+                float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
+            if args.verbose:
+                print "Size factors using total number " \
+                    "of mapped reads: {}".format(scale_factors)
+
+    # in case the subtract method is used, the final difference
+    # would be normalized according to the given method
+    if args.ratio == 'subtract':
+        # The next lines identify which of the samples is not scaled down.
+        # The normalization using RPKM or normalize to 1x would use
+        # as reference such sample. Since the other sample would be
+        # scaled to match the un-scaled one, the normalization factor
+        # for both samples should be based on the unscaled one.
+        # For example, if sample A is unscaled and sample B is scaled by 0.5,
+        # then normalizing factor for A to report RPKM read counts
+        # is also applied to B.
+        if scale_factors[0] == 1:
+            mappedReads = bam1_mapped
+            bamfile = args.bamfile1
+            bamindex = args.bamIndex1
+        else:
+            mappedReads = bam2_mapped
+            bamfile = args.bamfile2
+            bamindex = args.bamIndex2
+
+        if args.scaleFactors is None:
+            if args.normalizeTo1x:
+                from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+                frag_len_dict, read_len_dict = get_read_and_fragment_length(bamfile, bamindex,
+                                                                            return_lengths=False,
+                                                                            numberOfProcessors=args.numberOfProcessors,
+                                                                            verbose=args.verbose)
+                if args.fragmentLength:
+                    if frag_len_dict['mean'] != 0  and abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
+                        sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
+                                         "length estimated from the bam file: {}\n".format(args.fragmentLength,
+                                                                                         int(frag_len_dict['median'])))
+
+                    fragment_length = args.fragmentLength
+
+                else:
+                    # set as fragment length the read length
+                    if args.verbose:
+                        print "Estimated read length is {}".format(int(read_len_dict['median']))
+                    fragment_length = int(read_len_dict['median'])
+
+
+                current_coverage = \
+                                 float(mappedReads * fragment_length) / args.normalizeTo1x
+                # the coverage scale factor is 1 / coverage,
+                coverage_scale_factor = 1.0 / current_coverage
+                scale_factors = np.array(scale_factors) * coverage_scale_factor
+                if args.verbose:
+                    print "Estimated current coverage {}".format(current_coverage)
+                    print "Scale factor to convert " \
+                          "current coverage to 1: {}".format(coverage_scale_factor)
+            else:
+                # by default normalize using RPKM
+                # the RPKM is:
+                # Num reads per tile/(total reads (in millions)*tile length in Kb)
+                millionReadsMapped = float(mappedReads)  / 1e6
+                tileLengthInKb = float(args.binSize) / 1000
+                coverage_scale_factor = 1.0 / (millionReadsMapped * tileLengthInKb)
+                scale_factors = np.array(scale_factors) * coverage_scale_factor
+
+                if args.verbose:
+                    print "scale factor for   "
+                    "RPKM is {0}".format(coverage_scale_factor)
+
+    return scale_factors
+
 def main(args=None):
     """
     The algorithm is composed of two parts.
@@ -241,107 +347,21 @@ def main(args=None):
     """
     args = process_args(args)
 
-    bam1 = bamHandler.openBam(args.bamfile1, args.bamIndex1)
-    bam2 = bamHandler.openBam(args.bamfile2, args.bamIndex2)
 
-    bam1_mapped = parserCommon.bam_total_reads(bam1, args.ignoreForNormalization)
-    bam2_mapped = parserCommon.bam_total_reads(bam2, args.ignoreForNormalization)
-
-    ################# find scaling factor ##################
-
-    if args.scaleFactors:
-        scaleFactors = args.scaleFactors.split(":")
-        scaleFactors = [float(scaleFactors[0]), float(scaleFactors[1])]
-    else:
-        if args.scaleFactorsMethod == 'SES':
-            scaleFactorsDict = estimateScaleFactor(
-                [bam1.filename, bam2.filename],
-                args.sampleLength, args.numberOfSamples,
-                1,
-                numberOfProcessors=args.numberOfProcessors,
-                verbose=args.verbose,
-                chrsToSkip=args.ignoreForNormalization)
-
-            scaleFactors = scaleFactorsDict['size_factors']
-
-            if args.verbose:
-                print "Size factors using SES: {}".format(scaleFactors)
-                print "%s regions of size %s where used " % \
-                    (scaleFactorsDict['sites_sampled'],
-                     args.sampleLength)
-
-                print "size factor if the number of mapped " \
-                    "reads would have been used:"
-                print tuple(
-                    float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped]))
-
-        elif args.scaleFactorsMethod == 'readCount':
-            scaleFactors = \
-                float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
-            if args.verbose:
-                print "Size factors using total number " \
-                    "of mapped reads: {}".format(scaleFactors)
-
-    # in case the substract method is used, the final difference
-    # would be normalized according to the given method
-    if args.ratio == 'subtract':
-        # The next lines identify which of the samples is not scaled down.
-        # The normalization using RPKM or normalize to 1x would use
-        # as reference such sample. Since the other sample would be
-        # scaled to match the un-scaled one, the normalization factor
-        # for both samples should be based on the unscaled one.
-        # For example, if sample A is unscaled and sample B is scaled by 0.5,
-        # then normalizing factor for A to report RPKM read counts
-        # is also applied to B.
-        if scaleFactors[0] == 1:
-            mappedReads = bam1_mapped
-        else:
-            mappedReads = bam2_mapped
-
-        if args.scaleFactors is None:
-            if args.normalizeTo1x:
-                current_coverage = \
-                                 float(mappedReads * args.fragmentLength) / args.normalizeTo1x
-                # the scale factor is 1 / coverage,
-                scaleFactor = 1.0 / current_coverage
-                scaleFactors = np.array(scaleFactors) * scaleFactor
-                if args.verbose:
-                    print "Estimated current coverage {}".format(current_coverage)
-                    print "Scale factor to convert " \
-                          "current coverage to 1: {}".format(scaleFactor)
-            else:
-                # by default normalize using RPKM
-                # the RPKM is:
-                # Num reads per tile/(total reads (in millions)*tile length in Kb)
-                millionReadsMapped = float(mappedReads)  / 1e6
-                tileLengthInKb = float(args.binSize) / 1000
-                scaleFactor = 1.0 / (millionReadsMapped * tileLengthInKb)
-                scaleFactors = np.array(scaleFactors) * scaleFactor
-
-                if args.verbose:
-                    print "scale factor for   "
-                    "RPKM is {0}".format(scaleFactor)
-
+    scale_factors = get_scale_factors(args)
     if args.verbose:
-        print "Individual scale factors are {0}".format(scaleFactors)
-
-    ################# compute log2ratio ##################
-
-    scaling = float(scaleFactors[0]) / scaleFactors[1]
-
-    print "The scaling factors are:"
-    print scaleFactors
+        print "Individual scale factors are {0}".format(scale_factors)
 
     # the getRatio function is called and receives
     # the funcArgs per each tile that is considered
     FUNC = getRatio
     funcArgs = {'missingDataAsZero': args.missingDataAsZero,
                 'valueType': args.ratio,
-                'scaleFactors': scaleFactors,
+                'scaleFactors': scale_factors,
                 'pseudocount': args.pseudocount
                 }
 
-    wr = writeBedGraph.WriteBedGraph([bam1.filename, bam2.filename], args.binSize, 0,
+    wr = writeBedGraph.WriteBedGraph([args.bamfile1, args.bamfile2], args.binSize, 0,
                                      args.fragmentLength,
                                      stepSize=args.binSize,
                                      region=args.region,
@@ -353,6 +373,7 @@ def main(args=None):
                                      zerosToNans=True,
                                      samFlag_include=args.samFlagInclude,
                                      samFlag_exclude=args.samFlagExclude,
+                                     verbose=args.verbose
                                      )
 
     wr.run(FUNC, funcArgs,  args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
