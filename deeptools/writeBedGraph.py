@@ -151,12 +151,12 @@ class WriteBedGraph(cr.CountReadsPerBin):
         outFile.close()
         if format == 'bedgraph':
             os.rename(bedGraphFile, out_file_name)
-            if debug:
+            if self.verbose:
                 print "output file: %s" % (out_file_name)
         else:
             bedGraphToBigWig(
                 chromNamesAndSize, bedGraphFile, out_file_name, True)
-            if debug:
+            if self.verbose:
                 print "output file: %s" % (out_file_name)
             os.remove(bedGraphFile)
 
