@@ -40,8 +40,7 @@ def read_options():
                             'unmated paired-end reads, unmated reads will be '
                             'extended to match the --fragmentLength.',
                        type=int,
-                       metavar="INT bp",
-                       default='1')
+                       metavar="INT bp")
 
     group.add_argument('--extendPairedEnds',
                        help='If set, paired end reads are extended to match the '
