@@ -80,12 +80,9 @@ def countFragmentsInRegions_worker(chrom, start, end,
         for idx, bwh in enumerate(bigWigFiles):
             score = bwh.stats(chrom, start, end) #The default is "mean" and 1 bin
 
-            if score is None or np.isnan(score):
-                if num_warnings < 10:
-                    sys.stderr.write("NaN found in {} at {}:{:,}-{:,}\n".format(bigwigFilesList[idx], chrom, start, end))
-                    num_warnings += 1
-                score = np.nan
-            avgReadsArray.append(score)     #mean of fragment coverage for region
+            if score is None or score == [None] or np.isnan(score[0]):
+                score = [np.nan]
+            avgReadsArray.append(score[0])     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
 
         sub_score_per_bin.extend(avgReadsArray)
@@ -98,7 +95,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     # np.array([[score1_1, score1_2],
     #           [score2_1, score2_2]]
 
-    return np.array(sub_score_per_bin).reshape(rows, len(bigwigFilesList))
+    return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles))
 
 
 def getChromSizes(bigWigFiles):
