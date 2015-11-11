@@ -115,13 +115,13 @@ def getChromSizes(bigWigFiles):
 
     chromNamesAndSize = {}
     for bw in bigWigFiles :
-        if(bw is None or !bw) :
+        if bw is None :
             return None
 
         for k,v in bw.chroms().iteritems() :
             if(k not in chromNamesAndSize) :
                 chromNamesAndSize[k] = v
-            else if(chromNamesAndSize[k] != v) :
+            elif chromNamesAndSize[k] != v  :
                 print "\nWARNING\n" \
                 "Chromosome {} length reported in the bigwig files differ.\n\n" \
                 "The smaller of the two will be used.".format(k, chomNamesAndSize[k], v)
