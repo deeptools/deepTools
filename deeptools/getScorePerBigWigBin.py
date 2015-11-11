@@ -118,7 +118,7 @@ def getChromSizes(bigWigFiles):
         if(bw is None or !bw) :
             return None
 
-        for k,v in bw.chroms() :
+        for k,v in bw.chroms().iteritems() :
             if(k not in chromNamesAndSize) :
                 chromNamesAndSize[k] = v
             else if(chromNamesAndSize[k] != v) :
