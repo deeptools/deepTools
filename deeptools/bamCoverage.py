@@ -3,6 +3,7 @@
 
 # own tools
 import argparse
+import sys
 from deeptools import writeBedGraph
 from deeptools import parserCommon
 from deeptools import bamHandler
@@ -10,11 +11,11 @@ from deeptools import bamHandler
 debug = 0
 
 
-def parseArguments(args=None):
+def parseArguments():
     parentParser = parserCommon.getParentArgParse()
     bamParser = parserCommon.read_options()
-    requiredArgs = getRequiredArgs()
-    optionalArgs = getOptionalArgs()
+    requiredArgs = get_required_args()
+    optionalArgs = get_optional_args()
     outputParser = parserCommon.output()
     parser = \
         argparse.ArgumentParser(
@@ -38,7 +39,7 @@ def parseArguments(args=None):
     return parser
 
 
-def getRequiredArgs():
+def get_required_args():
     parser = argparse.ArgumentParser(add_help=False)
 
     required = parser.add_argument_group('Required arguments')
@@ -52,7 +53,7 @@ def getRequiredArgs():
     return parser
 
 
-def getOptionalArgs():
+def get_optional_args():
 
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
@@ -67,9 +68,9 @@ def getOptionalArgs():
 
     optional.add_argument('--scaleFactor',
                           help='Indicate a number that you would like to use. It can be used in combination'
-                               'with the --normalizeTo1x or --normalizeUsingRPKM. In that case the computed'
-                               'scaling factor will be multiplied by the given scale factor.  The default '
-                               'scale factor is one',
+                          'with the --normalizeTo1x or --normalizeUsingRPKM. In that case the computed'
+                          'scaling factor will be multiplied by the given scale factor.  The default '
+                          'scale factor is one',
                           default=1.0,
                           type=float,
                           required=False)
@@ -95,11 +96,10 @@ def getOptionalArgs():
                           'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
-                          metavar= 'EFFECTIVE GENOME SIZE LENGTH',
+                          metavar='EFFECTIVE GENOME SIZE LENGTH',
                           default=None,
                           type=int,
                           required=False)
-
 
     optional.add_argument('--normalizeUsingRPKM',
                           help='Use Reads Per Kilobase per Million reads to '
@@ -112,15 +112,13 @@ def getOptionalArgs():
                           action='store_true',
                           required=False)
 
-
     optional.add_argument('--ignoreForNormalization', '-ignore',
-                          help='A list of chromosome names '
-                          'separated by comma and limited by quotes, '
-                          'containing those '
-                          'chromosomes that want to be excluded '
-                          'for computing the normalization. For example, '
-                          ' --ignoreForNormalization "chrX, chrM" ')
-
+                          help='A list of chromosome names separated by spaces '
+                          'containing those chromosomes that want to be excluded '
+                          'for computing the normalization. This is useful when considering '
+                          'samples with unequal coverage across chromosomes like male '
+                          'samples. An usage examples is  --ignoreForNormalization chrX chrM',
+                          nargs='+')
 
     optional.add_argument('--missingDataAsZero',
                           default="yes",
@@ -133,16 +131,16 @@ def getOptionalArgs():
                           'no overlapping reads are found.')
 
     optional.add_argument('--smoothLength',
-                           metavar="INT bp",
-                           help='The smooth length defines a window, larger than '
-                           'the binSize, to average the number of reads. For '
-                           'example, if the --binSize is set to 20 bp and the '
-                           '--smoothLength is set to 60 bp, then, for each '
-                           'binSize the average of it and its left and right '
-                           'neighbors is considered. Any value smaller than the '
-                           '--binSize will be ignored and no smoothing will be '
-                           'applied.',
-                           type=int)
+                          metavar="INT bp",
+                          help='The smooth length defines a window, larger than '
+                          'the binSize, to average the number of reads. For '
+                          'example, if the --binSize is set to 20 bp and the '
+                          '--smoothLength is set to 60 bp, then, for each '
+                          'binSize the average of it and its left and right '
+                          'neighbors is considered. Any value smaller than the '
+                          '--binSize will be ignored and no smoothing will be '
+                          'applied.',
+                          type=int)
 
     return parser
 
@@ -158,10 +156,11 @@ def scaleFactor(string):
     return scaleFactors
 
 
-def process_args():
-    args = parseArguments().parse_args()
+def process_args(args=None):
+    args = parseArguments().parse_args(args)
 
-    if args.scaleFactor != 1: args.normalizeTo1x = None
+    if args.scaleFactor != 1:
+        args.normalizeTo1x = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\
             "size ({}).\n\n No smoothing will "\
@@ -169,48 +168,39 @@ def process_args():
                              args.binSize)
         args.smoothLength = None
 
-    if args.ignoreForNormalization:
-        args.ignoreForNormalization = \
-            [x.strip() for x in args.ignoreForNormalization.split(',')]
-    else:
-        args.ignoreForNormalization = []
+    return args
 
-    return(args)
+def get_scale_factor(args):
 
-
-def main():
-    args = process_args()
-
+    scale_factor = args.scaleFactor
     bamHandle = bamHandler.openBam(args.bam, args.bamIndex)
-
-    # if a list of chromosomes to remove from normalization
-    # is given, remove their counts
-    if len(args.ignoreForNormalization) > 0:
-        import pysam
-        # get the number of mapped reads but excluding
-        # some undesired chromosomes
-        bam_mapped = sum([int(y[2]) for y in
-                           [x.split("\t") for x in
-                            pysam.idxstats(bamHandle.filename)]
-                           if y[0] not in args.ignoreForNormalization])
-    else:
-        bam_mapped = bamHandle.mapped
-
-    binSize = args.binSize if args.binSize > 0 else 50
-    fragmentLength = \
-        args.fragmentLength if args.fragmentLength > 0 else 300
-
-    global debug
-    if args.verbose:
-        debug = 1
-    else:
-        debug = 0
+    bam_mapped = parserCommon.bam_total_reads(bamHandle, args.ignoreForNormalization)
 
     if args.normalizeTo1x:
+        # try to guess fragment length if the bam file contains paired end reads
+        from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, args.bamIndex,
+                                                                    return_lengths=False,
+                                                                    numberOfProcessors=args.numberOfProcessors,
+                                                                    verbose=args.verbose)
+        if args.fragmentLength:
+            if frag_len_dict['mean'] != 0  and abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
+                sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
+                                 "length estimated from the bam file: {}\n".format(args.fragmentLength,
+                                                                                 int(frag_len_dict['median'])))
+
+            fragment_length = args.fragmentLength
+
+        else:
+            # set as fragment length the read length
+            fragment_length = int(read_len_dict['median'])
+            if args.verbose:
+                print "Estimated read length is {}".format(int(read_len_dict['median']))
+
         current_coverage = \
-            float(bam_mapped * fragmentLength) / args.normalizeTo1x
+            float(bam_mapped * fragment_length) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
-        args.scaleFactor *= 1.0 / current_coverage
+        scale_factor *= 1.0 / current_coverage
         if debug:
             print "Estimated current coverage {}".format(current_coverage)
             print "Scaling factor {}".format(args.scaleFactor)
@@ -218,30 +208,44 @@ def main():
     elif args.normalizeUsingRPKM:
         # the RPKM is the # reads per tile / \
         #    ( total reads (in millions) * tile length in Kb)
-        millionReadsMapped = float(bam_mapped)  / 1e6
+        millionReadsMapped = float(bam_mapped) / 1e6
         tileLengthInKb = float(args.binSize) / 1000
 
-        args.scaleFactor *= 1.0 / (millionReadsMapped * tileLengthInKb)
+        scale_factor *= 1.0 / (millionReadsMapped * tileLengthInKb)
 
         if debug:
             print "scale factor using RPKM is {0}".format(args.scaleFactor)
 
-    funcArgs = {'scaleFactor': args.scaleFactor}
+    return scale_factor
+
+
+def main(args=None):
+    args = process_args(args)
+
+    global debug
+    if args.verbose:
+        debug = 1
+    else:
+        debug = 0
+
+
+    funcArgs = {'scaleFactor': get_scale_factor(args)}
     zerosToNans = True if args.missingDataAsZero == 'no' else False
-    wr = writeBedGraph.WriteBedGraph([bamHandle.filename],
-                                    binLength=binSize,
-                                    defaultFragmentLength=fragmentLength,
-                                    stepSize=binSize,
-                                    region=args.region,
-                                    numberOfProcessors=args.numberOfProcessors,
-                                    extendPairedEnds=args.extendPairedEnds,
-                                    minMappingQuality=args.minMappingQuality,
-                                    ignoreDuplicates=args.ignoreDuplicates,
-                                    center_read=args.centerReads,
-                                    zerosToNans=zerosToNans,
-                                    samFlag_include=args.samFlagInclude,
-                                    samFlag_exclude=args.samFlagExclude,
-                                    )
+    wr = writeBedGraph.WriteBedGraph([args.bam],
+                                     binLength=args.binSize,
+                                     defaultFragmentLength=args.fragmentLength,
+                                     stepSize=args.binSize,
+                                     region=args.region,
+                                     numberOfProcessors=args.numberOfProcessors,
+                                     extendPairedEnds=args.extendPairedEnds,
+                                     minMappingQuality=args.minMappingQuality,
+                                     ignoreDuplicates=args.ignoreDuplicates,
+                                     center_read=args.centerReads,
+                                     zerosToNans=zerosToNans,
+                                     samFlag_include=args.samFlagInclude,
+                                     samFlag_exclude=args.samFlagExclude,
+                                     verbose=args.verbose
+                                     )
 
     wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
-            format=args.outFileFormat, smooth_length=args.smoothLength)
+           format=args.outFileFormat, smooth_length=args.smoothLength)

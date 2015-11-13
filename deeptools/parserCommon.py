@@ -40,12 +40,11 @@ def read_options():
                             'unmated paired-end reads, unmated reads will be '
                             'extended to match the --fragmentLength.',
                        type=int,
-                       metavar="INT bp",
-                       default='1')
+                       metavar="INT bp")
 
     group.add_argument('--extendPairedEnds',
                        help='If set, paired end reads are extended to match the '
-                            'fragment length between the mate reads. Be default'
+                            'fragment length between the mate reads. By default '
                             '*each* read mate is extended. This can be modified using'
                             'the sam flags (see samFlagInclude and samFlagExclude '
                             'options) to keep only the first or the second mate. Mate '
@@ -558,3 +557,23 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'addition information are given.',
                           action='store_true')
     return parser
+
+
+def bam_total_reads(bam_handle, chroms_to_ignore):
+    """Count the total number of mapped reads in a BAM file, filtering
+    the chromosome given in chroms_to_ignore list
+    """
+    if chroms_to_ignore:
+        import pysam
+
+        lines = pysam.idxstats(bam_handle.filename)
+        tot_mapped_reads = 0
+        for line in lines:
+            chrom, _len, nmapped, _nunmapped = line.split('\t')
+            if chrom not in chroms_to_ignore:
+                tot_mapped_reads += int(nmapped)
+
+    else:
+        tot_mapped_reads = bam_handle.mapped
+
+    return tot_mapped_reads

@@ -86,7 +86,7 @@ Tools to create tracks
    :maxdepth: 1
 
    tools/bamCoverage
-   tools/bamCorrelate
+   tools/bamCompare
 
 Tools for visualization
 ^^^^^^^^^^^^^^^^^^^^^^^

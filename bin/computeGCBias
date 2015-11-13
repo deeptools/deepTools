@@ -15,7 +15,7 @@ from bx.seq import twobit
 
 from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import parserCommon, mapReduce
-from deeptools.bamPEFragmentSize import peFragmentSize
+from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools import config as cfg
 from deeptools import bamHandler
 
@@ -672,20 +672,20 @@ def main(args):
     bam = bamHandler.openBam(global_vars['bam'])
 
     if args.fragmentLength:
-        fragmentLength = \
+        fragment_len_dict = \
             {'median': args.fragmentLength}
 
     else:
-        fragmentLength = \
-            peFragmentSize(args.bamfile, None,
-                           numberOfProcessors=args.numberOfProcessors,
-                           verbose=args.verbose)
-        if not fragmentLength:
+        fragment_len_dict, __ = \
+            get_read_and_fragment_length(args.bamfile, None,
+                                         numberOfProcessors=args.numberOfProcessors,
+                                         verbose=args.verbose)
+        if not fragment_len_dict:
             print "\nPlease provide the fragment length used for the " \
                 "sample preparation.\n"
             exit(1)
 
-        fragmentLength = {'median': int(fragmentLength['median'])}
+        fragment_len_dict = {'median': int(fragment_len_dict['median'])}
 
     chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
 
@@ -709,12 +709,12 @@ def main(args):
     # Similarly for the min value, I divide by 4.
     global_vars['max_reads'] = \
         poisson(4 * global_vars['reads_per_bp'] *
-                fragmentLength['median']).isf(confidence_p_value)
+                fragment_len_dict['median']).isf(confidence_p_value)
     # this may be of not use, unless the depth of sequencing is really high
     # as this value is close to 0
     global_vars['min_reads'] = \
         poisson(0.25 * global_vars['reads_per_bp'] *
-                fragmentLength['median']).ppf(confidence_p_value)
+                fragment_len_dict['median']).ppf(confidence_p_value)
 
     for key in global_vars:
         print "{}: {}".format(key, global_vars[key])
@@ -724,7 +724,7 @@ def main(args):
     stepSize = max(int(global_vars['genome_size'] / args.sampleSize ), 1)
     print "stepSize: {}".format(stepSize)
     data = \
-        tabulateGCcontent(fragmentLength,
+        tabulateGCcontent(fragment_len_dict,
                           chrNameBitToBam, stepSize,
                           chromSizes,
                           numberOfProcessors=args.numberOfProcessors,

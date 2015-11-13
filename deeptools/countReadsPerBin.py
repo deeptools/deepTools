@@ -144,7 +144,7 @@ class CountReadsPerBin(object):
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
-        self.defaultFragmentLength = defaultFragmentLength
+        self.defaultFragmentLength = 'read length' if defaultFragmentLength is None else defaultFragmentLength
         self.numberOfProcessors = numberOfProcessors
         self.verbose = verbose
         self.region = region
@@ -164,8 +164,10 @@ class CountReadsPerBin(object):
         if numberOfSamples is None and stepSize is None and bedFile is None:
             raise ValueError("either stepSize, numberOfSamples or beFile has to be set")
 
-        self.maxPairedFragmentLength = 2 * self.defaultFragmentLength if \
-                                    self.defaultFragmentLength > 100 else 1000
+        if self.defaultFragmentLength != 'read length':
+            self.maxPairedFragmentLength = 4 * self.defaultFragmentLength
+        else:
+            self.maxPairedFragmentLength = 1000
 
     def run(self):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
@@ -325,7 +327,7 @@ class CountReadsPerBin(object):
             subNum_reads_per_bin.extend(coverage_array)
             rows += 1
 
-        if debug:
+        if self.verbose:
             endTime = time.time()
             print "%s countReadsInRegions_worker: processing %d " \
                   "(%.1f per sec) @ %s:%s-%s" % \
@@ -458,7 +460,7 @@ class CountReadsPerBin(object):
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
             c += 1
 
-        if debug:
+        if self.verbose:
             endTime = time.time()
             print "%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
                 multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, start, end)
@@ -564,7 +566,7 @@ class CountReadsPerBin(object):
         if read.is_paired and self.extendPairedEnds == False:
             return read.get_blocks()
 
-        if not read.is_paired and self.defaultFragmentLength <= read.alen:
+        if not read.is_paired and self.defaultFragmentLength == 'read length':
             return read.get_blocks()
 
         if self.extendPairedEnds == True and read.is_paired and \
