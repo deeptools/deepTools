@@ -1,9 +1,3 @@
-`**WIKI-START** <Home>`__ > `**About deepTools** <About-deepTools>`__
-
--  `Why we built deepTools <#why>`__
--  `How we use deepTools <#howWe>`__
--  `What deepTools can do <#overview>`__
-
 Why we built deepTools 
 -----------------------
 
@@ -24,18 +18,22 @@ wanted software that would fulfill *all* of the following criteria:
 -  **modular approach** - compatibility, flexibility, scalability (i.e.
    we can add more and more modules making use of established methods)
 
-| The flow chart below depicts the different tool modules that are
+The flow chart below depicts the different tool modules that are
 currently available within deepTools (deepTools modules are written in
-bold red and black font). For more information on a typical analysis
-pipeline, read the text below and `What deepTools can do <#overview>`__.
-| |flowChartI|. If you the file names in the figure mean nothing to you,
+bold red and black font).
+
+.. image:: ../../images/flowChart_BAMtoBIGWIG.png
+
+For more information on a typical analysis
+pipeline, read the text below, particularly `What deepTools can do <#overview>`__.
+If  the file names in the figure mean nothing to you,
 please make sure to check our
-`Glossary <https://github.com/fidelram/deepTools/wiki/Glossary>`__.
+`Glossary`_.
 
 How we use deepTools 
 ---------------------
 
-You will find many examples from ChIP-seq analyses in this tutorial, but
+You will find many examples from ChIP-seq analyses in our documentation, but
 this does not mean that deepTools is restricted to ChIP-seq data
 analysis. However, some tools, such as *bamFingerprint* specifically
 address ChIP-seq-issues.
@@ -44,18 +42,15 @@ address ChIP-seq-issues.
 are slides that we used for teaching at the University of Freiburg that
 contain more details on the deepTools usage and aims.
 
-| As shown in the flow chart above, our work usually begins with one or
-more
-`FASTQ <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fastq>`__
+As shown in the flow chart above, our work usually begins with one or
+more `FASTQ <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fastq>`__
 file(s) of deeply-sequenced samples. After a first quality control using
 `FASTQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__,
 we align the reads to the reference genome, e.g. using
 `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml>`__.
-| We then use deepTools to assess the quality of the aligned reads:
+We then use deepTools to assess the quality of the aligned reads:
 
-#. **Correlation between
-   `BAM <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bam>`__
-   files** (*bamCorrelate*). This is a very basic test to see whether
+#. **Correlation between BAM files** (*bamCorrelate*). This is a very basic test to see whether
    the sequenced and aligned reads meet your expectations. We use this
    check to assess the reproducibility - either between replicates
    and/or between different experiments that might have used the same
@@ -77,15 +72,15 @@ we align the reads to the reference genome, e.g. using
    experiments. It is based on the insights published by `Diaz et
    al. <http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml>`__.
 
-Once we're satisfied by the basic quality checks, we normally **convert
+Once we're satisfied by the basic quality checks, we normally **convert**
 the large
 `BAM <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bam>`__
 files into a leaner data format, typically
-`bigWig <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig>`__**.
+`bigWig <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig>`__.
 bigWig files have several advantages over BAM files that mainly stem
 from their significantly decreased size:
 
--  useful for data sharing & storage
+-  useful for data sharing and storage
 -  intuitive visualization in Genome Browsers (e.g.
    `IGV <http://www.broadinstitute.org/igv/>`__)
 -  more efficient downstream analyses are possible
@@ -137,3 +132,4 @@ links in the table.
 --------------
 
 .. |flowChartI| image:: https://raw.github.com/fidelram/deepTools/master/examples/flowChart_BAMtoBIGWIG.png
+.. _Glossary: https://github.com/fidelram/deepTools/wiki/Glossary
