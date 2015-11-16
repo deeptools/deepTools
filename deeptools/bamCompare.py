@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import sys
 import argparse  # to parse command line arguments
 import numpy as np
 
@@ -157,7 +158,7 @@ def getOptionalArgs():
                           'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
-                          metavar= 'EFFECTIVE GENOME SIZE LENGTH',
+                          metavar='EFFECTIVE GENOME SIZE LENGTH',
                           default=None,
                           type=int,
                           required=False)
@@ -199,16 +200,16 @@ def getOptionalArgs():
                           nargs='+')
 
     optional.add_argument('--smoothLength',
-                           metavar="INT bp",
-                           help='The smooth length defines a window, larger than '
-                           'the binSize, to average the number of reads. For '
-                           'example, if the --binSize is set to 20 bp and the '
-                           '--smoothLength is set to 60 bp, then, for each '
-                           'binSize the average of it and its left and right '
-                           'neighbors is considered. Any value smaller than the '
-                           '--binSize will be ignored and no smoothing will be '
-                           'applied.',
-                           type=int)
+                          metavar="INT bp",
+                          help='The smooth length defines a window, larger than '
+                          'the binSize, to average the number of reads. For '
+                          'example, if the --binSize is set to 20 bp and the '
+                          '--smoothLength is set to 60 bp, then, for each '
+                          'binSize the average of it and its left and right '
+                          'neighbors is considered. Any value smaller than the '
+                          '--binSize will be ignored and no smoothing will be '
+                          'applied.',
+                          type=int)
 
     return parser
 
@@ -239,7 +240,7 @@ def get_scale_factors(args):
         scale_factors = map(float, args.scaleFactors.split(":"))
     else:
         if args.scaleFactorsMethod == 'SES':
-            scaleFactorsDict = estimateScaleFactor(
+            scalefactors_dict = estimateScaleFactor(
                 [bam1.filename, bam2.filename],
                 args.sampleLength, args.numberOfSamples,
                 1,
@@ -247,12 +248,12 @@ def get_scale_factors(args):
                 verbose=args.verbose,
                 chrsToSkip=args.ignoreForNormalization)
 
-            scale_factors = scaleFactorsDict['size_factors']
+            scale_factors = scalefactors_dict['size_factors']
 
             if args.verbose:
                 print "Size factors using SES: {}".format(scale_factors)
                 print "%s regions of size %s where used " % \
-                    (scaleFactorsDict['sites_sampled'],
+                    (scalefactors_dict['sites_sampled'],
                      args.sampleLength)
 
                 print "size factor if the number of mapped " \
@@ -295,7 +296,8 @@ def get_scale_factors(args):
                                                                             numberOfProcessors=args.numberOfProcessors,
                                                                             verbose=args.verbose)
                 if args.fragmentLength:
-                    if frag_len_dict['mean'] != 0  and abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
+                    if frag_len_dict['mean'] != 0 and \
+                                    abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
                         sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
                                          "length estimated from the bam file: {}\n".format(args.fragmentLength,
                                                                                          int(frag_len_dict['median'])))
@@ -333,6 +335,7 @@ def get_scale_factors(args):
 
     return scale_factors
 
+
 def main(args=None):
     """
     The algorithm is composed of two parts.
@@ -347,19 +350,18 @@ def main(args=None):
     """
     args = process_args(args)
 
-
     scale_factors = get_scale_factors(args)
     if args.verbose:
         print "Individual scale factors are {0}".format(scale_factors)
 
     # the getRatio function is called and receives
-    # the funcArgs per each tile that is considered
+    # the func_args per each tile that is considered
     FUNC = getRatio
-    funcArgs = {'missingDataAsZero': args.missingDataAsZero,
-                'valueType': args.ratio,
-                'scaleFactors': scale_factors,
-                'pseudocount': args.pseudocount
-                }
+    func_args = {'missingDataAsZero': args.missingDataAsZero,
+                 'valueType': args.ratio,
+                 'scaleFactors': scale_factors,
+                 'pseudocount': args.pseudocount
+                 }
 
     wr = writeBedGraph.WriteBedGraph([args.bamfile1, args.bamfile2], args.binSize, 0,
                                      args.fragmentLength,
@@ -376,7 +378,7 @@ def main(args=None):
                                      verbose=args.verbose
                                      )
 
-    wr.run(FUNC, funcArgs,  args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
+    wr.run(FUNC, func_args,  args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
 
 if __name__ == "__main__":
     main()
