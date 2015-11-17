@@ -62,10 +62,10 @@
             #end if
             --colorMap '$advancedOpt.colorMap'
 
-            #if $plotTitle and str($plotTitle).strip() != "":
-                --plotTitle '$plotTitle'
+            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
+                --plotTitle '$advancedOpt.plotTitle'
             #end if
-            $plotNumbers
+            $advancedOpt.plotNumbers
 
         #end if
 ]]>
