@@ -217,7 +217,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             ln -s "${bamfile}" "./${counter}.bam" &&
             ln -s "${bamfile}" "./${counter}.bam.bai" &&
             #silent $files.append('%s.bam' % $counter)
-            #silent $labels.append("'%s'" % ($bamfile.display_name))
+            #silent $labels.append('%s' % ($bamfile.display_name))
         #end for
 ]]>
     </token>
@@ -229,7 +229,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         #for $counter, $bigwig in enumerate($bigwigfiles):
             ln -s "${bigwig}" "${counter}.bw" &&
             #silent $files.append('%s.bw' % $counter)
-            #silent $labels.append("'%s'" % ($bigwig.display_name))
+            #silent $labels.append('%s' % ($bigwig.display_name))
         #end for
 ]]>
     </token>
