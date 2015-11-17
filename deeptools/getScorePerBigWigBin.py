@@ -58,6 +58,8 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
+    bigWigHandlers = [pyBigWig.open(bw) for bw in bigWigFiles]
+
     regionsToConsider = []
     if bedRegions:
         for chrom, start, end in bedRegions:
@@ -77,7 +79,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     for chrom, start, end, binLength in regionsToConsider:
         avgReadsArray = []
         i += 1
-        for idx, bwh in enumerate(bigWigFiles):
+        for idx, bwh in enumerate(bigWigHandlers):
             score = bwh.stats(chrom, start, end) #The default is "mean" and 1 bin
 
             if score is None or score == [None] or np.isnan(score[0]):
@@ -107,41 +109,43 @@ def getChromSizes(bigWigFiles):
 
     Chromosome name(s) and size(s).
     >>> getChromSizes([test.bwFile1, test.bwFile2])
-    [('3R', 200)]
+    [('3R', 200L)]
     """
 
-    chromNamesAndSize = {}
-    for bw in bigWigFiles :
+    chrom_names_and_size = {}
+    bigWigHandlers = [pyBigWig.open(bw) for bw in bigWigFiles]
+    for bw in bigWigHandlers:
         if bw is None :
             return None
 
-        for k,v in bw.chroms().iteritems() :
-            if(k not in chromNamesAndSize) :
-                chromNamesAndSize[k] = v
-            elif chromNamesAndSize[k] != v  :
+        for key, value in bw.chroms().iteritems():
+            if(key not in chrom_names_and_size):
+                chrom_names_and_size[key] = value
+            elif chrom_names_and_size[key] != value:
                 print "\nWARNING\n" \
-                "Chromosome {} length reported in the bigwig files differ.\n\n" \
-                "The smaller of the two will be used.".format(k, chomNamesAndSize[k], v)
-                if(chromNamesAndSize[k] >= v) :
-                    chromNamesAndSize[k] = v
+                      "Chromosome {} length reported in the bigwig files differ.\n\n" \
+                      "The smaller of the two will be used.".format(key, chrom_names_and_size[key], value)
+                if chrom_names_and_size[key] >= value:
+                    chrom_names_and_size[key] = value
     # get the list of common chromosome names and sizes
-    chromSizes = sorted([(k, v) for k, v in chromNamesAndSize.iteritems() ])
-    return chromSizes
+    chromsizes = sorted([(key, value) for key, value in chrom_names_and_size.iteritems() ])
+
+    return chromsizes
 
 
 #This is a terribly inefficient way to get this.
 def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
     """
     Get the number of all mapped fragments per region in all chromosomes
-    from a bigWig. Utilizing bx-python.
+    from a bigWig.
 
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
 
     Get number of fragments in sample.
-    >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile1, [('3R', 200)])
+    >>> getNumberOfFragmentsPerRegionFromBigWig(pyBigWig.open(test.bwFile1), [('3R', 200)])
     3.0
-    >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile2, [('3R', 200)])
+    >>> getNumberOfFragmentsPerRegionFromBigWig(pyBigWig.open(test.bwFile2), [('3R', 200)])
     4.0
     """
     mapped = 0
