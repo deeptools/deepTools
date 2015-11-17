@@ -58,28 +58,29 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigWigHandlers = [pyBigWig.open(bw) for bw in bigWigFiles]
+    bigwig_handlers = [pyBigWig.open(bw) for bw in bigWigFiles]
 
-    regionsToConsider = []
+    regions_to_consider = []
     if bedRegions:
         for chrom, start, end in bedRegions:
-            regionsToConsider.append((chrom, start, end, end - start))
+            regions_to_consider.append((chrom, start, end, end - start))
     else:
         for i in xrange(start, end, stepSize):
             if (i + binLength) > end:
-                regionsToConsider.append((chrom, i, end, end-i)) #last bin (may be smaller)
+                regions_to_consider.append((chrom, i, end, end-i)) #last bin (may be smaller)
             else:
-                regionsToConsider.append((chrom, i, i + binLength, binLength))
+                regions_to_consider.append((chrom, i, i + binLength, binLength))
 
-    #print "\nNumber of regions: {}".format(len(regionsToConsider))
+    import ipdb;ipdb.set_trace()
+    #print "\nNumber of regions: {}".format(len(regions_to_consider))
 
     warnings.simplefilter("default")
     i = 0
     num_warnings = 0
-    for chrom, start, end, binLength in regionsToConsider:
+    for chrom, start, end, binLength in regions_to_consider:
         avgReadsArray = []
         i += 1
-        for idx, bwh in enumerate(bigWigHandlers):
+        for idx, bwh in enumerate(bigwig_handlers):
             score = bwh.stats(chrom, start, end) #The default is "mean" and 1 bin
 
             if score is None or score == [None] or np.isnan(score[0]):
@@ -219,20 +220,24 @@ def getScorePerBin(bigWigFiles, binLength,
 class Tester():
     def __init__( self ):
         """
-        The distribution of reads (and fragments) in the two bigWig
-        files is as follows.
+        The the two bigWig files are as follows:
+        $ cat /tmp/testA.bg
+        3R      0       100     1
+        3R      100     200     2
 
-        They cover 200 bp::
+        $ cat /tmp/testB.bg
+        3R      0       150     1
+        3R      150     200     3
 
-              0                              100                           200
+        They cover 200 bp:
+
+              0              50              100            150            200
               |------------------------------------------------------------|
-            A                                ==============>- - - - - - - -
-              - - - - - - - - - - - - - - - - - - - - - - - <==============
+            A  111111111111111111111111111111122222222222222222222222222222
 
 
-            B - - - - - - - - <==============               ==============>
-                                             ==============>- - - - - - - -
-                                                            ==============>
+            B  111111111111111111111111111111111111111111111333333333333333
+
         """
         self.root = "./test/test_data/"
         self.bwFile1  = self.root + "testA.bw"
