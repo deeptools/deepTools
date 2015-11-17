@@ -5,6 +5,7 @@ import sys
 import argparse
 import os.path
 import numpy as np
+import pyBigWig
 
 
 import deeptools.getScorePerBigWigBin as score_bw
@@ -187,8 +188,17 @@ def main(args):
     else:
         bed_regions = None
 
+    bwFiles = []
+    for fname in args.bwfiles :
+        f = pyBigWig.open(fname.name)
+        if f :
+            bwFiles.append(f)
+    if len(bwFiles) == 0 :
+        print "No valid bigwig files"
+        exit(1)
+
     num_reads_per_bin = score_bw.getScorePerBin(
-        [f.name for f in args.bwfiles],
+        bwFiles,
         args.binSize,
         numberOfProcessors=args.numberOfProcessors,
         stepSize=args.binSize + args.distanceBetweenBins,
@@ -224,6 +234,9 @@ def main(args):
     np.savez_compressed(args.outFileName,
              matrix=num_reads_per_bin,
              labels=args.labels)
+
+    for f in bwFiles :
+        f.close()
 
 
 if __name__ == "__main__":

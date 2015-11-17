@@ -3,7 +3,6 @@ deepTools
 ======================================================================
 ### user-friendly tools for the normalization and visualization of deep-sequencing data
 
-
 deepTools addresses the challenge of handling the large amounts of data 
 that are now routinely generated from DNA sequencing centers. To do so, deepTools contains useful modules to process the mapped reads data to create coverage files in standard bedGraph and bigWig file formats. By doing so, deepTools allows the creation of **normalized coverage files** or the comparison between two files (for example, treatment and control). Finally, using such normalized and standardized files, multiple
 **visualizations** can be created to identify enrichments with

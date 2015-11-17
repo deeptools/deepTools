@@ -4,7 +4,7 @@
 # own tools
 import argparse
 import sys
-from deeptools import writeBedGraph
+from deeptools import writeBedGraph #This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools import bamHandler
 
