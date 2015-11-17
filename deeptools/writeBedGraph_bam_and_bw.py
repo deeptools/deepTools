@@ -8,7 +8,8 @@ import numpy as np
 import tempfile
 
 # NGS packages
-from bx.bbi.bigwig_file import BigWigFile
+#from bx.bbi.bigwig_file import BigWigFile
+import pyBigWig
 
 # own module
 import mapReduce
@@ -121,13 +122,12 @@ def writeBedGraph_worker(
                 True))
             bamHandle.close()
         elif fileFormat == 'bigwig':
-            fileHandle = open(indexFile, 'r')
-            bigwigHandle = BigWigFile(file=fileHandle)
+            bigwigHandle = pyBigWig.open(fileHandle)
             coverage.append(
                 getCoverageFromBigwig(
                     bigwigHandle, chrom, start, end,
                     tileSize, missingDataAsZero))
-            fileHandle.close()
+            bigwigHandle.close()
 
     # is /dev/shm available?
     # working in this directory speeds the process

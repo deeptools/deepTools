@@ -8,8 +8,7 @@ import multiprocessing
 # NGS packages
 import pysam
 
-from bx.bbi.bigwig_file import BigWigFile
-
+import pyBigWig
 import deeptools.readBed
 
 def compute_sub_matrix_wrapper(args):
@@ -177,7 +176,7 @@ class heatmapper(object):
             if sc_file.endswith(".bam"):
                 score_file_handlers.append(pysam.Samfile(sc_file, 'rb'))
             else:
-                score_file_handlers.append(BigWigFile(file=open(sc_file, 'r' )))
+                score_file_handlers.append(pyBigWig.open(sc_file))
 
         """
         if score_file_list[0].endswith(".bam"):
