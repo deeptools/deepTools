@@ -71,8 +71,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
             else:
                 regions_to_consider.append((chrom, i, i + binLength, binLength))
 
-    import ipdb;ipdb.set_trace()
-    #print "\nNumber of regions: {}".format(len(regions_to_consider))
 
     warnings.simplefilter("default")
     i = 0
