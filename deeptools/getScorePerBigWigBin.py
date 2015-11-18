@@ -16,9 +16,9 @@ def countReadsInRegions_wrapper(args):
 
 
 def countFragmentsInRegions_worker(chrom, start, end,
-                               bigWigFiles,
-                               stepSize, binLength,     #staticArgs
-                               bedRegions=None):
+                                   bigWigFiles,
+                                   stepSize, binLength,
+                                   bedRegions=None):
     """ returns the average score in each bigwig file at each 'stepSize'
     position within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
@@ -50,7 +50,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
     array([[ 1. ,  1.5,  2. ],
            [ 1. ,  1. ,  2. ]])
     """
-
     assert start < end, "start {} bigger that end {}".format(start, end)
 
     # array to keep the scores for the regions
@@ -78,7 +77,19 @@ def countFragmentsInRegions_worker(chrom, start, end,
     for chrom, start, end, binLength in regions_to_consider:
         avgReadsArray = []
         i += 1
+
         for idx, bwh in enumerate(bigwig_handlers):
+            if chrom not in bwh.chroms().keys():
+                unmod_name = chrom
+                if chrom.startswith('chr'):
+                    # remove the chr part from chromosome name
+                    chrom = chrom[3:]
+                else:
+                    # prefix with 'chr' the chromosome name
+                    chrom = 'chr' + chrom
+                if chrom not in bwh.chroms().keys():
+                    exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
+
             score = bwh.stats(chrom, start, end) #The default is "mean" and 1 bin
 
             if score is None or score == [None] or np.isnan(score[0]):
@@ -99,9 +110,10 @@ def countFragmentsInRegions_worker(chrom, start, end,
     return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles))
 
 
-def getChromSizes(bigWigFiles):
+def getChromSizes(bigwigFilesList):
     """
-    Get chromosome sizes from bigWig files.
+    Get chromosome sizes from bigWig file by shell calling bigWigInfo
+    (UCSC tools).
 
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
@@ -110,49 +122,50 @@ def getChromSizes(bigWigFiles):
     >>> getChromSizes([test.bwFile1, test.bwFile2])
     [('3R', 200L)]
     """
+    #The following lines are - with one exception ("bigWigInfo") -
+    #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
 
-    chrom_names_and_size = {}
-    bigWigHandlers = [pyBigWig.open(bw) for bw in bigWigFiles]
-    for bw in bigWigHandlers:
-        if bw is None :
-            return None
 
-        for key, value in bw.chroms().iteritems():
-            if(key not in chrom_names_and_size):
-                chrom_names_and_size[key] = value
-            elif chrom_names_and_size[key] != value:
-                print "\nWARNING\n" \
-                      "Chromosome {} length reported in the bigwig files differ.\n\n" \
-                      "The smaller of the two will be used.".format(key, chrom_names_and_size[key], value)
-                if chrom_names_and_size[key] >= value:
-                    chrom_names_and_size[key] = value
+    # check that the path to USCS bedGraphToBigWig as set in the config
+    # is installed and is executable.
+
+    def print_chr_names_and_size(chr_set):
+        for name, size in chr_set:
+            sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
+
+    bigwigFilesList = bigwigFilesList[:]
+
+    common_chr = set(pyBigWig.open(bigwigFilesList.pop()).chroms().items())
+    non_common_chr = set()
+    for bw in bigwigFilesList:
+        _names_and_size = set(pyBigWig.open(bw).chroms().items())
+        if len(common_chr & _names_and_size) == 0:
+            #  try to add remove 'chr' from the chromosme name
+            _corr_names_size = set()
+            for chrom_name, size in _names_and_size:
+                if chrom_name.startswith('chr'):
+                    _corr_names_size.add((chrom_name[3:], size))
+                else:
+                    _corr_names_size.add(('chr' + chrom_name, size))
+            if len(common_chr & _corr_names_size) == 0:
+                message = "No common chromosomes found. Are the bigwig files " \
+                          "from the same species and same assemblies?\n"
+                sys.stderr.write(message)
+                print_chr_names_and_size(common_chr)
+
+                sys.stderr.write("\nand the following is the list of the unmatched chromsome and chromosome\n"
+                                 "lengths from file\n{}\n".format(bw))
+                print_chr_names_and_size(_names_and_size)
+                exit(1)
+
+            non_common_chr |= common_chr ^ _corr_names_size
+            common_chr = common_chr & _corr_names_size
+    if len(non_common_chr) > 0:
+        sys.stderr.write("\nThe following chromsome names did not match between the the bigwig files\n")
+        print_chr_names_and_size(non_common_chr)
+
     # get the list of common chromosome names and sizes
-    chromsizes = sorted([(key, value) for key, value in chrom_names_and_size.iteritems() ])
-
-    return chromsizes
-
-
-#This is a terribly inefficient way to get this.
-def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
-    """
-    Get the number of all mapped fragments per region in all chromosomes
-    from a bigWig.
-
-    Test dataset with two samples covering 200 bp.
-    >>> test = Tester()
-
-    Get number of fragments in sample.
-    >>> getNumberOfFragmentsPerRegionFromBigWig(pyBigWig.open(test.bwFile1), [('3R', 200)])
-    3.0
-    >>> getNumberOfFragmentsPerRegionFromBigWig(pyBigWig.open(test.bwFile2), [('3R', 200)])
-    4.0
-    """
-    mapped = 0
-    for cname, csize in chromSizes:
-        regions = bw.intervals(cname, 0, csize) # region = bwh.get(chrom_name, start, end)
-        for region in regions:
-            mapped += region[2]
-    return mapped
+    return sorted(common_chr)
 
 
 def getScorePerBin(bigWigFiles, binLength,
@@ -182,17 +195,16 @@ def getScorePerBin(bigWigFiles, binLength,
     # the following is a heuristic
 
     # get list of common chromosome names and sizes
-    chromSizes = getChromSizes(bigWigFiles)
-
+    chrom_sizes = getChromSizes(bigWigFiles)
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
     # Also the skip may contain heterochromatic regions and
     # mitochondrial DNA
-    if len(chrsToSkip): chromSizes = [ x for x in chromSizes if x[0] not in chrsToSkip ]
+    if len(chrsToSkip):
+        chrom_sizes = [x for x in chrom_sizes if x[0] not in chrsToSkip]
 
-    chrNames, chrLengths = zip(*chromSizes)
-    genomeSize = sum(chrLengths)
+    chrnames, chrlengths = zip(*chrom_sizes)
     if stepSize is None:
         stepSize = binLength    #for adjacent bins
     chunkSize = int(stepSize * 500 / len(bigWigFiles))
@@ -205,7 +217,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # mapReduce( (staticArgs), func, chromSize, etc. )
     imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength),
                                     countReadsInRegions_wrapper,
-                                    chromSizes,
+                                    chrom_sizes,
                                     genomeChunkLength=chunkSize,
                                     bedFile=bedFile,
                                     region=region,
