@@ -187,14 +187,14 @@ def main(args):
     else:
         bed_regions = None
 
-    num_reads_per_bin = score_bw.getScorePerBin(
-        [f.name for f in args.bwfiles],
-        args.binSize,
-        numberOfProcessors=args.numberOfProcessors,
-        stepSize=args.binSize + args.distanceBetweenBins,
-        verbose=args.verbose,
-        region=args.region,
-        bedFile=bed_regions)
+    bigwig_file_list = [f.name for f in args.bwfiles]
+    num_reads_per_bin = score_bw.getScorePerBin(bigwig_file_list,
+                                                args.binSize,
+                                                numberOfProcessors=args.numberOfProcessors,
+                                                stepSize=args.binSize + args.distanceBetweenBins,
+                                                verbose=args.verbose,
+                                                region=args.region,
+                                                bedFile=bed_regions)
 
     sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))
@@ -204,26 +204,29 @@ def main(args):
              "If using --region please check that this "
              "region is covered by reads.\n")
 
-    if args.outRawCounts:
-        if bed_regions:
-            bed_regions.seek(0)
-            reg_list = bed_regions.readlines()
-            args.outRawCounts.write("#'chr'\t'start'\t'end'\t")
-            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-            fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
-            for idx, row in enumerate(num_reads_per_bin):
-                args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].strip().split("\t")[0:3]))
-                args.outRawCounts.write(fmt % tuple(row))
-
-        else:
-            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-            fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
-            for row in num_reads_per_bin:
-                args.outRawCounts.write(fmt.format(*tuple(row)))
-
     np.savez_compressed(args.outFileName,
              matrix=num_reads_per_bin,
              labels=args.labels)
+
+    if args.outRawCounts:
+        try:
+            if bed_regions:
+                bed_regions.seek(0)
+                reg_list = bed_regions.readlines()
+                args.outRawCounts.write("#'chr'\t'start'\t'end'\t")
+                args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+                fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
+                for idx, row in enumerate(num_reads_per_bin):
+                    args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].strip().split("\t")[0:3]))
+                    args.outRawCounts.write(fmt % tuple(row))
+
+            else:
+                args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+                fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
+                for row in num_reads_per_bin:
+                    args.outRawCounts.write(fmt.format(*tuple(row)))
+        except:
+            import ipdb;ipdb.set_trace()
 
 
 if __name__ == "__main__":
