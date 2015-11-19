@@ -1,12 +1,13 @@
-from bx.bbi.bigwig_file import BigWigFile
+import pyBigWig
 import numpy as np
 import os
 import sys
+import shutil
 import warnings
 
 # deepTools packages
 import deeptools.mapReduce as mapReduce
-import deeptools.config as cfg
+import deeptools.utilities
 #debug = 0
 
 
@@ -16,14 +17,16 @@ def countReadsInRegions_wrapper(args):
 
 
 def countFragmentsInRegions_worker(chrom, start, end,
-                               bigwigFilesList,
-                               stepSize, binLength,     #staticArgs
-                               bedRegions=None):
+                                   bigWigFiles,
+                                   stepSize, binLength,
+                                   save_data,
+                                   bedRegions=None,
+                                   ):
     """ returns the average score in each bigwig file at each 'stepSize'
     position within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
     different positions for sampling the bins are equally spaced
-    between each other and are not one directly next *after* the other.
+    and *not adjacent*.
 
     If a list of bedRegions is given, then the number of reads
     that overlaps with each region is counted.
@@ -50,7 +53,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
     array([[ 1. ,  1.5,  2. ],
            [ 1. ,  1. ,  2. ]])
     """
-
     assert start < end, "start {} bigger that end {}".format(start, end)
 
     # array to keep the scores for the regions
@@ -58,51 +60,59 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigWigHandlers = [BigWigFile(open(bw, "rb")) for bw in bigwigFilesList]
+    bigwig_handlers = [pyBigWig.open(bw) for bw in bigWigFiles]
 
-    regionsToConsider = []
+    regions_to_consider = []
     if bedRegions:
         for chrom, start, end in bedRegions:
-            regionsToConsider.append((chrom, start, end, end - start))
+            regions_to_consider.append((chrom, start, end, end - start))
     else:
         for i in xrange(start, end, stepSize):
             if (i + binLength) > end:
-                regionsToConsider.append((chrom, i, end, end-i)) #last bin (may be smaller)
+                regions_to_consider.append((chrom, i, end, end-i)) #last bin (may be smaller)
             else:
-                regionsToConsider.append((chrom, i, i + binLength, binLength))
+                regions_to_consider.append((chrom, i, i + binLength, binLength))
 
-    #print "\nNumber of regions: {}".format(len(regionsToConsider))
-
+    if save_data:
+        _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
+        _file_name = _file.name
+    else:
+        _file_name = ''
     warnings.simplefilter("default")
     i = 0
     num_warnings = 0
-    for chrom, start, end, binLength in regionsToConsider:
+    for chrom, start, end, binLength in regions_to_consider:
         avgReadsArray = []
         i += 1
-        for idx, bwh in enumerate(bigWigHandlers):
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                score = bwh.query(chrom, start, end, 1)
-                if score is None:
-                    if chrom.startswith('chr'):
-                        score = bwh.query(chrom[3:], start, end, 1)
-                    else:
-                        score = bwh.query('chr' + chrom, start, end, 1)
 
-                if score is not None and len(score) > 0:
-                    score = score[0]
+        for idx, bwh in enumerate(bigwig_handlers):
+            if chrom not in bwh.chroms().keys():
+                unmod_name = chrom
+                if chrom.startswith('chr'):
+                    # remove the chr part from chromosome name
+                    chrom = chrom[3:]
+                else:
+                    # prefix with 'chr' the chromosome name
+                    chrom = 'chr' + chrom
+                if chrom not in bwh.chroms().keys():
+                    exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
-            if score is None or np.isnan(score['mean']):
-                if num_warnings < 10:
-                    sys.stderr.write("NaN found in {} at {}:{:,}-{:,}\n".format(bigwigFilesList[idx], chrom, start, end))
-                    num_warnings += 1
-                score = {}
-                score['mean'] = np.nan
-            avgReadsArray.append(score['mean'])     #mean of fragment coverage for region
+            score = bwh.stats(chrom, start, end)
+
+
+            if score is None or score == [None] or np.isnan(score[0]):
+                score = [np.nan]
+            avgReadsArray.append(score[0])     #mean of fragment coverage for region
         #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
 
         sub_score_per_bin.extend(avgReadsArray)
         rows += 1
+        if save_data:
+            _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
+            _file.write("\t".join(["{}".format(x) for x in avgReadsArray])+"\n")
+
+    if save_data:
+        _file.close()
     warnings.resetwarnings()
 
     # the output is a matrix having as many rows as the variable 'row'
@@ -110,8 +120,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     # each of the regions processed by the worker.
     # np.array([[score1_1, score1_2],
     #           [score2_1, score2_2]]
-
-    return np.array(sub_score_per_bin).reshape(rows, len(bigwigFilesList))
+    return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles)), _file_name
 
 
 def getChromSizes(bigwigFilesList):
@@ -124,7 +133,7 @@ def getChromSizes(bigwigFilesList):
 
     Chromosome name(s) and size(s).
     >>> getChromSizes([test.bwFile1, test.bwFile2])
-    [('3R', 200)]
+    [('3R', 200L)]
     """
     #The following lines are - with one exception ("bigWigInfo") -
     #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
@@ -132,38 +141,17 @@ def getChromSizes(bigwigFilesList):
 
     # check that the path to USCS bedGraphToBigWig as set in the config
     # is installed and is executable.
-    bigwig_info_cmd = cfg.config.get('external_tools', 'bigwig_info')
-
-    if not cfg.checkProgram(bigwig_info_cmd, '-h',
-                            'http://hgdownload.cse.ucsc.edu/admin/exe/'):
-        exit()
-
-    def get_chr_and_size(bigwig_file):
-        # hack to get the chromosome names an sizes using
-        # bigWigInfo and parsing the result
-
-        chrom_and_size = []
-        inBlock = False
-        for line in os.popen("{} -chroms {}".format(bigwig_info_cmd, bigwig_file)).readlines():
-            if line[0:10] == "chromCount":
-                inBlock = True
-                continue
-            if line[0:5] == "bases":
-                break
-            if inBlock:
-                chromname, id, size = line.strip().split(" ")
-                chrom_and_size.append((chromname, int(size)))
-        return chrom_and_size
 
     def print_chr_names_and_size(chr_set):
         for name, size in chr_set:
             sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
 
     bigwigFilesList = bigwigFilesList[:]
-    common_chr = set(get_chr_and_size(bigwigFilesList.pop()))
+
+    common_chr = set(pyBigWig.open(bigwigFilesList.pop()).chroms().items())
     non_common_chr = set()
     for bw in bigwigFilesList:
-        _names_and_size = set(get_chr_and_size(bw))
+        _names_and_size = set(pyBigWig.open(bw).chroms().items())
         if len(common_chr & _names_and_size) == 0:
             #  try to add remove 'chr' from the chromosme name
             _corr_names_size = set()
@@ -186,42 +174,20 @@ def getChromSizes(bigwigFilesList):
             non_common_chr |= common_chr ^ _corr_names_size
             common_chr = common_chr & _corr_names_size
     if len(non_common_chr) > 0:
-        sys.stderr.write("\nThe following chromosome names did not match between the the bigwig files\n")
+        sys.stderr.write("\nThe following chromsome names did not match between the the bigwig files\n")
         print_chr_names_and_size(non_common_chr)
 
     # get the list of common chromosome names and sizes
-    return sorted(common_chr)
+    return sorted(common_chr), non_common_chr
 
 
-def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):
-    """
-    Get the number of all mapped fragments per region in all chromosomes
-    from a bigWig. Utilizing bx-python.
-
-    Test dataset with two samples covering 200 bp.
-    >>> test = Tester()
-
-    Get number of fragments in sample.
-    >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile1, [('3R', 200)])
-    3.0
-    >>> getNumberOfFragmentsPerRegionFromBigWig(test.bwFile2, [('3R', 200)])
-    4.0
-    """
-    bwh = BigWigFile(open(bw, "rb"))
-    mapped = 0
-    for cname, csize in chromSizes:
-        regions = bwh.get(cname, 0, csize) # region = bwh.get(chrom_name, start, end)
-        for region in regions:
-            mapped += region[2]
-    return mapped
-
-
-def getScorePerBin(bigwigFilesList, binLength,
+def getScorePerBin(bigWigFiles, binLength,
                    numberOfProcessors=1,
                    verbose=False, region=None,
                    bedFile=None,
                    stepSize=None,
-                   chrsToSkip=[]):
+                   chrsToSkip=[],
+                   out_file_for_raw_data=None):
     """
     This function returns a matrix containing scores (median) for the coverage
     of fragments within a region. Each row corresponds to a sampled region.
@@ -238,25 +204,27 @@ def getScorePerBin(bigwigFilesList, binLength,
 
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
-    # is spend loading the files
+    # is spent loading the files
     # if too long, some processors end up free.
-    # the following values are empirical
+    # the following is a heuristic
 
     # get list of common chromosome names and sizes
-    chromSizes = getChromSizes(bigwigFilesList)
-
+    chrom_sizes, non_common = getChromSizes(bigWigFiles)
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
     # Also the skip may contain heterochromatic regions and
     # mitochondrial DNA
-    if len(chrsToSkip): chromSizes = [ x for x in chromSizes if x[0] not in chrsToSkip ]
+    if len(chrsToSkip):
+        chrom_sizes = [x for x in chrom_sizes if x[0] not in chrsToSkip]
 
-    chrNames, chrLengths = zip(*chromSizes)
-    genomeSize = sum(chrLengths)
+    chrnames, chrlengths = zip(*chrom_sizes)
     if stepSize is None:
-        stepSize = binLength    #for consecutive bins
-    chunkSize = int(stepSize * 500 / len(bigwigFilesList))
+        stepSize = binLength    #for adjacent bins
+
+    # set chunksize based on number of processors used
+    #chunkSize = int(stepSize * 5000 / len(bigWigFiles))
+    chunkSize = sum(chrlengths) / numberOfProcessors
     if verbose:
         print "step size is {}".format(stepSize)
 
@@ -264,35 +232,59 @@ def getScorePerBin(bigwigFilesList, binLength,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
     # mapReduce( (staticArgs), func, chromSize, etc. )
-    imap_res = mapReduce.mapReduce((bigwigFilesList, stepSize, binLength),
+    if out_file_for_raw_data:
+        save_file = True
+    else:
+        save_file = False
+
+    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
                                     countReadsInRegions_wrapper,
-                                    chromSizes,
+                                    chrom_sizes,
                                     genomeChunkLength=chunkSize,
                                     bedFile=bedFile,
                                     region=region,
                                     numberOfProcessors=numberOfProcessors)
 
-    score_per_bin = np.concatenate(imap_res, axis=0)
+    if out_file_for_raw_data:
+        if len(non_common):
+            sys.stderr.write("*Warning*\nThe resulting bed file does not contain information for "
+                             "the chromosomes that were not common between the bigwig files\n")
+
+        # concatenate intermediary bedgraph files
+        for _values, tempFileName in imap_res:
+            if tempFileName:
+                # concatenate all intermediate tempfiles into one
+                shutil.copyfileobj(open(tempFileName, 'r'), out_file_for_raw_data)
+                os.remove(tempFileName)
+
+        out_file_for_raw_data.close()
+
+    # the matrix scores are in the first element of each of the entries in imap_res
+    score_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
     return score_per_bin
 
 
 class Tester():
     def __init__( self ):
         """
-        The distribution of reads (and fragments) in the two bigWig
-        files is as follows.
+        The the two bigWig files are as follows:
+        $ cat /tmp/testA.bg
+        3R      0       100     1
+        3R      100     200     2
 
-        They cover 200 bp::
+        $ cat /tmp/testB.bg
+        3R      0       150     1
+        3R      150     200     3
 
-              0                              100                           200
+        They cover 200 bp:
+
+              0              50              100            150            200
               |------------------------------------------------------------|
-            A                                ==============>- - - - - - - -
-              - - - - - - - - - - - - - - - - - - - - - - - <==============
+            A  111111111111111111111111111111122222222222222222222222222222
 
 
-            B - - - - - - - - <==============               ==============>
-                                             ==============>- - - - - - - -
-                                                            ==============>
+            B  111111111111111111111111111111111111111111111333333333333333
+
         """
         self.root = "./test/test_data/"
         self.bwFile1  = self.root + "testA.bw"

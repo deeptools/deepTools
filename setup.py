@@ -81,14 +81,7 @@ class install(_install):
             'http://hgdownload.cse.ucsc.edu/admin/exe/',
             'bamCoverage, bamCompare, correctGCbias')
 
-        bigwigInfo_installed = self.checkProgramIsInstalled(
-            'bigWigInfo', '-h',
-            'http://hgdownload.cse.ucsc.edu/admin/exe/',
-            'bigwigCompare, bigwigCorrelate')
-
-        if not samtools_installed or not bedGraphToBigWig_installed \
-                or not bigwigInfo_installed:
-
+        if not samtools_installed or not bedGraphToBigWig_installed :
             msg = "\n##########\nSome tools were not fund.\n"\
                 "If you already have a copy of these programs installed\n"\
                 "please be sure that they are found in your PATH or\n"\
@@ -133,9 +126,6 @@ setup(
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation'],
     include_package_data=True,
     package_data={'': ['config/deeptools.cfg']},
-#    data_files=[('deepTools', ['./deepTools.cfg'])],
-#                ('galaxy', ['galaxy/bamCompare.xml','galaxy/bamCoverage.xml',
-#                            'galaxy/heatmapper.xml'])],
     url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
     description='Useful library to deal with mapped reads in sorted '
@@ -147,7 +137,8 @@ setup(
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
         "bx-python >= 0.5.0",
-        "numpydoc >=0.5"
+        "numpydoc >=0.5",
+        "pyBigWig >=1.0.3"
     ],
     cmdclass={'sdist': sdist, 'install': install}
 )
