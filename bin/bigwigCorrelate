@@ -121,6 +121,13 @@ def bigwigCorrelateArgs(case='bins'):
                             'Multiple labels have to be separated by space, e.g. '
                             '--labels sample1 sample2 sample3',
                         nargs='+')
+
+    optional.add_argument('--chromosomesToSkip',
+                        metavar='chr1 chr2',
+                        help='List of chromosomes that do not want to be included '
+                             'for the correlation. Useful to remove "ramdom" or "extra" chr.',
+                        nargs='+')
+
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                         metavar='INT',
@@ -207,6 +214,7 @@ def main(args):
         verbose=args.verbose,
         region=args.region,
         bedFile=bed_regions,
+        chrsToSkip=args.chromosomesToSkip,
         out_file_for_raw_data=args.outRawCounts)
 
     sys.stderr.write("Number of bins "
