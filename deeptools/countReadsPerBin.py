@@ -563,13 +563,13 @@ class CountReadsPerBin(object):
         # E.g for a cigar of 40M260N22M
         # get blocks return two elements for the first 40 matches
         # and the for the last 22 matches.
-        if read.is_paired and self.extendPairedEnds == False:
+        if not read.is_paired and not self.extendPairedEnds:
             return read.get_blocks()
 
         if not read.is_paired and self.defaultFragmentLength == 'read length':
             return read.get_blocks()
 
-        if self.extendPairedEnds == True and read.is_paired and \
+        if self.extendPairedEnds is True and read.is_paired and \
                 read.is_proper_pair and \
                 self.maxPairedFragmentLength > abs(read.tlen) > 0:
             if read.is_reverse:

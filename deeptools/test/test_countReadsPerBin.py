@@ -32,7 +32,7 @@ class TestCountReadsPerBin(object):
         self.chrom = '3R'
         step_size = 50
         bin_length = 25
-        default_frag_length = 0 # replaced by read length
+        default_frag_length = None # replaced by read length
 
         self.c = cr.CountReadsPerBin([self.bamFile1, self.bamFile2],
                              binLength = bin_length,
@@ -128,7 +128,7 @@ class TestCountReadsPerBin(object):
 
         # turn of read extension
         self.c.extendPairedEnds = False
-        self.c.defaultFragmentLength = 0
+        self.c.defaultFragmentLength = None
         resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile1),
                                              'chr_cigar', 0, 100, 10)
         nt.assert_array_equal(resp, np.array([ 0,  1,  1,  0,  1,  0,  0,  0,  0,  0]))
