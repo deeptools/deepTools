@@ -158,7 +158,9 @@ def getChromSizes(bigwigFilesList):
     def print_chr_names_and_size(chr_set):
         for name, size in chr_set:
             sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
-    common_chr = set()
+
+    bigwigFilesList = bigwigFilesList[:]
+    common_chr = set(get_chr_and_size(bigwigFilesList.pop()))
     non_common_chr = set()
     for bw in bigwigFilesList:
         _names_and_size = set(get_chr_and_size(bw))
@@ -184,7 +186,7 @@ def getChromSizes(bigwigFilesList):
             non_common_chr |= common_chr ^ _corr_names_size
             common_chr = common_chr & _corr_names_size
     if len(non_common_chr) > 0:
-        sys.stderr.write("\nThe following chromsome names did not match between the the bigwig files\n")
+        sys.stderr.write("\nThe following chromosome names did not match between the the bigwig files\n")
         print_chr_names_and_size(non_common_chr)
 
     # get the list of common chromosome names and sizes
