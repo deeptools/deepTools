@@ -83,6 +83,12 @@ def countFragmentsInRegions_worker(chrom, start, end,
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 score = bwh.query(chrom, start, end, 1)
+                if score is None:
+                    if chrom.startswith('chr'):
+                        score = bwh.query(chrom[3:], start, end, 1)
+                    else:
+                        score = bwh.query('chr' + chrom, start, end, 1)
+
                 if score is not None and len(score) > 0:
                     score = score[0]
 
@@ -132,37 +138,57 @@ def getChromSizes(bigwigFilesList):
                             'http://hgdownload.cse.ucsc.edu/admin/exe/'):
         exit()
 
-    cCommon = []
-    chromNamesAndSize = {}
-    for bw in bigwigFilesList:
+    def get_chr_and_size(bigwig_file):
+        # hack to get the chromosome names an sizes using
+        # bigWigInfo and parsing the result
+
+        chrom_and_size = []
         inBlock = False
-        for line in os.popen("{} -chroms {}".format(bigwig_info_cmd, bw)).readlines():
+        for line in os.popen("{} -chroms {}".format(bigwig_info_cmd, bigwig_file)).readlines():
             if line[0:10] == "chromCount":
                 inBlock = True
                 continue
             if line[0:5] == "bases":
                 break
             if inBlock:
-                chromName, id, size = line.strip().split(" ")
-                size = int(size)
-                if chromName in chromNamesAndSize:
-                    cCommon.append(chromName)
-                    if chromNamesAndSize[chromName] != size:
-                        print "\nWARNING\n" \
-                            "Chromosome {} length reported in the " \
-                            "bigwig files differ.\n{} for {}\n" \
-                            "{} for {}.\n\nThe smallest " \
-                            "length will be used".format(
-                            chromName, chromNamesAndSize[chromName],
-                            bw[0], size, bw[1])
-                        chromNamesAndSize[chromName] = min(
-                            chromNamesAndSize[chromName], size)
+                chromname, id, size = line.strip().split(" ")
+                chrom_and_size.append((chromname, int(size)))
+        return chrom_and_size
+
+    def print_chr_names_and_size(chr_set):
+        for name, size in chr_set:
+            sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
+    common_chr = set()
+    non_common_chr = set()
+    for bw in bigwigFilesList:
+        _names_and_size = set(get_chr_and_size(bw))
+        if len(common_chr & _names_and_size) == 0:
+            #  try to add remove 'chr' from the chromosme name
+            _corr_names_size = set()
+            for chrom_name, size in _names_and_size:
+                if chrom_name.startswith('chr'):
+                    _corr_names_size.add((chrom_name[3:], size))
                 else:
-                    chromNamesAndSize[chromName] = size
+                    _corr_names_size.add(('chr' + chrom_name, size))
+            if len(common_chr & _corr_names_size) == 0:
+                message = "No common chromosomes found. Are the bigwig files " \
+                          "from the same species and same assemblies?\n"
+                sys.stderr.write(message)
+                print_chr_names_and_size(common_chr)
+
+                sys.stderr.write("\nand the following is the list of the unmatched chromsome and chromosome\n"
+                                 "lengths from file\n{}\n".format(bw))
+                print_chr_names_and_size(_names_and_size)
+                exit(1)
+
+            non_common_chr |= common_chr ^ _corr_names_size
+            common_chr = common_chr & _corr_names_size
+    if len(non_common_chr) > 0:
+        sys.stderr.write("\nThe following chromsome names did not match between the the bigwig files\n")
+        print_chr_names_and_size(non_common_chr)
+
     # get the list of common chromosome names and sizes
-    chromSizes = sorted([(k, v) for k, v in chromNamesAndSize.iteritems() \
-                         if k in cCommon])
-    return chromSizes
+    return sorted(common_chr)
 
 
 def getNumberOfFragmentsPerRegionFromBigWig(bw, chromSizes):

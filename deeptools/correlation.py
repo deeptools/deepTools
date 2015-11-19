@@ -173,9 +173,8 @@ class Correlation:
         for index in xrange(len(rows)):
             row = rows[index]
             col = cols[index]
-            corr_matrix[row, col] = options[self.corr_method](
-                self.matrix[:, row],
-                self.matrix[:, col])[0]
+            corr_matrix[row, col] = options[self.corr_method](self.matrix[:, row],
+                                                              self.matrix[:, col])[0]
         # make the matrix symmetric
         self.corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
         return self.corr_matrix
@@ -328,7 +327,8 @@ class Correlation:
                 ax.yaxis.set_major_locator(majorLocator)
                 ax.yaxis.set_minor_locator(minorLocator)
 
-            vector1, vector2 = self.matrix[:, row], self.matrix[:, col]
+            vector1 = self.matrix[:, row]
+            vector2 = self.matrix[:, col]
 
             ax.text(0.2, 0.8, "{}={:.2f}".format(self.corr_method,
                                                  corr_matrix[row, col]),
@@ -364,7 +364,7 @@ class Correlation:
                     direction='out')
             else:
                 ax.set_xticklabels([])
-
+            import ipdb;ipdb.set_trace()
             ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
             # downsample for plotting
     #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))

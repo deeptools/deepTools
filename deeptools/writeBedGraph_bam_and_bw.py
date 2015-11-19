@@ -304,7 +304,7 @@ def writeBedGraph(
             print "output file: %s" % (outputFileName)
     else:
         bedGraphToBigWig(
-            chromNamesAndSize, bedGraphFile, outputFileName, False)
+            chromNamesAndSize, bedGraphFile, outputFileName, True)
         if debug:
             print "output file: %s" % (outputFileName)
         os.remove(bedGraphFile)
