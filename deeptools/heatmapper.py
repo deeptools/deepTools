@@ -497,9 +497,9 @@ class heatmapper(object):
             valuesArray[:] = np.nan
         bw_array = None
         try:
-            bw_array = bigwig.get_as_array(chrom,
-                                           max(0, zones[0][0]),
-                                           zones[-1][1])
+            bw_array = bigwig.values(chrom,
+                                    max(0, zones[0][0]),
+                                    zones[-1][1])
 #            print chrom, zones[1]
 #            print bigwig.get_as_array(chrom, zones[1][0], zones[1][1])
         except Exception as detail:
@@ -515,9 +515,9 @@ class heatmapper(object):
             # bx-python function does not allow access to
             # this info.
             altered_chrom = heatmapper.changeChromNames(chrom)
-            bw_array = bigwig.get_as_array(altered_chrom,
-                                           max(0, zones[0][0]),
-                                           zones[-1][1])
+            bw_array = bigwig.values(altered_chrom,
+                                     max(0, zones[0][0]),
+                                     zones[-1][1])
             # test again if with the altered chromosome name
             # the bigwig returns something.
             if bw_array is None:

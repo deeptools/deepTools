@@ -97,7 +97,8 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 if chrom not in bwh.chroms().keys():
                     exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
-            score = bwh.stats(chrom, start, end) #The default is "mean" and 1 bin
+            score = bwh.stats(chrom, start, end)
+
 
             if score is None or score == [None] or np.isnan(score[0]):
                 score = [np.nan]
