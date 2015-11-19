@@ -206,7 +206,8 @@ def main(args):
         stepSize=args.binSize + args.distanceBetweenBins,
         verbose=args.verbose,
         region=args.region,
-        bedFile=bed_regions)
+        bedFile=bed_regions,
+        out_file_for_raw_data=args.outRawCounts)
 
     sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))
@@ -221,6 +222,17 @@ def main(args):
                         labels=args.labels)
 
     if args.outRawCounts:
+        # append to the generated file the
+        # labels
+        header = "#'chr'\t'start'\t'end'\t"
+        header += "'" + "'\t'".join(args.labels) + "'\n"
+        #import ipdb;ipdb.set_trace()
+        with open(args.outRawCounts.name, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header + content)
+
+        """
         if bed_regions:
             bed_regions.seek(0)
             reg_list = bed_regions.readlines()
@@ -236,6 +248,7 @@ def main(args):
             fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
             for row in num_reads_per_bin:
                 args.outRawCounts.write(fmt.format(*tuple(row)))
+        """
 
 
 if __name__ == "__main__":

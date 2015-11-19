@@ -2,11 +2,12 @@ import pyBigWig
 import numpy as np
 import os
 import sys
+import shutil
 import warnings
 
 # deepTools packages
 import deeptools.mapReduce as mapReduce
-import deeptools.config as cfg
+import deeptools.utilities
 #debug = 0
 
 
@@ -18,7 +19,9 @@ def countReadsInRegions_wrapper(args):
 def countFragmentsInRegions_worker(chrom, start, end,
                                    bigWigFiles,
                                    stepSize, binLength,
-                                   bedRegions=None):
+                                   save_data,
+                                   bedRegions=None,
+                                   ):
     """ returns the average score in each bigwig file at each 'stepSize'
     position within the interval start, end for a 'binLength' window.
     Because the idea is to get counts for window positions at
@@ -70,7 +73,11 @@ def countFragmentsInRegions_worker(chrom, start, end,
             else:
                 regions_to_consider.append((chrom, i, i + binLength, binLength))
 
-
+    if save_data:
+        _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
+        _file_name = _file.name
+    else:
+        _file_name = ''
     warnings.simplefilter("default")
     i = 0
     num_warnings = 0
@@ -99,6 +106,12 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
         sub_score_per_bin.extend(avgReadsArray)
         rows += 1
+        if save_data:
+            _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
+            _file.write("\t".join(["{}".format(x) for x in avgReadsArray])+"\n")
+
+    if save_data:
+        _file.close()
     warnings.resetwarnings()
 
     # the output is a matrix having as many rows as the variable 'row'
@@ -106,8 +119,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     # each of the regions processed by the worker.
     # np.array([[score1_1, score1_2],
     #           [score2_1, score2_2]]
-
-    return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles))
+    return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles)), _file_name
 
 
 def getChromSizes(bigwigFilesList):
@@ -165,7 +177,7 @@ def getChromSizes(bigwigFilesList):
         print_chr_names_and_size(non_common_chr)
 
     # get the list of common chromosome names and sizes
-    return sorted(common_chr)
+    return sorted(common_chr), non_common_chr
 
 
 def getScorePerBin(bigWigFiles, binLength,
@@ -173,7 +185,8 @@ def getScorePerBin(bigWigFiles, binLength,
                    verbose=False, region=None,
                    bedFile=None,
                    stepSize=None,
-                   chrsToSkip=[]):
+                   chrsToSkip=[],
+                   out_file_for_raw_data=None):
     """
     This function returns a matrix containing scores (median) for the coverage
     of fragments within a region. Each row corresponds to a sampled region.
@@ -195,7 +208,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # the following is a heuristic
 
     # get list of common chromosome names and sizes
-    chrom_sizes = getChromSizes(bigWigFiles)
+    chrom_sizes, non_common = getChromSizes(bigWigFiles)
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
@@ -207,7 +220,10 @@ def getScorePerBin(bigWigFiles, binLength,
     chrnames, chrlengths = zip(*chrom_sizes)
     if stepSize is None:
         stepSize = binLength    #for adjacent bins
-    chunkSize = int(stepSize * 500 / len(bigWigFiles))
+
+    # set chunksize based on number of processors used
+    #chunkSize = int(stepSize * 5000 / len(bigWigFiles))
+    chunkSize = sum(chrlengths) / numberOfProcessors
     if verbose:
         print "step size is {}".format(stepSize)
 
@@ -215,7 +231,12 @@ def getScorePerBin(bigWigFiles, binLength,
         # in case a region is used, append the tilesize
         region += ":{}".format(binLength)
     # mapReduce( (staticArgs), func, chromSize, etc. )
-    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength),
+    if out_file_for_raw_data:
+        save_file = True
+    else:
+        save_file = False
+
+    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
                                     countReadsInRegions_wrapper,
                                     chrom_sizes,
                                     genomeChunkLength=chunkSize,
@@ -223,7 +244,22 @@ def getScorePerBin(bigWigFiles, binLength,
                                     region=region,
                                     numberOfProcessors=numberOfProcessors)
 
-    score_per_bin = np.concatenate(imap_res, axis=0)
+    if out_file_for_raw_data:
+        if len(non_common):
+            sys.stderr.write("*Warning*\nThe resulting bed file does not contain information for "
+                             "the chromosomes that were not common between the bigwig files\n")
+
+        # concatenate intermediary bedgraph files
+        for _values, tempFileName in imap_res:
+            if tempFileName:
+                # concatenate all intermediate tempfiles into one
+                shutil.copyfileobj(open(tempFileName, 'r'), out_file_for_raw_data)
+                os.remove(tempFileName)
+
+        out_file_for_raw_data.close()
+
+    # the matrix scores are in the first element of each of the entries in imap_res
+    score_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
     return score_per_bin
 
 
