@@ -67,7 +67,8 @@ def mapReduce(staticArgs, func, chromSize,
         # modify chromSize such that it only contains
         # chromosomes that are in the bed file
         chromSize = [x for x in chromSize if x[0] in bed_interval_tree.keys()]
-
+        if not len(chromSize):
+            exit("*ERROR*\nChromosome names in bed file do not match the chromosome names files to process")
     TASKS = []
     # iterate over all chromosomes
     for chrom, size in chromSize:
@@ -103,9 +104,10 @@ def mapReduce(staticArgs, func, chromSize,
                     # with two genomeChunks to be counted twice. Such region
                     # is only added for the genomeChunk that contains the start
                     # of the bed region.
-                    if bed_region.start + 1 < endPos:
-                        bed_regions_list.append([chrom, bed_region.start,
-                                                 bed_region.end])
+                    if bed_region.start < endPos < bed_region.end:
+                        continue
+                    bed_regions_list.append([chrom, bed_region.start,
+                                             bed_region.end])
                 if len(bed_regions_list) == 0:
                     continue
                 # add to argument list, the position of the bed regions to use
