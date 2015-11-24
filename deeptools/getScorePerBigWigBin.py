@@ -215,7 +215,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # or a mixture of male/female and is unreliable.
     # Also the skip may contain heterochromatic regions and
     # mitochondrial DNA
-    if len(chrsToSkip):
+    if chrsToSkip and len(chrsToSkip):
         chrom_sizes = [x for x in chrom_sizes if x[0] not in chrsToSkip]
 
     chrnames, chrlengths = zip(*chrom_sizes)
