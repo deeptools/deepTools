@@ -1,18 +1,10 @@
-| 
-| 
-| 
+Examples of deepTools Usage
+===========================
 
-.. raw:: html
-
-   </div>
-
---------------
-
-    If you have a nice deepTools plot that you'd like to share, we'd be
+.. note:: If you have a nice deepTools plot that you'd like to share, we'd be
     happy to ad it to our Gallery! Just send us an email:
     deeptools@googlegroups.com
 
---------------
 
 DNase accessibility at enhancers in murine ES cells
 ---------------------------------------------------
@@ -58,8 +50,6 @@ Command
      --regionsLabel enhancers \
      --plotTitle 'DNase signal' \
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
 
 TATA box enrichments around the TSS of mouse genes
 --------------------------------------------------
@@ -111,8 +101,6 @@ genes!
      --whatToShow 'heatmap and colorbar' \
      --sortRegions ascend
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
 
 Visualizing the GC content for mouse and fly genes
 --------------------------------------------------
@@ -128,17 +116,17 @@ The images nicely illustrate the completely opposite GC distributions in
 flies and mice: while the gene starts of mammalian genomes are enriched
 for CpGs, fly promoters show depletion of GC content.
 
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
-| Fast Facts           |                                                                                                                                   |
-+======================+===================================================================================================================================+
-| computeMatrix mode   | scale-regions                                                                                                                     |
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
-| regions files        | `BED <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed>`__ files with mouse and fly genes (from UCSC table browser)   |
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
-| signal file          | `bigWig <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig>`__ files with GC content                                |
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
-| heatmap cosmetics    | color scheme, labels, titles, color for missing data was set to white, heatmap height                                             |
-+----------------------+-----------------------------------------------------------------------------------------------------------------------------------+
++----------------------+--------------------------------------------------------------------------------------+
+| Fast Facts           |                                                                                      |
++======================+======================================================================================+
+| computeMatrix mode   | scale-regions                                                                        |
++----------------------+--------------------------------------------------------------------------------------+
+| regions files        | BED files with mouse and fly genes (from UCSC table browser)                         |
++----------------------+--------------------------------------------------------------------------------------+
+| signal file          | bigwig files with GC content                                                         |
++----------------------+--------------------------------------------------------------------------------------+
+| heatmap cosmetics    | color scheme, labels, titles, color for missing data was set to white, heatmap height|
++----------------------+--------------------------------------------------------------------------------------+
 
 Fly and mouse genes were scaled to different sizes due to the different
 median sizes of the two species' genes (genes of *D.melanogaster*
@@ -182,8 +170,6 @@ parameters while the heatmapper commands were virtually identical
      --heatmapHeight 15 \
      --plotTitle 'GC content mouse' &
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
 
 CpG methylation around murine transcription start sites in two different cell types
 -----------------------------------------------------------------------------------
@@ -243,15 +229,13 @@ were the same:
      --plotTitle 'ES cells' \
      --regionsLabel 'genes active in ESC' 
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
 
 Histone marks for genes of the mosquito *Anopheles gambiae*
 -----------------------------------------------------------
 
 This figure was taken from `Gómez-Díaz et al. (2014): Insights into the
 epigenomic landscape of the human malaria vector *Anopheles gambiae*.
-Fron Genet
+From Genet
 Aug15;5:277 <http://www.ncbi.nlm.nih.gov/pmc/articles/PMC4133732/>`__.
 It shows the distribution of H3K27me3 (left) and H3K27ac (right) with
 respect to gene features in *A. gambiae* midguts. The enrichment or
@@ -260,8 +244,6 @@ comprise gene bodies flanked by a segment of 200 bp at the 5′ end of
 TSSs and TTSs. Average profiles across gene regions ±200 bp for each
 histone modification are shown on top.
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
 
 Signals of repressive chromatin marks, their enzymes and repeat element conservation scores
 -------------------------------------------------------------------------------------------
@@ -277,8 +259,6 @@ normalized ChIP-seq signals for H3K9me3, Suv39h1, Suv39h2, Eset, and
 HP1alpha-EGFP, followed by LINE and ERV content and repeat conservation
 scores.
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
 
 Normalized ChIP-seq signals and peak regions
 --------------------------------------------
@@ -289,8 +269,4 @@ They used deepTools to generate extended reads per kilobase per million
 reads at 10 bp resolution and visualized the resulting coverage files in
 `IGV browser <dx.doi.org/10.1093/bib/bbs017>`__.
 
-`go to
-top <https://github.com/fidelram/deepTools/wiki/Gallery#pageTop>`__
-
---------------
 

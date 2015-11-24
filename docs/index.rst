@@ -1,7 +1,7 @@
 deepTools
 =========
 
-.. image:: ../../images/start_collage.png
+.. image:: images/start_collage.png
 
 For support, questions, or feature requests contact:
 deeptools@googlegroups.com
@@ -27,7 +27,7 @@ The flow chart below depicts the different tool modules that are
 currently available within deepTools (deepTools modules are written in
 bold red and black font).
 
-.. image:: ../../images/start_workflow.png
+.. image:: images/start_workflow.png
 
 If  the file names in the figure mean nothing to you,
 please make sure to check our `Glossary`_.
@@ -58,24 +58,14 @@ please make sure to check our `Glossary`_.
 Contents:
 ---------
 .. toctree::
-   :glob:
    :maxdepth: 2
 
+   content/installation/installation
    content/list_of_tools
-   *
-   Help/*
-   technical_documentation/*
-   tools_details/*
-   example_workflows/*
-   api_tutorial
+   content/exampleUsage/Gallery
+   content/exampleUsage/How_we_use_deepTools
+   content/exampleUsage/api_tutorial
 
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 About
 -----

@@ -7,7 +7,8 @@ deepTools consists of several command line and galaxy wrappers for summarising
 the information on Next Generation Sequencing data that can be mapped to a reference
 genome. However, the engine powering the deepTools commands can be used through the API for other
 purposes as well. The following is a short overview of the most useful methods and classes
-from deepTools.
+from deepTools. Complete information can be found in the following links: :ref:`genindex` and :ref:`modindex`
+
 
 
 Finding the coverage over a region
@@ -313,3 +314,11 @@ to the function, the bam file name. The next two positional arguments are the na
 .. parsed-literal::
 
     0.170030741997, 0.216740390353
+
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
