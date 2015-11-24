@@ -193,9 +193,11 @@ def getUserRegion(chromSizes, regionString, max_chunk_size=1e6):
 
 def BED_to_interval_tree(BED_file):
     """
-    Creates an index of intervals for each BED entri
+    Creates an index of intervals, using an interval tree, for each BED entry
 
     :param BED_file: file handler of a BED file
+
+    :return interval tree
     """
     from bx.intervals.intersection import IntervalTree, Interval
 
