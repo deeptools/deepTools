@@ -364,7 +364,6 @@ class Correlation:
                     direction='out')
             else:
                 ax.set_xticklabels([])
-            import ipdb;ipdb.set_trace()
             ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
             # downsample for plotting
     #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
