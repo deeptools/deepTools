@@ -5,6 +5,8 @@ import os
 import deeptools.writeBedGraph as wr
 from deeptools.writeBedGraph import scaleCoverage
 
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
+
 __author__ = 'fidel'
 
 
@@ -26,7 +28,7 @@ class TestWriteBedGraph(TestCase):
                                                             ==============>
         """
 
-        self.root = "./test/test_data/"
+        self.root = ROOT
         self.bamFile1  = self.root + "testA.bam"
         self.bamFile2  = self.root + "testB.bam"
         self.bamFile_PE  = self.root + "test_paired2.bam"

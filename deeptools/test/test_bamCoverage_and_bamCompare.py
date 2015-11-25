@@ -1,8 +1,9 @@
 import deeptools.bamCoverage as bam_cov
 import deeptools.bamCompare as bam_comp
+import os.path
 from os import unlink
 
-ROOT = "./test/test_data/"
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_A  = ROOT + "testA.bam"
 BAMFILE_B  = ROOT + "testB.bam"
 

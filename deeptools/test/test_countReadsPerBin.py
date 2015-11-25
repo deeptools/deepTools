@@ -4,8 +4,11 @@ import deeptools.countReadsPerBin as cr
 import numpy as np
 import numpy.testing as nt
 import pysam
+import os.path
 
 __author__ = 'Fidel'
+
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 
 
 class TestCountReadsPerBin(object):
@@ -25,7 +28,7 @@ class TestCountReadsPerBin(object):
                                              ==============>
                                                             ==============>
         """
-        self.root = "./test/test_data/"
+        self.root = ROOT
         self.bamFile1  = self.root + "testA.bam"
         self.bamFile2  = self.root + "testB.bam"
         self.bamFile_PE  = self.root + "test_paired2.bam"
