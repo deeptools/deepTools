@@ -14,14 +14,12 @@ before_install:
   # Useful for debugging any issues with conda
   - conda info -a
 
-
 # Install packages
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose
-  - conda install --yes -c https://conda.anaconda.org/anaconda pysam
-  # Coverage packages are on my binstar channel
+  - conda install -c https://conda.anaconda.org/cgat pysam
   - python setup.py install
 
 # command to run tests
 script: nosetests --doctest-extension=.py
-#sudo: false
+sudo: false
