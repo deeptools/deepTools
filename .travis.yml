@@ -10,8 +10,8 @@ before_install:
   - export PATH=/home/travis/miniconda/bin:$PATH
   - conda update --yes conda
   # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
-  #- sudo rm -rf /dev/shm
-  #- sudo ln -s /run/shm /dev/shm
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
 
 # Install packages
 install:
@@ -22,4 +22,4 @@ install:
 
 # command to run tests
 script: nosetests --doctest-extension=.py
-sudo: false
+#sudo: false
