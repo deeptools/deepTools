@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
+import numpy as np
 import argparse
 from matplotlib import use as mplt_use
 mplt_use('Agg')
@@ -9,18 +10,16 @@ import matplotlib.pyplot as plt
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 
-import numpy as np
 
-
-def parseArguments(args=None):
-    parentParser = parserCommon.getParentArgParse(binSize=False)
-    requiredArgs = getRequiredArgs()
-    outputArgs = getOutputArgs()
-    optionalArgs = getOptionalArgs()
+def parse_arguments(args=None):
+    parent_parser = parserCommon.getParentArgParse(binSize=False)
+    required_args = get_required_args()
+    output_args = get_output_args()
+    optional_args = get_optional_args()
     read_options_parser = parserCommon.read_options()
     parser = argparse.ArgumentParser(
-        parents=[requiredArgs, outputArgs, read_options_parser,
-                 optionalArgs, parentParser],
+        parents=[required_args, output_args, read_options_parser,
+                 optional_args, parent_parser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Samples indexed bam files '
         'and plots a profile for each bam file. '
@@ -34,7 +33,12 @@ def parseArguments(args=None):
         '-o signal.b',
         add_help=False)
 
-    args = parser.parse_args(args)
+    return parser
+
+
+def process_args(args=None):
+
+    args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
         print "The number of does not match the number of bam files."
@@ -45,10 +49,10 @@ def parseArguments(args=None):
     if not args.labels:
         args.labels = args.bamfiles
 
-    return(args)
+    return args
 
 
-def getRequiredArgs():
+def get_required_args():
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
 
@@ -61,7 +65,7 @@ def getRequiredArgs():
     return parser
 
 
-def getOptionalArgs():
+def get_optional_args():
     parser = argparse.ArgumentParser(add_help=False,
                                      conflict_handler='resolve')
     optional = parser.add_argument_group('Optional arguments')
@@ -115,7 +119,7 @@ def getOptionalArgs():
     return parser
 
 
-def getOutputArgs():
+def get_output_args():
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
     group.add_argument('--plotFile', '-plot',
@@ -135,7 +139,9 @@ def getOutputArgs():
     return parser
 
 
-def main(args):
+def main(args=None):
+    args = process_args(args)
+
     cr = countR.CountReadsPerBin(
         args.bamfiles,
         args.binSize,
@@ -191,5 +197,4 @@ def main(args):
             args.outRawCounts.write(fmt % tuple(row))
 
 if __name__ == "__main__":
-    args = parseArguments()
-    main(args)
+    main()
