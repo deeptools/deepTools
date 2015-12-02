@@ -23,6 +23,7 @@ def writeBedGraph_wrapper(args):
     """
     return WriteBedGraph.writeBedGraph_worker(*args)
 
+
 class WriteBedGraph(cr.CountReadsPerBin):
     r"""Reads bam files coverages and writes a bedgraph or bigwig file
 
@@ -72,11 +73,30 @@ class WriteBedGraph(cr.CountReadsPerBin):
     >>> step_size = 25
 
     >>> num_sample_sites = 0 #overruled by step_size
-    >>> fragment_length = 0 # if less thatn read length, then read length will be used instead
+    >>> fragment_length = None # if less thatn read length, then read length will be used instead
 
     >>> c = WriteBedGraph([bam_file], binLength=bin_length, defaultFragmentLength=fragment_length,
     ... region=region, stepSize=step_size)
     >>> c.run(function_to_call, funcArgs, outFile.name)
+    ignoreDuplicates: False
+    numberOfProcessors: 1
+    samFlag_exclude: None
+    verbose: False
+    samFlag_include: None
+    extendPairedEnds: True
+    region: 3R:0:200:25
+    maxPairedFragmentLength: 1000
+    binLength: 25
+    numberOfSamples: None
+    stepSize: 25
+    defaultFragmentLength: read length
+    bedFile: None
+    center_read: False
+    chrsToSkip: []
+    bamFilesList: ['./test/test_data/testA.bam']
+    smoothLength: 0
+    minMappingQuality: None
+    zerosToNans: False
     >>> open(outFile.name, 'r').readlines()
     ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.5\n']
     >>> outFile.close()
@@ -93,7 +113,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         and a value for each tile that corresponds to the given function
         and that is related to the coverage underlying the tile.
 
-       Parameters
+        Parameters
         ----------
         chrom : str
             Chrom name
@@ -160,7 +180,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 print "output file: %s" % (out_file_name)
             os.remove(bedGraphFile)
 
-
     def writeBedGraph_worker(self, chrom, start, end,
                              func_to_call, func_args, smooth_length=0,
                              bed_regions_list=None):
@@ -202,12 +221,12 @@ class WriteBedGraph(cr.CountReadsPerBin):
         >>> bamFile1  = "./test/test_data/testA.bam"
         >>> bin_length = 50
         >>> number_of_samples = 0 # overruled by step_size
-        >>> default_fragment_length = 0 # if < read length, then read length is used instead
+        >>> default_fragment_length = None # if < read length, then read length is used instead
         >>> func_to_call = scaleCoverage
         >>> funcArgs = {'scaleFactor': 1.0}
 
         >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples,
-        ... default_fragment_length, stepSize=50, skipZeros=False)
+        ... default_fragment_length, stepSize=50)
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
         >>> open(tempFile, 'r').readlines()
         ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.0\n']
