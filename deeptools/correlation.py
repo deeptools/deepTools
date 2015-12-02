@@ -35,7 +35,7 @@ class Correlation:
         self.load_matrix(matrix_file)
         self.skip_zeros = skip_zeros
         self.corr_method = corr_method
-        self.corr_matrix = None # correlation matrix
+        self.corr_matrix = None  # correlation matrix
         if labels is not None:
             # test that the length of labels
             # corresponds to the length of
@@ -54,7 +54,7 @@ class Correlation:
             self.remove_outliers()
 
         if log1p is True:
-            self.matrix  = np.log1p(self.matrix )
+            self.matrix = np.log1p(self.matrix )
 
         if corr_method:
             self.compute_correlation()
@@ -163,20 +163,26 @@ class Correlation:
 
         num_samples = len(self.labels)
         # initialize correlation matrix
-        corr_matrix = np.zeros((num_samples, num_samples), dtype='float')
-        options = {'spearman': spearmanr,
-                   'pearson': pearsonr}
-        # do an all vs all correlation using the
-        # indices of the upper triangle
-        rows, cols = np.triu_indices(num_samples)
 
-        for index in xrange(len(rows)):
-            row = rows[index]
-            col = cols[index]
-            corr_matrix[row, col] = options[self.corr_method](self.matrix[:, row],
-                                                              self.matrix[:, col])[0]
-        # make the matrix symmetric
-        self.corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
+        if self.corr_method == 'pearson':
+            self.corr_matrix = np.ma.corrcoef(np.ma.masked_invalid(self.matrix.T), allow_masked=True)
+
+        else:
+            corr_matrix = np.zeros((num_samples, num_samples), dtype='float')
+            options = {'spearman': spearmanr,
+                       'pearson': pearsonr}
+            # do an all vs all correlation using the
+            # indices of the upper triangle
+            rows, cols = np.triu_indices(num_samples)
+
+            for index in xrange(len(rows)):
+                row = rows[index]
+                col = cols[index]
+                corr_matrix[row, col] = spearmanr(self.matrix[:, row],
+                                                  self.matrix[:, col])[0]
+            # make the matrix symmetric
+            self.corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
+
         return self.corr_matrix
 
     def plot_correlation(self, plot_fiilename, plot_title='', vmax=None,
