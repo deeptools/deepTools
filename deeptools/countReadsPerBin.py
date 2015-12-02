@@ -120,7 +120,7 @@ class CountReadsPerBin(object):
     The first line corresponds to the number of reads per bin in bam file 1
 
     >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2],
-    ... 50, 4, 0)
+    ... 50, 4, defaultFragmentLength=None)
     >>> np.transpose(c.run())
     array([[ 0.,  0.,  1.,  1.],
            [ 0.,  1.,  1.,  2.]])
@@ -283,8 +283,8 @@ class CountReadsPerBin(object):
         Initialize some useful values
 
         >>> test = Tester()
-        >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0, 0,
-        ... stepSize=50)
+        >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0,
+        ... defaultFragmentLength=None, stepSize=50)
 
         The transpose is used to get better looking numbers. The first line
         corresponds to the number of reads per bin in the first bamfile.
@@ -538,10 +538,10 @@ class CountReadsPerBin(object):
         [(5001491, 5001691)]
         >>> c.get_fragment_from_read(test.getRead("single-reverse"))
         [(5001536, 5001736)]
-        >>> c.defaultFragmentLength = 0
+        >>> c.defaultFragmentLength = 'read length'
         >>> c.get_fragment_from_read(test.getRead("single-forward"))
         [(5001491, 5001527)]
-        >>> c.defaultFragmentLength = 0
+        >>> c.defaultFragmentLength = 'read length'
         >>> c.extendPairedEnds = False
         >>> c.get_fragment_from_read(test.getRead("paired-forward"))
         [(5000000, 5000036)]
@@ -563,31 +563,33 @@ class CountReadsPerBin(object):
         # E.g for a cigar of 40M260N22M
         # get blocks return two elements for the first 40 matches
         # and the for the last 22 matches.
-        if not read.is_paired and not self.extendPairedEnds:
+        if not self.extendPairedEnds:
             return read.get_blocks()
 
-        if not read.is_paired and self.defaultFragmentLength == 'read length':
-            return read.get_blocks()
+        if self.extendPairedEnds:
 
-        if self.extendPairedEnds is True and read.is_paired and \
-                read.is_proper_pair and \
+            if read.is_paired and read.is_proper_pair and \
                 self.maxPairedFragmentLength > abs(read.tlen) > 0:
-            if read.is_reverse:
-                fragmentStart = read.next_reference_start
-                fragmentEnd = read.reference_end
-            else:
-                fragmentStart = read.reference_start
-                # the end of the fragment is defined as
-                # the start of the forward read plus the insert length
-                fragmentEnd = read.reference_start + abs(read.tlen)
+                if read.is_reverse:
+                    fragmentStart = read.next_reference_start
+                    fragmentEnd = read.reference_end
+                else:
+                    fragmentStart = read.reference_start
+                    # the end of the fragment is defined as
+                    # the start of the forward read plus the insert length
+                    fragmentEnd = read.reference_start + abs(read.tlen)
 
-        else:
-            if read.is_reverse:
-                fragmentStart = read.reference_end - self.defaultFragmentLength
-                fragmentEnd = read.reference_end
+            elif self.defaultFragmentLength == 'read length':
+                return read.get_blocks()
+
+            # Extend using the default fragment length
             else:
-                fragmentStart = read.reference_start
-                fragmentEnd = read.reference_start + self.defaultFragmentLength
+                if read.is_reverse:
+                    fragmentStart = read.reference_end - self.defaultFragmentLength
+                    fragmentEnd = read.reference_end
+                else:
+                    fragmentStart = read.reference_start
+                    fragmentEnd = read.reference_start + self.defaultFragmentLength
 
         if self.center_read == True:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
