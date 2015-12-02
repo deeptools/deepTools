@@ -124,8 +124,8 @@ def bigwigCorrelateArgs(case='bins'):
 
     optional.add_argument('--chromosomesToSkip',
                         metavar='chr1 chr2',
-                        help='List of chromosomes that do not want to be included '
-                             'for the correlation. Useful to remove "ramdom" or "extra" chr.',
+                        help='List of chromosomes that you do not want to be included '
+                             'for the correlation. Useful to remove "random" or "extra" chr.',
                         nargs='+')
 
     if case == 'bins':
@@ -141,7 +141,7 @@ def bigwigCorrelateArgs(case='bins'):
                               help='By default, bamCorrelate considers consecutive '
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
-                              'between bins can by given. Larger distances '
+                              'between bins can be given. Larger distances '
                               'result in less bins being considered.',
                         default=0,
                         type=int)

@@ -75,8 +75,7 @@ def plot_correlation_args():
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--skipZeros',
                         help='By setting this option, genomic regions '
-                             'that have zero or nan values only all samples '
-                             'are excluded.',
+                             'that have zero or nan values are excluded.',
                         action='store_true',
                         required=False)
 
@@ -154,8 +153,8 @@ def heatmap_options():
         metavar='',
         help='Color map to use for the heatmap. Available values can be '
             'seen here: '
-            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/ The available options are: \'' +
+            'http://matplotlib.org/examples/color/colormaps_reference.html '
+            '\nThe available options are:\n \'' +
         color_options + '\'')
 
     heatmap.add_argument('--plotNumbers',
