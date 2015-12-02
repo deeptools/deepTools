@@ -34,19 +34,33 @@ General principles
 Parameters to decrease the run time
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``numberOfProcessors``
--  ``region`` - in case you're testing whether a certain plot works and
-   gives you the output you're hoping for, you can speed things up by
-   focusing on a certain genome region, e.g. chr4 or chr2:100000-200000
+-  ``numberOfProcessors`` - Number of processors to be used, e.g.
+                        ``--numberOfProcessors 10`` will split up the
+                        workload internally into 10 chunks which will be
+                        processed in parallel
+-  ``region`` - In case you're testing whether a certain plot works and
+                        gives you the output you're hoping for, you can
+                        speed things up by focusing on a certain genome
+                        region, e.g. ``--region chr2`` or even
+                        ``--region chr2:100000-200000``
+
+These parameters are optional and available throughout deepTools.
 
 Filtering BAMs while processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``ignoreDuplicates``
--  ``minMappingQuality``
--  ``samFlagInclude``
--  ``samFlagExclude``
+-  ``ignoreDuplicates`` - Reads with the same orientation and start
+                        position will be considered only once. If reads are
+                        paired, the mate is also evaluated
+-  ``minMappingQuality`` - Only reads with a mapping quality score equal
+                        or higher than the specified value are considered
+-  ``samFlagInclude`` - Include reads based on the SAM flag, e.g.
+                        ``--samFlagInclude 64`` gets reads that are first in
+                        pair. A good place helping to unravel SAM flags is
+                        https://broadinstitute.github.io/picard/explain-flags.html
+-  ``samFlagExclude`` - Exclude reads based on the SAM flags
 
+These parameters are optional and available throughout deepTools.
 
 
 .. warning::  If you know that your files will be strongly affected by the filtering
@@ -55,10 +69,11 @@ Filtering BAMs while processing
  by deepTools is done *after* the scaling factors are calculated!
 
 
+On the command line, to tell a program to use a certain option
+(e.g. to ignore duplicate reads), you will have to give the option name
+preceded by two hyphens (e.g. ``--ignoreDuplicates``).
 
-To tell a program to use a certain option (e.g. to ignore duplicate
-reads), you will have to give the option name preceded by two hyphens
-(e.g. --ignoreDuplicates). In the tables on this page, we try to list:
+The tables on this page list:
 
 -  The option name as recognized by the program
 -  The kind of value that is sometimes expected after the option name
@@ -99,3 +114,4 @@ Tools for visualization
    tools/plotCorrelation
    tools/plotCoverage
    tools/plotPCA
+
