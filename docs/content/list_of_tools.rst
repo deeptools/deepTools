@@ -1,9 +1,8 @@
 deepTools overview
 ==================
 
-Here, you will find all the options available for the command line
-(almost all of them are also available in Galaxy, perhaps named slightly
-different).
+Here, you will find all command line options. They are also available in
+Galaxy (in a few cases with minor updates to their naming where needed).
 
 You can always see all available command-line options via --help:
 
@@ -22,12 +21,12 @@ A typical deepTools command could look like this:
     --ignoreDuplicates \
     --scaleFactor 0.5
 
-general principles
+General principles
 ^^^^^^^^^^^^^^^^^^
 
--  output format of plots should be indicated by the file ending, e.g.
+-  Output format of plots should be indicated by the file ending, e.g.
    MyPlot.pdf will return a pdf, MyPlot.png a png-file
--  all tools that produce plots can also output the underlying data -
+-  All tools that produce plots can also output the underlying data -
    this can be useful in cases where you don't like the deepTools visualization
    as you can then use the data matrices produced by deepTools with your
    favorite plotting module, e.g. R or Excel
@@ -35,19 +34,33 @@ general principles
 Parameters to decrease the run time
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``numberOfProcessors``
--  ``region`` - in case you're testing whether a certain plot works and
-   gives you the output you're hoping for, you can speed things up by
-   focusing on a certain genome region, e.g. chr4 or chr2:100000200000
+-  ``numberOfProcessors`` - Number of processors to be used, e.g.
+                        ``--numberOfProcessors 10`` will split up the
+                        workload internally into 10 chunks which will be
+                        processed in parallel
+-  ``region`` - In case you're testing whether a certain plot works and
+                        gives you the output you're hoping for, you can
+                        speed things up by focusing on a certain genome
+                        region, e.g. ``--region chr2`` or even
+                        ``--region chr2:100000-200000``
 
-filtering BAMs while processing
+These parameters are optional and available throughout deepTools.
+
+Filtering BAMs while processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
--  ``ignoreDuplicates``
--  ``minMappingQuality``
--  ``samFlagInclude``
--  ``samFlagExclude``
+-  ``ignoreDuplicates`` - Reads with the same orientation and start
+                        position will be considered only once. If reads are
+                        paired, the mate is also evaluated
+-  ``minMappingQuality`` - Only reads with a mapping quality score equal
+                        or higher than the specified value are considered
+-  ``samFlagInclude`` - Include reads based on the SAM flag, e.g.
+                        ``--samFlagInclude 64`` gets reads that are first in
+                        pair. A good place helping to unravel SAM flags is
+                        https://broadinstitute.github.io/picard/explain-flags.html
+-  ``samFlagExclude`` - Exclude reads based on the SAM flags
 
+These parameters are optional and available throughout deepTools.
 
 
 .. warning::  If you know that your files will be strongly affected by the filtering
@@ -56,15 +69,16 @@ filtering BAMs while processing
  by deepTools is done *after* the scaling factors are calculated!
 
 
+On the command line, to tell a program to use a certain option
+(e.g. to ignore duplicate reads), you will have to give the option name
+preceded by two hyphens (e.g. ``--ignoreDuplicates``).
 
-To tell a program to use a certain option (e.g. to ignore duplicate
-reads), you will have to give the option name preceded by two hyphens
-(e.g. --ignoreDuplicates). In the tables on this page, we try to list:
+The tables on this page list:
 
--  the option name as recognized by the program
--  the kind of value that is sometimes expected after the option name
+-  The option name as recognized by the program
+-  The kind of value that is sometimes expected after the option name
    (see the annotated figure below)
--  a verbose explanation of what the option actually does
+-  A verbose explanation of what the option actually does
 
 The texts here are adjusted for readability, they might not match the
 help text that you see in the command line word by word.
@@ -100,3 +114,4 @@ Tools for visualization
    tools/plotCorrelation
    tools/plotCoverage
    tools/plotPCA
+

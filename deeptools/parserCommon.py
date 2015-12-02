@@ -63,7 +63,7 @@ def read_options():
     group.add_argument('--minMappingQuality',
                        metavar='INT',
                        help='If set, only reads that have a mapping '
-                       'quality score higher than --minMappingQuality are '
+                       'quality score equal or higher than --minMappingQuality are '
                        'considered.',
                        type=int,
                        )
