@@ -21,12 +21,12 @@ A typical deepTools command could look like this:
     --ignoreDuplicates \
     --scaleFactor 0.5
 
-general principles
+General principles
 ^^^^^^^^^^^^^^^^^^
 
--  output format of plots should be indicated by the file ending, e.g.
+-  Output format of plots should be indicated by the file ending, e.g.
    MyPlot.pdf will return a pdf, MyPlot.png a png-file
--  all tools that produce plots can also output the underlying data -
+-  All tools that produce plots can also output the underlying data -
    this can be useful in cases where you don't like the deepTools visualization
    as you can then use the data matrices produced by deepTools with your
    favorite plotting module, e.g. R or Excel
@@ -39,7 +39,7 @@ Parameters to decrease the run time
    gives you the output you're hoping for, you can speed things up by
    focusing on a certain genome region, e.g. chr4 or chr2:100000-200000
 
-filtering BAMs while processing
+Filtering BAMs while processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  ``ignoreDuplicates``
@@ -60,10 +60,10 @@ To tell a program to use a certain option (e.g. to ignore duplicate
 reads), you will have to give the option name preceded by two hyphens
 (e.g. --ignoreDuplicates). In the tables on this page, we try to list:
 
--  the option name as recognized by the program
--  the kind of value that is sometimes expected after the option name
+-  The option name as recognized by the program
+-  The kind of value that is sometimes expected after the option name
    (see the annotated figure below)
--  a verbose explanation of what the option actually does
+-  A verbose explanation of what the option actually does
 
 The texts here are adjusted for readability, they might not match the
 help text that you see in the command line word by word.
