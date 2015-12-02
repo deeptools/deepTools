@@ -151,7 +151,7 @@ def bamcorrelate_args(case='bins'):
                               help='Limits the correlation analysis to '
                               'the regions specified in this file.',
                               metavar='bedfile',
-                              type=argparse.FileType('r'),
+                              type=argparse.FileType('U'),
                               required=True)
 
     group = parser.add_argument_group('Output optional options')
