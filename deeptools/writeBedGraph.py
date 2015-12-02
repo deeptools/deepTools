@@ -115,12 +115,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         Parameters
         ----------
-        chrom : str
-            Chrom name
-        start : int
-            start coordinate
-        end : int
-            end coordinate
         func_to_call : str
             function name to be called to convert the list of coverages computed
             for each bam file at each position into a single value. An example
@@ -137,11 +131,11 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
 
         """
-        bamHandlers = [bamHandler.openBam(x) for x in self.bamFilesList]
-        genomeChunkLength = getGenomeChunkLength(bamHandlers, self.binLength)
+        bam_handlers = [bamHandler.openBam(x) for x in self.bamFilesList]
+        genome_chunk_length = getGenomeChunkLength(bam_handlers, self.binLength)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chromNamesAndSize = getCommonChrNames(bamHandlers, verbose=False)
+        chrom_names_and_size = getCommonChrNames(bam_handlers, verbose=False)
 
         if self.region:
             # in case a region is used, append the tilesize
@@ -152,33 +146,33 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         res = mapReduce.mapReduce([func_to_call, func_args],
                                   writeBedGraph_wrapper,
-                                  chromNamesAndSize,
+                                  chrom_names_and_size,
                                   self_=self,
-                                  genomeChunkLength=genomeChunkLength,
+                                  genomeChunkLength=genome_chunk_length,
                                   region=self.region,
                                   numberOfProcessors=self.numberOfProcessors)
 
         # concatenate intermediary bedgraph files
-        outFile = open(out_file_name + ".bg", 'wb')
-        for tempFileName in res:
-            if tempFileName:
+        out_file = open(out_file_name + ".bg", 'wb')
+        for tempfilename in res:
+            if tempfilename:
                 # concatenate all intermediate tempfiles into one
                 # bedgraph file
-                shutil.copyfileobj(open(tempFileName, 'rb'), outFile)
-                os.remove(tempFileName)
+                shutil.copyfileobj(open(tempfilename, 'rb'), out_file)
+                os.remove(tempfilename)
 
-        bedGraphFile = outFile.name
-        outFile.close()
+        bedgraph_file = out_file.name
+        out_file.close()
         if format == 'bedgraph':
-            os.rename(bedGraphFile, out_file_name)
+            os.rename(bedgraph_file, out_file_name)
             if self.verbose:
-                print "output file: %s" % (out_file_name)
+                print "output file: {}".format(out_file_name)
         else:
             bedGraphToBigWig(
-                chromNamesAndSize, bedGraphFile, out_file_name, True)
+                chrom_names_and_size, bedgraph_file, out_file_name, True)
             if self.verbose:
-                print "output file: %s" % (out_file_name)
-            os.remove(bedGraphFile)
+                print "output file: {}".format(out_file_name)
+            os.remove(bedgraph_file)
 
     def writeBedGraph_worker(self, chrom, start, end,
                              func_to_call, func_args, smooth_length=0,
@@ -239,27 +233,27 @@ class WriteBedGraph(cr.CountReadsPerBin):
                             "than end position ({1})".format(start, end))
 
         coverage = []
-        bamHandlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
-        for bam in bamHandlers:
+        bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
+        for bam in bam_handlers:
             coverage.append(
                 self.get_coverage_of_region(bam, chrom, start, end, self.binLength))
             bam.close()
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
-        previousValue = None
+        previous_value = None
 
-        lengthCoverage = len(coverage[0])
-        for tileIndex in xrange(lengthCoverage):
+        length_coverage = len(coverage[0])
+        for tileIndex in xrange(length_coverage):
 
             tileCoverage = []
             for index in range(len(self.bamFilesList)):
                 if smooth_length > 0:
-                    vectorStart, vectorEnd = self.getSmoothRange(tileIndex,
+                    vector_start, vector_end = self.getSmoothRange(tileIndex,
                                                                 self.binLength,
                                                                 smooth_length,
-                                                                lengthCoverage)
+                                                                length_coverage)
                     tileCoverage.append(
-                        np.mean(coverage[index][vectorStart:vectorEnd]))
+                        np.mean(coverage[index][vector_start:vector_end]))
                 else:
                     tileCoverage.append(coverage[index][tileIndex])
 
@@ -276,31 +270,31 @@ class WriteBedGraph(cr.CountReadsPerBin):
                                                      writeEnd, value) )
             """
 
-            if previousValue is None:
+            if previous_value is None:
                 writeStart = start + tileIndex * self.binLength
                 writeEnd = min(writeStart + self.binLength, end)
-                previousValue = value
+                previous_value = value
 
-            elif previousValue == value:
+            elif previous_value == value:
                 writeEnd = min(writeEnd + self.binLength, end)
 
-            elif previousValue != value:
-                if not np.isnan(previousValue):
+            elif previous_value != value:
+                if not np.isnan(previous_value):
                     _file.write(
                         "{}\t{}\t{}\t{:.2f}\n".format(chrom, writeStart,
-                                                      writeEnd, previousValue))
-                previousValue = value
+                                                      writeEnd, previous_value))
+                previous_value = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + self.binLength, end)
 
         # write remaining value if not a nan
-        if previousValue and writeStart != end and not np.isnan(previousValue):
+        if previous_value and writeStart != end and not np.isnan(previous_value):
             _file.write("%s\t%d\t%d\t%.1f\n" % (chrom, writeStart,
-                                                end, previousValue))
+                                                end, previous_value))
 
-        tempFileName = _file.name
+        tempfilename = _file.name
         _file.close()
-        return(tempFileName)
+        return tempfilename
 
 
 def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
@@ -323,7 +317,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
         _file2.write("{}\t{}\n".format(chrom, size))
     _file2.close()
 
-    chrSizesFileName = _file2.name
+    chr_sizes_filename = _file2.name
 
     # check if the file is empty
     if os.stat(bedGraphPath).st_size < 10:
@@ -337,22 +331,21 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
         sort_cmd = cfg.config.get('external_tools', 'sort')
         # temporary file to store sorted bedgraph file
         _file = NamedTemporaryFile(delete=False)
-        tempFileName1 = _file.name
-        system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd,
-                                                bedGraphPath, tempFileName1))
-        bedGraphPath = tempFileName1
+        tempfilename1 = _file.name
+        system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd, bedGraphPath, tempfilename1))
+        bedGraphPath = tempfilename1
 
     bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
     system("{} {} {} {}".format(bedgraph_to_bigwig,
-                                bedGraphPath, chrSizesFileName, bigWigPath))
+                                bedGraphPath, chr_sizes_filename, bigWigPath))
 
     if sort:
-        remove(tempFileName1)
+        remove(tempfilename1)
 
-    remove(chrSizesFileName)
+    remove(chr_sizes_filename)
 
 
-def getGenomeChunkLength(bamHandlers, tileSize):
+def getGenomeChunkLength(bamHandlers, tile_size):
     """
     Tries to estimate the length of the genome sent to the workers
     based on the density of reads per bam file and the number
@@ -371,24 +364,22 @@ def getGenomeChunkLength(bamHandlers, tileSize):
     genomeChunkLength = int(
         min(5e6, int(2e6 / (max_reads_per_bp * len(bamHandlers)))))
 
-    genomeChunkLength -= genomeChunkLength % tileSize
+    genomeChunkLength -= genomeChunkLength % tile_size
     return genomeChunkLength
 
 
-
-
-def scaleCoverage(tileCoverage, args):
+def scaleCoverage(tile_coverage, args):
     """
     tileCoverage should be an list with only one element
     """
-    return args['scaleFactor'] * tileCoverage[0]
+    return args['scaleFactor'] * tile_coverage[0]
 
 
-def ratio(tileCoverage, args):
+def ratio(tile_coverage, args):
     """
     tileCoverage should be an list of two elements
     """
-    return float(tileCoverage[0]) / tileCoverage[1]
+    return float(tile_coverage[0]) / tile_coverage[1]
 
 
 class Tester():
