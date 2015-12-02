@@ -36,9 +36,7 @@ detailed help:
            ' \n\n',
         parents=[basic_args, heatmap_parser])
 
-    args = parser.parse_args(args)
-
-    return args
+    return parser
 
 
 def plot_correlation_args():
@@ -136,27 +134,21 @@ def heatmap_options():
     heatmap.add_argument('--zMin', '-min',
                          default=None,
                          help='Minimum value for the heat map intensities. '
-                            'If not specified the value is set automatically',
+                              'If not specified the value is set automatically',
                          type=float)
 
     heatmap.add_argument('--zMax', '-max',
                          default=None,
                          help='Maximum value for the heat map intensities.'
-                            'If not specified the value is set automatically',
+                              'If not specified the value is set automatically',
                          type=float)
-
-    from matplotlib import cm
-    color_options = "', '".join([m for m in cm.datad
-                                 if not m.endswith('_r')])
 
     heatmap.add_argument(
         '--colorMap', default='jet',
         metavar='',
         help='Color map to use for the heatmap. Available values can be '
-            'seen here: '
-            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/ The available options are: \'' +
-        color_options + '\'')
+             'seen here: '
+             'http://matplotlib.org/examples/color/colormaps_reference.html')
 
     heatmap.add_argument('--plotNumbers',
                         help='If set, then the correlation number is plotted '
@@ -167,21 +159,23 @@ def heatmap_options():
     return parser
 
 
-def main(args):
+def main(args=None):
 
-    corr =  Correlation(args.corData,
-                        args.corMethod,
-                        labels=args.labels,
-                        remove_outliers=args.removeOutliers,
-                        log1p=None,
-                        skip_zeros=args.skipZeros)
+    args = parse_arguments().parse_args(args)
 
-    if args.corMethod=='pearson':
+    corr = Correlation(args.corData,
+                       args.corMethod,
+                       labels=args.labels,
+                       remove_outliers=args.removeOutliers,
+                       log1p=None,
+                       skip_zeros=args.skipZeros)
+
+    if args.corMethod == 'pearson':
         # test if there are outliers and write a message recommending the removal
         if len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0:
             sys.stderr.write("\nOutliers were detected in the data. Consider "
-                "using the --removeOutliers parameter to avoid a bias "
-                "in the pearson correlation.\n")
+                             "using the --removeOutliers parameter to avoid a bias "
+                             "in the pearson correlation.\n")
 
     if args.colorMap:
         try:
@@ -210,5 +204,4 @@ def main(args):
 
 
 if __name__ == "__main__":
-    ARGS = parse_arguments()
-    main(ARGS)
+    main()
