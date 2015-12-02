@@ -91,6 +91,7 @@ Tools for quality control
 
    tools/bamFingerPrint
    tools/bamCorrelate
+   tools/plotCorrelation
    tools/computeGCBias
 
 Tools to create tracks

@@ -201,7 +201,3 @@ def main(args=None):
                               plot_title=args.plotTitle,
                               image_format=args.plotFileFormat,
                               plot_numbers=args.plotNumbers)
-
-
-if __name__ == "__main__":
-    main()
