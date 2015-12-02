@@ -1,9 +1,8 @@
 deepTools overview
 ==================
 
-Here, you will find all the options available for the command line
-(almost all of them are also available in Galaxy, perhaps named slightly
-different).
+Here, you will find all command line options. They are also available in
+Galaxy (in a few cases with minor updates to their naming where needed).
 
 You can always see all available command-line options via --help:
 
@@ -38,7 +37,7 @@ Parameters to decrease the run time
 -  ``numberOfProcessors``
 -  ``region`` - in case you're testing whether a certain plot works and
    gives you the output you're hoping for, you can speed things up by
-   focusing on a certain genome region, e.g. chr4 or chr2:100000200000
+   focusing on a certain genome region, e.g. chr4 or chr2:100000-200000
 
 filtering BAMs while processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
