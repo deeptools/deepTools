@@ -96,7 +96,7 @@ def computeMatrixRequiredArgs(args=None):
                           metavar='File',
                           help='File name, in BED format, containing '
                           'the regions to plot.',
-                          type=argparse.FileType('r'),
+                          type=argparse.FileType('U'),
                           required=True)
     required.add_argument('--scoreFileName', '-S',
                           help='bigWig file(s) containing '
