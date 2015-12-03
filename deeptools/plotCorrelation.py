@@ -28,11 +28,11 @@ scatter plots. Further output files are optional.
 
 detailed help:
 
-  %(prog)s -h
+  plotCorrelation -h
 
 """,
-           epilog='example usages:\n%(prog)s '
-           '--results results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
+           epilog='example usages:\nplotCorrelation '
+           '-in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
            ' \n\n',
         parents=[basic_args, heatmap_parser])
 
