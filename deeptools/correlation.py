@@ -19,8 +19,8 @@ import os
 
 class Correlation:
     """
-    class to work with matrices 
-    having sample data 
+    class to work with matrices
+    having sample data
     to compute correlations, plot
     them and make scatter plots
     """
@@ -72,9 +72,9 @@ class Correlation:
         self.matrix = np.asarray(_ma['matrix'].tolist())
         if np.any(np.isnan(self.matrix)):
             num_nam = len(np.flatnonzero(np.isnan(self.matrix.flatten())))
-            sys.stderr.write("*Warning*. {} NaN values were found. They will be removed as well as the "
-                             "corresponding bins in other samples for the computation or coplottingons "
-                             "and for plotting\n".format(num_nam))
+            sys.stderr.write("*Warning*. {} NaN values were found. They will be removed along with the "
+                             "corresponding bins in other samples for the computation "
+                             "and plotting\n".format(num_nam))
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
 
@@ -354,7 +354,7 @@ class Correlation:
                         verticalalignment='center',
                         horizontalalignment='center',
                         fontsize=10, fontweight='bold',
-                        transform=ax.transAxes) 
+                        transform=ax.transAxes)
                 ax.set_axis_off()
                 continue
 
