@@ -50,7 +50,7 @@ To learn more about the specific parameters type:
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunk to the same length (bp) that is indicated by "
         "the user.",
-        usage='An example usage is:\n  %(prog)s -S '
+        usage='An example usage is:\n  computeMatrix -S '
         '<biwig file> -R <bed file> -b 1000\n \n')
 
 
@@ -61,11 +61,11 @@ To learn more about the specific parameters type:
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='reference-point')],
-        help="Reference-point refers to a position within the BED regions "
-        "(e.g start of region). In the reference-point, mode only those "
-        "genomic positions before (downstream) and/or after (upstream) the "
+        help="Reference-point refers to a position within a BED region "
+        "(e.g., the start of region). In this mode only those genomic"
+        "positions before (upstream) and/or after (downstream) of the "
         "reference point will be plotted.",
-        usage='An example usage is:\n  %(prog)s -S '
+        usage='An example usage is:\n  computeMatrix -S '
         '<biwig file> -R <bed file> -a 3000 -b 3000\n\ n')
 
     args = parser.parse_args(args)
@@ -226,9 +226,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortRegions',
                           help='Whether the output file should present the '
-                          'regions sorted. The default is to sort in '
-                          'descending order based on '
-                          'the mean value per region.',
+                          'regions sorted. The default is to not sort the regions.'
                           choices=["descend", "ascend", "no"],
                           default='no')
 
@@ -249,12 +247,11 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'and "std". The default is "mean".')
 
     optional.add_argument('--missingDataAsZero',
-                          help='[only for bigwig input] Set to "yes", if '
-                          'missing data should be indicated as zeros. Default '
-                          'is to ignore such cases which will be depicted as '
-                          'black areas in the heatmap. (see '
-                          '--missingDataColor argument of the heatmapper '
-                          'for additional options).',
+                          help='Set to "yes", if missing data should be '
+                          'indicated as zeros. The default is to ignore such '
+                          'cases, which will be depicted as black areas in '
+                          'the heatmap. (see the --missingDataColor argument '
+                          'of the heatmapper command for additional options).',
                           action='store_true')
 
     optional.add_argument('--skipZeros',
