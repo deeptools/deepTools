@@ -404,10 +404,7 @@ class Correlation:
             else:
                 ax.set_xticklabels([])
 
-            try:
-                ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
-            except:
-                import ipdb;ipdb.set_trace()
+            ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
             # downsample for plotting
     #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
     #        ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
