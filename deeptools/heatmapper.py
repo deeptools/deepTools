@@ -278,13 +278,15 @@ class heatmapper(object):
                         cov = heatmapper.coverageFromBam(
                             sc_handler, feature.chrom, zones,
                             parameters['bin size'],
-                            parameters['bin avg type'])
+                            parameters['bin avg type'],
+                            parameters['verbose'])
                     else:
                         cov = heatmapper.coverageFromBigWig(
                             sc_handler, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
-                            parameters['missing data as zero'])
+                            parameters['missing data as zero'],
+                            parameters['verbose'])
 
 
                     if feature.strand == "-":
@@ -419,7 +421,7 @@ class heatmapper(object):
             return 'chr%s' % chrom
 
     @staticmethod
-    def coverageFromBam(bamfile, chrom, zones, binSize, avgType):
+    def coverageFromBam(bamfile, chrom, zones, binSize, avgType, verbose=True):
         """
         currently this method is deactivated because is too slow.
         It is preferred to create a coverage bigiwig file from the
@@ -433,7 +435,7 @@ class heatmapper(object):
                     "Known chromosomes are: {}\n".format(chrom,
                                                          bamfile.references))
                 return None
-            else:
+            else if verbose :
                 sys.stderr.write("Warning: Your chromosome names do "
                                  "not match.\n Please check that the "
                                  "chromosome names in your BED "
@@ -461,7 +463,7 @@ class heatmapper(object):
 
     @staticmethod
     def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType,
-                           nansAsZeros=False):
+                           nansAsZeros=False, verbose=True):
 
         """
         uses bigwig file reader from bx-python
@@ -520,7 +522,7 @@ class heatmapper(object):
                                      zones[-1][1])
             # test again if with the altered chromosome name
             # the bigwig returns something.
-            if bw_array is None:
+            if bw_array is None and verbose:
                 sys.stderr.write("Warning: Your chromosome names do "
                                  "not match.\nPlease check that the "
                                  "chromosome names in your BED "
