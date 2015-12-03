@@ -1,6 +1,8 @@
 ======================================================================
 deepTools
 ======================================================================
+[![Build Status](https://travis-ci.org/fidelram/deepTools.svg?branch=devon_changes)](https://travis-ci.org/fidelram/deepTools)
+
 ### user-friendly tools for the normalization and visualization of deep-sequencing data
 
 deepTools addresses the challenge of handling the large amounts of data 
