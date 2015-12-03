@@ -596,7 +596,7 @@ class CountReadsPerBin(object):
             fragmentStart = fragmentCenter - read.alen / 2
             fragmentEnd = fragmentStart + read.alen
 
-        assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
+        assert fragmentStart > fragmentEnd, "fragment start greater than fragment " \
                                             "end for read {}".format(read.query_name)
         return [(fragmentStart, fragmentEnd)]
 
@@ -703,5 +703,3 @@ class Tester(object):
         else:  # by default a forward paired read is returned
             read = [x for x in bam.fetch('chr2', 5000027, 5000028)][0]
         return read
-
-
