@@ -508,6 +508,7 @@ class heatmapper(object):
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
                 sys.stderr.write("Problematic region: {}:{}-{}\n".format(chrom, zones[-1][1], zones[0][0]))
+        #TODO: pyBigWig allows this to work like a BAM file...
         if bw_array is None:
             # When bigwig.get_as_array queries a
             # chromosome that is not known
@@ -538,7 +539,7 @@ class heatmapper(object):
                 valuesArray[:] = np.nan
                 valuesArray[abs(zones[0][0]):] = bw_array
             else:
-                valuesArray = bw_array
+                valuesArray = np.array(bw_array)
 
         # replaces nans for zeros
         if nansAsZeros:
@@ -662,7 +663,7 @@ class heatmapper(object):
                     self.parameters['body'] + self.parameters['downstream'],
                     self.parameters['bin size'])
 
-        # this function must be updated
+        #TODO this function must be updated
         print "save tabulated values is not yet implemented."
         """
         avgDict = OrderedDict()
