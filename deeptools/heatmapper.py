@@ -435,7 +435,7 @@ class heatmapper(object):
                     "Known chromosomes are: {}\n".format(chrom,
                                                          bamfile.references))
                 return None
-            else if verbose :
+            elif verbose :
                 sys.stderr.write("Warning: Your chromosome names do "
                                  "not match.\n Please check that the "
                                  "chromosome names in your BED "

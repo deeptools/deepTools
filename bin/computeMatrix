@@ -226,7 +226,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortRegions',
                           help='Whether the output file should present the '
-                          'regions sorted. The default is to not sort the regions.'
+                          'regions sorted. The default is to not sort the regions.',
                           choices=["descend", "ascend", "no"],
                           default='no')
 
