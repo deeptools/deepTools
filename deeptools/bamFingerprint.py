@@ -26,7 +26,7 @@ def parse_arguments(args=None):
         'At each sample position all reads '
         'overlapping a window (bin) of '
         'specified length are counted. '
-        'This counts are then sorted '
+        'These counts are then sorted '
         'and the cumulative sum plotted ',
         conflict_handler='resolve',
         usage='An example usage is: %(prog)s -b treatment.bam control.bam '
@@ -126,7 +126,7 @@ def get_output_args():
                        help='File name of the output figure. The file '
                        'ending  will be used to determine the image '
                        'format. The available options are: "png", "emf", '
-                       '"eps", "pdf" and "svg", e. g. fingerprint.png.',
+                       '"eps", "pdf" and "svg", e.g. : fingerprint.png.',
                        metavar='',
                        type=argparse.FileType('w'),
                        required=True)
@@ -163,7 +163,7 @@ def main(args=None):
         sys.stderr.write(
             "\nNo reads were found in {} regions sampled. Check that the\n"
             "min mapping quality is not overly high and that the \n"
-            "chromosome names between bam files correspond.\n"
+            "chromosome names between bam files are consistant.\n"
             "\n".format(num_reads_per_bin.shape[0]))
         exit(1)
 
