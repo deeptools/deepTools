@@ -21,5 +21,5 @@ install:
   - python setup.py install
 
 # command to run tests
-script: nosetests --doctest-extension=.py
+script: nosetests --with-doctest --doctest-extension=.py
 sudo: false
