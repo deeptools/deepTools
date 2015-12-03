@@ -66,9 +66,15 @@ def mapReduce(staticArgs, func, chromSize,
         bed_interval_tree = BED_to_interval_tree(bedFile)
         # modify chromSize such that it only contains
         # chromosomes that are in the bed file
-        chromSize = [x for x in chromSize if x[0] in bed_interval_tree.keys()]
-        if not len(chromSize):
-            exit("*ERROR*\nChromosome names in bed file do not match the chromosome names files to process")
+        if not region:
+            chromSize = [x for x in chromSize if x[0] in bed_interval_tree.keys()]
+            if not len(chromSize):
+                exit("*ERROR*\nChromosome names in bed file do not match the chromosome names files to process")
+        else:
+            if chromSize[0][0] not in bed_interval_tree.keys() or \
+               len(bed_interval_tree[chromSize[0][0]].find(regionStart, regionEnd)) == 0 :
+                exit("*ERROR*\nThe specified region {} does not contain any of the "
+                     "intervals in the bed file".format(region))
     TASKS = []
     # iterate over all chromosomes
     for chrom, size in chromSize:
