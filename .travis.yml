@@ -18,6 +18,8 @@ before_install:
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose
   - conda install -c https://conda.anaconda.org/cgat pysam
+  - pip install pyBigWig
+  - pip install bx-python
   - python setup.py install
 
 # command to run tests
