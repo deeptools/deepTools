@@ -63,13 +63,25 @@ class Correlation:
         """
         loads a matrix file saved using the numpy
         savez method. Two keys are expected:
-        'matrix' and 'labels'
+        'matrix' and 'labels'. The matrix should
+        contain one sample per row
         """
-        #load data to correlate
+
         _ma = np.load(matrix_file)
-        # matrix:  cols to  samples
-        self.matrix  = np.asarray(_ma['matrix'].tolist())
+        # matrix:  cols correspond to  samples
+        self.matrix = np.asarray(_ma['matrix'].tolist())
+        if np.any(np.isnan(self.matrix)):
+            num_nam = len(np.flatnonzero(np.isnan(self.matrix.flatten())))
+            sys.stderr.write("*Warning*. {} NaN values were found. They will be removed as well as the "
+                             "corresponding bins in other samples for the computation or coplottingons "
+                             "and for plotting\n".format(num_nam))
+
+            self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
+
         self.labels = _ma['labels']
+
+        assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
+                                                         "to length of matrix samples"
 
 
     @staticmethod
@@ -155,8 +167,29 @@ class Correlation:
 
     def compute_correlation(self):
         """
-        computes spearman of pearson
+        computes spearman or pearson
         correlation for the samples in the matrix
+
+        The matrix should contain the values of each sample per column
+        that's why the transpose is used.
+        >>> matrix = np.array([[1, 2, 3, np.nan],
+        ...                    [1, 2, 3, 4],
+        ...                    [6, 4, 3, 1]]).T
+        >>> np.savez_compressed("/tmp/test_matrix.npz", matrix=matrix, labels=['a', 'b', 'c'])
+
+        >>> c = Correlation("/tmp/test_matrix.npz", corr_method='pearson')
+
+        the results should be  as in R
+        >>> c.compute_correlation().filled(np.nan)
+        array([[ 1.        ,  1.        , -0.98198051],
+               [ 1.        ,  1.        , -0.98198051],
+               [-0.98198051, -0.98198051,  1.        ]])
+        >>> c.corr_method = 'spearman'
+        >>> c.corr_matrix = None
+        >>> c.compute_correlation()
+        array([[ 1.,  1., -1.],
+               [ 1.,  1., -1.],
+               [-1., -1.,  1.]])
         """
         if self.corr_matrix is not None:
             return self.corr_matrix
@@ -165,7 +198,7 @@ class Correlation:
         # initialize correlation matrix
 
         if self.corr_method == 'pearson':
-            self.corr_matrix = np.ma.corrcoef(np.ma.masked_invalid(self.matrix.T), allow_masked=True)
+            self.corr_matrix = np.ma.corrcoef(self.matrix.T, allow_masked=True)
 
         else:
             corr_matrix = np.zeros((num_samples, num_samples), dtype='float')
@@ -370,7 +403,11 @@ class Correlation:
                     direction='out')
             else:
                 ax.set_xticklabels([])
-            ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
+
+            try:
+                ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
+            except:
+                import ipdb;ipdb.set_trace()
             # downsample for plotting
     #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
     #        ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
