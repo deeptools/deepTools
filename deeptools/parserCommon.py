@@ -249,11 +249,11 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
 
-    output.add_argument('--outFileNameData',
-                        help='File name to save the data '
-                        'underlying data for the average profile, e.g. '
-                        'myProfile.tab.',
-                        type=argparse.FileType('w'))
+    #output.add_argument('--outFileNameData',
+    #                    help='File name to save the data '
+    #                    'underlying data for the average profile, e.g. '
+    #                    'myProfile.tab.',
+    #                    type=argparse.FileType('w'))
 
     output.add_argument(
         '--outFileSortedRegions',
@@ -532,7 +532,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                    'center-right',
                                    'none'
                                    ],
-                          help='Location for the legend in the summary plot')
+                          help='Location for the legend in the summary plot.'
+                               'Note that "none" does not work for the profiler.')
 
     optional.add_argument('--perGroup',
                           help='The default is to combine all group '
