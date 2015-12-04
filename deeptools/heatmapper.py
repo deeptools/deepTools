@@ -99,13 +99,20 @@ class heatmapper(object):
 
         # merge all the submatrices into matrix
         matrix = np.concatenate([r[0] for r in res], axis=0)
+        regions = []
+        regions_no_score = 0
+        for idx in range(len(res)):
+            if len(res[idx][1]):
+                regions.extend(res[idx][1])
+                regions_no_score += res[idx][2]
+        group_boundaries[1] = len(regions)
+
         # mask invalid (nan) values
         matrix = np.ma.masked_invalid(matrix)
 
         assert matrix.shape[0] == len(regions), \
             "matrix length does not match regions length"
 
-        regions_no_score = sum([r[2] for r in res])
         if len(regions) == 0:
             sys.stderr.write(
                 "\nERROR: BED file does not contain any valid regions. "
