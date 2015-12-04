@@ -197,7 +197,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               choices=['TSS', 'TES', 'center'],
                               help='The reference point for the plotting '
                               'could be either the region start (TSS), the '
-                              'region end (TES) or the center of the region. ')
+                              'region end (TES) or the center of the region. '
+                              'Note that regardless of what you specify '
+                              'heatmapper will default to using "TSS" as the '
+                              'label.')
 
         # set region body length to zero for reference point mode
         optional.add_argument('--regionBodyLength', help=argparse.SUPPRESS,
