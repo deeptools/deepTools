@@ -34,7 +34,7 @@ def read_options():
                             'Length of the average fragment size. Reads will '
                             'be extended to match this length unless they are '
                             'paired-end, in which case they will be extended to '
-                            'match the fragment length. If this value is set to '
+                            'match the fragment length. If this value is set '
                             'between 1 and the read length, the read will not be '
                             'extended. *NOTE*: If the BAM files contain mated and '
                             'unmated paired-end reads, unmated reads will be '
@@ -48,7 +48,7 @@ def read_options():
                             '*each* read mate is extended. This can be modified using'
                             'the sam flags (see samFlagInclude and samFlagExclude '
                             'options) to keep only the first or the second mate. Mate '
-                            'reads that are in different chromosomes or that are to far'
+                            'reads that are in different chromosomes or that are to far '
                             'apart are extended to the given --fragmentLength',
                        action='store_true')
 
@@ -72,7 +72,7 @@ def read_options():
                        help='By adding this option reads are centered with '
                        'respect to the fragment length. For paired-end data '
                        'the read is centered at the fragment length defined '
-                       'by the two fragment ends. For single-end data, the '
+                       'by the two ends of the fragment. For single-end data, the '
                        'given fragment length is used. This option is '
                        'useful to get a sharper signal around enriched '
                        'regions.',
