@@ -120,12 +120,13 @@ def computeMatrixOutputArgs(args=None):
                         'needed by the "heatmapper" and "profiler" tools.',
                         type=writableFile,
                         required=True)
-    output.add_argument('--outFileNameData',
-                        help='Name to save the averages per matrix '
-                        'column into a text file. This corresponds to '
-                        'the underlying data used to '
-                        'plot a summary profile. Example: myProfile.tab',
-                        type=argparse.FileType('w'))
+    #TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
+    #output.add_argument('--outFileNameData',
+    #                    help='Name to save the averages per matrix '
+    #                    'column into a text file. This corresponds to '
+    #                    'the underlying data used to '
+    #                    'plot a summary profile. Example: myProfile.tab',
+    #                    type=argparse.FileType('w'))
 
     output.add_argument('--outFileNameMatrix',
                         help='If this option is given, then the matrix '
@@ -366,8 +367,9 @@ def main(args):
     if args.outFileNameMatrix:
         hm.saveMatrixValues(args.outFileNameMatrix)
 
-    if args.outFileNameData:
-        hm.saveTabulatedValues(args.outFileNameData)
+    #TODO This isn't implemented
+    #if args.outFileNameData:
+    #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.saveBED(args.outFileSortedRegions)
