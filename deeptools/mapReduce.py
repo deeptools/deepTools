@@ -78,8 +78,9 @@ def mapReduce(staticArgs, func, chromSize,
                 exit("*ERROR*\nThe specified region {} does not contain any of the "
                      "intervals in the bed file".format(region))
             # the user region has to be extended, otherwise if a bed interval ends after the region is not counted
-            if bed_in_region[-1].end > region_end:
-                chromSize[0][1] = bed_in_region[-1].end
+            # since the user region has been already added to the chromSize, the chrom size is extended instead.
+            if bed_in_region[-1].end > chromSize[0][1]:
+                chromSize[0] = (chromSize[0][0], bed_in_region[-1].end)
 
     TASKS = []
     # iterate over all chromosomes
