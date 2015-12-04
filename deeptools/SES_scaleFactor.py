@@ -83,8 +83,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
     sizeFactorBasedOnMappedReads = np.array(mappedReads, dtype='float64')
 
-    sizeFactorBasedOnMappedReads = \
-        sizeFactorBasedOnMappedReads.min() / sizeFactorBasedOnMappedReads
+    sizeFactorBasedOnMappedReads = sizeFactorBasedOnMappedReads.min() / sizeFactorBasedOnMappedReads
 
     cr = countR.CountReadsPerBin(bamFilesList,
                                  binLength=binLength,

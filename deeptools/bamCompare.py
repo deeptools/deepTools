@@ -225,6 +225,8 @@ def process_args(args=None):
                           args.binSize)
         args.smoothLength = None
 
+    if not args.ignoreForNormalization:
+        args.ignoreForNormalization = []
     return args
 
 

@@ -2,6 +2,7 @@
 #-*- coding: utf-8 -*-
 
 import argparse
+import sys
 
 from deeptools.SES_scaleFactor import estimateScaleFactor
 from deeptools.parserCommon import numberOfProcessors
@@ -80,8 +81,12 @@ def parseArguments(args=None):
                         default="max/2",
                         required=False)
 
+    parser.add_argument('--verbose', '-v',
+                         help='Set to see processing messages.',
+                         action='store_true')
+
     parser.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                         version='%(prog)s {}'.format(__version__))
 
     args=parser.parse_args(args)
     if args.ignoreForNormalization:
@@ -101,12 +106,13 @@ def main(args):
         print "SES method to stimate scale factors only works for two samples"
         exit(0)
 
+    sys.stderr.write("{:,} number of samples will be computed.\n".format(args.numberOfSamples))
     sizeFactorsDict = estimateScaleFactor(args.bamfiles, args.sampleWindowLength, 
-                                          args.numberOfSamples, args.fragmentLength,
+                                          args.numberOfSamples,
                                           args.normalizationLength,
                                           numberOfProcessors=args.numberOfProcessors,
                                           chrsToSkip=args.ignoreForNormalization,
-                                          verbose=True )
+                                          verbose=args.verbose)
 
     for k, v in sizeFactorsDict.iteritems():
          print "{}: {}".format(k, v)
