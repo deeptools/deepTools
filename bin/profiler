@@ -236,7 +236,14 @@ def plotProfile(hm, outFileName,
                   frameon=False, markerscale=0.5)
         """
 
-        ax.set_ylim(yMin, yMax)
+        lims = ax.get_ylim()
+        if yMin is not None: 
+            lims = (yMin, lims[1])
+        if yMax is not None:
+            lims = (lims[0], yMax)
+        if lims[0] >= lims[1]:
+            lims = (lims[0], lims[0]+1)
+        ax.set_ylim(lims)
 
         ax_list.append(ax)
 
