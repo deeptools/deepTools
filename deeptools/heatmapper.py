@@ -386,10 +386,12 @@ class heatmapper(object):
             # region is set to 0
             if zone_start == zone_end:
                 continue
-
-            (posArray, stepSize) = np.linspace(zone_start, zone_end, num_bins,
-                                               endpoint=False,
-                                               retstep=True)
+            if num_bins == 1:
+                posArray, stepSize = zone_start, zone_end - zone_start
+            else:
+                (posArray, stepSize) = np.linspace(zone_start, zone_end, num_bins,
+                                                   endpoint=False,
+                                                   retstep=True)
             stepSize = np.ceil(stepSize)
 
             for pos in np.floor(posArray):
