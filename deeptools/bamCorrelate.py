@@ -229,7 +229,6 @@ def main(args=None):
              matrix=num_reads_per_bin,
              labels=args.labels)
 
-
     if args.outRawCounts:
         # append to the generated file the
         # labels

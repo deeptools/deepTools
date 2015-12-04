@@ -607,10 +607,30 @@ class CountReadsPerBin(object):
         if not self.extendPairedEnds:
             return read.get_blocks()
 
+        def is_proper_pair():
+            """
+            Checks if a read is proper pair meaning that both mates are facing each other and are in
+            the same chromosome and are not to far away. The sam flag for proper pair can not
+            always be trusted.
+            :return: bool
+            """
+            if not read.is_proper_pair:
+                return False
+            if read.reference_id != read.next_reference_id:
+                return False
+            if self.maxPairedFragmentLength > abs(read.template_length) > 0:
+                return False
+            # check that the mates face each other (inward)
+            if read.reference_start < read.next_reference_start and not read.is_reverse and read.mate_is_reverse:
+                return True
+            if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
+                return True
+            return False
+
         if self.extendPairedEnds:
 
-            if read.is_paired and read.is_proper_pair and \
-                self.maxPairedFragmentLength > abs(read.tlen) > 0:
+            if is_proper_pair():
+
                 if read.is_reverse:
                     fragmentStart = read.next_reference_start
                     fragmentEnd = read.reference_end
@@ -618,7 +638,7 @@ class CountReadsPerBin(object):
                     fragmentStart = read.reference_start
                     # the end of the fragment is defined as
                     # the start of the forward read plus the insert length
-                    fragmentEnd = read.reference_start + abs(read.tlen)
+                    fragmentEnd = read.reference_start + abs(read.template_length)
 
             elif self.defaultFragmentLength == 'read length':
                 return read.get_blocks()
