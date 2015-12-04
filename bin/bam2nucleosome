@@ -13,9 +13,9 @@ debug = 0
 def parseArguments(args=None):
 
     parentParser = parserCommon.getParentArgParse()
-    bamParser = parserCommon.bam()
+    #bamParser = parserCommon.bam()
     outputParser = parserCommon.output()
-    parser = argparse.ArgumentParser(parents=[parentParser, bamParser, outputParser],
+    parser = argparse.ArgumentParser(parents=[parentParser, outputParser], #bamParser,
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description = 'Given a BAM file, generates a coverage bigwig file. The way the method works is by first calculating all the number of  reads (either extended or not) that overlap each tile (or bin) in the genome.  Tiles with counts equal to zero are skipped, i.e. not added to the output file.\nThe resulting read counts can be normalized using a given scaling factor, using the RPKM formula or normalizing to get a 1x depth of coverage.\n')
 
@@ -59,15 +59,15 @@ def scaleFactor(string):
     return scaleFactors
 
 
-def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True, 
+def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True,
                       maxPairedFragmentLength=None):
-    
+
     """
     Takes a proper pair fragment of high quaility and limited
     to a certain length and outputs the center
     """
     fragmentStart = fragmentEnd = None
-    
+
     if not maxPairedFragmentLength:
         maxPairedFragmentLength = 2*defaultFragmentLength if defaultFragmentLength > 0 else 1000;
 
@@ -78,11 +78,11 @@ def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True,
         if read.tlen % 2 == 0:
             fragmentStart = read.pos + read.tlen/2 -1
             fragmentEnd   = fragmentStart + 2
-            
+
         else:
             fragmentStart = read.pos + read.tlen/2 - 1
             fragmentEnd   = fragmentStart + 3
-            
+
     return (fragmentStart, fragmentEnd)
 
 #######################################
@@ -104,7 +104,7 @@ def main(args):
 
     if not args.mappedReads:
         args.mappedReads = bamHandle.mapped
-    
+
     if args.normalizeTo1x:
         current_coverage = float(args.mappedReads * fragmentLength) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
@@ -141,7 +141,7 @@ def main(args):
     wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
             format=args.outFileFormat, smooth_length=args.smoothLength)
 
-    
+
 if __name__ == "__main__":
     args = parseArguments()
     main(args)
