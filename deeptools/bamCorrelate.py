@@ -212,7 +212,8 @@ def main(args=None):
         samFlag_include=args.samFlagInclude,
         samFlag_exclude=args.samFlagExclude,
         stepSize=stepsize,
-        zerosToNans=False)
+        zerosToNans=False,
+        out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = c.run()
 
@@ -224,26 +225,22 @@ def main(args=None):
              "If using --region please check that this "
              "region is covered by reads.\n")
 
-    if args.outRawCounts:
-        if bed_regions:
-            bed_regions.seek(0)
-            reg_list = bed_regions.readlines()
-            args.outRawCounts.write("#'chr'\t'start'\t'end'\t")
-            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-            fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
-            for idx, row in enumerate(num_reads_per_bin):
-                args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].strip().split("\t")[0:3]))
-                args.outRawCounts.write(fmt % tuple(row))
-
-        else:
-            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-            fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
-            for row in num_reads_per_bin:
-                args.outRawCounts.write(fmt % tuple(row))
-
     np.savez_compressed(args.outFileName,
              matrix=num_reads_per_bin,
              labels=args.labels)
+
+
+    if args.outRawCounts:
+        # append to the generated file the
+        # labels
+        header = "#'chr'\t'start'\t'end'\t"
+        header += "'" + "'\t'".join(args.labels) + "'\n"
+        #import ipdb;ipdb.set_trace()
+        with open(args.outRawCounts.name, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header + content)
+    args.outRawCounts.close()
 
 
 if __name__ == "__main__":

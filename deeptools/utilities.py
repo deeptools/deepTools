@@ -77,59 +77,65 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
 
     Hopefully, only _random and chrM are not common.
     """
-    outMessage = []
-    commonChr = set( [ "{}|{}".format(bamFileHandlers[0].references[i], bamFileHandlers[0].lengths[i]) for i in range(0,len(bamFileHandlers[0].references)) ] )
-    
-    maxRefLen = len(commonChr)
+    def get_chrom_and_size(bam_handler):
+        """
+        Reads the chromosome/scaffold name and the length from
+        the bam file and returns a list of (chromname, size) tuples
+        :param bam_handler:
+        :return: list of (chrom, size) tuples
+        """
+        return [(bam_handler.references[i], bam_handler.lengths[i])
+                for i in range(0,len(bam_handler.references))]
+
+    def print_chr_names_and_size(chr_set):
+        sys.stderr.write("chromosome\tlength\n")
+        for name, size in chr_set:
+            sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
+
+    common_chr = set(get_chrom_and_size(bamFileHandlers[0]))
+    non_common_chr = set()
+
     for j in range(1, len(bamFileHandlers)):
-       refLen = len(bamFileHandlers[j].references)
-       commonChr = commonChr &  set ([ "{}|{}".format(bamFileHandlers[j].references[i], bamFileHandlers[j].lengths[i]) for i in range(0,refLen) ] )
-       if refLen > maxRefLen:
-          maxRefLen = refLen
-       
-    if len(commonChr) != maxRefLen:
-        outMessage.append( "\nReferenced chromosome names in the given bam files differ.\n\n" )
-        for i in range(0, len(bamFileHandlers)):
-           outMessage.append( "{0:>15}\t{1:>10}".format("chr names bam {}".format(i+1),"chr length") )
-        outMessage.append( "\n\n" )
+        _names_and_size = set(get_chrom_and_size(bamFileHandlers[j]))
+        if len(common_chr & _names_and_size) == 0:
+            #  try to add remove 'chr' from the chromosome name
+            _corr_names_size = set()
+            for chrom_name, size in _names_and_size:
+                if chrom_name.startswith('chr'):
+                    _corr_names_size.add((chrom_name[3:], size))
+                else:
+                    _corr_names_size.add(('chr' + chrom_name, size))
+            if len(common_chr & _corr_names_size) == 0:
+                message = "No common chromosomes found. Are the bam files files " \
+                          "from the same species and same assemblies?\n"
+                sys.stderr.write(message)
+                print_chr_names_and_size(common_chr)
 
-        # get the largest number of references (i.e. chromosome names)
-        # from the list of bam files
-        # maxI = max( map( (lambda x: len(x.references)), bamFileHandlers ) )
-        maxI = max( [ len(x.references) for x in bamFileHandlers ] )
-        for i in range(0, maxI):
-           for j in range(0, len(bamFileHandlers)):
-              try:
-                 outMessage.append( "{0:>15}\t{1:>10}".format(bamFileHandlers[j].references[i], 
-                                                 bamFileHandlers[j].lengths[i]) )
-              except:
-                 outMessage.append( "{0:^15}\t{1:^10}\t".format("--", "--") )
-           outMessage.append( "\n" ) # force a new line
+                sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
+                                 "lengths from file\n{}\n".format(bamFileHandlers.name))
+                print_chr_names_and_size(_names_and_size)
+                exit(1)
+            else:
+                _names_and_size = _corr_names_size
 
-    if len(commonChr) == 0:
-       outMessage.append( "No common chromosomes found." )
-       outMessage.append( "\nAre these bam files from different species or different assemblies?\n" )
-       sys.stderr.write("".join(outMessage) )
-       exit(1)
+        non_common_chr |= common_chr ^ _names_and_size
+        common_chr = common_chr & _names_and_size
+
+    if len(non_common_chr) > 0:
+        sys.stderr.write("\nThe following chromosome names did not match between the the bigwig files\n")
+        print_chr_names_and_size(non_common_chr)
 
     # the common chromosomes has to be sorted as in the original
     # bam files
-    chrSizes = []
-    for i in range(0, len(bamFileHandlers[0].references)):
-        if "{}|{}".format(bamFileHandlers[0].references[i],
-                          bamFileHandlers[0].lengths[i]) in commonChr:
-
-            chrSizes.append((bamFileHandlers[0].references[i],
-                             bamFileHandlers[0].lengths[i]))
-
-    outMessage.append("\nUsing the following set of common chromosome "
-                      "names and lengths:\n")
-    for chrSize in chrSizes:
-        outMessage.append("{0:>15}\t{1:>10}\n".format(chrSize[0], chrSize[1]))
+    chr_sizes = []
+    for tuple in get_chrom_and_size(bamFileHandlers[0]):
+        if tuple in common_chr:
+            chr_sizes.append(tuple)
 
     if verbose:
         sys.stderr.write("".join(outMessage))
-    return chrSizes
+
+    return chr_sizes, non_common_chr
 
 
 def copyFileInMemory(filePath, suffix=''):

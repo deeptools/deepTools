@@ -40,7 +40,8 @@ def test_bam_compare_arguments():
     """
     outfile = '/tmp/test_file.bg'
     args = "--bamfile1 {} --bamfile2 {} " \
-           "-o {} --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
+           "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
+
     bam_comp.main(args)
 
     resp =open(outfile, 'r').readlines()

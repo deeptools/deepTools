@@ -135,7 +135,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         genome_chunk_length = getGenomeChunkLength(bam_handlers, self.binLength)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chrom_names_and_size = getCommonChrNames(bam_handlers, verbose=False)
+        chrom_names_and_size, non_common = getCommonChrNames(bam_handlers, verbose=False)
 
         if self.region:
             # in case a region is used, append the tilesize

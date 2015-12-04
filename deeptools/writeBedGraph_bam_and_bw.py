@@ -234,7 +234,7 @@ def writeBedGraph(
         genomeChunkLength = getGenomeChunkLength(bamHandlers, tileSize)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chromNamesAndSize = getCommonChrNames(bamHandlers, verbose=False)
+        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=False)
     else:
         genomeChunkLength = int(10e6)
         bigwigs = [fileName for fileName,

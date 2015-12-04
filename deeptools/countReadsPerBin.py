@@ -1,8 +1,12 @@
+import shutil
+import os
+import time
+import sys
+import multiprocessing
 import numpy as np
-import time, sys, multiprocessing
 
 # deepTools packages
-from utilities import getCommonChrNames
+import deeptools.utilities
 import bamHandler
 import mapReduce
 
@@ -100,6 +104,8 @@ class CountReadsPerBin(object):
     zerosToNans : bool
         If true, zero values encountered are transformed to Nans. Default false.
 
+    out_file_for_raw_data : str
+        File name to save the raw counts computed
 
     Returns
     -------
@@ -138,7 +144,8 @@ class CountReadsPerBin(object):
                  samFlag_include=None,
                  samFlag_exclude=None,
                  zerosToNans=False,
-                 smoothLength=0):
+                 smoothLength=0,
+                 out_file_for_raw_data=None):
 
 
         self.bamFilesList = bamFilesList
@@ -160,6 +167,13 @@ class CountReadsPerBin(object):
         self.zerosToNans = zerosToNans
         self.smoothLength=smoothLength
 
+        if out_file_for_raw_data:
+            self.save_data = True
+            self.out_file_for_raw_data = out_file_for_raw_data
+        else:
+            self.save_data = False
+            self.out_file_for_raw_data = None
+
         # check that wither numberOfSamples or stepSize are set
         if numberOfSamples is None and stepSize is None and bedFile is None:
             raise ValueError("either stepSize, numberOfSamples or beFile has to be set")
@@ -176,7 +190,7 @@ class CountReadsPerBin(object):
         # the following values are empirical
 
         bamFilesHandlers = [bamHandler.openBam(x) for x in self.bamFilesList]
-        chromSizes = getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
+        chromSizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
 
         # skip chromosome in the list. This is usually for the
         # X chromosome which may have either one copy  in a male sample
@@ -207,7 +221,6 @@ class CountReadsPerBin(object):
         reads_per_bp = float(max_mapped) / genomeSize
         # chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
 
-
         chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
         [bam_h.close() for bam_h in bamFilesHandlers]
 
@@ -228,9 +241,22 @@ class CountReadsPerBin(object):
                                        region=self.region,
                                        numberOfProcessors=self.numberOfProcessors)
 
+        if self.out_file_for_raw_data:
+            if len(non_common):
+                sys.stderr.write("*Warning*\nThe resulting bed file does not contain information for "
+                                 "the chromosomes that were not common between the bigwig files\n")
+
+            # concatenate intermediary bedgraph files
+            for _values, tempFileName in imap_res:
+                if tempFileName:
+                    # concatenate all intermediate tempfiles into one
+                    shutil.copyfileobj(open(tempFileName, 'r'), self.out_file_for_raw_data)
+                    os.remove(tempFileName)
+
+            # self.out_file_for_raw_data.close()
 
         try:
-            num_reads_per_bin = np.concatenate(imap_res, axis=0)
+            num_reads_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
             return num_reads_per_bin
 
         except ValueError:
@@ -289,9 +315,12 @@ class CountReadsPerBin(object):
         The transpose is used to get better looking numbers. The first line
         corresponds to the number of reads per bin in the first bamfile.
 
-        >>> np.transpose(c.count_reads_in_region(test.chrom, 0, 200))
-        array([[ 0.,  0.,  1.,  1.],
-               [ 0.,  1.,  1.,  2.]])
+        >>> _array, __ = c.count_reads_in_region(test.chrom, 0, 200)
+        >>> _array
+        array([[ 0.,  0.],
+               [ 0.,  1.],
+               [ 1.,  1.],
+               [ 1.,  2.]])
 
         """
 
@@ -301,12 +330,12 @@ class CountReadsPerBin(object):
         if self.stepSize is None:
             raise ValueError("stepSize is not set!")
         # array to keep the read counts for the regions
-        subNum_reads_per_bin = []
+        subnum_reads_per_bin = []
 
         rows = 0
-        startTime = time.time()
+        start_time = time.time()
 
-        bamHandlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
+        bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
 
         regionsToConsider = []
         if bed_regions_list is not None:
@@ -318,23 +347,35 @@ class CountReadsPerBin(object):
                     break
                 regionsToConsider.append((chrom, i, i + self.binLength, self.binLength))
 
+        if self.save_data:
+            _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
+            _file_name = _file.name
+        else:
+            _file_name = ''
+
         for chrom, start, end, region_length in regionsToConsider:
             coverage_array = []
-            for bam in bamHandlers:
+            for bam in bam_handlers:
                 coverage_array.append(
                     self.get_coverage_of_region(bam, chrom, start, end, region_length)[0])
 
-            subNum_reads_per_bin.extend(coverage_array)
+            subnum_reads_per_bin.extend(coverage_array)
             rows += 1
+
+            if self.save_data:
+                _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
+                _file.write("\t".join(["{}".format(x) for x in coverage_array])+"\n")
 
         if self.verbose:
             endTime = time.time()
             print "%s countReadsInRegions_worker: processing %d " \
                   "(%.1f per sec) @ %s:%s-%s" % \
                   (multiprocessing.current_process().name,
-                   rows, rows / (endTime - startTime), chrom, start, end )
+                   rows, rows / (endTime - start_time), chrom, start, end )
+        if self.save_data:
+            _file.close()
 
-        return np.array(subNum_reads_per_bin).reshape(rows, len(self.bamFilesList))
+        return np.array(subnum_reads_per_bin).reshape(rows, len(self.bamFilesList)), _file_name
 
 
     def get_coverage_of_region(self, bamHandle, chrom, start, end, tileSize,
@@ -682,7 +723,8 @@ class Tester(object):
                                          ===============
                                                         ===============
         """
-        self.root = "./test/test_data/"
+        self.root= os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+        #self.root = "./test/test_data/"
         self.bamFile1 = self.root + "testA.bam"
         self.bamFile2 = self.root + "testB.bam"
         self.bamFile_PE = self.root + "test_paired2.bam"
