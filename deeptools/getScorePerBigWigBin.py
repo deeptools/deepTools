@@ -143,6 +143,7 @@ def getChromSizes(bigwigFilesList):
     # is installed and is executable.
 
     def print_chr_names_and_size(chr_set):
+        sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:
             sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
 
@@ -166,15 +167,18 @@ def getChromSizes(bigwigFilesList):
                 sys.stderr.write(message)
                 print_chr_names_and_size(common_chr)
 
-                sys.stderr.write("\nand the following is the list of the unmatched chromsome and chromosome\n"
+                sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
                                  "lengths from file\n{}\n".format(bw))
                 print_chr_names_and_size(_names_and_size)
                 exit(1)
+            else:
+                _names_and_size = _corr_names_size
 
-            non_common_chr |= common_chr ^ _corr_names_size
-            common_chr = common_chr & _corr_names_size
+        non_common_chr |= common_chr ^ _names_and_size
+        common_chr = common_chr & _names_and_size
+
     if len(non_common_chr) > 0:
-        sys.stderr.write("\nThe following chromsome names did not match between the the bigwig files\n")
+        sys.stderr.write("\nThe following chromosome names did not match between the the bigwig files\n")
         print_chr_names_and_size(non_common_chr)
 
     # get the list of common chromosome names and sizes

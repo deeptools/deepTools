@@ -44,7 +44,7 @@ class TestCountReadsPerBin(object):
 
     def test_count_reads_in_region(self):
         self.c.skipZeros = False
-        resp = self.c.count_reads_in_region(self.chrom, 0, 200)
+        resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200)
 
         nt.assert_equal(resp, np.array([[ 0,  0.],
                                         [ 0,  1.],
@@ -59,16 +59,15 @@ class TestCountReadsPerBin(object):
         self.c.skipZeros = False
         self.c.stepSize = 200
         self.c.binLength = 200
-        resp = self.c.count_reads_in_region(self.chrom, 0, 200)
+        resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200)
         nt.assert_equal(resp, np.array([[ 2, 4.]]))
-
 
     def test_countReadsInRegions_min_mapping_quality(self):
         # Test min mapping quality.
-        self.c.minMappingQuality=40
+        self.c.minMappingQuality = 40
         self.c.skipZeros = False
 
-        resp = self.c.count_reads_in_region(self. chrom, 0, 200)
+        resp, _ = self.c.count_reads_in_region(self. chrom, 0, 200)
         nt.assert_equal(resp, np.array([[ 0,  0,  0,  1.],
                                         [ 0,  0,  0,  1.]]).T)
     
@@ -77,7 +76,7 @@ class TestCountReadsPerBin(object):
         # Test ignore duplicates
         self.c.skipZeros = False
         self.c.ignoreDuplicates = True
-        resp = self.c.count_reads_in_region(self. chrom, 0, 200)
+        resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200)
 
         nt.assert_equal(resp, np.array([[ 0,  0,  1,  1.],
                                         [ 0,  1,  1,  1.]]).T)
@@ -86,10 +85,9 @@ class TestCountReadsPerBin(object):
         #Test bed regions:
         bed_regions = [(self. chrom, 10, 20), (self. chrom, 150, 160)]
         self.c.skipZeros = False
-        resp =self.c.count_reads_in_region(self. chrom, 0, 200, bed_regions_list=bed_regions)
+        resp, _ = self.c.count_reads_in_region(self. chrom, 0, 200, bed_regions_list=bed_regions)
         nt.assert_equal(resp, np.array([[ 0,  1.],
                                         [ 0,  2.]]).T)
-
 
     def test_get_coverage_of_region_sam_flag_include(self):
 
@@ -112,14 +110,12 @@ class TestCountReadsPerBin(object):
 
     def test_get_coverage_of_region_ignore_duplicates(self):
         self.c.ignoreDuplicates=True
-        resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile2),
-                                             '3R', 0, 200, 50)
+        resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile2), '3R', 0, 200, 50)
         nt.assert_array_equal(resp, np.array([0,   1,   1,   1.]))
 
         # check zero to nans
         self.c.zerosToNans = True
-        resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile2),
-                                             '3R', 0, 200, 50)
+        resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile2), '3R', 0, 200, 50)
         nt.assert_array_equal(resp, np.array([np.nan,   1,   1,   1.]))
 
     def test_get_coverage_of_region_splitted_read(self):
@@ -140,7 +136,7 @@ class TestCountReadsPerBin(object):
         step_size = 50
         bin_length = 25
         self.c.zerosToNans = True
-        resp = self.c.count_reads_in_region(self.chrom, 0, 200)
+        resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200)
 
         nt.assert_equal(resp, np.array([[ np.nan,  np.nan],
                                         [ np.nan,  1],
