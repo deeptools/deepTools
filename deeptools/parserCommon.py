@@ -433,14 +433,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'height is 25. The minimum value is '
                               '3 and the maximum is 100.',
                               type=float,
-                              default=22)
+                              default=28)
 
         optional.add_argument('--heatmapWidth',
-                              help='Width in cm. The default value is 7.5 '
+                              help='Width in cm. The default value is 4 '
                               'The minimum value is 1 and the '
                               'maximum is 100.',
                               type=float,
-                              default=5.5)
+                              default=4)
         optional.add_argument(
             '--whatToShow',
             help='The default is to include a summary or profile plot on top '
