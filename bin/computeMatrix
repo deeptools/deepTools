@@ -166,12 +166,16 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               help='Label shown in the plot for the start of '
                               'the region. Default is TSS (transcription '
                               'start site), but could be changed to anything, '
-                              'e.g. "peak start".'
-                              'Same for the --endLabel option. See below.')
+                              'e.g. "peak start". Note that this is only '
+                              'useful if you plan to plot the results yourself '
+                              'and not, for example, with heatmapper, which '
+                              'will override this.')
         optional.add_argument('--endLabel',
                               default='TES',
                               help='Label shown in the plot for the region '
-                              'end. Default is TES (transcription end site).')
+                              'end. Default is TES (transcription end site).'
+                              'See the --startLabel option for more '
+                              'information. ')
         optional.add_argument('--beforeRegionStartLength', '-b', '--upstream',
                               default=0,
                               type=int,
@@ -213,7 +217,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
         optional.add_argument('--nanAfterEnd',
                               action='store_true',
                               help='If set, any values after the region end '
-                              'are discarted. This is useful to visualize '
+                              'are discarded. This is useful to visualize '
                               'the region end when not using the '
                               'scale-regions mode and when the reference-'
                               'point is set to the TSS.')
@@ -227,7 +231,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortRegions',
                           help='Whether the output file should present the '
-                          'regions sorted. The default is to not sort the regions.',
+                          'regions sorted. The default is to not sort the regions.'
+                          ' Note that this is only useful if you plan to plot '
+                          'the results yourself and not, for example, with '
+                          'heatmapper, which will override this.',
                           choices=["descend", "ascend", "no"],
                           default='no')
 
