@@ -47,9 +47,14 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
                         edgecolor=f_color, lw=0.01)
 
     elif plot_type == 'overlapped_lines':
-        ax.patch.set_facecolor('black')
+        if type(color) is str and color == 'black':
+            ax.patch.set_facecolor('white')
+        elif type(color) is not str and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
+            ax.patch.set_facecolor('white')
+        else:
+            ax.patch.set_facecolor('black')
         for row in ma:
-            ax.plot(row, 'yellow', alpha=0.1)
+            ax.plot(row, color=color, alpha=0.1)
         x = np.arange(len(row))
     ax.set_xlim(0, max(x))
 

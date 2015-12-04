@@ -70,7 +70,7 @@ def parse_arguments(args=None):
 
 def plotProfile(hm, outFileName,
                 plotTitle='',
-                xAxislabel='', yAxislabel='',
+                yAxislabel='',
                 yMin=None, yMax=None,
                 averagetype='median',
                 referencePointLabel='TSS',
@@ -126,9 +126,13 @@ def plotProfile(hm, outFileName,
 
     if not color_list:
         cmap_plot = plt.get_cmap('jet')
-        color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
+        if numlines > 1:
+            #kmeans, so we need to color by cluster
+            color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
+        else :
+            color_list = cmap_plot(np.arange(numplots, dtype=float) / numplots)
     else:
-        if len(color_list) < numlines:
+        if (numlines > 1 and len(color_list) < numlines) or (numlines == 1 and len(color_list) < numplots) :
             sys.stderr.write("\nThe given list of colors is too small, "
                              "at least {} colors are needed\n".format(numlines))
             exit(1)
@@ -184,9 +188,13 @@ def plotProfile(hm, outFileName,
                 mat.append(np.__getattribute__(averagetype)(sub_matrix['matrix'],
                                                             axis=0))
             else:
+                if numlines > 1:
+                    coloridx = data_idx
+                else :
+                    coloridx = plot
                 plot_single(ax, sub_matrix['matrix'],
                             averagetype,
-                            color_list[data_idx],
+                            color_list[coloridx],
                             label,
                             plot_type=plotType)
 
@@ -278,7 +286,7 @@ def main(args):
     plotProfile(hm,
                 args.outFileName,
                 args.plotTitle,
-                args.xAxisLabel, args.yAxisLabel,
+                args.yAxisLabel,
                 args.yMin, args.yMax,
                 args.averageType,
                 args.refPointLabel,

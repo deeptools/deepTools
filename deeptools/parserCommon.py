@@ -333,8 +333,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'As in the case of '
             'fill, a semi-transparent color is used. The option '
             '"overlapped_lines" plots each region values, one on '
-            'top of the other; this option only works if '
-            '--onePlotPerGroup is set. The option "heatmap" plots a '
+            'top of the other. The option "heatmap" plots a '
             'summary heatmap.',
             choices=['lines', 'fill', 'se', 'std', 'overlapped_lines', 'heatmap'],
             default='lines')
@@ -415,10 +414,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument(
             '--colorNumber',
-            help='if --colorList is given, colorNumber controls the number of '
-            'transitions from one color to the other. If --colorNumber is set '
-            'to the same number of colors as in --colorList, then per each '
-            'color a discrete interval  is shown (i.e. no transitions)',
+            help='N.B., --colorList is required for an effect. This controls the '
+            'number of transitions from one color to the other. If --colorNumber is '
+            'the number of colors in --colorList then there will be no transitions '
+            'between the colors.',
             type=int,
             default=256)
 
@@ -453,6 +452,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "plot and heatmap", "heatmap only",
                      "colorbar only", "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
+        optional.add_argument('--xAxisLabel', '-x',
+                          default='gene distance (bp)',
+                          help='Description for the x-axis label. This does nothing in the profiler.')
 
     ## end elif
     optional.add_argument('--startLabel',
@@ -503,9 +505,6 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'the generated image. Leave blank for no title.',
                           default='')
 
-    optional.add_argument('--xAxisLabel', '-x',
-                          default='gene distance (bp)',
-                          help='Description for the x-axis label.')
     optional.add_argument('--yAxisLabel', '-y',
                           default='',
                           help='Description for the y-axis label for the '
