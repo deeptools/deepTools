@@ -122,7 +122,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         common_chr = common_chr & _names_and_size
 
     if len(non_common_chr) > 0:
-        sys.stderr.write("\nThe following chromosome names did not match between the the bigwig files\n")
+        sys.stderr.write("\nThe following chromosome names did not match between the the bam files\n")
         print_chr_names_and_size(non_common_chr)
 
     # the common chromosomes has to be sorted as in the original
@@ -131,9 +131,6 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
     for tuple in get_chrom_and_size(bamFileHandlers[0]):
         if tuple in common_chr:
             chr_sizes.append(tuple)
-
-    if verbose:
-        sys.stderr.write("".join(outMessage))
 
     return chr_sizes, non_common_chr
 
