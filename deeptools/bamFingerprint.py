@@ -44,8 +44,6 @@ def process_args(args=None):
         print "The number of does not match the number of bam files."
         exit(0)
 
-    args.extendPairedEnds = True if args.extendPairedEnds else False
-
     if not args.labels:
         args.labels = args.bamfiles
 
