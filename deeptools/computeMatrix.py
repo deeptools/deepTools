@@ -3,12 +3,15 @@
 
 import argparse
 import sys
+import os
+import os.path
+import shutil
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools import heatmapper
 from deeptools._version import __version__
 import deeptools.config as cfg
-
+import deeptools.utilities
 
 def parse_arguments(args=None):
     parser = \
@@ -77,8 +80,11 @@ def computeMatrixRequiredArgs(args=None):
     required.add_argument('--regionsFileName', '-R',
                           metavar='File',
                           help='File name, in BED format, containing '
-                          'the regions to plot.',
+                               'the regions to plot. If multiple bed files are given, each one is considered a '
+                               'group that can be plotted separately. Also, adding a "#" symbol in the bed file '
+                               'causes all the regions until the previous "#" to be considered one group.',
                           type=argparse.FileType('U'),
+                          nargs='+',
                           required=True)
     required.add_argument('--scoreFileName', '-S',
                           help='bigWig file(s) containing '
@@ -352,6 +358,26 @@ def main(args=None):
 
     args = process_args(args)
 
+    # concatenate intermediary bedgraph files
+    bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
+    if args.verbose:
+        print "temporary bed file {} created".format(bed_file.name)
+
+    if len(args.regionsFileName) > 1:
+        for bed in args.regionsFileName:
+            bed.close()
+            # concatenate all intermediate tempfiles into one
+            print "appending {} file".format(bed.name)
+            shutil.copyfileobj(open(bed.name, 'U'), bed_file)
+            # append hash and label based on the file name
+            label = os.path.basename(bed.name)
+            if label.endswith(".bed"):
+                label = label[:-4]
+            bed_file.write("# {}\n".format(label))
+        bed_file.seek(0)
+    else:
+        bed_file = args.regionsFileName[0]
+
     parameters = {'upstream': args.beforeRegionStartLength,
                   'downstream': args.afterRegionStartLength,
                   'body': args.regionBodyLength,
@@ -373,13 +399,13 @@ def main(args=None):
     hm = heatmapper.heatmapper()
 
     scores_file_list = [x.name for x in args.scoreFileName]
-    hm.computeMatrix(scores_file_list, args.regionsFileName,
-                     parameters, verbose=args.verbose)
+    hm.computeMatrix(scores_file_list, bed_file, parameters, verbose=args.verbose)
     if args.sortRegions != 'no':
-        hm.matrix.sort_groups(sort_using=args.sortUsing,
-                      sort_method=args.sortRegions)
+        hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
 
     hm.saveMatrix(args.outFileName)
+    bed_file.close()
+    #os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
         hm.saveMatrixValues(args.outFileNameMatrix)

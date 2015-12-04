@@ -61,8 +61,7 @@ class heatmapper(object):
                     parameters['upstream']))
             exit(1)
 
-        regions, group_labels, group_boundaries = \
-            self.getRegionsAndGroups(regions_file, verbose=verbose)
+        regions, group_labels, group_boundaries = self.getRegionsAndGroups(regions_file, verbose=verbose)
         group_len = np.diff(group_boundaries)
 
         # check if a given group is too small. Groups that
@@ -93,7 +92,7 @@ class heatmapper(object):
         else:
             res = map(compute_sub_matrix_wrapper, mp_args)
 
-        # each worker in the pools returns a tuple containing
+        # each worker in the pool returns a tuple containing
         # the submatrix data and the regions that correspond to the
         # submatrix
 
@@ -105,8 +104,8 @@ class heatmapper(object):
             if len(res[idx][1]):
                 regions.extend(res[idx][1])
                 regions_no_score += res[idx][2]
-        group_boundaries[1] = len(regions)
 
+        #group_boundaries[1] = len(regions)
         # mask invalid (nan) values
         matrix = np.ma.masked_invalid(matrix)
 
@@ -776,7 +775,6 @@ class heatmapper(object):
                 if includedintervals > 1 and  \
                         includedintervals - group_boundaries[-1] > 1:
                     label = ginterval.line[1:].strip()
-                    newlabel = label
                     if label in group_labels:
                        # loop to find a unique label name
                         i = 0
@@ -831,8 +829,9 @@ class heatmapper(object):
                                     float(duplicates) * 100 / totalintervals))
 
         if verbose:
-            sys.stderr.write("Found:\n\tintervals: {}\n\tgroups: {}\n\n".format(len(regions),
-                                                                          ", ".join(group_labels)))
+            sys.stderr.write("Found:\n\tintervals: {}\n"
+                             "\tgroups: {}\n\n".format(len(regions), ", ".join(group_labels)))
+
         return regions, group_labels, group_boundaries
 
     def getIndividualmatrices(self, matrix):
