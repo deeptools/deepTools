@@ -1,15 +1,11 @@
-deepTools
-=========
+=====================================================
+deepTools: *tools for exploring deep sequencing data*
+=====================================================
 
 .. image:: images/start_collage.png
 
-For support, questions, or feature requests contact:
-deeptools@googlegroups.com
-
-The main reason why deepTools was started is the simple fact that in
-2011 we could not find tools that met all our needs for NGS data
-analysis. While there were individual tools for separate tasks, we
-wanted software that would fulfill *all* of the following criteria:
+While developing deepTools, we continuously thrive to create software
+that fulfills the following criteria:
 
 -  **efficiently extract reads from BAM files** and perform various
    computations on them
@@ -21,7 +17,7 @@ wanted software that would fulfill *all* of the following criteria:
 -  enable **customized down-stream analyses** which requires that every
    data set that is being produced can be stored by the user
 -  **modular approach** - compatibility, flexibility, scalability (i.e.
-   we can add more and more modules making use of established methods)
+   we can add more and more modules and make use of established methods)
 
 The flow chart below depicts the different tool modules that are
 currently available within deepTools (deepTools modules are written in
@@ -60,12 +56,13 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   content/installation/installation
+   content/installation
    content/list_of_tools
-   content/exampleUsage/Gallery
-   content/exampleUsage/How_we_use_deepTools
-   content/exampleUsage/api_tutorial
+   content/example_usage
+   
 
+For support, questions, or feature requests contact:
+deeptools@googlegroups.com
 
 About
 -----

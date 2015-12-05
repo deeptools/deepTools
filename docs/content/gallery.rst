@@ -2,7 +2,7 @@ Examples of deepTools Usage
 ===========================
 
 .. note:: If you have a nice deepTools plot that you'd like to share, we'd be
-    happy to ad it to our Gallery! Just send us an email:
+    happy to add it to our Gallery! Just send us an email:
     deeptools@googlegroups.com
 
 
