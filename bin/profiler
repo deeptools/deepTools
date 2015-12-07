@@ -144,6 +144,22 @@ def plotProfile(hm, outFileName,
 
                 exit(1)
 
+    #If we plot a heatmap, we need to normalize the values to be between 0 and 1
+    if plotType == 'heatmap':
+        maxVal = None
+        for plot in range(numplots):
+            col = plot % plots_per_row
+            row = int(plot / plots_per_row)
+            for data_idx in range(numlines):
+                if perGroup:
+                    row, col = plot, data_idx
+                else:
+                    row, col = data_idx, plot
+                sub_matrix = hm.matrix.get_matrix(row, col)
+                curMax = np.amax(np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0))
+                if maxVal is None or curMax > maxVal:
+                    maxVal = curMax
+
     xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
                                           startLabel, endLabel)
     first = True
@@ -199,7 +215,7 @@ def plotProfile(hm, outFileName,
                             plot_type=plotType)
 
         if plotType == 'heatmap':
-            ax.imshow(np.asmatrix(mat), interpolation='nearest', cmap='seismic_r')
+            ax.imshow(np.divide(np.asmatrix(mat), maxVal), interpolation='nearest', cmap='seismic_r')
 
         if (perGroup and row > 0) or (perGroup is False and col > 0):
             # remove the numbers of the y axis for all plots
@@ -236,14 +252,15 @@ def plotProfile(hm, outFileName,
                   frameon=False, markerscale=0.5)
         """
 
-        lims = ax.get_ylim()
-        if yMin is not None: 
-            lims = (yMin, lims[1])
-        if yMax is not None:
-            lims = (lims[0], yMax)
-        if lims[0] >= lims[1]:
-            lims = (lims[0], lims[0]+1)
-        ax.set_ylim(lims)
+        if plotType != 'heatmap':
+            lims = ax.get_ylim()
+            if yMin is not None: 
+                lims = (yMin, lims[1])
+            if yMax is not None:
+                lims = (lims[0], yMax)
+            if lims[0] >= lims[1]:
+                lims = (lims[0], lims[0]+1)
+            ax.set_ylim(lims)
 
         ax_list.append(ax)
 
