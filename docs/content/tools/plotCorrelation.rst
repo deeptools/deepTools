@@ -2,8 +2,8 @@ plotCorrelation
 ==========================
 
 .. argparse::
-   :ref: deeptools.bamFingerprint.parse_arguments
-   :prog: bamFingerprint
+   :ref: deeptools.plotCorrelation.parse_arguments
+   :prog: plotCorrelation
 
 
 Usage Example:
