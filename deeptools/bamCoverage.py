@@ -23,15 +23,15 @@ def parseArguments():
                      parentParser, bamParser],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             description='Given a BAM file, this tool generates a bigWig or '
-            'bedGraph file of fragment or read coverages. The way the method '
-            'works is by first calculating all the number of reads (either '
-            'extended to match the fragment length or not) that overlap each '
-            'bin in the genome.\nThe resulting read counts can be '
-            'normalized using either a given scaling factor, the RPKM formula '
-            'or to get a 1x depth of coverage (RPGC).\n '
-            'In the case of paired-end mapping each read mate is treated '
+            'bedGraph file of read or fragment coverage. The method first '
+            'calculates the number of reads (either extended to match the '
+            'fragment length or not) that overlap each bin in the genome.\n'
+            'The resulting read counts can be '
+            'normalized using either a given scaling factor or the RPKM formula, '
+            'or to get a 1x depth of coverage (RPGC).\n'
+            'In the case of paired-end mapping, each read mate is treated '
             'independently to avoid a bias when a mixture of concordant and '
-            'discordant pairs is present. This means that *each end* will '
+            'discordant pairs is present. This means that *each mate* will '
             'be extended to match the fragment length.',
             usage='An example usage is: %(prog)s -b signal.bam -o signal.bw',
             add_help=False)
@@ -46,8 +46,8 @@ def get_required_args():
 
     # define the arguments
     required.add_argument('--bam', '-b',
-                          help='Bam file to process',
-                          metavar='bam file',
+                          help='BAM file to process',
+                          metavar='BAM file',
                           required=True)
 
     return parser
@@ -62,15 +62,14 @@ def get_optional_args():
                           help="show this help message and exit")
 
     optional.add_argument('--bamIndex', '-bai',
-                          help='Index for the bam file. Default is to consider '
-                          'the path of the bam file adding the .bai suffix.',
-                          metavar='bam file index')
+                          help='Index for the BAM file. Default is to consider '
+                          'the path of the BAM file adding the .bai suffix.',
+                          metavar='BAM file index')
 
     optional.add_argument('--scaleFactor',
-                          help='Indicate a number that you would like to use. It can be used in combination'
-                          'with the --normalizeTo1x or --normalizeUsingRPKM. In that case the computed'
-                          'scaling factor will be multiplied by the given scale factor.  The default '
-                          'scale factor is one',
+                          help='Indicate a number that you would like to use. When used in combination '
+                          'with --normalizeTo1x or --normalizeUsingRPKM, the computed '
+                          'scaling factor will be multiplied by the given scale factor.',
                           default=1.0,
                           type=float,
                           required=False)
@@ -85,14 +84,14 @@ def get_optional_args():
                           'for the sample to match the 1x coverage. '
                           'To use this option, the '
                           'effective genome size has to be indicated after the '
-                          'command. The effective genome size is the portion '
+                          'option. The effective genome size is the portion '
                           'of the genome that is mappable. Large fractions of '
                           'the genome are stretches of NNNN that should be '
                           'discarded. Also, if repetitive regions were not '
                           'included in the mapping of reads, the effective '
                           'genome size needs to be adjusted accordingly. '
-                          'Common values are: mm9: 2150570000, '
-                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
+                          'Common values are: mm9: 2,150,570,000; '
+                          'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
                           'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
@@ -105,26 +104,25 @@ def get_optional_args():
                           help='Use Reads Per Kilobase per Million reads to '
                           'normalize the number of reads per bin. The formula '
                           'is: RPKM (per bin) =  number of reads per bin / '
-                          '( number of mapped reads ( in millions) * bin '
+                          '( number of mapped reads (in millions) * bin '
                           'length (kb) ). Each read is considered independently,'
                           'if you want to only count either of the mate pairs in'
-                          'paired-end data use the --samFlag',
+                          'paired-end data, use the --samFlag option.',
                           action='store_true',
                           required=False)
 
     optional.add_argument('--ignoreForNormalization', '-ignore',
                           help='A list of chromosome names separated by spaces '
-                          'containing those chromosomes that want to be excluded '
+                          'containing those chromosomes that should be excluded '
                           'for computing the normalization. This is useful when considering '
                           'samples with unequal coverage across chromosomes like male '
-                          'samples. An usage examples is  --ignoreForNormalization chrX chrM',
+                          'samples. An usage examples is  --ignoreForNormalization chrX chrM.',
                           nargs='+')
 
     optional.add_argument('--missingDataAsZero',
                           default="yes",
                           choices=["yes", "no"],
-                          help='Default is "yes". This parameter determines '
-                          'if missing data should be treated as zeros. '
+                          help='If set to "yes", missing data will be treated as zero. '
                           'If set to "no", missing data will be ignored '
                           'and not included in the output file. Missing '
                           'data is defined as those bins for which '
@@ -136,11 +134,18 @@ def get_optional_args():
                           'the binSize, to average the number of reads. For '
                           'example, if the --binSize is set to 20 bp and the '
                           '--smoothLength is set to 60 bp, then, for each '
-                          'binSize the average of it and its left and right '
+                          'bin, the average of the bin and its left and right '
                           'neighbors is considered. Any value smaller than the '
                           '--binSize will be ignored and no smoothing will be '
                           'applied.',
                           type=int)
+
+    optional.add_argument('--MNase',
+                       help='Determine nucleosome positions from MNase-seq data. '
+                       'Only 3 nucleotides at the center of each fragment are counted. '
+                       'The fragment ends are defined by the two mate reads. '
+                       '*NOTE*: Requires paired-end data.',
+                       action='store_true')
 
     return parser
 
@@ -186,7 +191,7 @@ def get_scale_factor(args):
         if args.fragmentLength:
             if frag_len_dict['mean'] != 0  and abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
                 sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
-                                 "length estimated from the bam file: {}\n".format(args.fragmentLength,
+                                 "length estimated from the BAM file: {}\n".format(args.fragmentLength,
                                                                                  int(frag_len_dict['median'])))
 
             fragment_length = args.fragmentLength

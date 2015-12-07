@@ -29,33 +29,27 @@ def read_options():
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Read processing options')
 
-    group.add_argument('--fragmentLength', '-f',
-                       help='Only when --extendPairedEnds is set. '
-                            'Length of the average fragment size. Reads will '
-                            'be extended to match this length unless they are '
-                            'paired-end, in which case they will be extended to '
-                            'match the fragment length. If this value is set '
-                            'between 1 and the read length, the read will not be '
-                            'extended. *NOTE*: If the BAM files contain mated and '
-                            'unmated paired-end reads, unmated reads will be '
-                            'extended to match the --fragmentLength.',
+    group.add_argument('--extendReads', '-e',
+                       help='Extend reads to the given average fragment size. '
+                            '(1) Single-end reads are extended to match this length. '
+                            '(2) Paired-end reads are extended to match the fragment length '
+                            'between the mate reads. By default *each* read mate is '
+                            'extended. This can be modified using the SAM flags '
+                            '(see --samFlagInclude and --samFlagExclude options) to keep '
+                            'only the first or the second mate. '
+                            'Unmated reads, mate reads that map on different chromosomes or '
+                            'too far apart are extended to the given --fragmentLength. '
+                            'Read are only extended if --extendReads is set to a value '
+                            'greater than the read length. '
+                            '*NOTE*: For spliced-read data, this option is not recommended as '
+                            'it will extend reads over skipped regions, e.g. introns in RNA-seq data.',
                        type=int,
                        metavar="INT bp")
-
-    group.add_argument('--extendPairedEnds',
-                       help='If set, paired end reads are extended to match the '
-                            'fragment length between the mate reads. By default '
-                            '*each* read mate is extended. This can be modified using'
-                            'the sam flags (see samFlagInclude and samFlagExclude '
-                            'options) to keep only the first or the second mate. Mate '
-                            'reads that are in different chromosomes or that are to far '
-                            'apart are extended to the given --fragmentLength',
-                       action='store_true')
 
     group.add_argument('--ignoreDuplicates',
                        help='If set, reads that have the same orientation '
                        'and start position will be considered only '
-                       'once. If reads are paired, the mate position '
+                       'once. If reads are paired, the mate\'s position '
                        'also has to coincide to ignore a read.',
                        action='store_true'
                        )
@@ -70,7 +64,7 @@ def read_options():
 
     group.add_argument('--centerReads',
                        help='By adding this option reads are centered with '
-                       'respect to the fragment length. For paired-end data '
+                       'respect to the fragment length. For paired-end data, '
                        'the read is centered at the fragment length defined '
                        'by the two ends of the fragment. For single-end data, the '
                        'given fragment length is used. This option is '
@@ -92,7 +86,7 @@ def read_options():
     group.add_argument('--samFlagExclude',
                        help='Exclude reads based on the SAM flag. For example, '
                        'to get only reads that map to the forward strand, use '
-                       '--samFlagExclude 16. Where 16 is the sam flag for reads '
+                       '--samFlagExclude 16, where 16 is the SAM flag for reads '
                        'that map to the reverse strand.',
                        metavar= 'INT',
                        default=None,
