@@ -5,8 +5,6 @@ import sys
 import argparse
 import os.path
 import numpy as np
-import pyBigWig
-
 
 import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
@@ -28,19 +26,19 @@ outputs an intermediary file that can then be used with the 'plotCorrelation' to
 for visualizing the correlation.
 
 detailed help:
-  %(prog)s bins -h
-  %(prog)s BED-file -h
+  bigwigCorrelate bins -h
+  bigwigCorrelate BED-file -h
 
 """,
-            epilog='example usages:\n%(prog)s bins '
+            epilog='example usages:\n bigwigCorrelate bins '
                    '-b file1.bw file2.bw -out results.npz\n\n'
-                   '%(prog)s BED-file -b file1.bw file2.bw -out results.npz\n'
+                   'bigwigCorrelate BED-file -b file1.bw file2.bw -out results.npz\n'
                    '--BED selection.bed'
                    ' \n\n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='bigwigCorrelate {}'.format(__version__))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',
@@ -62,7 +60,7 @@ detailed help:
              "is regularly smaller. This mode is useful to assess the "
              "overall similarity of bigWig files.",
         add_help=False,
-        usage='%(prog)s '
+        usage='bigWigCorrelate '
               '-b file1.bw file2.bw '
               '-out results.npz\n')
 
@@ -76,12 +74,16 @@ detailed help:
              "that should be considered for the correlation analysis. A "
              "common use is to compare ChIP-seq coverages between two "
              "different samples for a set of peak regions.",
-        usage='%(prog)s '
+        usage='bigwigCorrelate '
               '-b file1.bw file2.bw '
               '-out results.npz --BED selection.bed\n',
         add_help=False)
 
-    args = parser.parse_args(args)
+    return parser
+
+
+def process_args(args=None):
+    args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bwfiles) != len(args.labels):
         print "The number of labels does not match the number of bigWig files."
@@ -178,7 +180,7 @@ def bigwigCorrelateArgs(case='bins'):
     return parser
 
 
-def main(args):
+def main(args=None):
     """
     1. get read counts at different positions either
     all of same length or from genomic regions from the BED file
@@ -186,6 +188,8 @@ def main(args):
     2. compute  correlation
 
     """
+    args = process_args(args)
+
     if len(args.bwfiles) < 2:
         print "Please input at least two bigWig (.bw) files to compare"
         exit(1)
@@ -258,8 +262,3 @@ def main(args):
             for row in num_reads_per_bin:
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
-
-
-if __name__ == "__main__":
-    ARGS = parse_arguments()
-    main(ARGS)

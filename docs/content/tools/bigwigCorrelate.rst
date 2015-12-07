@@ -1,5 +1,5 @@
 bigwigCorrelate
-==========================
+===============
 
 .. argparse::
    :ref: deeptools.bigwigCorrelate.parse_arguments

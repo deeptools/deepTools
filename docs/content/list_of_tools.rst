@@ -91,6 +91,7 @@ Tools for quality control
 
    tools/bamFingerPrint
    tools/bamCorrelate
+   tools/bigwigCorrelate
    tools/plotCorrelation
    tools/computeGCBias
 
