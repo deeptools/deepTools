@@ -8,7 +8,6 @@ import numpy as np
 import tempfile
 
 # NGS packages
-#from bx.bbi.bigwig_file import BigWigFile
 import pyBigWig
 
 # own module
@@ -18,19 +17,10 @@ from writeBedGraph import *
 import config as cfg
 from deeptools import bamHandler
 
-def getCoverageFromBam(bamHandle, chrom, start, end, tileSize,
-                       defaultFragmentLength, extendPairedEnds=True,
-                       zerosToNans=True):
-    return getCoverageOfRegion(bamHandle, chrom, start, end, tileSize,
-                               defaultFragmentLength,
-                               extendPairedEnds=extendPairedEnds,
-                               zerosToNans=zerosToNans)
-
-
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
-        coverage = bigwigHandle.get_as_array(chrom, start, end)
+        coverage = bigwigHandle.values(chrom, start, end)
     except TypeError:
         # this error happens when chromosome
         # is not into the bigwig file

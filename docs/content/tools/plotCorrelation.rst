@@ -1,5 +1,5 @@
 plotCorrelation
-==========================
+===============
 
 .. argparse::
    :ref: deeptools.plotCorrelation.parse_arguments
@@ -17,7 +17,10 @@ Here we are plotting a scatterplot with pearson correlation.
 
 .. code:: bash
 
-    plotCorrelation -in testDatset-results/histoneMarks_bigwig_corr.npz -o histoneMarks_corr-scatter.png -T "test data correlations" -p scatterplot --removeOutliers -c pearson
+    plotCorrelation -in testDatset-results/histoneMarks_bigwig_corr.npz \
+        -o histoneMarks_corr-scatter.png \
+        -T "test data correlations" \
+        -p scatterplot --removeOutliers -c pearson
 
 .. image:: test_plots/histoneMarks_corr-scatter.png
 
@@ -28,6 +31,9 @@ Here we are plotting a heatmap, this time using spearman correlation.
 
 .. code:: bash
 
-    plotCorrelation -in testDatset-results/histoneMarks_bigwig_corr.npz -o histoneMarks_corr-heatmap.png -T "test data correlations" -p heatmap --removeOutliers -c spearman
+   plotCorrelation -in testDatset-results/histoneMarks_bigwig_corr.npz \
+      -o histoneMarks_corr-heatmap.png \
+      -T "test data correlations" \
+      -p heatmap --removeOutliers -c spearman
 
 .. image:: test_plots/histoneMarks_corr-heatmap.png

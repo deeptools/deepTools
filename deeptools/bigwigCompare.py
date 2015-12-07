@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
+import argparse  # to parse command line arguments
+from deeptools import parserCommon
+#from deeptools.getRatio import getRatio
+debug = 0
+
+
+def parse_arguments(args=None):
+    parentParser = parserCommon.getParentArgParse()
+    outputParser = parserCommon.output()
+    parser = argparse.ArgumentParser(
+        parents=[parentParser, outputParser],
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='This tool compares two bigwig files based on the number '
+        'of mapped reads. To compare the bigwig files the genome is '
+        'partitioned into bins of equal size, then the number of reads found '
+        'in each BAM file are counted for such bins and finally a summarizing '
+        'value is reported. This vaule can be the ratio of the number of reads'
+        'per bin, the log2 of the ratio, the sum or the difference.')
+
+    # define the arguments
+    parser.add_argument('--bigwig1', '-b1',
+                        metavar='Bigwig file',
+                        help='Bigwig file 1. Usually the file for the '
+                        'treatment.',
+                        required=True)
+
+    parser.add_argument('--bigwig2', '-b2',
+                        metavar='Bigwig file',
+                        help='Bigwig file 2. Usually the file for the '
+                        'control.',
+                        required=True)
+
+    parser.add_argument('--scaleFactors',
+                        help='Set this parameter to multipy the bigwig values '
+                        'by a constant. The format is '
+                        'scaleFactor1:scaleFactor2. '
+                        'For example 0.7:1 to scale the first bigwig file '
+                        'by 0.7 while not scaling the second bigwig file',
+                        default=None,
+                        required=False)
+
+    parser.add_argument('--pseudocount',
+                        help='small number to avoid x/0. Only useful '
+                        'when ratio = log2 or ratio',
+                        default=1,
+                        type=float,
+                        required=False)
+
+    parser.add_argument('--ratio',
+                        help='The default is to compute the log2(ratio) '
+                        'between the two samples. The reciprocal '
+                        'ratio returns the '
+                        'the negative of the inverse of the ratio '
+                        'if the ratio is less than 0. The resulting '
+                        'values are interpreted as negative fold changes. '
+                        'Other possible operations are : simple ratio, '
+                        'subtraction, sum',
+                        default='log2',
+                        choices=['log2', 'ratio', 'subtract', 'add',
+                                 'reciprocal_ratio'],
+                        required=False)
+
+    parser.add_argument('--missingDataAsZero',
+                        default="yes",
+                        choices=["yes", "no"],
+                        help='Default is "yes". This parameter determines if '
+                        'missing data should be replaced with a zero. If set '
+                        'to "no", missing data will be ignored and will not '
+                        'be included in the output file at all. Missing data '
+                        'is defined as those regions for which no value exists'
+                        ' in *any* of the bigwig files.'
+                        'The decision to include or exclude missing data '
+                        'depends on the interpretation of the data. Missing '
+                        'data in a bigwig file may mean that there is no '
+                        'information available for certain regions, for '
+                        'example a repetitive region that is not being '
+                        'considered. In the same file regions with low '
+                        'coverage may get zero read counts. If missing data '
+                        'is replaced by zero, this would convert the excluded '
+                        'repetitive regions into regions of low coverage.')
+
+    return parser
+
+
+def process_args(args=None):
+    args = parse_arguments().parse_args(args)
+    args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
+
+    return args
+
+
+def main(args=None):
+
+    args = process_args(args)
+    if args.scaleFactors:
+        scaleFactors = [float(x) for x in args.scaleFactors.split(":")]
+    else:
+        scaleFactors = [1, 1]
+
+    # this import statement is here to allow compilation of the code on readthedocs.org
+    # otherwise, the pyBigWig dependency breaks the docs compilation.
+    #from deeptools import writeBedGraph_bam_and_bw
+
+    # the getRatio function is called and receives
+    # the funcArgs per each tile that is considered
+    FUNC = getRatio
+    funcArgs = {'missingDataAsZero': args.missingDataAsZero,
+                'valueType': args.ratio,
+                'scaleFactors': scaleFactors,
+                'pseudocount': args.pseudocount
+                }
+
+    writeBedGraph_bam_and_bw.writeBedGraph(
+        [(args.bigwig1, 'bigwig'),
+         (args.bigwig2, 'bigwig')],
+        args.outFileName, 0, FUNC,
+        funcArgs, tileSize=args.binSize, region=args.region,
+        numberOfProcessors=args.numberOfProcessors,
+        format=args.outFileFormat,
+        missingDataAsZero=args.missingDataAsZero,
+        smoothLength=False,
+        extendPairedEnds=False)
