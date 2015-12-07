@@ -16,5 +16,4 @@ Chip-Seq datasets.
 
     bigwigCorrelate bins -p 20 -b testDataset/H3K4Me1.bigWig testDataset/H3K4Me3.bigWig testDataset/H3K27Me3.bigWig testDataset/Input.bigWig -out histoneMarks_bigwig_corr.npz
 
-The output matrix file can now be plotted using `plotCorrelation <>`__
-tool.
+The output matrix file can now be plotted using :doc:`plotCorrelation` tool.
