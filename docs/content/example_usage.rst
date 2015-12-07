@@ -2,19 +2,18 @@ Example usage
 =============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   content/gallery
-   content/api_tutorial
-   content/step_by_step_protocols
-
+   step_by_step_protocols
+   gallery
+   api_tutorial
 
 How we use deepTools 
 --------------------
 
 deepTools started off as a tool package for ChIP-seq analyses, which is
 why you find many ChIP-seq examples in our documentation.
-`Here <https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing>`__
+`Here <https://https.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing>`__
 are slides that we used for teaching at the University of Freiburg with
 more details on the deepTools usage and aims in regard to ChIP-seq.
 However, while some tools, such as `bamFingerprint`, specifically
@@ -23,7 +22,7 @@ to NGS data, including RNA-seq.
 
 So, how does a typical, basic ChIP-seq workflow look like for us?
 
-.. image:: images/start_workflow.png
+.. image:: ../images/start_workflow.png
 
 As shown in the flow chart above, our work usually begins with one or
 more `FASTQ <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fastq>`__
@@ -70,8 +69,7 @@ from their significantly decreased size:
 
 The deepTools modules ``bamCompare`` and ``bamCoverage`` do not only allow
 the simple conversion from BAM to bigWig (or
-`bedGraph <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bedgraph>`__
-for that matter), **the main reason why we developed those tools was
+bedGraph for that matter), **the main reason why we developed those tools was
 that we wanted to be able to *normalize* the read coverages** so that we
 could compare different samples despite differences in sequencing depth,
 GC biases and so on.

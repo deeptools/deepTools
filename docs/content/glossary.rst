@@ -192,18 +192,30 @@ FASTQ
 
 * typical file extension: .fastq, fq
 * text file, often gzipped (--> .fastq.gz)
-* contains raw read information (e.g. base calls, sequencing quality measures etc.), but not information about where in the genome the read originated from
+* contains raw read information -- 4 lines per read:
+	 * read ID
+	 * base calls
+	 * additional information or empty line
+	 * sequencing quality measures - 1 per base call
+* note that there are no information about where in the genome the read originated from
 * example from the `wikipedia page <http://en.wikipedia.org/wiki/Fastq>`_
 ::
 
   # a FASTQ file containing a single sequence might look like this:
     
- @SEQ_ID
-    GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT
-    +
-    !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65
+    @read001														# read ID
+    GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT	# read sequence
+    +																# usually empty line
+    !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65	# ASCII-encoded quality scores
 
-   # The character '!' represents the lowest quality while '~' is the highest.
+* the quality string (here, the line starting with !) contains `ASCII-encoded <http://www.asciitable.com/>`_ measures of probability that the respective base call was correct
+	* the ASCII-encoding usually starts with an offset of at least 33 because the first 32 ASCII representations correspond to invisible entries, such as white spaces
+	* thus, a base call quality of 0 will be 0 + 33 = 33; in ASCII, 33 corresponds to the ! sign -- the first base in the above shown example is therefore a base where the base identification was rather uncertain
+	* however, over the years, Illumina has changed the offset a couple of times, which may sometimes lead to problems with aligners
+	
+.. image:: images/glossary_ascii.png
+	
+* if you need to find out what type of ASCII-encoding your .fastq file contains, you can simply run `FastQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`_ -- its summery file will tell you
 
 .. _SAM:
 
@@ -211,32 +223,33 @@ SAM
 ^^^ 
 
 * typical file extension: .sam
-* should be the result of an alignment of sequenced reads to a reference genome
-* each line = 1 mapped read, with information about its mapping quality, its sequence, its location in the genome etc.
-* it is recommended to generate the binary (compressed) version of this file format: :ref:`BAM`
-* for more information, see the `SAM specification <http://samtools.sourceforge.net/SAMv1.pdf>`_
-* two exemplary lines
-    * each one corresponds to one read (named r001 and r002 here)
-    * the different columns contain various information about each read, e.g. which chromosome they were mapped to (here: chr1) and the left-most mapping position in the genome (here: 7 and 9 on chr1); the *flag* in the second column summarizes multiple information about each single read at once (in hexadecimal encoding) (see below for more information on the flag)
+* usually the result of an alignment of sequenced reads to a reference genome
+* contains a short header section (entries are marked by @ signs) and an alignment section where each line corresponds to a single read (thus, there can be millions of these lines)
+
+.. image:: images/glossary_sam.png
+
+* **header section**:
+	* tab-delimited lines, beginning with @, followed by tag:value pairs
+	* *tag* = two-letter string that defines the content and the format of *value*
+	
+* **alignment section**:
+	* each line contains information about its mapping quality, its sequence, its location in the genome etc.
 ::
 
     r001 163 chr1 7 30 8M2I4M1D3M = 37 39 TTAGATAAAGGATACTG *
     r002 0 chr1 9 30 3S6M1P1I4M * 0 0 AAAAGATAAGGATA *
 
-* the flag contains the answer to several yes/no assessments that are encoded in a single number. The questions are the following ones:
-    * template having multiple segments in sequencing = Is the read part of a read pair?
-    * each segment properly aligned according to the aligner = Was the read properly paired?
-    * segment unmapped = Is the read unmapped?
-    * next segment in the template unmapped = Is the mate unmapped?
-    * reverse complemented = Did the read map to the reverse strand?
-    * next segment in the template is reversed  = Did the mate map to the reverse strand?
-    * the first seg
-    * ment in the template = Is this read the first one in the pair?
-    * the last segment in the template = Is this read the second one in the pair?
-    * secondary alignment = Is this not the primary (i.e. unique optimal) alignment for the read?
-    * not passing quality controls = Did the read not pass the quality control?
-    * PCR or optical duplicate = Was this read a PCR or optical duplicate?
-* for more details on the flag, see `this thorough explanation <http://ppotato.wordpress.com/2010/08/25/samtool-bitwise-flag-paired-reads/>`_ or `this more technical explanation <http://blog.nextgenetics.net/?e=18>`_
+	* the **flag in the second field** contains the answer to several yes/no assessments that are encoded in a single number
+	* for more details on the flag, see `this thorough explanation <http://ppotato.wordpress.com/2010/08/25/samtool-bitwise-flag-paired-reads/>`_ or `this more technical explanation <http://blog.nextgenetics.net/?e=18>`_
+    * the **CIGAR string in the 6th field** represents the types of operations that were needed in order to align the read to the specific genome location:
+		* insertion
+		* deletion (small deletions denoted with `D`, bigger deletions, e.g., for spliced reads, denoted with `N`)
+		* clipping (deletion at the ends of a read)
+
+.. warning::  Although the SAM/BAM format is rather meticulously defined and documented, whether an alignment program 
+will produce a SAM/BAM file that adheres to these principles is completely up to the programmer. The mapping score, CIGAR string,
+and particularly, all optional flags (fields >11) are often very differently defined depending on the program. If you plan on filtering
+your data based on any of these criteria, make sure you know exactly how these entries were calculated!
 
 .. _UCSC: <http://genome.ucsc.edu/FAQ/FAQformat.html#format1>
 .. _Zentner and Henikoff: <http://genomebiology.com/2012/13/10/250>

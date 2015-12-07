@@ -31,9 +31,11 @@ please make sure to check our `Glossary`_.
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | tool          | type          | input files                       | main output file(s)                    | application                                                                  |
 +===============+===============+===================================+========================================+==============================================================================+
-| bamCorrelate  | QC            | 2 or more BAM                     | clustered heatmap                      | Pearson or Spearman correlation between read distributions                   |
+| *Correlate    | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamFingerprin | QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
+|plotCorrelation| visualization | bam|bigWigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
++---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+| bamFingerprint| QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | computeGCbias | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
@@ -41,7 +43,7 @@ please make sure to check our `Glossary`_.
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | bamCoverage   | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamCompare    | normalization | 2 BAM                             | bedGraph or bigWig                     | normalize 2 BAM files to each other (e.g. log2ratio, difference)             |
+| *Compare      | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                     | normalize 2 files to each other (e.g. log2ratio, difference)                 |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | computeMatrix | visualization | 1 bigWig, 1 BED                   | zipped file for heatmapper or profiler | compute the values needed for heatmaps and summary plots                     |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
