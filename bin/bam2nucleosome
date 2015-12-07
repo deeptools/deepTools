@@ -5,6 +5,7 @@ import numpy as np
 # own tools
 import argparse
 from deeptools import writeBedGraph
+from deeptools import writeBedGraph_bam_and_bw
 from deeptools import parserCommon
 from deeptools import bamHandler
 
@@ -13,9 +14,9 @@ debug = 0
 def parseArguments(args=None):
 
     parentParser = parserCommon.getParentArgParse()
-    #bamParser = parserCommon.bam()
+    bamParser = parserCommon.read_options()
     outputParser = parserCommon.output()
-    parser = argparse.ArgumentParser(parents=[parentParser, outputParser], #bamParser,
+    parser = argparse.ArgumentParser(parents=[parentParser, bamParser,outputParser],
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description = 'Given a BAM file, generates a coverage bigwig file. The way the method works is by first calculating all the number of  reads (either extended or not) that overlap each tile (or bin) in the genome.  Tiles with counts equal to zero are skipped, i.e. not added to the output file.\nThe resulting read counts can be normalized using a given scaling factor, using the RPKM formula or normalizing to get a 1x depth of coverage.\n')
 
@@ -39,7 +40,11 @@ def parseArguments(args=None):
                         default = None,
                         type = int,
                         required = False)
-
+    parser.add_argument('--smoothLength',
+                        help = "length of smoothing to be done.",
+                        default = 0,
+                        type = int,
+                        required = False)
     parser.add_argument('--normalizeUsingRPKM',
                         help = "Use RPKM to normalize the number of reads per bin. The formula is: RPKM (per bin) = #reads per bin / ( # of mapped reads (millions) * bin length (KB) )",
                         action = 'store_true',
@@ -136,7 +141,9 @@ def main(args):
                                     ignoreDuplicates=args.ignoreDuplicates,
                                     center_read=args.centerReads,
                                     zerosToNans=True,
-                                    samFlag=args.samFlag)
+                                    samFlag_include=args.samFlagInclude,
+                                    samFlag_exclude=args.samFlagExclude
+                                    )
 
     wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
             format=args.outFileFormat, smooth_length=args.smoothLength)
