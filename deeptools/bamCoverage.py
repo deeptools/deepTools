@@ -188,11 +188,14 @@ def get_scale_factor(args):
                                                                     return_lengths=False,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
-        if args.fragmentLength:
-            if frag_len_dict['mean'] != 0  and abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
-                sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
-                                 "length estimated from the BAM file: {}\n".format(args.fragmentLength,
-                                                                                 int(frag_len_dict['median'])))
+        if args.extendReads and args.extendReads is True:
+            fragment_length = args.frag_len_dict['median']
+
+        elif args.extendReads:
+            if frag_len_dict['mean'] != 0  and abs(args.extendReads - frag_len_dict['median']) > frag_len_dict['std']:
+                sys.stderr.write("*Warning*:\nThe extend reads length provided ({}) does not match the fragment "
+                                 "length estimated from the BAM file: {}\n".format(args.extendReads,
+                                                                                   int(frag_len_dict['median'])))
 
             fragment_length = args.fragmentLength
 
