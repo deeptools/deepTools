@@ -108,7 +108,7 @@ def getHeatmapTicks(hm, referencePointLabel, startLabel, endLabel):
     return xTicks, xTicksLabel
 
 
-def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar):
+def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGroup):
     """
     prepare the plot layout
     as a grid having as many rows
@@ -119,15 +119,26 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar):
 
     numcols = hm_matrix.get_num_samples()
     numrows = hm_matrix.get_num_groups()
+    if perGroup:
+        temp = numcols
+        numcols = numrows
+        numrows = temp
 
     # the rows have different size depending 
     # on the number of regions contained in the
-    # heatmap
-    height_ratio = np.diff(hm_matrix.group_boundaries)
-    # scale ratio to sum = heatmapheight
-    height_ratio = heatmapheight * (height_ratio.astype(float) / height_ratio.sum())
+    if perGroup:
+        # heatmap
+        height_ratio = np.array([np.amax(np.diff(hm_matrix.group_boundaries))]*numrows)
+        # scale ratio to sum = heatmapheight
+        height_ratio = heatmapheight * (height_ratio.astype(float) / height_ratio.sum())
+    else:
+        # heatmap
+        height_ratio = np.diff(hm_matrix.group_boundaries)
+        # scale ratio to sum = heatmapheight
+        height_ratio = heatmapheight * (height_ratio.astype(float) / height_ratio.sum())
     # the width ratio is equal for all heatmaps
     width_ratio = [heatmapwidth] * numcols
+
     if showColorbar:
         numcols += 1
         width_ratio += [1 / 2.54]
@@ -204,7 +215,7 @@ def plotMatrix(hm, outFileName,
         showColorbar = True
 
     grids = prepare_layout(hm.matrix, (heatmapWidth, heatmapHeight),
-                           showSummaryPlot, showColorbar)
+                           showSummaryPlot, showColorbar, perGroup)
 
     # figsize: w,h tuple in inches
     figwidth = heatmapWidth / 2.54
@@ -242,7 +253,10 @@ def plotMatrix(hm, outFileName,
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
     numgroups = hm.matrix.get_num_groups()
-    color_list = cmap_plot(np.arange(numgroups) / numgroups)
+    if perGroup:
+        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
+    else:
+        color_list = cmap_plot(np.arange(numgroups) / numgroups)
     cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
 
     # check if matrix is reference-point based using the upstream >0 value
@@ -264,19 +278,26 @@ def plotMatrix(hm, outFileName,
     else:
         regions_length_in_bins = None
 
-    first_group = 0 # helper variable to place the title per sample
+    first_group = 0 # helper variable to place the title per sample/group
     for sample in range(hm.matrix.get_num_samples()):
+        sample_idx = sample
         for group in range(numgroups):
             group_idx = group
             # add the respective profile to the
             # summary plot
             sub_matrix = hm.matrix.get_matrix(group, sample)
             if showSummaryPlot:
-                group += 2 # plot + spacer
+                if perGroup:
+                    sample_idx = sample + 2 # plot + spacer
+                else:
+                    group += 2 # plot + spacer
                 first_group = 1
                                     
-            ax = fig.add_subplot(grids[group, sample])
-            if group == first_group and not showSummaryPlot:
+            if perGroup:
+                ax = fig.add_subplot(grids[sample_idx, group])
+            else :
+                ax = fig.add_subplot(grids[group, sample])
+            if group == first_group and not showSummaryPlot and not perGroup:
                 title = hm.matrix.sample_labels[sample]
                 ax.set_title(title)
 
@@ -304,10 +325,17 @@ def plotMatrix(hm, outFileName,
                 ax.set_ylim(y_lim)
 
 
-            ax.axes.get_xaxis().set_visible(False)
-            ax.axes.set_xlabel(xAxisLabel)
+            if perGroup:
+                ax.axes.set_xlabel(sub_matrix['group'])
+                if sample < hm.matrix.get_num_samples()-1:
+                    ax.axes.get_xaxis().set_visible(False)
+            else:
+                ax.axes.get_xaxis().set_visible(False)
+                ax.axes.set_xlabel(xAxisLabel)
             ax.axes.set_yticks([])
-            if sample == 0:
+            if perGroup and group == 0:
+                ax.axes.set_ylabel(sub_matrix['sample'])
+            elif not perGroup and sample == 0:
                 ax.axes.set_ylabel(sub_matrix['group'])
 
         # add xticks to the bottom heatmap (last group)
@@ -332,9 +360,16 @@ def plotMatrix(hm, outFileName,
         ax_list = []
         sample_ymax = None
         sample_ymin = None
+        if perGroup:
+            iterNum = numgroups
+        else:
+            iterNum = hm.matrix.get_num_samples()
         # plot each of the profiles
-        for sample_id in range(hm.matrix.get_num_samples()):
-            title = hm.matrix.sample_labels[sample_id]
+        for sample_id in range(iterNum):
+            if perGroup:
+                title = hm.matrix.group_labels[sample_id]
+            else:
+                title = hm.matrix.sample_labels[sample_id]
             if sample_id > 0:
                 ax_profile = fig.add_subplot(grids[0, sample_id],
                                              sharey=ax_list[0])
@@ -342,12 +377,21 @@ def plotMatrix(hm, outFileName,
                 ax_profile = fig.add_subplot(grids[0, sample_id])
                 
             ax_profile.set_title(title)
-            for group in range(numgroups):
-                sub_matrix = hm.matrix.get_matrix(group, sample_id)
+            if perGroup:
+                iterNum2 = hm.matrix.get_num_samples()
+            else:
+                iterNum2 = numgroups
+            for group in range(iterNum2):
+                if perGroup:
+                    sub_matrix = hm.matrix.get_matrix(sample_id, group)
+                    lineLabel = sub_matrix['sample']
+                else:
+                    sub_matrix = hm.matrix.get_matrix(group, sample_id)
+                    lineLabel = sub_matrix['group']
                 plot_single(ax_profile, sub_matrix['matrix'],
                                  averageType,
                                  color_list[group],
-                                 sub_matrix['group'],
+                                 lineLabel,
                                  plot_type='simple')
 
             if sample_id > 0:
@@ -375,7 +419,7 @@ def plotMatrix(hm, outFileName,
             ax_list[-1].legend(loc=legend_location.replace('-',' '),
             ncol=1, prop=fontP,
             frameon=False, markerscale=0.5)
-            
+
     if showColorbar:
         if showSummaryPlot:
             # we dont want to colorbar to extend
