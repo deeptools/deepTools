@@ -487,10 +487,10 @@ def mergeSmallGroups(matrixDict):
 def main(args=None):
     r"""
     >>> import filecmp
+    >>> import os
     >>> # computeMatrix reference-point -a 100 -b 100 -S ../deeptools/test/test_heatmapper/test.bw -R ../deeptools/test/test_heatmapper/test.bed -o /tmp/mat.gz -bs 25
-    >>> args = parseArguments(
-    ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test.svg".split())
+    >>> args = "-m ../deeptools/test/test_heatmapper/master.mat.gz \
+    ... --outFileName /tmp/_test.svg".split()
     >>> main(args)
     >>> filecmp.cmp(
     ... '../deeptools/test/test_heatmapper/master.svg', '/tmp/_test.svg') #may fail if diff version of  matplotlib library is used
@@ -499,18 +499,16 @@ def main(args=None):
 
     Test regions label
 
-    >>> args = parseArguments(
-    ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test2.svg --regionsLabel uno,dos".split())
+    >>> args = "-m ../deeptools/test/test_heatmapper/master.mat.gz \
+    ... --outFileName /tmp/_test2.svg --regionsLabel uno,dos".split()
     >>> main(args)
     >>> filecmp.cmp(
     ... '../deeptools/test/test_heatmapper/master_relabeled.svg',
     ... '/tmp/_test2.svg') #may fail because diff matplotlib library was used
     True
     >>> os.remove('/tmp/_test2.svg')
-    >>> args = parseArguments(
-    ... "-m ../deeptools/test/test_heatmapper/master_scale_reg.mat.gz \
-    ... --outFileName /tmp/_test3.svg".split())
+    >>> args = "-m ../deeptools/test/test_heatmapper/master_scale_reg.mat.gz \
+    ... --outFileName /tmp/_test3.svg".split()
     >>> main(args)
     >>> filecmp.cmp(
     ... '../deeptools/test/test_heatmapper/master_scale_reg.svg',

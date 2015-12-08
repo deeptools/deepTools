@@ -298,10 +298,9 @@ def main(args=None):
     r"""
     >>> import filecmp
     >>> import os
-    >>> args = parseArguments(
-    ... "-m ../deeptools/test/test_heatmapper/master.mat.gz \
+    >>> args = "-m ../deeptools/test/test_heatmapper/master.mat.gz \
     ... --outFileName /tmp/_test.png --regionsLabel uno,dos \
-    ... --plotType std".split())
+    ... --plotType std".split()
     >>> main(args)
     >>> filecmp.cmp(
     ... '../deeptools/test/test_heatmapper/profile_master.png',

@@ -13,6 +13,7 @@ import deeptools.config as cfg
 import deeptools.utilities
 from deeptools import heatmapper
 
+
 def parse_arguments(args=None):
     parser = \
         argparse.ArgumentParser(
@@ -330,11 +331,11 @@ def main(args=None):
     r"""
     >>> import filecmp
     >>> import os
-    >>> args = parseArguments("reference-point \
+    >>> args = "reference-point \
     ... -R ../deeptools/test/test_heatmapper/test2.bed \
     ... -S ../deeptools/test/test_heatmapper/test.bw \
     ... -b 100 -a 100 --outFileName /tmp/_test.mat.gz \
-    ... -bs 1 -p 1".split())
+    ... -bs 1 -p 1".split()
     >>> main(args)
     >>> os.system('gunzip -f /tmp/_test.mat.gz')
     0
@@ -342,11 +343,11 @@ def main(args=None):
     ... '/tmp/_test.mat')
     True
     >>> os.remove('/tmp/_test.mat')
-    >>> args = parseArguments("scale-regions \
+    >>> args = "scale-regions \
     ... -R ../deeptools/test/test_heatmapper/test2.bed \
     ... -S ../deeptools/test/test_heatmapper/test.bw \
     ... -b 100 -a 100 -m 100 --outFileName /tmp/_test2.mat.gz \
-    ... -bs 10 -p 1".split())
+    ... -bs 10 -p 1".split()
     >>> main(args)
     >>> os.system('gunzip -f /tmp/_test2.mat.gz')
     0
