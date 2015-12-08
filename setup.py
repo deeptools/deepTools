@@ -120,7 +120,7 @@ setup(
     author_email='deeptools@googlegroups.com',
     packages=['deeptools', 'deeptools/config', 'deeptools.test'],
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
-             'bin/plotHheatmap', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
+             'bin/plotHeatmap', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/plotProfile', 'bin/bam2nucleosome',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/bigwigCorrelate',
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation'],
