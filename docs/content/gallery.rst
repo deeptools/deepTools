@@ -1,10 +1,16 @@
-Examples of deepTools Usage
+Gallery of deepTools plots
 ===========================
 
-.. note:: If you have a nice deepTools plot that you'd like to share, we'd be
-    happy to ad it to our Gallery! Just send us an email:
+.. note:: If you have a nice deepTools plot that you'd like to share, we'll be
+    happy to add it to our Gallery! Just send us an email:
     deeptools@googlegroups.com
 
+.. contents:: Published example plots
+    :local:
+	
+We're trying to collect a great variety of plots that were generated using deepTools.
+For the plots that we created ourselves, we try to point out the options that were used to create 
+a certain image, so perhaps these can serve as inspirations for you.
 
 DNase accessibility at enhancers in murine ES cells
 ---------------------------------------------------
@@ -18,20 +24,14 @@ sequenced (which is indicative of open chromatin), black spots indicate
 missing data points. An appropriate labeling of the y-axis was
 neglected.
 
-+----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Fast Facts           |                                                                                                                                                                                                                                                                                                      |
-+======================+======================================================================================================================================================================================================================================================================================================+
-| computeMatrix mode   | reference-point                                                                                                                                                                                                                                                                                      |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| regions file         | `BED <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed>`__ file with typical enhancer regions from `Whyte et al., 2013 <http://dx.doi.org/10.1016/j.cell.2013.03.035>`__ (download `here <https://raw.github.com/fidelram/deepTools/master/gallery/Whyte_TypicalEnhancers_ESC.bed>`__)   |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| signal file          | `bigWig <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig>`__ file with `DNase signal from UCSC <http://hgdownload.cse.ucsc.edu/goldenPath/mm9/encodeDCC/wgEncodeUwDnase/wgEncodeUwDnaseEscj7S129ME0SigRep1.bigWig>`__                                                                |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| heatmap cosmetics    | labels, titles, heatmap height                                                                                                                                                                                                                                                                       |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+**Fast Facts:**
 
-Command
-^^^^^^^
+* `computeMatrix` mode: reference-point
+* *regions file*: BED file with typical enhancer regions from `Whyte et al., 2013 <http://dx.doi.org/10.1016/j.cell.2013.03.035>`__ (download `here <https://raw.github.com/fidelram/deepTools/master/gallery/Whyte_TypicalEnhancers_ESC.bed>`__)
+* *signal file*: bigWig file with `DNase signal from UCSC <http://hgdownload.cse.ucsc.edu/goldenPath/mm9/encodeDCC/wgEncodeUwDnase/wgEncodeUwDnaseEscj7S129ME0SigRep1.bigWig>`_
+* *heatmap cosmetics*: labels, titles, heatmap height
+
+**Command:**
 
 ::
 
@@ -70,17 +70,14 @@ motif sequence. The following heatmap demonstrates that:
 Note that the heatmap shows *all* mouse RefSeq genes, so ca. 15,000
 genes!
 
-+----------------------+------------------------------------------------------------------------------------------------------------------------------+
-| Fast Facts           |                                                                                                                              |
-+======================+==============================================================================================================================+
-| computeMatrix mode   | reference-point                                                                                                              |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------+
-| regions file         | `BED <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed>`__ file with all mouse genes (from UCSC table browser)   |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------+
-| signal file          | `bigWig <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig>`__ file of TATA psem scores                        |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------+
-| heatmap cosmetics    | color scheme, labels, titles, heatmap height, only showing heatmap + colorbar                                                |
-+----------------------+------------------------------------------------------------------------------------------------------------------------------+
+**Fast Facts:**
+
+* `computeMatrix mode`: reference-point
+* *regions file*: BED file with all mouse genes (from UCSC table browser)
+* *signal file*: bigWig file of TATA psem scores
+* *heatmap cosmetics*: color scheme, labels, titles, heatmap height, only showing heatmap + colorbar 
+
+**Command:**
 
 ::
 

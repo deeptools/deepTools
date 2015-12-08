@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import numpy as np
-# own tools
 import argparse
 from deeptools import writeBedGraph
 from deeptools import parserCommon
@@ -108,16 +106,14 @@ def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True,
 
         if read.tlen % 2 == 0:
             fragmentStart = read.pos + read.tlen/2 -1
-            fragmentEnd   = fragmentStart + 2
-            
+            fragmentEnd = fragmentStart + 2
+
         else:
             fragmentStart = read.pos + read.tlen/2 - 1
-            fragmentEnd   = fragmentStart + 3
+            fragmentEnd = fragmentStart + 3
             
     return (fragmentStart, fragmentEnd)
 
-#######################################
-# MAIN
 
 def main(args):
     bamFile = args.bam

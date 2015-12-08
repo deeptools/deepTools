@@ -13,8 +13,6 @@ import mapReduce
 debug = 0
 
 
-
-
 def countReadsInRegions_wrapper(args):
     """
     Passes the arguments to countReadsInRegions_worker.
@@ -47,12 +45,6 @@ class CountReadsPerBin(object):
         by ``stepSize`` in case such value is present and by ``bedFile`` in which
         case the number of samples and bins are defined in the bed file
 
-    defaultFragmentLength : int
-        fragment length to extend reads that are not paired. Paired reads are extended to
-        the fragment length defined by the mate distance. For Illumina reads, usual values
-        are around 300. This value can be determined using the peak caller MACS2 or can be
-        approximated by the fragment lengths computed when preparing the library for sequencing.
-
     numberOfProcessors : int
         Number of processors to use. Default is 4
 
@@ -65,9 +57,18 @@ class CountReadsPerBin(object):
     bedFile : file_handle
         File handle of a bed file containing the regions for wich to compute the coverage. This option
         overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
-    extendPairedEnds : bool
+
+    extendReads : bool, int
+
         Whether coverage should be computed for the extended read length (i.e. the region covered
-        by the two mates or the regions expected to be covered by single-reads). Default: true
+        by the two mates or the regions expected to be covered by single-reads).
+        If the value is 'int', then then this is interpreted as the fragment length to extend reads
+        that are not paired. For Illumina reads, usual values are around 300.
+        This value can be determined using the peak caller MACS2 or can be
+        approximated by the fragment lengths computed when preparing the library for sequencing. If the value
+        is of the variable is true and not value is given, the fragment size is sampled from the library but
+        only if the library is paired-end. Default: False
+
 
     minMappingQuality : int
         Reads of a mapping quality less than the give value are not considered. Default: None
@@ -125,17 +126,15 @@ class CountReadsPerBin(object):
     The transpose function is used to get a nicer looking output.
     The first line corresponds to the number of reads per bin in bam file 1
 
-    >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2],
-    ... 50, 4, defaultFragmentLength=None)
+    >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 50, 4)
     >>> np.transpose(c.run())
     array([[ 0.,  0.,  1.,  1.],
            [ 0.,  1.,  1.,  2.]])
     """
 
-    def __init__(self, bamFilesList, binLength=50, numberOfSamples=None,
-                 defaultFragmentLength=300, numberOfProcessors=1,
+    def __init__(self, bamFilesList, binLength=50, numberOfSamples=None, numberOfProcessors=1,
                  verbose=False, region=None,
-                 bedFile=None, extendPairedEnds=True,
+                 bedFile=None, extendReads=False,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
                  chrsToSkip=[],
@@ -147,16 +146,37 @@ class CountReadsPerBin(object):
                  smoothLength=0,
                  out_file_for_raw_data=None):
 
-
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
-        self.defaultFragmentLength = 'read length' if defaultFragmentLength is None else defaultFragmentLength
+
+        if extendReads:
+            if extendReads is True and len(bamFilesList):
+                # try to guess fragment length if the bam file contains paired end reads
+                from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+                frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
+                                                                            return_lengths=False,
+                                                                            numberOfProcessors=numberOfProcessors,
+                                                                            verbose=verbose)
+                if frag_len_dict:
+                    self.defaultFragmentLength = frag_len_dict['median']
+                else:
+                    exit("*ERROR*: library is not paired-end. Please provide an extension length.")
+                if verbose:
+                    print("Fragment length based on paired en data "
+                          "estimated to be {}".format(frag_len_dict['median']))
+
+            else:
+                self.defaultFragmentLength = extendReads
+            self.extendReads = True
+        else:
+            self.defaultFragmentLength = 'read length'
+            self.extendReads = False
+
         self.numberOfProcessors = numberOfProcessors
         self.verbose = verbose
         self.region = region
         self.bedFile = bedFile
-        self.extendPairedEnds = extendPairedEnds
         self.minMappingQuality = minMappingQuality
         self.ignoreDuplicates = ignoreDuplicates
         self.chrsToSkip = chrsToSkip
@@ -309,8 +329,7 @@ class CountReadsPerBin(object):
         Initialize some useful values
 
         >>> test = Tester()
-        >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0,
-        ... defaultFragmentLength=None, stepSize=50)
+        >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 25, 0, stepSize=50)
 
         The transpose is used to get better looking numbers. The first line
         corresponds to the number of reads per bin in the first bamfile.
@@ -388,7 +407,7 @@ class CountReadsPerBin(object):
         >>> test = Tester()
         >>> import pysam
         >>> c = CountReadsPerBin([], stepSize=1,
-        ... defaultFragmentLength=300, extendPairedEnds=True)
+        ... extendReads=300)
 
         For this case the reads are length 36. The number of overlapping
         read fragments is 4 and 5 for the positions tested.
@@ -409,8 +428,7 @@ class CountReadsPerBin(object):
 
         In the following  case the reads length is 50. Reads are not extended.
 
-        >>> c.extendPairedEnds=False
-        >>> c.defaultFragmentLength=1
+        >>> c.extendReads=False
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', 148, 154, 2)
         array([ 1.,  2.,  2.])
 
@@ -568,13 +586,12 @@ class CountReadsPerBin(object):
 
 
         >>> test = Tester()
-        >>> c = CountReadsPerBin([], 1, 1, 200)
-
-        >>> c.extendPairedEnds = True
+        >>> c = CountReadsPerBin([], 1, 1, 200, extendReads=True)
         >>> c.get_fragment_from_read(test.getRead("paired-forward"))
         [(5000000, 5000100)]
         >>> c.get_fragment_from_read(test.getRead("paired-reverse"))
         [(5000000, 5000100)]
+        >>> c.defaultFragmentLength = 200
         >>> c.get_fragment_from_read(test.getRead("single-forward"))
         [(5001491, 5001691)]
         >>> c.get_fragment_from_read(test.getRead("single-reverse"))
@@ -583,13 +600,13 @@ class CountReadsPerBin(object):
         >>> c.get_fragment_from_read(test.getRead("single-forward"))
         [(5001491, 5001527)]
         >>> c.defaultFragmentLength = 'read length'
-        >>> c.extendPairedEnds = False
+        >>> c.extendReads = False
         >>> c.get_fragment_from_read(test.getRead("paired-forward"))
         [(5000000, 5000036)]
 
         Tests for read centering.
 
-        >>> c.extendPairedEnds = True
+        >>> c.extendReads = True
         >>> c.center_read = True
         >>> c.defaultFragmentLength = 200
         >>> c.get_fragment_from_read(test.getRead("paired-forward"))
@@ -604,7 +621,7 @@ class CountReadsPerBin(object):
         # E.g for a cigar of 40M260N22M
         # get blocks return two elements for the first 40 matches
         # and the for the last 22 matches.
-        if not self.extendPairedEnds:
+        if not self.extendReads:
             return read.get_blocks()
 
         def is_proper_pair():
@@ -627,7 +644,7 @@ class CountReadsPerBin(object):
                 return True
             return False
 
-        if self.extendPairedEnds:
+        if self.extendReads:
 
             if is_proper_pair():
 

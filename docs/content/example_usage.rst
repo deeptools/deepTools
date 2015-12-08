@@ -1,14 +1,28 @@
+Example usage
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   step_by_step_protocols
+   gallery
+   api_tutorial
+
 How we use deepTools 
----------------------
+--------------------
 
-You will find many examples from ChIP-seq analyses in our documentation, but
-this does not mean that deepTools is restricted to ChIP-seq data
-analysis. However, some tools, such as *bamFingerprint* specifically
-address ChIP-seq-issues.
+deepTools started off as a tool package for ChIP-seq analyses, which is
+why you find many ChIP-seq examples in our documentation.
+`Here <https://https.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing>`__
+are slides that we used for teaching at the University of Freiburg with
+more details on the deepTools usage and aims in regard to ChIP-seq.
+However, while some tools, such as `bamFingerprint`, specifically
+address ChIP-seq-issues, the majority of tools is widely applicable
+to NGS data, including RNA-seq.
 
-`Here <https://docs.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing>`__
-are slides that we used for teaching at the University of Freiburg that
-contain more details on the deepTools usage and aims.
+So, how does a typical, basic ChIP-seq workflow look like for us?
+
+.. image:: ../images/start_workflow.png
 
 As shown in the flow chart above, our work usually begins with one or
 more `FASTQ <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fastq>`__
@@ -18,13 +32,13 @@ we align the reads to the reference genome, e.g. using
 `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml>`__.
 We then use deepTools to assess the quality of the aligned reads:
 
-#. **Correlation between BAM files** (*bamCorrelate*). This is a very basic test to see whether
+#. **Correlation between BAM files** (``bamCorrelate``). This is a very basic test to see whether
    the sequenced and aligned reads meet your expectations. We use this
    check to assess the reproducibility - either between replicates
    and/or between different experiments that might have used the same
    antibody or the same cell type etc. For instance, replicates should
    correlate better than differently treated samples.
-#. **GC bias check** (*computeGCbias*). Many sequencing protocols
+#. **GC bias check** (``computeGCbias``). Many sequencing protocols
    require several rounds of PCR-based amplification of the DNA to be
    sequenced. Unfortunately, most DNA polymerases used for PCR introduce
    significant GC biases as they prefer to amplify GC-rich templates.
@@ -53,13 +67,12 @@ from their significantly decreased size:
    `IGV <http://www.broadinstitute.org/igv/>`__)
 -  more efficient downstream analyses are possible
 
-The deepTools modules *bamCompare* and *bamCoverage* do not only allow
+The deepTools modules ``bamCompare`` and ``bamCoverage`` do not only allow
 the simple conversion from BAM to bigWig (or
-`bedGraph <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bedgraph>`__
-for that matter), **the main reason why we developed those tools was
+bedGraph for that matter), **the main reason why we developed those tools was
 that we wanted to be able to *normalize* the read coverages** so that we
 could compare different samples despite differences in sequencing depth,
 GC biases and so on.
 
 Finally, once all the files have passed our visual inspections, the fun
-of downstream analyses with *heatmapper* and *profiler* can begin!
+of downstream analyses with ``computeMatrix``, ``heatmapper`` and ``profiler`` can begin!

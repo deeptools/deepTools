@@ -366,11 +366,10 @@ def main(args=None):
                  }
 
     wr = writeBedGraph.WriteBedGraph([args.bamfile1, args.bamfile2], args.binSize, 0,
-                                     args.extendReads,
                                      stepSize=args.binSize,
                                      region=args.region,
                                      numberOfProcessors=args.numberOfProcessors,
-                                     extendPairedEnds=args.extendReads,
+                                     extendReads=args.extendReads,
                                      minMappingQuality=args.minMappingQuality,
                                      ignoreDuplicates=args.ignoreDuplicates,
                                      center_read=args.centerReads,

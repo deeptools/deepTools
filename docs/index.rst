@@ -1,15 +1,11 @@
-deepTools
-=========
+=====================================================
+deepTools: *tools for exploring deep sequencing data*
+=====================================================
 
 .. image:: images/start_collage.png
 
-For support, questions, or feature requests contact:
-deeptools@googlegroups.com
-
-The main reason why deepTools was started is the simple fact that in
-2011 we could not find tools that met all our needs for NGS data
-analysis. While there were individual tools for separate tasks, we
-wanted software that would fulfill *all* of the following criteria:
+While developing deepTools, we continuously thrive to create software
+that fulfills the following criteria:
 
 -  **efficiently extract reads from BAM files** and perform various
    computations on them
@@ -21,7 +17,7 @@ wanted software that would fulfill *all* of the following criteria:
 -  enable **customized down-stream analyses** which requires that every
    data set that is being produced can be stored by the user
 -  **modular approach** - compatibility, flexibility, scalability (i.e.
-   we can add more and more modules making use of established methods)
+   we can add more and more modules and make use of established methods)
 
 The flow chart below depicts the different tool modules that are
 currently available within deepTools (deepTools modules are written in
@@ -35,9 +31,11 @@ please make sure to check our `Glossary`_.
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | tool          | type          | input files                       | main output file(s)                    | application                                                                  |
 +===============+===============+===================================+========================================+==============================================================================+
-| bamCorrelate  | QC            | 2 or more BAM                     | clustered heatmap                      | Pearson or Spearman correlation between read distributions                   |
+| *Correlate    | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamFingerprin | QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
+|plotCorrelation| visualization | bam|bigWigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
++---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+| bamFingerprint| QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | computeGCbias | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
@@ -45,7 +43,7 @@ please make sure to check our `Glossary`_.
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | bamCoverage   | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamCompare    | normalization | 2 BAM                             | bedGraph or bigWig                     | normalize 2 BAM files to each other (e.g. log2ratio, difference)             |
+| *Compare      | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                     | normalize 2 files to each other (e.g. log2ratio, difference)                 |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 | computeMatrix | visualization | 1 bigWig, 1 BED                   | zipped file for heatmapper or profiler | compute the values needed for heatmaps and summary plots                     |
 +---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
@@ -60,12 +58,13 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   content/installation/installation
+   content/installation
    content/list_of_tools
-   content/exampleUsage/Gallery
-   content/exampleUsage/How_we_use_deepTools
-   content/exampleUsage/api_tutorial
+   content/example_usage
+   
 
+For support, questions, or feature requests contact:
+deeptools@googlegroups.com
 
 About
 -----

@@ -91,7 +91,7 @@ Tools for quality control
 
    tools/bamFingerPrint
    tools/bamCorrelate
-   tools/plotCorrelation
+   tools/bigwigCorrelate
    tools/computeGCBias
 
 Tools to create tracks
@@ -102,6 +102,7 @@ Tools to create tracks
 
    tools/bamCoverage
    tools/bamCompare
+   tools/bigwigCompare
 
 Tools for visualization
 ^^^^^^^^^^^^^^^^^^^^^^^

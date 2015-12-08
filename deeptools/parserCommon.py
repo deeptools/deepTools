@@ -44,6 +44,9 @@ def read_options():
                             '*NOTE*: For spliced-read data, this option is not recommended as '
                             'it will extend reads over skipped regions, e.g. introns in RNA-seq data.',
                        type=int,
+                       nargs='?',
+                       const=True,
+                       default=False,
                        metavar="INT bp")
 
     group.add_argument('--ignoreDuplicates',
