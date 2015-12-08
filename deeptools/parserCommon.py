@@ -246,11 +246,11 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
 
-    output.add_argument('--outFileNameData',
-                        help='File name to save the data '
-                        'underlying data for the average profile, e.g. '
-                        'myProfile.tab.',
-                        type=argparse.FileType('w'))
+    #output.add_argument('--outFileNameData',
+    #                    help='File name to save the data '
+    #                    'underlying data for the average profile, e.g. '
+    #                    'myProfile.tab.',
+    #                    type=argparse.FileType('w'))
 
     output.add_argument(
         '--outFileSortedRegions',
@@ -330,8 +330,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'As in the case of '
             'fill, a semi-transparent color is used. The option '
             '"overlapped_lines" plots each region values, one on '
-            'top of the other; this option only works if '
-            '--onePlotPerGroup is set. The option "heatmap" plots a '
+            'top of the other. The option "heatmap" plots a '
             'summary heatmap.',
             choices=['lines', 'fill', 'se', 'std', 'overlapped_lines', 'heatmap'],
             default='lines')
@@ -412,10 +411,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument(
             '--colorNumber',
-            help='if --colorList is given, colorNumber controls the number of '
-            'transitions from one color to the other. If --colorNumber is set '
-            'to the same number of colors as in --colorList, then per each '
-            'color a discrete interval  is shown (i.e. no transitions)',
+            help='N.B., --colorList is required for an effect. This controls the '
+            'number of transitions from one color to the other. If --colorNumber is '
+            'the number of colors in --colorList then there will be no transitions '
+            'between the colors.',
             type=int,
             default=256)
 
@@ -430,14 +429,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'height is 25. The minimum value is '
                               '3 and the maximum is 100.',
                               type=float,
-                              default=22)
+                              default=28)
 
         optional.add_argument('--heatmapWidth',
-                              help='Width in cm. The default value is 7.5 '
+                              help='Width in cm. The default value is 4 '
                               'The minimum value is 1 and the '
                               'maximum is 100.',
                               type=float,
-                              default=5.5)
+                              default=4)
         optional.add_argument(
             '--whatToShow',
             help='The default is to include a summary or profile plot on top '
@@ -450,6 +449,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "plot and heatmap", "heatmap only",
                      "colorbar only", "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
+        optional.add_argument('--xAxisLabel', '-x',
+                          default='gene distance (bp)',
+                          help='Description for the x-axis label. This does nothing in the profiler.')
 
     ## end elif
     optional.add_argument('--startLabel',
@@ -500,9 +502,6 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'the generated image. Leave blank for no title.',
                           default='')
 
-    optional.add_argument('--xAxisLabel', '-x',
-                          default='gene distance (bp)',
-                          help='Description for the x-axis label.')
     optional.add_argument('--yAxisLabel', '-y',
                           default='',
                           help='Description for the y-axis label for the '
@@ -529,7 +528,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                    'center-right',
                                    'none'
                                    ],
-                          help='Location for the legend in the summary plot')
+                          help='Location for the legend in the summary plot.'
+                               'Note that "none" does not work for the profiler.')
 
     optional.add_argument('--perGroup',
                           help='The default is to combine all group '
