@@ -10,27 +10,27 @@ from deeptools._version import __version__
 
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
-        description='Given a BAM file it '
-        'samples several regions to estimate the paired-end '
-        'fragment length. ' )
+        description='Given a BAM file, several regions are'
+        'sampled to estimate the paired-end '
+        'fragment length.' )
     parser.add_argument('bam',
-                        help='Bam file to process',
+                        help='BAM file to process',
                         metavar='bam-file')
 
     parser.add_argument('-bai',
-                        help='Index for the bam file. Default is to '
-                        'consider a the path of the bam file adding '
+                        help='Index for the BAM file. Default is to '
+                        'consider the path of the BAM file adding '
                         'the .bai suffix.',
                         metavar='bam-file-index')
 
     parser.add_argument('--histogram', '-hist',
-                        help='This options saves a .png file containing '
-                        'a histogram for the distribion of fragment length.',
+                        help='Save a .png file with a histogram '
+                        'of the fragment length distribution.',
                         metavar='FILE')
 
     parser.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. The default is '
-                        'to use one',
+                        'to use 1.',
                         metavar="INT",
                         type=int,
                         default=1,
@@ -53,7 +53,7 @@ def main(args):
                                                                     numberOfProcessors=args.numberOfProcessors)
 
     if fragment_len_dict['mean'] == 0:
-        print "No pairs were found. Is the dataset Paired-end?"
+        print "No pairs were found. Is the dataset paired-end?"
 
     print "Sample size: {}\n".format(fragment_len_dict['sample_size'])
 

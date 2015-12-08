@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-import numpy as np
-# own tools
 import argparse
 from deeptools import writeBedGraph
-from deeptools import writeBedGraph_bam_and_bw
 from deeptools import parserCommon
 from deeptools import bamHandler
 
@@ -14,41 +11,68 @@ debug = 0
 def parseArguments(args=None):
 
     parentParser = parserCommon.getParentArgParse()
-    bamParser = parserCommon.read_options()
+    bamParser = parserCommon.bam()
     outputParser = parserCommon.output()
-    parser = argparse.ArgumentParser(parents=[parentParser, bamParser,outputParser],
+    parser = argparse.ArgumentParser(parents=[parentParser, bamParser, outputParser],
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-                                     description = 'Given a BAM file, generates a coverage bigwig file. The way the method works is by first calculating all the number of  reads (either extended or not) that overlap each tile (or bin) in the genome.  Tiles with counts equal to zero are skipped, i.e. not added to the output file.\nThe resulting read counts can be normalized using a given scaling factor, using the RPKM formula or normalizing to get a 1x depth of coverage.\n')
+                                     description = 'Given a BAM file, this tool generates a coverage bigWig file. '
+                                     'The method first calculates the number of reads (either extended or not) that '
+                                     'overlap each tile (or bin) in the genome. Tiles with counts equal to zero are skipped, '
+                                     'i.e. not added to the output file.\n'
+                                     'The resulting read counts can be normalized using a given scaling factor, either using '
+                                     'the RPKM formula or normalizing to 1x depth of coverage.\n')
 
     # define the arguments
     parser.add_argument('--bam', '-b',
-                        help = 'Bam file to process',
-                        metavar = 'bam file',
+                        help = 'BAM file to process',
+                        metavar = 'BAM file',
                         required = True)
 
     parser.add_argument('--bamIndex', '-bai',
-                        help = 'Index for the bam file. Default is to consider a the path of the bam file adding the .bai suffix.',
-                        metavar = 'bam file index')
+                        help = 'Index for the BAM file. Default is to consider the path of the BAM file adding the .bai suffix.',
+                        metavar = 'BAM file index')
 
 
     parser.add_argument('--mappedReads',
-                        help = "Use this value instead of the value found on the bam file ",
+                        help = "Use this number of mapped reads instead of the value determined from the BAM file ",
                         type = int)
 
     parser.add_argument('--normalizeTo1x',
-                        help = "Report normalized coverage to 1x sequencing depth. Sequencing depth is defined as the total number of mapped reads * fragment length / effective genome size. To use this option, the effective genome size has to be given. Common values are: mm9: 2150570000, hg19:2451960000, dm3:121400000 and ce10:93260000. The default is not to use any normalization. ",
-                        default = None,
-                        type = int,
-                        required = False)
-    parser.add_argument('--smoothLength',
-                        help = "length of smoothing to be done.",
-                        default = 0,
-                        type = int,
-                        required = False)
+                          help='Report read coverage normalized to 1x '
+                          'sequencing depth (also known as Reads Per Genomic '
+                          'Content (RPGC)). Sequencing depth is defined as: '
+                          '(total number of mapped reads * fragment length) / '
+                          'effective genome size.\nThe scaling factor used '
+                          'is the inverse of the sequencing depth computed '
+                          'for the sample to match the 1x coverage. '
+                          'To use this option, the '
+                          'effective genome size has to be indicated after the '
+                          'option. The effective genome size is the portion '
+                          'of the genome that is mappable. Large fractions of '
+                          'the genome are stretches of NNNN that should be '
+                          'discarded. Also, if repetitive regions were not '
+                          'included in the mapping of reads, the effective '
+                          'genome size needs to be adjusted accordingly. '
+                          'Common values are: mm9: 2,150,570,000; '
+                          'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
+                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
+                          'for several effective genome sizes.',
+                          metavar='EFFECTIVE GENOME SIZE LENGTH',
+                          default=None,
+                          type=int,
+                          required=False)
+
     parser.add_argument('--normalizeUsingRPKM',
-                        help = "Use RPKM to normalize the number of reads per bin. The formula is: RPKM (per bin) = #reads per bin / ( # of mapped reads (millions) * bin length (KB) )",
-                        action = 'store_true',
-                        required = False)
+                          help='Use Reads Per Kilobase per Million reads to '
+                          'normalize the number of reads per bin. The formula '
+                          'is: RPKM (per bin) =  number of reads per bin / '
+                          '( number of mapped reads (in millions) * bin '
+                          'length (kb) ). Each read is considered independently,'
+                          'if you want to only count either of the mate pairs in'
+                          'paired-end data, use the --samFlag option.',
+                          action='store_true',
+                          required=False)
 
     args = parser.parse_args(args)
 
@@ -64,15 +88,15 @@ def scaleFactor(string):
     return scaleFactors
 
 
-def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True,
+def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True, 
                       maxPairedFragmentLength=None):
-
+    
     """
-    Takes a proper pair fragment of high quaility and limited
+    Takes a proper pair fragment of high quality and limited
     to a certain length and outputs the center
     """
     fragmentStart = fragmentEnd = None
-
+    
     if not maxPairedFragmentLength:
         maxPairedFragmentLength = 2*defaultFragmentLength if defaultFragmentLength > 0 else 1000;
 
@@ -82,16 +106,14 @@ def getFragmentCenter(read, defaultFragmentLength, extendPairedEnds=True,
 
         if read.tlen % 2 == 0:
             fragmentStart = read.pos + read.tlen/2 -1
-            fragmentEnd   = fragmentStart + 2
+            fragmentEnd = fragmentStart + 2
 
         else:
             fragmentStart = read.pos + read.tlen/2 - 1
-            fragmentEnd   = fragmentStart + 3
-
+            fragmentEnd = fragmentStart + 3
+            
     return (fragmentStart, fragmentEnd)
 
-#######################################
-# MAIN
 
 def main(args):
     bamFile = args.bam
@@ -109,7 +131,7 @@ def main(args):
 
     if not args.mappedReads:
         args.mappedReads = bamHandle.mapped
-
+    
     if args.normalizeTo1x:
         current_coverage = float(args.mappedReads * fragmentLength) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
@@ -141,14 +163,12 @@ def main(args):
                                     ignoreDuplicates=args.ignoreDuplicates,
                                     center_read=args.centerReads,
                                     zerosToNans=True,
-                                    samFlag_include=args.samFlagInclude,
-                                    samFlag_exclude=args.samFlagExclude
-                                    )
+                                    samFlag=args.samFlag)
 
     wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
             format=args.outFileFormat, smooth_length=args.smoothLength)
 
-
+    
 if __name__ == "__main__":
     args = parseArguments()
     main(args)
