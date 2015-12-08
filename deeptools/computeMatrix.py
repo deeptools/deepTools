@@ -8,7 +8,6 @@ import os.path
 import shutil
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
-from deeptools import heatmapper
 from deeptools._version import __version__
 import deeptools.config as cfg
 import deeptools.utilities
@@ -358,6 +357,7 @@ def main(args=None):
 
     args = process_args(args)
 
+    from deeptools import heatmapper
     # concatenate intermediary bedgraph files
     bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
     if args.verbose:
