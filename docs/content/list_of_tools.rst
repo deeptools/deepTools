@@ -111,7 +111,7 @@ Tools for visualization
    :maxdepth: 1
 
    tools/computeMatrix
-   tools/heatmapper
+   tools/plotHeatmap
    tools/profiler
    tools/plotCorrelation
    tools/plotCoverage
