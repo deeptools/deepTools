@@ -238,7 +238,7 @@ def main(args=None):
     zerosToNans = True if args.missingDataAsZero == 'no' else False
     wr = writeBedGraph.WriteBedGraph([args.bam],
                                      binLength=args.binSize,
-                                     defaultFragmentLength=args.fragmentLength,
+                                     defaultFragmentLength=args.extendedReads,
                                      stepSize=args.binSize,
                                      region=args.region,
                                      numberOfProcessors=args.numberOfProcessors,

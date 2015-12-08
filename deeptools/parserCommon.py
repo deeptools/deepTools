@@ -31,15 +31,15 @@ def read_options():
 
     group.add_argument('--extendReads', '-e',
                        help='Extend reads to the given average fragment size. '
-                            '(1) Single-end reads are extended to match this length. '
-                            '(2) Paired-end reads are extended to match the fragment length '
-                            'between the mate reads. By default *each* read mate is '
-                            'extended. This can be modified using the SAM flags '
+                            '(1) Single-end reads and singletons are extended to match this length. '
+                            '(2) Paired-end reads are extended to match the fragment size, regardless of what is set here. '
+                            'By default *each* read mate is extended. '
+                            'This can be modified using the SAM flags '
                             '(see --samFlagInclude and --samFlagExclude options) to keep '
                             'only the first or the second mate. '
                             'Unmated reads, mate reads that map on different chromosomes or '
-                            'too far apart are extended to the given --fragmentLength. '
-                            'Read are only extended if --extendReads is set to a value '
+                            'too far apart are extended to the given value. '
+                            'Reads are only extended if --extendReads is set to a value '
                             'greater than the read length. '
                             '*NOTE*: For spliced-read data, this option is not recommended as '
                             'it will extend reads over skipped regions, e.g. introns in RNA-seq data.',

@@ -366,7 +366,7 @@ def main(args=None):
                  }
 
     wr = writeBedGraph.WriteBedGraph([args.bamfile1, args.bamfile2], args.binSize, 0,
-                                     args.fragmentLength,
+                                     args.extendReads,
                                      stepSize=args.binSize,
                                      region=args.region,
                                      numberOfProcessors=args.numberOfProcessors,
