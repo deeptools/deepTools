@@ -404,7 +404,7 @@ class heatmapper(object):
             if zone_start == zone_end:
                 continue
             if num_bins == 1:
-                posArray, stepSize = zone_start, zone_end - zone_start
+                posArray, stepSize = [zone_start], zone_end - zone_start
             else:
                 (posArray, stepSize) = np.linspace(zone_start, zone_end, num_bins,
                                                    endpoint=False,
@@ -413,8 +413,7 @@ class heatmapper(object):
 
             for pos in np.floor(posArray):
                 indexStart = int(pos - start)
-                #indexEnd   = int(indexStart + binSize)
-                indexEnd   = int(indexStart + stepSize)
+                indexEnd = int(indexStart + stepSize)
                 try:
                     countsList.append(
                         heatmapper.myAverage(valuesArray[indexStart:indexEnd],
@@ -828,11 +827,13 @@ class heatmapper(object):
         # in case we reach the end of the file
         # without encountering a hash,
         # a default name is given to regions
+        using_default_group_name = False
         if len(group_labels) == 0:
             group_labels.append(default_group_name)
+            using_default_group_name = True
 
         if len(group_labels) < group_idx-1:
-            #There was a missing "#" at the end
+            # There was a missing "#" at the end
             label = default_group_name
             if label in group_labels:
                 # loop to find a unique label name
@@ -851,8 +852,11 @@ class heatmapper(object):
                                     float(duplicates) * 100 / totalintervals))
 
         if verbose:
-            sys.stderr.write("Found:\n\tintervals: {}\n"
-                             "\tgroups: {}\n\n".format(len(regions), ", ".join(group_labels)))
+            sys.stderr.write("Found:\n\tintervals: {}\n".format(len(regions)))
+            if using_default_group_name:
+                sys.stderr.write("\tno groups found\n")
+            else:
+                sys.stderr.write("\tgroups: {}\n\n".format(len(regions), ", ".join(group_labels)))
 
         return regions, group_labels
 

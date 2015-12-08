@@ -358,12 +358,10 @@ def main(args=None):
     args = process_args(args)
 
     from deeptools import heatmapper
-    # concatenate intermediary bedgraph files
-    bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-    if args.verbose:
-        print "temporary bed file {} created".format(bed_file.name)
 
+    # if more than one bed file is given, they are concatenated into one file.
     if len(args.regionsFileName) > 1:
+        bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
         for bed in args.regionsFileName:
             bed.close()
             # concatenate all intermediate tempfiles into one
@@ -405,7 +403,9 @@ def main(args=None):
 
     hm.saveMatrix(args.outFileName)
     bed_file.close()
-    #os.remove(bed_file.name)
+
+    if len(args.regionsFileName) > 1:
+        os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
         hm.saveMatrixValues(args.outFileNameMatrix)
