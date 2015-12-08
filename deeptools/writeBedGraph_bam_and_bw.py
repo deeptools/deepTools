@@ -112,7 +112,7 @@ def writeBedGraph_worker(
                 True))
             bamHandle.close()
         elif fileFormat == 'bigwig':
-            bigwigHandle = pyBigWig.open(fileHandle)
+            bigwigHandle = pyBigWig.open(indexFile)
             coverage.append(
                 getCoverageFromBigwig(
                     bigwigHandle, chrom, start, end,
@@ -313,7 +313,7 @@ class Tester():
                                                         ===============
 
 
-        B                 ===============               ===============                           
+        B                 ===============               ===============
                                          ===============
                                                         ===============
         """
