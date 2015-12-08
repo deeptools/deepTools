@@ -166,8 +166,13 @@ class CountReadsPerBin(object):
                     print("Fragment length based on paired en data "
                           "estimated to be {}".format(frag_len_dict['median']))
 
+            elif extendReads < 1:
+                exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(extendReads))
+            elif extendReads > 2000:
+                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(extendReads))
             else:
                 self.defaultFragmentLength = extendReads
+
             self.extendReads = True
         else:
             self.defaultFragmentLength = 'read length'
