@@ -112,7 +112,7 @@ Tools for visualization
 
    tools/computeMatrix
    tools/plotHeatmap
-   tools/profiler
+   tools/plotProfile
    tools/plotCorrelation
    tools/plotCoverage
    tools/plotPCA

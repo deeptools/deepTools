@@ -15,7 +15,7 @@ import matplotlib.gridspec as gridspec
 
 # own modules
 from deeptools import parserCommon
-from deeptools import heatmapper
+#from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, getProfileTicks
 
 debug = 0
@@ -37,7 +37,11 @@ def parse_arguments(args=None):
         epilog='An example usage is: %(prog)s -m <matrix file>',
         add_help=False)
 
-    args = parser.parse_args(args)
+    return parser
+
+
+def process_args(args=None):
+    args = parse_arguments().parse_args(args)
 
     # Because of galaxy, the value of this variables is normally
     # set to ''. Therefore this check is needed
@@ -68,33 +72,54 @@ def parse_arguments(args=None):
     return args
 
 
-def plotProfile(hm, outFileName,
-                plotTitle='',
-                yAxislabel='',
-                yMin=None, yMax=None,
-                averagetype='median',
-                referencePointLabel='TSS',
-                startLabel='TSS', endLabel="TES",
-                plotHeight=7,
-                plotWidth=11,
-                perGroup=False,
-                plotType='simple',
-                image_format=None,
-                color_list=None,
-                legend_location='auto',
-                plots_per_row=8):
-
+def plot_profile(hm, out_file_name,
+                 plot_title='', y_axis_label='',
+                 y_min=None, y_max=None,
+                 averagetype='median',
+                 reference_point_label='TSS',
+                 start_label='TSS', end_label="TES",
+                 plot_height=7,
+                 plot_width=11,
+                 per_group=False,
+                 plot_type='simple',
+                 image_format=None,
+                 color_list=None,
+                 legend_location='auto',
+                 plots_per_row=8):
     """
     Using the hm matrix, makes a line plot
     either per group or per sample
     using the specified parameters.
+
+    Args:
+        hm: heatmapper object
+        out_file_name: string
+        plot_title: string
+        y_axis_label: list
+        y_min: int
+        y_max: int
+        averagetype: mean, sum, median
+        reference_point_label: string
+        start_label: string
+        end_label: string
+        plot_height: in cm
+        plot_width: in cm
+        per_group: bool
+        plot_type: string
+        image_format: string
+        color_list: list
+        legend_location:
+        plots_per_row: int
+
+    Returns:
+
     """
     # the following line is to temporary compute the log
     # of the matrix
     # hm.matrix.matrix = np.log(hm.matrix.matrix)
 
     # decide how many plots are needed
-    if perGroup:
+    if per_group:
         numplots = hm.matrix.get_num_groups()
         numlines = hm.matrix.get_num_samples()
     else:
@@ -115,14 +140,14 @@ def plotProfile(hm, outFileName,
 #    rcParams['font.size'] = 9.0
 
     # convert cm values to inches
-    plotHeightInches = rows * float(plotHeight) / 2.54
-    figWidth = cols * float(plotWidth) / 2.54 
-    fig = plt.figure(figsize=(figWidth, plotHeightInches))
+    plot_height_inches = rows * float(plot_height) / 2.54
+    fig_width = cols * float(plot_width) / 2.54
+    fig = plt.figure(figsize=(fig_width, plot_height_inches))
 
     # add xticks and labels to the last plot
     # define the xticks
 
-    fig.suptitle(plotTitle, y=(1 - (0.06 / plotHeightInches)))
+    fig.suptitle(plot_title, y=(1 - (0.06 / plot_height_inches)))
 
     if not color_list:
         cmap_plot = plt.get_cmap('jet')
@@ -145,23 +170,23 @@ def plotProfile(hm, outFileName,
                 exit(1)
 
     #If we plot a heatmap, we need to normalize the values to be between 0 and 1
-    if plotType == 'heatmap':
-        maxVal = None
+    if plot_type == 'heatmap':
+        max_val = None
         for plot in range(numplots):
             col = plot % plots_per_row
             row = int(plot / plots_per_row)
             for data_idx in range(numlines):
-                if perGroup:
+                if per_group:
                     row, col = plot, data_idx
                 else:
                     row, col = data_idx, plot
                 sub_matrix = hm.matrix.get_matrix(row, col)
-                curMax = np.amax(np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0))
-                if maxVal is None or curMax > maxVal:
-                    maxVal = curMax
+                cur_max = np.amax(np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0))
+                if max_val is None or cur_max > max_val:
+                    max_val = cur_max
 
-    xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
-                                          startLabel, endLabel)
+    xticks, xtickslabel = getProfileTicks(hm, reference_point_label,
+                                          start_label, end_label)
     first = True
     sample_ymax = None
     sample_ymin = None
@@ -174,7 +199,7 @@ def plotProfile(hm, outFileName,
         else:
             ax = fig.add_subplot(grids[row, col], sharey=ax_list[0])
 
-        if perGroup:
+        if per_group:
             title = hm.matrix.group_labels[plot]
             if row != 0:
                 plt.setp(ax.get_yticklabels(), visible=False)
@@ -186,19 +211,19 @@ def plotProfile(hm, outFileName,
         ax.set_title(title)
         mat = []  # when drawing a heatmap (in contrast to drawing lines)
         for data_idx in range(numlines):
-            if perGroup:
+            if per_group:
                 row, col = plot, data_idx
             else:
                 row, col = data_idx, plot
 
             sub_matrix = hm.matrix.get_matrix(row, col)
 
-            if perGroup:
+            if per_group:
                 label = sub_matrix['sample']
             else:
                 label = sub_matrix['group']
 
-            if plotType == 'heatmap':
+            if plot_type == 'heatmap':
                 # if plotting a heatmap, the individual rows
                 # need to be collected before plotting
                 mat.append(np.__getattribute__(averagetype)(sub_matrix['matrix'],
@@ -212,18 +237,18 @@ def plotProfile(hm, outFileName,
                             averagetype,
                             color_list[coloridx],
                             label,
-                            plot_type=plotType)
+                            plot_type=plot_type)
 
-        if plotType == 'heatmap':
-            ax.imshow(np.divide(np.asmatrix(mat), maxVal), interpolation='nearest', cmap='seismic_r')
+        if plot_type == 'heatmap':
+            ax.imshow(np.divide(np.asmatrix(mat), max_val), interpolation='nearest', cmap='seismic_r')
 
-        if (perGroup and row > 0) or (perGroup is False and col > 0):
+        if (per_group and row > 0) or (per_group is False and col > 0):
             # remove the numbers of the y axis for all plots
             # except the first one
             plt.setp(ax.get_yticklabels(), visible=False)
         else:
             # add the y axis label for the first plot
-            ax.axes.set_ylabel(yAxislabel)
+            ax.axes.set_ylabel(y_axis_label)
             """
             # reduce the number of yticks by half
             num_ticks = len(ax.get_yticks())
@@ -252,12 +277,12 @@ def plotProfile(hm, outFileName,
                   frameon=False, markerscale=0.5)
         """
 
-        if plotType != 'heatmap':
+        if plot_type != 'heatmap':
             lims = ax.get_ylim()
-            if yMin is not None: 
-                lims = (yMin, lims[1])
-            if yMax is not None:
-                lims = (lims[0], yMax)
+            if y_min is not None:
+                lims = (y_min, lims[1])
+            if y_max is not None:
+                lims = (lims[0], y_max)
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0]+1)
             ax.set_ylim(lims)
@@ -266,10 +291,10 @@ def plotProfile(hm, outFileName,
 
     plt.subplots_adjust(wspace=0.05, hspace=0.3)
     plt.tight_layout()
-    plt.savefig(outFileName, dpi=200, format=image_format)
+    plt.savefig(out_file_name, dpi=200, format=image_format)
 
 
-def main(args):
+def main(args=None):
     r"""
     >>> import filecmp
     >>> import os
@@ -285,7 +310,7 @@ def main(args):
     >>> os.remove('/tmp/_test.png')
 
     """
-
+    args = process_args(args)
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
@@ -307,24 +332,19 @@ def main(args):
     if args.outFileSortedRegions:
         hm.saveBED(args.outFileSortedRegions)
 
-    plotProfile(hm,
-                args.outFileName,
-                args.plotTitle,
-                args.yAxisLabel,
-                args.yMin, args.yMax,
-                args.averageType,
-                args.refPointLabel,
-                args.startLabel,
-                args.endLabel,
-                args.plotHeight,
-                args.plotWidth,
-                args.perGroup,
-                plotType=args.plotType,
-                image_format=args.plotFileFormat,
-                color_list=args.colors,
-                legend_location=args.legendLocation,
-                plots_per_row=args.numPlotsPerRow)
-
-if __name__ == "__main__":
-    ARGS = parse_arguments()
-    main(ARGS)
+    plot_profile(hm, args.outFileName,
+                 plot_title=args.plotTitle,
+                 y_axis_label=args.yAxisLabel,
+                 y_min=args.yMin, y_max=args.yMax,
+                 averagetype=args.averageType,
+                 reference_point_label=args.refPointLabel,
+                 start_label=args.startLabel,
+                 end_label=args.endLabel,
+                 plot_height=args.plotHeight,
+                 plot_width=args.plotWidth,
+                 per_group=args.perGroup,
+                 plot_type=args.plotType,
+                 image_format=args.plotFileFormat,
+                 color_list=args.colors,
+                 legend_location=args.legendLocation,
+                 plots_per_row=args.numPlotsPerRow)
