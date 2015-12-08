@@ -14,13 +14,14 @@ debug = 0
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
     bamParser = parserCommon.read_options()
+    normalizationParser = parserCommon.normalization_options()
     requiredArgs = get_required_args()
     optionalArgs = get_optional_args()
     outputParser = parserCommon.output()
     parser = \
         argparse.ArgumentParser(
             parents=[requiredArgs, outputParser, optionalArgs,
-                     parentParser, bamParser],
+                     parentParser, normalizationParser, bamParser],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
             description='Given a BAM file, this tool generates a bigWig or '
             'bedGraph file of read or fragment coverage. The method first '
@@ -73,72 +74,6 @@ def get_optional_args():
                           default=1.0,
                           type=float,
                           required=False)
-
-    optional.add_argument('--normalizeTo1x',
-                          help='Report read coverage normalized to 1x '
-                          'sequencing depth (also known as Reads Per Genomic '
-                          'Content (RPGC)). Sequencing depth is defined as: '
-                          '(total number of mapped reads * fragment length) / '
-                          'effective genome size.\nThe scaling factor used '
-                          'is the inverse of the sequencing depth computed '
-                          'for the sample to match the 1x coverage. '
-                          'To use this option, the '
-                          'effective genome size has to be indicated after the '
-                          'option. The effective genome size is the portion '
-                          'of the genome that is mappable. Large fractions of '
-                          'the genome are stretches of NNNN that should be '
-                          'discarded. Also, if repetitive regions were not '
-                          'included in the mapping of reads, the effective '
-                          'genome size needs to be adjusted accordingly. '
-                          'Common values are: mm9: 2,150,570,000; '
-                          'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
-                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
-                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                          'for several effective genome sizes.',
-                          metavar='EFFECTIVE GENOME SIZE LENGTH',
-                          default=None,
-                          type=int,
-                          required=False)
-
-    optional.add_argument('--normalizeUsingRPKM',
-                          help='Use Reads Per Kilobase per Million reads to '
-                          'normalize the number of reads per bin. The formula '
-                          'is: RPKM (per bin) =  number of reads per bin / '
-                          '( number of mapped reads (in millions) * bin '
-                          'length (kb) ). Each read is considered independently,'
-                          'if you want to only count either of the mate pairs in'
-                          'paired-end data, use the --samFlag option.',
-                          action='store_true',
-                          required=False)
-
-    optional.add_argument('--ignoreForNormalization', '-ignore',
-                          help='A list of chromosome names separated by spaces '
-                          'containing those chromosomes that should be excluded '
-                          'for computing the normalization. This is useful when considering '
-                          'samples with unequal coverage across chromosomes like male '
-                          'samples. An usage examples is  --ignoreForNormalization chrX chrM.',
-                          nargs='+')
-
-    optional.add_argument('--missingDataAsZero',
-                          default="yes",
-                          choices=["yes", "no"],
-                          help='If set to "yes", missing data will be treated as zero. '
-                          'If set to "no", missing data will be ignored '
-                          'and not included in the output file. Missing '
-                          'data is defined as those bins for which '
-                          'no overlapping reads are found.')
-
-    optional.add_argument('--smoothLength',
-                          metavar="INT bp",
-                          help='The smooth length defines a window, larger than '
-                          'the binSize, to average the number of reads. For '
-                          'example, if the --binSize is set to 20 bp and the '
-                          '--smoothLength is set to 60 bp, then, for each '
-                          'bin, the average of the bin and its left and right '
-                          'neighbors is considered. Any value smaller than the '
-                          '--binSize will be ignored and no smoothing will be '
-                          'applied.',
-                          type=int)
 
     optional.add_argument('--MNase',
                        help='Determine nucleosome positions from MNase-seq data. '
