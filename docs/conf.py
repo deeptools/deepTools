@@ -19,7 +19,8 @@ import shlex
 # to allow readthedocs to compile without installing some dependencies
 import mock
 
-MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
+#MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
+MOCK_MODULES = ['pyBigWig']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
