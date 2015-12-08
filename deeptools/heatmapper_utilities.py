@@ -1,9 +1,8 @@
 import numpy as np
 from matplotlib import colors as pltcolors
 
-def plot_single(ax, ma, average_type, color, label,
-                plot_type='simple'):
 
+def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     """
     Adds a line to the plot using the specified metod
     """
@@ -15,7 +14,7 @@ def plot_single(ax, ma, average_type, color, label,
     if plot_type == 'fill':
         ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
 
-    elif plot_type == 'se':  #standard error
+    elif plot_type == 'se':  # standard error
         std = np.std(ma, axis=0)/np.sqrt(ma.shape[0])
         alpha = 0.2
         if type(color) == type((0, 0)):  # check if color is tuple
@@ -31,7 +30,7 @@ def plot_single(ax, ma, average_type, color, label,
         ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
                         edgecolor=f_color, lw=0.01)
 
-    elif plot_type == 'std':  #standard deviation
+    elif plot_type == 'std':  # standard deviation
         std = np.std(ma, axis=0)
         alpha = 0.2
         if type(color) == type((0, 0)):  # check if color is tuple
@@ -48,13 +47,19 @@ def plot_single(ax, ma, average_type, color, label,
                         edgecolor=f_color, lw=0.01)
 
     elif plot_type == 'overlapped_lines':
-        ax.patch.set_facecolor('black')
+        if type(color) is str and color == 'black':
+            ax.patch.set_facecolor('white')
+        elif type(color) is not str and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
+            ax.patch.set_facecolor('white')
+        else:
+            ax.patch.set_facecolor('black')
         for row in ma:
-            ax.plot(row, 'yellow', alpha=0.1)
+            ax.plot(row, color=color, alpha=0.1)
         x = np.arange(len(row))
     ax.set_xlim(0, max(x))
 
     return ax
+
 
 def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
     """
@@ -70,12 +75,12 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
     if b < 1e5:
         quotient = 1000
         symbol = 'Kb'
-    if b >= 1e5:
+    else:
         quotient = 1e6
         symbol = 'Mb'
 
     if m == 0:
-        xticks = [(k / w) - tickPlotAdj for k in [0, b, b  + a]]
+        xticks = [(k / w) - tickPlotAdj for k in [0, b, b + a]]
         xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]

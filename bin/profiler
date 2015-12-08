@@ -70,7 +70,7 @@ def parse_arguments(args=None):
 
 def plotProfile(hm, outFileName,
                 plotTitle='',
-                xAxislabel='', yAxislabel='',
+                yAxislabel='',
                 yMin=None, yMax=None,
                 averagetype='median',
                 referencePointLabel='TSS',
@@ -126,9 +126,13 @@ def plotProfile(hm, outFileName,
 
     if not color_list:
         cmap_plot = plt.get_cmap('jet')
-        color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
+        if numlines > 1:
+            #kmeans, so we need to color by cluster
+            color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
+        else :
+            color_list = cmap_plot(np.arange(numplots, dtype=float) / numplots)
     else:
-        if len(color_list) < numlines:
+        if (numlines > 1 and len(color_list) < numlines) or (numlines == 1 and len(color_list) < numplots) :
             sys.stderr.write("\nThe given list of colors is too small, "
                              "at least {} colors are needed\n".format(numlines))
             exit(1)
@@ -139,6 +143,22 @@ def plotProfile(hm, outFileName,
                                  "for example #eeff22".format(color))
 
                 exit(1)
+
+    #If we plot a heatmap, we need to normalize the values to be between 0 and 1
+    if plotType == 'heatmap':
+        maxVal = None
+        for plot in range(numplots):
+            col = plot % plots_per_row
+            row = int(plot / plots_per_row)
+            for data_idx in range(numlines):
+                if perGroup:
+                    row, col = plot, data_idx
+                else:
+                    row, col = data_idx, plot
+                sub_matrix = hm.matrix.get_matrix(row, col)
+                curMax = np.amax(np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0))
+                if maxVal is None or curMax > maxVal:
+                    maxVal = curMax
 
     xticks, xtickslabel = getProfileTicks(hm, referencePointLabel,
                                           startLabel, endLabel)
@@ -184,14 +204,18 @@ def plotProfile(hm, outFileName,
                 mat.append(np.__getattribute__(averagetype)(sub_matrix['matrix'],
                                                             axis=0))
             else:
+                if numlines > 1:
+                    coloridx = data_idx
+                else :
+                    coloridx = plot
                 plot_single(ax, sub_matrix['matrix'],
                             averagetype,
-                            color_list[data_idx],
+                            color_list[coloridx],
                             label,
                             plot_type=plotType)
 
         if plotType == 'heatmap':
-            ax.imshow(np.asmatrix(mat), interpolation='nearest', cmap='seismic_r')
+            ax.imshow(np.divide(np.asmatrix(mat), maxVal), interpolation='nearest', cmap='seismic_r')
 
         if (perGroup and row > 0) or (perGroup is False and col > 0):
             # remove the numbers of the y axis for all plots
@@ -228,7 +252,15 @@ def plotProfile(hm, outFileName,
                   frameon=False, markerscale=0.5)
         """
 
-        ax.set_ylim(yMin, yMax)
+        if plotType != 'heatmap':
+            lims = ax.get_ylim()
+            if yMin is not None: 
+                lims = (yMin, lims[1])
+            if yMax is not None:
+                lims = (lims[0], yMax)
+            if lims[0] >= lims[1]:
+                lims = (lims[0], lims[0]+1)
+            ax.set_ylim(lims)
 
         ax_list.append(ax)
 
@@ -269,8 +301,8 @@ def main(args):
     if args.samplesLabel and len(args.samplesLabel):
         hm.matrix.set_sample_labels(args.samplesLabel)
 
-    if args.outFileNameData:
-        hm.saveTabulatedValues(args.outFileNameData)
+    #if args.outFileNameData:
+    #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.saveBED(args.outFileSortedRegions)
@@ -278,7 +310,7 @@ def main(args):
     plotProfile(hm,
                 args.outFileName,
                 args.plotTitle,
-                args.xAxisLabel, args.yAxisLabel,
+                args.yAxisLabel,
                 args.yMin, args.yMax,
                 args.averageType,
                 args.refPointLabel,

@@ -61,21 +61,7 @@ class heatmapper(object):
                     parameters['upstream']))
             exit(1)
 
-        regions, group_labels, group_boundaries = \
-            self.getRegionsAndGroups(regions_file, verbose=verbose)
-        group_len = np.diff(group_boundaries)
-
-        # check if a given group is too small. Groups that
-        # are too small can't be plotted and an exception is thrown.
-        if len(group_len) > 1:
-            sum_len = sum(group_len)
-            group_frac = [float(x)/sum_len for x in group_len]
-            if min(group_frac) <= 0.002:
-                sys.stderr.write(
-                    "One of the groups defined in the bed file is "
-                    "too small.\nGroups that are too small can't be plotted. "
-                    "\n")
-#                exit(1)
+        regions, group_labels = self.getRegionsAndGroups(regions_file, verbose=verbose)
 
         # args to pass to the multiprocessing workers
         mp_args = []
@@ -93,19 +79,25 @@ class heatmapper(object):
         else:
             res = map(compute_sub_matrix_wrapper, mp_args)
 
-        # each worker in the pools returns a tuple containing
+        # each worker in the pool returns a tuple containing
         # the submatrix data and the regions that correspond to the
         # submatrix
 
         # merge all the submatrices into matrix
         matrix = np.concatenate([r[0] for r in res], axis=0)
+        regions = []
+        regions_no_score = 0
+        for idx in range(len(res)):
+            if len(res[idx][1]):
+                regions.extend(res[idx][1])
+                regions_no_score += res[idx][2]
+
         # mask invalid (nan) values
         matrix = np.ma.masked_invalid(matrix)
 
         assert matrix.shape[0] == len(regions), \
             "matrix length does not match regions length"
 
-        regions_no_score = sum([r[2] for r in res])
         if len(regions) == 0:
             sys.stderr.write(
                 "\nERROR: BED file does not contain any valid regions. "
@@ -139,10 +131,33 @@ class heatmapper(object):
         sample_boundaries = range(0, numcols + num_ind_cols, num_ind_cols)
         sample_labels = [splitext(basename(x))[0] for x in score_file_list]
 
+        #Determine the group boundaries, since any filtering out of regions will change things
+        group_boundaries = []
+        group_labels_filtered = []
+        last_idx = -1
+        for x in range(len(regions)):
+            if regions[x].group_idx != last_idx:
+                last_idx = regions[x].group_idx
+                group_boundaries.append(x)
+                group_labels_filtered.append(group_labels[last_idx])
+        group_boundaries.append(len(regions))
+
+        # check if a given group is too small. Groups that
+        # are too small can't be plotted and an exception is thrown.
+        group_len = np.diff(group_boundaries)
+        if len(group_len) > 1:
+            sum_len = sum(group_len)
+            group_frac = [float(x)/sum_len for x in group_len]
+            if min(group_frac) <= 0.002:
+                sys.stderr.write(
+                    "One of the groups defined in the bed file is "
+                    "too small.\nGroups that are too small can't be plotted. "
+                    "\n")
+
         self.matrix = _matrix(regions, matrix,
                               group_boundaries,
                               sample_boundaries,
-                              group_labels,
+                              group_labels_filtered,
                               sample_labels)
 
         if parameters['skip zeros']:
@@ -278,13 +293,15 @@ class heatmapper(object):
                         cov = heatmapper.coverageFromBam(
                             sc_handler, feature.chrom, zones,
                             parameters['bin size'],
-                            parameters['bin avg type'])
+                            parameters['bin avg type'],
+                            parameters['verbose'])
                     else:
                         cov = heatmapper.coverageFromBigWig(
                             sc_handler, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
-                            parameters['missing data as zero'])
+                            parameters['missing data as zero'],
+                            parameters['verbose'])
 
 
                     if feature.strand == "-":
@@ -421,7 +438,7 @@ class heatmapper(object):
             return 'chr%s' % chrom
 
     @staticmethod
-    def coverageFromBam(bamfile, chrom, zones, binSize, avgType):
+    def coverageFromBam(bamfile, chrom, zones, binSize, avgType, verbose=True):
         """
         currently this method is deactivated because is too slow.
         It is preferred to create a coverage bigiwig file from the
@@ -435,7 +452,7 @@ class heatmapper(object):
                     "Known chromosomes are: {}\n".format(chrom,
                                                          bamfile.references))
                 return None
-            else:
+            elif verbose :
                 sys.stderr.write("Warning: Your chromosome names do "
                                  "not match.\n Please check that the "
                                  "chromosome names in your BED "
@@ -463,7 +480,7 @@ class heatmapper(object):
 
     @staticmethod
     def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType,
-                           nansAsZeros=False):
+                           nansAsZeros=False, verbose=True):
 
         """
         uses bigwig file reader from bx-python
@@ -508,6 +525,7 @@ class heatmapper(object):
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
                 sys.stderr.write("Problematic region: {}:{}-{}\n".format(chrom, zones[-1][1], zones[0][0]))
+        #TODO: pyBigWig allows this to work like a BAM file...
         if bw_array is None:
             # When bigwig.get_as_array queries a
             # chromosome that is not known
@@ -522,7 +540,7 @@ class heatmapper(object):
                                      zones[-1][1])
             # test again if with the altered chromosome name
             # the bigwig returns something.
-            if bw_array is None:
+            if bw_array is None and verbose:
                 sys.stderr.write("Warning: Your chromosome names do "
                                  "not match.\nPlease check that the "
                                  "chromosome names in your BED "
@@ -538,7 +556,7 @@ class heatmapper(object):
                 valuesArray[:] = np.nan
                 valuesArray[abs(zones[0][0]):] = bw_array
             else:
-                valuesArray = bw_array
+                valuesArray = np.array(bw_array)
 
         # replaces nans for zeros
         if nansAsZeros:
@@ -662,7 +680,7 @@ class heatmapper(object):
                     self.parameters['body'] + self.parameters['downstream'],
                     self.parameters['bin size'])
 
-        # this function must be updated
+        #TODO this function must be updated
         print "save tabulated values is not yet implemented."
         """
         avgDict = OrderedDict()
@@ -747,8 +765,8 @@ class heatmapper(object):
         file, this is considered as a delimiter
         to split the heatmap into groups
 
-        Returns a list of regions, a list of labels
-        and a list of places to split the regions
+        Returns a list of regions with a label
+        index appended to each and a list of labels
         """
 
         regions = []
@@ -757,7 +775,7 @@ class heatmapper(object):
         totalintervals = 0
         includedintervals = 0
         group_labels = []
-        group_boundaries = [0]
+        group_idx = 0
         bed_file = deeptools.readBed.ReadBed(regions_file)
         for ginterval in bed_file:
             totalintervals += 1
@@ -765,21 +783,18 @@ class heatmapper(object):
                 continue
 
             if ginterval.line.startswith('#'):
-                if includedintervals > 1 and  \
-                        includedintervals - group_boundaries[-1] > 1:
-                    label = ginterval.line[1:].strip()
-                    newlabel = label
-                    if label in group_labels:
-                       # loop to find a unique label name
-                        i = 0
-                        while True:
-                            i += 1
-                            newlabel = label + "_r" + str(i)
-                            if newlabel not in group_labels:
-                                break
+                group_idx += 1
+                label = ginterval.line[1:].strip()
+                if label in group_labels:
+                    # loop to find a unique label name
+                    i = 0
+                    while True:
+                        i += 1
+                        newlabel = label + "_r" + str(i)
+                        if newlabel not in group_labels:
+                            break
 
-                    group_labels.append(label)
-                    group_boundaries.append(includedintervals)
+                group_labels.append(label)
                 continue
             # if the list of regions is to big, only
             # consider a fraction of the data
@@ -806,15 +821,28 @@ class heatmapper(object):
 
             previnterval = ginterval
 
+            ginterval.group_idx = group_idx
             regions.append(ginterval)
             includedintervals += 1
 
         # in case we reach the end of the file
         # without encountering a hash,
         # a default name is given to regions
-        if len(regions) > group_boundaries[-1]:
+        if len(group_labels) == 0:
             group_labels.append(default_group_name)
-            group_boundaries.append(includedintervals)
+
+        if len(group_labels) < group_idx-1:
+            #There was a missing "#" at the end
+            label = default_group_name
+            if label in group_labels:
+                # loop to find a unique label name
+                i = 0
+                while True:
+                    i += 1
+                    newlabel = label + "_r" + str(i)
+                    if newlabel not in group_labels:
+                        break
+            group_labels.append(label)
 
         if verbose and duplicates > 0:
             sys.stderr.write(
@@ -823,9 +851,10 @@ class heatmapper(object):
                                     float(duplicates) * 100 / totalintervals))
 
         if verbose:
-            sys.stderr.write("Found:\n\tintervals: {}\n\tgroups: {}\n\n".format(len(regions),
-                                                                          ", ".join(group_labels)))
-        return regions, group_labels, group_boundaries
+            sys.stderr.write("Found:\n\tintervals: {}\n"
+                             "\tgroups: {}\n\n".format(len(regions), ", ".join(group_labels)))
+
+        return regions, group_labels
 
     def getIndividualmatrices(self, matrix):
         """In case multiple matrices are saved one after the other
