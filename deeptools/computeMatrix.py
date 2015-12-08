@@ -11,6 +11,7 @@ from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
 import deeptools.config as cfg
 import deeptools.utilities
+from deeptools import heatmapper
 
 def parse_arguments(args=None):
     parser = \
@@ -357,7 +358,6 @@ def main(args=None):
 
     args = process_args(args)
 
-    from deeptools import heatmapper
 
     # if more than one bed file is given, they are concatenated into one file.
     if len(args.regionsFileName) > 1:
