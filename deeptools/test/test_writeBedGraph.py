@@ -36,13 +36,10 @@ class TestWriteBedGraph(TestCase):
 
         self.step_size = 50
         self.bin_length = 50
-        default_frag_length = None
-
-        self.func_args =  {'scaleFactor': 1.0}
+        self.func_args = {'scaleFactor': 1.0}
 
         self.c = wr.WriteBedGraph([self.bamFile1],
                                   binLength=self.bin_length,
-                                  defaultFragmentLength=default_frag_length,
                                   stepSize=self.step_size)
 
 
@@ -73,7 +70,6 @@ class TestWriteBedGraph(TestCase):
     def test_writeBedGraph_worker_ignore_duplicates(self):
         self.c = wr.WriteBedGraph([self.bamFile2],
                                    binLength=self.bin_length,
-                                   defaultFragmentLength=None,
                                    stepSize=self.step_size, ignoreDuplicates=True)
         self.c.zerosToNans = True
 
@@ -98,7 +94,6 @@ class TestWriteBedGraph(TestCase):
 
         # turn of read extension
         self.c.extendPairedEnds = False
-        self.c.defaultFragmentLength = None
         self.c.binLength = 10
         self.c.stepSize = 10
         tempFile = self.c.writeBedGraph_worker( 'chr_cigar', 0, 100, scaleCoverage, self.func_args)
