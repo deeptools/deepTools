@@ -211,6 +211,10 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
              if r.flag & 4 == 0]
 
     bam.close()
+    # If there are no reads in a specific regions, return an empty string
+    if not reads:
+        return ''
+
     r_index = -1
     for read in reads:
         r_index += 1
@@ -570,7 +574,8 @@ def main(args):
         run_shell_command("{} index {} ".format(samtools,
                                                 args.correctedFile.name))
         for tempFileName in res:
-            os.remove(tempFileName)
+            if os.path.exists(tempFileName):
+                os.remove(tempFileName)
 
     if args.correctedFile.name.endswith('bg') or \
             args.correctedFile.name.endswith('bw'):
