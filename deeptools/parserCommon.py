@@ -295,13 +295,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         help='Number of clusters to compute. When this '
         'option is set, then the matrix is split into clusters '
         'using the hierarchical clustering algorithm, using "ward linkage". '
-        'Only works for data that is not grouped, otherwise only the first group will '
-        'be clustered. --hclust could be very slow if you have >1000 regions. '
-        'If more specific clustering methods are required it is advisable to save '
-        'the underlying matrix and run the clustering using other software. '
-        ' The plotting of the clustering may fail with an error if a '
-        'cluster has very few members compared to the total number '
-        'or regions.',
+        'Only works for data that is not grouped, otherwise only the first '
+        'group will be clustered. --hclust could be very slow if you have '
+        '>1000 regions. In those situations, you might prefer --kmeans or if more '
+        'clustering methods are required you can save the underlying matrix and run '
+        'the clustering using  other software. The plotting of the clustering may '
+        'fail with an error if a cluster has very few members compared to the '
+        'total number of regions.',
         type=int)
 
     optional = parser.add_argument_group('Optional arguments')
