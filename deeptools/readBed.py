@@ -112,7 +112,7 @@ class ReadBed(object):
                 tmp = r
                 try:
                     tmp = float(r)
-                except ValueError as TypeError:
+                except ValueError:
                     tmp = r
                 line_values.append(tmp)
         if self.file_type is None:

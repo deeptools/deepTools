@@ -15,8 +15,8 @@ def checkProgram(program, args, where_to_download):
         return
 
     try:
-        _out = subprocess.Popen([program, args], stderr=subprocess.PIPE,
-                                stdout=subprocess.PIPE)
+        subprocess.Popen([program, args], stderr=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
         return True
     except EnvironmentError:
         # handle file not found error.

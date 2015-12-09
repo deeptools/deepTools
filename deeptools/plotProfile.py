@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from __future__ import division
 import sys
@@ -186,7 +186,6 @@ class Profile(object):
                 self.y_max = None
 
         xticks, xtickslabel = getProfileTicks(self.hm, self.reference_point_label, self.start_label, self.end_label)
-        first = True
         ax_list = []
         # turn off y ticks
 
@@ -303,7 +302,6 @@ class Profile(object):
                     plt.setp(ax.get_yticklabels(), visible=False)
 
             ax.set_title(title)
-            mat = []  # when drawing a heatmap (in contrast to drawing lines)
             for data_idx in range(self.numlines):
                 if self.per_group:
                     row, col = plot, data_idx
