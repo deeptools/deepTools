@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
-import matplotlib.colors as colors
 
 
 def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import argparse
@@ -47,7 +47,7 @@ detailed help:
     # read_options_parser = parserCommon.read_options()
 
     # bins mode options
-    bins_mode = subparsers.add_parser(
+    subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bigwigCorrelateArgs(case='bins'),
@@ -64,7 +64,7 @@ detailed help:
               '-out results.npz\n')
 
     # BED file arguments
-    bed_mode = subparsers.add_parser(
+    subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bigwigCorrelateArgs(case='BED-file'),

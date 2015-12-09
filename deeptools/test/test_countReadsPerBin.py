@@ -131,8 +131,6 @@ class TestCountReadsPerBin(object):
         nt.assert_array_equal(resp, np.array([0, 1, 1, 0, 1, 0, 0, 0, 0, 0]))
 
     def test_get_coverage_of_region_zeros_to_nan(self):
-        step_size = 50
-        bin_length = 25
         self.c.zerosToNans = True
         resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200)
 

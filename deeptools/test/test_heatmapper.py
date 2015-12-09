@@ -1,6 +1,5 @@
 import os
 import sys
-import subprocess
 import filecmp
 import matplotlib as mpl
 import deeptools.computeMatrix

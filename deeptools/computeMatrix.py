@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import argparse
 import sys
@@ -45,7 +45,7 @@ To learn more about the specific parameters type:
         metavar='')
 
     # scale-regions mode options
-    scaleRegions = subparsers.add_parser(
+    subparsers.add_parser(
         'scale-regions',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),
@@ -58,7 +58,7 @@ To learn more about the specific parameters type:
         '<biwig file> -R <bed file> -b 1000\n \n')
 
     # reference point arguments
-    refpoint = subparsers.add_parser(
+    subparsers.add_parser(
         'reference-point',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),

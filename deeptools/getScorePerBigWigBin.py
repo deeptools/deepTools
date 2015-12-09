@@ -80,7 +80,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
         _file_name = ''
     warnings.simplefilter("default")
     i = 0
-    num_warnings = 0
     for chrom, start, end, binLength in regions_to_consider:
         avgReadsArray = []
         i += 1

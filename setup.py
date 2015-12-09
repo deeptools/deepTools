@@ -113,9 +113,6 @@ class install(_install):
         except Exception as e:
             sys.stderr.write("Error: {}".format(e))
 
-
-#
-
 setup(
     name='deepTools',
     version=get_version(),

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import argparse
 from matplotlib import use as mplt_use
@@ -22,9 +22,9 @@ Detailed help:
   %(prog)s -h
 
 """,
-           epilog='example usages:\n%(prog)s '
-           '--results results_file -o pca.png\n\n'
-           ' \n\n',
+        epilog='example usages:\n%(prog)s '
+               '--results results_file -o pca.png\n\n'
+               ' \n\n',
         parents=[basic_args, ])
     return parser
 

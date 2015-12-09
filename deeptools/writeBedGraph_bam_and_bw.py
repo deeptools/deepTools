@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import shutil
 import tempfile
 import numpy as np
-import tempfile
 
 # NGS packages
 import pyBigWig

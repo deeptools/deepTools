@@ -313,7 +313,6 @@ class Correlation:
 
         fig.savefig(plot_fiilename, format=image_format)
 
-
     def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
         """
         Plot the scatter plots of a matrix
