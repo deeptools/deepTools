@@ -24,7 +24,7 @@ install:
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv --ignore=E501
+  #- flake8 . --exclude=.venv --ignore=E501
   - nosetests --with-doctest --doctest-extension=.py
 
 sudo: false
