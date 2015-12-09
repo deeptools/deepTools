@@ -11,6 +11,8 @@ from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
 import deeptools.config as cfg
 import deeptools.utilities
+from deeptools import heatmapper
+
 
 def parse_arguments(args=None):
     parser = \
@@ -329,11 +331,11 @@ def main(args=None):
     r"""
     >>> import filecmp
     >>> import os
-    >>> args = parseArguments("reference-point \
+    >>> args = "reference-point \
     ... -R ../deeptools/test/test_heatmapper/test2.bed \
     ... -S ../deeptools/test/test_heatmapper/test.bw \
     ... -b 100 -a 100 --outFileName /tmp/_test.mat.gz \
-    ... -bs 1 -p 1".split())
+    ... -bs 1 -p 1".split()
     >>> main(args)
     >>> os.system('gunzip -f /tmp/_test.mat.gz')
     0
@@ -341,11 +343,11 @@ def main(args=None):
     ... '/tmp/_test.mat')
     True
     >>> os.remove('/tmp/_test.mat')
-    >>> args = parseArguments("scale-regions \
+    >>> args = "scale-regions \
     ... -R ../deeptools/test/test_heatmapper/test2.bed \
     ... -S ../deeptools/test/test_heatmapper/test.bw \
     ... -b 100 -a 100 -m 100 --outFileName /tmp/_test2.mat.gz \
-    ... -bs 10 -p 1".split())
+    ... -bs 10 -p 1".split()
     >>> main(args)
     >>> os.system('gunzip -f /tmp/_test2.mat.gz')
     0
@@ -357,13 +359,10 @@ def main(args=None):
 
     args = process_args(args)
 
-    from deeptools import heatmapper
-    # concatenate intermediary bedgraph files
-    bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-    if args.verbose:
-        print "temporary bed file {} created".format(bed_file.name)
 
+    # if more than one bed file is given, they are concatenated into one file.
     if len(args.regionsFileName) > 1:
+        bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
         for bed in args.regionsFileName:
             bed.close()
             # concatenate all intermediate tempfiles into one
@@ -405,7 +404,9 @@ def main(args=None):
 
     hm.saveMatrix(args.outFileName)
     bed_file.close()
-    #os.remove(bed_file.name)
+
+    if len(args.regionsFileName) > 1:
+        os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
         hm.saveMatrixValues(args.outFileNameMatrix)

@@ -129,3 +129,51 @@ These parameters are optional and available throughout deepTools.
  of duplicates or reads of low quality, you should consider removing
  those reads *before* using bamCoverage or bamCompare as the filtering
  by deepTools is done *after* the scaling factors are calculated!
+
+On the command line, to tell a program to use a certain option
+(e.g. to ignore duplicate reads), you will have to give the option name
+preceded by two hyphens (e.g. ``--ignoreDuplicates``).
+
+The tables on this page list:
+
+-  The option name as recognized by the program
+-  The kind of value that is sometimes expected after the option name
+   (see the annotated figure below)
+-  A verbose explanation of what the option actually does
+
+The texts here are adjusted for readability, they might not match the
+help text that you see in the command line word by word.
+
+Tools for quality control
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   tools/bamFingerPrint
+   tools/bamCorrelate
+   tools/bigwigCorrelate
+   tools/computeGCBias
+
+Tools to create tracks
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   tools/bamCoverage
+   tools/bamCompare
+   tools/bigwigCompare
+
+Tools for visualization
+^^^^^^^^^^^^^^^^^^^^^^^
+
+.. toctree::
+   :maxdepth: 1
+
+   tools/computeMatrix
+   tools/plotHeatmap
+   tools/plotProfile
+   tools/plotCorrelation
+   tools/plotCoverage
+   tools/plotPCA

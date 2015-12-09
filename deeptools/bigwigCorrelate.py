@@ -7,6 +7,7 @@ import os.path
 import numpy as np
 from deeptools import parserCommon
 from deeptools._version import __version__
+import deeptools.getScorePerBigWigBin as score_bw
 
 
 def parse_arguments(args=None):
@@ -187,10 +188,6 @@ def main(args=None):
 
     """
     args = process_args(args)
-
-    # this import statement is here to allow compilation of the code on readthedocs.org
-    # otherwise, the pyBigWig dependency breaks the docs compilation.
-    import deeptools.getScorePerBigWigBin as score_bw
 
     if len(args.bwfiles) < 2:
         print "Please input at least two bigWig (.bw) files to compare"
