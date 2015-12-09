@@ -134,53 +134,145 @@ class Profile(object):
         self.plots_per_row = plots_per_row
 
 
-    def plot_profile(self):
-        # the following line is to temporary compute the log
-        # of the matrix
-        # hm.matrix.matrix = np.log(hm.matrix.matrix)
-
         # decide how many plots are needed
         if self.per_group:
-            numplots = self.hm.matrix.get_num_groups()
-            numlines = self.hm.matrix.get_num_samples()
+            self.numplots = self.hm.matrix.get_num_groups()
+            self.numlines = self.hm.matrix.get_num_samples()
         else:
-            numplots = self.hm.matrix.get_num_samples()
-            numlines = self.hm.matrix.get_num_groups()
+            self.numplots = self.hm.matrix.get_num_samples()
+            self.numlines = self.hm.matrix.get_num_groups()
 
-        if numplots > self.plots_per_row:
-            rows = np.ceil(numplots / self.plots_per_row).astype(int)
+        if self.numplots > self.plots_per_row:
+            rows = np.ceil(self.numplots / self.plots_per_row).astype(int)
             cols = self.plots_per_row
         else:
             rows = 1
-            cols = numplots
-        grids = gridspec.GridSpec(rows, cols)
+            cols = self.numplots
+        self.grids = gridspec.GridSpec(rows, cols)
 
         plt.rcParams['font.size'] = 10.0
-        font_p = FontProperties()
-        font_p.set_size('small')
-    #    rcParams['font.size'] = 9.0
+        self.font_p = FontProperties()
+        self.font_p.set_size('small')
 
         # convert cm values to inches
-        plot_height_inches = rows * float(self.plot_height) / 2.54
-        fig_width = cols * float(self.plot_width) / 2.54
-        fig = plt.figure(figsize=(fig_width, plot_height_inches))
+        plot_height_inches = rows * self.cm2inch(self.plot_height)[0]
+        self.fig = plt.figure(figsize=self.cm2inch(cols * self.plot_width, rows * self.plot_height))
+        self.fig.suptitle(self.plot_title, y=(1 - (0.06 / plot_height_inches)))
 
-        # add xticks and labels to the last plot
-        # define the xticks
+    @staticmethod
+    def cm2inch(*tupl):
+        inch = 2.54
+        if isinstance(tupl[0], tuple):
+            return tuple(i/inch for i in tupl[0])
+        else:
+            return tuple(i/inch for i in tupl)
 
-        fig.suptitle(self.plot_title, y=(1 - (0.06 / plot_height_inches)))
+    def plot_heatmap(self):
+        matrix_flatten = None
+        if self.y_min is None:
+            matrix_flatten = self.hm.matrix.flatten()
+            # try to avoid outliers by using np.percentile
+            self.y_min = np.percentile(matrix_flatten, 1.0)
+            if np.isnan(self.y_min):
+                self.y_min = None
+
+        if self.y_max is None:
+            if matrix_flatten is None:
+                matrix_flatten = self.hm.matrix.flatten()
+            # try to avoid outliers by using np.percentile
+            self.y_max = np.percentile(matrix_flatten, 98.0)
+            if np.isnan(self.y_max):
+                self.y_max = None
+
+        xticks, xtickslabel = getProfileTicks(self.hm, self.reference_point_label, self.start_label, self.end_label)
+        first = True
+        ax_list = []
+        # turn off y ticks
+
+        for plot in range(self.numplots):
+            labels = []
+            col = plot % self.plots_per_row
+            row = int(plot / self.plots_per_row)
+
+            # split the ax to make room for the colorbar
+            sub_grid = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=self.grids[row, col],
+                                                        width_ratios=[0.92, 0.08], wspace=0.05)
+
+            ax = self.fig.add_subplot(sub_grid[0])
+            cax = self.fig.add_subplot(sub_grid[1])
+
+            ax.tick_params(
+                axis='y',
+                which='both',
+                left='off',
+                right='off',
+                labelleft='on')
+
+            if self.per_group:
+                title = self.hm.matrix.group_labels[plot]
+            else:
+                title = self.hm.matrix.sample_labels[plot]
+
+            ax.set_title(title)
+            mat = []  # when drawing a heatmap (in contrast to drawing lines)
+            for data_idx in range(self.numlines):
+                if self.per_group:
+                    row, col = plot, data_idx
+                else:
+                    row, col = data_idx, plot
+
+                sub_matrix = self.hm.matrix.get_matrix(row, col)
+
+                if self.per_group:
+                    label = sub_matrix['sample']
+                else:
+                    label = sub_matrix['group']
+                labels.append(label)
+
+                mat.append(np.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
+
+            img = ax.imshow(np.vstack(mat), interpolation='nearest',
+                            cmap='jet', aspect='auto', vmin=self.y_min, vmax=self.y_max)
+            self.fig.colorbar(img, cax=cax)
+
+            ax.axes.set_xticks(xticks)
+            ax.axes.set_xticklabels(xtickslabel)
+            # align the first and last label
+            # such that they don't fall off
+            # the heatmap sides
+            ticks = ax.xaxis.get_major_ticks()
+            ticks[0].label1.set_horizontalalignment('left')
+            ticks[-1].label1.set_horizontalalignment('right')
+
+
+            # add labels as y ticks labels
+            ymin, ymax =  ax.axes.get_ylim()
+            pos, distance = np.linspace(ymin, ymax, len(labels), retstep=True, endpoint=False)
+            d_half = float(distance) / 2
+            yticks = [x + d_half for x in pos]
+
+            ax.axes.set_yticks(yticks)
+            ax.axes.set_yticklabels(labels)
+
+            ax_list.append(ax)
+
+        plt.subplots_adjust(wspace=0.05, hspace=0.3)
+        plt.tight_layout()
+        plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+
+    def plot_profile(self):
 
         if not self.color_list:
             cmap_plot = plt.get_cmap('jet')
-            if numlines > 1:
+            if self.numlines > 1:
                 # kmeans, so we need to color by cluster
-                color_list = cmap_plot(np.arange(numlines, dtype=float) / numlines)
+                color_list = cmap_plot(np.arange(self.numlines, dtype=float) / self.numlines)
             else :
-                color_list = cmap_plot(np.arange(numplots, dtype=float) / numplots)
+                color_list = cmap_plot(np.arange(self.numplots, dtype=float) / self.numplots)
         else:
-            if (numlines > 1 and len(color_list) < numlines) or (numlines == 1 and len(color_list) < numplots) :
+            if (self.numlines > 1 and len(color_list) < self.numlines) or (self.numlines == 1 and len(color_list) < self.numplots) :
                 sys.stderr.write("\nThe given list of colors is too small, "
-                                 "at least {} colors are needed\n".format(numlines))
+                                 "at least {} colors are needed\n".format(self.numlines))
                 exit(1)
             for color in self.color_list:
                 if not pltcolors.is_color_like(color):
@@ -190,32 +282,16 @@ class Profile(object):
 
                     exit(1)
 
-        # If we plot a heatmap, we need to detertime a max and a min values
-        # to make all plots comparable
-        if self.plot_type == 'heatmap':
-            matrix_flatten = self.hm.matrix.matrix.flatten()
-            # try to avoid outliers by using np.percentile
-            vmin = np.percentile(matrix_flatten, 1.0)
-            if np.isnan(vmin):
-                vmin = None
-
-            # try to avoid outliers by using np.percentile
-            vmax = np.percentile(matrix_flatten, 98.0)
-            if np.isnan(vmax):
-                vmax = None
-
         xticks, xtickslabel = getProfileTicks(self.hm, self.reference_point_label, self.start_label, self.end_label)
         first = True
-        sample_ymax = None
-        sample_ymin = None
         ax_list = []
-        for plot in range(numplots):
+        for plot in range(self.numplots):
             col = plot % self.plots_per_row
             row = int(plot / self.plots_per_row)
             if row == 0 and col == 0:
-                ax = fig.add_subplot(grids[row, col])
+                ax = self.fig.add_subplot(self.grids[row, col])
             else:
-                ax = fig.add_subplot(grids[row, col], sharey=ax_list[0])
+                ax = self.fig.add_subplot(self.grids[row, col], sharey=ax_list[0])
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
@@ -228,7 +304,7 @@ class Profile(object):
 
             ax.set_title(title)
             mat = []  # when drawing a heatmap (in contrast to drawing lines)
-            for data_idx in range(numlines):
+            for data_idx in range(self.numlines):
                 if self.per_group:
                     row, col = plot, data_idx
                 else:
@@ -241,28 +317,16 @@ class Profile(object):
                 else:
                     label = sub_matrix['group']
 
-                if self.plot_type == 'heatmap':
-                    # if plotting a heatmap, the individual rows
-                    # need to be collected before plotting
-                    mat.append(np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0))
-                else:
-                    if numlines > 1:
-                        coloridx = data_idx
-                    else :
-                        coloridx = plot
-                    plot_single(ax, sub_matrix['matrix'],
-                                self.averagetype,
-                                color_list[coloridx],
-                                label,
-                                plot_type=self.plot_type)
+                if self.numlines > 1:
+                    coloridx = data_idx
+                else :
+                    coloridx = plot
+                plot_single(ax, sub_matrix['matrix'],
+                            self.averagetype,
+                            color_list[coloridx],
+                            label,
+                            plot_type=self.plot_type)
 
-            if self.plot_type == 'heatmap':
-                #import ipdb;ipdb.set_trace()
-                #ax.imshow(np.divide(np.asmatrix(mat), max_val), interpolation='nearest', cmap='seismic_r')
-                #import ipdb;ipdb.set_trace()
-                #np.savez("/tmp/_mat", mat)
-                img = ax.imshow(np.vstack(mat), interpolation='nearest',
-                                cmap='seismic_r', aspect='auto', vmin=vmin, vmax=vmax)
 
             if (self.per_group and row > 0) or (self.per_group is False and col > 0):
                 # remove the numbers of the y axis for all plots
@@ -289,7 +353,7 @@ class Profile(object):
 
             if first and self.plot_type not in ['heatmap', 'overlapped_lines']:
                 ax.legend(loc=self.legend_location.replace('-', ' '),
-                          ncol=1, prop=font_p,
+                          ncol=1, prop=self.font_p,
                           frameon=False, markerscale=0.5)
                 first = False
 
@@ -356,4 +420,7 @@ def main(args=None):
                      legend_location=args.legendLocation,
                      plots_per_row=args.numPlotsPerRow)
 
-    prof.plot_profile()
+    if args.plotType == 'heatmap':
+        prof.plot_heatmap()
+    else:
+        prof.plot_profile()
