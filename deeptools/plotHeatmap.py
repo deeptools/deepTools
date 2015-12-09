@@ -485,43 +485,11 @@ def mergeSmallGroups(matrixDict):
 
 
 def main(args=None):
-    r"""
-    >>> import filecmp
-    >>> import os
-    >>> # computeMatrix reference-point -a 100 -b 100 -S ../deeptools/test/test_heatmapper/test.bw -R ../deeptools/test/test_heatmapper/test.bed -o /tmp/mat.gz -bs 25
-    >>> args = "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test.svg".split()
-    >>> main(args)
-    >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/master.svg', '/tmp/_test.svg') #may fail if diff version of  matplotlib library is used
-    True
-    >>> os.remove('/tmp/_test.svg')
-
-    Test regions label
-
-    >>> args = "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test2.svg --regionsLabel uno,dos".split()
-    >>> main(args)
-    >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/master_relabeled.svg',
-    ... '/tmp/_test2.svg') #may fail because diff matplotlib library was used
-    True
-    >>> os.remove('/tmp/_test2.svg')
-    >>> args = "-m ../deeptools/test/test_heatmapper/master_scale_reg.mat.gz \
-    ... --outFileName /tmp/_test3.svg".split()
-    >>> main(args)
-    >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/master_scale_reg.svg',
-    ... '/tmp/_test3.svg') #may fail because diff matplotlib library was used
-    True
-
-    """
     args = process_args(args)
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
-    hm.readMatrixFile(matrix_file,
-                      default_group_name=args.regionsLabel)
+    hm.read_matrix_file(matrix_file, default_group_name=args.regionsLabel)
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
@@ -547,13 +515,13 @@ def main(args=None):
                       sort_method=args.sortRegions)
 
     if args.outFileNameMatrix:
-        hm.saveMatrixValues(args.outFileNameMatrix)
+        hm.save_matrix_values(args.outFileNameMatrix)
 
     #if args.outFileNameData:
     #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
-        hm.saveBED(args.outFileSortedRegions)
+        hm.save_BED(args.outFileSortedRegions)
 
     colormap_dict = {'colorMap': args.colorMap,
                      'colorList': args.colorList,

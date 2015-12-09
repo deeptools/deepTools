@@ -15,7 +15,7 @@ import matplotlib.gridspec as gridspec
 
 # own modules
 from deeptools import parserCommon
-#from deeptools import heatmapper
+from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, getProfileTicks
 
 debug = 0
@@ -295,26 +295,11 @@ def plot_profile(hm, out_file_name,
 
 
 def main(args=None):
-    r"""
-    >>> import filecmp
-    >>> import os
-    >>> args = "-m ../deeptools/test/test_heatmapper/master.mat.gz \
-    ... --outFileName /tmp/_test.png --regionsLabel uno,dos \
-    ... --plotType std".split()
-    >>> main(args)
-    >>> filecmp.cmp(
-    ... '../deeptools/test/test_heatmapper/profile_master.png',
-    ... '/tmp/_test.png')
-    True
-    >>> os.remove('/tmp/_test.png')
-
-    """
     args = process_args(args)
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
-    hm.readMatrixFile(matrix_file,
-                      default_group_name=args.regionsLabel)
+    hm.read_matrix_file(matrix_file, default_group_name=args.regionsLabel)
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
@@ -329,7 +314,7 @@ def main(args=None):
     #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
-        hm.saveBED(args.outFileSortedRegions)
+        hm.save_BED(args.outFileSortedRegions)
 
     plot_profile(hm, args.outFileName,
                  plot_title=args.plotTitle,
