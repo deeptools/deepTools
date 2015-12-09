@@ -174,9 +174,9 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
 class Tester():
     def __init__(self):
-        self.root = "./test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
+        self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+        self.bamFile1 = self.root + "testA.bam"
+        self.bamFile2 = self.root + "testB.bam"
         global debug
         debug = 0
         self.chrom = '3R'
