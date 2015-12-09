@@ -71,7 +71,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
+        <param name="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
         <conditional name="scaleRegions">
             <param name="showScaleRegionsOpt" type="select" label="The input matrix was computed in scale-regions mode">
                 <option value="no" selected="true">no</option>

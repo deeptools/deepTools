@@ -87,7 +87,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="matrixFile" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
+        <param name="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
 
         <expand macro="input_graphic_output_settings">
             <expand macro="input_image_file_format" />
