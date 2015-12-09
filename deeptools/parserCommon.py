@@ -297,7 +297,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         'using the hierarchical clustering algorithm, using "ward linkage". '
         'Only works for data that is not grouped, otherwise only the first '
         'group will be clustered. --hclust could be very slow if you have '
-        '>1000 regions. In those situations, you might prefer --kmeans or if more '
+        '>1000 regions. In those cases, you might prefer --kmeans or if more '
         'clustering methods are required you can save the underlying matrix and run '
         'the clustering using  other software. The plotting of the clustering may '
         'fail with an error if a cluster has very few members compared to the '
