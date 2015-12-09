@@ -113,8 +113,6 @@ class TestHeatmapper(object):
         os.system('cat {} | perl -lane \'s/xlink:href=".+?"//g; s/id=".+?"//g; s/"url\(.+?\)"//g; print $_\' > {}'.format(file1, f1))
         os.system('cat {} | perl -lane \'s/xlink:href=".+?"//g; s/id=".+?"//g; s/"url\(.+?\)"//g; print $_\' > {}'.format(file2, f2))
         res = filecmp.cmp(f1, f2)
-        if res is False:
-            sys.stderr.write("\n\n{}\\nn".format(os.system("diff {} {}".format(f1, f2))))
         os.remove(f1)
         os.remove(f2)
         return res
