@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import numpy as np
 
@@ -54,8 +55,10 @@ class WriteBedGraph(cr.CountReadsPerBin):
                                                         ===============
 
     >>> import tempfile
+    >>> test_path = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+
     >>> outFile = tempfile.NamedTemporaryFile()
-    >>> bam_file =  "./test/test_data/testA.bam"
+    >>> bam_file = test_path +  "testA.bam"
 
     For the example a simple scaling function is going to be used. This function
     takes the coverage found at each region and multiplies it to the scaling factor.
@@ -73,30 +76,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
     >>> step_size = 25
 
     >>> num_sample_sites = 0 #overruled by step_size
-    >>> fragment_length = None # if less thatn read length, then read length will be used instead
-
-    >>> c = WriteBedGraph([bam_file], binLength=bin_length, defaultFragmentLength=fragment_length,
-    ... region=region, stepSize=step_size)
+    >>> c = WriteBedGraph([bam_file], binLength=bin_length, region=region, stepSize=step_size)
     >>> c.run(function_to_call, funcArgs, outFile.name)
-    ignoreDuplicates: False
-    numberOfProcessors: 1
-    samFlag_exclude: None
-    verbose: False
-    samFlag_include: None
-    extendPairedEnds: True
-    region: 3R:0:200:25
-    maxPairedFragmentLength: 1000
-    binLength: 25
-    numberOfSamples: None
-    stepSize: 25
-    defaultFragmentLength: read length
-    bedFile: None
-    center_read: False
-    chrsToSkip: []
-    bamFilesList: ['./test/test_data/testA.bam']
-    smoothLength: 0
-    minMappingQuality: None
-    zerosToNans: False
     >>> open(outFile.name, 'r').readlines()
     ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.5\n']
     >>> outFile.close()
@@ -142,7 +123,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
             self.region += ":{}".format(self.binLength)
 
         for x in self.__dict__.keys():
-            print "{}: {}".format(x, self.__getattribute__(x))
+            sys.stderr.write("{}: {}\n".format(x, self.__getattribute__(x)))
 
         res = mapReduce.mapReduce([func_to_call, func_args],
                                   writeBedGraph_wrapper,
@@ -212,15 +193,14 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         Example
         -------
-        >>> bamFile1  = "./test/test_data/testA.bam"
+        >>> test_path = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+        >>> bamFile1 = test_path +  "testA.bam"
         >>> bin_length = 50
         >>> number_of_samples = 0 # overruled by step_size
-        >>> default_fragment_length = None # if < read length, then read length is used instead
         >>> func_to_call = scaleCoverage
         >>> funcArgs = {'scaleFactor': 1.0}
 
-        >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples,
-        ... default_fragment_length, stepSize=50)
+        >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples, stepSize=50)
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
         >>> open(tempFile, 'r').readlines()
         ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.0\n']
@@ -380,41 +360,3 @@ def ratio(tile_coverage, args):
     tileCoverage should be an list of two elements
     """
     return float(tile_coverage[0]) / tile_coverage[1]
-
-
-class Tester():
-    def __init__(self):
-        """
-        The distribution of reads between the two bam files is as follows.
-
-        They cover 200 bp
-
-          0                              100                           200
-          |------------------------------------------------------------|
-        A                                ===============
-                                                        ===============
-
-
-        B                 ===============               ===============                           
-                                         ===============
-                                                        ===============
-        """
-        self.root = "./test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
-        self.bamFile_PE  = self.root + "test_paired2.bam"
-        self.chrom = '3R'
-        global debug
-        debug = 0
-
-    def writeBedGraph_worker(self):
-        """ prepare arguments for test
-        """
-        start = 0
-        end = 100
-        bedGraphStep = 25
-        scaleFactors = (1, 1)
-        defaultFragmentLength = 10
-        return (
-            self.chrom, start, end, bedGraphStep,
-            scaleFactors, defaultFragmentLength)
