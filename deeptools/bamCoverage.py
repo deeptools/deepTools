@@ -4,7 +4,7 @@
 # own tools
 import argparse
 import sys
-from deeptools import writeBedGraph #This should be made directly into a bigWig
+from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools import bamHandler
 
@@ -92,7 +92,7 @@ def get_optional_args():
                           'genome size needs to be adjusted accordingly. '
                           'Common values are: mm9: 2,150,570,000; '
                           'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
-                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
                           metavar='EFFECTIVE GENOME SIZE LENGTH',
@@ -141,11 +141,11 @@ def get_optional_args():
                           type=int)
 
     optional.add_argument('--MNase',
-                       help='Determine nucleosome positions from MNase-seq data. '
-                       'Only 3 nucleotides at the center of each fragment are counted. '
-                       'The fragment ends are defined by the two mate reads. '
-                       '*NOTE*: Requires paired-end data.',
-                       action='store_true')
+                          help='Determine nucleosome positions from MNase-seq data. '
+                          'Only 3 nucleotides at the center of each fragment are counted. '
+                          'The fragment ends are defined by the two mate reads. '
+                          '*NOTE*: Requires paired-end data.',
+                          action='store_true')
 
     return parser
 
@@ -175,6 +175,7 @@ def process_args(args=None):
 
     return args
 
+
 def get_scale_factor(args):
 
     scale_factor = args.scaleFactor
@@ -192,7 +193,7 @@ def get_scale_factor(args):
             fragment_length = args.frag_len_dict['median']
 
         elif args.extendReads:
-            if frag_len_dict['mean'] != 0  and abs(args.extendReads - frag_len_dict['median']) > frag_len_dict['std']:
+            if frag_len_dict['mean'] != 0 and abs(args.extendReads - frag_len_dict['median']) > frag_len_dict['std']:
                 sys.stderr.write("*Warning*:\nThe extend reads length provided ({}) does not match the fragment "
                                  "length estimated from the BAM file: {}\n".format(args.extendReads,
                                                                                    int(frag_len_dict['median'])))
@@ -235,7 +236,6 @@ def main(args=None):
         debug = 1
     else:
         debug = 0
-
 
     funcArgs = {'scaleFactor': get_scale_factor(args)}
     zerosToNans = True if args.missingDataAsZero == 'no' else False

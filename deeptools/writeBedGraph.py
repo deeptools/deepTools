@@ -12,6 +12,7 @@ import config as cfg
 
 debug = 0
 
+
 def writeBedGraph_wrapper(args):
     """
     Passes the arguments to writeBedGraph_worker.
@@ -25,6 +26,7 @@ def writeBedGraph_wrapper(args):
 
 
 class WriteBedGraph(cr.CountReadsPerBin):
+
     r"""Reads bam files coverages and writes a bedgraph or bigwig file
 
     Extends the CountReadsPerBin object such that the coverage
@@ -105,7 +107,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
     """
 
     def run(self, func_to_call, func_args, out_file_name, format="bedgraph", smooth_length=0):
-
         r"""
         Given a list of bamfiles, a function and a function arguments,
         this method writes a bedgraph file (or bigwig) file
@@ -177,7 +178,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
     def writeBedGraph_worker(self, chrom, start, end,
                              func_to_call, func_args, smooth_length=0,
                              bed_regions_list=None):
-
         r"""Writes a bedgraph based on the read coverage found on bamFiles
 
         The given func is called to compute the desired bedgraph value
@@ -249,9 +249,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
             for index in range(len(self.bamFilesList)):
                 if smooth_length > 0:
                     vector_start, vector_end = self.getSmoothRange(tileIndex,
-                                                                self.binLength,
-                                                                smooth_length,
-                                                                length_coverage)
+                                                                   self.binLength,
+                                                                   smooth_length,
+                                                                   length_coverage)
                     tileCoverage.append(
                         np.mean(coverage[index][vector_start:vector_end]))
                 else:
@@ -383,6 +383,7 @@ def ratio(tile_coverage, args):
 
 
 class Tester():
+
     def __init__(self):
         """
         The distribution of reads between the two bam files is as follows.
@@ -395,14 +396,14 @@ class Tester():
                                                         ===============
 
 
-        B                 ===============               ===============                           
+        B                 ===============               ===============
                                          ===============
                                                         ===============
         """
         self.root = "./test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
-        self.bamFile_PE  = self.root + "test_paired2.bam"
+        self.bamFile1 = self.root + "testA.bam"
+        self.bamFile2 = self.root + "testB.bam"
+        self.bamFile_PE = self.root + "test_paired2.bam"
         self.chrom = '3R'
         global debug
         debug = 0

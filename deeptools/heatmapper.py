@@ -345,13 +345,13 @@ class heatmapper(object):
             if parameters['scale'] != 1:
                 coverage = parameters['scale'] * coverage
 
-            sub_matrix[j, :] = coverage
+            sub_matrix[j,:] = coverage
 
             sub_regions.append(feature)
             j += 1
 
         # remove empty rows
-        sub_matrix = sub_matrix[0:j, :]
+        sub_matrix = sub_matrix[0:j,:]
         if len(sub_regions) != len(sub_matrix[:, 0]):
             sys.stderr.write("regions lengths do not match\n")
         return sub_matrix, sub_regions, regions_no_score
@@ -618,13 +618,13 @@ class heatmapper(object):
         for idx, region in enumerate(self.matrix.regions):
             # join np_array values
             # keeping nans while converting them to strings
-            score = self.matrix.matrix[idx, :]
+            score = self.matrix.matrix[idx,:]
             if np.ma.is_masked(score_list[idx]):
                 score = 'nan'
             else:
                 score = np.float(score_list[idx])
             matrix_values = "\t".join(
-                np.char.mod('%f', self.matrix.matrix[idx, :]))
+                np.char.mod('%f', self.matrix.matrix[idx,:]))
             fh.write(
                 '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
                     region['chrom'],
@@ -641,7 +641,7 @@ class heatmapper(object):
                     self.parameters['body'] + self.parameters['downstream'],
                     self.parameters['bin size'])
 
-        #TODO this function must be updated
+        # TODO this function must be updated
         print "save tabulated values is not yet implemented."
         """
         avgDict = OrderedDict()
@@ -759,7 +759,7 @@ class heatmapper(object):
                 continue
             # if the list of regions is to big, only
             # consider a fraction of the data
-            #if totalintervals % onlyMultiplesOf != 0:
+            # if totalintervals % onlyMultiplesOf != 0:
             #    continue
             # check for regions that have the same position as the previous.
             # This assumes that the regions file given is sorted
@@ -913,7 +913,7 @@ class _matrix(object):
         sample_start = self.sample_boundaries[sample]
         sample_end = self.sample_boundaries[sample+1]
 
-        return {'matrix': np.ma.masked_invalid(self.matrix[group_start:group_end, :][:, sample_start:sample_end]),
+        return {'matrix': np.ma.masked_invalid(self.matrix[group_start:group_end,:][:, sample_start:sample_end]),
                 'group': self.group_labels[group],
                 'sample': self.sample_labels[sample]}
 
@@ -989,7 +989,7 @@ class _matrix(object):
             order = matrix_avgs[start:end].argsort()
             if sort_method == 'descend':
                 order = order[::-1]
-            _sorted_matrix.append(self.matrix[start:end, :][order, :])
+            _sorted_matrix.append(self.matrix[start:end,:][order,:])
             # sort the regions
             _reg = self.regions[start:end]
             for idx in order:
@@ -1014,7 +1014,7 @@ class _matrix(object):
             # order the centroids in an attempt to
             # get the same cluster order
             order = np.argsort(centroids.mean(axis=1))[::-1]
-            cluster_labels,_ = vq(matrix, centroids[order, :])
+            cluster_labels, _ = vq(matrix, centroids[order,:])
 
         if method == 'hierarchical':
             # normally too slow for large data sets
@@ -1032,7 +1032,7 @@ class _matrix(object):
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))
-            _clustered_matrix.append(self.matrix[cluster_ids, :])
+            _clustered_matrix.append(self.matrix[cluster_ids,:])
             for idx in cluster_ids:
                 _clustered_regions.append(self.regions[idx])
 
@@ -1047,7 +1047,7 @@ class _matrix(object):
         to_keep = []
         score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
         for idx, region in enumerate(self.regions):
-            score = self.matrix[idx, :]
+            score = self.matrix[idx,:]
             if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
                 continue
             else:
@@ -1056,7 +1056,7 @@ class _matrix(object):
         self.matrix = self.matrix[to_keep,:]
         # adjust sample boundaries
         to_keep = np.array(to_keep)
-        self.group_boundaries = [len(to_keep[to_keep<x]) for x in self.group_boundaries]
+        self.group_boundaries = [len(to_keep[to_keep < x]) for x in self.group_boundaries]
 
     def flatten(self):
         """

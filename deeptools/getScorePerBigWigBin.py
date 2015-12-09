@@ -8,7 +8,7 @@ import warnings
 # deepTools packages
 import deeptools.mapReduce as mapReduce
 import deeptools.utilities
-#debug = 0
+# debug = 0
 
 
 def countReadsInRegions_wrapper(args):
@@ -69,7 +69,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     else:
         for i in xrange(start, end, stepSize):
             if (i + binLength) > end:
-                regions_to_consider.append((chrom, i, end, end-i)) #last bin (may be smaller)
+                regions_to_consider.append((chrom, i, end, end - i))  # last bin (may be smaller)
             else:
                 regions_to_consider.append((chrom, i, i + binLength, binLength))
 
@@ -99,17 +99,16 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
             score = bwh.stats(chrom, start, end)
 
-
             if score is None or score == [None] or np.isnan(score[0]):
                 score = [np.nan]
-            avgReadsArray.append(score[0])     #mean of fragment coverage for region
-        #print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
+            avgReadsArray.append(score[0])  # mean of fragment coverage for region
+        # print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
 
         sub_score_per_bin.extend(avgReadsArray)
         rows += 1
         if save_data:
             _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
-            _file.write("\t".join(["{}".format(x) for x in avgReadsArray])+"\n")
+            _file.write("\t".join(["{}".format(x) for x in avgReadsArray]) + "\n")
 
     if save_data:
         _file.close()
@@ -135,9 +134,8 @@ def getChromSizes(bigwigFilesList):
     >>> getChromSizes([test.bwFile1, test.bwFile2])
     [('3R', 200L)]
     """
-    #The following lines are - with one exception ("bigWigInfo") -
-    #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
-
+    # The following lines are - with one exception ("bigWigInfo") -
+    # identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
 
     # check that the path to USCS bedGraphToBigWig as set in the config
     # is installed and is executable.
@@ -224,10 +222,10 @@ def getScorePerBin(bigWigFiles, binLength,
 
     chrnames, chrlengths = zip(*chrom_sizes)
     if stepSize is None:
-        stepSize = binLength    #for adjacent bins
+        stepSize = binLength  # for adjacent bins
 
     # set chunksize based on number of processors used
-    #chunkSize = int(stepSize * 5000 / len(bigWigFiles))
+    # chunkSize = int(stepSize * 5000 / len(bigWigFiles))
     chunkSize = sum(chrlengths) / numberOfProcessors
     if verbose:
         print "step size is {}".format(stepSize)
@@ -242,12 +240,12 @@ def getScorePerBin(bigWigFiles, binLength,
         save_file = False
 
     imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
-                                    countReadsInRegions_wrapper,
-                                    chrom_sizes,
-                                    genomeChunkLength=chunkSize,
-                                    bedFile=bedFile,
-                                    region=region,
-                                    numberOfProcessors=numberOfProcessors)
+                                   countReadsInRegions_wrapper,
+                                   chrom_sizes,
+                                   genomeChunkLength=chunkSize,
+                                   bedFile=bedFile,
+                                   region=region,
+                                   numberOfProcessors=numberOfProcessors)
 
     if out_file_for_raw_data:
         if len(non_common):
@@ -269,7 +267,8 @@ def getScorePerBin(bigWigFiles, binLength,
 
 
 class Tester():
-    def __init__( self ):
+
+    def __init__(self):
         """
         The the two bigWig files are as follows:
         $ cat /tmp/testA.bg
@@ -291,9 +290,9 @@ class Tester():
 
         """
         self.root = "./test/test_data/"
-        self.bwFile1  = self.root + "testA.bw"
-        self.bwFile2  = self.root + "testB.bw"
-        self.bwFile_PE  = self.root + "test_paired2.bw"
+        self.bwFile1 = self.root + "testA.bw"
+        self.bwFile2 = self.root + "testB.bw"
+        self.bwFile_PE = self.root + "test_paired2.bw"
         self.chrom = '3R'
-        #global debug
-        #debug = 0
+        # global debug
+        # debug = 0

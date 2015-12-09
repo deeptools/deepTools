@@ -225,15 +225,14 @@ def main(args=None):
              "region is covered by reads.\n")
 
     np.savez_compressed(args.outFileName,
-             matrix=num_reads_per_bin,
-             labels=args.labels)
+                        matrix=num_reads_per_bin,
+                        labels=args.labels)
 
     if args.outRawCounts:
         # append to the generated file the
         # labels
         header = "#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        #import ipdb;ipdb.set_trace()
         with open(args.outRawCounts.name, 'r+') as f:
             content = f.read()
             f.seek(0, 0)

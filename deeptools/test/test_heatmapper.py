@@ -14,6 +14,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
 
 
 class TestHeatmapper(object):
+
     def setUp(self):
         # the tests based on images were done with
         # matplotlib 1.5.0 and will fail if other
@@ -49,7 +50,6 @@ class TestHeatmapper(object):
         os.system('gunzip -f /tmp/_test.mat.gz')
         assert filecmp.cmp(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
-
 
     def test_plotHeatmap_simple_plot(self):
         """
@@ -97,7 +97,6 @@ class TestHeatmapper(object):
             assert self.compare_svg(ROOT + '/profile_master_heatmap.svg', '/tmp/_test.svg')
             os.remove('/tmp/_test.svg')
 
-
     @staticmethod
     def compare_svg(file1, file2):
         """
@@ -106,7 +105,7 @@ class TestHeatmapper(object):
 
         :return: bool True if files are similar
         """
-        #import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         f1 = deeptools.utilities.getTempFileName(suffix='.svg')
         f2 = deeptools.utilities.getTempFileName(suffix='.svg')
         # remove xlink:href, id and url attributes

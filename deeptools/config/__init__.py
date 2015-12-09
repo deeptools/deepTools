@@ -3,6 +3,7 @@ import sys
 import ConfigParser
 import subprocess
 
+
 def checkProgram(program, args, where_to_download):
     """
     deeptools relies on some command line programs

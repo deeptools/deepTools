@@ -136,7 +136,7 @@ class Correlation:
         if len(to_remove):
             to_keep = [x for x in range(self.matrix.shape[0])
                        if x not in to_remove]
-            self.matrix = self.matrix[to_keep, :]
+            self.matrix = self.matrix[to_keep,:]
             if verbose:
                 sys.stderr.write(
                     "total/filtered/left: "
@@ -151,7 +151,7 @@ class Correlation:
         _mat = np.nan_to_num(self.matrix)
         to_keep = _mat.sum(1) != 0
 
-        self.matrix = self.matrix[to_keep, :]
+        self.matrix = self.matrix[to_keep,:]
 
     def save_corr_matrix(self, file_handle):
         """
@@ -268,7 +268,7 @@ class Correlation:
         # Plot distance matrix.
         axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
         index = z_var['leaves']
-        corr_matrix = corr_matrix[index, :]
+        corr_matrix = corr_matrix[index,:]
         corr_matrix = corr_matrix[:, index]
         img_mat = axmatrix.pcolormesh(corr_matrix,
                                       edgecolors='black',
@@ -421,7 +421,7 @@ class Correlation:
             ax.set_ylim(min_value, ax.get_ylim()[1])
             ax.set_xlim(min_value, ax.get_xlim()[1])
 
-    #    plt.tight_layout() # if set spoils the title position
+    # plt.tight_layout() # if set spoils the title position
         plt.savefig(plot_fiilename, format=image_format)
 
 
@@ -435,18 +435,18 @@ class Correlation:
         """
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 10))
-        ## PCA
+        # PCA
         mlab_pca = PCA(self.matrix)
         n = len(self.labels)
-        #print self.matrix
-        #print type(self.matrix)
-        colors = cycle(plt.cm.gist_rainbow(np.linspace(0,1,n)))
+        # print self.matrix
+        # print type(self.matrix)
+        colors = cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
         markers = cycle(matplotlib.markers.MarkerStyle.filled_markers)
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
         for i in range(n):
-            ax1.scatter(mlab_pca.Y[0,i], mlab_pca.Y[1,i],
+            ax1.scatter(mlab_pca.Y[0, i], mlab_pca.Y[1, i],
                         marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
         if plot_title == '':
             ax1.set_title('PCA')
@@ -460,7 +460,7 @@ class Correlation:
 #        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
 
-        #Scree plot
+        # Scree plot
         eigenvalues = map(lambda x: x*n, mlab_pca.fracs)
 
         cumulative = []
@@ -472,7 +472,7 @@ class Correlation:
         ind = np.arange(n)  # the x locations for the groups
         width = 0.35         # the width of the bars
 
-        #fig, ax2 = plt.subplots()
+        # fig, ax2 = plt.subplots()
         ax2.bar(width+ind, eigenvalues, width*2)
         ax2.set_ylabel('Eigenvalue')
         ax2.set_xlabel('Factors')
@@ -484,7 +484,7 @@ class Correlation:
         ax3.axhline(y=1, color="black", linestyle="dotted")
         ax3.plot(width*2+ind, cumulative[0:], "r-")
         ax3.plot(width*2+ind, cumulative[0:], "wo")
-        ax3.set_ylim([0,1.05])
+        ax3.set_ylim([0, 1.05])
         ax3.set_ylabel('Cumulative variability')
 
 

@@ -57,7 +57,6 @@ To learn more about the specific parameters type:
         usage='An example usage is:\n  computeMatrix -S '
         '<biwig file> -R <bed file> -b 1000\n \n')
 
-
     # reference point arguments
     refpoint = subparsers.add_parser(
         'reference-point',
@@ -109,8 +108,8 @@ def computeMatrixOutputArgs(args=None):
                         'needed by the "heatmapper" and "profiler" tools.',
                         type=writableFile,
                         required=True)
-    #TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
-    #output.add_argument('--outFileNameData',
+    # TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
+    # output.add_argument('--outFileNameData',
     #                    help='Name to save the averages per matrix '
     #                    'column into a text file. This corresponds to '
     #                    'the underlying data used to '
@@ -331,7 +330,6 @@ def main(args=None):
 
     args = process_args(args)
 
-
     # if more than one bed file is given, they are concatenated into one file.
     if len(args.regionsFileName) > 1:
         bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
@@ -383,8 +381,8 @@ def main(args=None):
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
 
-    #TODO This isn't implemented
-    #if args.outFileNameData:
+    # TODO This isn't implemented
+    # if args.outFileNameData:
     #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import numpy as np
 
 # own packages
-from deeptools.utilities import *
+# from deeptools.utilities import *
 from deeptools import bamHandler
 import deeptools.countReadsPerBin as countR
 
@@ -173,10 +173,11 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
 
 class Tester():
+
     def __init__(self):
         self.root = "./test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
+        self.bamFile1 = self.root + "testA.bam"
+        self.bamFile2 = self.root + "testB.bam"
         global debug
         debug = 0
         self.chrom = '3R'

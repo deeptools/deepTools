@@ -81,7 +81,7 @@ def read_options():
                        'This is useful to count properly paired reads only once, '
                        'otherwise the second mate will be also considered for the '
                        'coverage.',
-                       metavar= 'INT',
+                       metavar='INT',
                        default=None,
                        type=int,
                        required=False)
@@ -91,7 +91,7 @@ def read_options():
                        'to get only reads that map to the forward strand, use '
                        '--samFlagExclude 16, where 16 is the SAM flag for reads '
                        'that map to the reverse strand.',
-                       metavar= 'INT',
+                       metavar='INT',
                        default=None,
                        type=int,
                        required=False)
@@ -166,7 +166,7 @@ def numberOfProcessors(string):
             raise argparse.ArgumentTypeError("the value given is not valid. "
                                              "Error message: {}\nThe number of "
                                              "available processors in your "
-                                             "computer is {}.".format(string,e,
+                                             "computer is {}.".format(string, e,
                                                                       availProc))
 
         if numberOfProcessors > availProc:
@@ -232,12 +232,12 @@ def heatmapperMatrixArgs(args=None):
                           )
 
     required.add_argument('--outFileName', '-out',
-                        help='File name to save the image. The file '
-                        'ending will be used to determine the image '
-                        'format. The available options are: "png", "emf", '
-                        '"eps", "pdf" and "svg", e. g. MyHeatmap.png.',
-                        type=writableFile,
-                        required=True)
+                          help='File name to save the image. The file '
+                          'ending will be used to determine the image '
+                          'format. The available options are: "png", "emf", '
+                          '"eps", "pdf" and "svg", e. g. MyHeatmap.png.',
+                          type=writableFile,
+                          required=True)
     return parser
 
 
@@ -246,7 +246,7 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
 
-    #output.add_argument('--outFileNameData',
+    # output.add_argument('--outFileNameData',
     #                    help='File name to save the data '
     #                    'underlying data for the average profile, e.g. '
     #                    'myProfile.tab.',
@@ -450,10 +450,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "colorbar only", "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
         optional.add_argument('--xAxisLabel', '-x',
-                          default='gene distance (bp)',
-                          help='Description for the x-axis label. This does nothing in the profiler.')
+                              default='gene distance (bp)',
+                              help='Description for the x-axis label. This does nothing in the profiler.')
 
-    ## end elif
+    # end elif
     optional.add_argument('--startLabel',
                           default='TSS',
                           help='[only for scale-regions mode] Label shown '

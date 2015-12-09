@@ -65,7 +65,7 @@ def getRatio(tileCoverage, args):
         if np.isnan(value1) or np.isnan(value2):
             return np.nan
 
-    ## ratio case
+    # ratio case
     if args['valueType'] in ['ratio', 'log2', 'reciprocal_ratio']:
         bin_value = compute_ratio(value1, value2, args)
 

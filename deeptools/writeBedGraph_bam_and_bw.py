@@ -17,6 +17,7 @@ from writeBedGraph import *
 import config as cfg
 from deeptools import bamHandler
 
+
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
@@ -44,7 +45,6 @@ def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
         missingDataAsZero=False, fixed_step=False):
-
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -152,7 +152,7 @@ def writeBedGraph_worker(
         value = func(tileCoverage, funcArgs)
 
         if fixed_step:
-            writeStart = start + tileIndex*tileSize
+            writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
                 _file.write("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
@@ -162,7 +162,7 @@ def writeBedGraph_worker(
                                                       writeEnd, value))
         else:
             if previousValue is None:
-                writeStart = start + tileIndex*tileSize
+                writeStart = start + tileIndex * tileSize
                 writeEnd = min(writeStart + tileSize, end)
                 previousValue = value
 
@@ -196,7 +196,6 @@ def writeBedGraph(
         func, funcArgs, tileSize=25, region=None, numberOfProcessors=None,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
         smoothLength=0, fixed_step=False):
-
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -253,8 +252,8 @@ def writeBedGraph(
                                 "bigwig files differ.\n{} for {}\n" \
                                 "{} for {}.\n\nThe smallest " \
                                 "length will be used".format(
-                                chromName, chromNamesAndSize[chromName],
-                                bigwigs[0], size, bigwigs[1])
+                                    chromName, chromNamesAndSize[chromName],
+                                    bigwigs[0], size, bigwigs[1])
                             chromNamesAndSize[chromName] = min(
                                 chromNamesAndSize[chromName], size)
                     else:
@@ -301,6 +300,7 @@ def writeBedGraph(
 
 
 class Tester():
+
     def __init__(self):
         """
         The distribution of reads between the two bam files is as follows.
@@ -318,9 +318,9 @@ class Tester():
                                                         ===============
         """
         self.root = "/data/projects/ramirez/tools/deepTools/deeptools/test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
-        self.bamFile_PE  = self.root + "test_paired2.bam"
+        self.bamFile1 = self.root + "testA.bam"
+        self.bamFile2 = self.root + "testB.bam"
+        self.bamFile_PE = self.root + "test_paired2.bam"
         self.chrom = '3R'
         global debug
         debug = 0
@@ -330,13 +330,13 @@ class Tester():
         """
         bam = bamHandler.openBam(self.bamFile_PE)
         if readType == 'paired-reverse':
-            read = [x for x in bam.fetch('chr2', 5000081, 5000082 )][0]
+            read = [x for x in bam.fetch('chr2', 5000081, 5000082)][0]
         elif readType == 'single-forward':
-            read = [x for x in bam.fetch('chr2', 5001491, 5001492 )][0]
+            read = [x for x in bam.fetch('chr2', 5001491, 5001492)][0]
         elif readType == 'single-reverse':
-            read = [x for x in bam.fetch('chr2', 5001700, 5001701 )][0]
+            read = [x for x in bam.fetch('chr2', 5001700, 5001701)][0]
         else:  # by default a forward paired read is returned
-            read = [x for x in bam.fetch('chr2', 5000027, 5000028 )][0]
+            read = [x for x in bam.fetch('chr2', 5000027, 5000028)][0]
         return read
 
     def writeBedGraph_worker(self):

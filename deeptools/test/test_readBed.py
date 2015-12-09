@@ -6,9 +6,10 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 
 
 class TestReadBed(object):
+
     def setUp(self):
         self.root = ROOT
-        self.bed3_file  = self.root + "test.bed3"
+        self.bed3_file = self.root + "test.bed3"
 
         self.bed = readbed.ReadBed(open(self.bed3_file))
 

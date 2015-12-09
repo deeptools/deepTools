@@ -15,7 +15,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
         ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
 
     elif plot_type == 'se':  # standard error
-        std = np.std(ma, axis=0)/np.sqrt(ma.shape[0])
+        std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
         alpha = 0.2
         if type(color) == type((0, 0)):  # check if color is tuple
             # add the alpha channed to the color tuple
