@@ -178,7 +178,7 @@ def plotMatrix(hm, outFileName,
 
     matrix_flatten = None
     if zMin is None:
-        matrix_flatten = flattenMatrix(hm.matrix.matrix)
+        matrix_flatten = hm.matrix.flatten()
         # try to avoid outliers by using np.percentile
         zMin = np.percentile(matrix_flatten, 1.0)
         if np.isnan(zMin):
@@ -186,7 +186,7 @@ def plotMatrix(hm, outFileName,
 
     if zMax is None:
         if matrix_flatten is None:
-            matrix_flatten = flattenMatrix(hm.matrix.matrix)
+            matrix_flatten = hm.matrix.matrix.flatten()
         # try to avoid outliers by using np.percentile
         zMax = np.percentile(matrix_flatten, 98.0)
         if np.isnan(zMax):
@@ -432,20 +432,6 @@ def plotMatrix(hm, outFileName,
 
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
-
-
-def flattenMatrix(matrix):
-    """
-    flatten and remove nans
-    """
-    matrix_flatten = matrix.flatten()
-    # nans are removed from the flattened array
-    matrix_flatten = matrix_flatten[np.isnan(matrix_flatten) == False]
-    if len(matrix_flatten) == 0:
-        num_nan = len(np.flatnonzero(np.isnan(matrix.flatten())))
-        raise ValueError("matrix only contains nans "
-                         "(total nans: {})".format(num_nan))
-    return matrix_flatten
 
 
 def mergeSmallGroups(matrixDict):
