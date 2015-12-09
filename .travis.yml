@@ -20,6 +20,7 @@ install:
   - conda install -c https://conda.anaconda.org/cgat pysam
   - pip install pyBigWig
   - pip install bx-python
+  - pip install flake8
   - python setup.py install
 
 # command to run tests
