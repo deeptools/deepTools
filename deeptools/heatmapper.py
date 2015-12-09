@@ -1058,7 +1058,6 @@ class _matrix(object):
         to_keep = np.array(to_keep)
         self.group_boundaries = [len(to_keep[to_keep<x]) for x in self.group_boundaries]
 
-
     def flatten(self):
         """
         flatten and remove nans from matrix. Useful
@@ -1066,9 +1065,9 @@ class _matrix(object):
 
         :return flattened matrix
         """
-        matrix_flatten = self.matrix.flatten()
+        matrix_flatten = np.asarray(self.matrix.flatten())
         # nans are removed from the flattened array
-        matrix_flatten = matrix_flatten[np.isnan(matrix_flatten) == False]
+        matrix_flatten = matrix_flatten[~np.isnan(matrix_flatten)]
         if len(matrix_flatten) == 0:
             num_nan = len(np.flatnonzero(np.isnan(matrix.flatten())))
             raise ValueError("matrix only contains nans "

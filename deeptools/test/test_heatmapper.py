@@ -1,9 +1,12 @@
 import os
+import sys
 import subprocess
 import filecmp
+import matplotlib as mpl
 import deeptools.computeMatrix
 import deeptools.plotHeatmap
 import deeptools.plotProfile
+import deeptools.utilities
 
 __author__ = 'Fidel'
 
@@ -11,6 +14,15 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
 
 
 class TestHeatmapper(object):
+    def setUp(self):
+        # the tests based on images were done with
+        # matplotlib 1.5.0 and will fail if other
+        # version is used
+        self.run_image_tests = True
+        if mpl.__version__ != '1.5.0':
+            sys.stderr.write("\nTests based on images are skipped because of "
+                             "different matplotlib version ({}) != 1.5.0\n".format(mpl.__version__))
+            self.run_image_tests = False
 
     def test_computeMatrix_reference_point(self):
         args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
@@ -48,51 +60,59 @@ class TestHeatmapper(object):
           -R {test_path}/test.bed -o /tmp/mat.gz -bs 25
 
         """
-        args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg".format(ROOT).split()
-        deeptools.plotHeatmap.main(args)
+        if self.run_image_tests:
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg".format(ROOT).split()
+            deeptools.plotHeatmap.main(args)
 
-        # may fail if diff version of matplotlib library is used
-        assert self.compare_svg(ROOT + '/master.svg', '/tmp/_test.svg') is True
-        os.remove('/tmp/_test.svg')
+            # may fail if diff version of matplotlib library is used
+            assert self.compare_svg(ROOT + '/master.svg', '/tmp/_test.svg') is True
+            os.remove('/tmp/_test.svg')
 
     def test_plotHeatmap_rename_labels(self):
-        args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno,dos".format(ROOT).split()
-        deeptools.plotHeatmap.main(args)
-        assert self.compare_svg(ROOT + '/master_relabeled.svg', '/tmp/_test2.svg') is True
-        os.remove('/tmp/_test2.svg')
+        if self.run_image_tests:
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno,dos".format(ROOT).split()
+            deeptools.plotHeatmap.main(args)
+            assert self.compare_svg(ROOT + '/master_relabeled.svg', '/tmp/_test2.svg') is True
+            os.remove('/tmp/_test2.svg')
 
     def test_plotHeatmap_scale_regions(self):
-        args = "-m {}/master_scale_reg.mat.gz --outFileName /tmp/_test3.svg".format(ROOT).split()
-        deeptools.plotHeatmap.main(args)
-        assert self.compare_svg(ROOT + '/master_scale_reg.svg', '/tmp/_test3.svg') is True
-        os.remove('/tmp/_test3.svg')
+        if self.run_image_tests:
+            args = "-m {}/master_scale_reg.mat.gz --outFileName /tmp/_test3.svg".format(ROOT).split()
+            deeptools.plotHeatmap.main(args)
+            assert self.compare_svg(ROOT + '/master_scale_reg.svg', '/tmp/_test3.svg') is True
+            os.remove('/tmp/_test3.svg')
 
     def test_plotProfiler(self):
-        args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno,dos " \
-               "--plotType std".format(ROOT).split()
-        deeptools.plotProfile.main(args)
-        assert self.compare_svg(ROOT + '/profile_master.svg', '/tmp/_test.svg')
-        os.remove('/tmp/_test.svg')
+        if self.run_image_tests:
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno,dos " \
+                   "--plotType std".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
 
-        
+    def test_plotProfiler_heatmap(self):
+        if self.run_image_tests:
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --plotType heatmap".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_heatmap.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+
     @staticmethod
     def compare_svg(file1, file2):
         """
-        svg files usually differ on randomly assigned ids.
+        svg files usually differ on randomly assigned ids and xlink:href tags
         This code compares the files ignoring the lines that contain ids
 
         :return: bool True if files are similar
         """
-        try:
-            # the diff command is used to compare the files, lines containing the word id are filtered out
-            output = subprocess.check_output("/usr/bin/diff  --suppress-common-lines -y "
-                                             "{} {} | grep -v id".format(file1, file2), shell=True)
-        except subprocess.CalledProcessError as grepexc:
-            # if the files are different, diff returns and exit code = 1 that raises
-            # the subprocess.CalledProcessError exception
-            output = grepexc.output
-
-        if output.strip() == '':
-            return True
-        else:
-            return False
+        #import ipdb; ipdb.set_trace()
+        f1 = deeptools.utilities.getTempFileName(suffix='.svg')
+        f2 = deeptools.utilities.getTempFileName(suffix='.svg')
+        # remove xlink:href, id and url attributes
+        os.system('cat {} | perl -lane \'s/xlink:href=".+?"//g; s/id=".+?"//g; s/"url\(.+?\)"//g; print $_\' > {}'.format(file1, f1))
+        os.system('cat {} | perl -lane \'s/xlink:href=".+?"//g; s/id=".+?"//g; s/"url\(.+?\)"//g; print $_\' > {}'.format(file2, f2))
+        res = filecmp.cmp(f1, f2)
+        os.remove(f1)
+        os.remove(f2)
+        return res
