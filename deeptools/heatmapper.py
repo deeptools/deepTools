@@ -999,7 +999,7 @@ class _matrix(object):
         self.regions = _sorted_regions
         self.set_sorting_method(sort_method, sort_using)
 
-    def hmcluster(self, k, method='kmeans'):
+    def hmcluster(self, k, method):
 
         matrix = np.asarray(self.matrix)
         if np.any(np.isnan(matrix)):
@@ -1073,4 +1073,3 @@ class _matrix(object):
             raise ValueError("matrix only contains nans "
                              "(total nans: {})".format(num_nan))
         return matrix_flatten
-
