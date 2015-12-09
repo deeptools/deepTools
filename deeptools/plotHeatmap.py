@@ -126,7 +126,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         numcols = numrows
         numrows = temp
 
-    # the rows have different size depending 
+    # the rows have different size depending
     # on the number of regions contained in the
     if perGroup:
         # heatmap
@@ -291,7 +291,7 @@ def plotMatrix(hm, outFileName,
                 else:
                     group += 2 # plot + spacer
                 first_group = 1
-                                    
+
             if perGroup:
                 ax = fig.add_subplot(grids[sample_idx, group])
             else :
@@ -340,9 +340,9 @@ def plotMatrix(hm, outFileName,
         ax.axes.get_xaxis().set_visible(True)
         ax.axes.set_xticks(xticks_heat)
         ax.axes.set_xticklabels(xtickslabel_heat, size=8)
-        
+
         # align the first and last label
-        # such that they don't fall off 
+        # such that they don't fall off
         # the heatmap sides
         ticks = ax.xaxis.get_major_ticks()
         ticks[0].label1.set_horizontalalignment('left')
@@ -373,7 +373,7 @@ def plotMatrix(hm, outFileName,
                                              sharey=ax_list[0])
             else:
                 ax_profile = fig.add_subplot(grids[0, sample_id])
-                
+
             ax_profile.set_title(title)
             if perGroup:
                 iterNum2 = hm.matrix.get_num_samples()
@@ -402,7 +402,7 @@ def plotMatrix(hm, outFileName,
             ax_list.append(ax_profile)
 
             # align the first and last label
-            # such that they don't fall off 
+            # such that they don't fall off
             # the heatmap sides
             ticks = ax_profile.xaxis.get_major_ticks()
             ticks[0].label1.set_horizontalalignment('left')
@@ -479,6 +479,11 @@ def main(args=None):
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
+    else:
+        if args.hclust is not None:
+            print "Performing hierarchical clustering."\
+            "Please note that it might be very slow for large datasets.\n"
+            hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
@@ -486,7 +491,7 @@ def main(args=None):
         group_len = np.diff(hm.matrix.group_boundaries)
         print "Group '{}' contains too few regions {}. It can't "\
             "be plotted. Try removing this group.\n".format(
-            hm.matrix.group_labels[problem[0]], 
+            hm.matrix.group_labels[problem[0]],
             group_len[problem])
         exit(0)
 
