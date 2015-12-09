@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-import os
-import random
 import sys
 import argparse
 import numpy as np
@@ -31,9 +29,9 @@ detailed help:
   plotCorrelation -h
 
 """,
-           epilog='example usages:\nplotCorrelation '
-           '-in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
-           ' \n\n',
+        epilog='example usages:\nplotCorrelation '
+               '-in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
+               ' \n\n',
         parents=[basic_args, heatmap_parser])
 
     return parser
@@ -101,15 +99,15 @@ def plot_correlation_args():
 
     optional.add_argument(
         '--removeOutliers',
-            help='If set, bins with very large counts are removed. '
-            'Bins with abnormally high reads counts artificially increase '
-            'pearson correlation; that\'s why, by default, bamCorrelate tries '
-            'to remove outliers using the median absolute deviation (MAD) '
-            'method applying a threshold of 200 to only consider extremely '
-            'large deviations from the median. ENCODE blacklist page '
-            '(https://sites.google.com/site/anshulkundaje/projects/blacklists) '
-            'contains useful information about regions with unusually high counts.',
-            action='store_true')
+        help='If set, bins with very large counts are removed. '
+             'Bins with abnormally high reads counts artificially increase '
+             'pearson correlation; that\'s why, by default, bamCorrelate tries '
+             'to remove outliers using the median absolute deviation (MAD) '
+             'method applying a threshold of 200 to only consider extremely '
+             'large deviations from the median. ENCODE blacklist page '
+             '(https://sites.google.com/site/anshulkundaje/projects/blacklists) '
+             'contains useful information about regions with unusually high counts.',
+        action='store_true')
 
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))

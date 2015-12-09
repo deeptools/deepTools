@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -32,11 +32,11 @@ detailed sub-commands help available under:
   bedCorrelate BED-file -h
 
 """,
-           epilog='example usages:\n%(prog)s bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
-                  '%(prog)s BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
-                  '-out results.npz'
-                  ' \n\n',
-           conflict_handler='resolve')
+            epilog='example usages:\n%(prog)s bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
+                   '%(prog)s BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
+                   '-out results.npz'
+                   ' \n\n',
+            conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(__version__))
@@ -51,7 +51,7 @@ detailed sub-commands help available under:
     read_options_parser = parserCommon.read_options()
 
     # bins mode options
-    bins_mode = subparsers.add_parser(
+    subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='bins'),
@@ -68,7 +68,7 @@ detailed sub-commands help available under:
               '-out results.npz \n')
 
     # BED file arguments
-    bed_mode = subparsers.add_parser(
+    subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='BED-file'),

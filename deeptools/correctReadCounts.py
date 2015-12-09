@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import numpy as np
 from scipy.stats import poisson
@@ -58,9 +58,6 @@ def computeCorrectedReadcounts(tileCoverage, args):
 
     treatmentWindowTags = tileCoverage[0]
     controlWindowTags = tileCoverage[1]
-
-    treatmentLambda = controlWindowTags * args['treatmentControlRatio']
-
     treatmentCorrectedTags = treatmentWindowTags - args['treatmentControlRatio'] * (controlWindowTags - args['controlMean'])
 
     return treatmentCorrectedTags
@@ -72,8 +69,6 @@ def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentL
                       numberOfProcessors=1, Nsigmas=2, maxSignalRatio=10, verbose=False):
 
     bam1 = writeBedGraph.openBam(bamFilesList[0])
-    genomeSize = sum(bam1.lengths)
-
     bam2 = writeBedGraph.openBam(bamFilesList[1])
 
     treatmentMapped = bam1.mapped
@@ -175,6 +170,5 @@ def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentL
 
 def controlLambda(tileCoverage, args):
 
-    controlLambda = controlMean + (tileCoverage[0] * args['controlSignalRatio'])
-
+    controlLambda = args['controlMean'] + (tileCoverage[0] * args['controlSignalRatio'])
     return controlLambda

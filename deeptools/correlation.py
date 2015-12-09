@@ -4,7 +4,7 @@ mplt_use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
-from scipy.stats import pearsonr, spearmanr
+from scipy.stats import spearmanr
 
 from matplotlib import rcParams
 import matplotlib.colors as colors
@@ -54,7 +54,7 @@ class Correlation:
             self.remove_outliers()
 
         if log1p is True:
-            self.matrix = np.log1p(self.matrix )
+            self.matrix = np.log1p(self.matrix)
 
         if corr_method:
             self.compute_correlation()
@@ -83,7 +83,6 @@ class Correlation:
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"
 
-
     @staticmethod
     def get_outlier_indices(data, max_deviation=200):
         """
@@ -101,8 +100,8 @@ class Correlation:
         mean and the standard deviation.
         """
         median = np.median(data)
-        b_value = 1.4826 # value set for a normal distribution
-        mad = b_value * np.median(np.abs(data-median))
+        b_value = 1.4826  # value set for a normal distribution
+        mad = b_value * np.median(np.abs(data))
         outliers = []
         if mad > 0:
             deviation = abs(data - median) / mad
@@ -136,7 +135,7 @@ class Correlation:
         if len(to_remove):
             to_keep = [x for x in range(self.matrix.shape[0])
                        if x not in to_remove]
-            self.matrix = self.matrix[to_keep,:]
+            self.matrix = self.matrix[to_keep, :]
             if verbose:
                 sys.stderr.write(
                     "total/filtered/left: "
@@ -151,7 +150,7 @@ class Correlation:
         _mat = np.nan_to_num(self.matrix)
         to_keep = _mat.sum(1) != 0
 
-        self.matrix = self.matrix[to_keep,:]
+        self.matrix = self.matrix[to_keep, :]
 
     def save_corr_matrix(self, file_handle):
         """
@@ -202,8 +201,6 @@ class Correlation:
 
         else:
             corr_matrix = np.zeros((num_samples, num_samples), dtype='float')
-            options = {'spearman': spearmanr,
-                       'pearson': pearsonr}
             # do an all vs all correlation using the
             # indices of the upper triangle
             rows, cols = np.triu_indices(num_samples)
@@ -233,7 +230,7 @@ class Correlation:
         elif num_rows > 40:
             font_size = 5
         else:
-            font_size = int(14 - 0.25*num_rows)
+            font_size = int(14 - 0.25 * num_rows)
         rcParams.update({'font.size': font_size})
         # set the minimum and maximum values
         if vmax is None:
@@ -268,7 +265,7 @@ class Correlation:
         # Plot distance matrix.
         axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
         index = z_var['leaves']
-        corr_matrix = corr_matrix[index,:]
+        corr_matrix = corr_matrix[index, :]
         corr_matrix = corr_matrix[:, index]
         img_mat = axmatrix.pcolormesh(corr_matrix,
                                       edgecolors='black',
@@ -279,28 +276,28 @@ class Correlation:
         axmatrix.set_ylim(0, num_rows)
 
         axmatrix.yaxis.tick_right()
-        axmatrix.set_yticks(np.arange(corr_matrix .shape[0])+0.5)
+        axmatrix.set_yticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_yticklabels(np.array(self.labels).astype('str')[index])
 
     #    axmatrix.xaxis.set_label_position('top')
         axmatrix.xaxis.set_tick_params(labeltop='on')
         axmatrix.xaxis.set_tick_params(labelbottom='off')
-        axmatrix.set_xticks(np.arange(corr_matrix .shape[0])+0.5)
+        axmatrix.set_xticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_xticklabels(np.array(self.labels).astype('str')[index],
                                  rotation=45,
                                  ha='left')
 
         axmatrix.tick_params(
-                axis='x',
-                which='both',
-                bottom='off',
-                top='off')
+            axis='x',
+            which='both',
+            bottom='off',
+            top='off')
 
         axmatrix.tick_params(
-                axis='y',
-                which='both',
-                left='off',
-                right='off')
+            axis='y',
+            which='both',
+            left='off',
+            right='off')
 
         #    axmatrix.set_xticks([])
         # Plot colorbar.
@@ -310,7 +307,7 @@ class Correlation:
         if plot_numbers:
             for row in range(num_rows):
                 for col in range(num_rows):
-                    axmatrix.text(row+0.5, col+0.5,
+                    axmatrix.text(row + 0.5, col + 0.5,
                                   "{:.2f}".format(corr_matrix[row, col]),
                                   ha='center', va='center')
 
@@ -327,7 +324,7 @@ class Correlation:
         corr_matrix = self.compute_correlation()
         grids = gridspec.GridSpec(num_samples, num_samples)
         grids.update(wspace=0, hspace=0)
-        fig = plt.figure(figsize=(2*num_samples, 2*num_samples))
+        fig = plt.figure(figsize=(2 * num_samples, 2 * num_samples))
         plt.rcParams['font.size'] = 8.0
         plt.suptitle(plot_title)
         min_value = self.matrix.min()
@@ -340,7 +337,6 @@ class Correlation:
         if log1p:
             majorLocator = FixedLocator(range(min_value, max_value, 2))
             minorLocator = FixedLocator(range(min_value, max_value, 1))
-
 
         rows, cols = np.triu_indices(num_samples)
         for index in xrange(len(rows)):
@@ -357,7 +353,6 @@ class Correlation:
                         transform=ax.transAxes)
                 ax.set_axis_off()
                 continue
-
 
             ax = fig.add_subplot(grids[row, col])
             if log1p:
@@ -424,7 +419,6 @@ class Correlation:
     # plt.tight_layout() # if set spoils the title position
         plt.savefig(plot_fiilename, format=image_format)
 
-
     # def similar(self, a, b):
     #     from difflib import SequenceMatcher
     #     return SequenceMatcher(None, a, b).ratio()
@@ -440,14 +434,14 @@ class Correlation:
         n = len(self.labels)
         # print self.matrix
         # print type(self.matrix)
-        colors = cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
+        # colors = cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
         markers = cycle(matplotlib.markers.MarkerStyle.filled_markers)
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
         for i in range(n):
             ax1.scatter(mlab_pca.Y[0, i], mlab_pca.Y[1, i],
-                        marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i+3)
+                        marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
         if plot_title == '':
             ax1.set_title('PCA')
         else:
@@ -456,12 +450,11 @@ class Correlation:
         ax1.set_ylabel('PC2')
         lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
                          bbox_to_anchor=(1, 0.5),
-                         prop={'size':12}, markerscale=0.9)
+                         prop={'size': 12}, markerscale=0.9)
 #        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
-
         # Scree plot
-        eigenvalues = map(lambda x: x*n, mlab_pca.fracs)
+        eigenvalues = map(lambda x: x * n, mlab_pca.fracs)
 
         cumulative = []
         c = 0
@@ -473,20 +466,19 @@ class Correlation:
         width = 0.35         # the width of the bars
 
         # fig, ax2 = plt.subplots()
-        ax2.bar(width+ind, eigenvalues, width*2)
+        ax2.bar(width + ind, eigenvalues, width * 2)
         ax2.set_ylabel('Eigenvalue')
         ax2.set_xlabel('Factors')
         ax2.set_title('Scree plot')
-        ax2.set_xticks(ind+width*2)
-        ax2.set_xticklabels(ind+1)
+        ax2.set_xticks(ind + width * 2)
+        ax2.set_xticklabels(ind + 1)
 
         ax3 = ax2.twinx()
         ax3.axhline(y=1, color="black", linestyle="dotted")
-        ax3.plot(width*2+ind, cumulative[0:], "r-")
-        ax3.plot(width*2+ind, cumulative[0:], "wo")
+        ax3.plot(width * 2 + ind, cumulative[0:], "r-")
+        ax3.plot(width * 2 + ind, cumulative[0:], "wo")
         ax3.set_ylim([0, 1.05])
         ax3.set_ylabel('Cumulative variability')
-
 
         bname, ext = os.path.splitext(plot_filename)
         plt.subplots_adjust(top=3.85)

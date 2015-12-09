@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 from __future__ import division
 import argparse
 from collections import OrderedDict
@@ -198,22 +198,16 @@ def plotMatrix(hm, outFileName,
 #    fontP.set_size('small')
 
     showSummaryPlot = False
-    showHeatmap = False
     showColorbar = False
 
     if whatToShow == 'plot and heatmap':
         showSummaryPlot = True
-        showHeatmap = True
-    elif whatToShow == 'heatmap only':
-        showHeatmap = True
     elif whatToShow == 'colorbar only':
         showColorbar = True
     elif whatToShow == 'heatmap and colorbar':
-        showHeatmap = True
         showColorbar = True
     else:
         showSummaryPlot = True
-        showHeatmap = True
         showColorbar = True
 
     grids = prepare_layout(hm.matrix, (heatmapWidth, heatmapHeight),
@@ -233,10 +227,10 @@ def plotMatrix(hm, outFileName,
         total_figwidth += 1 / 2.54
     fig = plt.figure(figsize=(total_figwidth, figheight))
 
-    b = hm.parameters['upstream']
-    a = hm.parameters['downstream']
-    m = hm.parameters['body']
-    w = hm.parameters['bin size']
+    hm.parameters['upstream']
+    hm.parameters['downstream']
+    hm.parameters['body']
+    hm.parameters['bin size']
 
     xticks, xtickslabel = getProfileTicks(hm, reference_point_label, startLabel, endLabel)
 
@@ -357,8 +351,6 @@ def plotMatrix(hm, outFileName,
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
         ax_list = []
-        sample_ymax = None
-        sample_ymin = None
         if perGroup:
             iterNum = numgroups
         else:

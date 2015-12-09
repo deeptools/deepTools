@@ -11,6 +11,7 @@ import pysam
 import pyBigWig
 import deeptools.readBed
 
+
 def compute_sub_matrix_wrapper(args):
     return heatmapper.compute_sub_matrix_worker(*args)
 
@@ -136,7 +137,7 @@ class heatmapper(object):
         group_len = np.diff(group_boundaries)
         if len(group_len) > 1:
             sum_len = sum(group_len)
-            group_frac = [float(x)/sum_len for x in group_len]
+            group_frac = [float(x) / sum_len for x in group_len]
             if min(group_frac) <= 0.002:
                 sys.stderr.write(
                     "One of the groups defined in the bed file is "
@@ -345,13 +346,13 @@ class heatmapper(object):
             if parameters['scale'] != 1:
                 coverage = parameters['scale'] * coverage
 
-            sub_matrix[j,:] = coverage
+            sub_matrix[j, :] = coverage
 
             sub_regions.append(feature)
             j += 1
 
         # remove empty rows
-        sub_matrix = sub_matrix[0:j,:]
+        sub_matrix = sub_matrix[0:j, :]
         if len(sub_regions) != len(sub_matrix[:, 0]):
             sys.stderr.write("regions lengths do not match\n")
         return sub_matrix, sub_regions, regions_no_score
@@ -360,7 +361,7 @@ class heatmapper(object):
     def coverage_from_array(valuesArray, zones, binSize, avgType):
         try:
             valuesArray[0]
-        except IndexError as TypeError:
+        except IndexError:
             sys.stderr.write("values array {}, zones {}\n".format(valuesArray, zones))
 
         cvglist = []
@@ -618,13 +619,10 @@ class heatmapper(object):
         for idx, region in enumerate(self.matrix.regions):
             # join np_array values
             # keeping nans while converting them to strings
-            score = self.matrix.matrix[idx,:]
-            if np.ma.is_masked(score_list[idx]):
-                score = 'nan'
-            else:
-                score = np.float(score_list[idx])
+            if not np.ma.is_masked(score_list[idx]):
+                np.float(score_list[idx])
             matrix_values = "\t".join(
-                np.char.mod('%f', self.matrix.matrix[idx,:]))
+                np.char.mod('%f', self.matrix.matrix[idx, :]))
             fh.write(
                 '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
                     region['chrom'],
@@ -637,9 +635,9 @@ class heatmapper(object):
         fh.close()
 
     def saveTabulatedValues(self, file_handle):
-        bin = range(self.parameters['upstream'] * -1,
-                    self.parameters['body'] + self.parameters['downstream'],
-                    self.parameters['bin size'])
+        range(self.parameters['upstream'] * -1,
+              self.parameters['body'] + self.parameters['downstream'],
+              self.parameters['bin size'])
 
         # TODO this function must be updated
         print "save tabulated values is not yet implemented."
@@ -707,14 +705,13 @@ class heatmapper(object):
                     self.matrix.group_labels[label_idx]))
             if idx + 1 in boundaries:
                 file_handle.write('#{}\n'.format(
-                        self.matrix.group_labels[label_idx]))
+                    self.matrix.group_labels[label_idx]))
         file_handle.close()
 
     @staticmethod
     def matrix_avg(matrix, avgType='mean'):
         matrix = np.ma.masked_invalid(matrix)
         return np.__getattribute__(avgType)(matrix, axis=0)
-
 
     @staticmethod
     def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
@@ -765,23 +762,22 @@ class heatmapper(object):
             # This assumes that the regions file given is sorted
             if previnterval is not None:
                 if previnterval.chrom == ginterval.chrom and \
-                    previnterval.start == ginterval.start and \
-                    previnterval.end == ginterval.end and \
-                    previnterval.strand == ginterval.strand:
+                   previnterval.start == ginterval.start and \
+                   previnterval.end == ginterval.end and \
+                   previnterval.strand == ginterval.strand:
                     if verbose:
                         try:
                             genename = ginterval.name
                         except:
                             genename = ''
                         sys.stderr.write("*Warning* Duplicated region: "
-                                         "{} {}:{}-{}.\n".format(
-                                genename,
-                                ginterval.chrom, ginterval.start,
-                                ginterval.end))
+                                         "{} {}:{}-{}.\n".format(genename,
+                                                                 ginterval.chrom,
+                                                                 ginterval.start,
+                                                                 ginterval.end))
                     duplicates += 1
 
             previnterval = ginterval
-
             ginterval.group_idx = group_idx
             regions.append(ginterval)
             includedintervals += 1
@@ -794,7 +790,7 @@ class heatmapper(object):
             group_labels.append(default_group_name)
             using_default_group_name = True
 
-        if len(group_labels) < group_idx-1:
+        if len(group_labels) < group_idx - 1:
             # There was a missing "#" at the end
             label = default_group_name
             if label in group_labels:
@@ -833,7 +829,7 @@ class heatmapper(object):
         for i in range(0, num_cols, num_ind_cols):
             if i + num_ind_cols > num_cols:
                 break
-            matrices_list.append(matrix[:, i:i+num_ind_cols])
+            matrices_list.append(matrix[:, i:i + num_ind_cols])
         return matrices_list
 
     def get_num_individual_matrix_cols(self):
@@ -882,7 +878,7 @@ class _matrix(object):
 
         if group_labels is None:
             self.group_labels = ['group {}'.format(x)
-                                 for x in range(len(group_boundaries)-1)]
+                                 for x in range(len(group_boundaries) - 1)]
         else:
             assert len(group_labels) == len(group_boundaries) - 1, \
                 "number of group labels does not match number of groups"
@@ -890,7 +886,7 @@ class _matrix(object):
 
         if sample_labels is None:
             self.sample_labels = ['sample {}'.format(x)
-                                 for x in range(len(sample_boundaries)-1)]
+                                  for x in range(len(sample_boundaries) - 1)]
         else:
             assert len(sample_labels) == len(sample_boundaries) - 1, \
                 "number of sample labels does not match number of samples"
@@ -909,14 +905,13 @@ class _matrix(object):
         the group label and the sample label
         """
         group_start = self.group_boundaries[group]
-        group_end = self.group_boundaries[group+1]
+        group_end = self.group_boundaries[group + 1]
         sample_start = self.sample_boundaries[sample]
-        sample_end = self.sample_boundaries[sample+1]
+        sample_end = self.sample_boundaries[sample + 1]
 
-        return {'matrix': np.ma.masked_invalid(self.matrix[group_start:group_end,:][:, sample_start:sample_end]),
+        return {'matrix': np.ma.masked_invalid(self.matrix[group_start:group_end, :][:, sample_start:sample_end]),
                 'group': self.group_labels[group],
                 'sample': self.sample_labels[sample]}
-
 
     def get_num_samples(self):
         return len(self.sample_labels)
@@ -959,7 +954,7 @@ class _matrix(object):
         regions = []
         for idx in range(len(self.group_labels)):
             start = self.group_boundaries[idx]
-            end = self.group_boundaries[idx+1]
+            end = self.group_boundaries[idx + 1]
             regions.append(self.regions[start:end])
 
         return regions
@@ -985,11 +980,11 @@ class _matrix(object):
         _sorted_matrix = []
         for idx in range(len(self.group_labels)):
             start = self.group_boundaries[idx]
-            end = self.group_boundaries[idx+1]
+            end = self.group_boundaries[idx + 1]
             order = matrix_avgs[start:end].argsort()
             if sort_method == 'descend':
                 order = order[::-1]
-            _sorted_matrix.append(self.matrix[start:end,:][order,:])
+            _sorted_matrix.append(self.matrix[start:end, :][order, :])
             # sort the regions
             _reg = self.regions[start:end]
             for idx in order:
@@ -1014,7 +1009,7 @@ class _matrix(object):
             # order the centroids in an attempt to
             # get the same cluster order
             order = np.argsort(centroids.mean(axis=1))[::-1]
-            cluster_labels, _ = vq(matrix, centroids[order,:])
+            cluster_labels, _ = vq(matrix, centroids[order, :])
 
         if method == 'hierarchical':
             # normally too slow for large data sets
@@ -1028,11 +1023,11 @@ class _matrix(object):
         _clustered_regions = []
         _clustered_matrix = []
         for cluster in range(k):
-            self.group_labels.append("cluster {}".format(cluster+1))
+            self.group_labels.append("cluster {}".format(cluster + 1))
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))
-            _clustered_matrix.append(self.matrix[cluster_ids,:])
+            _clustered_matrix.append(self.matrix[cluster_ids, :])
             for idx in cluster_ids:
                 _clustered_regions.append(self.regions[idx])
 
@@ -1047,13 +1042,13 @@ class _matrix(object):
         to_keep = []
         score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
         for idx, region in enumerate(self.regions):
-            score = self.matrix[idx,:]
+            self.matrix[idx, :]
             if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
                 continue
             else:
                 to_keep.append(idx)
         self.regions = [self.regions[x] for x in to_keep]
-        self.matrix = self.matrix[to_keep,:]
+        self.matrix = self.matrix[to_keep, :]
         # adjust sample boundaries
         to_keep = np.array(to_keep)
         self.group_boundaries = [len(to_keep[to_keep < x]) for x in self.group_boundaries]
@@ -1067,10 +1062,9 @@ class _matrix(object):
         """
         matrix_flatten = np.asarray(self.matrix.flatten())
         # nans are removed from the flattened array
-        matrix_flatten = matrix_flatten[~np.isnan(matrix_flatten)]
+        matrix_flatten = matrix_flatten[~np.isnan(self.matrix_flatten)]
         if len(matrix_flatten) == 0:
-            num_nan = len(np.flatnonzero(np.isnan(matrix.flatten())))
+            num_nan = len(np.flatnonzero(np.isnan(self.matrix.flatten())))
             raise ValueError("matrix only contains nans "
                              "(total nans: {})".format(num_nan))
         return matrix_flatten
-
