@@ -36,7 +36,7 @@
                 #if $output.saveData:
                     --outFileNameData '$outFileNameData' 
                 #end if
-                #if $output.saveMatrix:
+                #if $output.save_matrix:
                 --outFileNameMatrix '$outFileNameMatrix'
                 #end if
 

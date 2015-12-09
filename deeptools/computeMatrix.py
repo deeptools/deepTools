@@ -328,34 +328,6 @@ def process_args(args=None):
 
 
 def main(args=None):
-    r"""
-    >>> import filecmp
-    >>> import os
-    >>> args = "reference-point \
-    ... -R ../deeptools/test/test_heatmapper/test2.bed \
-    ... -S ../deeptools/test/test_heatmapper/test.bw \
-    ... -b 100 -a 100 --outFileName /tmp/_test.mat.gz \
-    ... -bs 1 -p 1".split()
-    >>> main(args)
-    >>> os.system('gunzip -f /tmp/_test.mat.gz')
-    0
-    >>> filecmp.cmp('../deeptools/test/test_heatmapper/master.mat',
-    ... '/tmp/_test.mat')
-    True
-    >>> os.remove('/tmp/_test.mat')
-    >>> args = "scale-regions \
-    ... -R ../deeptools/test/test_heatmapper/test2.bed \
-    ... -S ../deeptools/test/test_heatmapper/test.bw \
-    ... -b 100 -a 100 -m 100 --outFileName /tmp/_test2.mat.gz \
-    ... -bs 10 -p 1".split()
-    >>> main(args)
-    >>> os.system('gunzip -f /tmp/_test2.mat.gz')
-    0
-    >>> filecmp.cmp('../deeptools/test/test_heatmapper/master_scale_reg.mat',
-    ... '/tmp/_test2.mat')
-    True
-    >>> os.remove('/tmp/_test2.mat')
-    """
 
     args = process_args(args)
 
@@ -402,18 +374,18 @@ def main(args=None):
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
 
-    hm.saveMatrix(args.outFileName)
+    hm.save_matrix(args.outFileName)
     bed_file.close()
 
     if len(args.regionsFileName) > 1:
         os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
-        hm.saveMatrixValues(args.outFileNameMatrix)
+        hm.save_matrix_values(args.outFileNameMatrix)
 
     #TODO This isn't implemented
     #if args.outFileNameData:
     #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
-        hm.saveBED(args.outFileSortedRegions)
+        hm.save_BED(args.outFileSortedRegions)

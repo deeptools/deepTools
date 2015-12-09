@@ -74,7 +74,6 @@ class ReadBed(object):
         # skip empty lines
         while 1:
             if line.strip() == '':
-                import ipdb;ipdb.set_trace()
                 line = self.file_handle.next()
             else:
                 break

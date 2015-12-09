@@ -53,7 +53,7 @@ class heatmapper(object):
             exit("Length of region before the body has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['upstream']))
 
-        regions, group_labels = self.getRegionsAndGroups(regions_file, verbose=verbose)
+        regions, group_labels = self.get_regions_and_groups(regions_file, verbose=verbose)
 
         # args to pass to the multiprocessing workers
         mp_args = []
@@ -116,7 +116,7 @@ class heatmapper(object):
         self.parameters = parameters
 
         numcols = matrix.shape[1]
-        num_ind_cols = self.getNumIndividualMatrixCols()
+        num_ind_cols = self.get_num_individual_matrix_cols()
         sample_boundaries = range(0, numcols + num_ind_cols, num_ind_cols)
         sample_labels = [splitext(basename(x))[0] for x in score_file_list]
 
@@ -271,13 +271,13 @@ class heatmapper(object):
                 for idx, sc_handler in enumerate(score_file_handlers):
                     # check if the file is bam or bigwig
                     if score_file_list[idx].endswith(".bam"):
-                        cov = heatmapper.coverageFromBam(
+                        cov = heatmapper.coverage_from_bam(
                             sc_handler, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
                             parameters['verbose'])
                     else:
-                        cov = heatmapper.coverageFromBigWig(
+                        cov = heatmapper.coverage_from_big_wig(
                             sc_handler, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
@@ -300,7 +300,7 @@ class heatmapper(object):
                 """
                 else:
                     for bigwig in bigwig_list:
-                        cov = heatmapper.coverageFromBigWig(
+                        cov = heatmapper.coverage_from_big_wig(
                             bigwig, feature.chrom, zones,
                             parameters['bin size'],
                             parameters['bin avg type'],
@@ -357,7 +357,7 @@ class heatmapper(object):
         return sub_matrix, sub_regions, regions_no_score
 
     @staticmethod
-    def coverageFromArray(valuesArray, zones, binSize, avgType):
+    def coverage_from_array(valuesArray, zones, binSize, avgType):
         try:
             valuesArray[0]
         except IndexError, TypeError:
@@ -376,7 +376,7 @@ class heatmapper(object):
             if zone_start == zone_end:
                 continue
             if num_bins == 1:
-                pos_array, step_size = [zone_start], zone_end - zone_start
+                pos_array, step_size = np.array([zone_start]), zone_end - zone_start
             else:
                 (pos_array, step_size) = np.linspace(zone_start, zone_end, num_bins,
                                                      endpoint=False,
@@ -388,8 +388,8 @@ class heatmapper(object):
                 index_end = int(index_start + step_size)
                 try:
                     counts_list.append(
-                        heatmapper.myAverage(valuesArray[index_start:index_end],
-                                             avgType))
+                        heatmapper.my_average(valuesArray[index_start:index_end],
+                                              avgType))
                 except Exception as detail:
                     sys.stderr.write("Exception found. "
                                      "Message: {}\n".format(detail))
@@ -397,7 +397,7 @@ class heatmapper(object):
         return np.concatenate(cvglist)
 
     @staticmethod
-    def changeChromNames(chrom):
+    def change_chrom_names(chrom):
         """
         Changes UCSC chromosome names to ensembl chromosome names
         and vice versa.
@@ -409,21 +409,21 @@ class heatmapper(object):
             return 'chr%s' % chrom
 
     @staticmethod
-    def coverageFromBam(bamfile, chrom, zones, binSize, avgType, verbose=True):
+    def coverage_from_bam(bamfile, chrom, zones, binSize, avgType, verbose=True):
         """
         currently this method is deactivated because is too slow.
         It is preferred to create a coverage bigiwig file from the
         bam file and then run heatmapper.
         """
         if chrom not in bamfile.references:
-            chrom = heatmapper.changeChromNames(chrom)
+            chrom = heatmapper.change_chrom_names(chrom)
             if chrom not in bamfile.references:
                 sys.stderr.write(
                     "Skipping region located at unknown chromosome: {} "
                     "Known chromosomes are: {}\n".format(chrom,
                                                          bamfile.references))
                 return None
-            elif verbose :
+            elif verbose:
                 sys.stderr.write("Warning: Your chromosome names do "
                                  "not match.\n Please check that the "
                                  "chromosome names in your BED "
@@ -444,17 +444,17 @@ class heatmapper(object):
             sys.stderr.write("Value out of range for region {}s {} {}\n".format(chrom, start, end))
             return np.array([0])  # return something innocuous
 
-        return heatmapper.coverageFromArray(values_array, zones, binSize, avgType)
+        return heatmapper.coverage_from_array(values_array, zones, binSize, avgType)
 
     @staticmethod
-    def coverageFromBigWig(bigwig, chrom, zones, binSize, avgType, nansAsZeros=False, verbose=True):
+    def coverage_from_big_wig(bigwig, chrom, zones, binSize, avgType, nansAsZeros=False, verbose=True):
 
         """
         uses bigwig file reader from bx-python
         to query a region define by chrom and zones.
         The output is an array that contains the bigwig
         value per base pair. The summary over bins is
-        done in a later step when coverageFromArray is called.
+        done in a later step when coverage_from_array is called.
         This method is more reliable than quering the bins
         directly from the bigwig, which should be more efficient.
 
@@ -497,7 +497,7 @@ class heatmapper(object):
             # as is the case for bam files, but the
             # bx-python function does not allow access to
             # this info.
-            altered_chrom = heatmapper.changeChromNames(chrom)
+            altered_chrom = heatmapper.change_chrom_names(chrom)
             bw_array = bigwig.values(altered_chrom,
                                      max(0, zones[0][0]),
                                      zones[-1][1])
@@ -524,11 +524,11 @@ class heatmapper(object):
         # replaces nans for zeros
         if nansAsZeros:
             values_array[np.isnan(values_array)] = 0
-        return heatmapper.coverageFromArray(values_array, zones,
-                                            binSize, avgType)
+        return heatmapper.coverage_from_array(values_array, zones,
+                                              binSize, avgType)
 
     @staticmethod
-    def myAverage(valuesArray, avgType='mean'):
+    def my_average(valuesArray, avgType='mean'):
         """
         computes the mean, median, etc but only for those values
         that are not Nan
@@ -540,14 +540,14 @@ class heatmapper(object):
         else:
             return avg
 
-    def matrixFromDict(self, matrixDict, regionsDict, parameters):
+    def matrix_from_dict(self, matrixDict, regionsDict, parameters):
         self.regionsDict = regionsDict
         self.matrixDict = matrixDict
         self.parameters = parameters
         self.lengthDict = OrderedDict()
         self.matrixAvgsDict = OrderedDict()
 
-    def readMatrixFile(self, matrix_file, verbose=None, default_group_name='label_1'):
+    def read_matrix_file(self, matrix_file, verbose=None, default_group_name='label_1'):
         # reads a bed file containing the position
         # of genomic intervals
         # In case a hash sign '#' is found in the
@@ -589,7 +589,7 @@ class heatmapper(object):
                                            self.parameters['sort using'])
         return
 
-    def saveMatrix(self, file_name):
+    def save_matrix(self, file_name):
         """
         saves the data required to reconstruct the matrix
         the format is:
@@ -648,8 +648,8 @@ class heatmapper(object):
         stdDict = OrderedDict()
 
         for label, heatmapMatrix in self.matrixDict.iteritems():
-            avgDict[label] = heatmapper.matrixAvg(heatmapMatrix, 'mean')
-            stdDict[label] = heatmapper.matrixAvg(heatmapMatrix, 'std')
+            avgDict[label] = heatmapper.matrix_avg(heatmapMatrix, 'mean')
+            stdDict[label] = heatmapper.matrix_avg(heatmapMatrix, 'std')
 
         file_handle.write(
             '#bin No.\t{}\n'.format(" mean\t std\t".join(avgDict.keys())))
@@ -664,7 +664,7 @@ class heatmapper(object):
         file_handle.close()
         """
 
-    def saveMatrixValues(self, file_name):
+    def save_matrix_values(self, file_name):
         # print a header telling the group names and their length
         fh = open(file_name, 'w')
         info = []
@@ -686,7 +686,7 @@ class heatmapper(object):
         np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
         fh.close()
 
-    def saveBED(self, file_handle):
+    def save_BED(self, file_handle):
         boundaries = np.array(self.matrix.group_boundaries)
         for idx, region in enumerate(self.matrix.regions):
             # the label id corresponds to the last boundary
@@ -711,15 +711,15 @@ class heatmapper(object):
         file_handle.close()
 
     @staticmethod
-    def matrixAvg(matrix, avgType='mean'):
+    def matrix_avg(matrix, avgType='mean'):
         matrix = np.ma.masked_invalid(matrix)
         return np.__getattribute__(avgType)(matrix, axis=0)
 
 
     @staticmethod
-    def getRegionsAndGroups(regions_file, onlyMultiplesOf=1,
-                            default_group_name='genes',
-                            verbose=None):
+    def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
+                               default_group_name='genes',
+                               verbose=None):
         """
         Reads a bed file.
         In case is hash sign '#' is found in the
@@ -818,17 +818,17 @@ class heatmapper(object):
             if using_default_group_name:
                 sys.stderr.write("\tno groups found\n")
             else:
-                sys.stderr.write("\tgroups: {}\n\n".format(len(regions), ", ".join(group_labels)))
+                sys.stderr.write("\tgroups: {} [{}]\n\n".format(len(group_labels), ", ".join(group_labels)))
 
         return regions, group_labels
 
-    def getIndividualmatrices(self, matrix):
+    def get_individual_matrices(self, matrix):
         """In case multiple matrices are saved one after the other
         this method splits them appart.
         Returns a list containing the matrices
         """
         num_cols = matrix.shape[1]
-        num_ind_cols = self.getNumIndividualMatrixCols()
+        num_ind_cols = self.get_num_individual_matrix_cols()
         matrices_list = []
         for i in range(0, num_cols, num_ind_cols):
             if i + num_ind_cols > num_cols:
@@ -836,7 +836,7 @@ class heatmapper(object):
             matrices_list.append(matrix[:, i:i+num_ind_cols])
         return matrices_list
 
-    def getNumIndividualMatrixCols(self):
+    def get_num_individual_matrix_cols(self):
         """
         returns the number of columns  that
         each matrix should have. This is done because
@@ -844,9 +844,7 @@ class heatmapper(object):
         of smaller matrices that are merged one after
         the other.
         """
-        matrixCols = ((self.parameters['downstream'] +
-                       self.parameters['upstream'] + 
-                       self.parameters['body']) /
+        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body']) /
                       self.parameters['bin size'])
 
         return matrixCols
@@ -1059,4 +1057,21 @@ class _matrix(object):
         # adjust sample boundaries
         to_keep = np.array(to_keep)
         self.group_boundaries = [len(to_keep[to_keep<x]) for x in self.group_boundaries]
+
+
+    def flatten(self):
+        """
+        flatten and remove nans from matrix. Useful
+        to get max and mins from matrix.
+
+        :return flattened matrix
+        """
+        matrix_flatten = self.matrix.flatten()
+        # nans are removed from the flattened array
+        matrix_flatten = matrix_flatten[np.isnan(matrix_flatten) == False]
+        if len(matrix_flatten) == 0:
+            num_nan = len(np.flatnonzero(np.isnan(matrix.flatten())))
+            raise ValueError("matrix only contains nans "
+                             "(total nans: {})".format(num_nan))
+        return matrix_flatten
 
