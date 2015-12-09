@@ -35,21 +35,18 @@ def countFragmentsInRegions_worker(chrom, start, end,
     >>> test = Tester()
 
     Fragment coverage.
-    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bwFile1, test.bwFile2], 50, 25))
+    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200, [test.bwFile1, test.bwFile2], 50, 25, False)[0])
     array([[ 1.,  1.,  2.,  2.],
            [ 1.,  1.,  1.,  3.]])
 
-    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bwFile1, test.bwFile2], 200, 200))
+    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200, [test.bwFile1, test.bwFile2], 200, 200, False)[0])
     array([[ 1.5],
            [ 1.5]])
 
     BED regions:
-    >>> bedRegions = [(test.chrom, 45, 55), (test.chrom, 95, 105),
-    ... (test.chrom, 145, 155)]
-    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,
-    ... [test.bwFile1, test.bwFile2], 200, 200, bedRegions=bedRegions))
+    >>> bedRegions = [(test.chrom, 45, 55), (test.chrom, 95, 105), (test.chrom, 145, 155)]
+    >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,[test.bwFile1, test.bwFile2], 200, 200, False,
+    ... bedRegions=bedRegions)[0])
     array([[ 1. ,  1.5,  2. ],
            [ 1. ,  1. ,  2. ]])
     """
@@ -133,7 +130,7 @@ def getChromSizes(bigwigFilesList):
 
     Chromosome name(s) and size(s).
     >>> getChromSizes([test.bwFile1, test.bwFile2])
-    [('3R', 200L)]
+    ([('3R', 200L)], set([]))
     """
     #The following lines are - with one exception ("bigWigInfo") -
     #identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
@@ -199,8 +196,7 @@ def getScorePerBin(bigWigFiles, binLength,
 
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
-
-    >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 50, 5,))
+    >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 50, 3))
     array([[ 1.,  1.,  2.,  2.],
            [ 1.,  1.,  1.,  3.]])
 
@@ -227,8 +223,9 @@ def getScorePerBin(bigWigFiles, binLength,
         stepSize = binLength    #for adjacent bins
 
     # set chunksize based on number of processors used
-    #chunkSize = int(stepSize * 5000 / len(bigWigFiles))
-    chunkSize = sum(chrlengths) / numberOfProcessors
+    chunkSize = max(sum(chrlengths) / numberOfProcessors, int(1e6))
+    # make chunkSize multiple of binLength
+    chunkSize -= chunkSize % binLength
     if verbose:
         print "step size is {}".format(stepSize)
 
@@ -290,7 +287,7 @@ class Tester():
             B  111111111111111111111111111111111111111111111333333333333333
 
         """
-        self.root = "./test/test_data/"
+        self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
         self.bwFile1  = self.root + "testA.bw"
         self.bwFile2  = self.root + "testB.bw"
         self.bwFile_PE  = self.root + "test_paired2.bw"
