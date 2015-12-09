@@ -72,7 +72,7 @@ class ReadBed(object):
         line = self.file_handle.next()
 
         # skip empty lines
-        while 1:
+        while True:
             if line.strip() == '':
                 line = self.file_handle.next()
             else:
@@ -112,7 +112,7 @@ class ReadBed(object):
                 tmp = r
                 try:
                     tmp = float(r)
-                except ValueError, TypeError:
+                except ValueError as TypeError:
                     tmp = r
                 line_values.append(tmp)
         if self.file_type is None:

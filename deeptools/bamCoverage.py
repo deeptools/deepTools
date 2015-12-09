@@ -254,5 +254,5 @@ def main(args=None):
                                      verbose=args.verbose
                                      )
 
-    wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
+    wr.run(writeBedGraph.scaleCoverage, funcArgs, args.outFileName,
            format=args.outFileFormat, smooth_length=args.smoothLength)

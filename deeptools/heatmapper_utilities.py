@@ -17,7 +17,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     elif plot_type == 'se':  # standard error
         std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
         alpha = 0.2
-        if type(color) == type((0, 0)):  # check if color is tuple
+        if isinstance(color, type((0, 0))):  # check if color is tuple
             # add the alpha channed to the color tuple
             f_color = [c for c in color[:-1]] + [alpha]
         else:
@@ -33,7 +33,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     elif plot_type == 'std':  # standard deviation
         std = np.std(ma, axis=0)
         alpha = 0.2
-        if type(color) == type((0, 0)):  # check if color is tuple
+        if isinstance(color, type((0, 0))):  # check if color is tuple
             # add the alpha channed to the color tuple
             f_color = [c for c in color[:-1]] + [alpha]
         else:
@@ -47,9 +47,9 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
                         edgecolor=f_color, lw=0.01)
 
     elif plot_type == 'overlapped_lines':
-        if type(color) is str and color == 'black':
+        if isinstance(color, str) and color == 'black':
             ax.patch.set_facecolor('white')
-        elif type(color) is not str and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
+        elif not isinstance(color, str) and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
             ax.patch.set_facecolor('white')
         else:
             ax.patch.set_facecolor('black')

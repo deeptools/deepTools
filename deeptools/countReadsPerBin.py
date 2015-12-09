@@ -670,7 +670,7 @@ class CountReadsPerBin(object):
                     fragmentStart = read.reference_start
                     fragmentEnd = read.reference_start + self.defaultFragmentLength
 
-        if self.center_read == True:
+        if self.center_read:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
             fragmentStart = fragmentCenter - read.alen / 2
             fragmentEnd = fragmentStart + read.alen

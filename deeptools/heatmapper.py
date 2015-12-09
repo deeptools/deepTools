@@ -360,7 +360,7 @@ class heatmapper(object):
     def coverage_from_array(valuesArray, zones, binSize, avgType):
         try:
             valuesArray[0]
-        except IndexError, TypeError:
+        except IndexError as TypeError:
             sys.stderr.write("values array {}, zones {}\n".format(valuesArray, zones))
 
         cvglist = []
