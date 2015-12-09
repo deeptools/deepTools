@@ -4,6 +4,35 @@ deepTools: *tools for exploring deep sequencing data*
 
 .. image:: images/start_collage.png
 
+deepTools is a **suite of python tools** particularly developed for the 
+efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq,
+MNase-seq etc.
+
+There are 2 ways for using deepTools:
+
+* **command line usage** -- simply download and install the tools
+* **Galaxy usage** --  if you would like to see our tools at work, you can test them in our public `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_.
+
+The flow chart below depicts the different tool modules that are
+currently available (deepTools modules are written in
+bold red and black font).
+
+.. image:: images/start_workflow.png
+
+If  the file names in the figure mean nothing to you,
+please make sure to check our :doc:`content/help_glossary`.
+
+
+Contents:
+---------
+.. toctree::
+   :maxdepth: 2
+
+   content/installation
+   content/list_of_tools
+   content/example_usage
+   
+
 While developing deepTools, we continuously thrive to create software
 that fulfills the following criteria:
 
@@ -19,50 +48,6 @@ that fulfills the following criteria:
 -  **modular approach** - compatibility, flexibility, scalability (i.e.
    we can add more and more modules and make use of established methods)
 
-The flow chart below depicts the different tool modules that are
-currently available within deepTools (deepTools modules are written in
-bold red and black font).
-
-.. image:: images/start_workflow.png
-
-If  the file names in the figure mean nothing to you,
-please make sure to check our `Glossary`_.
-
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| tool          | type          | input files                       | main output file(s)                    | application                                                                  |
-+===============+===============+===================================+========================================+==============================================================================+
-| *Correlate    | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|plotCorrelation| visualization | bam|bigWigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamFingerprint| QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| computeGCbias | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| correctGCbias | QC            | 1 BAM, output from computeGCbias  | 1 GC-corrected BAM                     | obtain a BAM file with reads distributed according to the genome’s GC conten |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamCoverage   | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| *Compare      | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                     | normalize 2 files to each other (e.g. log2ratio, difference)                 |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| computeMatrix | visualization | 1 bigWig, 1 BED                   | zipped file for heatmapper or profiler | compute the values needed for heatmaps and summary plots                     |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| heatmapper    | visualization | computeMatrix output              | heatmap of read coverages              | visualize the read coverages for genomic regions                             |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| profiler      | visualization | computeMatrix output              | summary plot (“meta-profile”)          | visualize the average read coverages over a group of genomic regions         |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-
-
-Contents:
----------
-.. toctree::
-   :maxdepth: 2
-
-   content/installation
-   content/list_of_tools
-   content/example_usage
-   
-
 For support, questions, or feature requests contact:
 deeptools@googlegroups.com
 
@@ -74,15 +59,10 @@ Please cite deepTools as follows:
 	  `deepTools: a flexible platform for exploring deep-sequencing data. <http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract>`_
 	  Nucl. Acids Res., 2014
 	  doi:10.1093/nar/gku365
-
+	  
 .. image:: ../../images/logo_mpi-ie.jpg
 	  
 This tool suite is developed by the `Bioinformatics Facility <http://www1.ie-freiburg.mpg.de/bioinformaticsfac>`_ at the
 `Max Planck Institute for Immunobiology and Epigenetics,
 Freiburg <http://www1.ie-freiburg.mpg.de/>`_.
 
-`deepTools Galaxy`_ | `get in touch`_!
-
-.. _Glossary: <https://github.com/fidelram/deepTools/wiki/Glossary>
-.. _deepTools Galaxy: <http://deeptools.ie-freiburg.mpg.de>
-.. _get in touch: <deeptools@googlegroups.com>
