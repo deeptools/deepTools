@@ -1,52 +1,54 @@
 import numpy as np
-from matplotlib import colors as pltcolors
+import matplotlib.colors as pltcolors
 
 
 def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     """
-    Adds a line to the plot using the specified metod
+    Adds a line to the plot in the given ax using the specified method
+    Args:
+        ax: matplotlib axis
+        ma: numpy array The data on this matrix is summarized according
+            to the `average_type` argument.
+        average_type: string values are sum mean median min max std
+        color: a valid color: either a html color name, hex
+        (e.g #002233), RGB + alpha tuple or list or RGB tuple or list
+        label: string
+        plot_type: type of plot. Either 'se' for standard error, 'std' for
+                                 standard deviation, 'overlapped_lines' to plot each line of the matrix,
+                                 fill to plot the area between the x axis and the value or None, just to
+                                 plot the average line.
+
+    Returns:
+        ax
+
+    Examples:
+
+    >>> import matplotlib.pyplot as plt
+    >>> fig = plt.figure()
+    >>> ax = fig.add_subplot(111)
+    >>> matrix = np.array([[1,2,3],
+    ...                    [4,5,6],
+    ...                    [7,8,9]])
+    >>> ax = plot_single(ax, matrix -2, 'mean', color=[0.6, 0.8, 0.9], label='fill light blue', plot_type='fill')
+    >>> ax = plot_single(ax, matrix, 'mean', color='blue', label='red')
+    >>> ax = plot_single(ax, matrix + 5, 'mean', color='red', label='red', plot_type='std')
+    >>> ax =plot_single(ax, matrix + 10, 'mean', color='#cccccc', label='gray se', plot_type='se')
+    >>> ax = plot_single(ax, matrix + 20, 'mean', color=(0.9, 0.5, 0.9), label='violet', plot_type='std')
+    >>> ax = plot_single(ax, matrix + 30, 'mean', color=(0.9, 0.5, 0.9, 0.5), label='violet with alpha', plot_type='std')
+    >>> leg = ax.legend()
+    >>> plt.savefig("/tmp/test.pdf")
+    >>> fig = plt.figure()
+
+    Plot overlapped lines
+    >>> ax = fig.add_subplot(111)
+    >>> ax = plot_single(ax, matrix -2, 'mean', color='yellow', label='test',
+    ... plot_type='overlapped_lines')
+    >>> plt.savefig("/tmp/test2.pdf")
+
     """
-    sumry = np.__getattribute__(average_type)(ma, axis=0)
+    summary = np.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
-    if plot_type != 'overlapped_lines':
-        x = np.arange(len(sumry))
-        ax.plot(x, sumry, color=color, label=label, alpha=0.9)
-    if plot_type == 'fill':
-        ax.fill_between(x, sumry, facecolor=color, alpha=0.6)
-
-    elif plot_type == 'se':  # standard error
-        std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
-        alpha = 0.2
-        if isinstance(color, type((0, 0))):  # check if color is tuple
-            # add the alpha channed to the color tuple
-            f_color = [c for c in color[:-1]] + [alpha]
-        else:
-            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
-        # ideally the edgecolor should be None,
-        # but when generating a pdf image an edge is still
-        # drawn.
-        ax.fill_between(x, sumry, sumry + std, facecolor=f_color,
-                        edgecolor=f_color, lw=0.01)
-        ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
-                        edgecolor=f_color, lw=0.01)
-
-    elif plot_type == 'std':  # standard deviation
-        std = np.std(ma, axis=0)
-        alpha = 0.2
-        if isinstance(color, type((0, 0))):  # check if color is tuple
-            # add the alpha channed to the color tuple
-            f_color = [c for c in color[:-1]] + [alpha]
-        else:
-            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
-        # ideally the edgecolor should be None,
-        # but when generating a pdf image an edge is still
-        # drawn.
-        ax.fill_between(x, sumry, sumry + std, facecolor=f_color,
-                        edgecolor=f_color, lw=0.01)
-        ax.fill_between(x, sumry, sumry - std, facecolor=f_color,
-                        edgecolor=f_color, lw=0.01)
-
-    elif plot_type == 'overlapped_lines':
+    if plot_type == 'overlapped_lines':
         if isinstance(color, str) and color == 'black':
             ax.patch.set_facecolor('white')
         elif not isinstance(color, str) and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
@@ -56,6 +58,39 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
         for row in ma:
             ax.plot(row, color=color, alpha=0.1)
         x = np.arange(len(row))
+
+    else:
+        x = np.arange(len(summary))
+        ax.plot(x, summary, color=color, label=label, alpha=0.9)
+        if plot_type == 'fill':
+            pass
+            ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
+
+        if plot_type in ['se', 'std']:
+            if plot_type == 'se':  # standard error
+                std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
+            else:
+                std = np.std(ma, axis=0)
+
+            alpha = 0.2
+            # an alpha channel has to be added to the color to fill the area
+            # between the mean (or median etc.) and the std or se
+            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
+
+            ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
+            ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
+
+        elif plot_type == 'overlapped_lines':
+            if isinstance(color, str) and color == 'black':
+                ax.patch.set_facecolor('white')
+            elif not isinstance(color, str) and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
+                ax.patch.set_facecolor('white')
+            else:
+                ax.patch.set_facecolor('black')
+            for row in ma:
+                ax.plot(row, color=color, alpha=0.1)
+            x = np.arange(len(row))
+
     ax.set_xlim(0, max(x))
 
     return ax
