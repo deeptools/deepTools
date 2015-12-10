@@ -1062,7 +1062,7 @@ class _matrix(object):
         """
         matrix_flatten = np.asarray(self.matrix.flatten())
         # nans are removed from the flattened array
-        matrix_flatten = matrix_flatten[~np.isnan(self.matrix_flatten)]
+        matrix_flatten = matrix_flatten[~np.isnan(matrix_flatten)]
         if len(matrix_flatten) == 0:
             num_nan = len(np.flatnonzero(np.isnan(self.matrix.flatten())))
             raise ValueError("matrix only contains nans "
