@@ -1,20 +1,16 @@
 import sys
-from matplotlib import use as mplt_use
-mplt_use('Agg')
-import matplotlib.pyplot as plt
+import itertools
 import numpy as np
 import scipy.cluster.hierarchy as sch
-from scipy.stats import spearmanr
-
-from matplotlib import rcParams
+import scipy.stats
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
-from matplotlib.ticker import FixedLocator
-
-from itertools import cycle
-from matplotlib.mlab import PCA
+import matplotlib.ticker
+import matplotlib.mlab
 import matplotlib.markers
-import os
 
 
 class Correlation:
@@ -208,8 +204,7 @@ class Correlation:
             for index in xrange(len(rows)):
                 row = rows[index]
                 col = cols[index]
-                corr_matrix[row, col] = spearmanr(self.matrix[:, row],
-                                                  self.matrix[:, col])[0]
+                corr_matrix[row, col] = scipy.stats.spearmanr(self.matrix[:, row], self.matrix[:, col])[0]
             # make the matrix symmetric
             self.corr_matrix = corr_matrix + np.triu(corr_matrix, 1).T
 
@@ -231,7 +226,7 @@ class Correlation:
             font_size = 5
         else:
             font_size = int(14 - 0.25 * num_rows)
-        rcParams.update({'font.size': font_size})
+        mpl.rcParams.update({'font.size': font_size})
         # set the minimum and maximum values
         if vmax is None:
             vmax = 1
@@ -279,13 +274,10 @@ class Correlation:
         axmatrix.set_yticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_yticklabels(np.array(self.labels).astype('str')[index])
 
-    #    axmatrix.xaxis.set_label_position('top')
         axmatrix.xaxis.set_tick_params(labeltop='on')
         axmatrix.xaxis.set_tick_params(labelbottom='off')
         axmatrix.set_xticks(np.arange(corr_matrix .shape[0]) + 0.5)
-        axmatrix.set_xticklabels(np.array(self.labels).astype('str')[index],
-                                 rotation=45,
-                                 ha='left')
+        axmatrix.set_xticklabels(np.array(self.labels).astype('str')[index], rotation=45, ha='left')
 
         axmatrix.tick_params(
             axis='x',
@@ -299,8 +291,7 @@ class Correlation:
             left='off',
             right='off')
 
-        #    axmatrix.set_xticks([])
-        # Plot colorbar.
+        # Plot colorbar
         axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
         cobar = plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
         cobar.solids.set_edgecolor("face")
@@ -331,11 +322,11 @@ class Correlation:
         if (min_value % 2 == 0 and max_value % 2 == 0) or \
                 (min_value % 1 == 0 and max_value % 2 == 1):
             # make one value odd and the other even
-            max_value = max_value + 1
+            max_value += 1
 
         if log1p:
-            majorLocator = FixedLocator(range(min_value, max_value, 2))
-            minorLocator = FixedLocator(range(min_value, max_value, 1))
+            major_locator = matplotlib.ticker.FixedLocator(range(min_value, max_value, 2))
+            minor_locator = matplotlib.ticker.FixedLocator(range(min_value, max_value, 1))
 
         rows, cols = np.triu_indices(num_samples)
         for index in xrange(len(rows)):
@@ -355,10 +346,10 @@ class Correlation:
 
             ax = fig.add_subplot(grids[row, col])
             if log1p:
-                ax.xaxis.set_major_locator(majorLocator)
-                ax.xaxis.set_minor_locator(minorLocator)
-                ax.yaxis.set_major_locator(majorLocator)
-                ax.yaxis.set_minor_locator(minorLocator)
+                ax.xaxis.set_major_locator(major_locator)
+                ax.xaxis.set_minor_locator(minor_locator)
+                ax.yaxis.set_major_locator(major_locator)
+                ax.yaxis.set_minor_locator(minor_locator)
 
             vector1 = self.matrix[:, row]
             vector2 = self.matrix[:, col]
@@ -415,12 +406,7 @@ class Correlation:
             ax.set_ylim(min_value, ax.get_ylim()[1])
             ax.set_xlim(min_value, ax.get_xlim()[1])
 
-    # plt.tight_layout() # if set spoils the title position
         plt.savefig(plot_fiilename, format=image_format)
-
-    # def similar(self, a, b):
-    #     from difflib import SequenceMatcher
-    #     return SequenceMatcher(None, a, b).ratio()
 
     def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False):
         """
@@ -429,12 +415,9 @@ class Correlation:
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 10))
         # PCA
-        mlab_pca = PCA(self.matrix)
+        mlab_pca = matplotlib.mlab.PCA(self.matrix)
         n = len(self.labels)
-        # print self.matrix
-        # print type(self.matrix)
-        # colors = cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
-        markers = cycle(matplotlib.markers.MarkerStyle.filled_markers)
+        markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
@@ -450,7 +433,6 @@ class Correlation:
         lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
                          bbox_to_anchor=(1, 0.5),
                          prop={'size': 12}, markerscale=0.9)
-#        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
 
         # Scree plot
         eigenvalues = map(lambda x: x * n, mlab_pca.fracs)
@@ -462,9 +444,8 @@ class Correlation:
             cumulative.append(c)
 
         ind = np.arange(n)  # the x locations for the groups
-        width = 0.35         # the width of the bars
+        width = 0.35        # the width of the bars
 
-        # fig, ax2 = plt.subplots()
         ax2.bar(width + ind, eigenvalues, width * 2)
         ax2.set_ylabel('Eigenvalue')
         ax2.set_xlabel('Factors')
@@ -479,8 +460,6 @@ class Correlation:
         ax3.set_ylim([0, 1.05])
         ax3.set_ylabel('Cumulative variability')
 
-        bname, ext = os.path.splitext(plot_filename)
         plt.subplots_adjust(top=3.85)
         plt.tight_layout()
         plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
-#        fig.savefig(bname+".scree"+ext, format=image_format, bbox_inches='tight')
