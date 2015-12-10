@@ -484,9 +484,8 @@ def main(args=None):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
         group_len = np.diff(hm.matrix.group_boundaries)
         print "Group '{}' contains too few regions {}. It can't "\
-            "be plotted. Try removing this group.\n".format(
-                    hm.matrix.group_labels[problem[0]],
-                    group_len[problem])
+            "be plotted. Try removing this group.\n".format(hm.matrix.group_labels[problem[0]],
+                                                            group_len[problem])
         if args.outFileSortedRegions:
             hm.save_BED(args.outFileSortedRegions)
             print 'Clustered output written in : ' + args.outFileSortedRegions.name
