@@ -3,8 +3,6 @@
 
 import numpy as np
 from scipy.stats import poisson
-
-# own tools
 from deeptools import writeBedGraph
 from deeptools.SES_scaleFactor import estimateScaleFactor
 
