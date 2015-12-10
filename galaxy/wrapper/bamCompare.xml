@@ -70,8 +70,8 @@
             #if str($advancedOpt.ignoreForNormalization).strip() != '':
                 --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
             #end if
-            #if $samFlag:
-                --samFlag $samFlag
+            #if $advancedOpt.samFlag:
+                --samFlag $advancedOpt.samFlag
             #end if
         #end if
 ]]>
