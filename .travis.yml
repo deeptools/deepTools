@@ -25,12 +25,7 @@ install:
 
 # command to run tests
 script:
-<<<<<<< HEAD
   - flake8 . --exclude=.venv,.build --ignore=E501,F403
-  - nosetests --with-doctest --doctest-extension=.py
-=======
-  #- flake8 . --exclude=.venv --ignore=E501
   - nosetests --with-doctest deeptools/test deeptools/*.py
->>>>>>> 54d2808de28140ff43151983fd071f8991b61bd5
 
 sudo: false
