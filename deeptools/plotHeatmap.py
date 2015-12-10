@@ -493,6 +493,12 @@ def main(args=None):
             "be plotted. Try removing this group.\n".format(
             hm.matrix.group_labels[problem[0]],
             group_len[problem])
+        if args.outFileSortedRegions:
+            hm.save_BED(args.outFileSortedRegions)
+            print 'Clustered output written in : ' + args.outFileSortedRegions.name
+        else:
+            print "No Output file defined for sorted regions. Please re-run "\
+                "heatmapper with --outFileSortedRegions to save the clustered output. "
         exit(0)
 
     if len(args.regionsLabel):
