@@ -1042,7 +1042,6 @@ class _matrix(object):
         to_keep = []
         score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
         for idx, region in enumerate(self.regions):
-            self.matrix[idx, :]
             if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
                 continue
             else:
