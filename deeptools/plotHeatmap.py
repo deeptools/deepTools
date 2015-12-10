@@ -407,7 +407,8 @@ def plotMatrix(hm, outFileName,
         ax_list[0].set_yticks(yticks)
         ax_list[0].set_ylim(yMin, yMax)
         if legend_location != 'none':
-            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP, frameon=False, markerscale=0.5)
+            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
+                               frameon=False, markerscale=0.5)
 
     if showColorbar:
         if showSummaryPlot:
@@ -483,22 +484,16 @@ def main(args=None):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
         group_len = np.diff(hm.matrix.group_boundaries)
         print "Group '{}' contains too few regions {}. It can't "\
-<<<<<<< 3a2ab10cfe0aa285a71ac9a854d617e66f126b21
-              "be plotted. Try removing this group.\n".format(
-                hm.matrix.group_labels[problem[0]],
-                group_len[problem])
-=======
             "be plotted. Try removing this group.\n".format(
-            hm.matrix.group_labels[problem[0]],
-            group_len[problem])
+                    hm.matrix.group_labels[problem[0]],
+                    group_len[problem])
         if args.outFileSortedRegions:
             hm.save_BED(args.outFileSortedRegions)
             print 'Clustered output written in : ' + args.outFileSortedRegions.name
         else:
             print "No Output file defined for sorted regions. Please re-run "\
-                "heatmapper with --outFileSortedRegions to save the clustered output. "
->>>>>>> Now in case of clusters with zero regions, plotheatmap will write back a clustered file with can be again used for heatmap.
-        exit(0)
+                  "heatmapper with --outFileSortedRegions to save the clustered output. "
+        exit(1)
 
     if len(args.regionsLabel):
         hm.matrix.set_group_labels(args.regionsLabel)

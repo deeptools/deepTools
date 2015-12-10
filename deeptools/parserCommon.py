@@ -291,7 +291,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         'or regions.',
         type=int)
     cluster.add_argument(
-            '--hclust',
+        '--hclust',
         help='Number of clusters to compute. When this '
         'option is set, then the matrix is split into clusters '
         'using the hierarchical clustering algorithm, using "ward linkage". '

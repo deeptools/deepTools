@@ -994,7 +994,7 @@ class _matrix(object):
         self.regions = _sorted_regions
         self.set_sorting_method(sort_method, sort_using)
 
-    def hmcluster(self, k, method):
+    def hmcluster(self, k, method='kmeans'):
 
         matrix = np.asarray(self.matrix)
         if np.any(np.isnan(matrix)):
@@ -1042,7 +1042,6 @@ class _matrix(object):
         to_keep = []
         score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
         for idx, region in enumerate(self.regions):
-            self.matrix[idx, :]
             if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
                 continue
             else:
