@@ -6,9 +6,10 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 
 
 class TestReadBed(object):
+
     def setUp(self):
         self.root = ROOT
-        self.bed3_file  = self.root + "test.bed3"
+        self.bed3_file = self.root + "test.bed3"
 
         self.bed = readbed.ReadBed(open(self.bed3_file))
 
@@ -32,18 +33,18 @@ class TestReadBed(object):
     def test_casting(self):
         # chromosome name should always be a strand
         fields = self.bed.get_values_from_line("1\t0\t10\tNAME\t0.0\t+\n")
-        assert type(fields['chrom']) == StringType
-        assert type(fields['start']) == IntType
-        assert type(fields['end']) == IntType
-        assert type(fields['name']) == StringType
-        assert type(fields['score']) == FloatType
-        assert type(fields['strand']) == StringType
+        assert isinstance(fields['chrom'], StringType)
+        assert isinstance(fields['start'], IntType)
+        assert isinstance(fields['end'], IntType)
+        assert isinstance(fields['name'], StringType)
+        assert isinstance(fields['score'], FloatType)
+        assert isinstance(fields['strand'], StringType)
 
         # in this test, the name and the strand should be cast
         # as strings
         fields = self.bed.get_values_from_line("1\t0\t10\t10\t0.0\t0\n")
-        assert type(fields['name']) == StringType
-        assert type(fields['strand']) == StringType
+        assert isinstance(fields['name'], StringType)
+        assert isinstance(fields['strand'], StringType)
 
         # test skip of invalid field for start position
         fields = self.bed.get_values_from_line("1\twrong\t10\t10\t0.0\t0\n")

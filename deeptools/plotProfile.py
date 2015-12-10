@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from __future__ import division
 import sys
@@ -71,7 +71,9 @@ def process_args(args=None):
 
     return args
 
+
 class Profile(object):
+
     def __init__(self, hm, out_file_name,
                  plot_title='', y_axis_label='',
                  y_min=None, y_max=None,
@@ -133,7 +135,6 @@ class Profile(object):
         self.legend_location = legend_location
         self.plots_per_row = plots_per_row
 
-
         # decide how many plots are needed
         if self.per_group:
             self.numplots = self.hm.matrix.get_num_groups()
@@ -163,9 +164,9 @@ class Profile(object):
     def cm2inch(*tupl):
         inch = 2.54
         if isinstance(tupl[0], tuple):
-            return tuple(i/inch for i in tupl[0])
+            return tuple(i / inch for i in tupl[0])
         else:
-            return tuple(i/inch for i in tupl)
+            return tuple(i / inch for i in tupl)
 
     def plot_heatmap(self):
         matrix_flatten = None
@@ -185,7 +186,6 @@ class Profile(object):
                 self.y_max = None
 
         xticks, xtickslabel = getProfileTicks(self.hm, self.reference_point_label, self.start_label, self.end_label)
-        first = True
         ax_list = []
         # turn off y ticks
 
@@ -244,9 +244,8 @@ class Profile(object):
             ticks[0].label1.set_horizontalalignment('left')
             ticks[-1].label1.set_horizontalalignment('right')
 
-
             # add labels as y ticks labels
-            ymin, ymax =  ax.axes.get_ylim()
+            ymin, ymax = ax.axes.get_ylim()
             pos, distance = np.linspace(ymin, ymax, len(labels), retstep=True, endpoint=False)
             d_half = float(distance) / 2
             yticks = [x + d_half for x in pos]
@@ -267,10 +266,10 @@ class Profile(object):
             if self.numlines > 1:
                 # kmeans, so we need to color by cluster
                 color_list = cmap_plot(np.arange(self.numlines, dtype=float) / self.numlines)
-            else :
+            else:
                 color_list = cmap_plot(np.arange(self.numplots, dtype=float) / self.numplots)
         else:
-            if (self.numlines > 1 and len(color_list) < self.numlines) or (self.numlines == 1 and len(color_list) < self.numplots) :
+            if (self.numlines > 1 and len(color_list) < self.numlines) or (self.numlines == 1 and len(color_list) < self.numplots):
                 sys.stderr.write("\nThe given list of colors is too small, "
                                  "at least {} colors are needed\n".format(self.numlines))
                 exit(1)
@@ -303,7 +302,6 @@ class Profile(object):
                     plt.setp(ax.get_yticklabels(), visible=False)
 
             ax.set_title(title)
-            mat = []  # when drawing a heatmap (in contrast to drawing lines)
             for data_idx in range(self.numlines):
                 if self.per_group:
                     row, col = plot, data_idx
@@ -319,14 +317,13 @@ class Profile(object):
 
                 if self.numlines > 1:
                     coloridx = data_idx
-                else :
+                else:
                     coloridx = plot
                 plot_single(ax, sub_matrix['matrix'],
                             self.averagetype,
                             color_list[coloridx],
                             label,
                             plot_type=self.plot_type)
-
 
             if (self.per_group and row > 0) or (self.per_group is False and col > 0):
                 # remove the numbers of the y axis for all plots
@@ -371,7 +368,7 @@ class Profile(object):
                 if self.y_max is not None:
                     lims = (lims[0], self.y_max)
                 if lims[0] >= lims[1]:
-                    lims = (lims[0], lims[0]+1)
+                    lims = (lims[0], lims[0] + 1)
                 ax.set_ylim(lims)
 
             ax_list.append(ax)
@@ -397,28 +394,28 @@ def main(args=None):
     if args.samplesLabel and len(args.samplesLabel):
         hm.matrix.set_sample_labels(args.samplesLabel)
 
-    #if args.outFileNameData:
+    # if args.outFileNameData:
     #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)
 
     prof = Profile(hm, args.outFileName,
-                     plot_title=args.plotTitle,
-                     y_axis_label=args.yAxisLabel,
-                     y_min=args.yMin, y_max=args.yMax,
-                     averagetype=args.averageType,
-                     reference_point_label=args.refPointLabel,
-                     start_label=args.startLabel,
-                     end_label=args.endLabel,
-                     plot_height=args.plotHeight,
-                     plot_width=args.plotWidth,
-                     per_group=args.perGroup,
-                     plot_type=args.plotType,
-                     image_format=args.plotFileFormat,
-                     color_list=args.colors,
-                     legend_location=args.legendLocation,
-                     plots_per_row=args.numPlotsPerRow)
+                   plot_title=args.plotTitle,
+                   y_axis_label=args.yAxisLabel,
+                   y_min=args.yMin, y_max=args.yMax,
+                   averagetype=args.averageType,
+                   reference_point_label=args.refPointLabel,
+                   start_label=args.startLabel,
+                   end_label=args.endLabel,
+                   plot_height=args.plotHeight,
+                   plot_width=args.plotWidth,
+                   per_group=args.perGroup,
+                   plot_type=args.plotType,
+                   image_format=args.plotFileFormat,
+                   color_list=args.colors,
+                   legend_location=args.legendLocation,
+                   plots_per_row=args.numPlotsPerRow)
 
     if args.plotType == 'heatmap':
         prof.plot_heatmap()

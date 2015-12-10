@@ -1,4 +1,4 @@
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -53,6 +53,7 @@ def get_version():
 
 
 class sdist(_sdist):
+
     def run(self):
         update_version_py()
         self.distribution.metadata.version = get_version()
@@ -60,6 +61,7 @@ class sdist(_sdist):
 
 
 class install(_install):
+
     def run(self):
         update_version_py()
         self.distribution.metadata.version = get_version()
@@ -70,7 +72,7 @@ class install(_install):
         self.config_file = self.install_platlib + \
             "/deeptools/config/deeptools.cfg"
 
-       # check installation of several components
+        # check installation of several components
         samtools_installed = self.checkProgramIsInstalled(
             'samtools', 'view',
             'http://samtools.sourceforge.net/',
@@ -81,7 +83,7 @@ class install(_install):
             'http://hgdownload.cse.ucsc.edu/admin/exe/',
             'bamCoverage, bamCompare, correctGCbias')
 
-        if not samtools_installed or not bedGraphToBigWig_installed :
+        if not samtools_installed or not bedGraphToBigWig_installed:
             msg = "\n##########\nSome tools were not fund.\n"\
                 "If you already have a copy of these programs installed\n"\
                 "please be sure that they are found in your PATH or\n"\
@@ -92,8 +94,9 @@ class install(_install):
     def checkProgramIsInstalled(self, program, args, where_to_download,
                                 affected_tools):
         try:
-            _out = subprocess.Popen([program, args], stderr=subprocess.PIPE,
-                                    stdout=subprocess.PIPE)
+            subprocess.Popen([program, args],
+                             stderr=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
             return True
         except EnvironmentError:
             # handle file not found error.
@@ -109,9 +112,6 @@ class install(_install):
 
         except Exception as e:
             sys.stderr.write("Error: {}".format(e))
-
-
-########
 
 setup(
     name='deepTools',

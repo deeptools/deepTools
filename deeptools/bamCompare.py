@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import argparse  # to parse command line arguments
@@ -155,7 +155,7 @@ def getOptionalArgs():
                           'genome size needs to be adjusted accordingly. '
                           'Common values are: mm9: 2150570000, '
                           'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes.',
                           metavar='EFFECTIVE GENOME SIZE LENGTH',
@@ -299,10 +299,10 @@ def get_scale_factors(args):
                                                                             verbose=args.verbose)
                 if args.fragmentLength:
                     if frag_len_dict['mean'] != 0 and \
-                                    abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
+                            abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
                         sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
                                          "length estimated from the bam file: {}\n".format(args.fragmentLength,
-                                                                                         int(frag_len_dict['median'])))
+                                                                                           int(frag_len_dict['median'])))
 
                     fragment_length = args.fragmentLength
 
@@ -312,9 +312,8 @@ def get_scale_factors(args):
                         print "Estimated read length is {}".format(int(read_len_dict['median']))
                     fragment_length = int(read_len_dict['median'])
 
-
                 current_coverage = \
-                                 float(mappedReads * fragment_length) / args.normalizeTo1x
+                    float(mappedReads * fragment_length) / args.normalizeTo1x
                 # the coverage scale factor is 1 / coverage,
                 coverage_scale_factor = 1.0 / current_coverage
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
@@ -326,7 +325,7 @@ def get_scale_factors(args):
                 # by default normalize using RPKM
                 # the RPKM is:
                 # Num reads per tile/(total reads (in millions)*tile length in Kb)
-                millionReadsMapped = float(mappedReads)  / 1e6
+                millionReadsMapped = float(mappedReads) / 1e6
                 tileLengthInKb = float(args.binSize) / 1000
                 coverage_scale_factor = 1.0 / (millionReadsMapped * tileLengthInKb)
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
@@ -379,7 +378,7 @@ def main(args=None):
                                      verbose=args.verbose
                                      )
 
-    wr.run(FUNC, func_args,  args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
+    wr.run(FUNC, func_args, args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
 
 if __name__ == "__main__":
     main()

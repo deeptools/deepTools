@@ -26,6 +26,7 @@ def countReadsInRegions_wrapper(args):
 
 
 class CountReadsPerBin(object):
+
     r"""Collects coverage over multiple bam files using multiprocessing
 
     This function collects read counts (coverage) from several bam files and returns
@@ -190,7 +191,7 @@ class CountReadsPerBin(object):
         self.samFlag_include = samFlag_include
         self.samFlag_exclude = samFlag_exclude
         self.zerosToNans = zerosToNans
-        self.smoothLength=smoothLength
+        self.smoothLength = smoothLength
 
         if out_file_for_raw_data:
             self.save_data = True
@@ -222,7 +223,8 @@ class CountReadsPerBin(object):
         # or a mixture of male/female and is unreliable.
         # Also the skip may contain heterochromatic regions and
         # mitochondrial DNA
-        if len(self.chrsToSkip): chromSizes = [x for x in chromSizes if x[0] not in self.chrsToSkip]
+        if len(self.chrsToSkip):
+            chromSizes = [x for x in chromSizes if x[0] not in self.chrsToSkip]
 
         chrNames, chrLengths = zip(*chromSizes)
 
@@ -234,7 +236,7 @@ class CountReadsPerBin(object):
                 # compute the step size, based on the number of samples
                 # and the length of the region studied
                 (chrom, start, end) = mapReduce.getUserRegion(chromSizes, self.region)[:3]
-                self.stepSize = max(int(float(end-start) / self.numberOfSamples), 1)
+                self.stepSize = max(int(float(end - start) / self.numberOfSamples), 1)
 
         # number of samples is better if large
         if np.mean(chrLengths) < self.stepSize:
@@ -287,16 +289,13 @@ class CountReadsPerBin(object):
         except ValueError:
             if self.bedFile:
                 sys.exit('\nNo coverage values could be computed.\n\n'
-                     'Please check that the chromosome names in the BED file are found on the bam files.\n\n'
-                     'The valid chromosome names are:\n{}'.format(chrNames))
+                         'Please check that the chromosome names in the BED file are found on the bam files.\n\n'
+                         'The valid chromosome names are:\n{}'.format(chrNames))
             else:
                 sys.exit('\nNo coverage values could be computed.\n\nCheck that all bam files are valid and '
-                     'contain mapped reads.')
-
-
+                         'contain mapped reads.')
 
     def count_reads_in_region(self, chrom, start, end, bed_regions_list=None):
-
         """Counts the reads in each bam file at each 'stepSize' position
         within the interval (start, end) for a window or bin of size binLength.
 
@@ -388,23 +387,21 @@ class CountReadsPerBin(object):
 
             if self.save_data:
                 _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
-                _file.write("\t".join(["{}".format(x) for x in coverage_array])+"\n")
+                _file.write("\t".join(["{}".format(x) for x in coverage_array]) + "\n")
 
         if self.verbose:
             endTime = time.time()
             print "%s countReadsInRegions_worker: processing %d " \
                   "(%.1f per sec) @ %s:%s-%s" % \
                   (multiprocessing.current_process().name,
-                   rows, rows / (endTime - start_time), chrom, start, end )
+                   rows, rows / (endTime - start_time), chrom, start, end)
         if self.save_data:
             _file.close()
 
         return np.array(subnum_reads_per_bin).reshape(rows, len(self.bamFilesList)), _file_name
 
-
     def get_coverage_of_region(self, bamHandle, chrom, start, end, tileSize,
-                            fragmentFromRead_func=None):
-
+                               fragmentFromRead_func=None):
         """
         Returns a numpy array that corresponds to the number of reads
         that overlap with each tile.
@@ -514,7 +511,7 @@ class CountReadsPerBin(object):
                 # while for the B case the vector_start is 2 and the vector_end is 3.
 
                 vector_end = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
-                                vector_length)
+                                 vector_length)
 
                 assert vector_end > vector_start, "Error, vector end < " \
                                                   "than vector start {}:{}:{}".format(chrom, start, end)
@@ -537,7 +534,6 @@ class CountReadsPerBin(object):
 
     def getReadLength(self, read):
         return len(read)
-
 
     def get_fragment_from_read(self, read):
         """Get read start and end position of a read.
@@ -674,7 +670,7 @@ class CountReadsPerBin(object):
                     fragmentStart = read.reference_start
                     fragmentEnd = read.reference_start + self.defaultFragmentLength
 
-        if self.center_read == True:
+        if self.center_read:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
             fragmentStart = fragmentCenter - read.alen / 2
             fragmentEnd = fragmentStart + read.alen
@@ -684,7 +680,6 @@ class CountReadsPerBin(object):
         return [(fragmentStart, fragmentEnd)]
 
     def getSmoothRange(self, tileIndex, tileSize, smoothRange, maxPosition):
-
         """
         Given a tile index position and a tile size (length), return the a new indices
         over a larger range, called the smoothRange.
@@ -748,7 +743,9 @@ def remove_row_of_zeros(matrix):
     to_keep = _mat.sum(1) != 0
     return matrix[to_keep, :]
 
+
 class Tester(object):
+
     def __init__(self):
         """
         The distribution of reads between the two bam files is as follows.
@@ -765,8 +762,8 @@ class Tester(object):
                                          ===============
                                                         ===============
         """
-        self.root= os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
-        #self.root = "./test/test_data/"
+        self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+        # self.root = "./test/test_data/"
         self.bamFile1 = self.root + "testA.bam"
         self.bamFile2 = self.root + "testB.bam"
         self.bamFile_PE = self.root + "test_paired2.bam"
@@ -787,5 +784,3 @@ class Tester(object):
         else:  # by default a forward paired read is returned
             read = [x for x in bam.fetch('chr2', 5000027, 5000028)][0]
         return read
-
-

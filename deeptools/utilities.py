@@ -17,7 +17,7 @@ def getGC_content(dnaString, as_fraction=True):
     gc += dnaString.count('C')
     gc += dnaString.count('c')
     if as_fraction:
-        return(float(gc) /len(dnaString))
+        return(float(gc) / len(dnaString))
     else:
         return gc
 
@@ -44,12 +44,12 @@ def tbitToBamChrName(tbitNames, bamNames):
             chrNameBitToBam = dict([(x, x) for x in
                                     set(bamNames).intersection(set(tbitNames))])
         elif set(["chr" + x if x != 'dmel_mitochondrion_genome'
-                else 'chrM' for x in bamNames]) == set(tbitNames):
+                  else 'chrM' for x in bamNames]) == set(tbitNames):
             sys.stderr.write("Adding 'chr' seems to solve the problem. "
                              "Continuing ...")
             chrNameBitToBam = dict([("chr" + x
                                      if x != 'dmel_mitochondrion_genome'
-                                     else 'chrM', x) for x in bamNames ])
+                                     else 'chrM', x) for x in bamNames])
         elif set([x for x in tbitNames if x.count('random') == 0
                   and x.count('chrM') == 0]) == set(bamNames):
             if debug:
@@ -85,7 +85,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         :return: list of (chrom, size) tuples
         """
         return [(bam_handler.references[i], bam_handler.lengths[i])
-                for i in range(0,len(bam_handler.references))]
+                for i in range(0, len(bam_handler.references))]
 
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
@@ -164,7 +164,7 @@ def getTempFileName(suffix=''):
     import tempfile
     import config as cfg
     # get temp dir from configuration file
-    tmp_dir =  cfg.config.get('general', 'tmp_dir')
+    tmp_dir = cfg.config.get('general', 'tmp_dir')
     if tmp_dir == 'default':
         _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
                                                 suffix=suffix,

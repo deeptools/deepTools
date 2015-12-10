@@ -36,7 +36,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
         raise NameError("chromosome {} not found in bam file".format(chrom))
 
     if not len(reads):
-        reads = np.array([]).reshape(0,2)
+        reads = np.array([]).reshape(0, 2)
 
     return reads
 
@@ -74,24 +74,24 @@ def get_read_and_fragment_length(bamFile, bamFileIndex=None,
         fragment_length = fl[:, 0]
         read_length = fl[:, 1]
         fragment_len_dict = {'sample_size': len(fragment_length),
-                      'min': fragment_length.min(),
-                      'qtile25': np.percentile(fragment_length, 25),
-                      'mean': np.mean(fragment_length),
-                      'median': np.median(fragment_length),
-                      'qtile75': np.percentile(fragment_length, 75),
-                      'max': fragment_length.max(),
-                      'std': np.std(fragment_length)}
+                             'min': fragment_length.min(),
+                             'qtile25': np.percentile(fragment_length, 25),
+                             'mean': np.mean(fragment_length),
+                             'median': np.median(fragment_length),
+                             'qtile75': np.percentile(fragment_length, 75),
+                             'max': fragment_length.max(),
+                             'std': np.std(fragment_length)}
         if return_lengths:
             fragment_len_dict['lengths'] = fragment_length
 
         read_len_dict = {'sample_size': len(read_length),
-                      'min': read_length.min(),
-                      'qtile25': np.percentile(read_length, 25),
-                      'mean': np.mean(read_length),
-                      'median': np.median(read_length),
-                      'qtile75': np.percentile(read_length, 75),
-                      'max': read_length.max(),
-                      'std': np.std(read_length)}
+                         'min': read_length.min(),
+                         'qtile25': np.percentile(read_length, 25),
+                         'mean': np.mean(read_length),
+                         'median': np.median(read_length),
+                         'qtile75': np.percentile(read_length, 75),
+                         'max': read_length.max(),
+                         'std': np.std(read_length)}
         if return_lengths:
             read_len_dict['lengths'] = read_length
     else:

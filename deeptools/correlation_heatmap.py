@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
-import matplotlib.colors as colors
 
 
 def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
@@ -19,7 +18,7 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
     elif num_rows > 40:
         font_size = 5
     else:
-        font_size = int(14 - 0.25*num_rows)
+        font_size = int(14 - 0.25 * num_rows)
     rcParams.update({'font.size': font_size})
     # set the minimum and maximum values
     if vmax is None:
@@ -65,24 +64,24 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
     axmatrix.set_ylim(0, num_rows)
 
     axmatrix.yaxis.tick_right()
-    axmatrix.set_yticks(np.arange(corr_matrix.shape[0])+0.5)
+    axmatrix.set_yticks(np.arange(corr_matrix.shape[0]) + 0.5)
     axmatrix.set_yticklabels(np.array(labels).astype('str')[index])
 
 #    axmatrix.xaxis.set_label_position('top')
     axmatrix.xaxis.set_tick_params(labeltop='on')
     axmatrix.xaxis.set_tick_params(labelbottom='off')
-    axmatrix.set_xticks(np.arange(corr_matrix.shape[0])+0.5)
+    axmatrix.set_xticks(np.arange(corr_matrix.shape[0]) + 0.5)
     axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
                              rotation=45,
                              ha='left')
 
-    axmatrix.tick_params(\
+    axmatrix.tick_params(
         axis='x',
         which='both',
         bottom='off',
         top='off')
 
-    axmatrix.tick_params(\
+    axmatrix.tick_params(
         axis='y',
         which='both',
         left='off',
@@ -96,9 +95,8 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
     if plot_numbers:
         for row in range(num_rows):
             for col in range(num_rows):
-                axmatrix.text(row+0.5, col+0.5,
+                axmatrix.text(row + 0.5, col + 0.5,
                               "{:.2f}".format(corr_matrix[row, col]),
                               ha='center', va='center')
 
     fig.savefig(plotFileName, format=image_format)
-

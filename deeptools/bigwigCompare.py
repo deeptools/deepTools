@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-
+# -*- coding: utf-8 -*-
 import argparse  # to parse command line arguments
 from deeptools import parserCommon
 from deeptools.getRatio import getRatio

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 """
 This script is usted to split a bed file into
@@ -23,11 +23,11 @@ tempArray = []
 for line in sys.stdin:
     if line[0] == '#':
         clusterName = line[1:].strip()
-        tempArray.append("#"+clusterName+"\n")
+        tempArray.append("#" + clusterName + "\n")
         open(clusterName + ".bed", 'w').write("".join(tempArray))
         tempArray = []
         continue
-    
+
     tempArray.append(line)
 
 if len(tempArray) > 0:

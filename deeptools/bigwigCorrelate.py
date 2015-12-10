@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import argparse
@@ -47,12 +47,12 @@ detailed help:
     # read_options_parser = parserCommon.read_options()
 
     # bins mode options
-    bins_mode = subparsers.add_parser(
+    subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bigwigCorrelateArgs(case='bins'),
                  parent_parser,
-        ],
+                 ],
         help="The correlation is based on arbitrary bins of similar "
              "size (10k bp by default), which consecutively cover the "
              "entire genome. The only exception is the last bin, which "
@@ -64,7 +64,7 @@ detailed help:
               '-out results.npz\n')
 
     # BED file arguments
-    bed_mode = subparsers.add_parser(
+    subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bigwigCorrelateArgs(case='BED-file'),
@@ -99,43 +99,43 @@ def bigwigCorrelateArgs(case='bins'):
 
     # define the arguments
     required.add_argument('--bwfiles', '-b',
-                        metavar='FILE1 FILE2',
-                        help='List of bigWig files separated by spaces.',
-                        nargs='+',
-                        type=argparse.FileType('r'),
-                        required=True)
+                          metavar='FILE1 FILE2',
+                          help='List of bigWig files separated by spaces.',
+                          nargs='+',
+                          type=argparse.FileType('r'),
+                          required=True)
 
     required.add_argument('--outFileName', '-out',
-                        help='File name to save the gzipped matrix file '
-                        'needed by the "heatmapper" and "profiler" tools.',
-                        type=argparse.FileType('w'),
-                        required=True)
+                          help='File name to save the gzipped matrix file '
+                          'needed by the "heatmapper" and "profiler" tools.',
+                          type=argparse.FileType('w'),
+                          required=True)
 
     optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument("--help", "-h", action="help",
-                        help="show this help message and exit")
+                          help="show this help message and exit")
     optional.add_argument('--labels', '-l',
-                        metavar='sample1 sample2',
-                        help='User defined labels instead of default labels from '
-                            'file names. '
-                            'Multiple labels have to be separated by space, e.g. '
-                            '--labels sample1 sample2 sample3',
-                        nargs='+')
+                          metavar='sample1 sample2',
+                          help='User defined labels instead of default labels from '
+                          'file names. '
+                          'Multiple labels have to be separated by space, e.g. '
+                          '--labels sample1 sample2 sample3',
+                          nargs='+')
 
     optional.add_argument('--chromosomesToSkip',
-                        metavar='chr1 chr2',
-                        help='List of chromosomes that you do not want to be included '
-                             'for the correlation. Useful to remove "random" or "extra" chr.',
-                        nargs='+')
+                          metavar='chr1 chr2',
+                          help='List of chromosomes that you do not want to be included '
+                          'for the correlation. Useful to remove "random" or "extra" chr.',
+                          nargs='+')
 
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
-                        metavar='INT',
-                        help='Size (in base pairs) of the windows sampled '
-                            'and correlated from the genome.',
-                        default=10000,
-                        type=int)
+                              metavar='INT',
+                              help='Size (in base pairs) of the windows sampled '
+                              'and correlated from the genome.',
+                              default=10000,
+                              type=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
@@ -144,17 +144,17 @@ def bigwigCorrelateArgs(case='bins'):
                               'reduce the computation time, a larger distance '
                               'between bins can be given. Larger distances '
                               'result in less bins being considered.',
-                        default=0,
-                        type=int)
+                              default=0,
+                              type=int)
 
         required.add_argument('--BED',
-                        help=argparse.SUPPRESS,
-                        default=None)
+                              help=argparse.SUPPRESS,
+                              default=None)
     else:
         optional.add_argument('--binSize', '-bs',
-                            help=argparse.SUPPRESS,
-                            default=10000,
-                            type=int)
+                              help=argparse.SUPPRESS,
+                              default=10000,
+                              type=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               help=argparse.SUPPRESS,
@@ -164,7 +164,7 @@ def bigwigCorrelateArgs(case='bins'):
 
         required.add_argument('--BED',
                               help='Limits the correlation analysis to '
-                                    'the regions specified in this file.',
+                              'the regions specified in this file.',
                               metavar='bedfile',
                               type=argparse.FileType('r'),
                               required=True)
@@ -199,7 +199,7 @@ def main(args=None):
         bed_regions = None
 
     bwFiles = []
-    for fname in args.bwfiles :
+    for fname in args.bwfiles:
         f = fname.name
         fname.close()
         if f:
@@ -232,13 +232,12 @@ def main(args=None):
                         matrix=num_reads_per_bin,
                         labels=args.labels)
 
-
     if args.outRawCounts:
         # append to the generated file the
         # labels
         header = "#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        #import ipdb;ipdb.set_trace()
+        # import ipdb;ipdb.set_trace()
         with open(args.outRawCounts.name, 'r+') as f:
             content = f.read()
             f.seek(0, 0)

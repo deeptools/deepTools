@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
+import os
 import numpy as np
 
 # own packages
-from deeptools.utilities import *
 from deeptools import bamHandler
 import deeptools.countReadsPerBin as countR
 
@@ -69,10 +69,10 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     >>> test = Tester()
     >>> bin_length = 50
     >>> num_samples = 4
-    >>> dict = estimateScaleFactor([test.bamFile1, test.bamFile2], bin_length, num_samples,  1)
-    >>> dict['size_factors']
+    >>> _dict = estimateScaleFactor([test.bamFile1, test.bamFile2], bin_length, num_samples,  1)
+    >>> _dict['size_factors']
     array([ 1. ,  0.5])
-    >>> dict['size_factors_based_on_mean']
+    >>> _dict['size_factors_based_on_mean']
     array([ 1. ,  0.5])
     """
 
@@ -172,7 +172,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
             'sites_sampled': sitesSampled}
 
 
-class Tester():
+class Tester(object):
+
     def __init__(self):
         self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
         self.bamFile1 = self.root + "testA.bam"

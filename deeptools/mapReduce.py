@@ -10,7 +10,6 @@ def mapReduce(staticArgs, func, chromSize,
               numberOfProcessors=4,
               verbose=False,
               self_=None):
-
     """
     Split the genome into parts that are sent to workers using a defined
     number of procesors. Results are collected and returned.
