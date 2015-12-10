@@ -472,15 +472,32 @@ def main(args=None):
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
+    else:
+        if args.hclust is not None:
+            print "Performing hierarchical clustering." \
+                  "Please note that it might be very slow for large datasets.\n"
+            hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
         group_len = np.diff(hm.matrix.group_boundaries)
         print "Group '{}' contains too few regions {}. It can't "\
-            "be plotted. Try removing this group.\n".format(
+<<<<<<< 3a2ab10cfe0aa285a71ac9a854d617e66f126b21
+              "be plotted. Try removing this group.\n".format(
                 hm.matrix.group_labels[problem[0]],
                 group_len[problem])
+=======
+            "be plotted. Try removing this group.\n".format(
+            hm.matrix.group_labels[problem[0]],
+            group_len[problem])
+        if args.outFileSortedRegions:
+            hm.save_BED(args.outFileSortedRegions)
+            print 'Clustered output written in : ' + args.outFileSortedRegions.name
+        else:
+            print "No Output file defined for sorted regions. Please re-run "\
+                "heatmapper with --outFileSortedRegions to save the clustered output. "
+>>>>>>> Now in case of clusters with zero regions, plotheatmap will write back a clustered file with can be again used for heatmap.
         exit(0)
 
     if len(args.regionsLabel):

@@ -20,7 +20,7 @@ from deeptools import bamHandler
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
-        coverage = bigwigHandle.values(chrom, start, end)
+        coverage = np.asarray(bigwigHandle.values(chrom, start, end))
     except TypeError:
         # this error happens when chromosome
         # is not into the bigwig file
