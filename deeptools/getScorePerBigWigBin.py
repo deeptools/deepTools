@@ -120,8 +120,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
 def getChromSizes(bigwigFilesList):
     """
-    Get chromosome sizes from bigWig file by shell calling bigWigInfo
-    (UCSC tools).
+    Get chromosome sizes from bigWig file with pyBigWig
 
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
@@ -130,9 +129,6 @@ def getChromSizes(bigwigFilesList):
     >>> getChromSizes([test.bwFile1, test.bwFile2])
     ([('3R', 200L)], set([]))
     """
-    # The following lines are - with one exception ("bigWigInfo") -
-    # identical with the bw-reading part of deeptools/countReadsPerBin.py (FK)
-
     # check that the path to USCS bedGraphToBigWig as set in the config
     # is installed and is executable.
 

@@ -160,7 +160,6 @@ def writeBedGraph(
 
     """
 
-    bigwig_info = cfg.config.get('external_tools', 'bigwig_info')
     bamHandlers = [bamHandler.openBam(indexedFile) for
                    indexedFile,
                    fileFormat in bamOrBwFileList if fileFormat == 'bam']
@@ -177,32 +176,23 @@ def writeBedGraph(
         chromNamesAndSize = {}
         for bw in bigwigs:
             inBlock = False
-            for line in os.popen(
-                    "{} -chroms {}".format(bigwig_info, bw)).readlines():
-
-                if line[0:10] == "chromCount":
-                    inBlock = True
-                    continue
-
-                if line[0:5] == "bases":
-                    break
-                if inBlock:
-                    chromName, id, size = line.strip().split(" ")
-                    size = int(size)
-                    if chromName in chromNamesAndSize:
-                        cCommon.append(chromName)
-                        if chromNamesAndSize[chromName] != size:
-                            print "\nWARNING\n" \
-                                "Chromosome {} length reported in the " \
-                                "bigwig files differ.\n{} for {}\n" \
-                                "{} for {}.\n\nThe smallest " \
-                                "length will be used".format(
-                                    chromName, chromNamesAndSize[chromName],
-                                    bigwigs[0], size, bigwigs[1])
-                            chromNamesAndSize[chromName] = min(
-                                chromNamesAndSize[chromName], size)
-                    else:
-                        chromNamesAndSize[chromName] = size
+            bwh = pyBigWig.open(bw)
+            for chromName, size in bwh.chroms():
+                if chromName in chromNamesAndSize:
+                    cCommon.append(chromName)
+                    if chromNamesAndSize[chromName] != size:
+                        print "\nWARNING\n" \
+                            "Chromosome {} length reported in the " \
+                            "bigwig files differ.\n{} for {}\n" \
+                            "{} for {}.\n\nThe smallest " \
+                            "length will be used".format(
+                                chromName, chromNamesAndSize[chromName],
+                                bigwigs[0], size, bw)
+                        chromNamesAndSize[chromName] = min(
+                            chromNamesAndSize[chromName], size)
+                else:
+                    chromNamesAndSize[chromName] = size
+            bwh.close()
 
         # get the list of common chromosome names and sizes
         chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.iteritems()
