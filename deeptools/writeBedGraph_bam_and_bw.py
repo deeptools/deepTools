@@ -13,7 +13,6 @@ import pyBigWig
 import mapReduce
 from utilities import getCommonChrNames
 from writeBedGraph import *
-import config as cfg
 from deeptools import bamHandler
 
 
@@ -175,7 +174,6 @@ def writeBedGraph(
         cCommon = []
         chromNamesAndSize = {}
         for bw in bigwigs:
-            inBlock = False
             bwh = pyBigWig.open(bw)
             for chromName, size in bwh.chroms():
                 if chromName in chromNamesAndSize:
