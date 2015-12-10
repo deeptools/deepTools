@@ -104,7 +104,6 @@ class TestHeatmapper(object):
 
         :return: bool True if files are similar
         """
-        # import ipdb; ipdb.set_trace()
         f1 = deeptools.utilities.getTempFileName(suffix='.svg')
         f2 = deeptools.utilities.getTempFileName(suffix='.svg')
         # remove xlink:href, id and url attributes
