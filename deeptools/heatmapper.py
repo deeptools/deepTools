@@ -361,13 +361,13 @@ class heatmapper(object):
     def coverage_from_array(valuesArray, zones, binSize, avgType):
         try:
             valuesArray[0]
-        except IndexError:
-            sys.stderr.write("values array {}, zones {}\n".format(valuesArray, zones))
+        except (IndexError, TypeError) as detail:
+            sys.stderr.write("{}\nvalues array value: {}, zones {}\n".format(detail, valuesArray, zones))
 
         cvglist = []
         start = zones[0][0]
         for zone_start, zone_end, num_bins in zones:
-            # the linspace is to get equally spaced positions along the range
+                # the linspace is to get equally spaced positions along the range
             # If the gene is short the sampling regions could overlap,
             # if it is long, the sampling regions would be spaced
             counts_list = []
