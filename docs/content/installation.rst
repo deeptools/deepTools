@@ -14,7 +14,7 @@ Requirements
 * numpy and scipy installed
 * pysam >= 0.8 and bx-python are required
 * samtools (preferably in your PATH)
-* 2 UCSC tools: bedGraphToBigWig, bigWigInfo (preferably in your PATH) 
+* 1 UCSC tool: bedGraphToBigWig (preferably in your PATH) 
 
 The easiest way to obtain **Python 2.7 together with numpy and scipy** is
 via the `Anaconda Scientific Python
@@ -62,11 +62,8 @@ check the website for the correct folder for your operating system) and make the
 
 	$ mkdir UCSCtools
 	$ cd UCSCtools
-	$ for PROGRAM in bedGraphToBigWig bigWigInfo
-		do
-			wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/${PROGRAM}
-			chmod +x ${PROGRAM}
-		done
+	$ wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
+	$ chmod +x bedGraphToBigWig
 
 4. Check whether the tools work (you should get a usage message)
 ::
@@ -118,8 +115,6 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	sort: sort
 	samtools: samtools
 	bedgraph_to_bigwig: bedGraphToBigWig
-	# used for bigwigCompare
-	bigwig_info: bigWigInfo
 	
 	[general]
 	# if set to max/2 (no quotes around)
@@ -144,7 +139,7 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	tmp_dir: default
 
 As you can see, deepTools expects samtools to be available via the command ``samtools``,
-as well as the UCSC tools ``bedGraphToBigWig`` and ``bigWigInfo``.
+as well as the UCSC tool ``bedGraphToBigWig``.
 You can either specify the path where you installed the tools in the *.cfg file
 or add the tools to your PATH in your .bashrc file
 (see above for details of the installation of these tools).

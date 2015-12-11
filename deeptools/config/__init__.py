@@ -54,7 +54,6 @@ if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
     config.set('external_tools', 'sort', 'sort')
     config.set('external_tools', 'samtools', 'samtools')
     config.set('external_tools', 'bedgraph_to_bigwig', 'bedGraphToBigWig')
-    config.set('external_tools', 'bigwig_info', 'bigWigInfo')
 
 else:
     import pkg_resources
