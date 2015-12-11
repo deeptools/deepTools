@@ -20,8 +20,12 @@ install:
   - conda install -c https://conda.anaconda.org/cgat pysam
   - pip install pyBigWig
   - pip install bx-python
+  - pip install flake8
   - python setup.py install
 
 # command to run tests
-script: nosetests --with-doctest --doctest-extension=.py
+script:
+  - flake8 . --exclude=.venv,.build --ignore=E501,F403
+  - nosetests --with-doctest deeptools/test deeptools/*.py
+
 sudo: false

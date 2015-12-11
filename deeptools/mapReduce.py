@@ -10,7 +10,6 @@ def mapReduce(staticArgs, func, chromSize,
               numberOfProcessors=4,
               verbose=False,
               self_=None):
-
     """
     Split the genome into parts that are sent to workers using a defined
     number of procesors. Results are collected and returned.
@@ -111,16 +110,14 @@ def mapReduce(staticArgs, func, chromSize,
                 # single region because of the overhead of initiating
                 # the data.
                 bed_regions_list = []
-                for bed_region in bed_interval_tree[chrom].find(startPos,
-                                                                endPos):
+                for bed_region in bed_interval_tree[chrom].find(startPos, endPos):
                     # start + 1 is used to avoid regions that may overlap
                     # with two genomeChunks to be counted twice. Such region
                     # is only added for the genomeChunk that contains the start
                     # of the bed region.
                     if bed_region.start < endPos < bed_region.end:
                         continue
-                    bed_regions_list.append([chrom, bed_region.start,
-                                             bed_region.end])
+                    bed_regions_list.append([chrom, bed_region.start, bed_region.end])
                 if len(bed_regions_list) == 0:
                     continue
                 # add to argument list, the position of the bed regions to use
@@ -143,7 +140,7 @@ def mapReduce(staticArgs, func, chromSize,
 
 
 def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
-    """
+    r"""
     Verifies if a given region argument, given by the user
     is valid. The format of the region_string is chrom:start:end:tileSize
     where start, end and tileSize are optional.
@@ -153,10 +150,11 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
     :param max_chunk_size: upper limit for the chunk size
     :return: tuple chrom_size for the region start, region end, chunk size
 
-    >>> data = getUserRegion({'chr2': 1000}, "chr1:10:10")
-    Traceback (most recent call last):
-    NameError: Unkown chromosome: chr1
-    Known chromosomes are: ['chr2']
+    #>>> data = getUserRegion({'chr2': 1000}, "chr1:10:10")
+    #Traceback (most recent call last):
+    #    ...
+    #NameError: Unknown chromosome: chr1
+    #Known chromosomes are: ['chr2']
 
     If the region end is biger than the chromosome size, this
     value is used instead
@@ -174,7 +172,7 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
     try:
         chrom_sizes[chrom]
     except KeyError:
-        raise NameError("Unkown chromosome: %s\nKnown "
+        raise NameError("Unknown chromosome: %s\nKnown "
                         "chromosomes are: %s " % (chrom, chrom_sizes.keys()))
     try:
         region_start = int(region[1])

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-
+# -*- coding: utf-8 -*-
 import argparse  # to parse command line arguments
 from deeptools import parserCommon
 from deeptools.getRatio import getRatio
+from deeptools import writeBedGraph_bam_and_bw
+
 debug = 0
 
 
@@ -99,9 +100,6 @@ def main(args=None):
         scaleFactors = [float(x) for x in args.scaleFactors.split(":")]
     else:
         scaleFactors = [1, 1]
-    # this import statement is here to allow compilation of the code on readthedocs.org
-    # otherwise, the pyBigWig dependency breaks the docs compilation.
-    from deeptools import writeBedGraph_bam_and_bw
 
     # the getRatio function is called and receives
     # the funcArgs per each tile that is considered

@@ -254,7 +254,7 @@ cite the following paper:
     </xml>
 
     <xml name="input_save_matrix_values">
-        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
+        <param name="save_matrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>
 
     <xml name="input_graphic_output_settings">
@@ -298,7 +298,7 @@ cite the following paper:
             <filter>
             ((
                 output['showOutputSettings'] == 'yes' and 
-                output['saveMatrix'] is True
+                output['save_matrix'] is True
             ))
             </filter>
         </data>

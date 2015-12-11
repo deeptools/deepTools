@@ -2,6 +2,7 @@ import sys
 
 
 class ReadBed(object):
+
     """
     Reads a bed file. Based on the number of fields
     it tries to guess the type of bed file used. Current options
@@ -15,7 +16,6 @@ class ReadBed(object):
     """
 
     def __init__(self, file_handle):
-
         """
         :param file_name: name of the bed file
         :return:
@@ -72,9 +72,8 @@ class ReadBed(object):
         line = self.file_handle.next()
 
         # skip empty lines
-        while 1:
+        while True:
             if line.strip() == '':
-                import ipdb;ipdb.set_trace()
                 line = self.file_handle.next()
             else:
                 break
@@ -107,13 +106,13 @@ class ReadBed(object):
                 try:
                     line_values.append(int(r))
                 except ValueError:
-                    sys.stderr.write("Value: {} in field {} is not an integer".format(r, idx+1))
+                    sys.stderr.write("Value: {} in field {} is not an integer".format(r, idx + 1))
                     return dict()
             else:
                 tmp = r
                 try:
                     tmp = float(r)
-                except ValueError, TypeError:
+                except (ValueError, TypeError):
                     tmp = r
                 line_values.append(tmp)
         if self.file_type is None:
@@ -131,12 +130,14 @@ class ReadBed(object):
         try:
             fields_dict = dict([(self.fields[index], value) for index, value in enumerate(line_values)])
         except:
-            import ipdb;ipdb.set_trace()
+            import ipdb
+            ipdb.set_trace()
 
         return fields_dict
 
 
 class BedInterval(object):
+
     """
     simple place holder for the line data of a bed file
     """
@@ -159,7 +160,7 @@ class BedInterval(object):
             setattr(self, key, value)
             self.fields[key] = value
 
-        self.line  = line
+        self.line = line
 
     def __getitem__(self, item):
         return self.fields[item]

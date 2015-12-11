@@ -3,20 +3,23 @@
 deepTools API example
 =====================
 
-deepTools consists of several command line and galaxy wrappers for summarising
-the information on Next Generation Sequencing data that can be mapped to a reference
-genome. However, the engine powering the deepTools commands can be used through the API for other
-purposes as well. The following is a short overview of the most useful methods and classes
-from deepTools. Complete information can be found in the following links: :ref:`genindex` and :ref:`modindex`
+deepTools consists of several command line and Galaxy wrappers for summarizing
+the information of Next Generation Sequencing data that can be mapped to a reference
+genome.
+Through the API, the engine powering the deepTools commands can be used for other
+purposes as well.
+The following is a short overview of the most useful methods and classes
+from deepTools.
+Complete information can be found in the following links: :ref:`genindex` and :ref:`modindex`
 
 
+Finding read coverage over a region
+------------------------------------
 
-Finding the coverage over a region
-----------------------------------
-
-With deepTools the read coverage over multiple genomic regions and
-multiple files can be computed quite quickly using multiprocessing. First, we
-start with simple example that is later extended to cover the use of multiprocessing.
+With deepTools, the read coverage over multiple genomic regions and
+multiple files can be computed quite quickly using multi-processing.
+First, we start with a simple example that is later extended to cover
+the use of multiprocessing.
 In this example we compute the coverage of reads over a small region for bins of 50bp. For
 this we need the :class:`deeptools.countReadsPerBin` class.
 
@@ -26,19 +29,20 @@ this we need the :class:`deeptools.countReadsPerBin` class.
     import deeptools.countReadsPerBin
 
 
-We also need a bam file containing the aligned reads to a reference genome. The bam file must
-be indexed to allow quick access to the reads falling into the regions of interest.
+We also need a BAM file containing the aligned reads.
+The BAM file must be indexed to allow quick access to the reads
+falling into the regions of interest.
 
 .. code:: python
 
     bam_file = "file.bam"
 
-Now, the countReadsPerBin object can be initialized.
-The first argument of the constructor is a list of bam files,
+Now, the ``countReadsPerBin`` object can be initialized.
+The first argument of the constructor is a list of BAM files,
 which in this case is just one.
-We are going to use a binLength of 50 bp that is computed every 50 bp pairs,
+We are going to use a ``binLength`` of 50 bp that is computed every 50 bp pairs,
 in other words, in consecutive bins of 50bp. Overlapping bin 
-coverages can be used by setting a `stepSize` smaller than the bin length.
+coverages can be used by setting a ``stepSize`` smaller than the bin length.
 
 .. code:: python
 

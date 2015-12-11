@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import argparse
 import sys
@@ -11,6 +11,8 @@ from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
 import deeptools.config as cfg
 import deeptools.utilities
+from deeptools import heatmapper
+
 
 def parse_arguments(args=None):
     parser = \
@@ -43,7 +45,7 @@ To learn more about the specific parameters type:
         metavar='')
 
     # scale-regions mode options
-    scaleRegions = subparsers.add_parser(
+    subparsers.add_parser(
         'scale-regions',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),
@@ -55,9 +57,8 @@ To learn more about the specific parameters type:
         usage='An example usage is:\n  computeMatrix -S '
         '<biwig file> -R <bed file> -b 1000\n \n')
 
-
     # reference point arguments
-    refpoint = subparsers.add_parser(
+    subparsers.add_parser(
         'reference-point',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),
@@ -107,8 +108,8 @@ def computeMatrixOutputArgs(args=None):
                         'needed by the "heatmapper" and "profiler" tools.',
                         type=writableFile,
                         required=True)
-    #TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
-    #output.add_argument('--outFileNameData',
+    # TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
+    # output.add_argument('--outFileNameData',
     #                    help='Name to save the averages per matrix '
     #                    'column into a text file. This corresponds to '
     #                    'the underlying data used to '
@@ -326,44 +327,12 @@ def process_args(args=None):
 
 
 def main(args=None):
-    r"""
-    >>> import filecmp
-    >>> import os
-    >>> args = parseArguments("reference-point \
-    ... -R ../deeptools/test/test_heatmapper/test2.bed \
-    ... -S ../deeptools/test/test_heatmapper/test.bw \
-    ... -b 100 -a 100 --outFileName /tmp/_test.mat.gz \
-    ... -bs 1 -p 1".split())
-    >>> main(args)
-    >>> os.system('gunzip -f /tmp/_test.mat.gz')
-    0
-    >>> filecmp.cmp('../deeptools/test/test_heatmapper/master.mat',
-    ... '/tmp/_test.mat')
-    True
-    >>> os.remove('/tmp/_test.mat')
-    >>> args = parseArguments("scale-regions \
-    ... -R ../deeptools/test/test_heatmapper/test2.bed \
-    ... -S ../deeptools/test/test_heatmapper/test.bw \
-    ... -b 100 -a 100 -m 100 --outFileName /tmp/_test2.mat.gz \
-    ... -bs 10 -p 1".split())
-    >>> main(args)
-    >>> os.system('gunzip -f /tmp/_test2.mat.gz')
-    0
-    >>> filecmp.cmp('../deeptools/test/test_heatmapper/master_scale_reg.mat',
-    ... '/tmp/_test2.mat')
-    True
-    >>> os.remove('/tmp/_test2.mat')
-    """
 
     args = process_args(args)
 
-    from deeptools import heatmapper
-    # concatenate intermediary bedgraph files
-    bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-    if args.verbose:
-        print "temporary bed file {} created".format(bed_file.name)
-
+    # if more than one bed file is given, they are concatenated into one file.
     if len(args.regionsFileName) > 1:
+        bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
         for bed in args.regionsFileName:
             bed.close()
             # concatenate all intermediate tempfiles into one
@@ -403,16 +372,18 @@ def main(args=None):
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
 
-    hm.saveMatrix(args.outFileName)
+    hm.save_matrix(args.outFileName)
     bed_file.close()
-    #os.remove(bed_file.name)
+
+    if len(args.regionsFileName) > 1:
+        os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
-        hm.saveMatrixValues(args.outFileNameMatrix)
+        hm.save_matrix_values(args.outFileNameMatrix)
 
-    #TODO This isn't implemented
-    #if args.outFileNameData:
+    # TODO This isn't implemented
+    # if args.outFileNameData:
     #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
-        hm.saveBED(args.outFileSortedRegions)
+        hm.save_BED(args.outFileSortedRegions)

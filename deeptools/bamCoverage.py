@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 # own tools
 import argparse
 import sys
-from deeptools import writeBedGraph #This should be made directly into a bigWig
+from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools import bamHandler
 
@@ -76,11 +76,11 @@ def get_optional_args():
                           required=False)
 
     optional.add_argument('--MNase',
-                       help='Determine nucleosome positions from MNase-seq data. '
-                       'Only 3 nucleotides at the center of each fragment are counted. '
-                       'The fragment ends are defined by the two mate reads. '
-                       '*NOTE*: Requires paired-end data.',
-                       action='store_true')
+                          help='Determine nucleosome positions from MNase-seq data. '
+                          'Only 3 nucleotides at the center of each fragment are counted. '
+                          'The fragment ends are defined by the two mate reads. '
+                          '*NOTE*: Requires paired-end data.',
+                          action='store_true')
 
     return parser
 
@@ -110,6 +110,7 @@ def process_args(args=None):
 
     return args
 
+
 def get_scale_factor(args):
 
     scale_factor = args.scaleFactor
@@ -127,7 +128,7 @@ def get_scale_factor(args):
             fragment_length = args.frag_len_dict['median']
 
         elif args.extendReads:
-            if frag_len_dict['mean'] != 0  and abs(args.extendReads - frag_len_dict['median']) > frag_len_dict['std']:
+            if frag_len_dict['mean'] != 0 and abs(args.extendReads - frag_len_dict['median']) > frag_len_dict['std']:
                 sys.stderr.write("*Warning*:\nThe extend reads length provided ({}) does not match the fragment "
                                  "length estimated from the BAM file: {}\n".format(args.extendReads,
                                                                                    int(frag_len_dict['median'])))
@@ -171,7 +172,6 @@ def main(args=None):
     else:
         debug = 0
 
-
     funcArgs = {'scaleFactor': get_scale_factor(args)}
     zerosToNans = True if args.missingDataAsZero == 'no' else False
     wr = writeBedGraph.WriteBedGraph([args.bam],
@@ -189,5 +189,5 @@ def main(args=None):
                                      verbose=args.verbose
                                      )
 
-    wr.run(writeBedGraph.scaleCoverage, funcArgs,  args.outFileName,
+    wr.run(writeBedGraph.scaleCoverage, funcArgs, args.outFileName,
            format=args.outFileFormat, smooth_length=args.smoothLength)

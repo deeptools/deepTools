@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import shutil
 import tempfile
 import numpy as np
-import tempfile
 
 # NGS packages
 import pyBigWig
@@ -17,10 +16,11 @@ from writeBedGraph import *
 import config as cfg
 from deeptools import bamHandler
 
+
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
-        coverage = bigwigHandle.values(chrom, start, end)
+        coverage = np.asarray(bigwigHandle.values(chrom, start, end))
     except TypeError:
         # this error happens when chromosome
         # is not into the bigwig file
@@ -44,7 +44,6 @@ def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
         missingDataAsZero=False, fixed_step=False):
-
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -52,50 +51,6 @@ def writeBedGraph_worker(
     using the funcArgs
 
     tileSize
-    >>> test = Tester()
-    >>> funcArgs = {'scaleFactor': 1.0}
-    >>> tempFile = writeBedGraph_worker(
-    ... '3R', 0, 200, 50, 0, [(test.bamFile1,'bam')],
-    ... scaleCoverage, funcArgs, True, 0, False)
-    >>> open(tempFile, 'r').readlines()
-    ['3R\t100\t200\t1.0\n']
-    >>> os.remove(tempFile)
-
-    Test the file being writen for single end reads with no
-    extension and no smoothing
-    >>> tempFile = writeBedGraph_worker(
-    ... '3R', 0, 200, 50, 0, [(test.bamFile1,'bam')],
-    ... scaleCoverage, funcArgs)
-    >>> open(tempFile, 'r').readlines()
-    ['3R\t100\t200\t1.0\n']
-    >>> os.remove(tempFile)
-
-    Test scaling
-    >>> funcArgs = {'scaleFactor': 3.0}
-    >>> tempFile = writeBedGraph_worker(
-    ... '3R', 0, 200, 50, 0, [(test.bamFile1,'bam')],
-    ... scaleCoverage, funcArgs)
-    >>> open(tempFile, 'r').readlines()
-    ['3R\t100\t200\t3.0\n']
-    >>> os.remove(tempFile)
-
-    Test smoothing
-    >>> funcArgs = {'scaleFactor': 1.0}
-    >>> tempFile = writeBedGraph_worker(
-    ... '3R', 100, 200, 20, 0, [(test.bamFile2,'bam')],
-    ... scaleCoverage, funcArgs, smoothLength=60)
-    >>> open(tempFile, 'r').readlines()
-    ['3R\t100\t120\t1.00\n', '3R\t120\t140\t1.67\n', '3R\t140\t160\t2.00\n', '3R\t160\t180\t2.33\n', '3R\t180\t200\t2.0\n']
-    >>> os.remove(tempFile)
-
-    Test ratio (needs two bam files)
-    >>> funcArgs = {}
-    >>> tempFile = writeBedGraph_worker(
-    ... '3R', 100, 200, 50, 0, [(test.bamFile1, 'bam'),
-    ... (test.bamFile2, 'bam')], ratio , funcArgs)
-    >>> open(tempFile, 'r').readlines()
-    ['3R\t100\t150\t1.00\n', '3R\t150\t200\t0.5\n']
-    >>> os.remove(tempFile)
     """
     if start > end:
         raise NameError("start position ({0}) bigger than "
@@ -152,7 +107,7 @@ def writeBedGraph_worker(
         value = func(tileCoverage, funcArgs)
 
         if fixed_step:
-            writeStart = start + tileIndex*tileSize
+            writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
                 _file.write("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
@@ -162,7 +117,7 @@ def writeBedGraph_worker(
                                                       writeEnd, value))
         else:
             if previousValue is None:
-                writeStart = start + tileIndex*tileSize
+                writeStart = start + tileIndex * tileSize
                 writeEnd = min(writeStart + tileSize, end)
                 previousValue = value
 
@@ -196,23 +151,12 @@ def writeBedGraph(
         func, funcArgs, tileSize=25, region=None, numberOfProcessors=None,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
         smoothLength=0, fixed_step=False):
-
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
     for a partition of the genome into tiles of given size
     and a value for each tile that corresponds to the given function
     and that is related to the coverage underlying the tile.
-
-    >>> test = Tester()
-    >>> outFile = tempfile.NamedTemporaryFile()
-    >>> funcArgs = {'scaleFactor': 1.0}
-    >>> writeBedGraph([(test.bamFile1, 'bam')], outFile.name,
-    ... 0, scaleCoverage, funcArgs, region='3R:0:200')
-    >>> open(outFile.name, 'r').readlines()
-    ['3R\t100\t200\t1.0\n']
-    >>> outFile.close()
-
 
     """
 
@@ -253,8 +197,8 @@ def writeBedGraph(
                                 "bigwig files differ.\n{} for {}\n" \
                                 "{} for {}.\n\nThe smallest " \
                                 "length will be used".format(
-                                chromName, chromNamesAndSize[chromName],
-                                bigwigs[0], size, bigwigs[1])
+                                    chromName, chromNamesAndSize[chromName],
+                                    bigwigs[0], size, bigwigs[1])
                             chromNamesAndSize[chromName] = min(
                                 chromNamesAndSize[chromName], size)
                     else:
@@ -298,53 +242,3 @@ def writeBedGraph(
         if debug:
             print "output file: %s" % (outputFileName)
         os.remove(bedGraphFile)
-
-
-class Tester():
-    def __init__(self):
-        """
-        The distribution of reads between the two bam files is as follows.
-
-        They cover 200 bp
-
-          0                              100                           200
-          |------------------------------------------------------------|
-        A                                ===============
-                                                        ===============
-
-
-        B                 ===============               ===============
-                                         ===============
-                                                        ===============
-        """
-        self.root = "/data/projects/ramirez/tools/deepTools/deeptools/test/test_data/"
-        self.bamFile1  = self.root + "testA.bam"
-        self.bamFile2  = self.root + "testB.bam"
-        self.bamFile_PE  = self.root + "test_paired2.bam"
-        self.chrom = '3R'
-        global debug
-        debug = 0
-
-    def getRead(self, readType):
-        """ prepare arguments for test
-        """
-        bam = bamHandler.openBam(self.bamFile_PE)
-        if readType == 'paired-reverse':
-            read = [x for x in bam.fetch('chr2', 5000081, 5000082 )][0]
-        elif readType == 'single-forward':
-            read = [x for x in bam.fetch('chr2', 5001491, 5001492 )][0]
-        elif readType == 'single-reverse':
-            read = [x for x in bam.fetch('chr2', 5001700, 5001701 )][0]
-        else:  # by default a forward paired read is returned
-            read = [x for x in bam.fetch('chr2', 5000027, 5000028 )][0]
-        return read
-
-    def writeBedGraph_worker(self):
-        """ prepare arguments for test
-        """
-        start = 0
-        end = 100
-        bedGraphStep = 25
-        scaleFactors = (1, 1)
-        defaultFragmentLength = 10
-        return (self.chrom, start, end, bedGraphStep, scaleFactors, defaultFragmentLength)

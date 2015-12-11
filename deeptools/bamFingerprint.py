@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import numpy as np
 import argparse
@@ -189,7 +189,7 @@ def main(args=None):
     plt.savefig(args.plotFile.name, bbox_inches=0, format=args.plotFileFormat)
 
     if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n" )
+        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
