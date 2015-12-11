@@ -115,37 +115,3 @@ The tables on this page list:
 
 The texts here are adjusted for readability, they might not match the
 help text that you see in the command line word by word.
-
-Tools for quality control
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/bamFingerPrint
-   tools/bamCorrelate
-   tools/bigwigCorrelate
-   tools/computeGCBias
-
-Tools to create tracks
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/bamCoverage
-   tools/bamCompare
-   tools/bigwigCompare
-
-Tools for visualization
-^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/computeMatrix
-   tools/heatmapper
-   tools/profiler
-   tools/plotCorrelation
-   tools/plotCoverage
-   tools/plotPCA
