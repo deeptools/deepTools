@@ -1,63 +1,35 @@
 The tools
-==================
+=========
 
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| tool          | type          | input files                       | main output file(s)                    | application                                                                  |
-+===============+===============+===================================+========================================+==============================================================================+
-| *Correlate    | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|plotCorrelation| visualization | bam|bigWigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamFingerprint| QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| computeGCbias | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| correctGCbias | QC            | 1 BAM, output from computeGCbias  | 1 GC-corrected BAM                     | obtain a BAM file with reads distributed according to the genome’s GC conten |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| bamCoverage   | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| *Compare      | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                     | normalize 2 files to each other (e.g. log2ratio, difference)                 |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| computeMatrix | visualization | 1 bigWig, 1 BED                   | zipped file for heatmapper or profiler | compute the values needed for heatmaps and summary plots                     |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| heatmapper    | visualization | computeMatrix output              | heatmap of read coverages              | visualize the read coverages for genomic regions                             |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| profiler      | visualization | computeMatrix output              | summary plot (“meta-profile”)          | visualize the average read coverages over a group of genomic regions         |
-+---------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-
-Tools for quality control
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/bamFingerPrint
-   tools/bamCorrelate
-   tools/bigwigCorrelate
-   tools/computeGCBias
-
-Tools to create tracks
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/bamCoverage
-   tools/bamCompare
-   tools/bigwigCompare
-
-Tools for visualization
-^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/computeMatrix
-   tools/heatmapper
-   tools/profiler
-   tools/plotCorrelation
-   tools/plotCoverage
-   tools/plotPCA
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+| tool                        | type          | input files                       | main output file(s)                    | application                                                                  |
++=============================+===============+===================================+========================================+==============================================================================+
+|:doc:`tools/bamCorrelate`    | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
++-----------------------------+               |                                   |                                        |                                                                              |
+|:doc:`tools/bigwigCorrelate` |               |                                   |                                        |                                                                              |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/plotCorrelation` | visualization | bam|bigwigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/plotPCA`         | visualization | bam|bigwigCorrelate output        | 2 PCA plots                            | visualize the principal component analysis                                   |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/bamFingerprint`  | QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/computeGCbias`   | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/correctGCbias`   | QC            | 1 BAM, output from computeGCbias  | 1 GC-corrected BAM                     | obtain a BAM file with reads distributed according to the genome’s GC content|
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/bamCoverage`     | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/bamCompare`      | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                     | normalize 2 files to each other (e.g. log2ratio, difference)                 |
++-----------------------------+               |                                   |                                        |                                                                              |
+|:doc:`tools/bigiwgCompare`   |               |                                   |                                        |                                                                              |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/computeMatrix`   | visualization | 1 or more bigWig, 1 or more BED   | zipped file for heatmapper or profiler | compute the values needed for heatmaps and summary plots                     |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/plotHeatmap`     | visualization | computeMatrix output              | heatmap of read coverages              | visualize the read coverages for genomic regions                             |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
+|:doc:`tools/plotProfile`     | visualization | computeMatrix output              | summary plot (“meta-profile”)          | visualize the average read coverages over a group of genomic regions         |
++-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 
 
 General principles
@@ -65,7 +37,7 @@ General principles
 
 A typical deepTools command could look like this:
 
-::
+.. code:: bash
 
     $ /deepTools/bin/bamCoverage --bam myAlignedReads.bam \
     --outFileName myCoverageFile.bigWig \
@@ -76,7 +48,7 @@ A typical deepTools command could look like this:
 
 You can always see all available command-line options via --help:
 
-::
+.. code:: bash
 
     $ /deepTools/bin/bamCoverage --help
 
@@ -90,7 +62,7 @@ You can always see all available command-line options via --help:
    Galaxy (in a few cases with minor updates to their naming where needed).
 
 Parameters to decrease the run time
-""""""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""""""
 
 -  ``numberOfProcessors`` - Number of processors to be used
                         For example, setting ``--numberOfProcessors 10`` will split up the
@@ -106,7 +78,7 @@ Parameters to decrease the run time
 These parameters are optional and available throughout almost all deepTools.
 
 Filtering BAMs while processing
-""""""""""""""""""""""""""""""""
+"""""""""""""""""""""""""""""""
 
 -  ``ignoreDuplicates`` 
                         Reads with the same orientation and start
@@ -143,37 +115,3 @@ The tables on this page list:
 
 The texts here are adjusted for readability, they might not match the
 help text that you see in the command line word by word.
-
-Tools for quality control
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/bamFingerPrint
-   tools/bamCorrelate
-   tools/bigwigCorrelate
-   tools/computeGCBias
-
-Tools to create tracks
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/bamCoverage
-   tools/bamCompare
-   tools/bigwigCompare
-
-Tools for visualization
-^^^^^^^^^^^^^^^^^^^^^^^
-
-.. toctree::
-   :maxdepth: 1
-
-   tools/computeMatrix
-   tools/plotHeatmap
-   tools/plotProfile
-   tools/plotCorrelation
-   tools/plotCoverage
-   tools/plotPCA
