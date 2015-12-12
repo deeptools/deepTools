@@ -1,11 +1,10 @@
 <tool id="deeptools_bigwigCompare" name="bigwigCompare" version="@WRAPPER_VERSION@.0">
     <description>normalizes and compares two bigWig files to obtain the ratio, log2ratio or difference</description>
-    <expand macro="requirements"/>
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bigwigCompare</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         bigwigCompare
@@ -34,6 +33,10 @@
           --scaleFactors '$advancedOpt.scaleFactor1:$advancedOpt.scaleFactor2'
           --binSize $advancedOpt.binSize
 
+            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
+                --plotTitle '$advancedOpt.plotTitle'
+            #end if
+
         #end if
 ]]>
     </command>
@@ -43,12 +46,15 @@
 
         <conditional name="comparison">
             <param name="comparison_select" type="select" 
-                label="How to compare the two files" help="(--ratio)">
+                label="How to compare the two files"
+                help="The default is to output the log2ratio between the two samples.
+                The reciprocal ratio returns the negative of the inverse of the ratio if
+                the ratio is less than 0. The resulting values are interpreted as negative fold changes. (--ratio)">
                 <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
                 <option value="ratio">compute the ratio of the number of reads</option>
                 <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
                 <option value="add">compute the sum over all reads</option>
-                <option value="reciprocal_ratio">compute the reciprocal ratio of the number of reads</option>
+                <option value="reciprocal_ratio">Computes the fold change. If the fold change is less than 1, the negative of the inverse is reported. E.g. A fold change of 10 to 5 would be reported not as 0.5 but as -2</option>
             </param>
             <when value="log2">
                 <expand macro="pseudocount" />
@@ -58,7 +64,9 @@
             </when>
             <when value="subtract" />
             <when value="add" />
-            <when value="reciprocal_ratio" />
+            <when value="reciprocal_ratio">
+                <expand macro="pseudocount" />
+            </when>
         </conditional>
 
         <param name="outFileFormat" type="select" label="Coverage file format">
@@ -80,8 +88,17 @@
                     help="Size of the bins in bp for the output of the bigwig/bedgraph file. (--binSize)"/>
                 <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
                     label ="Treat missing data as zero"
-                    help  ="This parameter determines if missing data should be replaced with a zero. If set to &quot;no&quot;, missing data will be ignored and will not be included in the output file at all. Missing data is defined as those regions for which no value exists in *any* of the bigwig files. The decision to include or exclude missing data depends on the interpretation of the data. Missing data in a bigwig file may mean that there is no information available for certain regions, for example a repetitive region that is not being considered. In the same file regions with low coverage may get zero read counts. If missing data is replaced by zero, this would convert the excluded repetitive regions into regions of low coverage. (--missingDataAsZero)" />
+                    help  ="This parameter determines if missing data should be replaced with a zero.
+                    If set to &quot;no&quot;, missing data will be ignored and will not be included in the
+                    output file at all. Missing data is defined as those regions for which no value exists in
+                    *any* of the bigwig files. The decision to include or exclude missing data depends on
+                    the interpretation of the data. Missing data in a bigwig file may mean that there is no
+                    information available for certain regions, for example a repetitive region that is not
+                    being considered. In the same file regions with low coverage may get zero read counts.
+                    If missing data is replaced by zero, this would convert the excluded repetitive regions
+                    into regions of low coverage. (--missingDataAsZero)" />
                 <expand macro="scaleFactor" />
+                <expand macro="plotTitle" />
             </when>
         </conditional>
     </inputs>
@@ -95,8 +112,8 @@
     </outputs>
     <tests>
         <test>
-            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
-            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="no" />
             <param name="outFileFormat" value="bigwig" />
             <param name="binSize" value="5" />
@@ -104,8 +121,8 @@
             <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" />
         </test>
         <test>
-            <param name="bigwigFile1" value="1.bigwig" ftype="bigwig" />
-            <param name="bigwigFile2" value="1.bigwig" ftype="bigwig" />
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="no" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="binSize" value="10" />

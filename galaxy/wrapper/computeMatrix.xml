@@ -1,32 +1,27 @@
 <tool id="deeptools_computeMatrix" name="computeMatrix" version="@WRAPPER_VERSION@.0">
-    <description>summarizes and prepares an intermediary file containing scores associated with genomic regions that can be used afterwards to plot a heatmap or a profile</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
+    <description>preparation step to plot a heatmap or a profile</description>
     <macros>
         <token name="@BINARY@">computeMatrix</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         #import tempfile
 
-        #set $temp_input_handle = tempfile.NamedTemporaryFile()
-        #set $temp_input_path = $temp_input_handle.name
-        #silent $temp_input_handle.close()
-
         #for $rf in $regionsFiles:
-            cat "$rf.regionsFile" >> $temp_input_path;
+            cat "$rf.regionsFile" >> ./temp_input_path;
             #if str($rf.label.value).strip():
-                echo "\#$rf.label.value" >> $temp_input_path;
+                echo "\#$rf.label.value" >> ./temp_input_path;
             #else:
-                echo "\#$rf.regionsFile.name" >> $temp_input_path;
+                echo "\#$rf.regionsFile.name" >> ./temp_input_path;
             #end if
         #end for
 
         computeMatrix
 
             $mode.mode_select
-            --regionsFileName '$temp_input_path'
+            --regionsFileName ./temp_input_path
             --scoreFileName '$scoreFile'
             --outFileName '$outFileName'
 
@@ -36,7 +31,7 @@
                 #if $output.saveData:
                     --outFileNameData '$outFileNameData' 
                 #end if
-                #if $output.save_matrix:
+                #if $output.saveMatrix:
                 --outFileNameMatrix '$outFileNameMatrix'
                 #end if
 
@@ -68,35 +63,44 @@
                 $advancedOpt.skipZeros
                 --binSize $advancedOpt.binSize
 
-                #if $advancedOpt.minThreshold:
+                #if $advancedOpt.minThreshold is not None and str($advancedOpt.minThreshold) != '':
                     --minThreshold $advancedOpt.minThreshold
                 #end if
-                #if $advancedOpt.maxThreshold:
+                #if $advancedOpt.maxThreshold is not None and str($advancedOpt.maxThreshold) != '':
                     --maxThreshold $advancedOpt.maxThreshold
                 #end if
-                #if $advancedOpt.scale:
+                #if $advancedOpt.scale is not None and str($advancedOpt.scale) != '':
                     --scale $advancedOpt.scale
                 #end if
 
             #end if
-        ; rm $temp_input_path
 ]]>
     </command>
     <inputs>
 
         <repeat name="regionsFiles" title="regions to plot" min="1">
-            <param name="regionsFile" format="bed" type="data" label="Regions to plot" help="File, in BED format, containing the regions to plot."/>
-            <param name="label" type="text" size="30" optional="true" value="" label="Label" help="Label to use in the output."/>
+            <param name="regionsFile" format="bed" type="data" label="Regions to plot"
+                help="File, in BED format, containing the regions to plot."/>
+            <param name="label" type="text" size="30" optional="true" value="" label="Label"
+                help="Label to use in the output."/>
         </repeat>
 
         <param name="scoreFile" format="bigwig" type="data"
             label="Score file"
-            help="Should be a bigWig file (containing a score, usually covering the whole genome). You can generate a bigWig file either from a bedGraph or WIG file using UCSC tools or from a BAM file using the deepTool bamCoverage. (-scoreFile)"/>
+            help="Should be a bigWig file (containing a score, usually covering
+            the whole genome). You can generate a bigWig file either from a
+            bedGraph or WIG file using UCSC tools or from a BAM file using the
+            deepTool bamCoverage. (-scoreFile)"/>
 
         <conditional name="mode" >
             <param name="mode_select" type="select"
                 label="computeMatrix has two main output options"
-                help="In the scale-regions mode, all regions in the BED file are stretched or shrunk to the same length (bp) that is indicated by the user. Reference-point refers to a position within the BED regions (e.g start of region). In the reference-point mode only those genomic positions before (downstream) and/or after (upstream) the reference point will be plotted.">
+                help="In the scale-regions mode, all regions in the BED file are
+                stretched or shrunk to the same length (bp) that is indicated
+                by the user. Reference-point refers to a position within the BED
+                regions (e.g start of region). In the reference-point mode only
+                those genomic positions before (downstream) and/or after (upstream)
+                the reference point will be plotted.">
                 <option value="scale-regions" selected="true">scale-regions</option>
                 <option value="reference-point">reference-point</option>
             </param>
@@ -106,7 +110,9 @@
                     label="Distance in bp to which all regions are going to be fitted" help="(--regionBodyLength)"/>
                 <param name="startLabel" type="text" value="TSS" size="10"
                     label="Label for the region start"
-                    help ="Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;. (--startLabel)" />
+                    help ="Label shown in the plot for the start of the region.
+                    Default is TSS (transcription start site), but could be changed to anything,
+                    e.g. &quot;peak start&quot;. (--startLabel)" />
                 <param name="endLabel" type="text" value="TES" size="10"
                     label="Label for the region end"
                     help="Label shown in the plot for the region end. Default is TES (transcription end site). (--endLabel)"/>
@@ -119,10 +125,12 @@
                     <when value="yes">
                         <param name="beforeRegionStartLength" type="integer" value="1000" min="1"
                             label="Distance upstream of the start site of the regions defined in the region file"
-                            help="If the regions are genes, this would be the distance upstream of the transcription start site. (--beforeRegionStartLength)"/>
+                            help="If the regions are genes, this would be the
+                            distance upstream of the transcription start site. (--beforeRegionStartLength)"/>
                         <param name="afterRegionStartLength" type="integer" value="1000" min="1"
                             label="Distance downstream of the end site of the given regions"
-                            help="If the regions are genes, this would be the distance downstream of the transcription end site. (--afterRegionStartLength)"/>
+                            help="If the regions are genes, this would be the
+                            distance downstream of the transcription end site. (--afterRegionStartLength)"/>
                     </when>
                 </conditional>
             </when>
@@ -134,7 +142,8 @@
                 </param>
                 <param name="nanAfterEnd" type="boolean" truevalue="--nanAfterEnd" falsevalue=""
                     label="Discard any values after the region end"
-                    help="This is useful to visualize the region end when not using the scale-regions mode and when the reference-point is set to the TSS. (--nanAfterEnd)"/>
+                    help="This is useful to visualize the region end when not using the
+                    scale-regions mode and when the reference-point is set to the TSS. (--nanAfterEnd)"/>
                 <param name="beforeRegionStartLength" type="integer" value="1000" min="1"
                     label="Distance upstream of the start site of the regions defined in the region file"
                     help="If the regions are genes, this would be the distance upstream of the transcription start site. (--beforeRegionStartLength)"/>
@@ -155,7 +164,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="binSize" type="integer" value="10" min="1"
+                <param name="binSize" type="integer" value="50" min="1"
                     label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
                     help="(--binSize)"/>
                 <param name="sortRegions" type="select" label="Sort regions"
@@ -188,23 +197,33 @@
 
                 <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue=""
                     label="Indicate missing data as zero"
-                    help="Set to &quot;yes&quot;, if missing data should be indicated as zeros. Default is to ignore such cases which will be depicted as black areas in the heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options). (--missingDataAsZero)"/>
+                    help="Set to &quot;yes&quot;, if missing data should be indicated as zeros.
+                    Default is to ignore such cases which will be depicted as black areas in the
+                    heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options).
+                    (--missingDataAsZero)"/>
                 <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
                     label="Skip zeros"
-                    help="Whether regions with only scores of zero should be included or not. Default is to include them. (--skipZeros)"/>
+                    help="Whether regions with only scores of zero should be included or not.
+                    Default is to include them. (--skipZeros)"/>
                 <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"
-                    help="Any region containing a value that is equal or less than this numeric value will be skipped. This is useful to skip, for example, genes where the read count is zero for any of the bins. This could be the result of unmappable areas and can bias the overall results. (--minThreshold)"/>
+                    help="Any region containing a value that is equal or less than this numeric
+                    value will be skipped. This is useful to skip, for example, genes where the
+                    read count is zero for any of the bins. This could be the result of
+                    unmappable areas and can bias the overall results. (--minThreshold)"/>
                 <param name="maxThreshold" type="float" optional="True"
                     label="Maximum threshold"
-                    help="Any region containing a value that is equal or higher that this numeric value will be skipped. The max threshold is useful to skip those few regions with very high read counts (e.g. major satellites) that may bias the average values. (--maxThreshold)"/>
+                    help="Any region containing a value that is equal or higher that this
+                    numeric value will be skipped. The max threshold is useful to skip those
+                    few regions with very high read counts (e.g. major satellites) that may
+                    bias the average values. (--maxThreshold)"/>
                 <param name="scale" type="float" optional="True" label="Scaling factor"
                     help="If set, all values are multiplied by this number. (--scale)"/>
             </when>
         </conditional>
     </inputs>
     <outputs>
-        <data format="bgzip" name="outFileName" label="${tool.name} on ${on_string}: Matrix" />
+        <data format="deeptools_compute_matrix_archive" name="outFileName" label="${tool.name} on ${on_string}: Matrix" />
         <expand macro="output_graphic_outputs" />
         <expand macro="output_save_matrix_values" />
     </outputs>
@@ -223,7 +242,7 @@
             <param name="missingDataAsZero" value="True" />
             <param name="beforeRegionStartLength" value="10" />
             <param name="afterRegionStartLength" value="10" />
-            <output name="outFileName" file="computeMatrix_result1.gz" ftype="bgzip" compare="sim_size" />
+            <output name="outFileName" file="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
         </test>
         <test>
             <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
@@ -233,7 +252,7 @@
             <param name="binSize" value="10" />
             <param name="beforeRegionStartLength" value="10" />
             <param name="afterRegionStartLength" value="10" />
-            <output name="outFileName" file="computeMatrix_result2.gz" ftype="bgzip" compare="sim_size" />
+            <output name="outFileName" file="computeMatrix_result2.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
         </test>
     </tests>
   <help>

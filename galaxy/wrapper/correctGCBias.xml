@@ -1,11 +1,10 @@
 <tool id="deeptools_correctGCBias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">correctGCBias</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         ln -s $bamInput local_bamInput.bam;
@@ -27,13 +26,15 @@
             #if str($region).strip() != '':
                 --region '$region'
             #end if
-            --correctedFile $outFileName
+            --correctedFile corrected.bam;
+
+        mv corrected.bam $outFileName;
 ]]>
     </command>
     <inputs>
         <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
         <param name="bamInput" format="bam" type="data"
-            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted."/>
+            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted. (--bamfile)" />
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
         <expand macro="region_limit_operation" />
@@ -44,12 +45,12 @@
     <tests>
         <test>
             <param name="GCbiasFrequenciesFile" value="computeGCBias_result1.tabular" ftype="tabular" />
-            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="bamInput" value="paired_chr2L.bam" ftype="bam" />
             <param name="ref_source" value="history" />
-            <param name="input1" value="phiX.2bit" />
+            <param name="input1" value="sequence.2bit" />
             <param name="effectiveGenomeSize_opt" value="specific" />
-            <param name="effectiveGenomeSize" value="5386" />
-            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" compare="sim_size" />
+            <param name="effectiveGenomeSize" value="23011544" />
+            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" />
         </test>
     </tests>
     <help>

@@ -13,16 +13,45 @@
                 <expand macro="doNotExtendPairedEnds" />
                 <expand macro="ignoreDuplicates" />
                 <expand macro="minMappingQuality" />
-                <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
-                    label="Include zeros"
-                    help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases. (--includeZeros)" />
-                <param name="zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
-                    help="If not specified the value is set automatically. (--zMin)"/>
-                <param name="zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
-                    help="If not specified the value is set automatically. (--zMax)"/>
+                <expand macro="includeZeros" />
+                <expand macro="zMin_zMax" />
                 <expand macro="colormap" />
             </when>
         </conditional>
+    </xml>
+
+
+    <xml name="bigwigCorrelate_mode_actions">
+
+        <expand macro="region_limit_operation" />
+
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <expand macro="includeZeros" />
+                <expand macro="zMin_zMax" />
+                <expand macro="colormap" />
+                <expand macro="plotTitle" />
+                <expand macro="plotNumbers" />
+            </when>
+        </conditional>
+    </xml>
+
+
+    <xml name="includeZeros">
+        <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
+            label="Include zeros"
+            help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases. (--includeZeros)" />
+    </xml>
+    <xml name="zMin_zMax">
+        <param name="zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
+            help="If not specified the value is set automatically. (--zMin)"/>
+        <param name="zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
+            help="If not specified the value is set automatically. (--zMax)"/>
     </xml>
 
     <xml name="region_limit_operation">
@@ -30,17 +59,21 @@
             label="Region of the genome to limit the operation to"
             help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;. (--region)" />
     </xml>
+
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">1.5.9.2</token>
+    <token name="@WRAPPER_VERSION@">1.5.11</token>
     <xml name="requirements">
         <requirements>
+            <requirement type="package" version="2.7.10">python</requirement>
             <requirement type="binary">@BINARY@</requirement>
             <requirement type="package" >deepTools</requirement>
-            <requirement type="package" version="1.5.9">deepTools</requirement>
+            <requirement type="package" version="1.5.11">deepTools</requirement>
             <yield />
         </requirements>
+        <expand macro="stdio" />
         <version_command>@BINARY@ --version</version_command>
     </xml>
+
 
     <xml name="kmeans_clustering">
         <conditional name="used_multiple_regions">
@@ -48,7 +81,7 @@
                 label="Did you compute the matrix with more than one groups of regions?"
                 help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                 <option value="yes">Yes, I used multiple groups of regions</option>
-                <option value="no">No, I used only one region.</option>
+                <option value="no">No, I used only one group</option>
             </param>
             <when value="no">
                 <conditional name="clustering">
@@ -77,6 +110,16 @@
         #end if
     </token>
 
+    <xml name="samFlag">
+        <param name="samFlag" type="integer" optional="true" value=""
+            label="Filter reads based on the SAM flag"
+            help= "For example to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage. (--samFlag)"/>
+    </xml>
+    <xml name="plotNumbers">
+        <param name="plotNumbers" type="boolean" truevalue="--plotNumbers" falsevalue="" 
+            label="Plot the correlation value" 
+            help="If set, then the correlation number is plotted on top of the heatmap. (--plotNumbers)"/>
+    </xml>
     <xml name="doNotExtendPairedEnds">
         <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
             label="Do not extend paired ends"
@@ -141,11 +184,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
 .. _help site: https://github.com/fidelram/deepTools/wiki/
 
-**References**
-
-If you use this Galaxy tool in work leading to a scientific publication please
-cite the following paper:
-
     </token>
     <xml name="citations">
         <citations>
@@ -155,36 +193,46 @@ cite the following paper:
     </xml>
 
     <xml name="multiple_input_bams">
-        <repeat name="input_files" title="BAM files" min="2">
-            <param name="bamfile" type="data" format="bam" 
-                label="Bam file" 
-                help="The BAM file must be sorted."/>
-            <param name="label" type="text" size="30" optional="true" value=""
-                label="Label"
-                help="Label to use in the output. If not given the dataset name will be used instead."/>
-          </repeat>
+        <param name="bamfiles" type="data" format="bam"
+            label="Bam file" multiple="true"
+            help="The BAM file must be sorted."/>
+    </xml>
+
+    <xml name="multiple_input_bigwigs">
+        <param name="bigwigfiles" type="data" format="bigwig" multiple="True"
+            label="Bigwig file" 
+            help="The Bigwig file must be sorted."/>
+    </xml>
+
+    <xml name="plotTitle">
+        <param name="plotTitle" type="text" value="" size="30" optional="True"
+            label="Title of the plot"
+            help="Title of the plot, to be printed on top of the generated image. (--plotTitle)" />
     </xml>
 
     <token name="@multiple_input_bams@">
-        #import tempfile
-        #set $temp_dir = os.path.abspath(tempfile.mkdtemp())
+<![CDATA[
         #set files=[]
         #set labels=[]
-        #for $i in $input_files:
-            #set $temp_input_handle = tempfile.NamedTemporaryFile( dir=$temp_dir )
-            #set $temp_input_path = $temp_input_handle.name
-            #silent $temp_input_handle.close()
-            #silent os.system("ln -s %s %s.bam" % (str($i.bamfile), $temp_input_path))
-            #silent os.system("ln -s %s %s.bam.bai" % (str($i.bamfile.metadata.bam_index), $temp_input_path))
-            #silent $files.append('%s.bam' % $temp_input_path)
-
-            ##set $files += [str($i.bamfile)]
-            #if str($i.label.value) != "":
-                #set $labels += ["\"%s\"" % ($i.label.value)]
-            #else
-                #set $labels += ["\"%s\"" % ($i.bamfile.name)]
-            #end if
+        #for $counter, $bamfile in enumerate($bamfiles):
+            ln -s "${bamfile}" "./${counter}.bam" &&
+            ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+            #silent $files.append('%s.bam' % $counter)
+            #silent $labels.append('%s' % ($bamfile.display_name))
         #end for
+]]>
+    </token>
+
+    <token name="@multiple_input_bigwigs@">
+<![CDATA[
+        #set files=[]
+        #set labels=[]
+        #for $counter, $bigwig in enumerate($bigwigfiles):
+            ln -s "${bigwig}" "${counter}.bw" &&
+            #silent $files.append('%s.bw' % $counter)
+            #silent $labels.append('%s' % ($bigwig.display_name))
+        #end for
+]]>
     </token>
 
     <xml name="reference_genome_source">
@@ -195,7 +243,7 @@ cite the following paper:
             </param>
             <when value="cached">
                 <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
-                    <options from_data_table="deepTools_seqs">
+                    <options from_data_table="lastz_seqs">
                         <filter type="sort_by" column="1" />
                         <validator type="no_options" message="No indexes are available." />
                     </options>
@@ -254,7 +302,7 @@ cite the following paper:
     </xml>
 
     <xml name="input_save_matrix_values">
-        <param name="save_matrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
+        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>
 
     <xml name="input_graphic_output_settings">
@@ -298,7 +346,7 @@ cite the following paper:
             <filter>
             ((
                 output['showOutputSettings'] == 'yes' and 
-                output['save_matrix'] is True
+                output['saveMatrix'] is True
             ))
             </filter>
         </data>

@@ -1,6 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <tool_dependency>
-    <package name="deepTools" version="1.5.9">
-        <repository name="package_deeptools_1_5_9" owner="iuc"/>
+    <package name="python" version="2.7.10">
+        <repository name="package_python_2_7_10" owner="iuc" />
+    </package>
+    <package name="deepTools" version="1.5.11">
+        <repository name="package_python_2_7_deeptools_1_5_11" owner="iuc"/>
     </package>
 </tool_dependency>

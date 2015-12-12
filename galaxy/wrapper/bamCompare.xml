@@ -1,11 +1,10 @@
 <tool id="deeptools_bamCompare" name="bamCompare" version="@WRAPPER_VERSION@.0">
     <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference. (bam2bigwig)</description>
-    <expand macro="requirements" />
-    <expand macro="stdio" />
     <macros>
         <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
     </macros>
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         bamCompare
@@ -71,7 +70,9 @@
             #if str($advancedOpt.ignoreForNormalization).strip() != '':
                 --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
             #end if
-
+            #if $advancedOpt.samFlag:
+                --samFlag $advancedOpt.samFlag
+            #end if
         #end if
 ]]>
     </command>
@@ -108,15 +109,24 @@
 
         <conditional name="comparison">
             <param name="type" type="select" 
-                label="How to compare the two files">
+                label="How to compare the two files"
+                help="The default is to output the log2ratio between the two samples.
+                The reciprocal ratio returns the negative of the inverse of the ratio if
+                the ratio is less than 0. The resulting values are interpreted as negative fold changes.">
                 <option value="log2" selected="true">Compute log2 of the number of reads ratio</option>
                 <option value="ratio">Compute the ratio of the number of reads</option>
                 <option value="subtract">Compute difference (subtract input from treatment) of the number of reads</option>
+                <option value="add">Compute the sum of number of reads</option>
+                <option value="reciprocal_ratio">Computes the fold change. If the fold change is less than 1, the negative of the inverse is reported. E.g. A fold change of 10 to 5 would be reported not as 0.5 but as -2</option>
             </param>
             <when value="log2">
                 <expand macro="pseudocount" />
             </when>
             <when value="ratio">
+                <expand macro="pseudocount" />
+            </when>
+            <when value="add" />
+            <when value="reciprocal_ratio">
                 <expand macro="pseudocount" />
             </when>
             <when value="subtract">
@@ -157,6 +167,7 @@
                 <param name="ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
+                <expand macro="samFlag" />
             </when>
         </conditional>
     </inputs>
