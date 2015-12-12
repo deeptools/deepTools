@@ -32,7 +32,7 @@ def openBam(bamFile, bamIndex=None):
     else:
         if not os.path.exists(bamFile + ".bai"):
             sys.exit("Index file {} does not exists.\n"
-                     "Be sure that the bam file you are"
+                     "Be sure that the bam file you are "
                      "using is indexed.".format(bamFile + ".bai"))
 
     try:
