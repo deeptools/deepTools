@@ -83,11 +83,6 @@ def get_optional_args():
                           default=500,
                           type=int)
 
-    optional.add_argument('--fragmentLength', '-f',
-                          help='Length of the average fragment size.',
-                          type=int,
-                          default=200)
-
     optional.add_argument('--numberOfSamples', '-n',
                           help='Number of bins, sampled from the genome '
                           'to compute the average number of reads.',
@@ -144,7 +139,6 @@ def main(args=None):
         args.bamfiles,
         args.binSize,
         args.numberOfSamples,
-        args.fragmentLength,
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
