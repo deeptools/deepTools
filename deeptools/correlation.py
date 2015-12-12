@@ -418,6 +418,7 @@ class Correlation:
         mlab_pca = matplotlib.mlab.PCA(self.matrix)
         n = len(self.labels)
         markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
+        colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
