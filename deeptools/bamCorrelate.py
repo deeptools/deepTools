@@ -237,7 +237,7 @@ def main(args=None):
             content = f.read()
             f.seek(0, 0)
             f.write(header + content)
-    args.outRawCounts.close()
+        args.outRawCounts.close()
 
 
 if __name__ == "__main__":
