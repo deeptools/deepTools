@@ -175,7 +175,7 @@ def writeBedGraph(
         chromNamesAndSize = {}
         for bw in bigwigs:
             bwh = pyBigWig.open(bw)
-            for chromName, size in bwh.chroms():
+            for chromName, size in bwh.chroms().items():
                 if chromName in chromNamesAndSize:
                     cCommon.append(chromName)
                     if chromNamesAndSize[chromName] != size:
