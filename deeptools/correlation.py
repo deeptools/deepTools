@@ -6,7 +6,6 @@ import scipy.stats
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
