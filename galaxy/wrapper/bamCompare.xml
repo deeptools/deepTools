@@ -7,24 +7,27 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
+        ln -s '$bamFile1' one.bam &&
+        ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
+        ln -s '$bamFile2' two.bam &&
+        ln -s '${bamFile2.metadata.bam_index}' two.bam.bai &&
+
         bamCompare
 
         @THREADS@
 
-        --bamfile1 '$bamFile1'
-        -bai1 '${bamFile1.metadata.bam_index}'
-        --bamfile2 '$bamFile2'
-        -bai2 '${bamFile2.metadata.bam_index}'
+        --bamfile1 one.bam
+        --bamfile2 two.bam
 
         --outFileName '$outFileName'
         --outFileFormat '$outFileFormat'
 
-        --fragmentLength $fragmentLength
         --binSize $binSize
 
         #if $scaling.method == 'SES':
             --scaleFactorsMethod SES
             --sampleLength $scaling.sampleLength
+            --numberOfSamples $scaling.numberOfSamples
         #elif $scaling.method == 'readCount':
             --scaleFactorsMethod readCount
         #elif $scaling.method == 'own':
@@ -55,12 +58,13 @@
 
         #if $advancedOpt.showAdvancedOpt == "yes":
             #if $advancedOpt.smoothLength:
-            --smoothLength '$advancedOpt.smoothLength'
+                --smoothLength '$advancedOpt.smoothLength'
             #end if
 
-            $advancedOpt.doNotExtendPairedEnds
+            ##$advancedOpt.doNotExtendPairedEnds
+            --extendReads $advancedOpt.extendReads
             $advancedOpt.ignoreDuplicates
-
+            $advancedOpt.centerReads
             #if $advancedOpt.minMappingQuality:
                 --minMappingQuality '$advancedOpt.minMappingQuality'
             #end if
@@ -70,8 +74,11 @@
             #if str($advancedOpt.ignoreForNormalization).strip() != '':
                 --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
             #end if
-            #if $advancedOpt.samFlag:
-                --samFlag $advancedOpt.samFlag
+            #if $advancedOpt.samFlagInclude:
+                --samFlagInclude $advancedOpt.samFlagInclude
+            #end if
+            #if $advancedOpt.samFlagExclude:
+                --samFlagExclude $advancedOpt.samFlagExclude
             #end if
         #end if
 ]]>
@@ -81,9 +88,6 @@
             help="The BAM file must be sorted."/>
         <param name="bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
-        <param name="fragmentLength" type="integer" value="200" min="1"
-            label="Length of the average fragment size"
-            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). The formula to normalize using the sequencing depth is genomeSize/(number of mapped reads * fragment length). *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 
         <param name="binSize" type="integer" value="50" min="1" 
             label="Bin size in bp"
@@ -97,9 +101,12 @@
                 <option value="own">enter own scaling factors</option>
             </param>
             <when value="SES">
-                <param name="sampleLength" type="integer" value="1000" min="10"
+                <param argument="--sampleLength" type="integer" value="1000" min="10"
                     label="Length in base pairs used to sample the genome and compute the size or scaling factors to compare the two  BAM files "
-                    help="The default is fine. Only change it if you know what you are doing" />
+                    help="The default is fine. Only change it if you know what you are doing." />
+                <param argument="--numberOfSamples" type="integer" value="100000" min="0"
+                    label="Number of samplings taken from the genome to compute the scaling factors"
+                    help="" />
             </when>
             <when value="readCount" />
             <when value="own">
@@ -157,17 +164,18 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="smoothLength" type="integer" value="1" optional="true" min="1"
+                <param argument="--smoothLength" type="integer" value="" optional="True" min="1"
                     label="Smooth values using the following length (in bp)"
-                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied. (--smoothLength)"/>
-                <expand macro="doNotExtendPairedEnds" />
+                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
+                <expand macro="extendReads" />
+                <expand macro="centerReads" />
                 <expand macro="ignoreDuplicates" />
                 <expand macro="minMappingQuality" />
                 <expand macro="missingDataAsZero" />
-                <param name="ignoreForNormalization" type="text" value="" size="50"
+                <param argument="--ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
-                <expand macro="samFlag" />
+                <expand macro="samFlags" />
             </when>
         </conditional>
     </inputs>
@@ -190,6 +198,17 @@
             <param name="binSize" value="5" />
             <param name="type" value="ratio" />
             <output name="outFileName" file="bamCompare_result1.bg" ftype="bedgraph" />
+        </test>
+        <test>
+            <param name="bamFile1" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="bamFile2" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="fragmentLength" value="100" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="10" />
+            <param name="type" value="ratio" />
+            <output name="outFileName" file="bamCompare_result2.bw" ftype="bigwig" />
         </test>
     </tests>
     <help>

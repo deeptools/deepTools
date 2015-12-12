@@ -10,7 +10,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <expand macro="doNotExtendPairedEnds" />
+                <!--expand macro="doNotExtendPairedEnds" /-->
                 <expand macro="ignoreDuplicates" />
                 <expand macro="minMappingQuality" />
                 <expand macro="includeZeros" />
@@ -20,9 +20,7 @@
         </conditional>
     </xml>
 
-
     <xml name="bigwigCorrelate_mode_actions">
-
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
@@ -41,23 +39,22 @@
         </conditional>
     </xml>
 
-
     <xml name="includeZeros">
-        <param name="includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
+        <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
-            help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases. (--includeZeros)" />
+            help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
     </xml>
     <xml name="zMin_zMax">
-        <param name="zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
-            help="If not specified the value is set automatically. (--zMin)"/>
-        <param name="zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
-            help="If not specified the value is set automatically. (--zMax)"/>
+        <param argument="--zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
+            help="If not specified the value is set automatically."/>
+        <param argument="--zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
+            help="If not specified the value is set automatically."/>
     </xml>
 
     <xml name="region_limit_operation">
-        <param name="region" type="text" value=""
+        <param argument="--region" type="text" value=""
             label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;. (--region)" />
+            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;." />
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
@@ -66,8 +63,7 @@
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
             <requirement type="binary">@BINARY@</requirement>
-            <requirement type="package" >deepTools</requirement>
-            <requirement type="package" version="1.5.11">deepTools</requirement>
+            <requirement type="package" version="2.0">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -110,44 +106,70 @@
         #end if
     </token>
 
-    <xml name="samFlag">
-        <param name="samFlag" type="integer" optional="true" value=""
+    <xml name="samFlags">
+        <!--param name="samFlag" type="integer" optional="true" value=""
             label="Filter reads based on the SAM flag"
-            help= "For example to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage. (--samFlag)"/>
+            help= "For example to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage. (- -samFlag)"/-->
+
+        <param argument="--samFlagInclude" type="integer" optional="True" value=""
+            label="Include reads based on the SAM flag"
+            help= "For example, to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage."/>
+        <param argument="--samFlagExclude" type="integer" optional="True" value=""
+            label="Exclude reads based on the SAM flag"
+            help= "For example, to get only reads that map to the forward strand, use --samFlagExclude 16, where 16 is the SAM flag for reads that map to the reverse strand."/>
     </xml>
+
     <xml name="plotNumbers">
         <param name="plotNumbers" type="boolean" truevalue="--plotNumbers" falsevalue="" 
             label="Plot the correlation value" 
             help="If set, then the correlation number is plotted on top of the heatmap. (--plotNumbers)"/>
     </xml>
-    <xml name="doNotExtendPairedEnds">
-        <param name="doNotExtendPairedEnds" type="boolean" truevalue="--doNotExtendPairedEnds" falsevalue=""
-            label="Do not extend paired ends"
-            help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available. (--doNotExtendPairedEnds)"/>
+
+
+    <xml name="extendReads">
+        <param argument="--extendReads" type="integer" value="" optional="True"
+            label="Extend reads to the given average fragment size"
+            help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here. By default *each* read mate is extended.
+This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate. Unmated reads, mate reads that map on different chromosomes or too far
+apart are extended to the given value. Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not recommended as it will extend reads
+over skipped regions, e.g. introns in RNA-seq data."/>
     </xml>
 
+
+    <xml name="centerReads">
+        <param argument="--centerReads" type="boolean" truevalue="--centerReads" falsevalue=""
+            label="Center regions with respect to the fragment length"
+            help="For paired-end data, the read is centered at the fragment length defined by the two ends of the fragment. For single-end data, the given fragment length is used. This option is useful to get a sharper signal around enriched regions. "/>
+    </xml>
+
+    <!--xml name="doNotExtendPairedEnds">
+        <param name="doNotExtendPairedEnds" type="boolean" truevalue="- -doNotExtendPairedEnds" falsevalue=""
+            label="Do not extend paired ends"
+            help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available. (- -doNotExtendPairedEnds)"/>
+    </xml-->
+
     <xml name="ignoreDuplicates">
-        <param name="ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
+        <param argument="--ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
             label="Ignore duplicates"
-            help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read. (--ignoreDuplicates)" />
+            help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." />
     </xml>
 
     <xml name="minMappingQuality">
-        <param name="minMappingQuality" type="integer" optional="true" value="1" min="1"
+        <param argument="--minMappingQuality" type="integer" optional="true" value="1" min="1"
             label="Minimum mapping quality"
-            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere. (--minMappingQuality)"/>
+            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
     </xml>
 
     <xml name="skipZeros">
-        <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
+        <param argument="--skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
             label ="Skip zeros"
-            help  ="If set, then zero counts that happen for *all* BAM files given are ignored. This might have the effect that fewer regions are considered than indicated in the option where the number of samples is defined. (--skipZeros)" />
+            help ="If set, then zero counts that happen for *all* BAM files given are ignored. This might have the effect that fewer regions are considered than indicated in the option where the number of samples is defined." />
     </xml>
 
     <xml name="fragmentLength">
-        <param name="fragmentLength" type="integer" value="300" min="1"
+        <param argument="--fragmentLength" type="integer" value="300" min="1"
             label="Fragment length used for the sequencing"
-            help ="If paired-end reads are used, the fragment length is computed from the BAM file. (--fragmentLength)"/>
+            help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
     </xml>
 
     <xml name="scaleFactor">
@@ -167,7 +189,7 @@
     </xml>
 
     <xml name="pseudocount">
-        <param name="pseudocount" type="float" value="1" label="Pseudocount" help="Small number to avoid dividing by zero."/>
+        <param argument="--pseudocount" type="float" value="1" label="Pseudocount" help="Small number to avoid dividing by zero."/>
     </xml>
 
     <token name="@REFERENCES@">
@@ -205,9 +227,9 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="plotTitle">
-        <param name="plotTitle" type="text" value="" size="30" optional="True"
+        <param argument="--plotTitle" type="text" value="" size="30" optional="True"
             label="Title of the plot"
-            help="Title of the plot, to be printed on top of the generated image. (--plotTitle)" />
+            help="Title of the plot, to be printed on top of the generated image." />
     </xml>
 
     <token name="@multiple_input_bams@">
