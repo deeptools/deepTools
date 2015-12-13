@@ -1,0 +1,223 @@
+<tool id="deeptools_plotHeatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.0">
+    <description>creates a heatmap for a score associated to genomic regions</description>
+    <macros>
+        <token name="@BINARY@">plotHeatmap</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements"/>
+    <command>
+<![CDATA[
+        @BINARY@
+            --matrixFile "$matrixFile"
+            --outFileName "$outFileName"
+
+            #if $output.showOutputSettings == "yes"
+                --plotFileFormat "$output.outFileFormat"
+                #if $outFileNameData:
+                    --outFileNameData "$outFileNameData"
+                #end if
+
+                #if $outFileNameMatrix:
+                    --outFileNameMatrix "$outFileNameMatrix"
+                #end if
+
+                #if $outFileSortedRegions:
+                    --outFileSortedRegions "$outFileSortedRegions"
+                #end if
+            #else
+                --plotFileFormat 'png'
+            #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes"
+                #if $advancedOpt.sortRegions:
+                    --sortRegions '$advancedOpt.sortRegions'
+                #end if
+          
+                #if $advancedOpt.sortUsing:
+                    --sortUsing '$advancedOpt.sortUsing'
+                #end if
+
+                #if $advancedOpt.averageTypeSummaryPlot:
+                    --averageTypeSummaryPlot '$advancedOpt.averageTypeSummaryPlot'
+                #end if
+
+                #if str($advancedOpt.missingDataColor.value) != "None":
+                    --missingDataColor '$advancedOpt.missingDataColor'
+                #end if
+
+                --colorMap '$advancedOpt.colorMap'
+
+                #if str($advancedOpt.zMin).strip() != "":
+                    --zMin $advancedOpt.zMin
+                #end if
+                #if $advancedOpt.zMax:
+                    --zMax $advancedOpt.zMax
+                #end if
+
+                #if str($advancedOpt.yMin).strip() != "":
+                    --yMin $advancedOpt.yMin
+                #end if
+                #if $advancedOpt.yMax:
+                    --yMax $advancedOpt.yMax
+                #end if
+
+                --xAxisLabel '$advancedOpt.xAxisLabel'
+                --yAxisLabel '$advancedOpt.yAxisLabel'
+
+                --heatmapWidth $advancedOpt.heatmapWidth
+                --heatmapHeight $advancedOpt.heatmapHeight
+
+                --whatToShow '$advancedOpt.whatToShow'
+
+                --startLabel '$advancedOpt.startLabel' 
+                --endLabel '$advancedOpt.endLabel'
+                --refPointLabel '$advancedOpt.referencePointLabel'
+                --regionsLabel '$advancedOpt.regionsLabel'
+
+                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
+                    --plotTitle '$advancedOpt.plotTitle'
+                #end if
+
+                $advancedOpt.onePlotPerGroup
+
+                @KMEANS_CLUSTERING@
+
+            #end if
+]]>
+    </command>
+    <inputs>
+        <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool" help=""/>
+
+        <expand macro="input_graphic_output_settings">
+            <expand macro="input_image_file_format" />
+            <expand macro="input_save_matrix_values" />
+        </expand>
+
+        <conditional name="advancedOpt" >
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <expand macro="sortRegions" />
+                <expand macro="sortUsing" />
+                <param argument="--averageTypeSummaryPlot" type="select"
+                    label="Type of statistic that should be plotted in the summary image above the heatmap"
+                    help="">
+                    <option value="mean" selected="true">mean</option>
+                    <option value="median">median</option>
+                    <option value="min">min</option>
+                    <option value="max">max</option>
+                    <option value="sum">sum</option>
+                    <option value="std">std</option>
+                </param>
+
+                <param argument="--missingDataColor" type="text" value="black" optional="true" label="Missing data color" 
+                    help="If 'Represent missing data as zero' is not set, such cases will be colored in black by default.
+                    By using this parameter a different color can be set. A value between 0 and 1 will be used for a gray scale (black is 0).
+                    Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html.
+                    Alternatively colors can be specified using the #rrggbb notation." />
+
+                <expand macro="colorMap" />
+
+                <param argument="--zMin" type="float" value="" size="3" optional="True"
+                    label="Minimum value for the heatmap intensities. Leave empty for automatic values" help=""/>
+                <param argument="--zMax" type="float" value="" size="3" optional="True"
+                    label="Maximum value for the heatmap intensities. Leave empty for automatic values" help=""/>
+                <param argument="--yMin" type="float" value="" size="3" optional="True"
+                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help=""/>
+                <param argument="--yMax" type="float" value="" size="3" optional="True"
+                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help=""/>
+                <param argument="--xAxisLabel" type="text" value="distance from TSS (bp)" size="200"
+                    label="Description for the x-axis label" help="" />
+                <param argument="--yAxisLabel" type="text" value="genes" size="30"
+                    label="Description for the y-axis label for the top panel" help="" />
+
+                <param argument="--heatmapWidth" type="float" value="7.5" min="1" max="100"
+                    label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
+                <param argument="--heatmapHeight" type="float" value="25" min="3" max="100"
+                    label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
+
+                <param argument="--whatToShow" type="select" label="What to show"
+                    help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
+                    <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
+                    <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
+                    <option value="heatmap only">heatmap only</option>
+                    <option value="heatmap and colorbar">heatmap and colorbar</option>
+                    <option value="colorbar only">colorbar only</option>
+                </param>
+
+                <param argument="--startLabel" type="text" value="TSS" size="10"
+                    label="Label for the region start"
+                    help ="Only for scale-regions mode. Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
+                <param argument="--endLabel" type="text" value="TES" size="10"
+                    label="Label for the region end"
+                    help="Only for scale-regions mode. Label shown in the plot for the region end. Default is TES (transcription end site)."/>
+
+                <param argument="--referencePointLabel" type="text" value="TSS" size="10"
+                    label="Reference point label"
+                    help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
+                <param argument="--regionsLabel" type="text" value="genes" size="30" 
+                    label="Labels for the regions plotted in the heatmap" 
+                    help="If more than one region is being plotted a list of labels separated by comma and limited by quotes, is required. For example, label1, label2.">
+                    <sanitizer>
+                        <valid initial="string.printable">
+                        </valid>
+                    </sanitizer>
+                </param>
+                <expand macro="plotTitle" />
+                <param argument="--onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
+                    label="Do one plot per group" 
+                    help="When computeMatrix was used on more than one group of genes, the average plots for all the groups will be drawn in one panel by default.
+                        If this option is set, each group will get its own plot, stacked on top of each other."/>
+
+                <expand macro="kmeans_clustering" />
+            </when>
+        </conditional>
+    </inputs>
+    <outputs>
+        <expand macro="output_image_file_format" />
+        <expand macro="output_graphic_outputs" />
+        <expand macro="output_save_matrix_values" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+        <test>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="whatToShow" value="heatmap and colorbar" />
+            <output name="outFileName" file="heatmapper_result2.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
+    <help>
+<![CDATA[
+**What it does**
+
+The heatmapper visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes.
+Like profiler, it requires that computeMatrix was run first to calculate the values.
+ 
+We implemented vast optional parameters to optimize the visual output and we encourage you to play around with the min/max values displayed in the heatmap as well as 
+with the different coloring options. The most powerful option is the k-means clustering where you simply need to indicate the number of 
+groups with similar read distributions that you expect and the algorithm will do the sorting for you.
+
+Do check the examples on our help page with step-by-step protocols: https://github.com/fidelram/deepTools/wiki/Example-workflows
+
+
+.. image:: $PATH_TO_IMAGES/visual_hm_DmelPolII.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+You can find more details on the tool itself on the heatmapper wiki page: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-heatmapper
+
+
+-----
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>
