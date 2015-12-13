@@ -415,7 +415,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
-            <option value="emf">emf</option>
         </param>
     </xml>
 
