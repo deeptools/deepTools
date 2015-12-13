@@ -3,7 +3,7 @@ categories:
 - Convert Formats
 - Sequence Analysis
 - Visualization
-description: "deepTools: user-friendly tools for the normalization, quality control and visualization of deep-sequencing data"
+description: "deepTools: User-friendly tools for the normalization, quality control and visualization of deep-sequencing data"
 long_description: |
   deepTools address the challenge of visualizing the large amounts of data that
   are now routinely generated from sequencing centers in a meaningful way. To do so,
@@ -27,3 +27,29 @@ name: deeptools
 owner: bgruening
 remote_repository_url: https://github.com/fidelram/deepTools/tree/master/galaxy/wrapper/
 type: unrestricted
+auto_tool_repositories:
+  name_template: "{{ tool_id }}"
+  description_template: "Wrapper for the deepTools: {{ tool_name }}"
+suite:
+  name: "suite_deepTools"
+  description: "deepTools: User-friendly tools for the normalization, quality control and visualization of deep-sequencing data"
+  long_description: |
+    deepTools address the challenge of visualizing the large amounts of data that
+    are now routinely generated from sequencing centers in a meaningful way. To do so,
+    deepTools contain useful routines to process the mapped reads data through removal of
+    duplicates and different filtering options to create coverage files in standard
+    bedGraph and bigWig file formats. deepTools allow the creation of normalized
+    coverage files or the comparison between two files (for example, treatment and control).
+
+    Finally, using such normalized and standardized files, multiple visualizations can be
+    created to identify enrichments with functional annotations of the genome.
+    For a gallery of images that can be produced and a description of the tools see http://f1000.com/posters/browse/summary/1094053
+
+    https://github.com/fidelram/deepTools
+    doi: 10.1093/nar/gku365
+    Wikipage: https://github.com/fidelram/deepTools/wiki
+
+    Repository-Maintainer: Björn Grüning
+
+    https://github.com/fidelram/deepTools
+

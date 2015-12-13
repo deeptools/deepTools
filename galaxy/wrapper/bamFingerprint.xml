@@ -8,16 +8,10 @@
     <command>
 <![CDATA[
         @multiple_input_bams@
-
-        bamFingerprint
-
+        @BINARY@
             @THREADS@
-
             --bamfiles #echo " ".join($files)
             --labels #echo " ".join($labels)
-
-            --fragmentLength $fragmentLength
-
             --plotFile $outFileName
 
             #if $output.showOutputSettings == "yes"
@@ -37,7 +31,6 @@
                 --binSize '$advancedOpt.binSize'
                 --numberOfSamples '$advancedOpt.numberOfSamples'
 
-                $advancedOpt.doNotExtendPairedEnds
                 $advancedOpt.ignoreDuplicates
                 $advancedOpt.skipZeros
 
@@ -48,14 +41,13 @@
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
-
+                @ADVANCED_OPTS_READ_PROCESSING@
             #end if
 ]]>
     </command>
 
     <inputs>
         <expand macro="multiple_input_bams" />
-        <expand macro="fragmentLength" />
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">
@@ -65,19 +57,18 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="binSize" type="integer" value="500" min="1" 
+                <param argument="--binSize" type="integer" value="500" min="1" 
                    label="Bin size in bp"
                    help="Length in base pairs for a window used to sample the genome."/>
-                <param name="numberOfSamples" type="integer" value="100000" min="1" 
+                <param argument="--numberOfSamples" type="integer" value="100000" min="1" 
                    label="Number of samples"
-                   help="Number of samples taken from the genome to compute the scaling factors. (--numberOfSamples)"/>
-                <expand macro="doNotExtendPairedEnds" />
-                <expand macro="ignoreDuplicates" />
-                <expand macro="minMappingQuality" />
+                   help="Number of samples taken from the genome to compute the scaling factors."/>
+                <expand macro="read_processing_options" />
                 <expand macro="skipZeros" />
                 <expand macro="plotTitle" />
             </when>
         </conditional>
+
         <conditional name="output">
             <param name="showOutputSettings" type="select" label="Show advanced output settings">
                 <option value="no" selected="true">no</option>
@@ -103,16 +94,19 @@
     </outputs>
     <tests>
         <test>
-            <repeat name="input_files">
-                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
-            </repeat>
-            <repeat name="input_files">
-                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
-            </repeat>
-            <param name="fragmentLength" value="200" />
+            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="no" />
             <param name="showOutputSettings" value="no" />
             <output name="outFileName" file="bamFingerprint_result1.png" ftype="png" compare="sim_size" />
+        </test>
+        <test>
+            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="showOutputSettings" value="yes" />
+            <param name="saveRawCounts" value="True" />
+            <param name="plotTitle" value="Test Fingerprint Plot" />
+            <output name="outFileName" file="bamFingerprint_result2.png" ftype="png" compare="sim_size" />
+            <output name="outFileRawCounts" file="bamFingerprint_result2.tabular" ftype="tabular" />
         </test>
     </tests>
     <help>

@@ -7,13 +7,12 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        ln -s $bamInput local_bamInput.bam;
-        ln -s $bamInput.metadata.bam_index local_bamInput.bam.bai;
+        ln -s "$bamInput" "local_bamInput.bam" &&
+        ln -s "$bamInput.metadata.bam_index" local_bamInput.bam.bai &&
 
-        computeGCBias
+        @BINARY@
             @THREADS@
-
-            --bamfile 'local_bamInput.bam'
+            --bamfile local_bamInput.bam
             --GCbiasFrequenciesFile $outFileName
             --fragmentLength $fragmentLength
 
@@ -117,7 +116,6 @@
             <param name="image_format" value="png" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="regionSize" value="1" />
-            <param name="fragmentLength" value="100" />
             <param name="ref_source" value="history" />
             <param name="input1" value="sequence.2bit" />
             <param name="sampleSize" value="10" />

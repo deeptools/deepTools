@@ -11,89 +11,45 @@
         #set labels=[]
 
         @multiple_input_bams@
+        @BINARY@
+            $mode.modeOpt
+            @THREADS@
 
-        bamCorrelate
+            --outFileName $outFile
+            --bamfiles '#echo "' '".join($files)#'
+            --labels '#echo "' '".join($labels)#'
 
-        $mode.modeOpt
-
-        @THREADS@
-
-        --bamfiles '#echo "' '".join($files)#'
-        --labels '#echo "' '".join($labels)#'
-        --fragmentLength $fragmentLength
-        --corMethod $corMethod
-
-        --plotFile $outFileName
-
-        #if $output.showOutputSettings == "yes"
-            --outRawCounts '$outFileRawCounts' 
-            --outFileCorMatrix '$outFileCorMatrix'
-            --plotFileFormat '$output.outFileFormat'
-        #else:
-            --plotFileFormat 'png'
-        #end if
-
-        #if $mode.modeOpt == "bins":
-            --binSize '$mode.binSize'
-            --distanceBetweenBins '$mode.distanceBetweenBins'
-            $mode.doNotRemoveOutliers
-        #else:
-            --BED $mode.region_file
-        #end if
-
-        #### options available in both modes
-        #if str($mode.region.value) != '':
-            --region '$mode.region'
-        #end if
-
-        #if $plotTitle and str($plotTitle).strip() != "":
-            --plotTitle '$plotTitle'
-        #end if
-        $plotNumbers
-        #if $mode.advancedOpt.showAdvancedOpt == "yes":
-
-            $mode.advancedOpt.doNotExtendPairedEnds
-            $mode.advancedOpt.ignoreDuplicates
-            $mode.advancedOpt.includeZeros
-
-            #if $mode.advancedOpt.minMappingQuality:
-                --minMappingQuality '$mode.advancedOpt.minMappingQuality'
+            #if $outRawCounts:
+                --outRawCounts '$outFileRawCounts' 
             #end if
 
-            #if $mode.advancedOpt.zMin:
-                --zMin $mode.advancedOpt.zMin
+            #if $mode.modeOpt == "bins":
+                --binSize '$mode.binSize'
+                --distanceBetweenBins '$mode.distanceBetweenBins'
+            #else:
+                --BED $mode.region_file
             #end if
-            #if $mode.advancedOpt.zMax:
-                --zMax $mode.advancedOpt.zMax
-            #end if
-            --colorMap '$mode.advancedOpt.colorMap'
 
-        #end if
+            #if str($region).strip() != '':
+                --region '$region'
+            #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                @ADVANCED_OPTS_READ_PROCESSING@
+            #end if
 ]]>
     </command>
 
     <inputs>
         <expand macro="multiple_input_bams" />
 
-        <param name="fragmentLength" type="integer" value="200" min="1"
-            label="Length of the average fragment size"
-            help ="Reads will be extended to match this length unless they are paired-end,
-            in which case they will be extended to match the fragment length.
-            *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will
-            be extended to match the fragment length. (--fragmentLength)"/>
-
-        <param name="corMethod" type="select" label="Correlation method">
-            <option value="spearman" selected="True">Spearman</option>
-            <option value="pearson">Pearson</option>
-        </param>
-
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode" 
-                help="In the bins mode, the correlation is computed based on equal
-                length bins. In the BED file mode, as list of genomic regions in BED
-                format has to be given. For each region in the BED file the number of
-                overlapping reads is counted in each of the BAM files.
-                Then the correlation is computed.">
+                    help="In the bins mode, the correlation is computed based on equal
+                    length bins. In the BED file mode, as list of genomic regions in BED
+                    format has to be given. For each region in the BED file the number of
+                    overlapping reads is counted in each of the BAM files.
+                    Then the correlation is computed.">
                 <option value="bins" selected="true">Bins</option>
                 <option value="BED-file">Limit correlation to certain regions (BED file)</option>
             </param>
@@ -102,87 +58,46 @@
                     label="Bin size in bp"
                     help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
 
-                <param name="distanceBetweenBins" type="integer" value="0" min="0"
-                    label="Distance between bins"
-                    help="By default, bamCorrelate considers consecutive bins of
-                        the specified 'Bin size'. However, to reduce the
-                        computation time, a larger distance between bins can
-                        by given. Larger distances result in less bins being
-                        considered. (--distanceBetweenBins)"/>
+                <expand macro="distanceBetweenBins" />
 
-                <param name="doNotRemoveOutliers" type="boolean"
-                    truevalue="--doNotRemoveOutliers" falsevalue="" label="Do not filter outliers"
-                    help="By default, bins with very large counts are removed.
-                        By setting this option, outliers will not be
-                        removed. Bins with unusually large counts normally
-                        correspond to regions in the genome that accumulate
-                        lot of reads like satellite regions. If outliers are not
-                        removed the pearson correlation will wrongly report a
-                        very high correlation; that's why, by default,
-                        bamCorrelate tries to remove outliers using
-                        the median absolute deviation (MAD) method applying a
-                        threshold of 200 to only consider extremely large
-                        deviations from the median. (--doNotRemoveOutliers)"/>
-
-                <expand macro="bamCorrelate_mode_actions" />
             </when>
             <when value="BED-file">
                 <param name="region_file" type="data" format="bed"
                     label="Region file in BED format"
                     help="Correlation is computed for the number of reads that overlap such regions."/>
-                <expand macro="bamCorrelate_mode_actions" />
-            </when>
-        </conditional>
-        <expand macro="plotTitle" />
-        <expand macro="plotNumbers" />
-        <conditional name="output">
-            <param name="showOutputSettings" type="select" label="Show advanced output settings" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="input_image_file_format"/>
-                <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
-                <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
             </when>
         </conditional>
 
+        <expand macro="region_limit_operation" />
+
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="read_processing_options" />
+        </expand>
+
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
+
     </inputs>
     <outputs>
-        <expand macro="output_image_file_format" />
+        <data format="deeptools_coverage_matrix" name="outFile" label="${tool.name} on ${on_string}: correlation matrix" />
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
-            <filter>
-            ((
-                output['showOutputSettings'] == 'yes' and 
-                output['saveRawCounts'] is True
-            ))
-            </filter>
-        </data>
-        <data format="tabular" name="outFileCorMatrix" label="${tool.name} on ${on_string}: correlation matrix">
-            <filter>
-            ((
-                output['showOutputSettings'] == 'yes' and 
-                output['saveCorMatrix'] is True
-            ))
-            </filter>
+            <filter>outRawCounts is True</filter>
         </data>
     </outputs>
     <tests>
         <test>
-            <repeat name="input_files">
-                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
-                <param name="label" value="first BAM file" />
-            </repeat>
-            <repeat name="input_files">
-                <param name="bamfile" value="bowtie2-test1.bam" ftype="bam" />
-                <param name="label" value="second BAM file" />
-            </repeat>
+            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
-            <param name="showOutputSettings" value="no" />
-            <output name="outFileName" file="bamCorrelate_result1.png" ftype="png" compare="sim_size" />
+            <output name="outFile" file="bamCorrelate_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
+        <test>
+            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
+            <param name="modeOpt" value="BED-file" />
+            <param name="region_file" value="bamCorrelate_regions.bed" />
+            <output name="outFile" file="bamCorrelate_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+        </test>
+
+
     </tests>
     <help>
 <![CDATA[

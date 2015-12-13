@@ -1,5 +1,7 @@
 Sample size: 3
 
+
+Fragment lengths:
 Min.: 241.0
 1st Qu.: 241.5
 Mean: 244.666666667
@@ -7,3 +9,12 @@ Median: 242.0
 3rd Qu.: 246.5
 Max.: 251.0
 Std: 4.49691252108
+
+Read lengths:
+Min.: 251.0
+1st Qu.: 251.0
+Mean: 251.0
+Median: 251.0
+3rd Qu.: 251.0
+Max.: 251.0
+Std: 0.0

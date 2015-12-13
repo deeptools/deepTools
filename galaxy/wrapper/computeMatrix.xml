@@ -18,7 +18,7 @@
             #end if
         #end for
 
-        computeMatrix
+        @BINARY@
 
             $mode.mode_select
             --regionsFileName ./temp_input_path
@@ -106,16 +106,16 @@
             </param>
 
             <when value="scale-regions" >
-                <param name="regionBodyLength" type="integer" value="500"
-                    label="Distance in bp to which all regions are going to be fitted" help="(--regionBodyLength)"/>
-                <param name="startLabel" type="text" value="TSS" size="10"
+                <param argument="--regionBodyLength" type="integer" value="500"
+                    label="Distance in bp to which all regions are going to be fitted" help=""/>
+                <param argument="--startLabel" type="text" value="TSS" size="10"
                     label="Label for the region start"
                     help ="Label shown in the plot for the start of the region.
                     Default is TSS (transcription start site), but could be changed to anything,
-                    e.g. &quot;peak start&quot;. (--startLabel)" />
-                <param name="endLabel" type="text" value="TES" size="10"
+                    e.g. &quot;peak start&quot;." />
+                <param argument="--endLabel" type="text" value="TES" size="10"
                     label="Label for the region end"
-                    help="Label shown in the plot for the region end. Default is TES (transcription end site). (--endLabel)"/>
+                    help="Label shown in the plot for the region end. Default is TES (transcription end site)."/>
                 <conditional name="regionStartLength">
                     <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
                         <option value="no" selected="true">no</option>
@@ -123,14 +123,14 @@
                     </param>
                     <when value="no" />
                     <when value="yes">
-                        <param name="beforeRegionStartLength" type="integer" value="1000" min="1"
+                        <param argument="--beforeRegionStartLength" type="integer" value="1000" min="1"
                             label="Distance upstream of the start site of the regions defined in the region file"
                             help="If the regions are genes, this would be the
-                            distance upstream of the transcription start site. (--beforeRegionStartLength)"/>
-                        <param name="afterRegionStartLength" type="integer" value="1000" min="1"
+                            distance upstream of the transcription start site."/>
+                        <param argument="--afterRegionStartLength" type="integer" value="1000" min="1"
                             label="Distance downstream of the end site of the given regions"
                             help="If the regions are genes, this would be the
-                            distance downstream of the transcription end site. (--afterRegionStartLength)"/>
+                            distance downstream of the transcription end site."/>
                     </when>
                 </conditional>
             </when>
@@ -167,22 +167,9 @@
                 <param name="binSize" type="integer" value="50" min="1"
                     label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
                     help="(--binSize)"/>
-                <param name="sortRegions" type="select" label="Sort regions"
-                    help="Whether the output file should present the regions sorted.">
-                    <option value="no" selected="true">no ordering</option>
-                    <option value="descend">descending order</option>
-                    <option value="ascend">ascending order</option>
-                </param>
 
-                <param name="sortUsing" type="select" label="Method used for sorting"
-                    help="The value is computed for each row. (--sortUsing)" >
-                    <option value="mean" selected="true">mean</option>
-                    <option value="median">median</option>
-                    <option value="min">min</option>
-                    <option value="max">max</option>
-                    <option value="sum">sum</option>
-                    <option value="region_length">region length</option>
-                </param>
+                <expand macro="sortRegions" />
+                <expand macro="sortUsing" />
 
                 <param name="averageTypeBins" type="select"
                     label="Define the type of statistic that should be displayed."
@@ -195,16 +182,9 @@
                     <option value="std">std</option>
                 </param>
 
-                <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue=""
-                    label="Indicate missing data as zero"
-                    help="Set to &quot;yes&quot;, if missing data should be indicated as zeros.
-                    Default is to ignore such cases which will be depicted as black areas in the
-                    heatmap. (see &quot;Missing data color&quot; options of the heatmapper for additional options).
-                    (--missingDataAsZero)"/>
-                <param name="skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
-                    label="Skip zeros"
-                    help="Whether regions with only scores of zero should be included or not.
-                    Default is to include them. (--skipZeros)"/>
+                <expand macro="missingDataAsZero" />
+                <expand macro="skipZeros" />
+
                 <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"
                     help="Any region containing a value that is equal or less than this numeric
@@ -253,6 +233,15 @@
             <param name="beforeRegionStartLength" value="10" />
             <param name="afterRegionStartLength" value="10" />
             <output name="outFileName" file="computeMatrix_result2.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
+        </test>
+        <test>
+            <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
+            <param name="scoreFile" value="computeMatrix2.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="mode_select" value="scale-regions" />
+            <param name="endLabel" value="END" />
+            <param name="regionStartLength" value="yes" />
+            <output name="outFileName" file="computeMatrix_result3.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
         </test>
     </tests>
   <help>

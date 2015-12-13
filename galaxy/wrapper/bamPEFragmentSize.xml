@@ -7,22 +7,25 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        bamPEFragmentSize
+        ln -s $bamInput one.bam &&
+        ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+
+        @BINARY@
             @THREADS@
-            -bai ${bamInput.metadata.bam_index}
             #if $histogram:
                 --histogram ./hist.png
             #end if
-            '$bamInput'
+
+            one.bam
             > $outfile
 ]]>
     </command>
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
-        <param name="histogram" type="boolean" truevalue="--histogram" falsevalue=""
+        <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribion of fragment length as histogram"
-            help="(--histogram)"/>
+            help=""/>
     </inputs>
     <outputs>
         <data name="outfile" format="txt"/>
