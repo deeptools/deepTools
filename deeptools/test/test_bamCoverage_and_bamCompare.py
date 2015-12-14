@@ -36,6 +36,15 @@ def test_bam_coverage_arguments():
     unlink(outfile)
 
 
+def test_bam_coverage_extend():
+    outfile = '/tmp/test_file.bg'
+    args = "-b {} -o {} --extendReads 100 --outFileFormat bedgraph".format(BAMFILE_B, outfile).split()
+    bam_cov.main(args)
+    resp = open(outfile, 'r').readlines()
+
+    assert resp == ['3R\t0\t150\t1.00\n', '3R\t150\t200\t3.0\n']
+    unlink(outfile)
+
 def test_bam_compare_arguments():
     """
     Test minimal command line args for bamCoverage
