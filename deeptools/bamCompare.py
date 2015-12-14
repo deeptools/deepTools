@@ -17,13 +17,14 @@ debug = 0
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
+    bamParser = parserCommon.read_options()
+    normalizationParser = parserCommon.normalization_options()
     requiredArgs = getRequiredArgs()
     optionalArgs = getOptionalArgs()
-    bamParser = parserCommon.read_options()
     outputParser = parserCommon.output()
     parser = argparse.ArgumentParser(
-        parents=[requiredArgs, outputParser, optionalArgs, parentParser,
-                 bamParser],
+        parents=[requiredArgs, outputParser, optionalArgs,
+                 parentParser, normalizationParser, bamParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two BAM files based on the number of '
         'mapped reads. To compare the BAM files, the genome is partitioned '
@@ -110,6 +111,13 @@ def getOptionalArgs():
                           default=1000,
                           type=int)
 
+    optional.add_argument('--numberOfSamples', '-n',
+                          help='*Only relevant when SES is chosen for the '
+                          'scaleFactorsMethod.* Number of samplings taken '
+                          'from the genome to compute the scaling factors.',
+                          default=1e5,
+                          type=int)
+
     optional.add_argument('--scaleFactors',
                           help='Set this parameter to avoid the computation of '
                           'scaleFactors. The format is '
@@ -119,97 +127,25 @@ def getOptionalArgs():
                           default=None,
                           required=False)
 
-    optional.add_argument('--pseudocount',
-                          help='small number to avoid x/0. Only useful '
-                          'when ratio = log2 or ratio',
-                          default=1,
-                          type=float,
-                          required=False)
-
     optional.add_argument('--ratio',
                           help='The default is to output the log2ratio between the '
                           'two samples. The reciprocal ratio returns the '
                           'the negative of the inverse of the ratio '
                           'if the ratio is less than 0. The resulting '
-                          'values are interpreted as negative fold changes. ',
+                          'values are interpreted as negative fold changes. '
+                          '*NOTE*: Only when --ratio subtract, the options --normalizeTo1x or '
+                          '--normalizeUsingRPKM can be used.',
                           default='log2',
                           choices=['log2', 'ratio', 'subtract', 'add',
                                    'reciprocal_ratio'],
                           required=False)
 
-    optional.add_argument('--normalizeTo1x',
-                          help='Report read coverage normalized to 1x '
-                          'sequencing depth (also known as Reads Per Genomic '
-                          'Content (RPGC)). Sequencing depth is defined as: '
-                          '(total number of mapped reads * fragment length) / '
-                          'effective genome size.\nThe scaling factor used '
-                          'is the inverse of the sequencing depth computed '
-                          'for the sample to match the 1x coverage. '
-                          'To use this option, the '
-                          'effective genome size has to be indicated after the '
-                          'command. The effective genome size is the portion '
-                          'of the genome that is mappable. Large fractions of '
-                          'the genome are stretches of NNNN that should be '
-                          'discarded. Also, if repetitive regions were not '
-                          'included in the mapping of reads, the effective '
-                          'genome size needs to be adjusted accordingly. '
-                          'Common values are: mm9: 2150570000, '
-                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                          'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                          'for several effective genome sizes.',
-                          metavar='EFFECTIVE GENOME SIZE LENGTH',
-                          default=None,
-                          type=int,
+    optional.add_argument('--pseudocount',
+                          help='small number to avoid x/0. Only useful '
+                          'together with --ratio log2 or --ratio ratio .',
+                          default=1,
+                          type=float,
                           required=False)
-
-    optional.add_argument('--normalizeUsingRPKM',
-                          help='(*only when --ratio subtract*) Use RPKM to '
-                          'normalize the number of reads per bin. The formula '
-                          'is: RPKM (per bin)=#reads per bin / ( # of mapped '
-                          'reads (millions) * bin length (KB) ). This is the '
-                          'default normalization method.  Each read is considered independently,'
-                          'if you want to only count either of the mate pairs in'
-                          'paired-end data use the --samFlag',
-                          action='store_true',
-                          required=False)
-
-    optional.add_argument('--numberOfSamples', '-n',
-                          help='*Only relevant when SES is chosen for the '
-                          'scaleFactorsMethod.* Number of samplings taken '
-                          'from the genome to compute the scaling factors',
-                          default=1e5,
-                          type=int)
-
-    optional.add_argument('--missingDataAsZero',
-                          default="yes",
-                          choices=["yes", "no"],
-                          help='Default is "yes". This parameter determines '
-                          'if missing data should be treated as zeros. '
-                          'If set to "no", missing data will be ignored '
-                          'and not included in the output file. Missing '
-                          'data is defined as those regions for which '
-                          'both BAM files have 0 reads.')
-
-    optional.add_argument('--ignoreForNormalization', '-ignore',
-                          help='A list of chromosome names separated by spaces '
-                          'containing those chromosomes that want to be excluded '
-                          'for computing the normalization. This is useful when considering '
-                          'samples with unequal coverage across chromosomes like male '
-                          'samples. An usage examples is  --ignoreForNormalization chrX chrM',
-                          nargs='+')
-
-    optional.add_argument('--smoothLength',
-                          metavar="INT bp",
-                          help='The smooth length defines a window, larger than '
-                          'the binSize, to average the number of reads. For '
-                          'example, if the --binSize is set to 20 bp and the '
-                          '--smoothLength is set to 60 bp, then, for each '
-                          'binSize the average of it and its left and right '
-                          'neighbors is considered. Any value smaller than the '
-                          '--binSize will be ignored and no smoothing will be '
-                          'applied.',
-                          type=int)
 
     return parser
 
