@@ -121,7 +121,7 @@ setup(
     packages=['deeptools', 'deeptools/config', 'deeptools.test'],
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/bamCorrelate',
              'bin/plotHeatmap', 'bin/bamFingerprint', 'bin/estimateScaleFactor',
-             'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/plotProfile', 'bin/bam2nucleosome',
+             'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/plotProfile',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/bigwigCorrelate',
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation'],
     include_package_data=True,
