@@ -71,6 +71,7 @@ def test_bam_coverage_keepnas():
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
+
 def test_bam_compare_arguments():
     """
     Test minimal command line args for bamCoverage. The ratio

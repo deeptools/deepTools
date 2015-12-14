@@ -168,15 +168,6 @@ def get_scale_factor(args):
     return scale_factor
 
 
-def scaleFactor(string):
-    try:
-        scaleFactor1, scaleFactor2 = string.split(":")
-        scaleFactors = ( float(scaleFactor1), float(scaleFactor2) )
-    except:
-        raise argparse.ArgumentTypeError("Format of scaleFactors is factor1:factor2. The value given ( {} ) is not valid".format(string))
-    return scaleFactors
-
-
 def main(args=None):
     args = process_args(args)
 

@@ -239,7 +239,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
             # only turn zeros to nans when all are nans
             if self.zerosToNans:
-                #import ipdb;ipdb.set_trace()
                 if np.all(np.isnan(tileCoverage)):
                     continue
                 else:

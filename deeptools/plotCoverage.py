@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -155,7 +155,7 @@ def main(args=None):
 
     # plot coverage
     for idx, col in enumerate(num_reads_per_bin.T):
-        axs[0].plot(np.bincount(col.astype(int)).astype(float)/num_reads_per_bin.shape[0],
+        axs[0].plot(np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0],
                     label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
         csum = np.bincount(col.astype(int))[::-1].cumsum()
         axs[1].plot(csum.astype(float)[::-1] / csum.max(),
