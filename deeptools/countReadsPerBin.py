@@ -168,9 +168,9 @@ class CountReadsPerBin(object):
                           "estimated to be {}".format(frag_len_dict['median']))
 
             elif extendReads < 1:
-                exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(extendReads))
+                exit("*ERROR*: read extension must be bigger than one. Value given: {} ".format(extendReads))
             elif extendReads > 2000:
-                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(extendReads))
+                exit("*ERROR*: read extension must be smaller that 2000. Value given: {} ".format(extendReads))
             else:
                 self.defaultFragmentLength = extendReads
 
