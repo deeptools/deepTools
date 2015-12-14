@@ -152,7 +152,6 @@ def getOptionalArgs():
 
 def process_args(args=None):
     args = parseArguments().parse_args(args)
-    args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
 
     if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\

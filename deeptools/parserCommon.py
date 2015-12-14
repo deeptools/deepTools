@@ -151,13 +151,12 @@ def normalization_options():
                        nargs='+')
 
     group.add_argument('--missingDataAsZero',
-                       default="yes",
-                       choices=["yes", "no"],
-                       help='If set to "yes", missing data will be treated as zero. '
-                       'If set to "no", missing data will be ignored '
+                       help='If set, missing data  will be treated as zero. '
+                       'Otherwise, missing data will be ignored '
                        'and not included in the output file. Missing '
                        'data is defined as those bins for which '
-                       'no overlapping reads are found.')
+                       'no overlapping reads are found.',
+                       action='store_true')
 
     group.add_argument('--smoothLength',
                        metavar="INT bp",
