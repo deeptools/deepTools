@@ -46,7 +46,7 @@ def test_bam_coverage_extend():
     unlink(outfile)
 
 
-def test_bam_coverage_extend_and_normalizeTo1x():
+def test_bam_coverage_extend_and_normalizeto1x():
 
     outfile = '/tmp/test_file.bg'
     args = "-b {} -o {} --normalizeTo1x 200  --extendReads 100 " \
@@ -57,6 +57,7 @@ def test_bam_coverage_extend_and_normalizeTo1x():
     # that of the previous test divided by 0.5
     assert resp == ['3R\t0\t150\t0.50\n', '3R\t150\t200\t1.5\n']
     unlink(outfile)
+
 
 def test_bam_compare_arguments():
     """
@@ -91,6 +92,7 @@ def test_bam_compare_diff_files():
     assert resp == expected
     unlink(outfile)
 
+
 def test_bam_compare_extend():
     """
     Test read extension
@@ -105,6 +107,7 @@ def test_bam_compare_extend():
     expected = ['3R\t0\t100\t-0.81\n', '3R\t100\t150\t0.78\n', '3R\t150\t200\t-0.1\n']
     assert resp == expected
     unlink(outfile)
+
 
 def test_ignore_for_normalization():
     """
