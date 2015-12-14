@@ -199,7 +199,7 @@ def main(args=None):
     c = countR.CountReadsPerBin(
         args.bamfiles,
         args.binSize,
-        0,
+        numberOfSamples=None,
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
@@ -211,7 +211,7 @@ def main(args=None):
         samFlag_include=args.samFlagInclude,
         samFlag_exclude=args.samFlagExclude,
         stepSize=stepsize,
-        zerosToNans=False,
+        zerosToNans=True,
         out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = c.run()

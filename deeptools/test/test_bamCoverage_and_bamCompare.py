@@ -32,7 +32,8 @@ def test_bam_coverage_arguments():
     bam_cov.main(args)
 
     resp = open(outfile, 'r').readlines()
-    assert resp == ['3R\t0\t50\t0.00\n', '3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
+    expected = ['3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
 
@@ -49,15 +50,26 @@ def test_bam_coverage_extend():
 def test_bam_coverage_extend_and_normalizeto1x():
 
     outfile = '/tmp/test_file.bg'
-    args = "-b {} -o {} --normalizeTo1x 200  --extendReads 100 " \
+    args = "-b {} -o {} --normalizeTo1x 200 --extendReads 100 " \
            "--outFileFormat bedgraph".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
     resp = open(outfile, 'r').readlines()
     # the scale factor should be 0.5, thus the result is similar to
     # that of the previous test divided by 0.5
-    assert resp == ['3R\t0\t150\t0.50\n', '3R\t150\t200\t1.5\n']
+    expected = ['3R\t0\t150\t0.50\n', '3R\t150\t200\t1.5\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
+
+def test_bam_coverage_keepnas():
+    outfile = '/tmp/test_file.bg'
+    args = "--bam {} -o {} --outFileFormat bedgraph --keepNAs".format(BAMFILE_B, outfile).split()
+    bam_cov.main(args)
+
+    resp = open(outfile, 'r').readlines()
+    expected = ['3R\t0\t50\t0.00\n', '3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
+    unlink(outfile)
 
 def test_bam_compare_arguments():
     """
@@ -72,24 +84,24 @@ def test_bam_compare_arguments():
     bam_comp.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t0\t200\t1.0\n']
-    assert resp == expected
+    expected = ['3R\t50\t200\t1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
 
 def test_bam_compare_diff_files():
     """
-    Test with two diferent files
+    Test with two different files
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} " \
+    args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
            "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t0\t50\t0.00\n', '3R\t50\t100\t-0.81\n', '3R\t100\t150\t0.19\n', '3R\t150\t200\t-0.3\n']
-    assert resp == expected
+    expected = ['3R\t100\t150\t0.00\n', '3R\t150\t200\t-1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
 
@@ -98,16 +110,31 @@ def test_bam_compare_extend():
     Test read extension
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} --extend 100 " \
+    args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --ratio subtract " \
            "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t0\t100\t-0.81\n', '3R\t100\t150\t0.78\n', '3R\t150\t200\t-0.1\n']
-    assert resp == expected
+    expected = ['3R\t100\t150\t1.00\n', '3R\t150\t200\t-1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
+
+def test_bam_compare_extend_keepnas():
+    """
+    Test read extension
+    """
+    outfile = '/tmp/test_file.bg'
+    args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --ratio subtract --keepNAs " \
+           "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
+
+    bam_comp.main(args)
+
+    resp = open(outfile, 'r').readlines()
+    expected = ['3R\t0\t100\t-1.00\n', '3R\t100\t150\t1.00\n', '3R\t150\t200\t-1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
+    unlink(outfile)
 
 def test_ignore_for_normalization():
     """

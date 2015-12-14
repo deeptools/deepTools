@@ -3,7 +3,6 @@
 
 # own tools
 import argparse
-import sys
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools import bamHandler
@@ -104,9 +103,7 @@ def process_args(args=None):
         args.normalizeTo1x = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will "\
-            "be done".format(args.smoothLength,
-                             args.binSize)
+            "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize)
         args.smoothLength = None
 
     return args
@@ -171,6 +168,15 @@ def get_scale_factor(args):
     return scale_factor
 
 
+def scaleFactor(string):
+    try:
+        scaleFactor1, scaleFactor2 = string.split(":")
+        scaleFactors = ( float(scaleFactor1), float(scaleFactor2) )
+    except:
+        raise argparse.ArgumentTypeError("Format of scaleFactors is factor1:factor2. The value given ( {} ) is not valid".format(string))
+    return scaleFactors
+
+
 def main(args=None):
     args = process_args(args)
 
@@ -182,21 +188,76 @@ def main(args=None):
 
     func_args = {'scaleFactor': get_scale_factor(args)}
     zeros_to_nans = not args.keepNAs
+    if args.MNase:
+        # check that library is paired end
+        # using getFragmentAndReadSize
+        from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, args.bamIndex,
+                                                                    return_lengths=False,
+                                                                    numberOfProcessors=args.numberOfProcessors,
+                                                                    verbose=args.verbose)
+        if frag_len_dict is None:
+            exit("*Error*: For the --MNAse function a paired end library is required. ")
 
-    wr = writeBedGraph.WriteBedGraph([args.bam],
-                                     binLength=args.binSize,
-                                     stepSize=args.binSize,
-                                     region=args.region,
-                                     numberOfProcessors=args.numberOfProcessors,
-                                     extendReads=args.extendReads,
-                                     minMappingQuality=args.minMappingQuality,
-                                     ignoreDuplicates=args.ignoreDuplicates,
-                                     center_read=args.centerReads,
-                                     zerosToNans=zeros_to_nans,
-                                     samFlag_include=args.samFlagInclude,
-                                     samFlag_exclude=args.samFlagExclude,
-                                     verbose=args.verbose
-                                     )
+        wr = CenterFragment([args.bam],
+                            binLength=args.binSize,
+                            stepSize=args.binSize,
+                            region=args.region,
+                            numberOfProcessors=args.numberOfProcessors,
+                            extendReads=args.extendReads,
+                            minMappingQuality=args.minMappingQuality,
+                            ignoreDuplicates=args.ignoreDuplicates,
+                            center_read=args.centerReads,
+                            zerosToNans=zeros_to_nans,
+                            samFlag_include=args.samFlagInclude,
+                            samFlag_exclude=args.samFlagExclude,
+                            verbose=args.verbose,
+                            )
+
+    else:
+        wr = writeBedGraph.WriteBedGraph([args.bam],
+                                         binLength=args.binSize,
+                                         stepSize=args.binSize,
+                                         region=args.region,
+                                         numberOfProcessors=args.numberOfProcessors,
+                                         extendReads=args.extendReads,
+                                         minMappingQuality=args.minMappingQuality,
+                                         ignoreDuplicates=args.ignoreDuplicates,
+                                         center_read=args.centerReads,
+                                         zerosToNans=zeros_to_nans,
+                                         samFlag_include=args.samFlagInclude,
+                                         samFlag_exclude=args.samFlagExclude,
+                                         verbose=args.verbose,
+                                         )
 
     wr.run(writeBedGraph.scaleCoverage, func_args, args.outFileName,
            format=args.outFileFormat, smooth_length=args.smoothLength)
+
+
+class CenterFragment(writeBedGraph.WriteBedGraph):
+    """
+    Class to redefine the get_fragment_from_read for the --MNase case
+
+    The coverage of the fragment is defined as the 2 or 3 basepairs at the
+    center of the fragment length. d
+    """
+    def get_fragment_from_read(self, read):
+        """
+        Takes a proper pair fragment of high quality and limited
+        to a certain length and outputs the center
+        """
+        fragment_start = fragment_end = None
+
+        # only paired forward reads are considered
+        if read.is_proper_pair and not read.is_reverse and abs(read.tlen) < 250:
+            # distance between pairs is even return two bases at the center
+            if read.tlen % 2 == 0:
+                fragment_start = read.pos + read.tlen / 2 - 1
+                fragment_end = fragment_start + 2
+
+            # distance is odd return three bases at the center
+            else:
+                fragment_start = read.pos + read.tlen / 2 - 1
+                fragment_end = fragment_start + 3
+
+        return [(fragment_start, fragment_end)]

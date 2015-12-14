@@ -237,8 +237,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 else:
                     tileCoverage.append(coverage[index][tileIndex])
 
-            # if zerosToNans == True and sum(tileCoverage) == 0.0:
-            #   continue
+            if self.zerosToNans == True and sum(tileCoverage) == 0.0:
+                continue
 
             value = func_to_call(tileCoverage, func_args)
             """
