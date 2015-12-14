@@ -41,8 +41,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
     return reads
 
 
-def get_read_and_fragment_length(bamFile, bamFileIndex=None,
-                                 return_lengths=False,
+def get_read_and_fragment_length(bamFile, bamFileIndex=None, return_lengths=False,
                                  numberOfProcessors=None, verbose=False):
     """
     Estimates the fragment length and read length through sampling
@@ -55,16 +54,16 @@ def get_read_and_fragment_length(bamFile, bamFileIndex=None,
                     for the read length. The dictionaries summarise the mean, median etc. values
     """
 
-    bamHandle = bamHandler.openBam(bamFile, bamFileIndex)
-    chromSizes = zip(bamHandle.references, bamHandle.lengths)
+    bam_handle = bamHandler.openBam(bamFile, bamFileIndex)
+    chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
 
-    chunkSize = int(
-        float(sum(bamHandle.lengths)) * 0.3 / max(numberOfProcessors,
-                                                  len(bamHandle.lengths)))
-    imap_res = mapReduce.mapReduce((bamHandle.filename, ),
+    chunk_size = int(float(sum(bam_handle.lengths)) * 0.3 / max(numberOfProcessors, len(bam_handle.lengths)))
+    # avoid small chunk sizes to split the computation
+    chunk_size = max(chunk_size, 100000)
+    imap_res = mapReduce.mapReduce((bam_handle.filename, ),
                                    getFragmentLength_wrapper,
-                                   chromSizes,
-                                   genomeChunkLength=chunkSize,
+                                   chrom_sizes,
+                                   genomeChunkLength=chunk_size,
                                    numberOfProcessors=numberOfProcessors,
                                    verbose=verbose)
 
@@ -73,14 +72,18 @@ def get_read_and_fragment_length(bamFile, bamFileIndex=None,
     if len(fl):
         fragment_length = fl[:, 0]
         read_length = fl[:, 1]
-        fragment_len_dict = {'sample_size': len(fragment_length),
-                             'min': fragment_length.min(),
-                             'qtile25': np.percentile(fragment_length, 25),
-                             'mean': np.mean(fragment_length),
-                             'median': np.median(fragment_length),
-                             'qtile75': np.percentile(fragment_length, 75),
-                             'max': fragment_length.max(),
-                             'std': np.std(fragment_length)}
+        if fragment_length.mean() > 0:
+            fragment_len_dict = {'sample_size': len(fragment_length),
+                                 'min': fragment_length.min(),
+                                 'qtile25': np.percentile(fragment_length, 25),
+                                 'mean': np.mean(fragment_length),
+                                 'median': np.median(fragment_length),
+                                 'qtile75': np.percentile(fragment_length, 75),
+                                 'max': fragment_length.max(),
+                                 'std': np.std(fragment_length)}
+        else:
+            fragment_len_dict = None
+
         if return_lengths:
             fragment_len_dict['lengths'] = fragment_length
 
@@ -97,4 +100,5 @@ def get_read_and_fragment_length(bamFile, bamFileIndex=None,
     else:
         fragment_len_dict = None
         read_len_dict = None
+
     return fragment_len_dict, read_len_dict
