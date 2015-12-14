@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -92,11 +92,11 @@ def required_args():
                           default='')
 
     optional.add_argument('--skipZeros',
-                        help='By setting this option, genomic regions '
-                             'that have zero or nan values only all samples '
-                             'are excluded.',
-                        action='store_true',
-                        required=False)
+                          help='By setting this option, genomic regions '
+                          'that have zero or nan values only all samples '
+                          'are excluded.',
+                          action='store_true',
+                          required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
                           help='Number of 1bp regions to sample. Default 1 million',
@@ -151,11 +151,11 @@ def main(args=None):
     # plot up to two std from mean
     sample_mean = num_reads_per_bin.mean(axis=0)
     std = max(num_reads_per_bin.std(axis=0))
-    y_max = max(sample_mean) + 3*std
+    y_max = max(sample_mean) + 3 * std
 
     # plot coverage
     for idx, col in enumerate(num_reads_per_bin.T):
-        axs[0].plot(np.bincount(col.astype(int)).astype(float)/num_reads_per_bin.shape[0],
+        axs[0].plot(np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0],
                     label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
         csum = np.bincount(col.astype(int))[::-1].cumsum()
         axs[1].plot(csum.astype(float)[::-1] / csum.max(),
