@@ -141,7 +141,7 @@ parameters while the heatmapper commands were virtually identical
      -m 10000 -b 3000 -a 3000 \ 
      -out matrix_GCcont_Mm9_scaledGenes.tab.gz \
      --skipZeros \
-     --missingDataAsZero  
+     --keepNAs
 
     $ deepTools-1.5.7/bin/computeMatrix scale-regions \
      -S GCcontent_Dm3_50_5.bw \
@@ -149,7 +149,7 @@ parameters while the heatmapper commands were virtually identical
      -bs 50
      -m 3000 -b 1000 -a 1000 \
      -out matrix_GCcont_Dm3_scaledGenes.tab.gz \
-     --skipZeros --missingDataAsZero
+     --skipZeros --keepNAs
 
     $ deepTools-1.5.7/bin/heatmapper \
      -m matrix_GCcont_Dm3_scaledGenes.tab.gz \

@@ -87,13 +87,14 @@ def get_optional_args():
 
 def scaleFactor(string):
     try:
-        scaleFactor1, scaleFactor2 = string.split(":")
-        scaleFactors = (float(scaleFactor1), float(scaleFactor2))
+        scalefactor1, scalefactor2 = string.split(":")
+        scalefactors = (float(scalefactor1), float(scalefactor2))
     except:
         raise argparse.ArgumentTypeError(
             "Format of scaleFactors is factor1:factor2. "
             "The value given ( {} ) is not valid".format(string))
-    return scaleFactors
+
+    return scalefactors
 
 
 def process_args(args=None):
@@ -114,8 +115,8 @@ def process_args(args=None):
 def get_scale_factor(args):
 
     scale_factor = args.scaleFactor
-    bamHandle = bamHandler.openBam(args.bam, args.bamIndex)
-    bam_mapped = parserCommon.bam_total_reads(bamHandle, args.ignoreForNormalization)
+    bam_handle = bamHandler.openBam(args.bam, args.bamIndex)
+    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
@@ -152,10 +153,10 @@ def get_scale_factor(args):
     elif args.normalizeUsingRPKM:
         # the RPKM is the # reads per tile / \
         #    ( total reads (in millions) * tile length in Kb)
-        millionReadsMapped = float(bam_mapped) / 1e6
-        tileLengthInKb = float(args.binSize) / 1000
+        million_reads_mapped = float(bam_mapped) / 1e6
+        tile_len_in_kb = float(args.binSize) / 1000
 
-        scale_factor *= 1.0 / (millionReadsMapped * tileLengthInKb)
+        scale_factor *= 1.0 / (million_reads_mapped * tile_len_in_kb)
 
         if debug:
             print "scale factor using RPKM is {0}".format(args.scaleFactor)
@@ -172,8 +173,9 @@ def main(args=None):
     else:
         debug = 0
 
-    funcArgs = {'scaleFactor': get_scale_factor(args)}
-    zerosToNans = True if args.missingDataAsZero == 'no' else False
+    func_args = {'scaleFactor': get_scale_factor(args)}
+    zeros_to_nans = not args.keepNAs
+
     wr = writeBedGraph.WriteBedGraph([args.bam],
                                      binLength=args.binSize,
                                      stepSize=args.binSize,
@@ -183,11 +185,11 @@ def main(args=None):
                                      minMappingQuality=args.minMappingQuality,
                                      ignoreDuplicates=args.ignoreDuplicates,
                                      center_read=args.centerReads,
-                                     zerosToNans=zerosToNans,
+                                     zerosToNans=zeros_to_nans,
                                      samFlag_include=args.samFlagInclude,
                                      samFlag_exclude=args.samFlagExclude,
                                      verbose=args.verbose
                                      )
 
-    wr.run(writeBedGraph.scaleCoverage, funcArgs, args.outFileName,
+    wr.run(writeBedGraph.scaleCoverage, func_args, args.outFileName,
            format=args.outFileFormat, smooth_length=args.smoothLength)
