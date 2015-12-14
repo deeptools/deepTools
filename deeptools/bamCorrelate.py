@@ -211,7 +211,7 @@ def main(args=None):
         samFlag_include=args.samFlagInclude,
         samFlag_exclude=args.samFlagExclude,
         stepSize=stepsize,
-        zerosToNans=True,
+        zerosToNans=False,
         out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = c.run()
