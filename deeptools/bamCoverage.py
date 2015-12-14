@@ -174,7 +174,7 @@ def main(args=None):
         debug = 0
 
     func_args = {'scaleFactor': get_scale_factor(args)}
-    zeros_to_nans = not args.missingDataAsZero
+    zeros_to_nans = not args.keepNAs
 
     wr = writeBedGraph.WriteBedGraph([args.bam],
                                      binLength=args.binSize,

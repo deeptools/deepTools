@@ -64,9 +64,9 @@ def parse_arguments(args=None):
                                  'reciprocal_ratio'],
                         required=False)
 
-    parser.add_argument('--missingDataAsZero',
+    parser.add_argument('--keepNAs',
                         help='This parameter determines if '
-                        'missing data should be replaced with a zero. If not given '
+                        'missing data (NAs) should be replaced with a zero. If not given '
                         'missing data will be ignored and will not '
                         'be included in the output file at all. Missing data '
                         'is defined as those regions for which no value exists'
@@ -95,7 +95,7 @@ def main(args=None):
     # the getRatio function is called and receives
     # the funcArgs per each tile that is considered
     FUNC = getRatio
-    funcArgs = {'missingDataAsZero': args.missingDataAsZero,
+    funcArgs = {'missingDataAsZero': args.keepNAs,
                 'valueType': args.ratio,
                 'scaleFactors': scaleFactors,
                 'pseudocount': args.pseudocount
