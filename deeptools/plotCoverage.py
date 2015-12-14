@@ -113,7 +113,7 @@ def required_args():
 
 
 def main(args=None):
-    args = process_args()
+    args = process_args(args)
     cr = countR.CountReadsPerBin(args.bamfiles,
                                  binLength=1,
                                  numberOfSamples=args.numberOfSamples,
