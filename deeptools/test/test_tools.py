@@ -1,13 +1,18 @@
+import subprocess
 import os
 
-ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../../bin/"
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../../bin"
 
 
-def test_plot_coverage():
-    os.system("{}plotCoverage --version".format(ROOT))
+def test_tools():
+    """
+    Checks everything that is in /bin/
+    and tries to run it
 
-def test_bam_coverage():
-    os.system("{}bamCoverage --version".format(ROOT))
-
+    """
+    for file in os.listdir(ROOT):
+        print file
+        if os.path.isfile(os.path.join(ROOT, file)):
+            subprocess.check_call("{}/{} --version".format(ROOT, file).split())
 
 
