@@ -34,7 +34,7 @@ def parse_arguments(args=None):
         'any other regions defined in a BED or GFF '
         'format will work. A preprocessed matrix generated '
         'by the tool computeMatrix is required.',
-        epilog='An example usage is: %(prog)s -m <matrix file>',
+        epilog='An example usage is: plotProfile -m <matrix file>',
         add_help=False)
 
     return parser

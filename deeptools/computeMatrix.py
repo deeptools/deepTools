@@ -29,11 +29,11 @@ to their score.
 
 To learn more about the specific parameters type:
 
-%(prog)s reference-point --help or
-%(prog)s scale-regions --help
+computeMatrix reference-point --help or
+computeMatrix scale-regions --help
 
 """,
-            epilog='An example usage is:\n  %(prog)s reference-point -S '
+            epilog='An example usage is:\n  computeMatrix reference-point -S '
             '<biwig file> -R <bed file> -b 1000\n \n')
 
     parser.add_argument('--version', action='version',
@@ -55,7 +55,7 @@ To learn more about the specific parameters type:
         "stretched or shrunk to the same length (bp) that is indicated by "
         "the user.",
         usage='An example usage is:\n  computeMatrix -S '
-        '<biwig file> -R <bed file> -b 1000\n \n')
+        '<biwig file> -R <bed file> -b 1000\n\n')
 
     # reference point arguments
     subparsers.add_parser(
@@ -69,7 +69,7 @@ To learn more about the specific parameters type:
         "positions before (upstream) and/or after (downstream) of the "
         "reference point will be plotted.",
         usage='An example usage is:\n  computeMatrix -S '
-        '<biwig file> -R <bed file> -a 3000 -b 3000\n\ n')
+        '<biwig file> -R <bed file> -a 3000 -b 3000\n\n')
 
     return parser
 
