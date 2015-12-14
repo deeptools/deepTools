@@ -151,7 +151,7 @@ def normalization_options():
                        nargs='+')
 
     group.add_argument('--keepNAs',
-                       help='If set, missing data (NAs) will be treated as zero. '
+                       help='If set, missing data (NAs) will be treated as zeros. '
                        'The default is to ignore missing data '
                        'and not included in the output file. Missing '
                        'data is defined as those bins for which '
