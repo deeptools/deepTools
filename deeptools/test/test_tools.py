@@ -10,9 +10,7 @@ def test_tools():
     and tries to run it
 
     """
-    for file in os.listdir(ROOT):
-        print file
-        if os.path.isfile(os.path.join(ROOT, file)):
-            subprocess.check_call("{}/{} --version".format(ROOT, file).split())
-
-
+    for _file in os.listdir(ROOT):
+        print _file
+        if os.path.isfile(os.path.join(ROOT, _file)):
+            subprocess.check_call("{}/{} --version".format(ROOT, _file).split())
