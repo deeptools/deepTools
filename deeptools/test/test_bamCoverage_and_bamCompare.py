@@ -120,4 +120,3 @@ def test_bam_compare_extend():
     expected = ['3R\t0\t100\t-1.00\n', '3R\t100\t150\t1.00\n', '3R\t150\t200\t-1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
-
