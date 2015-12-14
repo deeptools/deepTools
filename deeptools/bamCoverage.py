@@ -124,16 +124,23 @@ def get_scale_factor(args):
                                                                     return_lengths=False,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
-        if args.extendReads and args.extendReads is True:
-            fragment_length = args.frag_len_dict['median']
+        if args.extendReads:
+            if args.extendReads is True:
+                # try to guess fragment length if the bam file contains paired end reads
+                if frag_len_dict:
+                    fragment_length = frag_len_dict['median']
+                else:
+                    exit("*ERROR*: library is not paired-end. Please provide an extension length.")
+                if args.verbose:
+                    print("Fragment length based on paired en data "
+                          "estimated to be {}".format(frag_len_dict['median']))
 
-        elif args.extendReads:
-            if frag_len_dict['mean'] != 0 and abs(args.extendReads - frag_len_dict['median']) > frag_len_dict['std']:
-                sys.stderr.write("*Warning*:\nThe extend reads length provided ({}) does not match the fragment "
-                                 "length estimated from the BAM file: {}\n".format(args.extendReads,
-                                                                                   int(frag_len_dict['median'])))
-
-            fragment_length = args.fragmentLength
+            elif args.extendReads < 1:
+                exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(args.extendReads))
+            elif args.extendReads > 2000:
+                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(args.extendReads))
+            else:
+                fragment_length = args.extendReads
 
         else:
             # set as fragment length the read length
