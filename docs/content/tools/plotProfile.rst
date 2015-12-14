@@ -29,5 +29,5 @@ The following example plots the signal profile over hg19 transcript start sites 
         --colors red orange yellow green blue purple \
         --plotTitle "Test data profile"
 
-.. image:: test_plots/ExampleProfile1.png
+.. image:: test_plots/ExampleProfile2.png
 
