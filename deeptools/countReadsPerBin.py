@@ -489,6 +489,8 @@ class CountReadsPerBin(object):
                 continue
 
             for fragmentStart, fragmentEnd in position_blocks:
+                if fragmentEnd is None or fragmentStart is None:
+                    continue
                 fragmentLength = fragmentEnd - fragmentStart
                 if fragmentLength == 0:
                     continue

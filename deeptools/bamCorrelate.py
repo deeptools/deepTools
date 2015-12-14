@@ -199,7 +199,7 @@ def main(args=None):
     c = countR.CountReadsPerBin(
         args.bamfiles,
         args.binSize,
-        0,
+        numberOfSamples=None,
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
