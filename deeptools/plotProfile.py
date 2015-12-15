@@ -34,7 +34,7 @@ def parse_arguments(args=None):
         'any other regions defined in a BED or GFF '
         'format will work. A preprocessed matrix generated '
         'by the tool computeMatrix is required.',
-        epilog='An example usage is: %(prog)s -m <matrix file>',
+        epilog='An example usage is: plotProfile -m <matrix file>',
         add_help=False)
 
     return parser
@@ -265,21 +265,17 @@ class Profile(object):
             cmap_plot = plt.get_cmap('jet')
             if self.numlines > 1:
                 # kmeans, so we need to color by cluster
-                color_list = cmap_plot(np.arange(self.numlines, dtype=float) / self.numlines)
+                self.color_list = cmap_plot(np.arange(self.numlines, dtype=float) / self.numlines)
             else:
-                color_list = cmap_plot(np.arange(self.numplots, dtype=float) / self.numplots)
-        else:
-            if (self.numlines > 1 and len(color_list) < self.numlines) or (self.numlines == 1 and len(color_list) < self.numplots):
-                sys.stderr.write("\nThe given list of colors is too small, "
-                                 "at least {} colors are needed\n".format(self.numlines))
-                exit(1)
-            for color in self.color_list:
-                if not pltcolors.is_color_like(color):
-                    sys.stderr.write("\nThe color name {} is not valid. Check "
-                                     "the name or try with a html hex string "
-                                     "for example #eeff22".format(color))
-
-                    exit(1)
+                self.color_list = cmap_plot(np.arange(self.numplots, dtype=float) / self.numplots)
+        if (self.numlines > 1 and len(self.color_list) < self.numlines) or (self.numlines == 1 and len(self.color_list) < self.numplots):
+            sys.exit("\nThe given list of colors is too small, "
+                     "at least {} colors are needed\n".format(self.numlines))
+        for color in self.color_list:
+            if not pltcolors.is_color_like(color):
+                sys.exit("\nThe color name {} is not valid. Check "
+                         "the name or try with a html hex string "
+                         "for example #eeff22".format(color))
 
         xticks, xtickslabel = getProfileTicks(self.hm, self.reference_point_label, self.start_label, self.end_label)
         first = True
@@ -321,7 +317,7 @@ class Profile(object):
                     coloridx = plot
                 plot_single(ax, sub_matrix['matrix'],
                             self.averagetype,
-                            color_list[coloridx],
+                            self.color_list[coloridx],
                             label,
                             plot_type=self.plot_type)
 

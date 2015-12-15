@@ -390,34 +390,33 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             default='mean',
             choices=["mean", "median", "min",
                      "max", "std", "sum"],
-            help='Define the type of statistic that should be used for the '
+            help='The type of statistic that should be used for the '
             'profile. The options are: "mean", "median", "min", "max", '
             '"sum" and "std".')
 
         optional.add_argument('--plotHeight',
-                              help='height in cm.',
+                              help='Plot height in cm.',
                               type=float,
                               default=7)
 
         optional.add_argument('--plotWidth',
-                              help='Width in cm.  The minimum value is 1 cm.',
+                              help='Plot width in cm. The minimum value is 1 cm.',
                               type=float,
                               default=11)
 
         optional.add_argument(
             '--plotType',
-            help='For the summary plot (profile) only. The '
-            '"lines" option will plot the profile line based '
-            'on the average type selected. The "fill" option '
+            help='"lines" will plot the profile line based '
+            'on the average type selected. "fill" '
             'fills the region between zero and the profile '
             'curve. The fill in color is semi transparent to '
-            'distinguish different profiles. The "se" and "std" options '
-            'colors the region between the profile and the '
+            'distinguish different profiles. "se" and "std" '
+            'color the region between the profile and the '
             'standard error or standard deviation of the data. '
             'As in the case of '
-            'fill, a semi-transparent color is used. The option '
-            '"overlapped_lines" plots each region values, one on '
-            'top of the other. The option "heatmap" plots a '
+            'fill, a semi-transparent color is used. '
+            '"overlapped_lines" plots each region\'s value, one on '
+            'top of the other. "heatmap" plots a '
             'summary heatmap.',
             choices=['lines', 'fill', 'se', 'std', 'overlapped_lines', 'heatmap'],
             default='lines')
@@ -512,14 +511,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               default=None,
                               help='Maximum value for the heatmap intensities.')
         optional.add_argument('--heatmapHeight',
-                              help='Height in cm. The default for the heatmap '
+                              help='Plot height in cm. The default for the heatmap '
                               'height is 25. The minimum value is '
                               '3 and the maximum is 100.',
                               type=float,
                               default=28)
 
         optional.add_argument('--heatmapWidth',
-                              help='Width in cm. The default value is 4 '
+                              help='Plot width in cm. The default value is 4 '
                               'The minimum value is 1 and the '
                               'maximum is 100.',
                               type=float,
@@ -538,7 +537,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             default='plot, heatmap and colorbar')
         optional.add_argument('--xAxisLabel', '-x',
                               default='gene distance (bp)',
-                              help='Description for the x-axis label. This does nothing in the profiler.')
+                              help='Description for the x-axis label.')
 
     # end elif
     optional.add_argument('--startLabel',
@@ -547,7 +546,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'in the plot for the start of '
                           'the region. Default is TSS (transcription '
                           'start site), but could be changed to anything, '
-                          'e.g. "peak start".'
+                          'e.g. "peak start". '
                           'Same for the --endLabel option. See below.')
     optional.add_argument('--endLabel',
                           default='TES',
@@ -570,9 +569,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           default='genes',
                           help='Labels for the regions plotted in the '
                           'heatmap. If more than one region is being '
-                          'plotted a list of lables '
+                          'plotted a list of labels '
                           'separated by comma and limited by quotes, '
-                          'is requires. For example, '
+                          'is required. For example, '
                           ' --regionsLabel "label1, label2". '
                           'Default is "genes".')
 
@@ -580,8 +579,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           help='Labels for the samples plotted. The '
                           'default is to use the file name of the '
                           'sample. The sample names should be separated '
-                               'by spaces and quoted if they label itself'
-                               'contains a space E.g. --samplesLabel label-1 "label 2"  ',
+                          'by spaces and quoted if a label itself'
+                          'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
     optional.add_argument('--plotTitle', '-T',
@@ -591,8 +590,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
     optional.add_argument('--yAxisLabel', '-y',
                           default='',
-                          help='Description for the y-axis label for the '
-                          'top panel.')
+                          help='Y-axis label for the top panel.')
 
     optional.add_argument('--yMin',
                           default=None,
@@ -615,21 +613,20 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                    'center-right',
                                    'none'
                                    ],
-                          help='Location for the legend in the summary plot.'
+                          help='Location for the legend in the summary plot. '
                                'Note that "none" does not work for the profiler.')
 
     optional.add_argument('--perGroup',
-                          help='The default is to combine all group '
-                          'plots into one. If multiple samples are '
-                          'present, then for each sample a new plot is '
-                          'made. If --perGroup is set, then, for each '
-                          'group, all data from different samples '
-                          'is combined in to one plot.',
+                          help='The default is to plot all groups of regions by '
+                          'sample. Using this option instead plots all samples by '
+                          'group of regions. Note that this is only useful if you '
+                          'have multiple groups of regions. by sample rather than '
+                          'group.',
                           action='store_true')
 
     optional.add_argument('--plotFileFormat',
                           metavar='',
-                          help='image format type. If given, this '
+                          help='Image format type. If given, this '
                           'option overrides the '
                           'image format based on the plotFile ending. '
                           'The available options are: "png", "emf", '
@@ -637,7 +634,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           choices=['png', 'pdf', 'svg', 'eps', 'emf'])
 
     optional.add_argument('--verbose',
-                          help='If set warning messages and '
+                          help='If set, warning messages and '
                           'addition information are given.',
                           action='store_true')
     return parser
