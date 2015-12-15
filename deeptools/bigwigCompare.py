@@ -79,7 +79,8 @@ def parse_arguments(args=None):
                         'considered. In the same file regions with low '
                         'coverage may get zero read counts. If missing data '
                         'is replaced by zero, this would convert the excluded '
-                        'repetitive regions into regions of low coverage.')
+                        'repetitive regions into regions of low coverage.',
+                        action = 'store_true')
 
     return parser
 
