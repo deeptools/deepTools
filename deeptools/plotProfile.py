@@ -34,7 +34,7 @@ def parse_arguments(args=None):
         'any other regions defined in a BED or GFF '
         'format will work. A preprocessed matrix generated '
         'by the tool computeMatrix is required.',
-        epilog='An example usage is: %(prog)s -m <matrix file>',
+        epilog='An example usage is: plotProfile -m <matrix file>',
         add_help=False)
 
     return parser
@@ -48,7 +48,8 @@ def process_args(args=None):
     for attr in ['yMax', 'yMin']:
         try:
             args.__setattr__(attr, float(args.__getattribute__(attr)))
-        except (ValueError, TypeError):
+#       except ValueError, TypeError:
+        except:
             args.__setattr__(attr, None)
 
     if args.plotHeight < 0.5:
