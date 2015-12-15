@@ -237,8 +237,13 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 else:
                     tileCoverage.append(coverage[index][tileIndex])
 
-            # if zerosToNans == True and sum(tileCoverage) == 0.0:
-            #   continue
+            # only turn zeros to nans when all are nans
+            if self.zerosToNans:
+                if np.all(np.isnan(tileCoverage)):
+                    continue
+                else:
+                    tileCoverage = np.array(tileCoverage)
+                    tileCoverage[np.isnan(tileCoverage)] = 0
 
             value = func_to_call(tileCoverage, func_args)
             """

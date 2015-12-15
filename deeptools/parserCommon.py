@@ -150,14 +150,13 @@ def normalization_options():
                        'samples. An usage examples is  --ignoreForNormalization chrX chrM.',
                        nargs='+')
 
-    group.add_argument('--missingDataAsZero',
-                       default="yes",
-                       choices=["yes", "no"],
-                       help='If set to "yes", missing data will be treated as zero. '
-                       'If set to "no", missing data will be ignored '
+    group.add_argument('--keepNAs',
+                       help='If set, missing data (NAs) will be treated as zeros. '
+                       'The default is to ignore missing data '
                        'and not included in the output file. Missing '
                        'data is defined as those bins for which '
-                       'no overlapping reads are found.')
+                       'no overlapping reads are found.',
+                       action='store_true')
 
     group.add_argument('--smoothLength',
                        metavar="INT bp",

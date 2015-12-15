@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import argparse  # to parse command line arguments
 import numpy as np
 
@@ -152,7 +151,6 @@ def getOptionalArgs():
 
 def process_args(args=None):
     args = parseArguments().parse_args(args)
-    args.missingDataAsZero = True if args.missingDataAsZero == 'yes' else False
 
     if args.smoothLength and args.smoothLength <= args.binSize:
         print "Warning: the smooth length given ({}) is smaller than the bin "\
@@ -200,8 +198,7 @@ def get_scale_factors(args):
                     float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped]))
 
         elif args.scaleFactorsMethod == 'readCount':
-            scale_factors = \
-                float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
+            scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
             if args.verbose:
                 print "Size factors using total number " \
                     "of mapped reads: {}".format(scale_factors)
@@ -228,28 +225,37 @@ def get_scale_factors(args):
 
         if args.scaleFactors is None:
             if args.normalizeTo1x:
+                # try to guess fragment length if the bam file contains paired end reads
                 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
                 frag_len_dict, read_len_dict = get_read_and_fragment_length(bamfile, bamindex,
                                                                             return_lengths=False,
                                                                             numberOfProcessors=args.numberOfProcessors,
                                                                             verbose=args.verbose)
-                if args.fragmentLength:
-                    if frag_len_dict['mean'] != 0 and \
-                            abs(args.fragmentLength - frag_len_dict['median']) > frag_len_dict['std']:
-                        sys.stderr.write("*Warning*:\nThe fragment length provided ({}) does not match the fragment "
-                                         "length estimated from the bam file: {}\n".format(args.fragmentLength,
-                                                                                           int(frag_len_dict['median'])))
+                if args.extendReads:
+                    if args.extendReads is True:
+                        # try to guess fragment length if the bam file contains paired end reads
+                        if frag_len_dict:
+                            fragment_length = frag_len_dict['median']
+                        else:
+                            exit("*ERROR*: library is not paired-end. Please provide an extension length.")
+                        if args.verbose:
+                            print("Fragment length based on paired en data "
+                                  "estimated to be {}".format(frag_len_dict['median']))
 
-                    fragment_length = args.fragmentLength
+                    elif args.extendReads < 1:
+                        exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(args.extendReads))
+                    elif args.extendReads > 2000:
+                        exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(args.extendReads))
+                    else:
+                        fragment_length = args.extendReads
 
                 else:
                     # set as fragment length the read length
+                    fragment_length = int(read_len_dict['median'])
                     if args.verbose:
                         print "Estimated read length is {}".format(int(read_len_dict['median']))
-                    fragment_length = int(read_len_dict['median'])
 
-                current_coverage = \
-                    float(mappedReads * fragment_length) / args.normalizeTo1x
+                current_coverage = float(mappedReads * fragment_length) / args.normalizeTo1x
                 # the coverage scale factor is 1 / coverage,
                 coverage_scale_factor = 1.0 / current_coverage
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
@@ -294,11 +300,12 @@ def main(args=None):
     # the getRatio function is called and receives
     # the func_args per each tile that is considered
     FUNC = getRatio
-    func_args = {'missingDataAsZero': args.missingDataAsZero,
+    func_args = {'missingDataAsZero': args.keepNAs,
                  'valueType': args.ratio,
                  'scaleFactors': scale_factors,
                  'pseudocount': args.pseudocount
                  }
+    zeros_to_nans = not args.keepNAs
 
     wr = writeBedGraph.WriteBedGraph([args.bamfile1, args.bamfile2], args.binSize, 0,
                                      stepSize=args.binSize,
@@ -308,7 +315,7 @@ def main(args=None):
                                      minMappingQuality=args.minMappingQuality,
                                      ignoreDuplicates=args.ignoreDuplicates,
                                      center_read=args.centerReads,
-                                     zerosToNans=True,
+                                     zerosToNans=zeros_to_nans,
                                      samFlag_include=args.samFlagInclude,
                                      samFlag_exclude=args.samFlagExclude,
                                      verbose=args.verbose
