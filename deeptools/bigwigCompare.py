@@ -108,6 +108,5 @@ def main(args=None):
         funcArgs, tileSize=args.binSize, region=args.region,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
-        missingDataAsZero=args.missingDataAsZero,
         smoothLength=False,
         extendPairedEnds=False)
