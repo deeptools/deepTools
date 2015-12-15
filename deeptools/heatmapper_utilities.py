@@ -39,57 +39,29 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     >>> plt.savefig("/tmp/test.pdf")
     >>> fig = plt.figure()
 
-    Plot overlapped lines
-    >>> ax = fig.add_subplot(111)
-    >>> ax = plot_single(ax, matrix -2, 'mean', color='yellow', label='test',
-    ... plot_type='overlapped_lines')
-    >>> plt.savefig("/tmp/test2.pdf")
 
     """
     summary = np.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
-    if plot_type == 'overlapped_lines':
-        if isinstance(color, str) and color == 'black':
-            ax.patch.set_facecolor('white')
-        elif not isinstance(color, str) and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
-            ax.patch.set_facecolor('white')
+    x = np.arange(len(summary))
+    ax.plot(x, summary, color=color, label=label, alpha=0.9)
+    if plot_type == 'fill':
+        pass
+        ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
+
+    if plot_type in ['se', 'std']:
+        if plot_type == 'se':  # standard error
+            std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
         else:
-            ax.patch.set_facecolor('black')
-        for row in ma:
-            ax.plot(row, color=color, alpha=0.1)
-        x = np.arange(len(row))
+            std = np.std(ma, axis=0)
 
-    else:
-        x = np.arange(len(summary))
-        ax.plot(x, summary, color=color, label=label, alpha=0.9)
-        if plot_type == 'fill':
-            pass
-            ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
+        alpha = 0.2
+        # an alpha channel has to be added to the color to fill the area
+        # between the mean (or median etc.) and the std or se
+        f_color = pltcolors.colorConverter.to_rgba(color, alpha)
 
-        if plot_type in ['se', 'std']:
-            if plot_type == 'se':  # standard error
-                std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
-            else:
-                std = np.std(ma, axis=0)
-
-            alpha = 0.2
-            # an alpha channel has to be added to the color to fill the area
-            # between the mean (or median etc.) and the std or se
-            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
-
-            ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
-            ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
-
-        elif plot_type == 'overlapped_lines':
-            if isinstance(color, str) and color == 'black':
-                ax.patch.set_facecolor('white')
-            elif not isinstance(color, str) and np.all(np.equal(color, np.array([0.0, 0.0, 0.0, 0.0]))):
-                ax.patch.set_facecolor('white')
-            else:
-                ax.patch.set_facecolor('black')
-            for row in ma:
-                ax.plot(row, color=color, alpha=0.1)
-            x = np.arange(len(row))
+        ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
+        ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
 
     ax.set_xlim(0, max(x))
 
