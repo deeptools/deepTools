@@ -174,7 +174,6 @@ class Profile(object):
         # turn off y ticks
 
         for plot in range(self.numplots):
-            labels = []
             col = plot % self.plots_per_row
             row = int(plot / self.plots_per_row)
 
@@ -202,7 +201,6 @@ class Profile(object):
             cmap.set_bad('black')
 
             ax.set_title(title)
-            mat = []  # when drawing a heatmap (in contrast to drawing lines)
             for data_idx in range(self.numlines):
                 ax = self.fig.add_subplot(sub_grid[data_idx, 0])
 
@@ -222,7 +220,6 @@ class Profile(object):
                 ax.set_axis_bgcolor('black')
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
                 img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1)
-                #x = np.arange(ma.shape[1])
 
                 # remove the numbers of the y axis for all plots
                 plt.setp(ax.get_yticklabels(), visible=False)
@@ -267,8 +264,6 @@ class Profile(object):
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
-
-
 
     def plot_heatmap(self):
         matrix_flatten = None
