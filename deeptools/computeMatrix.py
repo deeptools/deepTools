@@ -20,9 +20,9 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-This tool summarizes and prepares an intermediary file containing
-scores associated with genomic regions that can be used afterwards to
-plot a heatmap or a profile.  Typically, these genoic regions are
+This tool summarizes and prepares an intermediate file containing
+scores associated with genomic regions that can be used afterward to
+plot a heatmap or profile.  Typically, these genomic regions are
 genes, but any other regions defined in a BED format can be
 used. This tool can also be used to filter and sort regions according
 to their score.
@@ -52,8 +52,7 @@ computeMatrix scale-regions --help
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='scale-regions')],
         help="In the scale-regions mode, all regions in the BED file are "
-        "stretched or shrunk to the same length (bp) that is indicated by "
-        "the user.",
+        "stretched or shrunk to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix -S '
         '<biwig file> -R <bed file> -b 1000\n\n')
 
@@ -147,8 +146,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
         optional.add_argument('--regionBodyLength', '-m',
                               default=1000,
                               type=int,
-                              help='Distance in bp to which all regions are '
-                              'going to be fitted.')
+                              help='Distance in bases to which all regions will '
+                              'be fitted.')
         optional.add_argument('--startLabel',
                               default='TSS',
                               help='Label shown in the plot for the start of '
@@ -161,7 +160,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
         optional.add_argument('--endLabel',
                               default='TES',
                               help='Label shown in the plot for the region '
-                              'end. Default is TES (transcription end site).'
+                              'end. Default is TES (transcription end site). '
                               'See the --startLabel option for more '
                               'information. ')
         optional.add_argument('--beforeRegionStartLength', '-b', '--upstream',
@@ -214,7 +213,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'point is set to the TSS.')
 
     optional.add_argument('--binSize', '-bs',
-                          help='Length, in base pairs, of the non-overlapping '
+                          help='Length, in bases, of the non-overlapping '
                           'bin for averaging the score over the '
                           'regions length.',
                           type=int,
@@ -222,8 +221,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortRegions',
                           help='Whether the output file should present the '
-                          'regions sorted. The default is to not sort the regions.'
-                          ' Note that this is only useful if you plan to plot '
+                          'regions sorted. The default is to not sort the regions. '
+                          'Note that this is only useful if you plan to plot '
                           'the results yourself and not, for example, with '
                           'heatmapper, which will override this.',
                           choices=["descend", "ascend", "no"],
@@ -263,8 +262,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           default=None,
                           type=float,
                           help='Numeric value. Any region containing a '
-                          'value that is equal or less than this numeric '
-                          'value will be skipped. This is useful to skip, '
+                          'value that is less than or equal to this '
+                          'will be skipped. This is useful to skip, '
                           'for example, genes where the read count is zero '
                           'for any of the bins. This could be the result of '
                           'unmappable areas and can bias the overall results.')
@@ -273,10 +272,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           default=None,
                           type=float,
                           help='Numeric value. Any region containing a value '
-                          'that is equal or higher that this numeric value '
+                          'greater than or equal to this '
                           'will be skipped. The maxThreshold is useful to '
                           'skip those few regions with very high read counts '
-                          '(e.g. major satellites) that may bias the average '
+                          '(e.g. micro satellites) that may bias the average '
                           'values.')
 
     # in contrast to other tools,
@@ -318,10 +317,9 @@ def process_args(args=None):
     elif args.command == 'reference-point':
         if args.beforeRegionStartLength == 0 and \
                 args.afterRegionStartLength == 0:
-            sys.stderr.write("\nUpstrean and downstream regions are both "
-                             "set to 0. Nothing to output. Maybe you want to "
-                             "use the scale-regions mode?\n")
-            exit()
+            sys.exit("\nUpstrean and downstream regions are both "
+                     "set to 0. Nothing to output. Maybe you want to "
+                     "use the scale-regions mode?\n")
 
     return(args)
 
