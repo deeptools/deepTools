@@ -93,8 +93,8 @@ def required_args():
 
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
-                               'that have zero or nan values only all samples '
-                               'are excluded.',
+                          'that have zero or nan values only all samples '
+                          'are excluded.',
                           action='store_true',
                           required=False)
 
