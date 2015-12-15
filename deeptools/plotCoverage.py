@@ -32,16 +32,16 @@ correspond to the same genome assembly.
 
 
 detailed help:
-  %(prog)s  -h
+  plotCoverage  -h
 
 """,
-            epilog='example usages:\n%(prog)s '
+            epilog='example usages:\nplotCoverage '
                    '--bamfiles file1.bam file2.bam -out results.png\n\n'
                    ' \n\n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='plotCoverage {}'.format(__version__))
 
     return parser
 
