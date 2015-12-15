@@ -14,9 +14,9 @@ The tools
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/bamFingerprint`  | QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/computeGCbias`   | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
+|:doc:`tools/computeGCBias`   | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/correctGCbias`   | QC            | 1 BAM, output from computeGCbias  | 1 GC-corrected BAM                     | obtain a BAM file with reads distributed according to the genome’s GC content|
+|:doc:`tools/correctGCBias`   | QC            | 1 BAM, output from computeGCbias  | 1 GC-corrected BAM                     | obtain a BAM file with reads distributed according to the genome’s GC content|
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/bamCoverage`     | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
@@ -30,7 +30,7 @@ The tools
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/plotProfile`     | visualization | computeMatrix output              | summary plot (“meta-profile”)          | visualize the average read coverages over a group of genomic regions         |
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotCoverage`    | visualization | 1 or more bam                     | 2 diagnostic plots                     | visualize the average read coverages over sampled genomic positions          |
+|:doc:`tools/plotCoverage`    | visualization | 1 or more bam                     | 2 diagnostic plots                     | visualize the average read coverages over sampled genomic  positions         |
 +-----------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 
 
