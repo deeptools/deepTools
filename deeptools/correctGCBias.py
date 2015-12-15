@@ -33,7 +33,7 @@ def parse_arguments(args=None):
         description='Corrects the GC bias using Benjamini\'s method '
         '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
         'The tool computeGC bias needs to be run first.',
-        usage='An example usage is:\n %(prog)s '
+        usage='An example usage is:\n correctGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit '
         '--GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '
         '[options]',

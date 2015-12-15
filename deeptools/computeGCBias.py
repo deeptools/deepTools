@@ -32,7 +32,7 @@ def parse_arguments(args=None):
         '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
         'The resulting GC bias can later be used to plot '
         'the bias or to correct the bias.',
-        usage='An example usage is:\n %(prog)s '
+        usage='An example usage is:\n computeGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt [options]',
         conflict_handler='resolve',
         add_help=False)
