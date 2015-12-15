@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import sys
 import time
@@ -19,11 +19,8 @@ from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools import config as cfg
 from deeptools import bamHandler
 
-from deeptools._version import __version__
-
 debug = 0
 
-#global_vars = dict()
 
 def parse_arguments(args=None):
     parentParser = parserCommon.getParentArgParse(binSize=False)
@@ -40,8 +37,7 @@ def parse_arguments(args=None):
         conflict_handler='resolve',
         add_help=False)
 
-    #args = parser.parse_args(args)
-    return(parser)
+    return parser
 
 
 def getRequiredArgs():
@@ -64,7 +60,7 @@ def getRequiredArgs():
                           'Common values are: mm9: 2150570000, '
                           'hg19:2451960000, dm3:121400000 and ce10:93260000. '
                           'See Table 2 of '
-                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes. This value is '
                           'needed to detect enriched regions that, if not '
@@ -97,9 +93,9 @@ def getRequiredArgs():
                           help="show this help message and exit")
 
     optional.add_argument('--sampleSize',
-                        default=5e7,
-                        help='Number of sampling points to be considered.',
-                        type=int)
+                          default=5e7,
+                          help='Number of sampling points to be considered.',
+                          type=int)
 
     optional.add_argument(
         '--filterOut', '-fo',
@@ -341,7 +337,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     subF_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
 
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
-    bam  = bamHandler.openBam(global_vars['bam'])
+    bam = bamHandler.openBam(global_vars['bam'])
     peak = 0
     startTime = time.time()
 
@@ -415,7 +411,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         if verbose:
             if index % 50000 == 0:
                 endTime = time.time()
-                print "%s processing %d (%.1f per sec) @ %s:%s-%s %s"  % \
+                print "%s processing %d (%.1f per sec) @ %s:%s-%s %s" % \
                     (multiprocessing.current_process().name,
                      index, index / (endTime - countTime),
                      chromNameBit, start, end, stepSize)
@@ -423,13 +419,12 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
 
     if verbose:
         endTime = time.time()
-        print "%s processing %d (%.1f per sec) @ %s:%s-%s %s"  % \
+        print "%s processing %d (%.1f per sec) @ %s:%s-%s %s" % \
             (multiprocessing.current_process().name,
              index, index / (endTime - countTime),
              chromNameBit, start, end, stepSize)
-        print "%s total time %.1f @ %s:%s-%s %s"  % \
-            (multiprocessing.current_process().name,
-             (endTime - startTime), chromNameBit, start, end, stepSize)
+        print "%s total time %.1f @ %s:%s-%s %s" % (multiprocessing.current_process().name,
+                                                    (endTime - startTime), chromNameBit, start, end, stepSize)
 
     return(subN_gc, subF_gc)
 
@@ -480,10 +475,9 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
             F_gc = subF_gc
             N_gc = subN_gc
 
-
     scaling = sum(N_gc) / sum(F_gc)
 
-    R_gc = np.array([float(F_gc[x] ) / N_gc[x] * scaling
+    R_gc = np.array([float(F_gc[x]) / N_gc[x] * scaling
                      if N_gc[x] and F_gc[x] > 0 else 1
                      for x in xrange(len(F_gc))])
 
@@ -583,11 +577,11 @@ def bin_by(x, y, nbins=10):
     # To avoid extra bin for the max value
     bins[-1] += 1
 
-    indicies = np.digitize(y, bins)
+    indices = np.digitize(y, bins)
 
     output = []
     for i in xrange(1, len(bins)):
-        output.append(x[indicies == i])
+        output.append(x[indices == i])
 
     # Just return the left edges of the bins
     bins = bins[:-1]
@@ -605,7 +599,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     reads_per_gc, bin_labels = bin_by(reads, GC, nbins=100)
 #    total = sum([len(x) for x in reads_per_gc])
 #    to_keep = [idx for idx, x in enumerate(reads_per_gc) if float(len(x))/total> 0.005]
-    to_keep = [idx for idx, x in enumerate(bin_labels) if 0.2 <= x <= 0.7 ]
+    to_keep = [idx for idx, x in enumerate(bin_labels) if 0.2 <= x <= 0.7]
     reads_per_gc = [reads_per_gc[x] for x in to_keep]
     bin_labels = [bin_labels[x] for x in to_keep]
 
@@ -629,7 +623,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     ax1.set_ylabel('Number of reads')
     ax1.set_xlabel('GC fraction')
 
-    xticks = [idx for idx, x in enumerate(bin_labels) if int(x*100) % 10 == 0]
+    xticks = [idx for idx, x in enumerate(bin_labels) if int(x * 100) % 10 == 0]
 
     ax1.set_xticks(xticks)
     ax1.set_xticklabels(["{:.1f}".format(bin_labels[x]) for x in xticks])
@@ -639,15 +633,11 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     ax2.set_xlabel('GC fraction')
     ax2.set_ylabel('log2ratio observed/expected')
     ax2.set_xlim(0.2, 0.7)
-    #fig.suptitle(args.title, fontsize='small')
-    #plt.tight_layout()
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
 
 
 def main(args=None):
-    ################## compute histograms #################
-    #args = process_args(args)
     args = parse_arguments().parse_args(args)
     # check if directory is writable
     if args.filterOut:
@@ -665,9 +655,9 @@ def main(args=None):
     global global_vars
     global_vars = {}
     global_vars['2bit'] = args.genome
-    global_vars['bam']  = args.bamfile
-    global_vars['filter_out']  = filter_out_file
-    global_vars['extra_sampling_file']  = extra_sampling_file
+    global_vars['bam'] = args.bamfile
+    global_vars['filter_out'] = filter_out_file
+    global_vars['extra_sampling_file'] = extra_sampling_file
 
     bit = twobit.TwoBitFile(open(global_vars['2bit']))
     bam = bamHandler.openBam(global_vars['bam'])
@@ -722,15 +712,14 @@ def main(args=None):
 
     print "computing frequencies"
     # the GC of the genome is sampled each stepSize bp.
-    stepSize = max(int(global_vars['genome_size'] / args.sampleSize ), 1)
+    stepSize = max(int(global_vars['genome_size'] / args.sampleSize), 1)
     print "stepSize: {}".format(stepSize)
-    data = \
-        tabulateGCcontent(fragment_len_dict,
-                          chrNameBitToBam, stepSize,
-                          chromSizes,
-                          numberOfProcessors=args.numberOfProcessors,
-                          verbose=args.verbose,
-                          region=args.region)
+    data = tabulateGCcontent(fragment_len_dict,
+                             chrNameBitToBam, stepSize,
+                             chromSizes,
+                             numberOfProcessors=args.numberOfProcessors,
+                             verbose=args.verbose,
+                             region=args.region)
 
     np.savetxt(args.GCbiasFrequenciesFile.name, data)
 
@@ -749,13 +738,13 @@ class Tester():
     def __init__(self):
         self.root = cfg.config.get('general', 'test_root') + "/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
-        self.bamFile  = self.root + "test.bam"
-        self.mappability  = self.root + "mappability.bw"
+        self.bamFile = self.root + "test.bam"
+        self.mappability = self.root + "mappability.bw"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         self.samtools = cfg.config.get('external_tools', 'samtools')
         bam = bamHandler.openBam(self.bamFile)
-        bit = twobit.TwoBitFile(open(self.tbitFile ))
+        bit = twobit.TwoBitFile(open(self.tbitFile))
         global debug
         debug = 0
         global global_vars
@@ -772,7 +761,7 @@ class Tester():
                        'genome_size': sum([bit[x].size for x in bit.index])}
 
     def testTabulateGCcontentWorker(self):
-        stepSize  = 2
+        stepSize = 2
         fragmentLength = {'min': 1, 'median': 3, 'max': 5}
         start = 0
         end = 20
@@ -782,15 +771,15 @@ class Tester():
 
     def set_filter_out_file(self):
         global global_vars
-        global_vars['filter_out']  = self.root + "filter_out.bed"
+        global_vars['filter_out'] = self.root + "filter_out.bed"
 
     def unset_filter_out_file(self):
         global global_vars
-        global_vars['filter_out']  = None
+        global_vars['filter_out'] = None
 
     def set_extra_sampling_file(self):
         global global_vars
-        global_vars['extra_sampling_file']  = self.root + "extra_sampling.bed"
+        global_vars['extra_sampling_file'] = self.root + "extra_sampling.bed"
 
     def testTabulateGCcontent(self):
         fragmentLength = {'median': 10}

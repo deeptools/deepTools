@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import os
-import tempfile
 import shutil
 import time
 import subprocess
@@ -21,11 +20,8 @@ from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
 
-#debug = 0
 samtools = cfg.config.get('external_tools', 'samtools')
-bedgraph_to_bigwig = cfg.config.get('external_tools',
-                                    'bedgraph_to_bigwig')
-#global_vars = dict()
+bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
 
 
 def parse_arguments(args=None):
@@ -44,11 +40,11 @@ def parse_arguments(args=None):
         conflict_handler='resolve',
         add_help=False)
     return parser
-    
+
+
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
     if args.correctedFile.name.endswith('bam'):
-        
         if not cfg.checkProgram(samtools, 'view',
                                 'http://samtools.sourceforge.net/'):
             exit(1)
@@ -80,7 +76,7 @@ def getRequiredArgs():
                           'Common values are: mm9: 2150570000, '
                           'hg19:2451960000, dm3:121400000 and ce10:93260000. '
                           'See Table 2 of '
-                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 ' 
+                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes. This value is '
                           'needed to detect enriched regions that, if not '
@@ -88,6 +84,7 @@ def getRequiredArgs():
                           default=None,
                           type=int,
                           required=True)
+
     required.add_argument('--genome', '-g',
                           help='Genome in two bit format. Most genomes can be '
                           'found here: http://hgdownload.cse.ucsc.edu/gbdb/  '
@@ -145,26 +142,23 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
     fragStart = None
     fragEnd = None
 
-    if read.is_paired and read.is_proper_pair and \
-            abs(read.tlen) < 2 * fragmentLength:
+    if read.is_paired and read.is_proper_pair and abs(read.tlen) < 2 * fragmentLength:
         if read.is_reverse and read.tlen < 0:
-            fragEnd   = read.aend
+            fragEnd = read.aend
             fragStart = read.aend + read.tlen
         elif read.tlen >= read.qlen:
             fragStart = read.pos
-            fragEnd   = read.pos + read.tlen
+            fragEnd = read.pos + read.tlen
 
     if not fragStart:
         if read.is_reverse:
-            fragEnd    = read.aend
-            fragStart  = read.aend  - fragmentLength
+            fragEnd = read.aend
+            fragStart = read.aend - fragmentLength
         else:
-            fragStart  = read.pos
-            fragEnd    = fragStart + fragmentLength
+            fragStart = read.pos
+            fragEnd = fragStart + fragmentLength
     try:
-        gc = getGC_content(tbit[chrNameBit].get(fragStart,
-                                                fragEnd),
-                           as_fraction=True)
+        gc = getGC_content(tbit[chrNameBit].get(fragStart, fragEnd), as_fraction=True)
     except Exception:
         return None
 
@@ -195,7 +189,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     i = 0
 
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
-    bam  = pysam.Samfile(global_vars['bam'])
+    bam = pysam.Samfile(global_vars['bam'])
     read_repetitions = 0
     removed_duplicated_reads = 0
     startTime = time.time()
@@ -235,12 +229,9 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
             read_repetitions = 0
 
         try:
-            fragmentStart, fragmentEnd = \
-                getFragmentFromRead(read,
-                                    fragmentLength,
-                                    extendPairedEnds=True)
+            fragmentStart, fragmentEnd = getFragmentFromRead(read, fragmentLength, extendPairedEnds=True)
             vectorStart = max(fragmentStart - start, 0)
-            vectorEnd   = min(fragmentEnd   - start, end - start)
+            vectorEnd = min(fragmentEnd - start, end - start)
         except TypeError:
             # the get_fragment_from_read functions returns None in some cases.
             # Those cases are to be skipped, hence the continue line.
@@ -331,7 +322,8 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     global R_gc
     fragmentLength = len(R_gc) - 1
 
-    if verbose: print "Sam for %s %s %s " % (chrNameBit, start, end)
+    if verbose:
+        print "Sam for %s %s %s " % (chrNameBit, start, end)
     i = 0
 
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
@@ -347,14 +339,14 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     # cache data
     # r.flag & 4 == 0 is to filter unmapped reads that
     # have a genomic position
-    reads = [r for r in bam.fetch(chrNameBam, start, end) 
+    reads = [r for r in bam.fetch(chrNameBam, start, end)
              if r.pos > start and r.flag & 4 == 0]
 
     r_index = -1
     for read in reads:
         r_index += 1
         copies = None
-        gc     = None
+        gc = None
 
         # check if a mate has already been procesed
         # to apply the same correction
@@ -391,7 +383,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
                                     decimals=2))
             readTag.append(
                 ('CO', float(round(float(1) / R_gc[gc], 2))))
-            readTag.append(('CP', copies ))
+            readTag.append(('CP', copies))
         else:
             GC = -1
 
@@ -415,7 +407,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
             # the read has to be renamed such that newly
             # formed pairs will match
             if numCop > 1:
-                read.qname  = readName + "_%d" % (numCop)
+                read.qname = readName + "_%d" % (numCop)
             outfile.write(read)
 
         if verbose:
@@ -449,6 +441,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
 
     os.remove(tempFileName)
     return tempFileName + ".bam"
+
 
 def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True):
     """
@@ -498,9 +491,7 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True):
     # condition read.tlen < maxPairedFragmentLength is added to avoid read pairs
     # that span thousands of base pairs
 
-    if extendPairedEnds == True and read.is_paired \
-            and abs(read.tlen) < 1000 \
-            and abs(read.tlen) > 0:
+    if extendPairedEnds is True and read.is_paired and 0 < abs(read.tlen) < 1000:
         if read.is_reverse:
             fragmentStart = read.pnext
             fragmentEnd = read.aend
@@ -521,7 +512,8 @@ def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True):
                 fragmentStart = read.pos
                 fragmentEnd = read.pos + defaultFragmentLength
 
-    return (fragmentStart, fragmentEnd)
+    return fragmentStart, fragmentEnd
+
 
 def run_shell_command(command):
     """
@@ -538,7 +530,7 @@ def run_shell_command(command):
         sys.stderr.write('Error: {}\n'.format(error))
         exit(1)
 
-#############
+
 def main(args=None):
     args = process_args(args)
     global F_gc, N_gc, R_gc
@@ -552,7 +544,7 @@ def main(args=None):
     global global_vars
     global_vars = {}
     global_vars['2bit'] = args.genome
-    global_vars['bam']  = args.bamfile
+    global_vars['bam'] = args.bamfile
 
     # compute the probability to find more than one read (a redundant read)
     # at a certain position based on the gc of the read fragment
@@ -571,7 +563,7 @@ def main(args=None):
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
 
-    ################# apply correction ##################
+    # apply correction
     print "applying correction"
     # divide the genome in fragments containing about 4e5 reads.
     # This amount of reads takes about 20 seconds
@@ -588,7 +580,7 @@ def main(args=None):
             mapReduce.getUserRegion(chromSizes, args.region,
                                     max_chunk_size=chunkSize)
 
-    print "genome partition size for multiprocessing: %s" % (chunkSize)
+    print "genome partition size for multiprocessing: {}".format(chunkSize)
     print "using region {}".format(args.region)
     mp_args = []
     bedGraphStep = args.binSize
@@ -675,12 +667,12 @@ class Tester():
     def __init__(self):
         self.root = cfg.config.get('general', 'test_root') + "/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
-        self.bamFile  = self.root + "test.bam"
+        self.bamFile = self.root + "test.bam"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         self.samtools = cfg.config.get('external_tools', 'samtools')
         bam = pysam.Samfile(self.bamFile)
-        bit = twobit.TwoBitFile(open(self.tbitFile ))
+        bit = twobit.TwoBitFile(open(self.tbitFile))
         global debug
         debug = 0
         global global_vars
@@ -707,7 +699,7 @@ class Tester():
         end = 300
         bedGraphStep = 25
         return (self.chrNameBam,
-                self.chrNameBit, start, end, bedGraphStep )
+                self.chrNameBit, start, end, bedGraphStep)
 
     def testWriteCorrectedSam(self):
         """ prepare arguments for test
@@ -727,12 +719,12 @@ class Tester():
         """
         global R_gc, R_gc_min, R_gc_max
         R_gc = np.loadtxt(self.root + "R_gc_paired.txt")
-        
+
         start = 0
         end = 500
         global global_vars
-        global_vars['bam']  = self.root + "paired.bam"
-        return ('chr2L', 'chr2L', start, end )
+        global_vars['bam'] = self.root + "paired.bam"
+        return 'chr2L', 'chr2L', start, end
 
 
 if __name__ == "__main__":
