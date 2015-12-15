@@ -665,7 +665,8 @@ def main(args=None):
 
 class Tester():
     def __init__(self):
-        self.root = cfg.config.get('general', 'test_root') + "/test_corrGC/"
+        import os
+        self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
         self.bamFile = self.root + "test.bam"
         self.chrNameBam = '2L'
