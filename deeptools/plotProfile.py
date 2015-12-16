@@ -161,7 +161,6 @@ class Profile(object):
         self.xticks, self.xtickslabel = getProfileTicks(self.hm, self.reference_point_label,
                                                         self.start_label, self.end_label)
 
-
     @staticmethod
     def cm2inch(*tupl):
         inch = 2.54
