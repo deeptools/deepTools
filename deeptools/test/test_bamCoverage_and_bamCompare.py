@@ -61,9 +61,9 @@ def test_bam_coverage_extend_and_normalizeto1x():
     unlink(outfile)
 
 
-def test_bam_coverage_keepnas():
+def test_bam_coverage_skipnas():
     outfile = '/tmp/test_file.bg'
-    args = "--bam {} -o {} --outFileFormat bedgraph --keepNAs".format(BAMFILE_B, outfile).split()
+    args = "--bam {} -o {} --outFileFormat bedgraph --skipNAs".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
 
     resp = open(outfile, 'r').readlines()
@@ -114,7 +114,7 @@ def test_bam_compare_diff_files_skipnas():
     """
     outfile = '/tmp/test_file.bg'
     args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
-           "-o {} -p 1 --outFileFormat bedgraph --keepNAs".format(BAMFILE_A, BAMFILE_B, outfile).split()
+           "-o {} -p 1 --outFileFormat bedgraph --skipNAs".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
 
