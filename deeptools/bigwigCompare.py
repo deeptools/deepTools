@@ -65,12 +65,14 @@ def parse_arguments(args=None):
                         required=False)
 
     parser.add_argument('--skipNonCoveredRegions', '--skipNAs',
-                        help='This parameter determines if regions for which there is no information '
+                        help='This parameter determines if non covered regions (regions without a score) '
                         'in the bigwig files should be skipped. The default is to treat those '
                         'regions as having a value of zero. '
                         'The decision to skip non covered regions '
                         'depends on the interpretation of the data. Non covered regions '
-                        'in a bigwig file may represent for example repetitive regions.',
+                        'in a bigwig file may represent for example repetitive regions that want '
+                        'to be skipped. Alternatively, the interpretation of non covered regions as'
+                        'zeros may be wrong and this option should be used ',
                         action='store_true')
 
     return parser
