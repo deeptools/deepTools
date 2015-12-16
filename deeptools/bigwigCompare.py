@@ -80,7 +80,7 @@ def parse_arguments(args=None):
                         'coverage may get zero read counts. If missing data '
                         'is replaced by zero, this would convert the excluded '
                         'repetitive regions into regions of low coverage.',
-                        action = 'store_true')
+                        action='store_true')
 
     return parser
 
