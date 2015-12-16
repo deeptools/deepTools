@@ -19,7 +19,7 @@ plot from bamCorrelate or bigwigCorrelate output.
 
 Detailed help:
 
-  %(prog)s -h
+  plotPCA -h
 
 """,
         epilog='example usages:\n%(prog)s '
