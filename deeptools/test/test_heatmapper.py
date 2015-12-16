@@ -32,6 +32,15 @@ class TestHeatmapper(object):
         assert filecmp.cmp(ROOT + '/master.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
+    def test_computeMatrix_reference_point_missing_data_as_zero(self):
+        args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
+               "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1 --missingDataAsZero".format(ROOT).split()
+        print " ".join(args)
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_nan_to_zero.mat', '/tmp/_test.mat') is True
+        os.remove('/tmp/_test.mat')
+
     def test_computeMatrix_scale_regions(self):
         args = "scale-regions -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 -m 100 " \
                "--outFileName /tmp/_test2.mat.gz -bs 10 -p 1".format(ROOT).split()
