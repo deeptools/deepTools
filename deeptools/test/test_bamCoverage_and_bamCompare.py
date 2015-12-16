@@ -32,7 +32,7 @@ def test_bam_coverage_arguments():
     bam_cov.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
+    expected = ['3R\t0\t50\t0.00\n', '3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
@@ -67,7 +67,7 @@ def test_bam_coverage_keepnas():
     bam_cov.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t0\t50\t0.00\n', '3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
+    expected = ['3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
@@ -85,7 +85,7 @@ def test_bam_compare_arguments():
     bam_comp.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t50\t200\t1.0\n']
+    expected = ['3R\t0\t200\t1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
@@ -101,7 +101,25 @@ def test_bam_compare_diff_files():
     bam_comp.main(args)
 
     resp = open(outfile, 'r').readlines()
-    expected = ['3R\t50\t100\t-1.00\n', '3R\t100\t150\t0.00\n', '3R\t150\t200\t-1.0\n']
+    expected = ['3R\t0\t50\t0.00\n', '3R\t50\t100\t-1.00\n', '3R\t100\t150\t0.00\n', '3R\t150\t200\t-1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
+    unlink(outfile)
+
+
+def test_bam_compare_diff_files_skipnas():
+    """
+    Test skipnas
+    Compared to the previous tests, any region that do not have coverage (in either of the bam files)
+    is not included in the bedgraphfile.
+    """
+    outfile = '/tmp/test_file.bg'
+    args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
+           "-o {} -p 1 --outFileFormat bedgraph --keepNAs".format(BAMFILE_A, BAMFILE_B, outfile).split()
+
+    bam_comp.main(args)
+
+    resp = open(outfile, 'r').readlines()
+    expected = ['3R\t100\t150\t0.00\n', '3R\t150\t200\t-1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 

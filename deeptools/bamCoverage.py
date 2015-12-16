@@ -178,7 +178,7 @@ def main(args=None):
         debug = 0
 
     func_args = {'scaleFactor': get_scale_factor(args)}
-    zeros_to_nans = not args.keepNAs
+    zeros_to_nans = args.keepNAs
     if args.MNase:
         # check that library is paired end
         # using getFragmentAndReadSize
