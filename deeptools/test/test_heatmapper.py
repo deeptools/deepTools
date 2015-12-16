@@ -81,6 +81,13 @@ class TestHeatmapper(object):
             assert self.compare_svg(ROOT + '/master_scale_reg.svg', '/tmp/_test3.svg') is True
             os.remove('/tmp/_test3.svg')
 
+    def test_plotHeatmap_multi_bigwig_pergroup(self):
+        if self.run_image_tests:
+            args = "-m {}/master_multi.mat.gz --perGroup --outFileName /tmp/_test.svg".format(ROOT).split()
+            deeptools.plotHeatmap.main(args)
+            assert self.compare_svg(ROOT + '/heatmap_master_multi_pergroup.svg', '/tmp/_test.svg') is True
+            os.remove('/tmp/_test.svg')
+
     def test_plotProfiler(self):
         if self.run_image_tests:
             args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno,dos " \
@@ -94,6 +101,30 @@ class TestHeatmapper(object):
             args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --plotType heatmap".format(ROOT).split()
             deeptools.plotProfile.main(args)
             assert self.compare_svg(ROOT + '/profile_master_heatmap.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+    def test_plotProfiler_overlapped_lines(self):
+        if self.run_image_tests:
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg " \
+                   "--plotType overlapped_lines --yMin -1".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_overlap_lines.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+    def test_plotProfiler_multibigwig(self):
+        if self.run_image_tests:
+            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
+                   "--numPlotsPerRow 2 --yMax 1.5".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_multi.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+    def test_plotProfiler_multibigwig_pergroup(self):
+        if self.run_image_tests:
+            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
+                   "--perGroup --yMax 1.5".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_multi_pergroup.svg', '/tmp/_test.svg')
             os.remove('/tmp/_test.svg')
 
     @staticmethod
