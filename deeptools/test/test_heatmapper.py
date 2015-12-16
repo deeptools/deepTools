@@ -105,8 +105,8 @@ class TestHeatmapper(object):
 
     def test_plotProfiler_overlapped_lines(self):
         if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
-                   "--plotType overlapped_lines --zMax 1.6".format(ROOT).split()
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg " \
+                   "--plotType overlapped_lines --yMin -1".format(ROOT).split()
             deeptools.plotProfile.main(args)
             assert self.compare_svg(ROOT + '/profile_master_overlap_lines.svg', '/tmp/_test.svg')
             os.remove('/tmp/_test.svg')

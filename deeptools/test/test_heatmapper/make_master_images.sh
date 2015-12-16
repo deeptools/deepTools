@@ -5,7 +5,7 @@ plotHeatmap -m master.mat.gz --outFileName master_relabeled.svg --regionsLabel u
 plotHeatmap -m master_scale_reg.mat.gz --outFileName master_scale_reg.svg
 plotProfile -m master.mat.gz -o profile_master.svg --regionsLabel uno,dos --plotType std
 plotProfile -m master.mat.gz -o profile_master_heatmap.svg --plotType heatmap
-plotProfile -m master.mat.gz -o profile_master_overlap_lines.svg --plotType overlapped_lines
+plotProfile -m master.mat.gz -o profile_master_overlap_lines.svg --plotType overlapped_lines --yMin -1
 
 # for tests with multiple bigwigs and multiple beds
 computeMatrix reference-point -R group1.bed group2.bed -S test.bw test.bw test.bw test.bw -o master_multi.mat.gz -a 100 -b 100 -bs 1

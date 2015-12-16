@@ -171,7 +171,6 @@ class Profile(object):
             return tuple(i / inch for i in tupl)
 
     def plot_hexbin(self):
-        ax_list = []
         from matplotlib import cm
         cmap = cm.coolwarm
         cmap.set_bad('black')
@@ -183,7 +182,7 @@ class Profile(object):
             # split the ax to make room for the colorbar and for each of the
             # groups
             sub_grid = gridspec.GridSpecFromSubplotSpec(self.numlines, 2, subplot_spec=self.grids[row, col],
-                                                        width_ratios=[0.92, 0.08], wspace=0.05)
+                                                        width_ratios=[0.92, 0.08], wspace=0.05, hspace=0.1)
 
             ax = self.fig.add_subplot(sub_grid[0, 0])
 
@@ -200,8 +199,31 @@ class Profile(object):
                 title = self.hm.matrix.sample_labels[plot]
 
             ax.set_title(title)
+            vmin = np.inf
+            vmax = -np.inf
             for data_idx in range(self.numlines):
+                # get the max and min
+                if self.per_group:
+                    _row, _col = plot, data_idx
+                else:
+                    _row, _col = data_idx, plot
+
+                sub_matrix = self.hm.matrix.get_matrix(_row, _col)
+                ma = sub_matrix['matrix']
+                x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
+                img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1)
+                _vmin, _vmax = img.get_clim()
+                if _vmin < vmin:
+                    vmin = _vmin
+                if _vmax > vmax:
+                    vmax = _vmax
+
+            # iterate again after having computed the vmin and vmax
+            ax_list = []
+            for data_idx in range(self.numlines)[::-1]:
                 ax = self.fig.add_subplot(sub_grid[data_idx, 0])
+                if data_idx != self.numlines - 1:
+                    plt.setp(ax.get_xticklabels(), visible=False)
 
                 if self.per_group:
                     _row, _col = plot, data_idx
@@ -218,36 +240,10 @@ class Profile(object):
                 ma = sub_matrix['matrix']
                 ax.set_axis_bgcolor('black')
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
-                img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1)
+                img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1, vmin=vmin, vmax=vmax)
 
                 # remove the numbers of the y axis for all plots
-                plt.setp(ax.get_yticklabels(), visible=False)
-
-                if col == 0:
-                    # add the y axis label for the first plot
-                    # on each row and make the numbers and ticks visible
-                    plt.setp(ax.get_yticklabels(), visible=True)
-                    ax.axes.set_ylabel(self.y_axis_label)
-
-                cax = self.fig.add_subplot(sub_grid[data_idx, 1])
-
-                self.fig.colorbar(img, cax=cax)
-
-                ax.axes.set_xticks(self.xticks)
-                ax.axes.set_xticklabels(self.xtickslabel)
-                # align the first and last label
-                # such that they don't fall off
-                # the heatmap sides
-                ticks = ax.xaxis.get_major_ticks()
-                ticks[0].label1.set_horizontalalignment('left')
-                ticks[-1].label1.set_horizontalalignment('right')
-
-                # add labels as y ticks labels
-                ymin, ymax = ax.axes.get_ylim()
-                center = ymin + (ymax - ymin) / 2
-                yticks = [center]
-                ax.axes.set_yticks(yticks)
-                ax.axes.set_yticklabels([label])
+                ax.axes.set_ylabel(label)
 
                 ax_list.append(ax)
 
@@ -259,6 +255,18 @@ class Profile(object):
                 if lims[0] >= lims[1]:
                     lims = (lims[0], lims[0] + 1)
                 ax.set_ylim(lims)
+
+            ax_list[0].axes.set_xticks(self.xticks)
+            ax_list[0].axes.set_xticklabels(self.xtickslabel)
+            # align the first and last label
+            # such that they don't fall off
+            # the heatmap sides
+            ticks = ax_list[-1].xaxis.get_major_ticks()
+            ticks[0].label1.set_horizontalalignment('left')
+            ticks[-1].label1.set_horizontalalignment('right')
+
+            cax = self.fig.add_subplot(sub_grid[:, 1])
+            self.fig.colorbar(img, cax=cax)
 
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
