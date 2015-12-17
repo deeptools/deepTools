@@ -28,9 +28,9 @@ def parseArguments():
             'The coverage is calculated as the number of reads per bin, which '
             'are consecutive windows of a defined size. It is possible to '
             'extended the length of the reads in this step to better reflect '
-            'the actual fragment length. bamCoverage offer normalization by '
+            'the actual fragment length. bamCoverage offers normalization by '
             'scaling factor, Reads Per Kilobase per Million mapped reads '
-            '(RPKM), or 1x depth of coverage (RPGC).\n',
+            '(RPKM), and 1x depth (Reads Per Genome Coverage, RPGC).\n',
             usage='An example usage is: bamCoverage -b signal.bam -o signal.bw',
             add_help=False)
 
