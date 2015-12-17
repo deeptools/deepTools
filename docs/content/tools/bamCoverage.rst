@@ -17,12 +17,15 @@ Command line example using additional options (smaller bin size for higher resol
       --binSize 10
       --normalizeTo1x 2150570000
       --ignoreForNormalization chrX
+      --extendReads
       --fragmentLength 200
 
 * A smaller bin size value will result in a higher resolution of the coverage track but also in a larger file size.
 * The 1x normalization (RPGC) requires the input of a value for the **effective genome size**, which is the mappable part of the reference genome. Of course, this value is species specific. The command line help of this tool offers suggestions for a number of model species.
 * It might be useful for some studies to exclude certain chromosomes in order to avoid biases, e.g. chromosome X, as male mice contain a pair of each autosome, but usually only a single X chromosome.
-* By default, the actual fragment length is estimated from the coordinates of read pairs. The user provided fragment length (e.g. 200 bp) is only used as a fall back for singletons.
+* By default, the read length is **NOT** extended! This is the preferred setting for **spliced-read** data like RNA-seq, where one usually wants to rely on the detected read locations only. A read extension would neglect potential splice sites in the unmapped part of the fragment.
+  Other data, e.g. Chip-seq, where fragments are known to map contiguously, should be processed with read extension (``--extendReads [INT]``).
+* For paired-end data, the fragment length is generally defined by the two read mates. The user provided fragment length is only used as a fall back for singletons or mate reads that map too far apart (with a distance greater than four times the fragment length or are located on different chromosomes).
 
 
 Important notes
