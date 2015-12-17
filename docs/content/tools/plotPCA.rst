@@ -19,6 +19,7 @@ Usage example
 * Then plot PCA of the output :
 
 .. code:: bash
+
     plotPCA -in testDatset-results/correlation_testBigwigs.matrix -o testData_PCAplot.png
 
 .. image:: test_plots/testData_PCAplot.png
