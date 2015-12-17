@@ -25,7 +25,7 @@ bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
 
 
 def parse_arguments(args=None):
-    parentParser = parserCommon.getParentArgParse(binSize=False)
+    parentParser = parserCommon.getParentArgParse(binSize=True)
     requiredArgs = getRequiredArgs()
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
