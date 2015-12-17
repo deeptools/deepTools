@@ -27,7 +27,8 @@ detailed sub-commands help available under:
   bamCorrelate BED-file -h
 
 """,
-            epilog='example usages:\n bamCorrelate  bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
+            epilog='example usages:\n'
+                   'bamCorrelate bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
                    'bamCorrelate BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
                    '-out results.npz'
                    ' \n\n',
