@@ -244,7 +244,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'options are: "mean", "median", "min", "max", "sum" '
                           'and "std". The default is "mean".')
 
-    optional.add_argument('--keepNAs',
+    optional.add_argument('--missingDataAsZero',
                           help='If set, missing data (NAs) will be treated as zeros. '
                           'The default is to ignore such cases, which will be depicted as black areas in '
                           'the heatmap. (see the --missingDataColor argument '
@@ -351,7 +351,7 @@ def main(args=None):
                   'ref point': args.referencePoint,
                   'verbose': args.verbose,
                   'bin avg type': args.averageTypeBins,
-                  'missing data as zero': args.keepNAs,
+                  'missing data as zero': args.missingDataAsZero,
                   'min threshold': args.minThreshold,
                   'max threshold': args.maxThreshold,
                   'scale': args.scale,

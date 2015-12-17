@@ -64,22 +64,15 @@ def parse_arguments(args=None):
                                  'reciprocal_ratio'],
                         required=False)
 
-    parser.add_argument('--keepNAs',
-                        help='This parameter determines if '
-                        'missing data (NAs) should be replaced with a zero. If not given '
-                        'missing data will be ignored and will not '
-                        'be included in the output file at all. Missing data '
-                        'is defined as those regions for which no value exists'
-                        ' in *any* of the bigwig files.'
-                        'The decision to treat missing data as zero '
-                        'depends on the interpretation of the data. Missing '
-                        'data in a bigwig file may mean that there is no '
-                        'information available for certain regions, for '
-                        'example a repetitive region that is not being '
-                        'considered. In the same file regions with low '
-                        'coverage may get zero read counts. If missing data '
-                        'is replaced by zero, this would convert the excluded '
-                        'repetitive regions into regions of low coverage.',
+    parser.add_argument('--skipNonCoveredRegions', '--skipNAs',
+                        help='This parameter determines if non covered regions (regions without a score) '
+                        'in the bigwig files should be skipped. The default is to treat those '
+                        'regions as having a value of zero. '
+                        'The decision to skip non covered regions '
+                        'depends on the interpretation of the data. Non covered regions '
+                        'in a bigwig file may represent for example repetitive regions that want '
+                        'to be skipped. Alternatively, the interpretation of non covered regions as'
+                        'zeros may be wrong and this option should be used ',
                         action='store_true')
 
     return parser
@@ -94,20 +87,19 @@ def main(args=None):
         scaleFactors = [1, 1]
 
     # the getRatio function is called and receives
-    # the funcArgs per each tile that is considered
+    # the function_args per each tile that is considered
     FUNC = getRatio
-    funcArgs = {'missingDataAsZero': args.keepNAs,
-                'valueType': args.ratio,
-                'scaleFactors': scaleFactors,
-                'pseudocount': args.pseudocount
-                }
+    function_args = {'valueType': args.ratio,
+                     'scaleFactors': scaleFactors,
+                     'pseudocount': args.pseudocount}
 
     writeBedGraph_bam_and_bw.writeBedGraph(
         [(args.bigwig1, 'bigwig'),
          (args.bigwig2, 'bigwig')],
         args.outFileName, 0, FUNC,
-        funcArgs, tileSize=args.binSize, region=args.region,
+        function_args, tileSize=args.binSize, region=args.region,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
         smoothLength=False,
+        missingDataAsZero=not args.skipNonCoveredRegions,
         extendPairedEnds=False)

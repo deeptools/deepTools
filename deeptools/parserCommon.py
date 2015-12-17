@@ -150,12 +150,14 @@ def normalization_options():
                        'samples. An usage examples is  --ignoreForNormalization chrX chrM.',
                        nargs='+')
 
-    group.add_argument('--keepNAs',
-                       help='If set, missing data (NAs) will be treated as zeros. '
-                       'The default is to ignore missing data '
-                       'and not included in the output file. Missing '
-                       'data is defined as those bins for which '
-                       'no overlapping reads are found.',
+    group.add_argument('--skipNonCoveredRegions', '--skipNAs',
+                       help='This parameter determines if non covered regions '
+                       '(regions without overlapping reads) in a bam file should '
+                       'be skipped. The default is to treat those regions as having a value of zero. '
+                       'The decision to skip non covered regions '
+                       'depends on the interpretation of the data. Non covered regions '
+                       'may represent for example repetitive regions that want '
+                       'to be skipped.',
                        action='store_true')
 
     group.add_argument('--smoothLength',
