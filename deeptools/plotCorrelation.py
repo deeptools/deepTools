@@ -18,9 +18,9 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
-Tool for visualizing a correlation using either bamCorrelate or
+Tool for the analysis and visualization of sample correlations based on the output from bamCorrelate or
 bigwigCorrelate. Pearson or Spearman methods are available to compute correlation
-coefficients. Results can be saved into a heat map image or as multiple
+coefficients. Results can be saved into a heatmap image or as multiple
 scatter plots. Further output files are optional.
 
 
@@ -29,8 +29,8 @@ detailed help:
   plotCorrelation -h
 
 """,
-        epilog='example usages:\nplotCorrelation '
-               '-in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
+        epilog='example usages:\n'
+               'plotCorrelation -in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
                ' \n\n',
         parents=[basic_args, heatmap_parser])
 
@@ -127,17 +127,17 @@ def heatmap_options():
     Options for generating the correlation heat map
     """
     parser = argparse.ArgumentParser(add_help=False)
-    heatmap = parser.add_argument_group('Heat map options')
+    heatmap = parser.add_argument_group('Heatmap options')
 
     heatmap.add_argument('--zMin', '-min',
                          default=None,
-                         help='Minimum value for the heat map intensities. '
+                         help='Minimum value for the heatmap intensities. '
                               'If not specified the value is set automatically',
                          type=float)
 
     heatmap.add_argument('--zMax', '-max',
                          default=None,
-                         help='Maximum value for the heat map intensities.'
+                         help='Maximum value for the heatmap intensities.'
                               'If not specified the value is set automatically',
                          type=float)
 
