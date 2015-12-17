@@ -300,12 +300,10 @@ def main(args=None):
     # the getRatio function is called and receives
     # the func_args per each tile that is considered
     FUNC = getRatio
-    func_args = {'missingDataAsZero': args.keepNAs,
-                 'valueType': args.ratio,
+    func_args = {'valueType': args.ratio,
                  'scaleFactors': scale_factors,
                  'pseudocount': args.pseudocount
                  }
-    zeros_to_nans = not args.keepNAs
 
     wr = writeBedGraph.WriteBedGraph([args.bamfile1, args.bamfile2], args.binSize, 0,
                                      stepSize=args.binSize,
@@ -315,7 +313,7 @@ def main(args=None):
                                      minMappingQuality=args.minMappingQuality,
                                      ignoreDuplicates=args.ignoreDuplicates,
                                      center_read=args.centerReads,
-                                     zerosToNans=zeros_to_nans,
+                                     zerosToNans=args.skipNonCoveredRegions,
                                      samFlag_include=args.samFlagInclude,
                                      samFlag_exclude=args.samFlagExclude,
                                      verbose=args.verbose

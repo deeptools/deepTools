@@ -32,6 +32,15 @@ class TestHeatmapper(object):
         assert filecmp.cmp(ROOT + '/master.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
+    def test_computeMatrix_reference_point_missing_data_as_zero(self):
+        args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
+               "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1 --missingDataAsZero".format(ROOT).split()
+        print " ".join(args)
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_nan_to_zero.mat', '/tmp/_test.mat') is True
+        os.remove('/tmp/_test.mat')
+
     def test_computeMatrix_scale_regions(self):
         args = "scale-regions -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 -m 100 " \
                "--outFileName /tmp/_test2.mat.gz -bs 10 -p 1".format(ROOT).split()
@@ -81,6 +90,13 @@ class TestHeatmapper(object):
             assert self.compare_svg(ROOT + '/master_scale_reg.svg', '/tmp/_test3.svg') is True
             os.remove('/tmp/_test3.svg')
 
+    def test_plotHeatmap_multi_bigwig_pergroup(self):
+        if self.run_image_tests:
+            args = "-m {}/master_multi.mat.gz --perGroup --outFileName /tmp/_test.svg".format(ROOT).split()
+            deeptools.plotHeatmap.main(args)
+            assert self.compare_svg(ROOT + '/heatmap_master_multi_pergroup.svg', '/tmp/_test.svg') is True
+            os.remove('/tmp/_test.svg')
+
     def test_plotProfiler(self):
         if self.run_image_tests:
             args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno,dos " \
@@ -94,6 +110,30 @@ class TestHeatmapper(object):
             args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --plotType heatmap".format(ROOT).split()
             deeptools.plotProfile.main(args)
             assert self.compare_svg(ROOT + '/profile_master_heatmap.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+    def test_plotProfiler_overlapped_lines(self):
+        if self.run_image_tests:
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg " \
+                   "--plotType overlapped_lines --yMin -1".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_overlap_lines.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+    def test_plotProfiler_multibigwig(self):
+        if self.run_image_tests:
+            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
+                   "--numPlotsPerRow 2 --yMax 1.5".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_multi.svg', '/tmp/_test.svg')
+            os.remove('/tmp/_test.svg')
+
+    def test_plotProfiler_multibigwig_pergroup(self):
+        if self.run_image_tests:
+            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
+                   "--perGroup --yMax 1.5".format(ROOT).split()
+            deeptools.plotProfile.main(args)
+            assert self.compare_svg(ROOT + '/profile_master_multi_pergroup.svg', '/tmp/_test.svg')
             os.remove('/tmp/_test.svg')
 
     @staticmethod
