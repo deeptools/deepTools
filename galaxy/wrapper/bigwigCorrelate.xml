@@ -1,4 +1,4 @@
-<tool id="deeptools_bigwigCorrelate" name="bigwigCorrelate" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_bigwig_correlate" name="bigwigCorrelate" version="@WRAPPER_VERSION@.0">
     <description>correlates pairs of BigWig files</description>
     <macros>
         <token name="@BINARY@">bigwigCorrelate</token>

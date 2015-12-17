@@ -31,7 +31,7 @@ auto_tool_repositories:
   name_template: "{{ tool_id }}"
   description_template: "Wrapper for the deepTools: {{ tool_name }}"
 suite:
-  name: "suite_deepTools"
+  name: "suite_deeptools"
   description: "deepTools: User-friendly tools for the normalization, quality control and visualization of deep-sequencing data"
   long_description: |
     deepTools address the challenge of visualizing the large amounts of data that

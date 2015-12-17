@@ -1,4 +1,4 @@
-<tool id="deeptools_bamCompare" name="bamCompare" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_bam_compare" name="bamCompare" version="@WRAPPER_VERSION@.0">
     <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference</description>
     <macros>
         <token name="@BINARY@">bamCompare</token>
@@ -60,7 +60,7 @@
                 #end if
 
                 @ADVANCED_OPTS_READ_PROCESSING@
-                $advancedOpt.missingDataAsZero
+                $advancedOpt.keepNAs
 
                 #if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
@@ -153,7 +153,7 @@
                 <expand macro="smoothLength" />
                 <expand macro="read_processing_options" />
 
-                <expand macro="missingDataAsZero" />
+                <expand macro="keepNAs" />
                 <param argument="--ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.

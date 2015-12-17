@@ -61,36 +61,6 @@
             </when>
         </conditional>
 
-<!--
-            $mode.advancedOpt.includeZeros
-
-
-        #if $plotTitle and str($plotTitle).strip() != "":
-            - -plotTitle '$plotTitle'
-        #end if
-
-
--->
-
-    <xml name="bigwigCorrelate_mode_actions">
-        <expand macro="region_limit_operation" />
-
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="includeZeros" />
-                <expand macro="zMin_zMax" />
-                <expand macro="colorMap" />
-                <expand macro="plotTitle" />
-                <expand macro="plotNumbers" />
-            </when>
-        </conditional>
-    </xml>
-
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
@@ -418,18 +388,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </param>
     </xml>
 
-    <xml name="missingDataAsZero">
-        <param argument="--missingDataAsZero" type="boolean" truevalue="--missingDataAsZero yes" falsevalue="--missingDataAsZero no" checked="True"
+    <xml name="keepNAs">
+        <param argument="--keepNAs" type="boolean" truevalue="--keepNAs" falsevalue="" checked="False"
             label="Treat missing data as zero"
-            help="This parameter determines if missing data should be replaced with a zero.
-                    If set to &quot;no&quot;, missing data will be ignored and will not be included in the
-                    output file at all. Missing data is defined as those regions for which no value exists in
-                    *any* of the bigwig files. The decision to include or exclude missing data depends on
-                    the interpretation of the data. Missing data in a bigwig file may mean that there is no
-                    information available for certain regions, for example a repetitive region that is not
-                    being considered. In the same file regions with low coverage may get zero read counts.
-                    If missing data is replaced by zero, this would convert the excluded repetitive regions
-                    into regions of low coverage." />
+            help="If set, missing data (NAs) will be treated as zeros.
+                The default is to ignore missing data and not included
+                in the output file. Missing data is defined as those
+                bins for which no overlapping reads are found." />
     </xml>
 
     <xml name="input_save_matrix_values">

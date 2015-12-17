@@ -1,4 +1,4 @@
-<tool id="deeptools_bamCoverage" name="bamCoverage" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_bam_coverage" name="bamCoverage" version="@WRAPPER_VERSION@.0">
     <description>generates a coverage bigWig file from a given BAM file</description>
     <macros>
         <token name="@BINARY@">bamCoverage</token>
@@ -41,7 +41,7 @@
                 #end if
 
                 @ADVANCED_OPTS_READ_PROCESSING@
-                $advancedOpt.missingDataAsZero
+                $advancedOpt.keepNAs
 
                 if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization $advancedOpt.ignoreForNormalization
@@ -98,7 +98,7 @@
                         considering samples with unequal coverage across
                         chromosomes like male samples. Example: chrX chrM" />
 
-                <expand macro="missingDataAsZero" />
+                <expand macro="keepNAs" />
                 <expand macro="read_processing_options" />
 
                 <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
