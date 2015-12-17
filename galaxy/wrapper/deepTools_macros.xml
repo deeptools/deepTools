@@ -1,8 +1,6 @@
 <macros>
-    <xml name="bamCorrelate_mode_actions">
 
-        <expand macro="region_limit_operation" />
-
+    <xml name="advancedOpt_scaffold">
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
@@ -10,40 +8,65 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <!--expand macro="doNotExtendPairedEnds" /-->
-                <expand macro="ignoreDuplicates" />
-                <expand macro="minMappingQuality" />
-                <expand macro="includeZeros" />
-                <expand macro="zMin_zMax" />
-                <expand macro="colormap" />
+                <yield/>
             </when>
         </conditional>
     </xml>
 
-    <xml name="bigwigCorrelate_mode_actions">
-        <expand macro="region_limit_operation" />
+    <token name="@ADVANCED_OPTS_READ_PROCESSING@">
+        --extendReads $advancedOpt.extendReads
+        $advancedOpt.ignoreDuplicates
+        $advancedOpt.centerReads
+        #if $advancedOpt.minMappingQuality:
+            --minMappingQuality '$advancedOpt.minMappingQuality'
+        #end if
+        #if $advancedOpt.samFlagInclude:
+            --samFlagInclude $advancedOpt.samFlagInclude
+        #end if
+        #if $advancedOpt.samFlagExclude:
+            --samFlagExclude $advancedOpt.samFlagExclude
+        #end if
+    </token>
 
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+    <xml name="heatmap_options">
+        <expand macro="zMin_zMax" />
+        <expand macro="colorMap" />
+        <expand macro="plotTitle" />
+        <expand macro="plotNumbers" />
+    </xml>
+
+    <token name="@HEATMAP_OPTIONS@">
+        #if $zMin:
+            --zMin $zMin
+        #end if
+        #if $zMax:
+            --zMax $zMax
+        #end if
+            --colorMap '$colorMap'
+        $plotNumbers
+    </token>
+
+        <expand macro="plotTitle" />
+        <expand macro="plotNumbers" />
+        <conditional name="output">
+            <param name="showOutputSettings" type="select" label="Show advanced output settings" >
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
             <when value="no" />
             <when value="yes">
-                <expand macro="includeZeros" />
-                <expand macro="zMin_zMax" />
-                <expand macro="colormap" />
-                <expand macro="plotTitle" />
-                <expand macro="plotNumbers" />
+                <expand macro="input_image_file_format"/>
+                <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
+                <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
             </when>
         </conditional>
-    </xml>
 
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
             help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
     </xml>
+
     <xml name="zMin_zMax">
         <param argument="--zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
@@ -68,6 +91,12 @@
         </requirements>
         <expand macro="stdio" />
         <version_command>@BINARY@ --version</version_command>
+    </xml>
+
+    <xml name="smoothLength">
+        <param argument="--smoothLength" type="integer" value="" optional="True" min="1"
+            label="Smooth values using the following length (in bp)"
+            help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
     </xml>
 
 
@@ -107,10 +136,6 @@
     </token>
 
     <xml name="samFlags">
-        <!--param name="samFlag" type="integer" optional="true" value=""
-            label="Filter reads based on the SAM flag"
-            help= "For example to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage. (- -samFlag)"/-->
-
         <param argument="--samFlagInclude" type="integer" optional="True" value=""
             label="Include reads based on the SAM flag"
             help= "For example, to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage."/>
@@ -119,22 +144,47 @@
             help= "For example, to get only reads that map to the forward strand, use --samFlagExclude 16, where 16 is the SAM flag for reads that map to the reverse strand."/>
     </xml>
 
-    <xml name="plotNumbers">
-        <param name="plotNumbers" type="boolean" truevalue="--plotNumbers" falsevalue="" 
-            label="Plot the correlation value" 
-            help="If set, then the correlation number is plotted on top of the heatmap. (--plotNumbers)"/>
+    <xml name="read_processing_options">
+        <expand macro="extendReads" />
+        <expand macro="ignoreDuplicates" />
+        <expand macro="centerReads" />
+        <expand macro="minMappingQuality" />
+        <expand macro="samFlags" />
     </xml>
 
+    <xml name="plotNumbers">
+        <param argument="--plotNumbers" type="boolean" truevalue="--plotNumbers" falsevalue=""
+            label="Plot the correlation value" 
+            help="If set, then the correlation number is plotted on top of the heatmap."/>
+    </xml>
 
     <xml name="extendReads">
         <param argument="--extendReads" type="integer" value="" optional="True"
             label="Extend reads to the given average fragment size"
-            help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here. By default *each* read mate is extended.
-This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate. Unmated reads, mate reads that map on different chromosomes or too far
-apart are extended to the given value. Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not recommended as it will extend reads
-over skipped regions, e.g. introns in RNA-seq data."/>
+            help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
+                    By default *each* read mate is extended.
+                    This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
+                    Unmated reads, mate reads that map on different chromosomes or too far apart are extended to the given value.
+                    Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
+                    recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data."/>
     </xml>
 
+    <xml name="corMethod">
+        <param argument="--corMethod" type="select" label="Correlation method">
+            <option value="spearman" selected="True">Spearman</option>
+            <option value="pearson">Pearson</option>
+        </param>
+    </xml>
+
+    <xml name="distanceBetweenBins">
+        <param argument="--distanceBetweenBins" type="integer" value="0" min="0"
+            label="Distance between bins"
+            help="By default, bamCorrelate considers consecutive bins of
+                the specified 'Bin size'. However, to reduce the
+                computation time, a larger distance between bins can
+                by given. Larger distances result in less bins being
+                considered."/>
+    </xml>
 
     <xml name="centerReads">
         <param argument="--centerReads" type="boolean" truevalue="--centerReads" falsevalue=""
@@ -142,16 +192,31 @@ over skipped regions, e.g. introns in RNA-seq data."/>
             help="For paired-end data, the read is centered at the fragment length defined by the two ends of the fragment. For single-end data, the given fragment length is used. This option is useful to get a sharper signal around enriched regions. "/>
     </xml>
 
-    <!--xml name="doNotExtendPairedEnds">
-        <param name="doNotExtendPairedEnds" type="boolean" truevalue="- -doNotExtendPairedEnds" falsevalue=""
-            label="Do not extend paired ends"
-            help="If set, reads are not extended to match the fragment length reported in the BAM file, instead they will be extended to match the fragment length. Default is to extend the reads if paired end information is available. (- -doNotExtendPairedEnds)"/>
-    </xml-->
-
     <xml name="ignoreDuplicates">
         <param argument="--ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
             label="Ignore duplicates"
             help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." />
+    </xml>
+
+    <xml name="sortUsing">
+        <param argument="--sortUsing" type="select" label="Method used for sorting"
+            help="For each row the method is computed.">
+            <option value="mean" selected="true">mean</option>
+            <option value="median">median</option>
+            <option value="min">min</option>
+            <option value="max">max</option>
+            <option value="sum">sum</option>
+            <option value="region_length">region length</option>
+        </param>
+    </xml>
+
+    <xml name="sortRegions">
+        <param argument="--sortRegions" type="select" label="Sort regions"
+            help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
+            <option value="no">no ordering</option>
+            <option value="descend" selected="true">descending order</option>
+            <option value="ascend">ascending order</option>
+        </param>
     </xml>
 
     <xml name="minMappingQuality">
@@ -173,6 +238,13 @@ over skipped regions, e.g. introns in RNA-seq data."/>
     </xml>
 
     <xml name="scaleFactor">
+        <param argument="--scaleFactor" type="float" value="1" label="Scaling factor"
+            help="When used in combination with --normalizeTo1x or
+                --normalizeUsingRPKM, the computed scaling factor will
+                be multiplied by the given scale factor." />
+    </xml>
+
+    <xml name="scaleFactors">
         <param name="scaleFactor1" type="float" value="1" label="Scale factor for treatment" help="(--scaleFactors)"/>
         <param name="scaleFactor2" type="float" value="1" label="Scale factor for input" help="(--scaleFactors)"/>
     </xml>
@@ -215,13 +287,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bams">
-        <param name="bamfiles" type="data" format="bam"
+        <param argument="--bamfiles" type="data" format="bam"
             label="Bam file" multiple="true"
             help="The BAM file must be sorted."/>
     </xml>
 
     <xml name="multiple_input_bigwigs">
-        <param name="bigwigfiles" type="data" format="bigwig" multiple="True"
+        <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True"
             label="Bigwig file" 
             help="The Bigwig file must be sorted."/>
     </xml>
@@ -298,7 +370,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
-                <param name="effectiveGenomeSize" type="integer" value="" label="Effective genome size" help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
+                <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size" help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
             </when>
             <when value="2150570000" />
             <when value="2451960000" />
@@ -308,23 +380,25 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="image_file_format">
-        <param name="outFileFormat" type="select" label="Image file format">
+        <param argument="--outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
-            <option value="emf">emf</option>
         </param>
     </xml>
 
-    <xml name="missingDataAsZero">
-                <param name="missingDataAsZero" type="boolean" truevalue="yes" falsevalue="no" checked="True"
-                    label ="Treat missing data as zero"
-                    help  ="This parameter determines if missing data should be treated as zeros. If unchecked, missing data will be ignored and not included in the output file. Missing data is defined as those regions for which both BAM files have 0 reads." />
+    <xml name="keepNAs">
+        <param argument="--keepNAs" type="boolean" truevalue="--keepNAs" falsevalue="" checked="False"
+            label="Treat missing data as zero"
+            help="If set, missing data (NAs) will be treated as zeros.
+                The default is to ignore missing data and not included
+                in the output file. Missing data is defined as those
+                bins for which no overlapping reads are found." />
     </xml>
 
     <xml name="input_save_matrix_values">
-        <param name="saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
+        <param argument="--saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>
 
     <xml name="input_graphic_output_settings">
@@ -393,7 +467,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </data>
     </xml>
 
-    <xml name="colormap">
+    <xml name="colorMap">
         <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>

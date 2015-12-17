@@ -1,5 +1,5 @@
-<tool id="deeptools_bamCompare" name="bamCompare" version="@WRAPPER_VERSION@.0">
-    <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference. (bam2bigwig)</description>
+<tool id="deeptools_bam_compare" name="bamCompare" version="@WRAPPER_VERSION@.0">
+    <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference</description>
     <macros>
         <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
@@ -12,86 +12,72 @@
         ln -s '$bamFile2' two.bam &&
         ln -s '${bamFile2.metadata.bam_index}' two.bam.bai &&
 
-        bamCompare
+        @BINARY@
+            @THREADS@
+            --bamfile1 one.bam
+            --bamfile2 two.bam
 
-        @THREADS@
+            --outFileName '$outFileName'
+            --outFileFormat '$outFileFormat'
 
-        --bamfile1 one.bam
-        --bamfile2 two.bam
+            --binSize $binSize
 
-        --outFileName '$outFileName'
-        --outFileFormat '$outFileFormat'
+            #if $scaling.method == 'SES':
+                --scaleFactorsMethod SES
+                --sampleLength $scaling.sampleLength
+                --numberOfSamples $scaling.numberOfSamples
+            #elif $scaling.method == 'readCount':
+                --scaleFactorsMethod readCount
+            #elif $scaling.method == 'own':
+                --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
+            #end if
 
-        --binSize $binSize
+            --ratio $comparison.type
 
-        #if $scaling.method == 'SES':
-            --scaleFactorsMethod SES
-            --sampleLength $scaling.sampleLength
-            --numberOfSamples $scaling.numberOfSamples
-        #elif $scaling.method == 'readCount':
-            --scaleFactorsMethod readCount
-        #elif $scaling.method == 'own':
-            --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
-        #end if
+            #if $comparison.type == 'subtract':
+                #if $comparison.normalization.type == 'rpkm':
+                    --normalizeUsingRPKM
+                #elif $comparison.normalization.type == '1x':
 
-        --ratio $comparison.type
+                    #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
+                        --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
+                    #else:
+                        --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
+                    #end if
 
-        #if $comparison.type=='subtract':
-            #if $comparison.normalization.type=='rpkm':
-                --normalizeUsingRPKM
-            #elif $comparison.normalization.type=='1x':
+                #end if
+            #elif $comparison.type in ['ratio','log2']:
+                --pseudocount $comparison.pseudocount
+            #end if
 
-                #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                    --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
-                #else:
-                    --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
+            #if str($region).strip() != '':
+                --region '$region'
+            #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                #if $advancedOpt.smoothLength:
+                    --smoothLength '$advancedOpt.smoothLength'
                 #end if
 
-            #end if
-        #elif $comparison.type in ['ratio','log2']:
-            --pseudocount $comparison.pseudocount
-        #end if
+                @ADVANCED_OPTS_READ_PROCESSING@
+                $advancedOpt.keepNAs
 
-        #if str($region).strip() != '':
-            --region '$region'
-        #end if
-
-        #if $advancedOpt.showAdvancedOpt == "yes":
-            #if $advancedOpt.smoothLength:
-                --smoothLength '$advancedOpt.smoothLength'
+                #if str($advancedOpt.ignoreForNormalization).strip() != '':
+                    --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
+                #end if
             #end if
-
-            ##$advancedOpt.doNotExtendPairedEnds
-            --extendReads $advancedOpt.extendReads
-            $advancedOpt.ignoreDuplicates
-            $advancedOpt.centerReads
-            #if $advancedOpt.minMappingQuality:
-                --minMappingQuality '$advancedOpt.minMappingQuality'
-            #end if
-
-            --missingDataAsZero $advancedOpt.missingDataAsZero
-
-            #if str($advancedOpt.ignoreForNormalization).strip() != '':
-                --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
-            #end if
-            #if $advancedOpt.samFlagInclude:
-                --samFlagInclude $advancedOpt.samFlagInclude
-            #end if
-            #if $advancedOpt.samFlagExclude:
-                --samFlagExclude $advancedOpt.samFlagExclude
-            #end if
-        #end if
 ]]>
     </command>
     <inputs>
-        <param name="bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
+        <param argument="--bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
             help="The BAM file must be sorted."/>
-        <param name="bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
+        <param argument="--bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
 
-        <param name="binSize" type="integer" value="50" min="1" 
+        <param argument="--binSize" type="integer" value="50" min="1" 
             label="Bin size in bp"
-            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. (--binSize)"/>
+            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads) will be reported.
+                If only half a fragment overlaps, this fraction will be reported."/>
 
         <conditional name="scaling">
             <param name="method" type="select" 
@@ -110,7 +96,7 @@
             </when>
             <when value="readCount" />
             <when value="own">
-                <expand macro="scaleFactor" />
+                <expand macro="scaleFactors" />
             </when>
         </conditional>
 
@@ -164,18 +150,16 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param argument="--smoothLength" type="integer" value="" optional="True" min="1"
-                    label="Smooth values using the following length (in bp)"
-                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
-                <expand macro="extendReads" />
-                <expand macro="centerReads" />
-                <expand macro="ignoreDuplicates" />
-                <expand macro="minMappingQuality" />
-                <expand macro="missingDataAsZero" />
+                <expand macro="smoothLength" />
+                <expand macro="read_processing_options" />
+
+                <expand macro="keepNAs" />
                 <param argument="--ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
-                    help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
-                <expand macro="samFlags" />
+                    help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.
+                        For example, if you know some regions that you suspect to be present more often in your sample's genome than in
+                        the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome
+                        in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
             </when>
         </conditional>
     </inputs>
@@ -193,7 +177,6 @@
             <param name="bamFile2" value="bowtie2-test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="no" />
             <param name="outFileFormat" value="bigwig" />
-            <param name="fragmentLength" value="100" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="binSize" value="5" />
             <param name="type" value="ratio" />
@@ -204,7 +187,6 @@
             <param name="bamFile2" value="bowtie2-test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="outFileFormat" value="bigwig" />
-            <param name="fragmentLength" value="100" />
             <param name="outFileFormat" value="bigwig" />
             <param name="binSize" value="10" />
             <param name="type" value="ratio" />
@@ -213,6 +195,7 @@
     </tests>
     <help>
 <![CDATA[
+
 **What it does**
 
 This tool compares two BAM files based on the number of mapped reads. To

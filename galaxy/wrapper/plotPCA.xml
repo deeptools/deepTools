@@ -1,0 +1,47 @@
+<tool id="deeptools_plot_pca" name="plotPCA" version="@WRAPPER_VERSION@.0">
+    <description>generating a principal component analysis (PCA) plot from bamCorrelate or bigwigCorrelate output</description>
+    <macros>
+        <token name="@BINARY@">plotPCA</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements"/>
+    <command>
+<![CDATA[
+        @BINARY@
+            --corData "$corData"
+            --plotTitle "$plotTitle"
+            --plotFile "$outFileName"
+            --plotFileFormat "$outFileFormat"
+]]>
+    </command>
+    <inputs>
+        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
+        <expand macro="image_file_format" />
+        <expand macro="plotTitle" />
+    </inputs>
+    <outputs>
+        <expand macro="output_image_file_format" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="corData" value="bamCorrelate_result2.npz" ftype="deeptools_coverage_matrix" />
+            <param name="plotTitle" value="Test Plot" />
+            <param name="outFileFormat" value="png" />
+            <output name="outFileName" file="plotPCA_result1.png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
+    <help>
+<![CDATA[
+
+**What it does**
+
+Tool for generating a principal component analysis (PCA)
+plot from bamCorrelate or bigwigCorrelate output.
+
+-----
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>

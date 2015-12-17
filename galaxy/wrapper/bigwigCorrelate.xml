@@ -1,4 +1,4 @@
-<tool id="deeptools_bigwigCorrelate" name="bigwigCorrelate" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_bigwig_correlate" name="bigwigCorrelate" version="@WRAPPER_VERSION@.0">
     <description>correlates pairs of BigWig files</description>
     <macros>
         <token name="@BINARY@">bigwigCorrelate</token>
@@ -12,82 +12,34 @@
 
         @multiple_input_bigwigs@
 
-        bigwigCorrelate
+        @BINARY@
+            $mode.modeOpt
 
-        $mode.modeOpt
+            @THREADS@
 
-        @THREADS@
+            --outFileName $outFile
+            --bwfiles '#echo "' '".join($files)#'
+            --labels '#echo "' '".join($labels)#'
 
-        --bwfiles '#echo "' '".join($files)#'
-        --labels '#echo "' '".join($labels)#'
-        #if $filterPercentile:
-            --filterPercentile $filterPercentile
-        #end if
-        --corMethod $corMethod
-
-        --plotFile $outFileName
-
-        #if $output.showOutputSettings == "yes"
-            #if $output.saveRawCounts:
-                --outRawCounts '$outFileRawCounts'
+            #if $outRawCounts:
+                --outRawCounts '$outFileRawCounts' 
             #end if
-            #if $output.saveCorMatrix:
-                --outFileCorMatrix '$outFileCorMatrix'
+
+            #if $mode.modeOpt == "bins":
+                --binSize '$mode.binSize'
+                --distanceBetweenBins '$mode.distanceBetweenBins'
+            #else:
+                --BED $mode.region_file
             #end if
-            --plotFileFormat '$output.outFileFormat'
-        #else:
-            --plotFileFormat 'png'
-        #end if
 
-        #if $mode.modeOpt == "bins":
-            --binSize '$mode.binSize'
-        #else:
-            --BED $mode.region_file
-        #end if
-
-        #### options available in both modes
-        #if str($region.value) != '':
-            --region '$region'
-        #end if
-
-        #if $advancedOpt.showAdvancedOpt == "yes":
-
-            $advancedOpt.includeZeros
-
-            #if $advancedOpt.zMin:
-                --zMin $advancedOpt.zMin
+            #if str($region.value) != '':
+                --region '$region'
             #end if
-            #if $advancedOpt.zMax:
-                --zMax $advancedOpt.zMax
-            #end if
-            --colorMap '$advancedOpt.colorMap'
-
-            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
-                --plotTitle '$advancedOpt.plotTitle'
-            #end if
-            $advancedOpt.plotNumbers
-
-        #end if
 ]]>
     </command>
 
     <inputs>
         <expand macro="multiple_input_bigwigs" />
-
-        <param name="filterPercentile" type="float" optional="True" value="" min="0.0" max="100.0"
-            label="Percentile used to filter out extreme outliers"
-            help ="If not specified, it is automatically set to 99.9 in analyses
-                    using Pearson correlation! This means that values
-                    above that threshold, which consistently occur in all
-                    datasets, will not be taken into account for the
-                    correlation analysis. This behavior can be overridden
-                    by a user specified value from within the 0.0 to 100.0
-                    range. (--filterPercentile)"/>
-
-        <param name="corMethod" type="select" label="Correlation method" help="(--corMethod)">
-            <option value="spearman" selected="True">Spearman</option>
-            <option value="pearson">Pearson</option>
-        </param>
 
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode" 
@@ -102,6 +54,8 @@
                 <param name="binSize" type="integer" value="10000" min="1" 
                     label="Bin size in bp"
                     help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
+
+                <expand macro="distanceBetweenBins" />
             </when>
             <when value="BED-file">
                 <param name="region_file" type="data" format="bed"
@@ -110,56 +64,33 @@
             </when>
         </conditional>
 
-        <expand macro="bigwigCorrelate_mode_actions" />
-        <conditional name="output">
-            <param name="showOutputSettings" type="select" label="Show advanced output settings" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="input_image_file_format"/>
-                <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
-                <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
-            </when>
-        </conditional>
+        <expand macro="region_limit_operation" />
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
 
     </inputs>
     <outputs>
-        <expand macro="output_image_file_format" />
+        <data format="deeptools_coverage_matrix" name="outFile" label="${tool.name} on ${on_string}: correlation matrix" />
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
-            <filter>
-            ((
-                output['showOutputSettings'] == 'yes' and 
-                output['saveRawCounts'] is True
-            ))
-            </filter>
-        </data>
-        <data format="tabular" name="outFileCorMatrix" label="${tool.name} on ${on_string}: correlation matrix">
-            <filter>
-            ((
-                output['showOutputSettings'] == 'yes' and 
-                output['saveCorMatrix'] is True
-            ))
-            </filter>
+            <filter>outRawCounts is True</filter>
         </data>
     </outputs>
     <tests>
         <test>
-            <repeat name="input_files">
-                <param name="bigwigfile" value="test.bw" ftype="bigwig" />
-                <param name="label" value="first bigwig file" />
-            </repeat>
-            <repeat name="input_files">
-                <param name="bigwigfile" value="test.bw" ftype="bigwig" />
-                <param name="label" value="second bigwig file" />
-            </repeat>
+            <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
-            <param name="showOutputSettings" value="no" />
             <param name="corMethod" value="spearman" />
-            <output name="outFileName" file="bigwigCorrelate_result1.png" ftype="png" compare="sim_size" />
+            <output name="outFileName" file="bigwigCorrelate_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
+        <!--test>
+            <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
+            <param name="modeOpt" value="BED-file" />
+            <param name="region_file" value="bamCorrelate_regions.bed" />
+            <param name="corMethod" value="pearson" />
+            <param name="outRawCounts" value="True" />
+            <output name="outFileRawCounts" file="bigwigCorrelate_result2.tabular" ftype="tabular" />
+            <output name="outFileName" file="bigwigCorrelate_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+        </test-->
     </tests>
     <help>
 <![CDATA[
