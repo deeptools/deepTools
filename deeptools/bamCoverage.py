@@ -22,17 +22,15 @@ def parseArguments():
             parents=[requiredArgs, outputParser, optionalArgs,
                      parentParser, normalizationParser, bamParser],
             formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-            description='Given a BAM file, this tool generates a bigWig or '
-            'bedGraph file of read or fragment coverage. The method first '
-            'calculates the number of reads (either extended to match the '
-            'fragment length or not) that overlap each bin in the genome.\n'
-            'The resulting read counts can be '
-            'normalized using either a given scaling factor or the RPKM formula, '
-            'or to get a 1x depth of coverage (RPGC).\n'
-            'In the case of paired-end mapping, each read mate is treated '
-            'independently to avoid a bias when a mixture of concordant and '
-            'discordant pairs is present. This means that *each mate* will '
-            'be extended to match the fragment length.',
+            description='This tool takes an alignment of reads or fragments '
+            'as input (BAM file) and generates a coverage track (bigWig or '
+            'bedGraph). '
+            'The coverage is calculated as the number of reads per bin, which '
+            'are consecutive windows of a defined size. It is possible to '
+            'extended the length of the reads in this step to better reflect '
+            'the actual fragment length. bamCoverage offer normalization by '
+            'scaling factor, Reads Per Kilobase per Million mapped reads '
+            '(RPKM), or 1x depth of coverage (RPGC).\n',
             usage='An example usage is: %(prog)s -b signal.bam -o signal.bw',
             add_help=False)
 
