@@ -19,6 +19,7 @@ Usage example
 * Then plot PCA of the output :
 
 .. code:: bash
-    plotPCA -in testDatset-results/correlation_testBigwigs.matrix -o testData_PCAplot.png
+
+    plotPCA --corData testDatset-results/correlation_testBigwigs.matrix -o testData_PCAplot.png --labels H3K27me3 H3K4me1 H3K4me3 H3K9me3 input
 
 .. image:: test_plots/testData_PCAplot.png
