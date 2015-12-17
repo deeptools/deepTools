@@ -16,24 +16,19 @@ def parse_arguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
-bamCorrelate computes the overall similarity between two or more BAM
-files based on read coverage (number of reads) within genomic regions.
-The correlation analysis is performed for the entire genome by running
-the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Because the computation of the coverage is time consuming the program
-outputs an intermediary file that can then be used with the 'plotCorrelation' tool
-for visualizing the correlation.
-
+bamCorrelate computes the read coverage of two or more BAM files in genomic regions.
+This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
+mode. Most commonly, the output of bamCorrelates is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
 detailed sub-commands help available under:
 
-  bedCorrelate bins -h
+  bamCorrelate bins -h
 
-  bedCorrelate BED-file -h
+  bamCorrelate BED-file -h
 
 """,
-            epilog='example usages:\n%(prog)s bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
-                   '%(prog)s BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
+            epilog='example usages:\n bamCorrelate  bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
+                   'bamCorrelate BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
                    '-out results.npz'
                    ' \n\n',
             conflict_handler='resolve')
@@ -57,10 +52,9 @@ detailed sub-commands help available under:
         parents=[bamcorrelate_args(case='bins'),
                  parent_parser, read_options_parser,
                  ],
-        help="The correlation is based on read coverage over "
-             "consecutive bins of equal "
+        help="The coverage calculation is done for consecutive bins of equal "
              "size (10k bp by default). This mode is useful to assess the "
-             "overall similarity of BAM files. The bin size and the "
+             "genome-wide similarity of BAM files. The bin size and the "
              "distance between bins can be adjusted.",
         add_help=False,
         usage='%(prog)s '
@@ -75,7 +69,7 @@ detailed sub-commands help available under:
                  parent_parser, read_options_parser,
                  ],
         help="The user provides a BED file that contains all regions "
-             "that should be considered for the correlation analysis. A "
+             "that should be considered for the coverage analysis. A "
              "common use is to compare ChIP-seq coverages between two "
              "different samples for a set of peak regions.",
         usage='%(prog)s --BED selection.bed --bamfiles file1.bam file2.bam -out results.npz\n',
@@ -148,7 +142,7 @@ def bamcorrelate_args(case='bins'):
                               type=int)
 
         required.add_argument('--BED',
-                              help='Limits the correlation analysis to '
+                              help='Limits the coverage analysis to '
                               'the regions specified in this file.',
                               metavar='bedfile',
                               type=argparse.FileType('U'),
