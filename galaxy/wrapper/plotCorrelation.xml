@@ -25,8 +25,8 @@
         <expand macro="corMethod" />
 
         <param argument="--whatToPlot" type="select" label="Plotting type">
-            <option value="heatmap" selected="True">Spearman</option>
-            <option value="scatterplot">Pearson</option>
+            <option value="heatmap" selected="True">Heatmap</option>
+            <option value="scatterplot">Scatterplot</option>
         </param>
 
         <expand macro="skipZeros" />
