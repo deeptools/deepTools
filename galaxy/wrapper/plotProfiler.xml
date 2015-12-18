@@ -1,77 +1,70 @@
-<tool id="deeptools_profiler" name="profiler" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_plot_profile" name="plotProfile" version="@WRAPPER_VERSION@.0">
     <description>
         creates a profile plot for a score associated to genomic regions
     </description>
     <macros>
-        <token name="@BINARY@">profiler</token>
+        <token name="@BINARY@">plotProfile</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        profiler
+        @BINARY@
+            --matrixFile "$matrixFile"
+            --outFileName "$outFileName"
 
-        --matrixFile $matrixFile
-        --outFileName $outFileName
+            #if $output.showOutputSettings == "yes"
+                --plotFileFormat $output.outFileFormat
 
-        #if $output.showOutputSettings == "yes"
-            --plotFileFormat $output.outFileFormat
+                #if $output.saveData:
+                    --outFileNameData "$outFileNameData"
+                #end if
 
-            #if $output.saveData:
-                --outFileNameData '$outFileNameData' 
+                #if $output.saveSortedRegions:
+                    --outFileSortedRegions '$outFileSortedRegions'
+                #end if
+            #else
+                --plotFileFormat 'png'
             #end if
 
-            #if $output.saveSortedRegions:
-                --outFileSortedRegions '$outFileSortedRegions'
-            #end if
-        #else
-            --plotFileFormat 'png'
-        #end if
-
-        #if $scaleRegions.showScaleRegionsOpt == "yes":
-            --startLabel '$scaleRegions.startLabel'
-            --endLabel '$scaleRegions.endLabel'
-        #end if
-
-        #if $advancedOpt.showAdvancedOpt == "yes":
-            #if $advancedOpt.averageType:
-                --averageType '$advancedOpt.averageType'
-            #end if
-            --plotHeight $advancedOpt.plotHeight
-            --plotWidth $advancedOpt.plotWidth
-            --plotType $advancedOpt.plotType
-
-            --regionsLabel '$advancedOpt.regionsLabel'
-
-            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
-                --plotTitle '$advancedOpt.plotTitle'
+            #if $scaleRegions.showScaleRegionsOpt == "yes":
+                --startLabel '$scaleRegions.startLabel'
+                --endLabel '$scaleRegions.endLabel'
             #end if
 
-            #if str($advancedOpt.colors).strip() != "":
-                --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                #if $advancedOpt.averageType:
+                    --averageType '$advancedOpt.averageType'
+                #end if
+                --plotHeight $advancedOpt.plotHeight
+                --plotWidth $advancedOpt.plotWidth
+                --plotType $advancedOpt.plotType
+                --regionsLabel '$advancedOpt.regionsLabel'
+
+                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
+                    --plotTitle '$advancedOpt.plotTitle'
+                #end if
+
+                #if str($advancedOpt.colors).strip() != "":
+                    --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
+                #end if
+
+                $advancedOpt.onePlotPerGroup
+
+                #if $advancedOpt.yMin:
+                    --yMin $advancedOpt.yMin
+                #end if
+                #if $advancedOpt.yMax:
+                    --yMax $advancedOpt.yMax
+                #end if
+
+                @KMEANS_CLUSTERING@
+
             #end if
-
-            $advancedOpt.onePlotPerGroup
-
-            #if $advancedOpt.yMin:
-                --yMin $advancedOpt.yMin
-            #end if
-            #if $advancedOpt.yMax:
-                --yMax $advancedOpt.yMax
-            #end if
-
-            --xAxisLabel '$advancedOpt.xAxisLabel'
-            #if str($advancedOpt.yAxisLabel.value) != "None":
-                --yAxisLabel '$advancedOpt.yAxisLabel'
-            #end if
-
-            @KMEANS_CLUSTERING@
-
-        #end if
 ]]>
     </command>
     <inputs>
-        <param name="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+        <param argument="--matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
         <conditional name="scaleRegions">
             <param name="showScaleRegionsOpt" type="select" label="The input matrix was computed in scale-regions mode">
                 <option value="no" selected="true">no</option>
@@ -79,14 +72,14 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="startLabel" type="text" value="TSS" size="10"
+                <param argument="--startLabel" type="text" value="TSS" size="10"
                     label="Label for the region start"
                     help ="[only for scale-regions mode] Label shown in the plot
                     for the start of the region. Default is TSS (transcription start site),
                     but could be changed to anything, e.g. &quot;peak start&quot;." />
-                <param name="endLabel" type="text" value="TES" size="10"
+                <param argument="--endLabel" type="text" value="TES" size="10"
                     label="Label for the region end"
-                    help="[only for scale-regions mode] Label shown in the plot for the region end. Default is TES (transcription end site)."/>
+                    help="Label shown in the plot for the region end. Default is TES (transcription end site)."/>
             </when>
         </conditional>
 
@@ -109,13 +102,15 @@
                     <option value="sum">sum</option>
                     <option value="std">std</option>
                 </param>
-                <param name="plotHeight" type="integer" value="5" min="3" 
-                    label="Plot height" 
+                <param argument="--plotHeight" type="integer" value="5" min="3"
+                    label="Plot height"
                     help="Height in cm. The default for the plot height is 5 centimeters. The minimum value is 3 cm." />
-                <param name="plotWidth" type="integer" value="8" min="1" 
-                    label="Plot width" 
+
+                <param argument="--plotWidth" type="integer" value="8" min="1"
+                    label="Plot width"
                     help="Width in cm. The default value is 8 centimeters. The minimum value is 1 cm." />
-                <param name="plotType" type="select" label="Plot type"
+
+                <param argument="--plotType" type="select" label="Plot type"
                     help="For the summary plot (profile) only. The &quot;lines&quot; option will
                     plot the profile line based on the average type selected. The &quot;fill&quot;
                     option fills the region between zero and the profile curve. The fill in color is
@@ -129,13 +124,13 @@
                     <option value="se">add standard error</option>
                     <option value="overlapped_lines">overlapped lines</option>
                 </param>
-                <param name="regionsLabel" type="text" value="genes" size="30"
+                <param argument="--regionsLabel" type="text" value="genes" size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated
                     by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
 
                 <expand macro="plotTitle" />
-                <param name="colors" type="text" value="" size="40"
+                <param argument="--colors" type="text" value="" size="40"
                     label="List of colors to use for the plotted lines"
                     help="Color names and html hex strings (e.g. #eeff22) are accepted.
                     The color names should be given separated by spaces. (--colors red blue green)">
@@ -143,19 +138,17 @@
                         message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
 
-                <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
+                <param argument="--onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
                     label="Do one plot per group"
                     help="When the region file contains groups separated by &quot;#&quot;, the default is
                     to plot the averages for the distinct plots in one plot. If this option is set, each group
-                    will get its own plot, stacked on top of each other."/>
-                <param name="yMin" type="float" value="" size="3" optional="true"
+                    will get its own plot, stacked on top of each other." />
+
+
+                <param argument="--yMin" type="float" value="" size="3" optional="true"
                     label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
-                <param name="yMax" type="float" value="" size="3" optional="true"
+                <param argument="--yMax" type="float" value="" size="3" optional="true"
                     label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" />
-                <param name="xAxisLabel" type="text" value="gene distance (bp)" size="50"
-                    label="Description for the x-axis label" />
-                <param name="yAxisLabel" type="text" value="" size="50"
-                    label="Description for the y-axis label for the top panel" />
 
                 <expand macro="kmeans_clustering" />
 
@@ -170,6 +163,12 @@
         <test>
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <output name="outFileName" file="profiler_result1.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+        <test>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="showScaleRegionsOpt" value="yes" />
+            <output name="outFileName" file="profiler_result2.png" ftype="png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>

@@ -1,180 +1,76 @@
-<tool id="deeptools_plotCorrelation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_plot_correlation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
     <description>creates a heatmap for a score associated to genomic regions</description>
     <macros>
-        <token name="@BINARY@">heatmapper</token>
+        <token name="@BINARY@">plotCorrelation</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <expand macro="requirements"/>
     <command>
 <![CDATA[
-        heatmapper
+        @BINARY@
+            --corData "$corData"
+            --plotFile "$outFileName"
+            --corMethod "$corMethod"
+            --whatToPlot "$whatToPlot"
+            $skipZeros
+            --plotFileFormat "$outFileFormat"
+            $removeOutliers
+            --outFileCorMatrix "$matrix"
+            @HEATMAP_OPTIONS@
 
-        --matrixFile $matrixFile
-        --outFileName $outFileName
-
-        #if $output.showOutputSettings == "yes"
-            --plotFileFormat $output.outFileFormat
-            #if $outFileNameData:
-                --outFileNameData '$outFileNameData'
-            #end if
-
-            #if $outFileNameMatrix:
-                --outFileNameMatrix '$outFileNameMatrix'
-            #end if
-
-            #if $outFileSortedRegions:
-                --outFileSortedRegions '$outFileSortedRegions'
-            #end if
-        #else
-            --plotFileFormat 'png'
-        #end if
-
-        #if $advancedOpt.showAdvancedOpt == "yes"
-            #if $advancedOpt.sortRegions:
-                --sortRegions '$advancedOpt.sortRegions'
-            #end if
-      
-            #if $advancedOpt.sortUsing:
-                --sortUsing '$advancedOpt.sortUsing'
-            #end if
-
-            #if $advancedOpt.averageTypeSummaryPlot:
-                --averageTypeSummaryPlot '$advancedOpt.averageTypeSummaryPlot'
-            #end if
-
-            #if str($advancedOpt.missingDataColor.value) != "None":
-                --missingDataColor '$advancedOpt.missingDataColor'
-            #end if
-
-            --colorMap '$advancedOpt.colorMap'
-
-            #if str($advancedOpt.zMin).strip() != "":
-                --zMin $advancedOpt.zMin
-            #end if
-            #if $advancedOpt.zMax:
-                --zMax $advancedOpt.zMax
-            #end if
-
-            #if str($advancedOpt.yMin).strip() != "":
-                --yMin $advancedOpt.yMin
-            #end if
-            #if $advancedOpt.yMax:
-                --yMax $advancedOpt.yMax
-            #end if
-
-            --xAxisLabel '$advancedOpt.xAxisLabel'
-            --yAxisLabel '$advancedOpt.yAxisLabel'
-
-            --heatmapWidth $advancedOpt.heatmapWidth
-            --heatmapHeight $advancedOpt.heatmapHeight
-
-            --whatToShow '$advancedOpt.whatToShow'
-
-            --startLabel '$advancedOpt.startLabel' 
-            --endLabel '$advancedOpt.endLabel'
-            --refPointLabel '$advancedOpt.referencePointLabel'
-            --regionsLabel '$advancedOpt.regionsLabel'
-
-            #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
-                --plotTitle '$advancedOpt.plotTitle'
-            #end if
-
-            $advancedOpt.onePlotPerGroup
-
-            @KMEANS_CLUSTERING@
-
-        #end if
 ]]>
     </command>
     <inputs>
-        <param name="corData" format="bgzip" type="data" label="Matrix file from the computeMatrix tool"/>
+        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
+        <expand macro="corMethod" />
 
-        <expand macro="input_graphic_output_settings">
-            <expand macro="input_image_file_format" />
-            <expand macro="input_save_matrix_values" />
-        </expand>
+        <param argument="--whatToPlot" type="select" label="Plotting type">
+            <option value="heatmap" selected="True">Spearman</option>
+            <option value="scatterplot">Pearson</option>
+        </param>
 
-        <conditional name="advancedOpt" >
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
+        <expand macro="skipZeros" />
 
-                <expand macro="colormap" />
+        <expand macro="image_file_format" />
 
-                <param name="zMin" type="float" value="" size="3"
-                    label="Minimum value for the heatmap intensities. Leave empty for automatic values"/>
-                <param name="zMax" type="float" value="" size="3"
-                    label="Maximum value for the heatmap intensities. Leave empty for automatic values"/>
+        <param argument="--removeOutliers" type="boolean"
+            truevalue="--removeOutliers" falsevalue="" label="Remove regions with very large counts"
+            help="If set, bins with very large counts are removed. Bins
+                with abnormally high reads counts artificially
+                increase pearson correlation; that's why, by default,
+                bamCorrelate tries to remove outliers using the median
+                absolute deviation (MAD) method applying a threshold
+                of 200 to only consider extremely large deviations
+                from the median. ENCODE blacklist page (https://sites.
+                google.com/site/anshulkundaje/projects/blacklists)
+                contains useful information about regions with
+                unusually high counts."/>
 
-                <param name="yMin" type="float" value="" size="3"
-                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
-                <param name="yMax" type="float" value="" size="3"
-                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values"/>
-                <param name="xAxisLabel" type="text" value="distance from TSS (bp)" size="200"
-                    label="Description for the x-axis label" />
-                <param name="yAxisLabel" type="text" value="genes" size="30"
-                    label="Description for the y-axis label for the top panel" />
+        <param name="outFileCorMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
+        <expand macro="heatmap_options" />
 
-                <param name="heatmapWidth" type="float" value="7.5" min="1" max="100"
-                    label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
-                <param name="heatmapHeight" type="float" value="25" min="3" max="100"
-                    label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
-
-                <param name="whatToShow" type="select" label="What to show"
-                    help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
-                    <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
-                    <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
-                    <option value="heatmap only">heatmap only</option>
-                    <option value="heatmap and colorbar">heatmap and colorbar</option>
-                    <option value="colorbar only">colorbar only</option>
-                </param>
-
-                <param name="startLabel" type="text" value="TSS" size="10"
-                    label="Label for the region start"
-                    help ="[only for scale-regions mode] Label shown in the plot for the start of the region.
-                    Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;. (--startLabel)" />
-                <param name="endLabel" type="text" value="TES" size="10"
-                    label="Label for the region end"
-                    help="[only for scale-regions mode] Label shown in the plot for the region end. (--endLabel)"/>
-
-                <param name="referencePointLabel" type="text" value="TSS" size="10"
-                    label="Reference point label"
-                    help ="[only for scale-regions mode] Label shown in the plot for the reference-point.
-                    Default is the same as the reference point selected (e.g. TSS),
-                    but could be anything, e.g. &quot;peak start&quot; etc (--referencePointLabel)" />
-                <param name="regionsLabel" type="text" value="genes" size="30" 
-                    label="Labels for the regions plotted in the heatmap" 
-                    help="If more than one region is being plotted a list of labels
-                    separated by comma and limited by quotes, is required. For example, label1, label2. (--regionsLabel)">
-                    <sanitizer>
-                        <valid initial="string.printable">
-                        </valid>
-                    </sanitizer>
-                </param>
-
-                <expand macro="plotTitle" />
-                <param name="onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
-                    label="Do one plot per group"
-                    help="When computeMatrix was used on more than one group of genes,
-                    the average plots for all the groups will be drawn in one panel by default.
-                    If this option is set, each group will get its own plot, stacked on top of each other. (--onePlotPerGroup)"/>
-
-                <expand macro="kmeans_clustering" />
-            </when>
-        </conditional>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format" />
-        <expand macro="output_graphic_outputs" />
-        <expand macro="output_save_matrix_values" />
+        <data format="tabular" name="matrix" label="${tool.name} on ${on_string}: Correlation matrix">
+            <filter>outFileCorMatrix is True</filter>
+        </data>
     </outputs>
     <tests>
         <test>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="bgzip" />
-            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="100" />
+            <param name="corData" value="bamCorrelate_result1.npz" ftype="deeptools_coverage_matrix" />
+            <param name="outFileFormat" value="png" />
+            <param name="outFileCorMatrix" value="True" />
+            <output name="matrix" file="plotCorrelation_result1.tabular" ftype="tabular" />
+            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+        <test>
+            <param name="corData" value="bamCorrelate_result1.npz" ftype="deeptools_coverage_matrix" />
+            <param name="outFileFormat" value="png" />
+            <param name="whatToPlot" value="scatterplot" />
+            <param name="removeOutliers" value="True" />
+            <param name="plotTitle" value="Test Plot" />
+            <output name="outFileName" file="plotCorrelation_result2.png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>

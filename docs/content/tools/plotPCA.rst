@@ -3,7 +3,7 @@ plotPCA
 
 .. argparse::
    :ref: deeptools.plotPCA.parse_arguments
-   :prog: plotCorrelation
+   :prog: plotPCA
 
 
 Usage example
@@ -20,6 +20,8 @@ Usage example
 
 .. code:: bash
 
+
     plotPCA --corData testDatset-results/correlation_testBigwigs.matrix -o testData_PCAplot.png --labels H3K27me3 H3K4me1 H3K4me3 H3K9me3 input
+
 
 .. image:: test_plots/testData_PCAplot.png

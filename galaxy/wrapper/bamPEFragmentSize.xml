@@ -1,4 +1,4 @@
-<tool id="deeptools_bamPEFragmentSize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_bam_pe_fragmentsize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
     <description>Given a BAM file it samples several regions to estimate the paired-end fragment length</description>
     <macros>
         <token name="@BINARY@">bamPEFragmentSize</token>
@@ -7,22 +7,25 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        bamPEFragmentSize
+        ln -s $bamInput one.bam &&
+        ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+
+        @BINARY@
             @THREADS@
-            -bai ${bamInput.metadata.bam_index}
             #if $histogram:
                 --histogram ./hist.png
             #end if
-            '$bamInput'
+
+            one.bam
             > $outfile
 ]]>
     </command>
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
-        <param name="histogram" type="boolean" truevalue="--histogram" falsevalue=""
+        <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribion of fragment length as histogram"
-            help="(--histogram)"/>
+            help=""/>
     </inputs>
     <outputs>
         <data name="outfile" format="txt"/>
