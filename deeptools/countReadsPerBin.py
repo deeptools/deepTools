@@ -409,8 +409,7 @@ class CountReadsPerBin(object):
 
         >>> test = Tester()
         >>> import pysam
-        >>> c = CountReadsPerBin([], stepSize=1,
-        ... extendReads=300)
+        >>> c = CountReadsPerBin([], stepSize=1, extendReads=300)
 
         For this case the reads are length 36. The number of overlapping
         read fragments is 4 and 5 for the positions tested.
@@ -591,6 +590,7 @@ class CountReadsPerBin(object):
 
         >>> test = Tester()
         >>> c = CountReadsPerBin([], 1, 1, 200, extendReads=True)
+        >>> c.defaultFragmentLength=100
         >>> c.get_fragment_from_read(test.getRead("paired-forward"))
         [(5000000, 5000100)]
         >>> c.get_fragment_from_read(test.getRead("paired-reverse"))
@@ -610,11 +610,11 @@ class CountReadsPerBin(object):
 
         Tests for read centering.
 
-        >>> c.extendReads = True
-        >>> c.center_read = True
-        >>> c.defaultFragmentLength = 200
+        >>> c = CountReadsPerBin([], 1, 1, 200, extendReads=True, center_read=True)
+        >>> c.defaultFragmentLength = 100
         >>> c.get_fragment_from_read(test.getRead("paired-forward"))
         [(5000032, 5000068)]
+        >>> c.defaultFragmentLength = 200
         >>> c.get_fragment_from_read(test.getRead("single-reverse"))
         [(5001618, 5001654)]
         """
@@ -637,7 +637,6 @@ class CountReadsPerBin(object):
             if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
                 return True
             return False
-
         # if no extension is needed, use pysam get_blocks
         # to identify start and end reference positions.
         # get_blocks return a list of start and end positions
@@ -671,8 +670,8 @@ class CountReadsPerBin(object):
 
         if self.center_read:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
-            fragmentStart = fragmentCenter - read.alen / 2
-            fragmentEnd = fragmentStart + read.alen
+            fragmentStart = fragmentCenter - read.query_length / 2
+            fragmentEnd = fragmentStart + read.query_length
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
                                             "end for read {}".format(read.query_name)
