@@ -111,6 +111,8 @@
     </tests>
     <help>
 <![CDATA[
+
+
 **What it does**
 
 This tool is useful to assess the strength of a ChIP (i.e. how clearly the enrichment signal can be separated from the background signal)
@@ -137,6 +139,9 @@ You can find more details on the bamFingerprint wiki page: https://github.com/fi
 - (optional) Data matrix of raw counts
 
 **Output with test dataset**:
+
+Following is the output of bamFingerPrint with our test ChIP-Seq datasets, limiting analysis to chromosome X. Single-end reads were extended to
+200 bp (advanced options).
 
 .. image:: $PATH_TO_IMAGES/bamFP_galaxy_output.png
 
