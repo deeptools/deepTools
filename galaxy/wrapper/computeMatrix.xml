@@ -182,7 +182,12 @@
                     <option value="std">std</option>
                 </param>
 
-                <expand macro="skipNAs" />
+                <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" checked="False"
+                    label="Convert missing values to 0?."
+                    help="If set to 'yes', missing values (NAs) are converted to 0.
+                          The default is to ignore such cases, which will be
+                          depicted as black areas in the heatmap." />
+
                 <expand macro="skipZeros" />
 
                 <param name="minThreshold" type="float" optional="True"
