@@ -22,3 +22,12 @@ Example output plot:
 The example shows the GC-bias of a corrected BAM file (output from computeGCBias). 
 
 .. image:: test_plots/ExampleCorrectGCBias.png
+
+Galaxy
+------
+
+`correctGCBias` is also available in `deepTools Galaxy`_:
+
+.. image:: ../../images/correctGCBias_Galaxy.png 
+
+.. _deepTools Galaxy: http://deeptools2.ie-freiburg.mpg.de/
