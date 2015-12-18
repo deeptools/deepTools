@@ -589,7 +589,7 @@ def bin_by(x, y, nbins=10):
     return output, bins
 
 
-def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
+def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=None):
     from matplotlib import use
     use('Agg')
     import matplotlib.pyplot as plt
@@ -597,13 +597,11 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     # prepare data for boxplot
     reads, GC = reads_per_gc.T
     reads_per_gc, bin_labels = bin_by(reads, GC, nbins=100)
-#    total = sum([len(x) for x in reads_per_gc])
-#    to_keep = [idx for idx, x in enumerate(reads_per_gc) if float(len(x))/total> 0.005]
     to_keep = [idx for idx, x in enumerate(bin_labels) if 0.2 <= x <= 0.7]
     reads_per_gc = [reads_per_gc[x] for x in to_keep]
     bin_labels = [bin_labels[x] for x in to_keep]
 
-    title = "reads per regions of {} bp".format(args.regionSize)
+    title = "reads per regions of {} bp".format(region_size)
     fig = plt.figure(figsize=(6, 8))
     ax1 = fig.add_subplot(211, title=title)
     ax2 = fig.add_subplot(212,
@@ -612,7 +610,6 @@ def plotGCbias(file_name, frequencies, reads_per_gc, image_format=None):
     # make boxplot
 
     bp = ax1.boxplot(reads_per_gc, notch=0, patch_artist=True)
-#    plt.setp(bp['boxes'], color='black', facecolor='mediumaquamarine')
     plt.setp(bp['boxes'], color='black', facecolor='LightGreen')
     plt.setp(bp['medians'], color='black')
     plt.setp(bp['whiskers'], color='black', linestyle='dashed')
@@ -730,8 +727,7 @@ def main(args=None):
                                        numberOfProcessors=args.numberOfProcessors,
                                        verbose=args.verbose,
                                        region=args.region)
-        plotGCbias(args.biasPlot, data, reads_per_gc,
-                   image_format=args.plotFileFormat)
+        plotGCbias(args.biasPlot, data, reads_per_gc, args.regionSize, image_format=args.plotFileFormat)
 
 
 class Tester():
