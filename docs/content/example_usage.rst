@@ -32,12 +32,18 @@ we align the reads to the reference genome, e.g. using
 `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml>`__.
 We then use deepTools to assess the quality of the aligned reads:
 
-#. **Correlation between BAM files** (``bamCorrelate``). This is a very basic test to see whether
+#. **Correlation between BAM files** (``bamCorrelate`` and ``plotCorrelation``). 
+   Together these two modules perform a very basic test to see whether
    the sequenced and aligned reads meet your expectations. We use this
    check to assess the reproducibility - either between replicates
    and/or between different experiments that might have used the same
    antibody or the same cell type etc. For instance, replicates should
    correlate better than differently treated samples.
+#. **Correlation between BIGWIG files** (``bigwigCorrelate`` and ``plotCorrelation``). 
+   Frequently we want to compare genome-wide data stored as "tracks" in public repositories or more general scores
+   that are not necessarily based on read-coverages. To this end we provide an efficient module to handle
+   BIGWIG files and compare them and their correlation for several samples. In addition we provide a tool
+   (``plotPCA``) to perform a Principle Component Analysis of the same underlying data. 
 #. **GC bias check** (``computeGCbias``). Many sequencing protocols
    require several rounds of PCR-based amplification of the DNA to be
    sequenced. Unfortunately, most DNA polymerases used for PCR introduce
