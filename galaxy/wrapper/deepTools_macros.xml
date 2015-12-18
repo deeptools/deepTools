@@ -42,24 +42,11 @@
         #if $zMax:
             --zMax $zMax
         #end if
-            --colorMap '$colorMap'
+        --colorMap '$colorMap'
         $plotNumbers
+        --plotTitle $plotTitle
     </token>
 
-        <expand macro="plotTitle" />
-        <expand macro="plotNumbers" />
-        <conditional name="output">
-            <param name="showOutputSettings" type="select" label="Show advanced output settings" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="input_image_file_format"/>
-                <param name="saveRawCounts" type="boolean" label="Save the bin counts"/>
-                <param name="saveCorMatrix" type="boolean" label="Save the correlation matrix"/>
-            </when>
-        </conditional>
 
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
