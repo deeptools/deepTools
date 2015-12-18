@@ -217,7 +217,6 @@ class Correlation:
         """
         num_rows = len(self.labels)
         corr_matrix = self.compute_correlation()
-        print corr_matrix
         # set a font size according to figure length
         if num_rows < 6:
             font_size = 14

@@ -19,3 +19,12 @@ Chip-Seq datasets.
       testDataset/Input.bigWig -out histoneMarks_bigwig_corr.npz
 
 The output matrix file can now be plotted using :doc:`plotCorrelation` tool.
+
+
+bigwigCorrelate on Galaxy:
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Below is the screenshot showing how to use bigwigCorrelate on the deeptools galaxy.
+
+
+.. image:: ../../images/bigwiCorr_galaxy.png

@@ -1,4 +1,4 @@
-<tool id="deeptools_correctGCBias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_correct_gc_bias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
     <description>uses the output from computeGCBias to generate corrected BAM files</description>
     <macros>
         <token name="@BINARY@">correctGCBias</token>
@@ -7,13 +7,13 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        ln -s $bamInput local_bamInput.bam;
-        ln -s $bamInput.metadata.bam_index local_bamInput.bam.bai;
+        ln -s "$bamInput" "local_bamInput.bam" &&
+        ln -s "$bamInput.metadata.bam_index" local_bamInput.bam.bai &&
 
-        correctGCBias
+        @BINARY@
             @THREADS@
             --bamfile local_bamInput.bam
-            --GCbiasFrequenciesFile $GCbiasFrequenciesFile
+            --GCbiasFrequenciesFile "$GCbiasFrequenciesFile"
 
             @reference_genome_source@
 
@@ -26,21 +26,19 @@
             #if str($region).strip() != '':
                 --region '$region'
             #end if
-            --correctedFile corrected.bam;
-
-        mv corrected.bam $outFileName;
+            --correctedFile corrected.bam
 ]]>
     </command>
     <inputs>
-        <param name="GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" />
-        <param name="bamInput" format="bam" type="data"
-            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted. (--bamfile)" />
+        <param argument="--GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" help="" />
+        <param argument="--bamInput" format="bam" type="data"
+            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted." />
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
         <expand macro="region_limit_operation" />
     </inputs>
     <outputs>
-        <data format="bam" name="outFileName" />
+        <data format="bam" from_work_dir="corrected.bam" name="outFileName" />
     </outputs>
     <tests>
         <test>

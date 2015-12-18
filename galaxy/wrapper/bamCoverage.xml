@@ -1,5 +1,5 @@
-<tool id="deeptools_bamCoverage" name="bamCoverage" version="@WRAPPER_VERSION@.0">
-    <description> generates a coverage bigWig file from a given BAM file.  Multiple options are available to count reads and normalize coverage. (bam2bigwig)</description>
+<tool id="deeptools_bam_coverage" name="bamCoverage" version="@WRAPPER_VERSION@.0">
+    <description>generates a coverage bigWig file from a given BAM file</description>
     <macros>
         <token name="@BINARY@">bamCoverage</token>
         <import>deepTools_macros.xml</import>
@@ -7,16 +7,16 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        bamCoverage
+        ln -s '$bamInput' one.bam &&
+        ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
 
+        @BINARY@
             @THREADS@
 
-            --bam '$bamInput'
-            --bamIndex ${bamInput.metadata.bam_index}
+            --bam one.bam
             --outFileName '$outFileName'
             --outFileFormat '$outFileFormat'
 
-            --fragmentLength $fragmentLength
             --binSize $binSize
 
             #if $scaling.type=='rpkm':
@@ -40,21 +40,12 @@
                     --smoothLength '$advancedOpt.smoothLength'
                 #end if
 
-                $advancedOpt.doNotExtendPairedEnds
-                $advancedOpt.ignoreDuplicates
+                @ADVANCED_OPTS_READ_PROCESSING@
+                $advancedOpt.skipNAs
 
-                #if $advancedOpt.minMappingQuality:
-                    --minMappingQuality '$advancedOpt.minMappingQuality'
-                #end if
-
-                --missingDataAsZero $advancedOpt.missingDataAsZero
-
-                ##if str($advancedOpt.ignoreForNormalization).strip() != '':
-                ##    --ignoreForNormalization $advancedOpt.ignoreForNormalization
-                ##end if
-                #if $advancedOpt.samFlag:
-                    --samFlag $advancedOpt.samFlag
-                #end if
+                if str($advancedOpt.ignoreForNormalization).strip() != '':
+                    --ignoreForNormalization $advancedOpt.ignoreForNormalization
+                end if
             #end if
 ]]>
     </command>
@@ -62,10 +53,6 @@
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
-
-        <param name="fragmentLength" type="integer" value="200" min="1"
-            label="Length of the average fragment size"
-            help ="Reads will be extended to match this length unless they are paired-end, in which case they will be extended to match the fragment length. If this value is set to the read length or smaller, the read will not be extended. *Warning* the fragment length affects the normalization to 1x (see &quot;normalize coverage to 1x&quot;). Sequencing depth is defined as: (total number of mapped reads * fragment length) / effective genome size. *NOTE*: If the BAM files contain mated and unmated paired-end reads, unmated reads will be extended to match the fragment length. (--fragmentLength)"/>
 
         <param name="binSize" type="integer" value="50" min="1" 
             label="Bin size in bp"
@@ -75,17 +62,15 @@
             <param name="type" type="select" label="Scaling/Normalization method" >
                 <option value="1x">Normalize coverage to 1x</option>
                 <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
-                <option value="own">Set your own scaling factor</option>
                 <option value="no">Do not normalize or scale</option>
             </param>
-            <when value="rpkm"/>
+            <when value="rpkm">
+                <expand macro="scaleFactor" />
+            </when>
             <when value="no"/>
             <when value="1x">
                 <expand macro="effectiveGenomeSize" />
-            </when>
-            <when value="own">
-                <param name="scaleFactor" type="float" value="1" size="3" 
-                    label="Scale factor to multiply all values" />
+                <expand macro="scaleFactor" />
             </when>
         </conditional>
 
@@ -103,19 +88,23 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param name="smoothLength" type="integer" value="1" optional="true" min="1"
-                    label="Smooth values using the following length (in bp)"
-                    help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied. (--smoothLength)"/>
+                <expand macro="smoothLength" />
 
-                <expand macro="doNotExtendPairedEnds" />
-                <expand macro="ignoreDuplicates" />
-                <expand macro="minMappingQuality" />
-                <expand macro="missingDataAsZero" />
-                <expand macro="samFlag" />
-             <!--   <param name="ignoreForNormalization" type="text" value="" size="50"
-                    label="regions that should be excluded for calculating the scaling factor"
-                    help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor. For example, if you know some regions that you suspect to be present more often in your sample's genome than in the reference genome that will therefore accumulate reads (CNV). Another typical example is the single X chromosome in male samples that should be scaled separately from the diploid autosomes. For example chrX,chrY,chr3. or chr10:12220-128932" />
-            -->
+                <param argument="ignoreForNormalization" type="text" value=""
+                    label="Regions that should be excluded for normalization"
+                    help="A list of chromosome names separated by spaces
+                        containing those chromosomes that should be excluded
+                        for computing the normalization. This is useful when
+                        considering samples with unequal coverage across
+                        chromosomes like male samples. Example: chrX chrM" />
+
+                <expand macro="skipNAs" />
+                <expand macro="read_processing_options" />
+
+                <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
+                    label="Determine nucleosome positions from MNase-seq data"
+                    help="Only 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data." />
+
             </when>
         </conditional>
     </inputs>

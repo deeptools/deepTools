@@ -5,22 +5,38 @@ bamCoverage
    :ref: deeptools.bamCoverage.parseArguments
    :prog: bamCoverage
 
+
 Usage hints
 -----------
 
+Command line example using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
+
 ::
 
-	$ bamCoverage --bam corrected_counts.bam --binSize 10 \
-		--normalizeTo1x 2150570000 --fragmentLength 200 \
-		-o Coverage.GCcorrected.SeqDepthNorm.bw --ignoreForNormalization chrX
+   $ bamCoverage --bam corrected_counts.bam -o Coverage.GCcorrected.SeqDepthNorm.bw
+      --binSize 10
+      --normalizeTo1x 2150570000
+      --ignoreForNormalization chrX
+      --extendReads
 
-* The bin size can be chosen completely to your liking (`-bs` option). The smaller it is, the bigger the resulting file will be.
-* The above shown example was for a mouse sample, therefore the effective genome size for mouse had to be indicated once it was decided that the file should be normalize to 1x coverage.
-* Chromosome X was excluded from sampling the regions for normalization as the sample was from a male mouse that therefore contained pairs of autosomes, but only a single X chromosome.
-* The fragment length of 200 bp is only the fall-back option of `bamCoverage` as the sample provided here was done with paired-end sequencing. `bamCoverage` will resort to the user-specified fragment length only if it encounters singletons.
-* `--ignoreDuplicates` - important note! if you normalized for GC bias using `correctGCbias`, you should absolutely **NOT** set this parameter 
- 
-Here's an example of how `bamCoverage` can be used with `deepTools Galaxy`_:
+* A smaller bin size value will result in a higher resolution of the coverage track but also in a larger file size.
+* The 1x normalization (RPGC) requires the input of a value for the **effective genome size**, which is the mappable part of the reference genome. Of course, this value is species specific. The command line help of this tool offers suggestions for a number of model species.
+* It might be useful for some studies to exclude certain chromosomes in order to avoid biases, e.g. chromosome X, as male mice contain a pair of each autosome, but usually only a single X chromosome.
+* By default, the read length is **NOT** extended! This is the preferred setting for **spliced-read** data like RNA-seq, where one usually wants to rely on the detected read locations only. A read extension would neglect potential splice sites in the unmapped part of the fragment.
+  Other data, e.g. Chip-seq, where fragments are known to map contiguously, should be processed with read extension (``--extendReads [INT]``).
+* For paired-end data, the fragment length is generally defined by the two read mates. The user provided fragment length is only used as a fall back for singletons or mate reads that map too far apart (with a distance greater than four times the fragment length or are located on different chromosomes).
+
+
+Important notes
+---------------
+
+* ``--ignoreDuplicates`` : If you already normalized for GC bias using `correctGCbias`, you should absolutely **NOT** set this parameter here!
+
+
+Galaxy
+------
+
+`bamCoverage` is also available in `deepTools Galaxy`_:
 
 .. image:: ../../images/norm_bamCoverage.png 
 
