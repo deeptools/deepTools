@@ -50,6 +50,20 @@ class TestCountReadsPerBin(object):
                                         [1, 1.],
                                         [1, 2.]]))
 
+    def test_count_reads_in_region_extension_1(self):
+        self.c = cr.CountReadsPerBin([self.bamFile1, self.bamFile2],
+                                     binLength=1,
+                                     stepSize=1,
+                                     extendReads=1)
+
+        resp, _ = self.c.count_reads_in_region(self.chrom, 98, 102)
+
+        nt.assert_equal(resp, np.array([[0., 0.],
+                                        [0., 1.],
+                                        [1., 1.],
+                                        [0., 0.]]))
+
+
     def test_count_reads_in_region_total(self):
         """ count the reads over the whole region
         2 for the first case, and 4 for the second
