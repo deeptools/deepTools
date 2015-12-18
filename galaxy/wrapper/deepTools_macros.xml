@@ -388,13 +388,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </param>
     </xml>
 
-    <xml name="keepNAs">
-        <param argument="--keepNAs" type="boolean" truevalue="--keepNAs" falsevalue="" checked="False"
-            label="Treat missing data as zero"
-            help="If set, missing data (NAs) will be treated as zeros.
-                The default is to ignore missing data and not included
-                in the output file. Missing data is defined as those
-                bins for which no overlapping reads are found." />
+    <xml name="skipNAs">
+        <param argument="--skipNAs" type="boolean" truevalue="--skipNAs" falsevalue="" checked="False"
+            label="Do not treat missing data as zero"
+            help="If set, missing data (NAs) will not be treated as zero.
+                The default is to convert missing values to 0 so that regions
+                covered in only one sample (or a group of them) are still
+                included in the output." />
     </xml>
 
     <xml name="input_save_matrix_values">

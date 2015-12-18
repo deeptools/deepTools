@@ -27,7 +27,7 @@
 
             #if $advancedOpt.showAdvancedOpt == "yes":
 
-              $advancedOpt.keepNAs
+              $advancedOpt.skipNAs
               --scaleFactors '$advancedOpt.scaleFactor1:$advancedOpt.scaleFactor2'
               --binSize $advancedOpt.binSize
 
@@ -85,7 +85,7 @@
                     label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
                     help="Size of the bins in bp for the output of the bigwig/bedgraph file."/>
 
-                <expand macro="keepNAs" />
+                <expand macro="skipNAs" />
                 <expand macro="scaleFactor" />
                 <expand macro="plotTitle" />
             </when>
