@@ -9,6 +9,18 @@ plotCoverage
 Usage Example:
 ~~~~~~~~~~~~~~
 
-.. code:: bash
-    plotCoverage -b H3K4Me1.bam H3K4Me3.bam H3K27Me3.bam H3K9Me3.bam --plotFile example_coverage \
-      -n 1000000 -p 5 --plotTitle "example_coverage" --ignoreDuplicates --minMappingQuality 10 --region 19
+::
+	
+   $ plotCoverage -b H3K4Me1.bam H3K4Me3.bam H3K27Me3.bam H3K9Me3.bam
+      --plotFile example_coverage
+      -n 1000000
+      -p 5\
+      --plotTitle "example_coverage"\ 
+      --ignoreDuplicates\
+      --minMappingQuality 10\ 
+      --region 19
+      
+Example output plot:
+~~~~~~~~~~~~~~~~~~~~
+      
+.. image:: test_plots/ExamplePlotCoverage.png
