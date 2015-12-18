@@ -37,3 +37,12 @@ Here we are plotting a heatmap, this time using spearman correlation.
       -p heatmap --removeOutliers -c spearman
 
 .. image:: test_plots/histoneMarks_corr-heatmap.png
+
+
+plotCorrelation on Galaxy:
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Below is the screenshot showing how to use plotCorrelation on the deeptools galaxy.
+
+
+.. image:: ../../images/plotCorrelation_galaxy.png

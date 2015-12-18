@@ -30,19 +30,24 @@ def read_options():
     group = parser.add_argument_group('Read processing options')
 
     group.add_argument('--extendReads', '-e',
-                       help='If set, reads are extended to the given fragment size. The fragment size '
-                            'should be greater than the read length. '
-                            'For paired-end data, --extendReads can be used without a value. In this case, '
-                            'the fragment length is automatically estimated from the data. '
-                            '(1) Single-end reads are extended to match the specified fragment length. '
-                            '(2) Paired-end reads are extended to match the fragment size defined by the two read mates. '
-                            'Unmated reads, mate reads that map to different chromosomes or too far apart '
-                            '(distance greater than four times the fragment length) are treated like single-end reads '
-                            'and extended to the given (or automatically estimated) fragment size. '
-                            'By default *each* read mate is extended. This can be modified using the SAM flags '
-                            '(see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate. '
-                            '*NOTE*: For spliced-read data, using --extendReads is not recommended as '
-                            'it will extend reads over skipped regions, e.g. introns in RNA-seq data.',
+                       help='This parameter allows the extension of reads to '
+                       'fragment size. If set, every individual read is '
+                       'extended without exception.\n'
+                       '*NOTE*: This feature is generally NOT recommended for '
+                       'spliced-read data, e.g. from RNA-seq, as it would'
+                       'extend reads over skipped regions.\n'
+                       '*Single-end*: Requires a user specified value for the '
+                       'final fragment length. Reads that already exceed this '
+                       'fragment length will not be extended.\n'
+                       '*Paired-end*: Reads with mates are always extended to '
+                       'match the fragment size defined by the two read mates. '
+                       'Unmated reads, mate reads that map or too far apart '
+                       '(greater '
+                       '4x fragment length) or even map to different '
+                       'chromosomes are treated like singe-end reads. The input '
+                       'of a fragment length value is optional to the user. If '
+                       'no value is specified, it is auto-estimated from the '
+                       'data (mean of the fragment size of all mate reads).\n',
                        type=int,
                        nargs='?',
                        const=True,
