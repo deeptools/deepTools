@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_correlation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap for a score associated to genomic regions</description>
+    <description>creates a heatmap of correlation scores between different samples </description>
     <macros>
         <token name="@BINARY@">plotCorrelation</token>
         <import>deepTools_macros.xml</import>
@@ -77,10 +77,24 @@
 <![CDATA[
 **What it does**
 
-Tool for visualizing a correlation using either bamCorrelate or
-bigwigCorrelate. Pearson or Spearman methods are available to compute correlation
-coefficients. Results can be saved into a heat map image or as multiple
-scatter plots. Further output files are optional.
+This tools takes a compressed matrix of scores (such as read coverages) for a number of genomic regions
+and different samples. It can visualize the correlation among samples as scatterplots or as 
+heatmap of correlation coefficients. Further output files are optional.
+The compressed input matrices are easily generated using the "bamCorrelate" and "bigwigCorrelate" modules of deeptools.
+
+
+.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+You can find more details on plotCorrelation here http://deeptools.readthedocs.org/en/release-1.6/content/tools/plotCorrelation.html
+
+
+**Output files**:
+
+- **correlation structure**: a scatterplot of all mutual correlations between all samples in matrix
+- **diagnostic plot**: clustered heatmap displaying the values for each pair-wise correlation, see below for an example
+- data matrix (optional): if you want to analyze or plot the correlation values using a different program, e.g. R, this matrix can be used
 
 -----
 
