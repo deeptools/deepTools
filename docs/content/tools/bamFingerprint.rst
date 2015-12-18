@@ -26,4 +26,4 @@ bamFingerprint on Galaxy:
 Below is the screenshot showing how to use bamFingerprint on the deeptools galaxy.
 
 
-.. image:: ../../images/bamFP_galaxy_output.png
+.. image:: ../../images/bamFP_galaxy.png
