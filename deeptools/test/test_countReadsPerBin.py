@@ -63,7 +63,6 @@ class TestCountReadsPerBin(object):
                                         [1., 1.],
                                         [0., 0.]]))
 
-
     def test_count_reads_in_region_total(self):
         """ count the reads over the whole region
         2 for the first case, and 4 for the second
