@@ -390,11 +390,15 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     <xml name="skipNAs">
         <param argument="--skipNAs" type="boolean" truevalue="--skipNAs" falsevalue="" checked="False"
-            label="Do not treat missing data as zero"
-            help="If set, missing data (NAs) will not be treated as zero.
-                The default is to convert missing values to 0 so that regions
-                covered in only one sample (or a group of them) are still
-                included in the output." />
+            label="Treat missing data as zero?"
+            help="This parameter determines if non-covered regions
+                 (regions without overlapping reads) in a bam/bigWig file
+                 should be skipped. The default is to treat those
+                 regions as having a value of zero. The decision to
+                 skip non-covered regions depends on the interpretation
+                 of the data. Non-covered regions may represent for
+                 example repetitive regions that want to be skipped.
+                 (default: False)" />
     </xml>
 
     <xml name="input_save_matrix_values">

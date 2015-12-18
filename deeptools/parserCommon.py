@@ -151,11 +151,11 @@ def normalization_options():
                        nargs='+')
 
     group.add_argument('--skipNonCoveredRegions', '--skipNAs',
-                       help='This parameter determines if non covered regions '
+                       help='This parameter determines if non-covered regions '
                        '(regions without overlapping reads) in a bam file should '
                        'be skipped. The default is to treat those regions as having a value of zero. '
-                       'The decision to skip non covered regions '
-                       'depends on the interpretation of the data. Non covered regions '
+                       'The decision to skip non-covered regions '
+                       'depends on the interpretation of the data. Non-covered regions '
                        'may represent for example repetitive regions that want '
                        'to be skipped.',
                        action='store_true')
