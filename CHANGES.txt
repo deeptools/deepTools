@@ -1,6 +1,7 @@
 2.0
 
- * Documentation improved and migrated to http://deeptools.readthedocs.org
+ * Documentation improved and migrated to http://deeptools.readthedocs.org The API to use deepTools modules is now
+   part of the documentation and includes a tutorial.
  * Allow multiple bigwig files in computeMatrix that can be clustered together
  * computeMatrix now accepts multiple bed files. Each bed file is considered as a group. Labels are automatically
    added based on the file names.
@@ -11,9 +12,10 @@
  * New analysis tool plotPCA that visualizes the results from principal component analysis
  * New option in bamCoverage `--MNase` that will compute the read coverage only considering 2 base pairs at the
    center of the fragment.
- * Make read extension optional. Remove the need to specify a default fragment length for most of the tools. When
-   read extension is enabled and the bam files contain paired en data, the mean fragment length is calculated by
-   sampling the read pairs in the bam file.
+ * Make read extension optional. Remove the need to specify a default fragment length for most of the tools. Now, when
+   read extension is enabled and the bam files contain paired en data, the mean fragment length is automatically
+   calculated by sampling the read pairs in the bam file. The --doNotExtendPairedEnds and --fragmentLentgh parameters
+   are no longer used and the new --extendReads parameter was added.
  * Dramatically improved bigwig related tools by using the new pyBigWig module. Eliminated the requirement for the
    UCSC program `bigWigInfo`
  * renamed heatmapper to plotHeatmap and profiler to plotProfile
@@ -25,11 +27,16 @@
    plots and includes options to adjust a large array of visual features.
  * Fixed issue with bed intervals in bigwigCorrelate and bamCorrelate and a user specified region.
  * Correlation coefficients can be computed even if the data contains NaNs
-
-1.5.9:
-* Fixed problem with pseudocounts. The original implementation was scaling pseudocounts twice, which resulted in unexpected results for regions with zero reads.
-* The tools bigWigCorrelate and bamPEFragmentSize where added to galaxy.
-* Added parameter missingDataAsZero to bamCoverage. The default behaviour is unchanged.
-* Improved error reporting of bamCorrelate when few bins are computed.
-
-       
+ * Allow computeMatrix to read files with DOS newline characters
+ * Added option --skipChromosomes to  bigwigCorrelate, for example to skip all 'random' chromosomes. bigwigCorrelate
+   now also considers chromosomes as identical when their names between samples differ with the prefix 'chr'. E.g.
+   chr1 vs. 1
+ * For bamCoverage and bamCompare, behaviour of scaleFactor was updated such that now, if given in combination
+   with the normalization options (normalize to 1x or normalize using RPKM) the given scaleFactor
+   will multiply the scale factor computed for the normalization methods.
+ * Fixed problem with read pairs labelled as proper pairs by the aligner but that were actually not proper pairs, for
+   example because the mates did not face each other. deepTools adds further checks to determine if a read pair is a
+   proper pair.
+ * Added titles to QC plots (#74)
+ * Added --samFlagInclude and --samFlagExclude parameters. This is useful to for example only include forward reads
+ * In deeptools2 most of the core code was rewriting to facilitate API usage and for optimization.

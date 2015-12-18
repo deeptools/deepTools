@@ -31,7 +31,9 @@ Contents:
    content/installation
    content/list_of_tools
    content/example_usage
-   
+   content/api
+   content/changelog
+
 
 While developing deepTools, we continuously thrive to create software
 that fulfills the following criteria:
