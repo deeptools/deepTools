@@ -48,7 +48,6 @@ detailed help:
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
-    #args.extendPairedEnds = False if args.doNotExtendPairedEnds else True
 
     if args.labels and len(args.bamfiles) != len(args.labels):
         print "The number of does not match the number of bam files."
