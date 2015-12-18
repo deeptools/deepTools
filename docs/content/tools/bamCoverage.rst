@@ -9,7 +9,7 @@ bamCoverage
 Usage hints
 -----------
 
-Command line example using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads to an assay specific fragment size of 200 nt):
+Command line example using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
 
 ::
 
@@ -18,7 +18,6 @@ Command line example using additional options (smaller bin size for higher resol
       --normalizeTo1x 2150570000
       --ignoreForNormalization chrX
       --extendReads
-      --fragmentLength 200
 
 * A smaller bin size value will result in a higher resolution of the coverage track but also in a larger file size.
 * The 1x normalization (RPGC) requires the input of a value for the **effective genome size**, which is the mappable part of the reference genome. Of course, this value is species specific. The command line help of this tool offers suggestions for a number of model species.
