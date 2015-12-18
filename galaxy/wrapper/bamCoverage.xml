@@ -41,7 +41,7 @@
                 #end if
 
                 @ADVANCED_OPTS_READ_PROCESSING@
-                $advancedOpt.keepNAs
+                $advancedOpt.skipNAs
 
                 if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization $advancedOpt.ignoreForNormalization
@@ -98,7 +98,7 @@
                         considering samples with unequal coverage across
                         chromosomes like male samples. Example: chrX chrM" />
 
-                <expand macro="keepNAs" />
+                <expand macro="skipNAs" />
                 <expand macro="read_processing_options" />
 
                 <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
