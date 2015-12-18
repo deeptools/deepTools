@@ -151,14 +151,14 @@ class CountReadsPerBin(object):
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
 
-        if extendReads:
-            if extendReads is True and len(bamFilesList):
+        if extendReads and len(bamFilesList):
+            from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+            frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
+                                                                        return_lengths=False,
+                                                                        numberOfProcessors=numberOfProcessors,
+                                                                        verbose=verbose)
+            if extendReads is True:
                 # try to guess fragment length if the bam file contains paired end reads
-                from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-                frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
-                                                                            return_lengths=False,
-                                                                            numberOfProcessors=numberOfProcessors,
-                                                                            verbose=verbose)
                 if frag_len_dict:
                     self.defaultFragmentLength = frag_len_dict['median']
                 else:
@@ -167,17 +167,18 @@ class CountReadsPerBin(object):
                     print("Fragment length based on paired en data "
                           "estimated to be {}".format(frag_len_dict['median']))
 
-            elif extendReads < 1:
-                exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(extendReads))
+            elif extendReads < read_len_dict['median']:
+                sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
+                                 "Reads will not be extended.\n".format(int(read_len_dict['median'])))
+                self.defaultFragmentLength = 'read length'
+
             elif extendReads > 2000:
                 exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(extendReads))
             else:
                 self.defaultFragmentLength = extendReads
 
-            self.extendReads = True
         else:
             self.defaultFragmentLength = 'read length'
-            self.extendReads = False
 
         self.numberOfProcessors = numberOfProcessors
         self.verbose = verbose
@@ -617,16 +618,6 @@ class CountReadsPerBin(object):
         >>> c.get_fragment_from_read(test.getRead("single-reverse"))
         [(5001618, 5001654)]
         """
-        # if no extension is needed, use pysam get_blocks
-        # to identify start and end reference positions.
-        # get_blocks return a list of start and end positions
-        # based on the CIGAR if skipped regions are found.
-        # E.g for a cigar of 40M260N22M
-        # get blocks return two elements for the first 40 matches
-        # and the for the last 22 matches.
-        if not self.extendReads:
-            return read.get_blocks()
-
         def is_proper_pair():
             """
             Checks if a read is proper pair meaning that both mates are facing each other and are in
@@ -647,8 +638,17 @@ class CountReadsPerBin(object):
                 return True
             return False
 
-        if self.extendReads:
+        # if no extension is needed, use pysam get_blocks
+        # to identify start and end reference positions.
+        # get_blocks return a list of start and end positions
+        # based on the CIGAR if skipped regions are found.
+        # E.g for a cigar of 40M260N22M
+        # get blocks return two elements for the first 40 matches
+        # and the for the last 22 matches.
+        if self.defaultFragmentLength == 'read length':
+            return read.get_blocks()
 
+        else:
             if is_proper_pair():
 
                 if read.is_reverse:
@@ -659,9 +659,6 @@ class CountReadsPerBin(object):
                     # the end of the fragment is defined as
                     # the start of the forward read plus the insert length
                     fragmentEnd = read.reference_start + abs(read.template_length)
-
-            elif self.defaultFragmentLength == 'read length':
-                return read.get_blocks()
 
             # Extend using the default fragment length
             else:

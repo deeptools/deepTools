@@ -51,17 +51,21 @@ class TestCountReadsPerBin(object):
                                         [1, 2.]]))
 
     def test_count_reads_in_region_extension_1(self):
+        """
+        In this case when read extension is smaller than read length
+        extension is turned off and a warning is printed.
+        """
         self.c = cr.CountReadsPerBin([self.bamFile1, self.bamFile2],
                                      binLength=1,
-                                     stepSize=1,
-                                     extendReads=1)
+                                     stepSize=50,
+                                     extendReads=25)
 
-        resp, _ = self.c.count_reads_in_region(self.chrom, 98, 102)
+        resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200)
 
-        nt.assert_equal(resp, np.array([[0., 0.],
-                                        [0., 1.],
-                                        [1., 1.],
-                                        [0., 0.]]))
+        nt.assert_equal(resp, np.array([[0, 0.],
+                                        [0, 1.],
+                                        [1, 1.],
+                                        [1, 2.]]))
 
     def test_count_reads_in_region_total(self):
         """ count the reads over the whole region
@@ -138,7 +142,6 @@ class TestCountReadsPerBin(object):
 
         # turn of read extension
         self.c.extendPairedEnds = False
-        self.c.defaultFragmentLength = None
         resp = self.c.get_coverage_of_region(pysam.AlignmentFile(self.bamFile1),
                                              'chr_cigar', 0, 100, 10)
         nt.assert_array_equal(resp, np.array([0, 1, 1, 0, 1, 0, 0, 0, 0, 0]))
