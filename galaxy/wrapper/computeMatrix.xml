@@ -29,7 +29,7 @@
 
             #if $output.showOutputSettings == "yes"
                 #if $output.saveData:
-                    --outFileNameData '$outFileNameData' 
+                    --outFileNameData '$outFileNameData'
                 #end if
                 #if $output.saveMatrix:
                 --outFileNameMatrix '$outFileNameMatrix'
@@ -213,7 +213,7 @@
         <expand macro="output_save_matrix_values" />
     </outputs>
     <!--
-    computeMatrix -S test.bw -R test2.bed -a 100 -b 100 -bs 1 
+    computeMatrix -S test.bw -R test2.bed -a 100 -b 100 -bs 1
     -->
     <tests>
         <test>
@@ -270,7 +270,7 @@ regions according to their score by making use of its advanced output options.
    :alt: Relationship between computeMatrix, heatmapper and profiler
 
 
-You can find more details on the computeMatrix wiki page: https://github.com/fidelram/deepTools/wiki/Visualizations#wiki-computeMatrix
+You can find more details on the computeMatrix doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/computeMatrix.html
 
 
 -----

@@ -20,7 +20,7 @@
             --labels '#echo "' '".join($labels)#'
 
             #if $outRawCounts:
-                --outRawCounts '$outFileRawCounts' 
+                --outRawCounts '$outFileRawCounts'
             #end if
 
             #if $mode.modeOpt == "bins":
@@ -44,7 +44,7 @@
         <expand macro="multiple_input_bams" />
 
         <conditional name="mode">
-            <param name="modeOpt" type="select" label="Choose computation mode" 
+            <param name="modeOpt" type="select" label="Choose computation mode"
                     help="In the bins mode, the correlation is computed based on equal
                     length bins. In the BED file mode, as list of genomic regions in BED
                     format has to be given. For each region in the BED file the number of
@@ -54,7 +54,7 @@
                 <option value="BED-file">Limit correlation to certain regions (BED file)</option>
             </param>
             <when value="bins">
-                <param name="binSize" type="integer" value="10000" min="1" 
+                <param name="binSize" type="integer" value="10000" min="1"
                     label="Bin size in bp"
                     help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
 
@@ -115,7 +115,7 @@ pairs of BAM files. Finally, a heatmap is drawn based on the similarity of the s
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
-You can find more details on the bamCorrelate wiki page: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamCorrelate
+You can find more details on the bamCorrelate doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCorrelate.html
 
 
 **Output files**:

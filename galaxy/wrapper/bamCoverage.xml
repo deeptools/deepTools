@@ -54,7 +54,7 @@
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
 
-        <param name="binSize" type="integer" value="50" min="1" 
+        <param name="binSize" type="integer" value="50" min="1"
             label="Bin size in bp"
             help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. "/>
 
@@ -171,7 +171,7 @@ fragment length.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
-You can find more details on the bamCoverage wiki page: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage
+You can find more details on the bamCoverage doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCoverage.html
 
 
 **Output files**:

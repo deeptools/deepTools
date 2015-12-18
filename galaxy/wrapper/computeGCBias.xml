@@ -141,7 +141,7 @@ depicting the ratio of observed/expected reads per genomic GC content bin.
 
 In order to estimate how many reads with what kind of GC content one should have sequenced, we first need to determine how many regions the specific
 reference genome contains for each amount of GC content, i.e. how many regions in the genome have 50% GC (or 10% GC or 90% GC or...).
-We then sample a large number of equally sized genome bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any 
+We then sample a large number of equally sized genome bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any
 sequencing as it only depends on the respective reference genome (i.e. it will most likely vary between mouse and fruit fly due to their genome's different GC contents).
 The OBSERVED values are based on the reads from the sequenced sample. Instead of noting how many genomic regions there are per GC content, we now count the reads per GC content.
 In an ideal sample without GC bias, the ratio of OBSERVED/EXPECTED values should be close to 1 regardless of the GC content. Due to PCR (over)amplifications, the majority of ChIP samples
@@ -150,7 +150,7 @@ usually shows a significant bias towards reads with high GC content (>50%)
 .. image:: $PATH_TO_IMAGES/QC_GCplots_input.png
 
 
-You can find more details on the computeGCBias wiki page: computeGCBias wiki: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
+You can find more details on the computeGCBias doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/computeGCBias.html
 
 
 **Output files**:
