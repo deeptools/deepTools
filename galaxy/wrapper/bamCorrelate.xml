@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_correlate" name="bamCorrelate" version="@WRAPPER_VERSION@.0">
-    <description>correlates pairs of BAM files</description>
+    <description>calculates average read coverages for a list of two or more BAM files</description>
     <macros>
         <token name="@BINARY@">bamCorrelate</token>
         <import>deepTools_macros.xml</import>
@@ -101,28 +101,19 @@
     </tests>
     <help>
 <![CDATA[
+
 **What it does**
 
-This tool is useful to assess the overall similarity of different BAM files. A typical application
-is to check the correlation between replicates or published data sets.
-
-The tool splits the genomes into bins of given length. For each bin, the number of reads
-found in each BAM file is counted and a correlation (either Pearson or Spearman) is computed for all
-pairs of BAM files. Finally, a heatmap is drawn based on the similarity of the samples.
-
-
-.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
-   :alt: Heatmap of RNA Polymerase II ChIP-seq
-
-
-You can find more details on the bamCorrelate wiki page: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamCorrelate
-
+This tool generates a matrix of read-coverages for a list of genomic regions and a number of two or more samples (BAM files)
+The tool splits the genome into bins of given length. For each bin, the number of reads found in each BAM file is counted.
+Alternatively, a bed file with pre-defined genomic regions can be provided. In each case the calculation can further be limited to
+a given genomic interval (e.g. a given chromosome). This option is mostly used for testing and efficiency.
+A typical follow-up application is to check and visuzalize the similarity between replicates or published data sets (see: plotPCA and plotCorrelation).
 
 **Output files**:
 
-- **diagnostic plot**: clustered heatmap displaying the values for each pair-wise correlation, see below for an example
-- data matrix (optional): if you want to plot the correlation values using a different program, e.g. R, this matrix can be used
-
+- **score matrix**: a compressed matrix where every row correponds to a genome region (or bin) and each column corresponds to a sample (BAM file)
+- optional: uncompressed **score matrix** for 
 
 -----
 

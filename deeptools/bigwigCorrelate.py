@@ -16,16 +16,14 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-bigwigCorrelate computes the overall similarity between two or more bigWig
-files based on coverage means of genomic regions. The correlation analysis
-is performed for the entire genome by running the program in 'bins' mode,
-or for certain regions only in 'BED-file' mode. Because the computation
-of the data is time consuming the program
-outputs an intermediary file that can then be used with the 'plotCorrelation' tool
-for visualizing the correlation.
+Given two or more bigWig files, bigwigCorrelate computes the average scores for each of the files in every genomic region.
+This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
+mode. Most commonly, the output of bigwigCorrelate is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
-detailed help:
+detailed sub-commands help available under:
+
   bigwigCorrelate bins -h
+
   bigwigCorrelate BED-file -h
 
 """,
@@ -53,11 +51,11 @@ detailed help:
         parents=[bigwigCorrelateArgs(case='bins'),
                  parent_parser,
                  ],
-        help="The correlation is based on arbitrary bins of similar "
+        help="The average score is based on bins of same "
              "size (10k bp by default), which consecutively cover the "
-             "entire genome. The only exception is the last bin, which "
-             "is regularly smaller. This mode is useful to assess the "
-             "overall similarity of bigWig files.",
+             "entire genome. The only exception is the last bin of a chromosome, which "
+             "is regularly smaller. The output of this mode is commonly used to assess the "
+             "overall similarity of different samples represented by different bigWig files.",
         add_help=False,
         usage='bigWigCorrelate '
               '-b file1.bw file2.bw '
@@ -70,9 +68,9 @@ detailed help:
         parents=[bigwigCorrelateArgs(case='BED-file'),
                  parent_parser],
         help="The user provides a BED file that contains all regions "
-             "that should be considered for the correlation analysis. A "
-             "common use is to compare ChIP-seq coverages between two "
-             "different samples for a set of peak regions.",
+             "that should be considered for the  analysis. A "
+             "common use is to compare scores (e.g. ChIP-seq scores) between "
+             "different samples for a set of pre-defined peak regions.",
         usage='bigwigCorrelate '
               '-b file1.bw file2.bw '
               '-out results.npz --BED selection.bed\n',
@@ -106,7 +104,7 @@ def bigwigCorrelateArgs(case='bins'):
                           required=True)
 
     required.add_argument('--outFileName', '-out',
-                          help='File name to save the gzipped matrix file '
+                          help='File name to save the compressed matrix file (npz format)'
                           'needed by the "heatmapper" and "profiler" tools.',
                           type=argparse.FileType('w'),
                           required=True)
@@ -133,13 +131,13 @@ def bigwigCorrelateArgs(case='bins'):
         optional.add_argument('--binSize', '-bs',
                               metavar='INT',
                               help='Size (in base pairs) of the windows sampled '
-                              'and correlated from the genome.',
+                              'from the genome.',
                               default=10000,
                               type=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
-                              help='By default, bamCorrelate considers consecutive '
+                              help='By default, bigwigCorrelate considers consecutive '
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can be given. Larger distances '
@@ -172,7 +170,7 @@ def bigwigCorrelateArgs(case='bins'):
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outRawCounts',
-                       help='Save raw counts (coverages) to file.',
+                       help='Save raw scores in each bigWig file to a single uncompressed file.',
                        metavar='FILE',
                        type=argparse.FileType('w'))
 
