@@ -102,7 +102,7 @@
 
     <xml name="kmeans_clustering">
         <conditional name="used_multiple_regions">
-            <param name="used_multiple_regions_options" type="select" 
+            <param name="used_multiple_regions_options" type="select"
                 label="Did you compute the matrix with more than one groups of regions?"
                 help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
                 <option value="yes">Yes, I used multiple groups of regions</option>
@@ -115,7 +115,7 @@
                         <option value="kmeans">Kmeans clustering</option>
                     </param>
                     <when value="kmeans">
-                        <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute" 
+                        <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
                             help="When this option is set, then the matrix is split into clusters using the kmeans algorithm. Only works for data that is not grouped, otherwise only the first group will be clustered. If more specific clustering methods are required it is advisable to save the underlying matrix and run the clustering using other software. The plotting of the clustering may fail (Error: Segmentation fault) if a cluster has very few members compared to the total number or regions. (default: None)."/>
                     </when>
                     <when value="none" />
@@ -154,7 +154,7 @@
 
     <xml name="plotNumbers">
         <param argument="--plotNumbers" type="boolean" truevalue="--plotNumbers" falsevalue=""
-            label="Plot the correlation value" 
+            label="Plot the correlation value"
             help="If set, then the correlation number is plotted on top of the heatmap."/>
     </xml>
 
@@ -274,9 +274,9 @@ If you would like to give us feedback or you run into any trouble, please send a
 
 This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
 
-.. _Bioinformatics and Deep-Sequencing Unit: http://www3.ie-freiburg.mpg.de/facilities/research-facilities/bioinformatics-and-deep-sequencing-unit/
+.. _Bioinformatics and Deep-Sequencing Unit: http://www.ie-freiburg.mpg.de/bioinformaticsfac
 .. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _help site: https://github.com/fidelram/deepTools/wiki/
+.. _help site: https://deeptools.readthedocs.org/
 
     </token>
     <xml name="citations">
@@ -294,7 +294,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     <xml name="multiple_input_bigwigs">
         <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True"
-            label="Bigwig file" 
+            label="Bigwig file"
             help="The Bigwig file must be sorted."/>
     </xml>
 
@@ -360,8 +360,8 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     <xml name="effectiveGenomeSize">
         <conditional name="effectiveGenomeSize">
             <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
-                help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded. 
-                    Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly. 
+                help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded.
+                    Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly.
                     See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
                 <option value="93260000">ce10 (93260000)</option>
                 <option value="121400000">dm3 (121400000)</option>
@@ -445,7 +445,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: Heatmap values">
             <filter>
             ((
-                output['showOutputSettings'] == 'yes' and 
+                output['showOutputSettings'] == 'yes' and
                 output['saveMatrix'] is True
             ))
             </filter>
@@ -456,7 +456,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
             <filter>
             ((
-                output['showOutputSettings'] == 'yes' and 
+                output['showOutputSettings'] == 'yes' and
                 output['saveData'] is True
             ))
             </filter>
@@ -464,7 +464,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         <data format="bed" name="outFileSortedRegions" label="${tool.name} on ${on_string}: sorted/filtered regions">
             <filter>
             ((
-                output['showOutputSettings'] == 'yes' and 
+                output['showOutputSettings'] == 'yes' and
                 output['saveSortedRegions'] is True
             ))
             </filter>

@@ -17,7 +17,7 @@
             #if $output.showOutputSettings == "yes"
                 --plotFileFormat $output.outFileFormat
                 #if $output.saveRawCounts:
-                    --outRawCounts '$outFileRawCounts' 
+                    --outRawCounts '$outFileRawCounts'
                 #end if
             #else
                 --plotFileFormat 'png'
@@ -57,10 +57,10 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param argument="--binSize" type="integer" value="500" min="1" 
+                <param argument="--binSize" type="integer" value="500" min="1"
                    label="Bin size in bp"
                    help="Length in base pairs for a window used to sample the genome."/>
-                <param argument="--numberOfSamples" type="integer" value="100000" min="1" 
+                <param argument="--numberOfSamples" type="integer" value="100000" min="1"
                    label="Number of samples"
                    help="Number of samples taken from the genome to compute the scaling factors."/>
                 <expand macro="read_processing_options" />
@@ -86,7 +86,7 @@
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>
             ((
-                output['showOutputSettings'] == 'yes' and 
+                output['showOutputSettings'] == 'yes' and
                 output['saveRawCounts'] is True
             ))
             </filter>
@@ -111,6 +111,8 @@
     </tests>
     <help>
 <![CDATA[
+
+
 **What it does**
 
 This tool is useful to assess the strength of a ChIP (i.e. how clearly the enrichment signal can be separated from the background signal)
@@ -134,7 +136,15 @@ You can find more details on the bamFingerprint wiki page: https://github.com/fi
 **Output files**:
 
 - Diagnostic plot
-- Data matrix of raw counts
+- (optional) Data matrix of raw counts
+
+**Output with test dataset**:
+
+Following is the output of bamFingerPrint with our test ChIP-Seq datasets, limiting analysis to chromosome X. Single-end reads were extended to
+200 bp (advanced options).
+
+.. image:: $PATH_TO_IMAGES/bamFP_galaxy_output.png
+
 
 -----
 
