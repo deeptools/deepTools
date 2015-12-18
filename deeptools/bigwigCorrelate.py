@@ -170,7 +170,7 @@ def bigwigCorrelateArgs(case='bins'):
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outRawCounts',
-                       help='Save raw scores in each bigWig file to a single file.',
+                       help='Save raw scores in each bigWig file to a single uncompressed file.',
                        metavar='FILE',
                        type=argparse.FileType('w'))
 
