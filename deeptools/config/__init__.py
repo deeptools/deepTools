@@ -50,7 +50,8 @@ if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
     config = ConfigParser.ConfigParser()
     config.add_section('general')
     config.set('general', 'default_proc_number', 'max/2')
-    config.set('general', 'tmp_dir', tempfile.gettempdir()) #N.B., the TMPDIR variable can be used!
+    # N.B., the TMPDIR variable can be used!
+    config.set('general', 'tmp_dir', tempfile.gettempdir())
 
     config.add_section('external_tools')
     config.set('external_tools', 'sort', 'sort')

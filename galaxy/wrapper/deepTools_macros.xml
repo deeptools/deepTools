@@ -14,7 +14,11 @@
     </xml>
 
     <token name="@ADVANCED_OPTS_READ_PROCESSING@">
-        --extendReads $advancedOpt.extendReads
+        #if $advancedOpt.doExtendCustom == 'custom':
+            --extendReads $advancedOpt.extendReadsValue
+        #else if $advancedOpt.doExtendCustom == 'yes':
+            --extendReads
+        #end if
         $advancedOpt.ignoreDuplicates
         $advancedOpt.centerReads
         #if $advancedOpt.minMappingQuality:
@@ -159,14 +163,26 @@
     </xml>
 
     <xml name="extendReads">
-        <param argument="--extendReads" type="integer" value="" optional="True"
-            label="Extend reads to the given average fragment size"
-            help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
-                    By default *each* read mate is extended.
-                    This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
-                    Unmated reads, mate reads that map on different chromosomes or too far apart are extended to the given value.
-                    Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
-                    recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data."/>
+        <conditional name="doExtendCustom">
+            <param name="doExtend" type="select" label="Extend reads to the given average fragment size."
+                help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
+                        By default *each* read mate is extended.
+                        This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
+                        Unmated reads, mate reads that map on different chromosomes or too far apart are extended to the given value.
+                        Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
+                        recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data.">
+                <option value="no" selected="True">No extension. The default value and most typically appropriate.</option>
+                <option value="yes">Paired-end extension. Suitable only for paired-end datasets.</option>
+                <option value="custom">A custom length, which will be applied to ALL reads.</option>
+            </param>
+            <when value="no" />
+            <when value="yes" />
+            <when value="custom">
+                <param name="extendReadsValue" type="integer" value="300" min="1"
+                    label="Extend reads to the given average fragment size"
+                    help="Extend all reads to this length" />
+            </when>
+        </conditional>
     </xml>
 
     <xml name="corMethod">
