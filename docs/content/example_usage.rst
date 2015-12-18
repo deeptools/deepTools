@@ -18,7 +18,7 @@ are slides that we used for teaching at the University of Freiburg with
 more details on the deepTools usage and aims in regard to ChIP-seq.
 However, while some tools, such as `bamFingerprint`, specifically
 address ChIP-seq-issues, the majority of tools is widely applicable
-to NGS data, including RNA-seq.
+to deep-sequencing data, including RNA-seq.
 
 So, how does a typical, basic ChIP-seq workflow look like for us?
 
@@ -30,6 +30,8 @@ file(s) of deeply-sequenced samples. After a first quality control using
 `FASTQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__,
 we align the reads to the reference genome, e.g. using
 `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml>`__.
+The standard output of bowtie2 (and other mapping tools) is in the form of sorted and indexed BAM files
+which provide the common input and starting point for all subsequent deepTools analyses. 
 We then use deepTools to assess the quality of the aligned reads:
 
 #. **Correlation between BAM files** (``bamCorrelate`` and ``plotCorrelation``). 
@@ -40,9 +42,10 @@ We then use deepTools to assess the quality of the aligned reads:
    antibody or the same cell type etc. For instance, replicates should
    correlate better than differently treated samples.
 #. **Correlation between BIGWIG files** (``bigwigCorrelate`` and ``plotCorrelation``). 
-   Frequently we want to compare genome-wide data stored as "tracks" in public repositories or more general scores
-   that are not necessarily based on read-coverages. To this end we provide an efficient module to handle
-   BIGWIG files and compare them and their correlation for several samples. In addition we provide a tool
+   Soemtimes we want to compare our alignements with genome-wide data stored as "tracks" in public repositories 
+   or other more general scores that are not necessarily based on read-coverages. 
+   To this end we provide an efficient module to handle BIGWIG files and compare them and their 
+   correlation for several samples. In addition we provide a tool
    (``plotPCA``) to perform a Principle Component Analysis of the same underlying data. 
 #. **GC bias check** (``computeGCbias``). Many sequencing protocols
    require several rounds of PCR-based amplification of the DNA to be
