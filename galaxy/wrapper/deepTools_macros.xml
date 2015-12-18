@@ -390,7 +390,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     <xml name="skipNAs">
         <param argument="--skipNAs" type="boolean" truevalue="--skipNAs" falsevalue="" checked="False"
-            label="Treat missing data as zero?"
+            label="Ignore missing data?"
             help="This parameter determines if non-covered regions
                  (regions without overlapping reads) in a bam/bigWig file
                  should be skipped. The default is to treat those
