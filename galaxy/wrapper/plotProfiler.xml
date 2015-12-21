@@ -49,7 +49,7 @@
                     --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
                 #end if
 
-                $advancedOpt.onePlotPerGroup
+                $advancedOpt.perGroup
 
                 #if $advancedOpt.yMin:
                     --yMin $advancedOpt.yMin
@@ -138,11 +138,12 @@
                         message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
 
-                <param argument="--onePlotPerGroup" type="boolean" truevalue="--onePlotPerGroup" falsevalue=""
+                <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Do one plot per group"
-                    help="When the region file contains groups separated by &quot;#&quot;, the default is
-                    to plot the averages for the distinct plots in one plot. If this option is set, each group
-                    will get its own plot, stacked on top of each other." />
+                    help="When clustering is applied to the data, or the region file contains groups separated by &quot;#&quot;,
+                    plot the groups next to each other. The default is to plot the samples next to each other.
+                    If this option is set, each group (or cluster) will get its own plot, with different samples
+                    stacked on top of each other." />
 
 
                 <param argument="--yMin" type="float" value="" size="3" optional="true"
