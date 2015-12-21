@@ -15,7 +15,7 @@
             $mode.modeOpt
             @THREADS@
 
-            --outFileName $outFile
+            --outFileName '$outFile'
             --bamfiles '#echo "' '".join($files)#'
             --labels '#echo "' '".join($labels)#'
 
