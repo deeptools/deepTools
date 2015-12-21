@@ -189,6 +189,7 @@
                           depicted as black areas in the heatmap by default." />
 
                 <expand macro="skipZeros" />
+                <expand macro="skipNAs" />
 
                 <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"

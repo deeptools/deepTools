@@ -44,7 +44,7 @@
         #end if
         --colorMap '$colorMap'
         $plotNumbers
-        --plotTitle $plotTitle
+        --plotTitle '$plotTitle'
     </token>
 
 
@@ -366,15 +366,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </conditional>
     </xml>
 
-    <xml name="image_file_format">
-        <param argument="--outFileFormat" type="select" label="Image file format">
-            <option value="png" selected="true">png</option>
-            <option value="pdf">pdf</option>
-            <option value="svg">svg</option>
-            <option value="eps">eps</option>
-        </param>
-    </xml>
-
     <xml name="skipNAs">
         <param argument="--skipNAs" type="boolean" truevalue="--skipNAs" falsevalue="" checked="False"
             label="Ignore missing data?"
@@ -407,13 +398,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </conditional>
     </xml>
 
+
     <xml name="input_image_file_format">
-        <param name="outFileFormat" type="select" label="Image file format">
+        <param argument="--outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
-            <option value="emf">emf</option>
         </param>
     </xml>
 
@@ -423,7 +414,16 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <when input="output.outFileFormat" value="pdf" format="pdf" />
                 <when input="output.outFileFormat" value="svg" format="svg" />
                 <when input="output.outFileFormat" value="eps" format="eps" />
-                <when input="output.outFileFormat" value="emf" format="emf" />
+            </change_format>
+        </data>
+    </xml>
+
+    <xml name="output_image_file_format_not_nested">
+        <data format="png" name="outFileName" label="${tool.name} image">
+            <change_format>
+                <when input="outFileFormat" value="pdf" format="pdf" />
+                <when input="outFileFormat" value="svg" format="svg" />
+                <when input="outFileFormat" value="eps" format="eps" />
             </change_format>
         </data>
     </xml>

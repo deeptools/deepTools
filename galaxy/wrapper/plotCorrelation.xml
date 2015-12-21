@@ -15,7 +15,9 @@
             $skipZeros
             --plotFileFormat "$outFileFormat"
             $removeOutliers
-            --outFileCorMatrix "$matrix"
+            #if $outFileCorMatrix:
+                --outFileCorMatrix "$matrix"
+            #end if
             @HEATMAP_OPTIONS@
 
 ]]>
@@ -31,7 +33,7 @@
 
         <expand macro="skipZeros" />
 
-        <expand macro="image_file_format" />
+        <expand macro="input_image_file_format" />
 
         <param argument="--removeOutliers" type="boolean"
             truevalue="--removeOutliers" falsevalue="" label="Remove regions with very large counts"
@@ -51,7 +53,7 @@
 
     </inputs>
     <outputs>
-        <expand macro="output_image_file_format" />
+        <expand macro="output_image_file_format_not_nested" />
         <data format="tabular" name="matrix" label="${tool.name} on ${on_string}: Correlation matrix">
             <filter>outFileCorMatrix is True</filter>
         </data>
@@ -70,7 +72,7 @@
             <param name="whatToPlot" value="scatterplot" />
             <param name="removeOutliers" value="True" />
             <param name="plotTitle" value="Test Plot" />
-            <output name="outFileName" file="plotCorrelation_result2.png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotCorrelation_result2.png" ftpye="png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>
