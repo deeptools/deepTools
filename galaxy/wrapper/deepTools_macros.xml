@@ -40,15 +40,15 @@
     </xml>
 
     <token name="@HEATMAP_OPTIONS@">
-        #if $zMin:
-            --zMin $zMin
+        #if $plotting_type.zMin:
+            --zMin $plotting_type.zMin
         #end if
-        #if $zMax:
-            --zMax $zMax
+        #if $plotting_type.zMax:
+            --zMax $plotting_type.zMax
         #end if
-        --colorMap '$colorMap'
-        $plotNumbers
-        --plotTitle '$plotTitle'
+        --colorMap '$plotting_type.colorMap'
+        $plotting_type.plotNumbers
+        --plotTitle '$plotting_type.plotTitle'
     </token>
 
 

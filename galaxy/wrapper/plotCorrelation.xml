@@ -11,14 +11,18 @@
             --corData "$corData"
             --plotFile "$outFileName"
             --corMethod "$corMethod"
-            --whatToPlot "$whatToPlot"
+            --whatToPlot "$plotting_type.whatToPlot"
+            #if str($plotting_type.whatToPlot) == 'heatmap':
+                @HEATMAP_OPTIONS@
+            #else:
+                --plotTitle '$plotting_type.plotTitle'
+            #end if
             $skipZeros
             --plotFileFormat "$outFileFormat"
             $removeOutliers
             #if $outFileCorMatrix:
                 --outFileCorMatrix "$matrix"
             #end if
-            @HEATMAP_OPTIONS@
 
 ]]>
     </command>
@@ -26,10 +30,18 @@
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
         <expand macro="corMethod" />
 
-        <param argument="--whatToPlot" type="select" label="Plotting type">
-            <option value="heatmap" selected="True">Heatmap</option>
-            <option value="scatterplot">Scatterplot</option>
-        </param>
+        <conditional name="plotting_type" >
+            <param argument="--whatToPlot" type="select" label="Plotting type">
+                <option value="heatmap" selected="True">Heatmap</option>
+                <option value="scatterplot">Scatterplot</option>
+            </param>
+            <when value="heatmap">
+                <expand macro="heatmap_options" />
+            </when>
+            <when value="scatterplot">
+                <expand macro="plotTitle" />
+            </when>
+        </conditional>
 
         <expand macro="skipZeros" />
 
@@ -49,7 +61,6 @@
                 unusually high counts."/>
 
         <param name="outFileCorMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
-        <expand macro="heatmap_options" />
 
     </inputs>
     <outputs>
