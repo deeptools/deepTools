@@ -14,7 +14,11 @@
     </xml>
 
     <token name="@ADVANCED_OPTS_READ_PROCESSING@">
-        --extendReads $advancedOpt.extendReads
+        #if $advancedOpt.doExtendCustom.doExtend == 'custom':
+            --extendReads $advancedOpt.doExtendCustom.extendReadsValue
+        #else if $advancedOpt.doExtendCustom.doExtend == 'yes':
+            --extendReads
+        #end if
         $advancedOpt.ignoreDuplicates
         $advancedOpt.centerReads
         #if $advancedOpt.minMappingQuality:
@@ -36,15 +40,15 @@
     </xml>
 
     <token name="@HEATMAP_OPTIONS@">
-        #if $zMin:
-            --zMin $zMin
+        #if $plotting_type.zMin:
+            --zMin $plotting_type.zMin
         #end if
-        #if $zMax:
-            --zMax $zMax
+        #if $plotting_type.zMax:
+            --zMax $plotting_type.zMax
         #end if
-        --colorMap '$colorMap'
-        $plotNumbers
-        --plotTitle $plotTitle
+        --colorMap '$plotting_type.colorMap'
+        $plotting_type.plotNumbers
+        --plotTitle '$plotting_type.plotTitle'
     </token>
 
 
@@ -55,9 +59,9 @@
     </xml>
 
     <xml name="zMin_zMax">
-        <param argument="--zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
+        <param argument="--zMin" type="float" value="" optional="true" label="Minimum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
-        <param argument="--zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
+        <param argument="--zMax" type="float" value="" optional="true" label="Maximum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
     </xml>
 
@@ -146,14 +150,26 @@
     </xml>
 
     <xml name="extendReads">
-        <param argument="--extendReads" type="integer" value="" optional="True"
-            label="Extend reads to the given average fragment size"
-            help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
-                    By default *each* read mate is extended.
-                    This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
-                    Unmated reads, mate reads that map on different chromosomes or too far apart are extended to the given value.
-                    Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
-                    recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data."/>
+        <conditional name="doExtendCustom">
+            <param name="doExtend" type="select" label="Extend reads to the given average fragment size."
+                help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
+                        By default *each* read mate is extended.
+                        This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
+                        Unmated reads, mate reads that map on different chromosomes or too far apart are extended to the given value.
+                        Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
+                        recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data.">
+                <option value="no" selected="True">No extension. The default value and most typically appropriate.</option>
+                <option value="yes">Paired-end extension. Suitable only for paired-end datasets.</option>
+                <option value="custom">A custom length, which will be applied to ALL reads.</option>
+            </param>
+            <when value="no" />
+            <when value="yes" />
+            <when value="custom">
+                <param name="extendReadsValue" type="integer" value="300" min="1"
+                    label="Extend reads to the given average fragment size"
+                    help="Extend all reads to this length" />
+            </when>
+        </conditional>
     </xml>
 
     <xml name="corMethod">
@@ -274,13 +290,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bams">
-        <param argument="--bamfiles" type="data" format="bam"
+        <param argument="--bamfiles" type="data" format="bam" min="2"
             label="Bam file" multiple="true"
             help="The BAM file must be sorted."/>
     </xml>
 
     <xml name="multiple_input_bigwigs">
-        <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True"
+        <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="2"
             label="Bigwig file"
             help="The Bigwig file must be sorted."/>
     </xml>
@@ -340,7 +356,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     #if $source.ref_source=="history":
         --genome $source.input1
     #else:
-        --genome "${source.input1_2bit.fields.path}"
+        --genome "$source.input1_2bit.fields.path"
     #end if
     </token>
 
@@ -364,15 +380,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <when value="121400000" />
             <when value="93260000" />
         </conditional>
-    </xml>
-
-    <xml name="image_file_format">
-        <param argument="--outFileFormat" type="select" label="Image file format">
-            <option value="png" selected="true">png</option>
-            <option value="pdf">pdf</option>
-            <option value="svg">svg</option>
-            <option value="eps">eps</option>
-        </param>
     </xml>
 
     <xml name="skipNAs">
@@ -407,13 +414,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </conditional>
     </xml>
 
+
     <xml name="input_image_file_format">
-        <param name="outFileFormat" type="select" label="Image file format">
+        <param argument="--outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
-            <option value="emf">emf</option>
         </param>
     </xml>
 
@@ -423,7 +430,16 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <when input="output.outFileFormat" value="pdf" format="pdf" />
                 <when input="output.outFileFormat" value="svg" format="svg" />
                 <when input="output.outFileFormat" value="eps" format="eps" />
-                <when input="output.outFileFormat" value="emf" format="emf" />
+            </change_format>
+        </data>
+    </xml>
+
+    <xml name="output_image_file_format_not_nested">
+        <data format="png" name="outFileName" label="${tool.name} image">
+            <change_format>
+                <when input="outFileFormat" value="pdf" format="pdf" />
+                <when input="outFileFormat" value="svg" format="svg" />
+                <when input="outFileFormat" value="eps" format="eps" />
             </change_format>
         </data>
     </xml>

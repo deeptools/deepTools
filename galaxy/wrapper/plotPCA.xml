@@ -16,18 +16,18 @@
     </command>
     <inputs>
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
-        <expand macro="image_file_format" />
+        <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
     </inputs>
     <outputs>
-        <expand macro="output_image_file_format" />
+        <expand macro="output_image_file_format_not_nested" />
     </outputs>
     <tests>
         <test>
             <param name="corData" value="bamCorrelate_result2.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
-            <output name="outFileName" file="plotPCA_result1.png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>

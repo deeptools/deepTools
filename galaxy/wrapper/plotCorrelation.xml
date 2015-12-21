@@ -11,12 +11,18 @@
             --corData "$corData"
             --plotFile "$outFileName"
             --corMethod "$corMethod"
-            --whatToPlot "$whatToPlot"
+            --whatToPlot "$plotting_type.whatToPlot"
+            #if str($plotting_type.whatToPlot) == 'heatmap':
+                @HEATMAP_OPTIONS@
+            #else:
+                --plotTitle '$plotting_type.plotTitle'
+            #end if
             $skipZeros
             --plotFileFormat "$outFileFormat"
             $removeOutliers
-            --outFileCorMatrix "$matrix"
-            @HEATMAP_OPTIONS@
+            #if $outFileCorMatrix:
+                --outFileCorMatrix "$matrix"
+            #end if
 
 ]]>
     </command>
@@ -24,14 +30,22 @@
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
         <expand macro="corMethod" />
 
-        <param argument="--whatToPlot" type="select" label="Plotting type">
-            <option value="heatmap" selected="True">Heatmap</option>
-            <option value="scatterplot">Scatterplot</option>
-        </param>
+        <conditional name="plotting_type" >
+            <param argument="--whatToPlot" type="select" label="Plotting type">
+                <option value="heatmap" selected="True">Heatmap</option>
+                <option value="scatterplot">Scatterplot</option>
+            </param>
+            <when value="heatmap">
+                <expand macro="heatmap_options" />
+            </when>
+            <when value="scatterplot">
+                <expand macro="plotTitle" />
+            </when>
+        </conditional>
 
         <expand macro="skipZeros" />
 
-        <expand macro="image_file_format" />
+        <expand macro="input_image_file_format" />
 
         <param argument="--removeOutliers" type="boolean"
             truevalue="--removeOutliers" falsevalue="" label="Remove regions with very large counts"
@@ -47,11 +61,10 @@
                 unusually high counts."/>
 
         <param name="outFileCorMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
-        <expand macro="heatmap_options" />
 
     </inputs>
     <outputs>
-        <expand macro="output_image_file_format" />
+        <expand macro="output_image_file_format_not_nested" />
         <data format="tabular" name="matrix" label="${tool.name} on ${on_string}: Correlation matrix">
             <filter>outFileCorMatrix is True</filter>
         </data>
@@ -70,7 +83,7 @@
             <param name="whatToPlot" value="scatterplot" />
             <param name="removeOutliers" value="True" />
             <param name="plotTitle" value="Test Plot" />
-            <output name="outFileName" file="plotCorrelation_result2.png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotCorrelation_result2.png" ftpye="png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>

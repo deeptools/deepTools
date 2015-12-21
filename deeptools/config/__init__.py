@@ -2,6 +2,7 @@ import os
 import sys
 import ConfigParser
 import subprocess
+import tempfile
 
 
 def checkProgram(program, args, where_to_download):
@@ -12,7 +13,7 @@ def checkProgram(program, args, where_to_download):
 
     """
     if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
-        return
+        return True
 
     try:
         subprocess.Popen([program, args], stderr=subprocess.PIPE,
@@ -49,6 +50,8 @@ if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
     config = ConfigParser.ConfigParser()
     config.add_section('general')
     config.set('general', 'default_proc_number', 'max/2')
+    # N.B., the TMPDIR variable can be used!
+    config.set('general', 'tmp_dir', tempfile.gettempdir())
 
     config.add_section('external_tools')
     config.set('external_tools', 'sort', 'sort')
