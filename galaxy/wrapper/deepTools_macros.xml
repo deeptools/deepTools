@@ -165,7 +165,7 @@
             <when value="no" />
             <when value="yes" />
             <when value="custom">
-                <param argument="--extendReadsValue" type="integer" value="300" min="1"
+                <param argument="extendReadsValue" type="integer" value="300" min="1"
                     label="Extend reads to the given average fragment size"
                     help="Extend all reads to this length" />
             </when>
