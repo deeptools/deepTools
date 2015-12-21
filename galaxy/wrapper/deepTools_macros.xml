@@ -14,9 +14,9 @@
     </xml>
 
     <token name="@ADVANCED_OPTS_READ_PROCESSING@">
-        #if $advancedOpt.doExtendCustom == 'custom':
-            --extendReads $advancedOpt.extendReadsValue
-        #else if $advancedOpt.doExtendCustom == 'yes':
+        #if $advancedOpt.doExtendCustom.doExtend == 'custom':
+            --extendReads $advancedOpt.doExtendCustom.extendReadsValue
+        #else if $advancedOpt.doExtendCustom.doExtend == 'yes':
             --extendReads
         #end if
         $advancedOpt.ignoreDuplicates
