@@ -356,7 +356,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     #if $source.ref_source=="history":
         --genome $source.input1
     #else:
-        --genome "${source.input1_2bit.fields.path}"
+        --genome "$source.input1_2bit.fields.path"
     #end if
     </token>
 
