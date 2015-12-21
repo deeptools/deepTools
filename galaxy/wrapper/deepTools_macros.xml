@@ -55,9 +55,9 @@
     </xml>
 
     <xml name="zMin_zMax">
-        <param argument="--zMin" type="integer" value="" optional="true" label="Minimum value for the heatmap intensities"
+        <param argument="--zMin" type="float" value="" optional="true" label="Minimum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
-        <param argument="--zMax" type="integer" value="" optional="true" label="Maximum value for the heatmap intensities"
+        <param argument="--zMax" type="float" value="" optional="true" label="Maximum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
     </xml>
 
