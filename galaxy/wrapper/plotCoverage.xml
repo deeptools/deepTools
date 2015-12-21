@@ -1,0 +1,101 @@
+<tool id="deeptools_plot_coverage" name="plotCoverage" version="@WRAPPER_VERSION@.0">
+    <description>creates a heatmap of correlation scores between different samples </description>
+    <macros>
+        <token name="@BINARY@">plotCoverage</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements"/>
+    <command>
+<![CDATA[
+        #set files=[]
+        #set labels=[]
+
+        @multiple_input_bams@
+
+        @BINARY@
+
+            @THREADS@
+
+            --plotFile plot.png
+            --bamfiles '#echo "' '".join($files)#'
+            --labels '#echo "' '".join($labels)#'
+
+            #if $outRawCounts:
+                --outRawCounts '$outFileRawCounts' 
+            #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                --numberOfSamples '$advancedOpt.numberOfSamples'
+                $advancedOpt.skipZeros
+
+                #if str($advancedOpt.region).strip() != '':
+                    --region '$advancedOpt.region'
+                #end if
+                --numberOfSamples $advancedOpt.numberOfSamples
+
+                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
+                    --plotTitle '$advancedOpt.plotTitle'
+                #end if
+                @ADVANCED_OPTS_READ_PROCESSING@
+            #end if
+        &&
+
+        mv plot.png '$plotFile'
+
+]]>
+    </command>
+    <inputs>
+
+        <expand macro="multiple_input_bams" />
+
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param argument="--numberOfSamples" type="integer" value="100000" min="1"
+                   label="Number of samples"
+                   help="Number of samples taken from the genome to compute the scaling factors."/>
+                <expand macro="region_limit_operation" />
+                <expand macro="read_processing_options" />
+                <expand macro="skipZeros" />
+                <expand macro="plotTitle" />
+            </when>
+        </conditional>
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
+
+
+    </inputs>
+    <outputs>
+        <data format="png" name="plotFile" label="${tool.name} on ${on_string}: bin counts" />
+        <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
+            <filter>outRawCounts is True</filter>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
+            <!--param name="outFileFormat" value="png" /-->
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="plotTitle" value="Test Title from Galaxy" />
+            <param name="outRawCounts" value="True" />
+            <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
+            <output name="plotFile" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="100" />
+        </test>
+    </tests>
+    <help>
+<![CDATA[
+**What it does**
+
+This tools samples 1 million positions of the genome to build
+a coverage histogram. Multiple bam files are accepted but all should
+correspond to the same genome assembly.
+
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>
