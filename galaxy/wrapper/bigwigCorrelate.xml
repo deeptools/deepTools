@@ -3,7 +3,7 @@
     <macros>
         <token name="@BINARY@">bigwigCorrelate</token>
         <import>deepTools_macros.xml</import>
-    </macros> 
+    </macros>
    <expand macro="requirements" />
     <command>
 <![CDATA[
@@ -22,7 +22,7 @@
             --labels '#echo "' '".join($labels)#'
 
             #if $outRawCounts:
-                --outRawCounts '$outFileRawCounts' 
+                --outRawCounts '$outFileRawCounts'
             #end if
 
             #if $mode.modeOpt == "bins":
@@ -42,7 +42,7 @@
         <expand macro="multiple_input_bigwigs" />
 
         <conditional name="mode">
-            <param name="modeOpt" type="select" label="Choose computation mode" 
+            <param name="modeOpt" type="select" label="Choose computation mode"
                 help="In the bins mode, the correlation is computed based on equal length bins.
                 In the BED file mode, as list of genomic regions in BED format has to be given.
                 For each region in the BED file the number of overlapping reads is counted in
@@ -51,7 +51,7 @@
                 <option value="BED-file">Limit correlation to certain regions (BED file)</option>
             </param>
             <when value="bins">
-                <param name="binSize" type="integer" value="10000" min="1" 
+                <param name="binSize" type="integer" value="10000" min="1"
                     label="Bin size in bp"
                     help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
 
@@ -96,19 +96,18 @@
 <![CDATA[
 **What it does**
 
-bigwigCorrelate computes the overall similarity between two or more bigWig
-files based on coverage means of genomic regions. The correlation analysis
-is performed for the entire genome by running the program in 'bins' mode,
-or for certain regions only in 'BED-file' mode. Pearson or Spearman analyses
-are available to compute correlation coefficients. Results are saved to a
-heat map file. Further output files are optional.
+Given two or more bigWig files, bigwigCorrelate computes the average scores for each of the files in every genomic region.
+This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions
+in 'BED-file' mode. Most commonly, the output of bigwigCorrelate is used by other tools such as 'plotCorrelation' or 'plotPCA'
+for visualization and diagnostic purposes.
 
 
 **Output files**:
 
-- **diagnostic plot**: clustered heatmap displaying the values for each pair-wise correlation
-- data matrix (optional): if you want to plot the correlation values using a different program, e.g. R, this matrix can be used
+- **Coverage scores**: Coverage scores computed and saved in a format detected by 'plotCorrelation' or 'plotPCA' tools.
 
+- Data matrix (optional,select to save raw counts to a file above): If you want to have a look at the coverage values
+  or compute statistics yourself using a different program (like R).
 
 -----
 
