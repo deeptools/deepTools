@@ -296,7 +296,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bigwigs">
-        <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True"
+        <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="2"
             label="Bigwig file"
             help="The Bigwig file must be sorted."/>
     </xml>
