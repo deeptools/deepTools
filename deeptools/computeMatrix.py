@@ -34,7 +34,7 @@ computeMatrix scale-regions --help
 
 """,
             epilog='An example usage is:\n  computeMatrix reference-point -S '
-            '<biwig file> -R <bed file> -b 1000\n \n')
+            '<bigwig file> -R <bed file> -b 1000\n \n')
 
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(__version__))
