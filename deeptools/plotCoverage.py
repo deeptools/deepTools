@@ -108,6 +108,15 @@ def required_args():
                           metavar='FILE',
                           type=argparse.FileType('w'))
 
+    optional.add_argument('--plotFileFormat',
+                          metavar='FILETYPE',
+                          help='Image format type. If given, this option '
+                          'overrides the image format based on the plotFile '
+                          'ending. The available options are: png, emf, '
+                          'eps, pdf and svg.',
+                          default=None,
+                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+
     return parser
 
 
@@ -169,7 +178,7 @@ def main(args=None):
     axs[1].set_xlabel('coverage')
     axs[1].set_ylabel('fraction of bases sampled >= coverage')
     axs[1].legend()
-    plt.savefig(args.plotFile.name)
+    plt.savefig(args.plotFile.name, format=args.plotFileFormat)
 
 if __name__ == "__main__":
     main()
