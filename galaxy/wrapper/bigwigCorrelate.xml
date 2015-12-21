@@ -46,7 +46,7 @@
                 help="In the bins mode, the correlation is computed based on equal length bins.
                 In the BED file mode, as list of genomic regions in BED format has to be given.
                 For each region in the BED file the number of overlapping reads is counted in
-                each of the BAM files. Then the correlation is computed.">
+                each of the BigWig files. Then the correlation is computed.">
                 <option value="bins" selected="true">Bins</option>
                 <option value="BED-file">Limit correlation to certain regions (BED file)</option>
             </param>
