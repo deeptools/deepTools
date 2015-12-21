@@ -65,25 +65,6 @@
             </when>
         </conditional>
 
-    <xml name="bigwigCorrelate_mode_actions">
-        <expand macro="region_limit_operation" />
-
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="includeZeros" />
-                <expand macro="zMin_zMax" />
-                <expand macro="colorMap" />
-                <expand macro="plotTitle" />
-                <expand macro="plotNumbers" />
-            </when>
-        </conditional>
-    </xml>
-
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
