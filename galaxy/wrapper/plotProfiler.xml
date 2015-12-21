@@ -124,7 +124,7 @@
                     <option value="se">add standard error</option>
                     <option value="overlapped_lines">overlapped lines</option>
                 </param>
-                <param argument="--regionsLabel" type="text" value="genes" size="30"
+                <param argument="--regionsLabel" type="text" value="coverage" size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated
                     by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
