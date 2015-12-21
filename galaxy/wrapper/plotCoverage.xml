@@ -16,9 +16,10 @@
 
             @THREADS@
 
-            --plotFile plot.png
+            --plotFile '$outFileName'
             --bamfiles '#echo "' '".join($files)#'
             --labels '#echo "' '".join($labels)#'
+            --plotFileFormat "$outFileFormat"
 
             #if $outRawCounts:
                 --outRawCounts '$outFileRawCounts' 
@@ -38,9 +39,6 @@
                 #end if
                 @ADVANCED_OPTS_READ_PROCESSING@
             #end if
-        &&
-
-        mv plot.png '$plotFile'
 
 ]]>
     </command>
@@ -64,12 +62,14 @@
                 <expand macro="plotTitle" />
             </when>
         </conditional>
+
+        <expand macro="input_image_file_format" />
         <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
 
 
     </inputs>
     <outputs>
-        <data format="png" name="plotFile" label="${tool.name} on ${on_string}: bin counts" />
+        <expand macro="output_image_file_format_not_nested" />
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>outRawCounts is True</filter>
         </data>
@@ -82,7 +82,7 @@
             <param name="plotTitle" value="Test Title from Galaxy" />
             <param name="outRawCounts" value="True" />
             <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
-            <output name="plotFile" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
     </tests>
     <help>
