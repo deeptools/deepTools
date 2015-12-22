@@ -149,7 +149,7 @@
         <test>
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
-            <param name="showAdvancedOpt" value="no" />
+            <param name="showAdvancedOpt" value="yes" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph" />
         </test>
