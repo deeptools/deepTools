@@ -35,7 +35,10 @@ def parse_arguments():
                         type=int,
                         default=1,
                         required=False)
-
+#    optional.add_argument('--plotTitle', '-T',
+#                          help='Title of the plot, to be printed on top of '
+#                          'the generated image. Leave blank for no title.',
+#                          default='')
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
                         action='store_true',
@@ -84,6 +87,9 @@ def main(args=None):
         plt.hist(fragment_len_dict['lengths'], 50,
                  range=(fragment_len_dict['min'], fragment_len_dict['mean'] * 2),
                  normed=True)
+        plt.xlabel('Fragment Length')
+        plt.ylabel('Frequency')
+        #plt.title(args.plotTitle)
         plt.savefig(args.histogram, bbox_inches=0)
 
 
