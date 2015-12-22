@@ -1,5 +1,5 @@
 <tool id="deeptools_correct_gc_bias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
-    <description>uses the output from computeGCBias to generate corrected BAM files</description>
+    <description>uses the output from computeGCBias to generate GC-corrected BAM files</description>
     <macros>
         <token name="@BINARY@">correctGCBias</token>
         <import>deepTools_macros.xml</import>

@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_correlation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap of correlation scores between different samples </description>
+    <description>creates a heatmap or scatterplot of correlation scores between different samples </description>
     <macros>
         <token name="@BINARY@">plotCorrelation</token>
         <import>deepTools_macros.xml</import>

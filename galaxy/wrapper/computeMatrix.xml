@@ -1,5 +1,5 @@
 <tool id="deeptools_compute_matrix" name="computeMatrix" version="@WRAPPER_VERSION@.0">
-    <description>preparation step to plot a heatmap or a profile</description>
+    <description>prepares data for plotting a heatmap or a profile of given regions</description>
     <macros>
         <token name="@BINARY@">computeMatrix</token>
         <import>deepTools_macros.xml</import>
