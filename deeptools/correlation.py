@@ -421,7 +421,7 @@ class Correlation:
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
         for i in range(n):
-            ax1.scatter(mlab_pca.Y[0, i], mlab_pca.Y[1, i],
+            ax1.scatter(mlab_pca.Wt[0, i], mlab_pca.Wt[1, i],
                         marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
         if plot_title == '':
             ax1.set_title('PCA')
