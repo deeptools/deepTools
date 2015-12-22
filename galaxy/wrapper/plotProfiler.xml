@@ -16,10 +16,6 @@
             #if $output.showOutputSettings == "yes"
                 --plotFileFormat $output.outFileFormat
 
-                #if $output.saveData:
-                    --outFileNameData "$outFileNameData"
-                #end if
-
                 #if $output.saveSortedRegions:
                     --outFileSortedRegions '$outFileSortedRegions'
                 #end if

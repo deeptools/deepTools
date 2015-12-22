@@ -408,7 +408,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <when value="no" />
             <when value="yes">
                 <yield />
-                <param name="saveData" type="boolean" label="Save the data underlying the average profile"/>
                 <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
             </when>
         </conditional>
@@ -456,14 +455,6 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="output_graphic_outputs">
-        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: averages per matrix column">
-            <filter>
-            ((
-                output['showOutputSettings'] == 'yes' and
-                output['saveData'] is True
-            ))
-            </filter>
-        </data>
         <data format="bed" name="outFileSortedRegions" label="${tool.name} on ${on_string}: sorted/filtered regions">
             <filter>
             ((

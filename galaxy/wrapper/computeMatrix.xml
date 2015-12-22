@@ -9,28 +9,22 @@
 <![CDATA[
         #import tempfile
 
-        #for $rf in $regionsFiles:
-            cat "$rf.regionsFile" >> ./temp_input_path;
-            #if str($rf.label.value).strip():
-                echo "\#$rf.label.value" >> ./temp_input_path;
-            #else:
-                echo "\#$rf.regionsFile.name" >> ./temp_input_path;
-            #end if
-        #end for
-
         @BINARY@
 
             $mode.mode_select
-            --regionsFileName ./temp_input_path
-            --scoreFileName '$scoreFile'
+            --regionsFileName
+            #for $rf in $regionsFiles:
+                '$rf.regionsFile' 
+            #end for
+            --scoreFileName
+            #for $bw in $scoreFileName:
+                '$bw' 
+            #end for
             --outFileName '$outFileName'
 
             @THREADS@
 
             #if $output.showOutputSettings == "yes"
-                #if $output.saveData:
-                    --outFileNameData '$outFileNameData' 
-                #end if
                 #if $output.saveMatrix:
                 --outFileNameMatrix '$outFileNameMatrix'
                 #end if
@@ -85,12 +79,12 @@
                 help="Label to use in the output."/>
         </repeat>
 
-        <param name="scoreFile" format="bigwig" type="data"
-            label="Score file"
+        <param name="scoreFileName" format="bigwig" type="data"
+            label="Score file" multiple="True"
             help="Should be a bigWig file (containing a score, usually covering
             the whole genome). You can generate a bigWig file either from a
             bedGraph or WIG file using UCSC tools or from a BAM file using the
-            deepTool bamCoverage. (-scoreFile)"/>
+            deepTool bamCoverage. (--scoreFileName)"/>
 
         <conditional name="mode" >
             <param name="mode_select" type="select"
@@ -219,7 +213,7 @@
     <tests>
         <test>
             <param name="regionsFile" value="computeMatrix1.bed" ftype="bed" />
-            <param name="scoreFile" value="bamCoverage_result4.bw" ftype="bigwig" />
+            <param name="scoreFileName" value="bamCoverage_result4.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="mode_select" value="reference-point" />
             <param name="binSize" value="10" />
@@ -232,7 +226,7 @@
         </test>
         <test>
             <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
-            <param name="scoreFile" value="computeMatrix2.bw" ftype="bigwig" />
+            <param name="scoreFileName" value="computeMatrix2.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="mode_select" value="reference-point" />
             <param name="binSize" value="10" />
@@ -242,7 +236,7 @@
         </test>
         <test>
             <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
-            <param name="scoreFile" value="computeMatrix2.bw" ftype="bigwig" />
+            <param name="scoreFileName" value="computeMatrix2.bw" ftype="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="mode_select" value="scale-regions" />
             <param name="endLabel" value="END" />
