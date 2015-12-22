@@ -107,7 +107,11 @@
                     </param>
                     <when value="kmeans">
                         <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
-                            help="When this option is set, then the matrix is split into clusters using the kmeans algorithm. Only works for data that is not grouped, otherwise only the first group will be clustered. If more specific clustering methods are required it is advisable to save the underlying matrix and run the clustering using other software. The plotting of the clustering may fail (Error: Segmentation fault) if a cluster has very few members compared to the total number or regions. (default: None)."/>
+                            help="When this option is set, then the matrix is split into clusters using the kmeans algorithm.
+                            Only works for data that is not grouped, otherwise only the first group will be clustered.
+                            If more specific clustering methods are required it is advisable to save the underlying matrix and
+                            run the clustering using other software. The plotting of the clustering may fail (Error: Segmentation fault)
+                            if a cluster has very few members compared to the total number or regions. (default: 0 [do not cluster])."/>
                     </when>
                     <when value="none" />
                 </conditional>

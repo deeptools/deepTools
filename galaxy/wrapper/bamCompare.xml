@@ -74,13 +74,13 @@
         <param argument="--bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
             help="The BAM file must be sorted."/>
 
-        <param argument="--binSize" type="integer" value="50" min="1" 
+        <param argument="--binSize" type="integer" value="50" min="1"
             label="Bin size in bp"
             help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads) will be reported.
                 If only half a fragment overlaps, this fraction will be reported."/>
 
         <conditional name="scaling">
-            <param name="method" type="select" 
+            <param name="method" type="select"
                 label="Method to use for scaling the largest sample to the smallest">
                 <option value="readCount" selected="true">read count</option>
                 <option value="SES">signal extraction scaling (SES), check the bamFingerprint plot before using it!</option>
@@ -101,7 +101,7 @@
         </conditional>
 
         <conditional name="comparison">
-            <param name="type" type="select" 
+            <param name="type" type="select"
                 label="How to compare the two files"
                 help="The default is to output the log2ratio between the two samples.
                 The reciprocal ratio returns the negative of the inverse of the ratio if
@@ -218,7 +218,7 @@ extended to match the fragment length.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
-You can find more details on the bamCompare wiki page: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
+You can find more details on the bamCompare doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCompare.html
 
 
 **Output files**:

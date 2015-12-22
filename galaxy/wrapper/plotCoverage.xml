@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_coverage" name="plotCoverage" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap of correlation scores between different samples </description>
+    <description>plots a histogram of coverage on genomic regions </description>
     <macros>
         <token name="@BINARY@">plotCoverage</token>
         <import>deepTools_macros.xml</import>
@@ -22,7 +22,7 @@
             --plotFileFormat "$outFileFormat"
 
             #if $outRawCounts:
-                --outRawCounts '$outFileRawCounts' 
+                --outRawCounts '$outFileRawCounts'
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":

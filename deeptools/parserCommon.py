@@ -534,8 +534,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '--whatToShow',
             help='The default is to include a summary or profile plot on top '
             'of the heatmap and a heatmap colorbar. Other options are: '
-            '"plot and heatmap", '
-            '"heatmap only", "colorbar only", "heatmap and '
+            '"plot and heatmap", "heatmap and '
             'colorbar", and the default "plot, heatmap and '
             'colorbar".',
             choices=["plot, heatmap and colorbar",

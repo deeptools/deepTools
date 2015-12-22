@@ -20,7 +20,7 @@
             --labels '#echo "' '".join($labels)#'
 
             #if $outRawCounts:
-                --outRawCounts '$outFileRawCounts' 
+                --outRawCounts '$outFileRawCounts'
             #end if
 
             #if $mode.modeOpt == "bins":
@@ -54,7 +54,7 @@
                 <option value="BED-file">Limit calculation to certain regions (BED file)</option>
             </param>
             <when value="bins">
-                <param name="binSize" type="integer" value="10000" min="1" 
+                <param name="binSize" type="integer" value="10000" min="1"
                     label="Bin size in bp"
                     help="Length in base pairs for a window used to sample the genome. (--binSize)"/>
 
@@ -113,7 +113,15 @@ A typical follow-up application is to check and visuzalize the similarity betwee
 **Output files**:
 
 - **score matrix**: a compressed matrix where every row correponds to a genome region (or bin) and each column corresponds to a sample (BAM file)
-- optional: uncompressed **score matrix** for 
+- Optional : Uncompressed **score matrix**, in case you want to analyse the coverage scores yourself. (Select to "Save raw counts" from above)
+
+=======
+
+.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+You can find more details on the bamCorrelate doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCorrelate.html
 
 -----
 

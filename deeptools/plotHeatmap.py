@@ -172,7 +172,7 @@ def plotMatrix(hm, outFileName,
                startLabel='TSS', endLabel="TES",
                heatmapHeight=25,
                heatmapWidth=7.5,
-               perGroup=False, whatToShow='plot, heatmap and scale',
+               perGroup=False, whatToShow='plot, heatmap and colorbar',
                plotType='simple',
                image_format=None,
                legend_location='upper-left'):
@@ -202,8 +202,6 @@ def plotMatrix(hm, outFileName,
 
     if whatToShow == 'plot and heatmap':
         showSummaryPlot = True
-    elif whatToShow == 'colorbar only':
-        showColorbar = True
     elif whatToShow == 'heatmap and colorbar':
         showColorbar = True
     else:
