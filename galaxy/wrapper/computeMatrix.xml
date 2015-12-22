@@ -41,8 +41,6 @@
                 --afterRegionStartLength $mode.afterRegionStartLength
             #else
                 --regionBodyLength $mode.regionBodyLength
-                --startLabel "$mode.startLabel"
-                --endLabel "$mode.endLabel"
                 #if $mode.regionStartLength.regionStartLength_select == "yes":
                     --beforeRegionStartLength $mode.regionStartLength.beforeRegionStartLength
                     --afterRegionStartLength $mode.regionStartLength.afterRegionStartLength
@@ -72,11 +70,9 @@
     </command>
     <inputs>
 
-        <repeat name="regionsFiles" title="regions to plot" min="1">
+        <repeat name="regionsFiles" title="Select regions" min="1">
             <param name="regionsFile" format="bed" type="data" label="Regions to plot"
                 help="File, in BED format, containing the regions to plot."/>
-            <param name="label" type="text" size="30" optional="true" value="" label="Label"
-                help="Label to use in the output."/>
         </repeat>
 
         <param name="scoreFileName" format="bigwig" type="data"
@@ -94,7 +90,7 @@
                 by the user. Reference-point refers to a position within the BED
                 regions (e.g start of region). In the reference-point mode only
                 those genomic positions before (downstream) and/or after (upstream)
-                the reference point will be plotted.">
+                the reference point will be considered.">
                 <option value="scale-regions" selected="true">scale-regions</option>
                 <option value="reference-point">reference-point</option>
             </param>
@@ -102,14 +98,6 @@
             <when value="scale-regions" >
                 <param argument="--regionBodyLength" type="integer" value="500"
                     label="Distance in bp to which all regions are going to be fitted" help=""/>
-                <param argument="--startLabel" type="text" value="TSS" size="10"
-                    label="Label for the region start"
-                    help ="Label shown in the plot for the start of the region.
-                    Default is TSS (transcription start site), but could be changed to anything,
-                    e.g. &quot;peak start&quot;." />
-                <param argument="--endLabel" type="text" value="TES" size="10"
-                    label="Label for the region end"
-                    help="Label shown in the plot for the region end. Default is TES (transcription end site)."/>
                 <conditional name="regionStartLength">
                     <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
                         <option value="no" selected="true">no</option>
@@ -180,7 +168,7 @@
                     label="Convert missing values to 0?."
                     help="If set to 'yes', missing values (NAs) are converted to 0.
                           The default is to ignore such cases, which will be
-                          depicted as black areas in the heatmap by default." />
+                          depicted as black areas once a heatmap is created." />
 
                 <expand macro="skipZeros" />
                 <expand macro="skipNAs" />
