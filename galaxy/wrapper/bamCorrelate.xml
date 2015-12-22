@@ -45,13 +45,13 @@
 
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode" 
-                    help="In the bins mode, the correlation is computed based on equal
+                    help="In the bins mode, the coverage is computed for equal
                     length bins. In the BED file mode, as list of genomic regions in BED
                     format has to be given. For each region in the BED file the number of
                     overlapping reads is counted in each of the BAM files.
-                    Then the correlation is computed.">
+                    ">
                 <option value="bins" selected="true">Bins</option>
-                <option value="BED-file">Limit correlation to certain regions (BED file)</option>
+                <option value="BED-file">Limit calculation to certain regions (BED file)</option>
             </param>
             <when value="bins">
                 <param name="binSize" type="integer" value="10000" min="1" 
@@ -64,7 +64,7 @@
             <when value="BED-file">
                 <param name="region_file" type="data" format="bed"
                     label="Region file in BED format"
-                    help="Correlation is computed for the number of reads that overlap such regions."/>
+                    help="Coverage is computed for the number of reads that overlap such regions."/>
             </when>
         </conditional>
 
