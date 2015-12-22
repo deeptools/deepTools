@@ -102,15 +102,7 @@
     <help>
 <![CDATA[
 
-<<<<<<< HEAD
-.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
-   :alt: Heatmap of RNA Polymerase II ChIP-seq
-
-
-You can find more details on the bamCorrelate doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCorrelate.html
-=======
 **What it does**
->>>>>>> 4e5124484b42d4ffef76af4bd82a6feb67a5b829
 
 This tool generates a matrix of read-coverages for a list of genomic regions and a number of two or more samples (BAM files)
 The tool splits the genome into bins of given length. For each bin, the number of reads found in each BAM file is counted.
@@ -121,7 +113,15 @@ A typical follow-up application is to check and visuzalize the similarity betwee
 **Output files**:
 
 - **score matrix**: a compressed matrix where every row correponds to a genome region (or bin) and each column corresponds to a sample (BAM file)
-- optional: uncompressed **score matrix** for 
+- Optional : Uncompressed **score matrix**, in case you want to analyse the coverage scores yourself. (Select to "Save raw counts" from above)
+
+=======
+
+.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+   :alt: Heatmap of RNA Polymerase II ChIP-seq
+
+
+You can find more details on the bamCorrelate doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCorrelate.html
 
 -----
 
