@@ -25,9 +25,6 @@
             @THREADS@
 
             #if $output.showOutputSettings == "yes"
-                #if $output.saveData:
-                    --outFileNameData '$outFileNameData'
-                #end if
                 #if $output.saveMatrix:
                 --outFileNameMatrix '$outFileNameMatrix'
                 #end if
