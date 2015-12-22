@@ -15,7 +15,7 @@
             #if $histogram:
                 --histogram ./hist.png
             #end if
-
+            --plotTitle "$plotTitle"
             one.bam
             > $outfile
 ]]>
@@ -26,6 +26,7 @@
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribion of fragment length as histogram"
             help=""/>
+        <expand macro="plotTitle" />
     </inputs>
     <outputs>
         <data name="outfile" format="txt"/>
@@ -37,6 +38,7 @@
         <test>
             <param name="bamInput" value="bowtie2-test1.bam" ftype="bam" />
             <param name="histogram" value="True" />
+            <param name="plotTitle" value="Test Plot" />
             <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt" />
             <output name="histogram_outfile" file="bamPEFragmentSize_histogram_result1.png" ftype="png" compare="sim_size" />
         </test>

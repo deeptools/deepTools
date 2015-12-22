@@ -35,10 +35,10 @@ def parse_arguments():
                         type=int,
                         default=1,
                         required=False)
-#    optional.add_argument('--plotTitle', '-T',
-#                          help='Title of the plot, to be printed on top of '
-#                          'the generated image. Leave blank for no title.',
-#                          default='')
+    optional.add_argument('--plotTitle', '-T',
+                          help='Title of the plot, to be printed on top of '
+                          'the generated image. Leave blank for no title.',
+                          default='')
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
                         action='store_true',
