@@ -86,7 +86,7 @@
                     help="Size of the bins in bp for the output of the bigwig/bedgraph file."/>
 
                 <expand macro="skipNAs" />
-                <expand macro="scaleFactor" />
+                <expand macro="scaleFactors" />
                 <expand macro="plotTitle" />
             </when>
         </conditional>
