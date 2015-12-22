@@ -43,9 +43,9 @@
                 @ADVANCED_OPTS_READ_PROCESSING@
                 $advancedOpt.skipNAs
 
-                if str($advancedOpt.ignoreForNormalization).strip() != '':
+                #if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization $advancedOpt.ignoreForNormalization
-                end if
+                #end if
             #end if
 ]]>
     </command>
