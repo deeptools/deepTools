@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_pe_fragmentsize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
-    <description>Given a BAM file it samples several regions to estimate the paired-end fragment length</description>
+    <description>Estimate the paired-end fragment length in a BAM file</description>
     <macros>
         <token name="@BINARY@">bamPEFragmentSize</token>
         <import>deepTools_macros.xml</import>
@@ -24,7 +24,7 @@
         <param name="bamInput" format="bam" type="data" label="BAM file"
             help="The BAM file must be sorted."/>
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
-            label="Get the distribution of fragment length as a histogram"
+            label="Get the distribution of fragment lengths as a histogram"
             help=""/>
         <expand macro="plotTitle" />
     </inputs>
@@ -47,7 +47,7 @@
 <![CDATA[
 **What it does**
 
-Given a BAM file, several regions are sampled depending on the size of the genome to estimate the paired-end fragment length.
+This tool samples a BAM file containing paired-end data to estimate the fragment length distribution.
 Properly paired reads are preferred for computation. The output can be obtained as a histogram.
 
 -----

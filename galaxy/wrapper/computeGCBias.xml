@@ -64,17 +64,17 @@
             <when value="no" />
             <when value="yes">
                 <param name="sampleSize" type="integer" value="50000000" min="1"
-                    label="Number of sampling points to be considered" help="(--sampleSize)" />
+                    label="Number of sampling points to consider" help="(--sampleSize)" />
                 <param name="regionSize" type="integer" value="300" min="1"
                     label="Region size"
                     help ="To plot the reads per GC over a region, the size of the region is
-                    required (see below for more details of the mthod). By default, the bin size
-                    is set to 300 bp, which is close to the standard fragment size many sequencing
+                    required (see below for more details about the method). By default, the bin size
+                    is set to 300 bases, which is close to the standard fragment size of many sequencing
                     applications. However, if the depth of sequencing is low, a larger bin size will
                     be required, otherwise many bins will not overlap with any read. (--regionSize)"/>
                 <param name="filterOut" type="data" format="bed" optional="true"
                     label="BED file containing genomic regions to be excluded from the estimation of the correction"
-                    help="Such regions  usually contain repetitive regions and peaks that if included will
+                    help="Such regions usually contain repetitive regions and peaks that, if included, would
                     bias the correction. It is recommended to filter out known repetitive regions if multi-reads
                     (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data,
                     it is recommended to first use a peak caller to identify and filter out the identified peaks. (--filterOut)" />
@@ -130,19 +130,19 @@
 <![CDATA[
 **What it does**
 
-This tool computes the GC bias using the method proposed by Benjamini and Speed (2012) Nucleic Acids Res. (see below for more explanations)
+This tool computes the GC bias using the method proposed in Benjamini and Speed (2012) Nucleic Acids Res. (see below for further details).
 The output is used to plot the bias and can also be used later on to correct the bias with the tool correctGCbias.
-There are two plots produced by the tool: a boxplot showing the absolute read numbers per genomic-GC bin and an x-y plot
-depicting the ratio of observed/expected reads per genomic GC content bin.
+There are two plots produced by the tool: a boxplot showing the absolute read numbers per GC-content bin and an x-y plot
+depicting the ratio of observed/expected reads per GC-content bin.
 
 -----
 
 **Summary of the method used**
 
-In order to estimate how many reads with what kind of GC content one should have sequenced, we first need to determine how many regions the specific
-reference genome contains for each amount of GC content, i.e. how many regions in the genome have 50% GC (or 10% GC or 90% GC or...).
-We then sample a large number of equally sized genome bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any
-sequencing as it only depends on the respective reference genome (i.e. it will most likely vary between mouse and fruit fly due to their genome's different GC contents).
+In order to estimate how many reads with what kind of GC content one should have sequenced, we first need to determine how many regions the 
+reference genome contains with each percentage of GC content, i.e. how many regions in the genome have 50% GC (or 10% GC or 90% GC or...).
+We then sample a large number of equally sized genomic bins and count how many times we see a bin with 50% GC (or 10% GC or 90% or...). These EXPECTED values are independent of any
+sequencing bias and is purely dependent on the underlying genome (i.e. it will most likely vary between mouse and fruit fly due to their genome's different GC contents).
 The OBSERVED values are based on the reads from the sequenced sample. Instead of noting how many genomic regions there are per GC content, we now count the reads per GC content.
 In an ideal sample without GC bias, the ratio of OBSERVED/EXPECTED values should be close to 1 regardless of the GC content. Due to PCR (over)amplifications, the majority of ChIP samples
 usually shows a significant bias towards reads with high GC content (>50%)
@@ -157,8 +157,8 @@ You can find more details on the computeGCBias doc page: https://deeptools.readt
 
 - Diagnostic plot
 
-  - box plot of absolute read numbers per genomic GC bin
-  - x-y plot of observed/expected read ratios per genomic GC content bin
+  - box plot of absolute read numbers per GC-content bin
+  - x-y plot of observed/expected read ratios per GC-content bin
 
 - Data matrix
 

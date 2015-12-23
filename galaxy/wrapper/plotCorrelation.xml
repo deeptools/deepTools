@@ -92,8 +92,8 @@
 
 This tools takes a compressed matrix of scores (such as read coverages) for a number of genomic regions
 and different samples. It can visualize the correlation among samples as scatterplots or as
-heatmap of correlation coefficients. Further output files are optional.
-The compressed input matrices are easily generated using the "bamCorrelate" and "bigwigCorrelate" modules of deeptools.
+a heatmap of correlation coefficients. Further output files are optional.
+The compressed input matrices are easily generated using the "bamCorrelate" and "bigwigCorrelate" tools.
 
 
 .. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
@@ -111,7 +111,7 @@ You can find more details on plotCorrelation here http://deeptools.readthedocs.o
 
 **Output with test dataset**:
 
-Following is the output of plotCorrelation with our test ChIP-Seq datasets. Average coverages were computed over 10kb bins for chromosome X,
+The following is the output of plotCorrelation with our test ChIP-Seq datasets. Average coverages were computed over 10kb bins for chromosome X,
 from bigwig files using bigwigCorrelate. The output was used by plotCorrelation to make a heatmap of spearman correlation between samples.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png

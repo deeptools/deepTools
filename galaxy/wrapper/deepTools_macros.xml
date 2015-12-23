@@ -55,7 +55,7 @@
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
-            help="If set, then regions with zero counts for *all* BAM files given are included. The default behavior is to ignore those cases." />
+            help="If set, then regions with zero counts for *all* BAM files are included. The default behavior is to ignore such regions." />
     </xml>
 
     <xml name="zMin_zMax">
@@ -68,7 +68,7 @@
     <xml name="region_limit_operation">
         <param argument="--region" type="text" value=""
             label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the computing time. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;." />
+            help="This is useful when testing parameters to reduce the time required. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;." />
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
@@ -86,8 +86,8 @@
 
     <xml name="smoothLength">
         <param argument="--smoothLength" type="integer" value="" optional="True" min="1"
-            label="Smooth values using the following length (in bp)"
-            help ="The smooth length defines a window, larger than the bin size, to average the number of reads. For example, if the bin size is set to 20 bp and the smooth length is set to 60 bp, then, for each bin size the average of it and its left and right neighbors is considered. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
+            label="Smooth values using the following length (in bases)"
+            help ="The smooth length defines a window, larger than the bin size, over which the number of reads is to be averaged. For example, if the bin size is set to 20 and the smooth length is 60, then, for each bin, its value is set to the average of it and its left and right neighbors. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
     </xml>
 
 
@@ -107,11 +107,10 @@
                     </param>
                     <when value="kmeans">
                         <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
-                            help="When this option is set, then the matrix is split into clusters using the kmeans algorithm.
-                            Only works for data that is not grouped, otherwise only the first group will be clustered.
+                            help="When this option is set, the matrix is split into clusters using the k-means algorithm.
+                            This only works for data that is not grouped, otherwise only the first group will be clustered.
                             If more specific clustering methods are required it is advisable to save the underlying matrix and
-                            run the clustering using other software. The plotting of the clustering may fail (Error: Segmentation fault)
-                            if a cluster has very few members compared to the total number or regions. (default: 0 [do not cluster])."/>
+                            run the clustering using other software."/>
                     </when>
                     <when value="none" />
                 </conditional>
@@ -157,11 +156,11 @@
         <conditional name="doExtendCustom">
             <param name="doExtend" type="select" label="Extend reads to the given average fragment size."
                 help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
-                        By default *each* read mate is extended.
-                        This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
-                        Unmated reads, mate reads that map on different chromosomes or too far apart are extended to the given value.
-                        Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
-                        recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data.">
+                     By default *each* read mate is extended.
+                     This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
+                     Unmated reads, mate reads that map to different chromosomes or too far apart are extended to the given value.
+                     Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
+                     recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data.">
                 <option value="no" selected="True">No extension. The default value and most typically appropriate.</option>
                 <option value="yes">Paired-end extension. Suitable only for paired-end datasets.</option>
                 <option value="custom">A custom length, which will be applied to ALL reads.</option>
@@ -189,14 +188,14 @@
             help="By default, bamCorrelate considers consecutive bins of
                 the specified 'Bin size'. However, to reduce the
                 computation time, a larger distance between bins can
-                by given. Larger distances result in less bins being
+                be given. Larger distances result in fewer bins being
                 considered."/>
     </xml>
 
     <xml name="centerReads">
         <param argument="--centerReads" type="boolean" truevalue="--centerReads" falsevalue=""
             label="Center regions with respect to the fragment length"
-            help="For paired-end data, the read is centered at the fragment length defined by the two ends of the fragment. For single-end data, the given fragment length is used. This option is useful to get a sharper signal around enriched regions. "/>
+            help="For paired-end data the fragment is defined by the bounds of the reads. For single-end data the bounds are defined by the read and the user-definable fragment/extension length. This option is useful to get a sharper signal around enriched regions."/>
     </xml>
 
     <xml name="ignoreDuplicates">
@@ -229,19 +228,19 @@
     <xml name="minMappingQuality">
         <param argument="--minMappingQuality" type="integer" optional="true" value="1" min="1"
             label="Minimum mapping quality"
-            help= "If set, only reads that have a mapping quality score higher than the given value are considered. *Note* Bowtie's Mapping quality is related to uniqueness: the higher the score, the more unique is a read. A mapping quality defined by Bowtie of 10 or less indicates that there is at least a 1 in 10 chance that the read truly originated elsewhere."/>
+            help= "If set, only reads with a mapping quality score higher than this value are considered."/>
     </xml>
 
     <xml name="skipZeros">
         <param argument="--skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
             label ="Skip zeros"
-            help ="If set, then zero counts that happen for *all* BAM files given are ignored. This might have the effect that fewer regions are considered than indicated in the option where the number of samples is defined." />
+            help ="If set, then zero counts that happen for *all* BAM files given are ignored. This may result in fewer considered regions." />
     </xml>
 
     <xml name="fragmentLength">
         <param argument="--fragmentLength" type="integer" value="300" min="1"
             label="Fragment length used for the sequencing"
-            help ="If paired-end reads are used, the fragment length is computed from the BAM file."/>
+            help ="If paired-end reads are used, the fragment length is computed from the BAM file, so this is only needed for single-end data."/>
     </xml>
 
     <xml name="scaleFactor">
@@ -302,7 +301,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     <xml name="multiple_input_bigwigs">
         <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="2"
             label="Bigwig file"
-            help="The Bigwig file must be sorted."/>
+            help="A Bigwig file."/>
     </xml>
 
     <xml name="plotTitle">
@@ -394,8 +393,8 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                  should be skipped. The default is to treat those
                  regions as having a value of zero. The decision to
                  skip non-covered regions depends on the interpretation
-                 of the data. Non-covered regions may represent for
-                 example repetitive regions that want to be skipped.
+                 of the data. Non-covered regions may represent, for
+                 example, repetitive regions that should be ignored.
                  (default: False)" />
     </xml>
 

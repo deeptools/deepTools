@@ -77,19 +77,18 @@
 
         <param name="scoreFileName" format="bigwig" type="data"
             label="Score file" multiple="True"
-            help="Should be a bigWig file (containing a score, usually covering
-            the whole genome). You can generate a bigWig file either from a
+            help="You can generate a bigWig file from either a
             bedGraph or WIG file using UCSC tools or from a BAM file using the
-            deepTool bamCoverage. (--scoreFileName)"/>
+            bamCoverage tool. (--scoreFileName)"/>
 
         <conditional name="mode" >
             <param name="mode_select" type="select"
                 label="computeMatrix has two main output options"
                 help="In the scale-regions mode, all regions in the BED file are
-                stretched or shrunk to the same length (bp) that is indicated
+                stretched or shrunk to the same length (in bases) that is indicated
                 by the user. Reference-point refers to a position within the BED
                 regions (e.g start of region). In the reference-point mode only
-                those genomic positions before (downstream) and/or after (upstream)
+                those genomic positions before (upstream) and/or after (downstream)
                 the reference point will be considered.">
                 <option value="scale-regions" selected="true">scale-regions</option>
                 <option value="reference-point">reference-point</option>
@@ -97,7 +96,7 @@
 
             <when value="scale-regions" >
                 <param argument="--regionBodyLength" type="integer" value="500"
-                    label="Distance in bp to which all regions are going to be fitted" help=""/>
+                    label="Distance in bases to which all regions are going to be fit" help=""/>
                 <conditional name="regionStartLength">
                     <param name="regionStartLength_select" type="select" label="Set distance up- and downstream of the given regions">
                         <option value="no" selected="true">no</option>
@@ -106,11 +105,11 @@
                     <when value="no" />
                     <when value="yes">
                         <param argument="--beforeRegionStartLength" type="integer" value="1000" min="1"
-                            label="Distance upstream of the start site of the regions defined in the region file"
+                            label="Distance upstream of the region start position"
                             help="If the regions are genes, this would be the
                             distance upstream of the transcription start site."/>
                         <param argument="--afterRegionStartLength" type="integer" value="1000" min="1"
-                            label="Distance downstream of the end site of the given regions"
+                            label="Distance downstream of the region end position"
                             help="If the regions are genes, this would be the
                             distance downstream of the transcription end site."/>
                     </when>
@@ -147,7 +146,7 @@
             <when value="no" />
             <when value="yes">
                 <param name="binSize" type="integer" value="50" min="1"
-                    label="Length, in base pairs, of the non-overlapping bin for averaging the score over the regions length"
+                    label="Length, in bases, of non-overlapping bins used for averaging the score over the regions length"
                     help="(--binSize)"/>
 
                 <expand macro="sortRegions" />
@@ -236,9 +235,9 @@
 <![CDATA[
 **What it does**
 
-This tool prepares an intermediary file (a gzipped table of values)
-that contains scores associated with genomic regions that can be used
-afterwards to plot a heatmap or a profile.
+This tool prepares an intermediate file (a gzipped table of values)
+that contains scores associated with genomic regions and can be used
+afterwards to plot a heatmap or profile.
 
 Genomic regions can really be anything - genes, parts of genes, ChIP-seq
 peaks, favorite genome regions... as long as you provide a proper file

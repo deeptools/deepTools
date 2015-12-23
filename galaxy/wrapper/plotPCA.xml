@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_pca" name="plotPCA" version="@WRAPPER_VERSION@.0">
-    <description>generating a principal component analysis (PCA) plot from bamCorrelate or bigwigCorrelate output</description>
+    <description>generate a principal component analysis (PCA) plot from bamCorrelate or bigwigCorrelate output</description>
     <macros>
         <token name="@BINARY@">plotPCA</token>
         <import>deepTools_macros.xml</import>
@@ -15,7 +15,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
+        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate or bigwigCorrelate tools"/>
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
     </inputs>
