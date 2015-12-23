@@ -55,7 +55,7 @@
 <![CDATA[
 **What it does**
 
-This tool requires the output from computeGCBias to correct a given BAM file according to the method proposed by
+This tool requires the output from computeGCBias to correct a given BAM file according to the method proposed in
 Benjamini and Speed (2012) Nucleic Acids Res.
 The resulting BAM file can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
 

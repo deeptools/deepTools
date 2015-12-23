@@ -159,7 +159,7 @@
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.
                         For example, if you know of copy number variations between samples then you may want to exclude these.
                         Another typical example is the difference in chromosome X copies between males and females in many species.
-                        Example inputs are chrX,chrY,chr3. or chr10:12220-128932" />
+                        Example inputs are chrX,chrY,chr3 or chr10:12220-128932" />
             </when>
         </conditional>
     </inputs>

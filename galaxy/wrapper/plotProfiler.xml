@@ -70,7 +70,7 @@
             <when value="yes">
                 <param argument="--startLabel" type="text" value="TSS" size="10"
                     label="Label for the region start"
-                    help ="[only for scale-regions mode] Label shown in the plot
+                    help ="Label shown in the plot
                     for the start of the region. Default is TSS (transcription start site),
                     but could be changed to anything, e.g. &quot;peak start&quot;." />
                 <param argument="--endLabel" type="text" value="TES" size="10"
@@ -107,14 +107,14 @@
                     help="Width in cm. The default value is 8 centimeters. The minimum value is 1 cm." />
 
                 <param argument="--plotType" type="select" label="Plot type"
-                    help="For the summary plot (profile) only. The &quot;lines&quot; option will
+                    help="The &quot;lines&quot; option will
                     plot the profile line based on the average type selected. The &quot;fill&quot;
-                    option fills the region between zero and the profile curve. The fill in color is
-                    semi transparent to distinguish different profiles. The &quot;add standard error&quot;
+                    option fills the region between zero and the profile curve. The filled in color is
+                    semi-transparent. The &quot;add standard error&quot;
                     option colors the region between the profile and the standard error of the data.
                     As in the case of fill, a semi-transparent color is used.
-                    The option &quot;overlapped_lines&quot; plots each region values, one on top of
-                    the other; this option only works if &quot;one plot per proup&quot; is set.">
+                    The option &quot;overlapped_lines&quot; plots each region's value, one on top of
+                    the other.">
                     <option value="lines" selected="true">lines</option>
                     <option value="fill">fill</option>
                     <option value="se">add standard error</option>
@@ -123,23 +123,21 @@
                 <param argument="--regionsLabel" type="text" value="coverage" size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated
-                    by comma and limited by quotes, is required. For example, &quot;label1, label2&quot;."/>
+                    by commas is required. For example, &quot;label1, label2&quot;."/>
 
                 <expand macro="plotTitle" />
                 <param argument="--colors" type="text" value="" size="40"
                     label="List of colors to use for the plotted lines"
                     help="Color names and html hex strings (e.g. #eeff22) are accepted.
-                    The color names should be given separated by spaces. (--colors red blue green)">
+                    The color names should be separated by spaces. (--colors red blue green)">
                     <validator type="expression"
                         message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
 
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Do one plot per group"
-                    help="When clustering is applied to the data, or the region file contains groups separated by &quot;#&quot;,
-                    plot the groups next to each other. The default is to plot the samples next to each other.
-                    If this option is set, each group (or cluster) will get its own plot, with different samples
-                    stacked on top of each other." />
+                    help="When clustering is applied to the data or multiple BED files were used,
+                    plot the groups next to each other. The default is to plot the samples next to each other." />
 
 
                 <param argument="--yMin" type="float" value="" size="3" optional="true"
@@ -175,10 +173,9 @@
 
 This tool plots the average enrichments over all genomic
 regions supplied to computeMarix. It requires that computeMatrix was successfully run.
-It is a very useful complement to the heatmapper, especially in cases when you want to
+It is a very useful complement to the heatmapper, especially in cases where you want to
 compare the scores for many different groups. Like heatmapper, profiler does not change the
-values that were compute by computeMatrix, but you can choose between
-many different ways to color and display the plots.
+values that were compute by computeMatrix, but you can modify the color and other display properties of the plots.
 
 
 .. image:: $PATH_TO_IMAGES/visual_profiler_DmelPolII.png

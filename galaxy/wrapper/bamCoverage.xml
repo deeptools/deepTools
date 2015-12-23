@@ -55,8 +55,8 @@
             help="The BAM file must be sorted."/>
 
         <param name="binSize" type="integer" value="50" min="1"
-            label="Bin size in bp"
-            help="The genome will be divided in bins (also called tiles) of the specified length. For each bin the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. "/>
+            label="Bin size in bases"
+            help="The genome will be divided into bins of the specified size. For each bin, the overlaping number of fragments (or reads)  will be reported. If only half a fragment overlaps, this fraction will be reported. "/>
 
         <conditional name="scaling">
             <param name="type" type="select" label="Scaling/Normalization method" >
@@ -94,16 +94,16 @@
                     label="Regions that should be excluded for normalization"
                     help="A list of chromosome names separated by spaces
                         containing those chromosomes that should be excluded
-                        for computing the normalization. This is useful when
+                        during normalization. This is useful when
                         considering samples with unequal coverage across
-                        chromosomes like male samples. Example: chrX chrM" />
+                        chromosomes, like male and female samples. Example: chrX chrM" />
 
                 <expand macro="skipNAs" />
                 <expand macro="read_processing_options" />
 
                 <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
                     label="Determine nucleosome positions from MNase-seq data"
-                    help="Only 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data." />
+                    help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data." />
 
             </when>
         </conditional>
@@ -163,7 +163,7 @@ read coverages. The way the method works is by first calculating all the
 number of reads (either extended to match the fragment length or not) that
 overlap each bin in the genome. The resulting read counts can be normalized
 using either a given scaling factor, the RPKM formula or to get a 1x depth of
-coverage (RPGC). In the case of paired-end mapping each read mate is treated
+coverage (RPGC). In the case of paired-end mapping, each read mate is treated
 independently to avoid a bias when a mixture of concordant and discordant
 pairs is present. This means that *each end* will be extended to match the
 fragment length.

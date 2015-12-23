@@ -64,7 +64,7 @@
         </conditional>
 
         <expand macro="input_image_file_format" />
-        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to a file" help=""/>
 
 
     </inputs>
@@ -89,7 +89,7 @@
 <![CDATA[
 **What it does**
 
-This tools samples 1 million positions of the genome to build
+This tools samples 1 million positions in the genome to build
 a coverage histogram. Multiple bam files are accepted but all should
 correspond to the same genome assembly.
 
