@@ -9,7 +9,7 @@ plotHeatmap
 Usage Example:
 ~~~~~~~~~~~~~~
 
-The following example plots the heatmap over hg19 transcripts for our test ENCODE datasets. Note that the matrix contains multiple groups of regions (in this case, one for each chromosome used).
+The following example creates a heatmap over hg19 transcripts for our test ENCODE datasets. Note that the matrix contains multiple groups of regions (in this case, one for each chromosome used).
 
 .. code:: bash
 
@@ -19,7 +19,7 @@ The following example plots the heatmap over hg19 transcripts for our test ENCOD
 
 .. image:: test_plots/ExampleHeatmap1.png
 
-plotHeatmap has many options, including the ability to do kmeans clustering and change the color map.
+plotHeatmap has many options, including the ability to do k-means clustering and change the color map.
 
 .. code:: bash
 

@@ -11,7 +11,7 @@ Usage Example:
 
 The following example plots the the fingerprint for our test ENCODE
 Chip-Seq datasets, for chromosome X. Here we are skipping the regions
-with zero reads using *--skipZeros* option.
+with zero reads using the *--skipZeros* option.
 
 .. code:: bash
 

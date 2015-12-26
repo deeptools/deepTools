@@ -8,7 +8,7 @@ computeMatrix
 Usage Example:
 ~~~~~~~~~~~~~~
 
-computeMatrix has two main modes of use: for computing the signal distribution relative to a point ("reference-point") and for computing the signal over a region ("scale-regions"). The "reference-point" method is commonly used before plotting signal around the transcript start site. An example of that with our test ENCODE dataset is depicted below:
+computeMatrix has two main modes of use: for computing the signal distribution relative to a point ("reference-point") and for computing the signal over a region ("scale-regions"). The "reference-point" method is commonly used before plotting the signal around the transcription start site. An example of that with our test ENCODE dataset is depicted below:
 
 .. code:: bash
 
@@ -24,7 +24,7 @@ computeMatrix has two main modes of use: for computing the signal distribution r
 
 .. image:: test_plots/ExampleComputeMatrix1.png
 
-Alternatively, for RNAseq and many other ChIP signal it's more informative to plot the signal distribution over exons or other feature types. For such cases, one can use the "scale-regions" method.
+Alternatively, for RNAseq and many other ChIP signals it's more informative to plot the signal distribution over exons or other feature types. For such cases, one can use the "scale-regions" method.
 
 .. code:: bash
 
@@ -40,7 +40,7 @@ Alternatively, for RNAseq and many other ChIP signal it's more informative to pl
 
 .. image:: test_plots/ExampleComputeMatrix2.png
 
-It's often the case that one has multiple groups of regions to consider per sample. For such cases, you can simply specify multiple BED files (in this case, we've simply split the BED file by chromosomes).
+It's often the case that one has multiple groups of regions to consider per sample. For such cases, you can simply specify multiple BED files (in this case, we've split the BED file by chromosome).
 
 .. code:: bash
 
