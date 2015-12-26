@@ -17,9 +17,9 @@ Finding read coverage over a region
 ------------------------------------
 
 With deepTools, the read coverage over multiple genomic regions and
-multiple files can be computed quite quickly using multi-processing.
-First, we start with a simple example that is later extended to cover
-the use of multiprocessing.
+multiple files can be computed quite quickly using multiple processors.
+First, we start with a simple example that is later expanded upon to demonstrate
+the use of multipe processors.
 In this example we compute the coverage of reads over a small region for bins of 50bp. For
 this we need the :class:`deeptools.countReadsPerBin` class.
 
@@ -30,7 +30,7 @@ this we need the :class:`deeptools.countReadsPerBin` class.
 
 
 We also need a BAM file containing the aligned reads.
-The BAM file must be indexed to allow quick access to the reads
+The BAM file must be indexed to allow quick access to reads
 falling into the regions of interest.
 
 .. code:: python
@@ -38,11 +38,11 @@ falling into the regions of interest.
     bam_file = "file.bam"
 
 Now, the ``countReadsPerBin`` object can be initialized.
-The first argument of the constructor is a list of BAM files,
-which in this case is just one.
-We are going to use a ``binLength`` of 50 bp that is computed every 50 bp pairs,
-in other words, in consecutive bins of 50bp. Overlapping bin 
-coverages can be used by setting a ``stepSize`` smaller than the bin length.
+The first argument to the constructor is a list of BAM files,
+which in this case is just one file.
+We are going to use a ``binLength`` of 50 bases, with subsequent bins adjacent
+(i.e., the ``stepSize`` between bins is also 50 bases). Overlapping bin 
+coverages can be used by setting a ``stepSize`` smaller than ``binLength``.
 
 .. code:: python
 
@@ -75,16 +75,15 @@ to 1000.
            [ 2.],
            [ 1.]])
 
-The result is a numpy array in which each row corresponds to a bin and each column corresponds
-to a bam file. In this case only one bam file was used.
+The result is a numpy array with one row per bin and one column per bam file. Since only one BAM file was used, there is only one column.
 
-Filtering regions
------------------
+Filtering reads
+---------------
 
 If reads should be filtered, the relevant options simply
 need to be passed to the constructor. In the following code, the reads are filtered
-using a minimum mapping quality of 20, and by including only reads that map to the forward
-strand using a sam flag (samFlag_exclude=16, where 16 is the value for reverse reads, see
+such that only those with a mapping quality of at least 20 and not aligned to the
+reverse strand are kept (samFlag_exclude=16, where 16 is the value for reverse reads, see
 the [SAM Flag Calculator](http://broadinstitute.github.io/picard/explain-flags.html)
 for more info).
 Furthermore, duplicated reads are ignored.
@@ -124,14 +123,13 @@ Furthermore, duplicated reads are ignored.
 Sampling the genome
 -------------------
 
-Instead of consecutive bins as in the previous cases, a genome can
+Instead of adjacent bins, as in the previous cases, a genome can
 simply be sampled. This is useful to estimate some values,
 like depth of sequencing, without having to look at the complete genome. In the following example,
-10,000 positions of size 1 bp are going to be queried from three bam files to compute the average depth of sequencing.
-For this we set the numberOfSamples parameter in the object constructor. The `skipZeros` parameter
-is added such that regions that in all bam files do not have any reads are excluded. Usually, those
-regions are repetive which are often excluded from the read mapping. The `run()` method is
-used instead of `count_reads_in_region`.
+10,000 positions of size 1 base are going to be queried from three bam files to compute the average depth of sequencing.
+For this, we set the `numberOfSamples` parameter in the object constructor. The `skipZeros` parameter
+is added to exclude regions lacking reads in all BAM files.
+The `run()` method is used instead of `count_reads_in_region`.
 
 .. code:: python
 
@@ -146,12 +144,10 @@ used instead of `count_reads_in_region`.
     [  1.98923924   2.43743744  22.90102603]
 
 
-The `run()` method splits the computation of the coverage over 10 processors and aggregates
-the results. When the parameter number of samples is used the regions selected
+The `run()` method splits the computation over 10 processors and collates
+the results. When the parameter `numberOfSamples` is used, the regions selected
 for the computation of the coverage are not random. Instead, the genome is split into 'number-of-samples'
-equal parts and at the start of each part is then queried for the coverage. If truly random values are
-required is recommended to pass a bed file to the constructor containing the regions to be sampled.
-
+equal parts and the start of each part is queried for its coverage. You can also compute coverage over selected regions by inputting a BED file.
 
 Now it is possible to make some diagnostic plots from the results:
 
@@ -178,10 +174,10 @@ Computing the FRiP score
 ------------------------
 
 The FRiP score is defined as the fraction of reads that fall into a peak and is 
-often used as a measure of ChIP-seq quality. For this example we
-need a  bed file containing the peak regions. Such file is
+often used as a measure of ChIP-seq quality. For this example, we
+need a BED file containing the peak regions. Such files are
 usually computed using a peak caller. Also, two bam files are
-going to be used that correspond to two biological replicates.
+going to be used, corresponding to two biological replicates.
 
 .. code:: python
 
@@ -203,7 +199,7 @@ going to be used that correspond to two biological replicates.
            [ 246.,  265.]])
 
 
-The result is a numpy array having as rows each of the peak regions and as columns each of the bam files.
+The result is a numpy array with a row for each peak region and a column for each BAM file.
 
 .. code:: python
 
@@ -214,7 +210,7 @@ The result is a numpy array having as rows each of the peak regions and as colum
 
     (6295, 2)
 
-Now, the total number of reads per falling within the peaks, per bam file, is computed:
+Now, the total number of reads per peaks per bam file is computed:
 
 .. code:: python
 
@@ -230,7 +226,7 @@ this we use the pysam module.
     bam2 = pysam.AlignmentFile(bam_file2)
 
 Now, `bam1.mapped` and `bam2.mapped` contain the total number of mapped
-reads in each of the bam files respectively.
+reads in each of the bam files, respectively.
 
 Finally, we can compute the FRiP score:
 
@@ -249,20 +245,19 @@ Finally, we can compute the FRiP score:
 Using mapReduce to sample paired-end fragment lengths
 ------------------------------------------------------
 
-deepTools internally uses a map-reduce strategy in which a computation is split into smaller
-parts that are sent to different processors which is subsequently integrated. The following
+deepTools internally uses a map-reduce strategy, in which a computation is split into smaller
+parts that are sent to different processors. The output from the different processors is subsequently collated. The following
 example is based on the code available for `bamPEFragmentSize.py`
 
-In this case retrieve the reads from a bam file and collect the
+Here, we retrieve the reads from a BAM file and collect the
 fragment length. Reads are retrieved using pysam, and the `read` object returned
-contains the `template_length` attribute which is the number of bases from the
-leftmost mapped base to the rightmost mapped base in the read pair.
+contains the `template_length` attribute, which is the number of bases from the
+leftmost to the rightmost mapped base in the read pair.
 
 First, we will create a function that can collect fragment lengths over a genomic
-position from a bam file. Because later we will call this function using
-mapReduce the function accepts only one argument that is
-a tuple in which the first three parameters are set to
-chromosome name, start and end. The next parameter is the bam file name.
+position from a BAM file. As we will later call this function using
+mapReduce, the function accepts only one argument, namely 
+a tuple with the parameters: chromosome name, start position, end position, and BAM file name.
 
 .. code:: python
 
@@ -273,7 +268,7 @@ chromosome name, start and end. The next parameter is the bam file name.
         bam = pysam.Aligmementfile(bam_file_name)
         f_lens_list = []
         for fetch_start in range(start, end, 1e6):
-            # simply get the reads over a region of 10000 bp
+            # simply get the reads over a region of 10000 bases
             fetch_end = min(end, start + 10000)
 
             f_lens_list.append(np.array([abs(read.template_length)
@@ -285,16 +280,15 @@ chromosome name, start and end. The next parameter is the bam file name.
 
 
 Now, we can use `mapReduce` to call this function and compute fragment lengths
-over the whole genome. mapReduce needs to know the chromosome sizes which
-can be easily retrieved from the bam file. Furthermore, it needs to know
-the size of the region that is sent to each processor. For this
-example, a region of 10 million bp is sent to each processor where
-the function just defined (get_fragment_length) is going to be called. In other
-words, each processor executes the same get_fragment_length function to collect data over
-a 10 million bp. The arguments to mapReduce are the list of arguments sent to the function, besides
+over the whole genome. mapReduce needs to know the chromosome sizes, which
+can be easily retrieved from the BAM file. Furthermore, it needs to know
+the size of the region(s) sent to each processor. For this
+example, a region of 10 million bases is sent to each processor using the `genomeChunkLength` parameter.
+In other words, each processor executes the same `get_fragment_length` function to collect data over
+different 10 million base regions. The arguments to mapReduce are the list of arguments sent to the function, besides
 the first obligatory three (chrom start, end). In this case only one extra argument is passed
-to the function, the bam file name. The next two positional arguments are the name of the function to call
-(`get_fragment_length`) the the chromosome sizes.
+to the function, the BAM file name. The next two positional arguments are the name of the function to call
+(`get_fragment_length`) and the chromosome sizes.
 
 .. code:: python
 

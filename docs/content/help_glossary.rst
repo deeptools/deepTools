@@ -1,7 +1,7 @@
 Glossary
 ========
 
-Like most specialized fields, next-generation sequencing has inspired many an acronym.
+Like most specialized fields, next-generation sequencing has inspired many an acronyms.
 We are trying to keep track of those :ref:`abbreviations` that we heavily use.
 Do make us aware if something is unclear: deeptools@googlegroups.com
 
@@ -47,25 +47,25 @@ For a review of popular *-seq applications, see `Zentner and Henikoff`_.
 
 .. _terminology:
 
-NGS terminology
----------------
-In addition to abbreviations, there are many specialized terms and different labs and people use different terms for the same thing.
+NGS and generic terminology
+---------------------------
+The following are terms that may be new to some:
 
 **bin**
 
 * synonyms: window, region
-* For many calculations, the genome is divided into smaller chunks, for example for the calculation of read coverages. These regions can be as small as 1 bp, but really, they can be any size. We commonly use the term "bin" for those artificially created genome parts as we feel that we "store" scores (e.g. read coverages or motif scores) in them.
+* A 'bin' is a subset of a larger grouping. Many calculations calculation are performed by first dividing the genome into small regions (bins), on which the calculations are actually performed.
 
 
 **Input**
 
 * Control experiment typically done for ChIP-seq experiments 
-* While ChIP-seq relies on antibodies to enrich for DNA fragments bound to a certain protein, the input sample should be processed exactly the same way, excluding the antibody. This way, one hopes to account for biases introduced by the sample handling and the general chromatin structure of the cells 
+* While ChIP-seq relies on antibodies to enrich for DNA fragments bound to a certain protein, the input sample should be processed exactly the same way, excluding the antibody. This allows one to account for biases introduced by sample handling and the general chromatin structure of the cells 
 
 **read**
 
 * synonym: tag
-* This term refers to the piece of DNA that is sequenced ("read") by the sequencers. We try to differentiate between "read" and "DNA fragment" as the fragments that are put into the sequencer tend to be in the range of 200-1000 bp of which only the first 30 to 100 bp (depending on the read length) are in fact sequenced. Most of the deepTools will not only take those 30 to 100 bp into consideration when calculating coverages, instead they will extend the reads to match the original DNA fragment size. (The original size will either be given by you or, if you used paired-end sequencing, can be calculated by the distance of two read mates).
+* This term refers to the piece of DNA that is sequenced ("read") by the sequencers. We try to differentiate between "read" and "DNA fragment" as the fragments that are put into the sequencer tend to be in the range of 200-1000 bases, of which only the first 50 to 300 bases are typically sequenced. Most of the deepTools will not only take these reads into account, but also extend them to match the original DNA fragment size. (The original size will either be given by you or, if you used paired-end sequencing, be calculated from the distance between the two read mates).
 
 .. _file formats:
 
@@ -73,14 +73,12 @@ File Formats
 -------------------
 
 Data obtained from next-generation sequencing data must be processed several times.
-Most of the processing steps are aimed at extracting only those information that are
-truly needed for a specific down-stream analysis and to discard all the redundant entries.
+Most of the processing steps are aimed at extracting only that information
+needed for a specific down-stream analysis, with redundant entries often discarded.
 Therefore, **specific data formats are often associated with different steps of a data processing pipeline**.
-These associations, are by no means binding, but you should understand what kind of data is represented in which data format
-- this will help you to select the correct tools further down the road.
 
 Here, we just want to give very brief key descriptions of the file, for elaborate information we will link to external websites.
-Be aware, that the file name sorting here is purely alphabetically, not according to their usage within an analysis pipeline that is depicted here:
+Be aware, that the file name sorting here is alphabetical, not according to their usage within an analysis pipeline that is depicted here:
 
 .. image:: images/flowChart_FileFormats.png
 
@@ -107,11 +105,11 @@ BAM
 
 * typical file extension: .bam
 * *binary* file format (complement to :ref:`SAM`)
-* contains information about sequenced reads *after alignment* to a reference genome
+* contains information about sequenced reads (typically) *after alignment* to a reference genome
 * each line = 1 mapped read, with information about:
-    *  its mapping quality (how certain is the read alignment to this particular genome locus?)
-    *  its sequencing quality (how well was each base pair detected during sequencing?)
-    *  its DNA sequence
+    *  its mapping quality (how likelihood that the reported alignment is correct)
+    *  its sequencing quality (the probability that each base is correct)
+    *  its sequence
     *  its location in the genome
     *  etc.
 * highly recommended format for storing data
@@ -126,9 +124,9 @@ bed
 * typical file extension: .bed
 * text file
 * used for genomic intervals, e.g. genes, peak regions etc.
-* actually, there is a rather strict definition of the format that can be found at `UCSC`_
+* the format can be found at `UCSC`_
 * for deepTools, the first 3 columns are important: chromosome, start position of the region, end position of the genome
-* do not confuse it with the :ref:`bedgraph` format (eventhough they are quite similar)
+* do not confuse it with the :ref:`bedgraph` format (although they are related)
 * example lines from a BED file of mouse genes (note that the start position is 0-based, the end-position 1-based, following UCSC conventions for BED files):
 ::
 
@@ -147,7 +145,7 @@ bedGraph
 * text file
 * similar to BED file (not the same!), it can *only* contain 4 columns and the 4th column *must* be a score
 * again, read the `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format1.8>`_  for more details
-* 4  exemplary lines from a bedGraph file (like BED files following the UCSC convention, the start position is 0-based, the end-position 1-based in bedGraph files):
+* 4  example lines from a bedGraph file (like BED files following the UCSC convention, the start position is 0-based, the end-position 1-based in bedGraph files):
 ::
 
     chr1 10 20 1.5
@@ -161,8 +159,8 @@ bigWig
 ^^^^^^
 
 * typical file extension: .bw, .bigwig
-* *binary* version of a :ref:`bedgraph` file
-* usually contains 4 columns: chromosome, start of genomic bin, end of genomic bin, score
+* *binary* version of a :ref:`bedgraph` or `wiggle` file
+* contains coordinates for an interval and an associated score
 * the score can be anything, e.g. an average read coverage
 * `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format6.1>`_ for more details
 
@@ -173,8 +171,8 @@ FASTA
 
 * typical file extension: .fasta
 * text file, often gzipped (.fasta.gz)
-* very simple format for **DNA/RNA** or **protein** sequences, this can be anything from small pieces of DNA or proteins to entire genome information (most likely, you will get the genome sequence of your organism of interest in fasta format)
-* see the :ref:`2bit` file format entry for a compressed alternative of the fasta format
+* very simple format for **DNA/RNA** or **protein** sequences, this can be anything from small pieces of DNA or proteins to an entire genome (most likely, you will get the genome sequence of your organism of interest in fasta format)
+* see the :ref:`2bit` file format entry for a compressed alternative
 * example from [wikipedia](http://en.wikipedia.org/wiki/FASTA_format "wikipedia entry on FASTA files") showing exactly one sequence:
 ::
 
@@ -197,7 +195,7 @@ FASTQ
 	 * base calls
 	 * additional information or empty line
 	 * sequencing quality measures - 1 per base call
-* note that there are no information about where in the genome the read originated from
+* note that there is no information about where in the genome the read originated from
 * example from the `wikipedia page <http://en.wikipedia.org/wiki/Fastq>`_
 ::
 

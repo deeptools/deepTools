@@ -1,7 +1,7 @@
 FAQ
 ====
 
-Here, we are collecting issues we have encountered over the time. Feel free to contribute your questions via deeptools@googlegroups.com
+Below are issues we have encountered. Feel free to contribute your questions via deeptools@googlegroups.com
 We also have :doc:`faq_galaxy`.
 
 .. contents:: 
@@ -9,11 +9,11 @@ We also have :doc:`faq_galaxy`.
 
 How does deepTools handle data from paired-end sequencing?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Generally, all the modules working with [BAM] files (``bamCorrelate``, ``bamCoverage``, ``bamCompare``, ``bamFingerprint``, ``computeGCbias``) recognize paired-end sequencing data. You can enforce to ignore the fragment length based on the mate pairs using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
+Generally, all the modules working with [BAM] files (``bamCorrelate``, ``bamCoverage``, ``bamCompare``, ``bamFingerprint``, ``computeGCbias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
 
 How can I test a tool with little computation time? 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-When you're playing around with the tools to see what kinds of results they will produce, you can limit the operation to one chromosome or a specific region save computation time. In Galaxy, you will find this under "advanced output options" &rarr; "Region of the genome to limit the operation to"; the command line option is called "--region" (CHR:START:END).
+When you're playing around with the tools to see what kinds of results they will produce, you can limit the operation to one chromosome or a specific region to save time. In Galaxy, you will find this under "advanced output options" &rarr; "Region of the genome to limit the operation to"; the command line option is called "--region" (CHR:START:END).
 
 The following tools currently have this option:
 * [bamCorrelate][]
@@ -21,19 +21,19 @@ The following tools currently have this option:
 * [computeGCbias][], [correctGCbias]
 * [bamCoverage][], [bamCompare][]
 
-It works as follows: first, the *entire* genome represented in the [BAM][] file will be regarded and sampled, *then* all the regions or sampled bins that do not overlap with the region indicated by the user will be discarded.
+It works as follows: first, the *entire* genome represented in the [BAM][] file will be regarded and sampled, *then* all the regions or sampled bins that do not overlap the region indicated by the user will be discarded.
 
-Be aware that you can limit the operation to only *one* chromosome (or *one* specific locus on a chromosome).
+Beware that you can limit the operation to only *one* chromosome (or *one* specific locus on a chromosome).
 If you would like to limit the operation to more than one region, see the next question.
 
 
 Can I specify more than one chromosome in the ``--regions`` option?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Several programs have the option to limit the operation to a specific region (i.e. to reduce computation time).
-The input must be given in the format of ``chr:start:end``, for example "chr10" or "chr10:456700:891000".
+Several programs allow specifying a specific regions. 
+For these, the input must be in the format of ``chr:start:end``, for example "chr10" or "chr10:456700:891000".
 For these programs, it is not possible to indicate more than one region, e.g. chr10, chr11 - **this will not work**!
 
-Here are some ideas for workarounds if you do find yourself in a situation where you would in fact like to limit the operation to more than one region:
+Here are some ideas for workarounds if you none-the-less need to do this:
 
 * **general workaround**: since all the tools that have the ``--region`` option work on BAM files, you could *filter your reads* prior to running the program, e.g. using ``intersectBed`` with ``--abam`` or ``samtools view``. Then use the resulting (smaller) BAM file with the deepTools program of your choice.
 
@@ -55,11 +55,11 @@ However, ``computeGCbias`` and ``bamCorrelate`` do offer in-build solutions:
 
 When should I exclude regions from computeGCbias?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In general, we recommend that you should only correct for GC bias (using [computeGCbias][] followed by [correctGCbias][]) if you observe that the majority of the genome (the region between 30-60%) is continuously GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
+In general, we recommend only correcting for GC bias (using [computeGCbias][] followed by [correctGCbias][]) if the majority of the genome (the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
 
-Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC bias, we incorporated the possibility to supply a file of regions to [computeGCbias][] that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched per se. This way, the [computeGCbias][] will focus on background regions.
+Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4Me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC-bias, we incorporated the possibility to supply a file of regions to [computeGCbias][] that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched. This allows [computeGCbias][] to focus on background regions.
 
-When should I use bamCoverage, when bamCompare?
+When should I use bamCoverage or bamCompare?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Both tools produce bigWig files, i.e. they translate the read-centered information from a [BAM][] file into scores for genomic regions of a fixed size. The only difference is the *number of BAM files* that the tools use as input: while bamCoverage will only take one BAM file and produce a coverage file that is mostly normalized for sequencing depth, [bamCompare][] will take *two* [BAM][] files that can be compared with each other using several mathematical operations. [bamCompare][] will always normalize for sequencing depth like bamCoverage, but then it will perform additional calculations depending on what the user chose, for example:
@@ -71,7 +71,7 @@ Both tools produce bigWig files, i.e. they translate the read-centered informati
 
 How does computeMatrix handle overlapping genome regions?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If the [BED][] file supplied to [computeMatrix][] contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to avoid that overlapping regions are taken into account, you will need to clean the [BED][] file prior to using computeMatrix. There are several possibilities for modifying your [BED][] file.
+If the [BED][] file supplied to [computeMatrix][] contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the [BED][] file before using computeMatrix. There are several methods for modifying your [BED][] file.
 Let's say your file looks like this:
 
 ```
@@ -94,7 +94,7 @@ chr1	18	29	region3
 chr1	35	40	region4
 ```
 
-* if you would like to *merge all overlapping regions* to one big one, use the BEDtool mergeBed
+* if you would like to *merge all overlapping regions* into one big one, use the BEDtool mergeBed
 	* again, the BED file must be sorted first
 	* -n and -nms tell mergeBed to output the number of overlapping regions and the names of them
 	* in the resulting file, regions 1, 2 and 3 are merged
@@ -117,35 +117,7 @@ chr1	35	40	region4	1
 Why does the maximum value in the heatmap not equal the maximum value in the matrix?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The entire question went like this:
-
-_The max scale in the heatmap does not correspond to the max. values in the matrix. This suggests that some scaling/normalization is done prior to heatmap plot. (ex: I have values in the matrix going up to 50 and the scales on the matrix goes from 0 to ~13)_
-
-Indeed, if you do not indicate --zMax and/or --zMin together with the heatmapper command, the default of heatmapper is to remove outliers. We have found that this is beneficial in most cases as outliers tend to screw up the color schemes. In the code, this looks like this:
-
-```
-if zMin is None:
-    matrixFlatten = flattenMatrix(hm.matrixDict)
-    # try to avoid outliers by using np.percentile
-    zMin = np.percentile(matrixFlatten, 1.0)
-    
-    if np.isnan(zMin):
-      zMin = None
-
-...
-
-if zMax is None:
-    if matrixFlatten is None:
-      matrixFlatten = flattenMatrix(hm.matrixDict)
-
-# try to avoid outliers by using np.percentile
-   zMax = np.percentile(matrixFlatten, 98.0)
-
-   if np.isnan(zMax):
-      zMax = None
-```
-
-If you would like to include the entire range, you can set --zMax and --zMin to the min and max values you find in your matrix.
+Additional processing, such as outlier removal, is done on the matrix prior to plotting the heatmap. We've found this beneficial in most cases. You can override this by manually setting `--zMax` and/or `--zMin` appropriately.
 
 The heatmap I generated looks very "coarse", I would like a much more fine-grained image. 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -159,16 +131,16 @@ Each cluster will get its own box, exactly the same way as different groups of r
 
 If you indicated 3 clusters for k-means clustering, enter here: C1, C2, C3 &rarr; instead of the full default label ("cluster 1"), the heatmap will be labeled with the abbreviations.
 
-In the command line, use the --regionsLabel option to define your customized names.
+In the command line, use the `--regionsLabel` option to define your customized names.
 
 How can I manually specify several groups of regions (instead of clustering)?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you would like to compare the profiles and heatmaps for different groups of regions that you specified yourself, you need to tell computeMatrix to assess the BED file of regions accordingly. In Galaxy, you should add one BED file per group (i.e. genes.bed, exons.bed, introns.bed) while on the command line you should have just one BED file total with hashed lines indicating the end of a group. For more details, see the step-by-step-description [here](https://github.com/fidelram/deepTools/wiki/Visualizations#1st-example-heatmap-with-all-genes-scaled-to-the-one-size-and-user-specified-groups-of-genes).
+Simply specify multiple BED files (e.g., genes.bed, exons.bed and introns.bed). This works both in Galaxy and on the command line.
 
 What do I have to pay attention to when working with a draft version of a genome?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you are working with sequences from a genome that is not included in our standard descriptions, you need to pay attention to two sets of data that you might need using deepTools:
+If your genome isn't included in our standard dataset then you'll need the following:
 
 1. **Effective genome size** - this is mostly needed for [bamCoverage][] and [bamCompare][], see [below](#effGenomeSize) for details
 2. **Reference genome sequence in 2bit format** - this is needed for [computeGCbias][], see [below](#2bit) for details
@@ -176,7 +148,7 @@ If you are working with sequences from a genome that is not included in our stan
 
 How do I calculate the effective genome size for an organism that's not in your list?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We plan on including a module that will calculate the effective genome size for you, but it's not ready yet, so you will have to find a solution outside of deepTools for the time being.
+At the moment we do not provide a tool for this purpose, so you'll have to find a solution outside of deepTools for the time being.
 
 The "real" effective genome size is the part of the genome that is _uniquely mappable_. This means that the value will depend on the genome properties (how many repetitive elements, quality of the assembly etc.) and the length of the sequenced reads as 100 million 36-bp-reads might cover less than 100 million 100-bp-reads.
 
@@ -196,7 +168,7 @@ There is a tool that promises to calculate the mappability for any genome given 
 
 <a name="faCount"></a>
 **2. Use faCount**
-If you are using [bowtie2][] which reports *multi*-read alignments (= including *non-uniquely* mapping reads) as a default setting, you can use **faCount from UCSC tools** to report the total number of bases as well as the number of bases that are missing from the genome assembly indicated by 'N'. The effective genome size would then be the total number of base pairs minus the total number of 'N'.
+If you are using [bowtie2][] which reports *multimappers* (i.e., *non-uniquely* mapped reads) as a default setting, you can use **faCount from UCSC tools** to report the total number of bases as well as the number of bases that are missing from the genome assembly indicated by 'N'. The effective genome size would then be the total number of base pairs minus the total number of 'N'.
 Here's an example output of faCount on *D. melanogaster* genome version dm3:
 ```
 $ UCSCtools/faCount dm3.fa
@@ -222,17 +194,17 @@ In this example:
 Total no. bp = 168,736,537
 Total no. 'N' = 6,368,725
 
-*NOTE*: this method only works if multi-reads are mapped randomly to their possible locations, in other words if repetitive regions are covered by reads in which case the effective genome size is the size of the genome discarding stretches of 'N's.
+*NOTE*: this method only works if multimappers are randomly assigned to their possible locations (in such cases the effective genome size is simply the number of non-N bases).
 
 <a name="mapp_bamCov"></a>
 **3. Use bamCoverage**
-If you have a sample where you expect the genome to be covered completely, e.g. from genome sequencing, a very trivial solution is to use bamCoverage with a bin size of 1 bp and the --outFileFormat option set to 'bedgraph'. You can then count the number of non-Zero bins (= bp) which will indicate the mappable genome size for this specific sample.
+If you have a sample where you expect the genome to be covered completely, e.g. from genome sequencing, a very trivial solution is to use bamCoverage with a bin size of 1 bp and the --outFileFormat option set to 'bedgraph'. You can then count the number of non-Zero bins (bases) which will indicate the mappable genome size for this specific sample.
 
 <a name="mapp_genomeCov"></a>
 **4. Use genomeCoverageBed**
-The BEDtool genomeCoverageBed can be used to calculate the number of bp in the genome for which 0 reads can be found overlapping. As described on the [BEDtools website](http://bedtools.readthedocs.org/en/latest/content/tools/genomecov.html "go to genomeCov description"), you need:
+The BEDtool genomeCoverageBed can be used to calculate the number of bases in the genome for which 0 reads can be found overlapping. As described on the [BEDtools website](http://bedtools.readthedocs.org/en/latest/content/tools/genomecov.html "go to genomeCov description"), you need:
 
-* a file with the choromosome sizes of your sample's organism
+* a file with the chromosome sizes of your sample's organism
 * a position-sorted BAM file
 
 ```

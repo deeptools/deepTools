@@ -31,7 +31,7 @@ You can find workflows that are public or specifically shared with you by anothe
      <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf01.png" Title="Finding published workflows" />
 </a>
 
-A green box should appear, there you select "start using this workflow" which should lead you to your own workflow menu (that you can always access via the top menu "Workflow"). Here, you should now see a workflow labeled "imported: ....". If you want to use the workflow right away, click on the triangle and select "Run". The workflow should now be available within the Galaxy main data frame and should be waiting for your input.
+A green box should appear, there you select "start using this workflow", which should lead you to your own workflow menu (that you can always access via the top menu "Workflow"). Here, you should now see a workflow labeled "imported: ....". If you want to use the workflow right away, click on the triangle and select "Run". The workflow should now be available within the Galaxy main data frame and should be waiting for your input.
 
 <a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png" target="_blank">
      <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png" Title="Finding published workflows" />
@@ -44,24 +44,24 @@ Yes, it is possible. The only requirement is that your local Galaxy has a recent
 
 Go to the workflows, click on the ones you're interested in and go to "Download". This will save the workflows into .ga files on your computer. Now go to your local Galaxy installation and login. Go to the workflow menu and select "import workflow" (top right hand corner of the page). Click on "Browse" and select the saved workflow. If you have the same tool versions installed in your local Galaxy, these workflows should work right away.
 
-How can I have a look at the continuous read coverages from bigWig files? Which Genome Browser do you recommend?
+How can I have a look at the continuous read coverages from bigWig files? Which genome browser do you recommend?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are 2 popular Genome Browsers to visualize continuous data: [UCSC](http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu "UCSC Genome Browser") and [IGV](http://www.broadinstitute.org/igv/ "IGV Genome Browser").
+There are 2 popular genome browsers for visualizing continuous data: [UCSC](http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu "UCSC") and [IGV](http://www.broadinstitute.org/igv/ "IGV").
 
 IGV (recommended)
 """"""""""""""""""
 
-We recommend to download the [IGV Genome Browser](http://www.broadinstitute.org/igv/ "IGV Genome Browser"). Any user working for academia will be granted access after an informal registration. IGV itself needs an up-to-date Java installation and considerable amounts of RAM. It's usage is rather intuitive and the display can be easily customized. In addition, you can download genome-wide annotation data that can be displayed together with your own data.
+We recommend downloading [IGV](http://www.broadinstitute.org/igv/ "IGV"), which is free for academic use. IGV itself needs an up-to-date Java installation and a considerable amount of RAM. It's usage is rather intuitive and the display can be easily customized. In addition, you can download genome-wide annotation data that can be displayed together with your own data.
 
-To display data in IGV, do the following steps:
+To display data in IGV, do the following:
 
 1. Go to http://www.broadinstitute.org/igv/, register and download IGV
 2. Unpack the IGV archive and change to the extracted IGV folder
 3. Use the igv.bat (Windows), igv.sh (Linux) or igv.command (OSX) to start IGV (for more information please read the included readme.txt file or the IGV documentation)
 4. Choose the genome version of the file(s) you would like to visualize (e.g. dm3) THIS IS THE MOST IMPORTANT STEP! IGV will not detect the genome version automatically, i.e. if you select mm9 but your file is based on human data, it will still be displayed without an error message (but with the wrong positions, obviously!)
 5. Go to your deepTools Galaxy server (http://deeptools.ie-freiburg.mpg.de/) and navigate to your data set of choice
-6. Click on your data set so that you see its details like in  the screenshot below (_Keep in mind that not all datasets can be visualized in IGV or UCSC._ We recommend to use [bigWig][] or [BED][] files for visualization.)
+6. Click on your data set so that you see its details like in the screenshot below (_Keep in mind that not all datasets can be visualized in IGV or UCSC._ We recommend to use [bigWig][] or [BED][] files for visualization.)
 
 
 <a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV_dataset.png" target="_blank">
@@ -112,8 +112,8 @@ What's the best way to integrate the deepTools results with other downstream ana
 How can I determine basic parameters of a BAM file, such as the number of reads, [read][] length, duplication rate and average DNA fragment length?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Even though [MACS][] is meant to do peak calling for you, it also outputs a number of useful information such as those listed above.
-Simply run MACS on the BAM file that you would like to gain the information for and check the .xls file from the MACS output. It will list:
+Even though [MACS][] is meant to do peak calling for you, it also outputs additional useful information, such as that listed above.
+Simply run MACS on the BAM file in question and check the .xls file from the MACS output. It will list:
 
 * tag length = read length
 * duplication rate
