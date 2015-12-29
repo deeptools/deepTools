@@ -30,7 +30,7 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Corrects the GC bias using Benjamini\'s method '
+        description='Corrects the GC-bias using Benjamini\'s method '
         '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
         'The tool computeGC bias needs to be run first.',
         usage='An example usage is:\n correctGCBias '
@@ -63,8 +63,8 @@ def getRequiredArgs():
 
     # define the arguments
     required.add_argument('--bamfile', '-b',
-                          metavar='bam file',
-                          help='Sorted Bam file to correct.',
+                          metavar='BAM file',
+                          help='Sorted BAM file to correct.',
                           required=True)
     required.add_argument('--effectiveGenomeSize',
                           help='The effective genome size is the portion '
@@ -80,7 +80,7 @@ def getRequiredArgs():
                           'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
                           'for several effective genome sizes. This value is '
                           'needed to detect enriched regions that, if not '
-                          'discarded can bias the results.',
+                          'discarded, could bias the results.',
                           default=None,
                           type=int,
                           required=True)
@@ -89,17 +89,16 @@ def getRequiredArgs():
                           help='Genome in two bit format. Most genomes can be '
                           'found here: http://hgdownload.cse.ucsc.edu/gbdb/  '
                           'Search for the .2bit ending. Otherwise, fasta '
-                          'files can be converted to 2bit using the UCSC '
-                          'programm called faToTwoBit available for different '
-                          'plattforms at '
+                          'files can be converted to 2bit using faToTwoBit '
+                          'available here: '
                           'http://hgdownload.cse.ucsc.edu/admin/exe/',
                           metavar='two bit file',
                           required=True)
 
     required.add_argument('--GCbiasFrequenciesFile', '-freq',
                           help='Indicate the output file from '
-                          'computeGCBias containing, '
-                          'the observed and expected read frequencies per GC '
+                          'computeGCBias containing '
+                          'the observed and expected read frequencies per GC-'
                           'content.',
                           type=argparse.FileType('r'),
                           metavar='FILE',
@@ -110,7 +109,7 @@ def getRequiredArgs():
                         help='Name of the corrected file. The ending will '
                         'be used to decide the output file format. The options '
                         'are ".bam", ".bw" for a bigWig file, ".bg" for a '
-                        'bedgraph file.',
+                        'bedGraph file.',
                         metavar='FILE',
                         type=argparse.FileType('w'),
                         required=True)

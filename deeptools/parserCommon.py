@@ -31,22 +31,21 @@ def read_options():
 
     group.add_argument('--extendReads', '-e',
                        help='This parameter allows the extension of reads to '
-                       'fragment size. If set, every individual read is '
-                       'extended without exception.\n'
+                       'fragment size. If set, each read is '
+                       'extended, without exception.\n'
                        '*NOTE*: This feature is generally NOT recommended for '
-                       'spliced-read data, e.g. from RNA-seq, as it would'
+                       'spliced-read data, such as RNA-seq, as it would '
                        'extend reads over skipped regions.\n'
                        '*Single-end*: Requires a user specified value for the '
                        'final fragment length. Reads that already exceed this '
                        'fragment length will not be extended.\n'
                        '*Paired-end*: Reads with mates are always extended to '
                        'match the fragment size defined by the two read mates. '
-                       'Unmated reads, mate reads that map or too far apart '
-                       '(greater '
-                       '4x fragment length) or even map to different '
+                       'Unmated reads, mate reads that map too far apart '
+                       '(>4x fragment length) or even map to different '
                        'chromosomes are treated like singe-end reads. The input '
-                       'of a fragment length value is optional to the user. If '
-                       'no value is specified, it is auto-estimated from the '
+                       'of a fragment length value is optional. If '
+                       'no value is specified, it is estimated from the '
                        'data (mean of the fragment size of all mate reads).\n',
                        type=int,
                        nargs='?',
@@ -65,13 +64,13 @@ def read_options():
     group.add_argument('--minMappingQuality',
                        metavar='INT',
                        help='If set, only reads that have a mapping '
-                       'quality score equal or higher than --minMappingQuality are '
+                       'quality score of at least this are '
                        'considered.',
                        type=int,
                        )
 
     group.add_argument('--centerReads',
-                       help='By adding this option reads are centered with '
+                       help='By adding this option, reads are centered with '
                        'respect to the fragment length. For paired-end data, '
                        'the read is centered at the fragment length defined '
                        'by the two ends of the fragment. For single-end data, the '
@@ -82,9 +81,9 @@ def read_options():
 
     group.add_argument('--samFlagInclude',
                        help='Include reads based on the SAM flag. For example, '
-                       'to get only reads that are the first mate use a flag of 64. '
+                       'to get only reads that are the first mate, use a flag of 64. '
                        'This is useful to count properly paired reads only once, '
-                       'otherwise the second mate will be also considered for the '
+                       'as otherwise the second mate will be also considered for the '
                        'coverage.',
                        metavar='INT',
                        default=None,
@@ -148,31 +147,30 @@ def normalization_options():
                        required=False)
 
     group.add_argument('--ignoreForNormalization', '-ignore',
-                       help='A list of chromosome names separated by spaces '
+                       help='A list of space-delimited chromosome names '
                        'containing those chromosomes that should be excluded '
                        'for computing the normalization. This is useful when considering '
-                       'samples with unequal coverage across chromosomes like male '
-                       'samples. An usage examples is  --ignoreForNormalization chrX chrM.',
+                       'samples with unequal coverage across chromosomes, like male '
+                       'samples. An usage examples is --ignoreForNormalization chrX chrM.',
                        nargs='+')
 
     group.add_argument('--skipNonCoveredRegions', '--skipNAs',
                        help='This parameter determines if non-covered regions '
-                       '(regions without overlapping reads) in a bam file should '
+                       '(regions without overlapping reads) in a BAM file should '
                        'be skipped. The default is to treat those regions as having a value of zero. '
                        'The decision to skip non-covered regions '
                        'depends on the interpretation of the data. Non-covered regions '
-                       'may represent for example repetitive regions that want '
-                       'to be skipped.',
+                       'may represent, for example, repetitive regions that should be skipped.',
                        action='store_true')
 
     group.add_argument('--smoothLength',
                        metavar="INT bp",
                        help='The smooth length defines a window, larger than '
                        'the binSize, to average the number of reads. For '
-                       'example, if the --binSize is set to 20 bp and the '
-                       '--smoothLength is set to 60 bp, then, for each '
+                       'example, if the --binSize is set to 20 and the '
+                       '--smoothLength is set to 60, then, for each '
                        'bin, the average of the bin and its left and right '
-                       'neighbors is considered. Any value smaller than the '
+                       'neighbors is considered. Any value smaller than '
                        '--binSize will be ignored and no smoothing will be '
                        'applied.',
                        type=int)
@@ -193,7 +191,7 @@ def getParentArgParse(args=None, binSize=True):
 
     if binSize:
         optional.add_argument('--binSize', '-bs',
-                              help='Size of the bins in bp for the output '
+                              help='Size of the bins, in bases, for the output '
                               'of the bigwig/bedgraph file.',
                               metavar="INT bp",
                               type=int,
@@ -313,10 +311,10 @@ def heatmapperMatrixArgs(args=None):
                           )
 
     required.add_argument('--outFileName', '-out',
-                          help='File name to save the image. The file '
+                          help='File name to save the image to. The file '
                           'ending will be used to determine the image '
                           'format. The available options are: "png", "emf", '
-                          '"eps", "pdf" and "svg", e. g. MyHeatmap.png.',
+                          '"eps", "pdf" and "svg", e.g., MyHeatmap.png.',
                           type=writableFile,
                           required=True)
     return parser
@@ -335,11 +333,11 @@ def heatmapperOutputArgs(args=None,
 
     output.add_argument(
         '--outFileSortedRegions',
-        help='File name in which the regions are saved '
+        help='File name into which the regions are saved '
         'after skipping zeros or min/max threshold values. The '
         'order of the regions in the file follows the sorting '
         'order selected. This is useful, for example, to '
-        'generate other heatmaps keeping the sorting of the '
+        'generate other heatmaps while keeping the sorting of the '
         'first heatmap. Example: Heatmap1sortedRegions.bed',
         metavar='FILE',
         type=argparse.FileType('w'))
@@ -361,11 +359,11 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     cluster.add_argument(
         '--kmeans',
         help='Number of clusters to compute. When this '
-        'option is set, then the matrix is split into clusters '
-        'using the kmeans algorithm. Only works for data that '
+        'option is set, the matrix is split into clusters '
+        'using the k-means algorithm. Only works for data that '
         'is not grouped, otherwise only the first group will '
         'be clustered. If more specific clustering methods '
-        'are required it is advisable to save the underlying matrix '
+        'are required, then save the underlying matrix '
         'and run the clustering using other software. The plotting  '
         'of the clustering may fail with an error if a '
         'cluster has very few members compared to the total number '
@@ -431,14 +429,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         optional.add_argument('--colors',
                               help='List of colors to use '
                               'for the plotted lines. Color names '
-                              'and html hex strings (e.g. #eeff22) '
+                              'and html hex strings (e.g., #eeff22) '
                               'are accepted. The color names should '
-                              'be given separated by spaces. For example '
+                              'be space separated. For example, '
                               '--colors red blue green ',
                               nargs='+')
 
         optional.add_argument('--numPlotsPerRow',
-                              help='Number of plots to plot in a row',
+                              help='Number of plots per row',
                               type=int,
                               default=8)
 
@@ -473,7 +471,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             default='black',
             help='If --missingDataAsZero is not set, such cases '
             'will be colored in black by default. Using this '
-            'parameter a different color can be set. A value '
+            'parameter, a different color can be set. A value '
             'between 0 and 1 will be used for a gray scale '
             '(black is 0). For a list of possible color '
             'names see: http://packages.python.org/ete2/'
@@ -495,7 +493,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument(
             '--colorList',
-            help='List of color to create a colormap. For example if  '
+            help='List of colors to use to create a colormap. For example, if  '
             '--colorList black yellow blue is set (colors separated by '
             'spaces) then a color map that starts with black, continues '
             'to yellow and finishes in blue is created. If this option is'
@@ -641,7 +639,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
     optional.add_argument('--verbose',
                           help='If set, warning messages and '
-                          'addition information are given.',
+                          'additional information are given.',
                           action='store_true')
     return parser
 

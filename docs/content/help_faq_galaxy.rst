@@ -16,8 +16,8 @@ Once you've copied a data set from one history to another, check two things:
 * do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
 * hit the refresh button
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png" Title="Galaxy history refresh button" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_historyReload.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_historyReload.png" Title="Galaxy history refresh button" />
 </a>
 
 How can I use a published workflow?
@@ -27,14 +27,14 @@ You **must register** if you want to use the workflows within [deepTools Galaxy]
 
 You can find workflows that are public or specifically shared with you by another user via "Shared Data" &rarr; "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf01.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf01.png" Title="Finding published workflows" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_wf01.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_wf01.png" Title="Finding published workflows" />
 </a>
 
 A green box should appear, there you select "start using this workflow", which should lead you to your own workflow menu (that you can always access via the top menu "Workflow"). Here, you should now see a workflow labeled "imported: ....". If you want to use the workflow right away, click on the triangle and select "Run". The workflow should now be available within the Galaxy main data frame and should be waiting for your input.
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png" Title="Finding published workflows" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_wf02.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_wf02.png" Title="Finding published workflows" />
 </a>
 
 I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?
@@ -64,15 +64,15 @@ To display data in IGV, do the following:
 6. Click on your data set so that you see its details like in the screenshot below (_Keep in mind that not all datasets can be visualized in IGV or UCSC._ We recommend to use [bigWig][] or [BED][] files for visualization.)
 
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV_dataset.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV_dataset.png" Title="Screenshot of a bigWig file in Galaxy" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_IGV_dataset.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_IGV_dataset.png" Title="Screenshot of a bigWig file in Galaxy" />
 </a>
 
 Now click on “display with IGV local” to visualize your data set in IGV that should already be running on your computer. _(“display with IGV Web current” can be used if you do not have an installed IGV. It will start an IGV web start version. We do not recommend that option.)_
 
 Here's a screenshot of a typical bigWig file display:
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV.png" Title="Screenshot of IGV browser display of bigWig files" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_IGV.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_IGV.png" Title="Screenshot of IGV browser display of bigWig files" />
 </a>
 
 
@@ -83,15 +83,15 @@ UCSC
 
 There is a direct link from within deepTools Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC_dataset.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC_dataset.png" Title="Screenshot of bigWig file in Galaxy" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_UCSC_dataset.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_UCSC_dataset.png" Title="Screenshot of bigWig file in Galaxy" />
 </a>
 
 Click on "main" and the UCSC browser should open within a new window, displaying the data set that you chose.
 The default setting for bigWig files is the "dense" display that looks like a heatmap.
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC01.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC01.png" Title="Screenshot of UCSC browser display of bigWig files" />
+<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_UCSC01.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/Gal_FAQ_UCSC01.png" Title="Screenshot of UCSC browser display of bigWig files" />
 </a>
 
 If you would like to display the continuous profile in a "valley-mountain" fashion like the one shown in the IGV screenshot, go to the drop-down menu underneath your custom track and choose "full".

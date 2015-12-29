@@ -21,8 +21,8 @@ def parse_arguments(args=None):
             description="""
 
 This tool summarizes and prepares an intermediate file containing
-scores associated with genomic regions that can be used afterward to
-plot a heatmap or profile.  Typically, these genomic regions are
+scores associated with genomic regions. This file can be used to
+plot a heatmap or profile. Typically, these genomic regions are
 genes, but any other regions defined in a BED format can be
 used. This tool can also be used to filter and sort regions according
 to their score.
@@ -64,7 +64,7 @@ computeMatrix scale-regions --help
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='reference-point')],
         help="Reference-point refers to a position within a BED region "
-        "(e.g., the start of region). In this mode only those genomic"
+        "(e.g., the starting point). In this mode, only those genomic"
         "positions before (upstream) and/or after (downstream) of the "
         "reference point will be plotted.",
         usage='An example usage is:\n  computeMatrix -S '
@@ -104,7 +104,7 @@ def computeMatrixOutputArgs(args=None):
     output = parser.add_argument_group('Output options')
     output.add_argument('--outFileName', '-out',
                         help='File name to save the gzipped matrix file '
-                        'needed by the "heatmapper" and "profiler" tools.',
+                        'needed by the "plotHeatmap" and "plotProfile" tools.',
                         type=writableFile,
                         required=True)
     # TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
@@ -147,7 +147,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               default=1000,
                               type=int,
                               help='Distance in bases to which all regions will '
-                              'be fitted.')
+                              'be fit.')
         optional.add_argument('--startLabel',
                               default='TSS',
                               help='Label shown in the plot for the start of '
@@ -155,7 +155,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'start site), but could be changed to anything, '
                               'e.g. "peak start". Note that this is only '
                               'useful if you plan to plot the results yourself '
-                              'and not, for example, with heatmapper, which '
+                              'and not, for example, with plotHeatmap, which '
                               'will override this.')
         optional.add_argument('--endLabel',
                               default='TES',
@@ -186,7 +186,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'could be either the region start (TSS), the '
                               'region end (TES) or the center of the region. '
                               'Note that regardless of what you specify, '
-                              'heatmapper will default to using "TSS" as the '
+                              'plotHeatmap/plotProfile will default to using "TSS" as the '
                               'label.')
 
         # set region body length to zero for reference point mode
@@ -214,7 +214,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--binSize', '-bs',
                           help='Length, in bases, of the non-overlapping '
-                          'bin for averaging the score over the '
+                          'bins for averaging the score over the '
                           'regions length.',
                           type=int,
                           default=10)
@@ -224,7 +224,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'regions sorted. The default is to not sort the regions. '
                           'Note that this is only useful if you plan to plot '
                           'the results yourself and not, for example, with '
-                          'heatmapper, which will override this.',
+                          'plotHeatmap, which will override this.',
                           choices=["descend", "ascend", "no"],
                           default='no')
 
@@ -247,8 +247,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
     optional.add_argument('--missingDataAsZero',
                           help='If set, missing data (NAs) will be treated as zeros. '
                           'The default is to ignore such cases, which will be depicted as black areas in '
-                          'the heatmap. (see the --missingDataColor argument '
-                          'of the heatmapper command for additional options).',
+                          'a heatmap. (see the --missingDataColor argument '
+                          'of the plotHeatmap command for additional options).',
                           action='store_true')
 
     optional.add_argument('--skipZeros',

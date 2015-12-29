@@ -51,11 +51,11 @@ detailed sub-commands help available under:
         parents=[bigwigCorrelateArgs(case='bins'),
                  parent_parser,
                  ],
-        help="The average score is based on bins of same "
-             "size (10k bp by default), which consecutively cover the "
+        help="The average score is based on equally sized bins "
+             "(10 kilobases by default), which consecutively cover the "
              "entire genome. The only exception is the last bin of a chromosome, which "
-             "is regularly smaller. The output of this mode is commonly used to assess the "
-             "overall similarity of different samples represented by different bigWig files.",
+             "is often smaller. The output of this mode is commonly used to assess the "
+             "overall similarity of different bigWig files.",
         add_help=False,
         usage='bigWigCorrelate '
               '-b file1.bw file2.bw '
@@ -68,9 +68,9 @@ detailed sub-commands help available under:
         parents=[bigwigCorrelateArgs(case='BED-file'),
                  parent_parser],
         help="The user provides a BED file that contains all regions "
-             "that should be considered for the  analysis. A "
+             "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
-             "different samples for a set of pre-defined peak regions.",
+             "different samples over a set of pre-defined peak regions.",
         usage='bigwigCorrelate '
               '-b file1.bw file2.bw '
               '-out results.npz --BED selection.bed\n',
@@ -98,14 +98,14 @@ def bigwigCorrelateArgs(case='bins'):
     # define the arguments
     required.add_argument('--bwfiles', '-b',
                           metavar='FILE1 FILE2',
-                          help='List of bigWig files separated by spaces.',
+                          help='List of bigWig files, separated by spaces.',
                           nargs='+',
                           type=argparse.FileType('r'),
                           required=True)
 
     required.add_argument('--outFileName', '-out',
                           help='File name to save the compressed matrix file (npz format)'
-                          'needed by the "heatmapper" and "profiler" tools.',
+                          'needed by the "plotHeatmap" and "plotProfile" tools.',
                           type=argparse.FileType('w'),
                           required=True)
 
@@ -117,7 +117,7 @@ def bigwigCorrelateArgs(case='bins'):
                           metavar='sample1 sample2',
                           help='User defined labels instead of default labels from '
                           'file names. '
-                          'Multiple labels have to be separated by space, e.g. '
+                          'Multiple labels have to be separated by spaces, e.g., '
                           '--labels sample1 sample2 sample3',
                           nargs='+')
 
@@ -130,18 +130,18 @@ def bigwigCorrelateArgs(case='bins'):
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                               metavar='INT',
-                              help='Size (in base pairs) of the windows sampled '
+                              help='Size (in bases) of the windows sampled '
                               'from the genome.',
                               default=10000,
                               type=int)
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
-                              help='By default, bigwigCorrelate considers consecutive '
+                              help='By default, bigwigCorrelate considers adjacent '
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can be given. Larger distances '
-                              'result in less bins being considered.',
+                              'results in fewer considered bins.',
                               default=0,
                               type=int)
 

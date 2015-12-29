@@ -28,10 +28,10 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Computes the GC bias using Benjamini\'s method '
+        description='Computes the GC-bias using Benjamini\'s method '
         '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
-        'The resulting GC bias can later be used to plot '
-        'the bias or to correct the bias.',
+        'The resulting GC-bias can later be used to plot '
+        'or correct the bias.',
         usage='An example usage is:\n computeGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt [options]',
         conflict_handler='resolve',
@@ -47,7 +47,7 @@ def getRequiredArgs():
 
     required.add_argument('--bamfile', '-b',
                           metavar='bam file',
-                          help='Sorted Bam file. ',
+                          help='Sorted BAM file. ',
                           required=True)
 
     required.add_argument('--effectiveGenomeSize',
@@ -82,7 +82,7 @@ def getRequiredArgs():
 
     required.add_argument('--fragmentLength', '-l',
                           help='Fragment length used for the sequencing. If '
-                          'paired-end reads are used the fragment length is '
+                          'paired-end reads are used, the fragment length is '
                           'computed based from the bam file',
                           type=int,
                           required=True)
@@ -101,19 +101,19 @@ def getRequiredArgs():
         '--filterOut', '-fo',
         help='BED file containing genomic regions to be excluded '
         'from the estimation of the correction. Such regions '
-        'usually contain repetitive regions and peaks that if '
-        'included will bias the correction. '
+        'usually contain repetitive regions and peaks that, if '
+        'included, would bias the correction. '
         'It is recommended to filter out known repetitive regions '
-        'if multi-reads (reads that map to more than one genomic '
+        'if multimappers (reads that map to more than one genomic '
         'position) were excluded. In the case of ChIP-seq data, '
         'it is recommended to first use '
         'a peak caller to identify and filter out the identified peaks.\n\n'
-        'Mappability tracks for different read lenghts can be '
+        'Mappability tracks for different read lengths can be '
         'found at: http://hgdownload.cse.ucsc.edu/gbdb/mm9/bbi/ '
         'and http://hgdownload.cse.ucsc.edu/gbdb/hg19/bbi \n\n'
         'The script: scripts/mappabilityBigWig_to_unmappableBed.sh '
-        'can be used to get a bed file from the mappability '
-        'bigwig.',
+        'can be used to get a BED file from the mappability '
+        'bigWig.',
         type=argparse.FileType('r'),
         metavar='BED file')
 
@@ -127,8 +127,8 @@ def getRequiredArgs():
     group = parser.add_argument_group('Output options')
 
     group.add_argument('--GCbiasFrequenciesFile', '-freq',
-                       help='Path to save the file containing, '
-                       'the observed and expected read frequencies per GC '
+                       help='Path to save the file containing '
+                       'the observed and expected read frequencies per %GC-'
                        'content. This file is needed to run the '
                        'correctGCBias tool. This is a text file.',
                        type=argparse.FileType('w'),
@@ -140,17 +140,17 @@ def getRequiredArgs():
     plot.add_argument('--biasPlot',
                       metavar='FILE NAME',
                       help='If given, a diagnostic image summarizing '
-                      'the GC bias found on the sample will be saved.')
+                      'the GC-bias will be saved.')
 
     plot.add_argument('--regionSize',
                       metavar='INT',
                       type=int,
                       default=300,
-                      help='To plot the reads per GC over a region'
+                      help='To plot the reads per %GC over a region'
                       'the size of the region is required. By default, '
-                      'the bin size is set to 300bp, which is close to the '
+                      'the bin size is set to 300 bases, which is close to the '
                       'standard fragment size for Illumina machines. However, '
-                      'if the depth of sequencing is low a larger bin size '
+                      'if the depth of sequencing is low, a larger bin size '
                       'will be required, otherwise many bins will not '
                       'overlap with any read')
 

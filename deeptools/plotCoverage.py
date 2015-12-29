@@ -27,7 +27,7 @@ def parse_arguments(args=None):
             description="""
 
 plotCoverage samples 1 million positions of the genome to build
-a coverage histogram. Multiple bam files are accepted but all should
+a coverage histogram. Multiple BAM files are accepted but all should
 correspond to the same genome assembly.
 
 
@@ -64,12 +64,12 @@ def required_args():
 
     required.add_argument('--bamfiles', '-b',
                           metavar='FILE1 FILE2',
-                          help='List of indexed bam files separated by spaces.',
+                          help='List of indexed BAM files separated by spaces.',
                           nargs='+',
                           required=True)
 
     required.add_argument('--plotFile', '-o',
-                          help='File name to save the plot',
+                          help='File name to save the plot to',
                           type=argparse.FileType('w'),
                           required=True)
 
@@ -81,7 +81,7 @@ def required_args():
                           metavar='sample1 sample2',
                           help='User defined labels instead of default labels from '
                                'file names. '
-                               'Multiple labels have to be separated by space, e.g. '
+                               'Multiple labels have to be separated by spaces, e.g. '
                                '--labels sample1 sample2 sample3',
                           nargs='+')
 
@@ -92,13 +92,13 @@ def required_args():
 
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
-                          'that have zero or nan values only all samples '
+                          'that have zero or nan values in all samples '
                           'are excluded.',
                           action='store_true',
                           required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of 1bp regions to sample. Default 1 million',
+                          help='Number of 1 base regions to sample. Default 1 million',
                           required=False,
                           type=int,
                           default=1000000)

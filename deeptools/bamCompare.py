@@ -27,23 +27,23 @@ def parseArguments():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two BAM files based on the number of '
         'mapped reads. To compare the BAM files, the genome is partitioned '
-        'into bins of equal size, then the number of reads found in each BAM '
-        'file is counted for such bins and finally a summarizing value is '
+        'into bins of equal size, then the number of reads found in each is counted per file '
+        'and finally a summary value is '
         'reported. This value can be the ratio of the number of reads per '
         'bin, the log2 of the ratio or the difference. This tool can '
-        'normalize the number of reads on each BAM file using the SES method '
-        'proposed by Diaz et al. (2012). "Normalization, bias correction, and '
+        'normalize the number of reads in each BAM file using the SES method '
+        'proposed in Diaz et al. (2012). "Normalization, bias correction, and '
         'peak calling for ChIP-seq". Statistical applications in genetics '
         'and molecular biology, 11(3). Normalization based on read counts '
-        'is also available. The output is either a bedgraph or a bigwig file '
+        'is also available. The output is either a bedgraph or bigWig file '
         'containing the bin location and the resulting comparison values. By '
         'default, if reads are mated, the fragment length reported in the BAM '
-        'file is used. In the case of paired-end mapping each read mate '
+        'file is used. In the case of paired-end mapping, each mate '
         'is treated independently to avoid a bias when a mixture of concordant '
         'and discordant pairs is present. This means that *each end* will '
         'be extended to match the fragment length.',
 
-        usage='An example usage is:\n %(prog)s '
+        usage='An example usage is:\n bamCompare '
         '-b1 treatment.bam -b2 control.bam -o log2ratio.bw',
 
         add_help=False)
@@ -101,8 +101,8 @@ def getOptionalArgs():
     optional.add_argument('--sampleLength', '-l',
                           help='*Only relevant when SES is chosen for the '
                           'scaleFactorsMethod.* To compute the SES, specify '
-                          'the length (in bp) of the regions (see --numberOfSamples) '
-                          'which will be randomly sampled to calculate the scaling factors. '
+                          'the length (in bases) of the regions (see --numberOfSamples) '
+                          'that will be randomly sampled to calculate the scaling factors. '
                           'If you do not have a good sequencing depth for '
                           'your samples consider increasing the sampling '
                           'regions\' size to minimize the probability '
@@ -127,13 +127,13 @@ def getOptionalArgs():
                           required=False)
 
     optional.add_argument('--ratio',
-                          help='The default is to output the log2ratio between the '
+                          help='The default is to output the log2ratio of the '
                           'two samples. The reciprocal ratio returns the '
                           'the negative of the inverse of the ratio '
                           'if the ratio is less than 0. The resulting '
                           'values are interpreted as negative fold changes. '
-                          '*NOTE*: Only when --ratio subtract, the options --normalizeTo1x or '
-                          '--normalizeUsingRPKM can be used.',
+                          '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
+                          '--normalizeUsingRPKM be used.',
                           default='log2',
                           choices=['log2', 'ratio', 'subtract', 'add',
                                    'reciprocal_ratio'],
