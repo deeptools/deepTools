@@ -13,7 +13,7 @@ The following example performs a correlation analysis based on the coverage file
 
 **Scatterplot**
 
-Here we are plotting a scatterplot with pearson correlation.
+Here we make a scatterplot and include pearson correlation coefficients.
 
 .. code:: bash
 
@@ -27,7 +27,7 @@ Here we are plotting a scatterplot with pearson correlation.
 
 **Heatmap**
 
-Here we are plotting a heatmap, this time using spearman correlation.
+Here we plot a heatmap, this time of the spearman correlation coefficients.
 
 .. code:: bash
 
@@ -42,7 +42,7 @@ Here we are plotting a heatmap, this time using spearman correlation.
 plotCorrelation on Galaxy:
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below is the screenshot showing how to use plotCorrelation on the deeptools galaxy.
+Below is the screenshot showing how to use plotCorrelation with deepTools Galaxy.
 
 
 .. image:: ../../images/plotCorrelation_galaxy.png

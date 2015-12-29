@@ -11,12 +11,12 @@ Requirements
 -------------
 
 * Python 2.7
-* numpy and scipy installed
-* pysam >= 0.8 and bx-python are required
+* numpy, scipy, bx-python, and pyBigWig
+* pysam >= 0.8
 * samtools (preferably in your PATH)
 * 1 UCSC tool: bedGraphToBigWig (preferably in your PATH) 
 
-The easiest way to obtain **Python 2.7 together with numpy and scipy** is
+The fastet way to obtain **Python 2.7 together with numpy and scipy** is
 via the `Anaconda Scientific Python
 Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
@@ -48,8 +48,8 @@ Installing samtools
 
 	$ export PATH=$PATH:/Users/frd2007/Tools/samtools-1.2
 
-Installing UCSC tools (aka Kent tools)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Installing UCSC tools (aka Kent's tools)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1. Figure out which operating system version you have
 ::
@@ -79,17 +79,12 @@ check the website for the correct folder for your operating system) and make the
 Command line installation using ``pip``
 -----------------------------------------
 
-If you've fulfilled all requirements,
-the easiest way to install deepTools is by using python ``pip``.
-If you installed the Anaconda Scientific Python distribution (see above),
-then ``pip`` will also have been installed.
-
 Install deepTools using the following command:
 ::
 
 	$ pip install git+https://github.com/fidelram/deepTools.git
 
-Done.
+All python requirements are automatically installed.
 
 
 Command line installation without ``pip``
@@ -160,7 +155,7 @@ Shed <http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools>`_.
 Installation via Galaxy API (recommended)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-At first generate an `API Key <http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key>`_
+First generate an `API Key <http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key>`_
 for your admin user and run the the installation script:
 ::
 

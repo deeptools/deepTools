@@ -5,13 +5,13 @@ deepTools: *tools for exploring deep sequencing data*
 .. image:: images/start_collage.png
 
 deepTools is a **suite of python tools** particularly developed for the 
-efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq,
-MNase-seq etc.
+efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq or
+MNase-seq.
 
 There are 2 ways for using deepTools:
 
 * **command line usage** -- simply download and install the tools
-* **Galaxy usage** --  if you would like to see our tools at work, you can test them in our public `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_.
+* **Galaxy usage** --  if you would like to see our tools at work, you can test them on our public `deepTools Galaxy server <http://deeptools.ie-freiburg.mpg.de>`_.
 
 The flow chart below depicts the different tool modules that are
 currently available (deepTools modules are written in
@@ -19,7 +19,7 @@ bold red and black font).
 
 .. image:: images/start_workflow.png
 
-If  the file names in the figure mean nothing to you,
+If the file names in the figure mean nothing to you,
 please make sure to check our :doc:`content/help_glossary`.
 
 
@@ -35,7 +35,7 @@ Contents:
    content/changelog
 
 
-While developing deepTools, we continuously thrive to create software
+While developing deepTools, we continuously strive to create software
 that fulfills the following criteria:
 
 -  **efficiently extract reads from BAM files** and perform various
@@ -44,9 +44,9 @@ that fulfills the following criteria:
    normalization strategies
 -  make use of **multiple processors** (speed!)
 -  generation of **highly customizable images** (change colours, size,
-   labels, file format etc.)
--  enable **customized down-stream analyses** which requires that every
-   data set that is being produced can be stored by the user
+   labels, file format, etc.)
+-  enable **customized down-stream analyses**, meaning that every
+   data set created can be stored by the user
 -  **modular approach** - compatibility, flexibility, scalability (i.e.
    we can add more and more modules and make use of established methods)
 

@@ -14,11 +14,11 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[parentParser, outputParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='This tool compares two bigwig files based on the number '
-        'of mapped reads. To compare the bigwig files the genome is '
+        description='This tool compares two bigWig files based on the number '
+        'of mapped reads. To compare the bigWig files, the genome is '
         'partitioned into bins of equal size, then the number of reads found '
-        'in each BAM file are counted for such bins and finally a summarizing '
-        'value is reported. This vaule can be the ratio of the number of reads'
+        'in each BAM file are counted per bin and finally a summary '
+        'value is reported. This value can be the ratio of the number of reads'
         'per bin, the log2 of the ratio, the sum or the difference.')
 
     # define the arguments
@@ -66,12 +66,12 @@ def parse_arguments(args=None):
 
     parser.add_argument('--skipNonCoveredRegions', '--skipNAs',
                         help='This parameter determines if non-covered regions (regions without a score) '
-                        'in the bigwig files should be skipped. The default is to treat those '
+                        'in the bigWig files should be skipped. The default is to treat those '
                         'regions as having a value of zero. '
                         'The decision to skip non-covered regions '
                         'depends on the interpretation of the data. Non-covered regions '
-                        'in a bigwig file may represent for example repetitive regions that want '
-                        'to be skipped. Alternatively, the interpretation of non-covered regions as'
+                        'in a bigWig file may represent repetitive regions that should '
+                        'be skipped. Alternatively, the interpretation of non-covered regions as '
                         'zeros may be wrong and this option should be used ',
                         action='store_true')
 

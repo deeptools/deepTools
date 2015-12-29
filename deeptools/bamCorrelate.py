@@ -16,7 +16,7 @@ def parse_arguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
-bamCorrelate computes the read coverage of two or more BAM files in genomic regions.
+bamCorrelate computes the read coverage in genomic regions of two or more BAM files.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
 mode. Most commonly, the output of bamCorrelates is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
@@ -54,8 +54,8 @@ detailed sub-commands help available under:
                  parent_parser, read_options_parser,
                  ],
         help="The coverage calculation is done for consecutive bins of equal "
-             "size (10k bp by default). This mode is useful to assess the "
-             "genome-wide similarity of BAM files. The bin size and the "
+             "size (10 kilobases by default). This mode is useful to assess the "
+             "genome-wide similarity of BAM files. The bin size and "
              "distance between bins can be adjusted.",
         add_help=False,
         usage='%(prog)s '
@@ -105,14 +105,14 @@ def bamcorrelate_args(case='bins'):
                           metavar='sample1 sample2',
                           help='User defined labels instead of default labels from '
                                'file names. '
-                               'Multiple labels have to be separated by space, e.g. '
+                               'Multiple labels have to be separated by a space, e.g. '
                                '--labels sample1 sample2 sample3',
                           nargs='+')
 
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                               metavar='INT',
-                              help='Length in base pairs for a window used '
+                              help='Length in bases of the window used '
                                    'to sample the genome.',
                               default=10000,
                               type=int)
@@ -123,7 +123,7 @@ def bamcorrelate_args(case='bins'):
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can by given. Larger distances '
-                              'result in less bins being considered.',
+                              'result in fewer bins considered.',
                               default=0,
                               type=int)
 

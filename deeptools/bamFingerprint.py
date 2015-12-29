@@ -21,16 +21,16 @@ def parse_arguments(args=None):
         parents=[required_args, output_args, read_options_parser,
                  optional_args, parent_parser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Samples indexed bam files '
-        'and plots a profile for each bam file. '
-        'At each sample position all reads '
-        'overlapping a window (bin) of '
+        description='Samples indexed BAM files '
+        'and plots a profile for each. '
+        'At each sample position, all reads '
+        'overlapping a window (bin) of the '
         'specified length are counted. '
         'These counts are then sorted '
         'and the cumulative sum plotted ',
         conflict_handler='resolve',
-        usage='An example usage is: %(prog)s -b treatment.bam control.bam '
-        '-o signal.b',
+        usage='An example usage is: bamFingerprint -b treatment.bam control.bam '
+        '-o signal.bw',
         add_help=False)
 
     return parser
@@ -41,7 +41,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of does not match the number of bam files."
+        print "The number of labels does not match the number of BAM files."
         exit(0)
 
     if not args.labels:
@@ -58,7 +58,7 @@ def get_required_args():
     required.add_argument('--bamfiles', '-b',
                           metavar='bam files',
                           nargs='+',
-                          help='List of sorted Bam files',
+                          help='List of sorted BAM files',
                           required=True)
     return parser
 
@@ -73,12 +73,12 @@ def get_optional_args():
     optional.add_argument('--labels', '-l',
                           metavar='',
                           help='List of labels to use in the output. '
-                          'If not given the file names will be used instead. '
-                          'Separate the labels by space.',
+                          'If not given, the file names will be used instead. '
+                          'Separate the labels by spaces.',
                           nargs='+')
 
     optional.add_argument('--binSize', '-bs',
-                          help='Length in base pairs for a window used to '
+                          help='Length in bases for a window used to '
                           'sample the genome.',
                           default=500,
                           type=int)
@@ -104,9 +104,9 @@ def get_optional_args():
 
     optional.add_argument('--skipZeros',
                           help='If set, then zero counts that happen '
-                          'for *all* bam files given are ignored. This '
+                          'for *all* BAM files given are ignored. This '
                           'will result in a reduced number of read '
-                          'counts than the the specified in --numberOfSamples',
+                          'counts than that specified in --numberOfSamples',
                           action='store_true')
 
     return parser
@@ -117,8 +117,8 @@ def get_output_args():
     group = parser.add_argument_group('Output')
     group.add_argument('--plotFile', '-plot',
                        help='File name of the output figure. The file '
-                       'ending  will be used to determine the image '
-                       'format. The available options are: "png", "emf", '
+                       'ending will be used to determine the image '
+                       'format. The available options are typically: "png", "emf", '
                        '"eps", "pdf" and "svg", e.g. : fingerprint.png.',
                        metavar='',
                        type=argparse.FileType('w'),

@@ -25,13 +25,13 @@ def parseArguments():
             description='This tool takes an alignment of reads or fragments '
             'as input (BAM file) and generates a coverage track (bigWig or '
             'bedGraph) as output. '
-            'The coverage is calculated as the number of reads for each bin, '
-            'whereby bins are short consecutive counting windows of a defined '
+            'The coverage is calculated as the number of reads per bin, '
+            'where bins are short consecutive counting windows of a defined '
             'size. It is possible to extended the length of the reads '
             'to better reflect the actual fragment length. *bamCoverage* '
             'offers normalization by scaling factor, Reads Per Kilobase per '
-            'Million mapped reads (RPKM), and 1x depth (Reads Per Genome '
-            'Coverage, RPGC).\n',
+            'Million mapped reads (RPKM), and 1x depth (reads per genome '
+            'coverage, RPGC).\n',
             usage='An example usage is: bamCoverage -b signal.bam -o signal.bw',
             add_help=False)
 

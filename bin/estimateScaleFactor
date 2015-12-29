@@ -22,30 +22,30 @@ def fileType(string):
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
          formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-         description='Given two BAM files estimates scaling factors '
-         '(bigger to smaller) using different methods.')
+         description='Given two BAM files, this estimates scaling factors '
+         '(bigger to smaller).')
 
     # define the arguments
     parser.add_argument('--bamfiles', '-b',
                         metavar='list of bam files',
-                        help='List of indexed bam files separated by space',
+                        help='List of indexed BAM files, space delineated',
                         nargs='+',
                         type=fileType,
                         required=True)
 
 
     parser.add_argument('--ignoreForNormalization', '-ignore',
-                        help='A list of chromosome names '
-                        'separated by comma and limited by quotes, '
+                        help='A comma-separated list of chromosome names, '
+                        'limited by quotes, '
                         'containing those '
-                        'chromosomes that want to be excluded '
-                        'for computing the normalization. For example, '
+                        'chromosomes that should be excluded '
+                        'during normalization computations. For example, '
                         '--ignoreForNormalization "chrX, chrM" ')
 
     parser.add_argument('--sampleWindowLength', '-l',
-                        help='Length in base pairs for a window used to '
+                        help='Length in bases for a window used to '
                         'sample the genome and compute the size or scaling '
-                        'factors when comparing the bam files',
+                        'factors',
                         default=1000,
                         type=int)
 
@@ -57,18 +57,18 @@ def parseArguments(args=None):
 
     parser.add_argument('--normalizationLength', '-nl',
                         help='By default, data is normalized to 1 '
-                        'fragment per 100 bp. The expected value is an '
-                        'integer. For example, if the normalizationLength '
-                        'given is 1000 bp, then the resulting scaling factor '
-                        'will cause the average coverage of the bam file to '
-                        'have on  average 1 fragment every 1000 bp',
+                        'fragment per 100 bases. The expected value is an '
+                        'integer. For example, if normalizationLength '
+                        'is 1000, then the resulting scaling factor '
+                        'will cause the average coverage of the BAM file to '
+                        'have on  average 1 fragment per kilobase',
                         type=int,
                         default=10)
 
     parser.add_argument('--skipZeros',
                         help='If set, then zero counts that happen for *all* '
-                        'bam files given are ignored. This will result in a '
-                        'reduced number of read counts than the the specified '
+                        'BAM files given are ignored. This will result in a '
+                        'reduced number of read counts than that specified '
                         'in --numberOfSamples',
                         action='store_true',
                         required=False)

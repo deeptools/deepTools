@@ -40,9 +40,9 @@ def plotCorrelationArgs():
                           required=True)
 
     required.add_argument('--plotFile', '-o',
-                          help='File name to save the plot. '
-                          'The given file ending will be used '
-                          'to determine the image format, for example: '
+                          help='File name to save the plot to. '
+                          'The extension determines the file format. '
+                          'For example: '
                           'pca.pdf will save the PCA plot in PDF format. '
                           'The available options are: .png, .emf, '
                           '.eps, .pdf and .svg.',
@@ -55,7 +55,7 @@ def plotCorrelationArgs():
                           metavar='sample1 sample2',
                           help='User defined labels instead of default labels from '
                           'file names. '
-                          'Multiple labels have to be separated by space, e.g. '
+                          'Multiple labels have to be separated by spaces, e.g. '
                           '--labels sample1 sample2 sample3',
                           nargs='+')
 
@@ -78,7 +78,7 @@ def plotCorrelationArgs():
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outFileCorMatrix',
-                       help='Save correlation matrix to file.',
+                       help='Save correlation matrix to this file.',
                        metavar='FILE',
                        type=argparse.FileType('w'))
     return parser
