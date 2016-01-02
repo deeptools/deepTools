@@ -13,9 +13,6 @@
 
             #if $output.showOutputSettings == "yes"
                 --plotFileFormat "$output.outFileFormat"
-                #if $outFileNameData:
-                    --outFileNameData "$outFileNameData"
-                #end if
 
                 #if $outFileNameMatrix:
                     --outFileNameMatrix "$outFileNameMatrix"
