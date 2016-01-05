@@ -60,11 +60,6 @@ def get_optional_args():
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
 
-    optional.add_argument('--bamIndex', '-bai',
-                          help='Index for the BAM file. Default is to consider '
-                          'the path of the BAM file adding the .bai suffix.',
-                          metavar='BAM file index')
-
     optional.add_argument('--scaleFactor',
                           help='Indicate a number that you would like to use. When used in combination '
                           'with --normalizeTo1x or --normalizeUsingRPKM, the computed '
@@ -111,13 +106,13 @@ def process_args(args=None):
 def get_scale_factor(args):
 
     scale_factor = args.scaleFactor
-    bam_handle = bamHandler.openBam(args.bam, args.bamIndex)
+    bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, args.bamIndex,
+        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                     return_lengths=False,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
@@ -181,7 +176,7 @@ def main(args=None):
         # check that library is paired end
         # using getFragmentAndReadSize
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, args.bamIndex,
+        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                     return_lengths=False,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)

@@ -41,12 +41,11 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
     return reads
 
 
-def get_read_and_fragment_length(bamFile, bamFileIndex=None, return_lengths=False,
+def get_read_and_fragment_length(bamFile, return_lengths=False,
                                  numberOfProcessors=None, verbose=False):
     """
     Estimates the fragment length and read length through sampling
     :param bamFile: bamfile name
-    :param bamFileIndex: bamfile index name
     :param return_lengths: bool,
     :param numberOfProcessors:
     :param verbose:
@@ -54,7 +53,7 @@ def get_read_and_fragment_length(bamFile, bamFileIndex=None, return_lengths=Fals
                     for the read length. The dictionaries summarise the mean, median etc. values
     """
 
-    bam_handle = bamHandler.openBam(bamFile, bamFileIndex)
+    bam_handle = bamHandler.openBam(bamFile)
     chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
 
     chunk_size = int(float(sum(bam_handle.lengths)) * 0.3 / max(numberOfProcessors, len(bam_handle.lengths)))

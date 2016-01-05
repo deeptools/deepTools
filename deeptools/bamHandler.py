@@ -1,8 +1,8 @@
+import sys
 import pysam
-import tempfile
 
 
-def openBam(bamFile, bamIndex=None):
+def openBam(bamFile):
 
     try:
         bam = pysam.Samfile(bamFile, 'rb')
