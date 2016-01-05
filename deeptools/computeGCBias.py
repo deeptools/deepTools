@@ -128,7 +128,7 @@ def getRequiredArgs():
 
     group.add_argument('--GCbiasFrequenciesFile', '-freq',
                        help='Path to save the file containing '
-                       'the observed and expected read frequencies per %GC-'
+                       'the observed and expected read frequencies per %%GC-'
                        'content. This file is needed to run the '
                        'correctGCBias tool. This is a text file.',
                        type=argparse.FileType('w'),
@@ -146,7 +146,7 @@ def getRequiredArgs():
                       metavar='INT',
                       type=int,
                       default=300,
-                      help='To plot the reads per %GC over a region'
+                      help='To plot the reads per %%GC over a region'
                       'the size of the region is required. By default, '
                       'the bin size is set to 300 bases, which is close to the '
                       'standard fragment size for Illumina machines. However, '
