@@ -30,7 +30,6 @@ def parseArguments(args=None):
                         metavar='list of bam files',
                         help='List of indexed BAM files, space delineated',
                         nargs='+',
-                        type=fileType,
                         required=True)
 
 
