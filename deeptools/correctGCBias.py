@@ -593,6 +593,7 @@ def main(args=None):
 
         if len(res) == 1:
             command = "cp {} {}".format(res[0], args.correctedFile.name)
+            run_shell_command(command)
         else:
             print "concatenating (sorted) intermediate BAMs"
             of = pysam.open(args.correctedFile.name, "wb", template=res[0])

@@ -1,4 +1,3 @@
-import sys
 import argparse
 import deeptools.config as cfg
 from deeptools._version import __version__

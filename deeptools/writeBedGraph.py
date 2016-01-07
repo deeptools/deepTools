@@ -282,7 +282,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     """
 
     from tempfile import NamedTemporaryFile
-    from os import remove
+    from os import remove, system
 
     # Make a list of tuples for the bigWig header
     cl = []
