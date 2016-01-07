@@ -16,7 +16,6 @@ from bx.seq import twobit
 from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import parserCommon, mapReduce
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools import config as cfg
 from deeptools import bamHandler
 
 debug = 0
@@ -739,7 +738,6 @@ class Tester():
         self.mappability = self.root + "mappability.bw"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        self.samtools = cfg.config.get('external_tools', 'samtools')
         bam = bamHandler.openBam(self.bamFile)
         bit = twobit.TwoBitFile(open(self.tbitFile))
         global debug

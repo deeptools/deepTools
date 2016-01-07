@@ -1,6 +1,5 @@
 [external_tools]
 sort: sort
-samtools: samtools
 
 [general]
 # if set to max/2 (no quotes around)

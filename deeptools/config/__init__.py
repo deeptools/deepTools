@@ -55,7 +55,6 @@ if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
 
     config.add_section('external_tools')
     config.set('external_tools', 'sort', 'sort')
-    config.set('external_tools', 'samtools', 'samtools')
 
 else:
     import pkg_resources
