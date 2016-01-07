@@ -308,10 +308,10 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     bw = pyBigWig.open(bigWigPath, "w")
     assert(bw is not None)
     # The lack of maxZooms will change the results a bit, perhaps the defaults are better
-    bw.addHeader(cl, maxZooms=0)
+    bw.addHeader(cl, maxZooms=10)
     for line in open(bedGraphPath):
         interval = line.split()
-        bw.addEntries([interval[0]], starts=[interval[1]], ends=[interval[2]], values=[interval[3]])
+        bw.addEntries([interval[0]], [int(interval[1])], ends=[int(interval[2])], values=[float(interval[3])])
     bw.close()
 
     if sort:
