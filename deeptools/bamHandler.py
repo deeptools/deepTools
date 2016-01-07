@@ -7,12 +7,16 @@ def openBam(bamFile):
     try:
         bam = pysam.Samfile(bamFile, 'rb')
     except IOError:
-        sys.exit("The file {} does not exits".format(bamFile))
+        sys.exit("The file {} does not exist".format(bamFile))
     except:
         sys.exit("The file {} does not have BAM format ".format(bamFile))
 
     try:
-        assert(bam.check_index())
+        if 'check_index' in dir(bam):
+            assert(bam.check_index())
+        else:
+            # The proper check_index() function wasn't implemented until pysam 0.8.4!
+            assert(bam._hasIndex())
     except:
         sys.exit("{} does not appear to have an index. You MUST index the file first!".format(bamFile))
 
