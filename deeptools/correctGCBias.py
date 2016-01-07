@@ -21,7 +21,6 @@ from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
 
 samtools = cfg.config.get('external_tools', 'samtools')
-bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
 
 
 def parse_arguments(args=None):
@@ -47,10 +46,6 @@ def process_args(args=None):
     if args.correctedFile.name.endswith('bam'):
         if not cfg.checkProgram(samtools, 'view',
                                 'http://samtools.sourceforge.net/'):
-            exit(1)
-    if args.correctedFile.name.endswith('bw'):
-        if not cfg.checkProgram(bedgraph_to_bigwig, '-h',
-                                'http://hgdownload.cse.ucsc.edu/admin/exe/'):
             exit(1)
 
     return args

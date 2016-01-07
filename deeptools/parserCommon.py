@@ -13,11 +13,10 @@ def output(args=None):
                        type=writableFile,
                        required=True)
 
-    default = checkBigWig('bigwig')
     group.add_argument('--outFileFormat', '-of',
                        help='Output file type. Either "bigwig" or "bedgraph".',
                        choices=['bigwig', 'bedgraph'],
-                       default=default)
+                       default='bigwig')
 
     return parser
 
@@ -277,23 +276,6 @@ def writableFile(string):
     except:
         msg = "{} file can be opened for writing".format(string)
         raise argparse.ArgumentTypeError(msg)
-    return string
-
-
-def checkBigWig(string):
-    """
-    Checks if the path to USCS bedGraphToBigWig as set in the config
-    is installed and is executable.
-    """
-    if string == 'bigwig':
-        bedgraph_to_bigwig = cfg.config.get('external_tools',
-                                            'bedgraph_to_bigwig')
-        if not cfg.checkProgram(bedgraph_to_bigwig, 'h',
-                                'http://hgdownload.cse.ucsc.edu/admin/exe/'):
-            msg = "The output is set by default to 'bedgraph'\n"
-            sys.stderr.write(msg)
-            return 'bedgraph'
-
     return string
 
 

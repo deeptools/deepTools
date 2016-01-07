@@ -138,7 +138,7 @@ setup(
         "pysam >= 0.8.2",
         "bx-python >= 0.5.0",
         "numpydoc >=0.5",
-        "pyBigWig >=0.1.9"
+        "pyBigWig >=0.2.0"
     ],
     cmdclass={'sdist': sdist, 'install': install}
 )
