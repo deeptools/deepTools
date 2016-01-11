@@ -27,8 +27,8 @@ ___________________________________
 
 Note: BAM files can also be viewed in genome browsers, however, they're large and tend to freeze the applications. Generating bigWig files of read coverages will help you a lot in this regard. In addition, if you have more than one sample you'd like to look at, it is helpful to normalize all of them to 1x sequencing depth.
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamCoverage.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamCoverage.png" Title="deepTools Galaxy screenshot of bamCoverage usage and output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCoverage.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCoverage.png" Title="deepTools Galaxy screenshot of bamCoverage usage and output" />
 </a>
 
 ___________________________________
@@ -41,8 +41,8 @@ ___________________________________
 
 * output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages will be
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamCorrelate.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamCorrelate.png" Title="deepTools Galaxy screenshot of bamCorrelate usage and output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCorrelate.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCorrelate.png" Title="deepTools Galaxy screenshot of bamCorrelate usage and output" />
 </a>
 
 ___________________________________
@@ -52,8 +52,8 @@ ___________________________________
 * you need a BAM file of your sample
 * use the tool [computeGCbias][] on that BAM file (default settings, just make sure your reference genome and genome size are matching)
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_computeGCbias.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_computeGCbias.png" Title="deepTools Galaxy screenshot of computeGCbias" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_computeGCbias.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_computeGCbias.png" Title="deepTools Galaxy screenshot of computeGCbias" />
 </a>
 
 
@@ -64,8 +64,8 @@ ___________________________________
 
     + CAUTION!! correctGCbias will add reads to otherwise depleted regions (typically GC-poor regions), that means that you should __not__ remove duplicates in any downstream analyses based on the GC-corrected BAM file (we therefore recommend removing duplicates before doing the correction so that only those duplicate reads are kept that were produced by the GC correction procedure)
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_correctGCbias.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_correctGCbias.png" Title="deepTools Galaxy screenshot of correctGCbias usage and output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_correctGCbias.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_correctGCbias.png" Title="deepTools Galaxy screenshot of correctGCbias usage and output" />
 </a>
 
 ___________________________________
@@ -75,8 +75,8 @@ ___________________________________
 * input: you need two BAM files, one for the input and one for the ChIP-seq experiment
 * tool: [bamCompare][] with ChIP = treatment, input = control sample
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamCompare.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamCompare.png" Title="deepTools Galaxy screenshot of bamCompare usage and output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCompare.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCompare.png" Title="deepTools Galaxy screenshot of bamCompare usage and output" />
 </a>
 
 ___________________________________
@@ -86,8 +86,8 @@ ___________________________________
 * tool: [bamFingerprint][]
 * input: as many BAM files as you'd like to compare. Make sure you get all the labels right!
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamFingerprint.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_bamFingerprint.png" Title="deepTools Galaxy screenshot of bamFingerprint" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamFingerprint.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamFingerprint.png" Title="deepTools Galaxy screenshot of bamFingerprint" />
 </a>
 
 ___________________________________
@@ -99,23 +99,23 @@ ___________________________________
     * 1 bigWig file of normalized read coverages (e.g. the result of bamCoverage or bamCompare)
     * 1 BED or INTERVAL file of genes, e.g. obtained through Galaxy via "Get Data" &rarr; "UCSC main table browser" &rarr; group: "Genes and Gene Predictions" &rarr; (e.g.) "RefSeqGenes" &rarr; send to Galaxy (see screenshots below)
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_clustHM01.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_clustHM01.png" Title="deepTools Galaxy screenshot of how to get a list of genes from UCSC" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM01.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM01.png" Title="deepTools Galaxy screenshot of how to get a list of genes from UCSC" />
 </a>
 
 * use [computeMatrix][] with the bigWig file and the BED file
 * indicate "reference-point"  (and whatever other option you would like to tune, see screenshot below)
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_clustHM02.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_clustHM02.png" Title="deepTools Galaxy screenshot of computeMatrix for profiles in reference-point mode with output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM02.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM02.png" Title="deepTools Galaxy screenshot of computeMatrix for profiles in reference-point mode with output" />
 </a>
 
 
 * use the output from computeMatrix with [heatmapper][]
     * if you would like to cluster the signals, choose "k-means clustering" (last option of "advanced options") with a reasonable number of clusters (usually between 2 to 7)
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_clustHM03.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_clustHM03.png" Title="deepTools Galaxy screenshot of heatmapper usage and output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM03.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_clustHM03.png" Title="deepTools Galaxy screenshot of heatmapper usage and output" />
 </a>
 
 ___________________________________
@@ -155,8 +155,8 @@ ___________________________________
 
     * important: display the "advanced output options" and select "save the data underlying the average profile" &rarr; this will generate a table in addition to the summary plot images
 
-<a href="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_profiles_XvsA02.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/release-1.6/examples/GalHow_profiles_XvsA02.png" Title="combined profiles for different histone marks" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_profiles_XvsA02.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_profiles_XvsA02.png" Title="combined profiles for different histone marks" />
 </a>
 
 ------------------------------------

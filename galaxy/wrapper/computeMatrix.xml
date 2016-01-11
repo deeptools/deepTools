@@ -252,7 +252,7 @@ regions according to their score by making use of its advanced output options.
    :alt: Relationship between computeMatrix, heatmapper and profiler
 
 
-You can find more details on the computeMatrix doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/computeMatrix.html
+You can find more details on the computeMatrix doc page: https://deeptools.readthedocs.org/en/master/content/tools/computeMatrix.html
 
 
 -----

@@ -218,7 +218,7 @@ extended to match the fragment length.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
-You can find more details on the bamCompare doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCompare.html
+You can find more details on the bamCompare doc page: https://deeptools.readthedocs.org/en/master/content/tools/bamCompare.html
 
 
 **Output files**:

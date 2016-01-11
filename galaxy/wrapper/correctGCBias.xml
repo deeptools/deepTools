@@ -59,7 +59,7 @@ This tool requires the output from computeGCBias to correct a given BAM file acc
 Benjamini and Speed (2012) Nucleic Acids Res.
 The resulting BAM file can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
 
-You can find more details on the correctGCBias doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/correctGCBias.html
+You can find more details on the correctGCBias doc page: https://deeptools.readthedocs.org/en/master/content/tools/correctGCBias.html
 
 
 **Output files**:

@@ -171,7 +171,7 @@ fragment length.
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
 
 
-You can find more details on the bamCoverage doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/bamCoverage.html
+You can find more details on the bamCoverage doc page: https://deeptools.readthedocs.org/en/master/content/tools/bamCoverage.html
 
 
 **Output files**:

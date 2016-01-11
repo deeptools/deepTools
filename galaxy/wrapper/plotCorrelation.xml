@@ -100,7 +100,7 @@ The compressed input matrices are easily generated using the "bamCorrelate" and 
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
-You can find more details on plotCorrelation here http://deeptools.readthedocs.org/en/release-1.6/content/tools/plotCorrelation.html
+You can find more details on plotCorrelation here http://deeptools.readthedocs.org/en/master/content/tools/plotCorrelation.html
 
 
 **Output files**:

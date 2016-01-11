@@ -206,7 +206,7 @@ where you simply need to indicate the number of groups with similar read distrib
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
-You can find more details on the tool on the plotHeatmap doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/plotHeatmap.html
+You can find more details on the tool on the plotHeatmap doc page: https://deeptools.readthedocs.org/en/master/content/tools/plotHeatmap.html
 
 
 -----

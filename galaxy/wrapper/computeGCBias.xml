@@ -150,7 +150,7 @@ usually shows a significant bias towards reads with high GC content (>50%)
 .. image:: $PATH_TO_IMAGES/QC_GCplots_input.png
 
 
-You can find more details on the computeGCBias doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/computeGCBias.html
+You can find more details on the computeGCBias doc page: https://deeptools.readthedocs.org/en/master/content/tools/computeGCBias.html
 
 
 **Output files**:

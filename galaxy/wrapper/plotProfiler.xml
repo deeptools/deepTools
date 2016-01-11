@@ -182,7 +182,7 @@ values that were compute by computeMatrix, but you can modify the color and othe
    :alt: Meta-gene profile of Rna Polymerase II
 
 
-You can find more details on the profiler doc page: https://deeptools.readthedocs.org/en/release-1.6/content/tools/plotProfile.html
+You can find more details on the profiler doc page: https://deeptools.readthedocs.org/en/master/content/tools/plotProfile.html
 
 
 -----
