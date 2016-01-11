@@ -1,7 +1,5 @@
 [external_tools]
 sort: sort
-samtools: samtools
-bedgraph_to_bigwig: bedGraphToBigWig
 
 [general]
 # if set to max/2 (no quotes around)

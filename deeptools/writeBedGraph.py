@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import numpy as np
+import pyBigWig
 
 # own modules
 from deeptools import mapReduce
@@ -277,24 +278,16 @@ class WriteBedGraph(cr.CountReadsPerBin):
 def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     """
     takes a bedgraph file, orders it and converts it to
-    a bigwig file using command line tools.
-
-    Will fail if the bedGraphToBigWig path changes.
+    a bigwig file using pyBigWig.
     """
 
     from tempfile import NamedTemporaryFile
     from os import remove, system
 
-    # destination to save chromosome names and sizes
-    _file2 = NamedTemporaryFile(delete=False)
-
-    # bedGraph to bigwig requires the chromosome sizes to be
-    # saved into a file
+    # Make a list of tuples for the bigWig header
+    cl = []
     for chrom, size in chromSizes:
-        _file2.write("{}\t{}\n".format(chrom, size))
-    _file2.close()
-
-    chr_sizes_filename = _file2.name
+        cl.append((chrom, size))
 
     # check if the file is empty
     if os.stat(bedGraphPath).st_size < 10:
@@ -312,14 +305,17 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
         system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd, bedGraphPath, tempfilename1))
         bedGraphPath = tempfilename1
 
-    bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
-    system("{} {} {} {}".format(bedgraph_to_bigwig,
-                                bedGraphPath, chr_sizes_filename, bigWigPath))
+    bw = pyBigWig.open(bigWigPath, "w")
+    assert(bw is not None)
+    # The lack of maxZooms will change the results a bit, perhaps the defaults are better
+    bw.addHeader(cl, maxZooms=10)
+    for line in open(bedGraphPath):
+        interval = line.split()
+        bw.addEntries([interval[0]], [int(interval[1])], ends=[int(interval[2])], values=[float(interval[3])])
+    bw.close()
 
     if sort:
         remove(tempfilename1)
-
-    remove(chr_sizes_filename)
 
 
 def getGenomeChunkLength(bamHandlers, tile_size):

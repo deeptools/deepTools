@@ -13,68 +13,12 @@ Requirements
 * Python 2.7
 * numpy, scipy, bx-python, and pyBigWig
 * pysam >= 0.8
-* samtools (preferably in your PATH)
-* 1 UCSC tool: bedGraphToBigWig (preferably in your PATH) 
 
 The fastet way to obtain **Python 2.7 together with numpy and scipy** is
 via the `Anaconda Scientific Python
 Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
 follow the directions for its installation.
-
-Installing samtools
-^^^^^^^^^^^^^^^^^^^^
-
-1. Download source code and unzip it
-::
-
-	$ wget http://sourceforge.net/projects/samtools/files/samtools/1.2/samtools-1.2.tar.bz2/download -O samtools-1.2.tar.bz2
-	$ bunzip2 samtools-1.2.tar.bz2 
-	$ tar -xvf samtools-1.2.tar
-	$ cd samtools-1.2
-
-2. Compile
-::
-
-	$ make
-
-3. Check whether the tool is running
-::
-
-	$ ./samtools
-
-4. Add the location where it was installed to your PATH variable
-::
-
-	$ export PATH=$PATH:/Users/frd2007/Tools/samtools-1.2
-
-Installing UCSC tools (aka Kent's tools)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-1. Figure out which operating system version you have
-::
-
-	$ uname -a
-
-2. Download the compiled binaries from the corresponding folder (shown here for the Linux server,
-check the website for the correct folder for your operating system) and make them executable.
-::
-
-	$ mkdir UCSCtools
-	$ cd UCSCtools
-	$ wget http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
-	$ chmod +x bedGraphToBigWig
-
-4. Check whether the tools work (you should get a usage message)
-::
-
-	$ ./bedGraphToBigWig
-
-5. Add them to the PATH variable
-::
-
-	$ export PATH=$PATH:/Users/frd2007/Tools/UCSCtools
-
 
 Command line installation using ``pip``
 -----------------------------------------
@@ -108,8 +52,6 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	
 	[external_tools]
 	sort: sort
-	samtools: samtools
-	bedgraph_to_bigwig: bedGraphToBigWig
 	
 	[general]
 	# if set to max/2 (no quotes around)
@@ -132,12 +74,6 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	# files can by given as well (ie, /tmp)
 	#tmp_dir: /dev/shm
 	tmp_dir: default
-
-As you can see, deepTools expects samtools to be available via the command ``samtools``,
-as well as the UCSC tool ``bedGraphToBigWig``.
-You can either specify the path where you installed the tools in the *.cfg file
-or add the tools to your PATH in your .bashrc file
-(see above for details of the installation of these tools).
 
 3. install the source code (if you don't have root permission, you can set
 a specific folder using the ``--prefix`` option)

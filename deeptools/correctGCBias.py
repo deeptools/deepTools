@@ -16,12 +16,8 @@ import argparse
 from scipy.stats import binom
 
 from deeptools.utilities import getGC_content, tbitToBamChrName
-from deeptools import config as cfg
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
-
-samtools = cfg.config.get('external_tools', 'samtools')
-bedgraph_to_bigwig = cfg.config.get('external_tools', 'bedgraph_to_bigwig')
 
 
 def parse_arguments(args=None):
@@ -44,14 +40,6 @@ def parse_arguments(args=None):
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
-    if args.correctedFile.name.endswith('bam'):
-        if not cfg.checkProgram(samtools, 'view',
-                                'http://samtools.sourceforge.net/'):
-            exit(1)
-    if args.correctedFile.name.endswith('bw'):
-        if not cfg.checkProgram(bedgraph_to_bigwig, '-h',
-                                'http://hgdownload.cse.ucsc.edu/admin/exe/'):
-            exit(1)
 
     return args
 
@@ -292,17 +280,14 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
                              tag_but_not_change_number=False,
                              verbose=True):
     r"""
-    Writes a SAM file, deleting and adding some reads in order to compensate
+    Writes a BAM file, deleting and adding some reads in order to compensate
     for the GC bias. **This is a stochastic method.**
-
-    First, check if samtools can be executed, otherwise the test will fail
-    >>> resp = cfg.checkProgram(samtools, 'view', '')
     >>> np.random.seed(1)
     >>> test = Tester()
     >>> args = test.testWriteCorrectedSam()
     >>> tempFile = writeCorrectedSam_worker(*args, \
     ... tag_but_not_change_number=True, verbose=False)
-    >>> res = os.system("{} index {}".format(test.samtools, tempFile))
+    >>> pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch(args[0], 200, 250)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
@@ -311,7 +296,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> tempFile = \
     ... writeCorrectedSam_worker(*test.testWriteCorrectedSam_paired(),\
     ... tag_but_not_change_number=True, verbose=False)
-    >>> res = os.system("{} index {}".format(test.samtools, tempFile))
+    >>> pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch('chr2L', 0, 50)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -328,9 +313,9 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     tbit = twobit.TwoBitFile(open(global_vars['2bit']))
 
     bam = pysam.Samfile(global_vars['bam'])
-    tempFileName = utilities.getTempFileName(suffix='.sam')
+    tempFileName = utilities.getTempFileName(suffix='.bam')
 
-    outfile = pysam.Samfile(tempFileName, 'wh', template=bam)
+    outfile = pysam.Samfile(tempFileName, 'wb', template=bam)
     startTime = time.time()
     matePairs = {}
     read_repetitions = 0
@@ -430,16 +415,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         print "duplicated reads removed %d of %d (%.2f) " % \
             (removed_duplicated_reads, len(reads), percentage)
 
-    # convert sam to bam.
-    command = '{0} view -bS {1} 2> /dev/null > {1}.bam'.format(samtools,
-                                                               tempFileName)
-    if verbose:
-        sys.stderr.write("running {}\n".format(command))
-
-    run_shell_command(command)
-
-    os.remove(tempFileName)
-    return tempFileName + ".bam"
+    return tempFileName
 
 
 def getFragmentFromRead(read, defaultFragmentLength, extendPairedEnds=True):
@@ -617,17 +593,18 @@ def main(args=None):
 
         if len(res) == 1:
             command = "cp {} {}".format(res[0], args.correctedFile.name)
+            run_shell_command(command)
         else:
-            print "concatenating intermediary bams"
-            command = "{} cat -o {} {} ".format(samtools,
-                                                args.correctedFile.name,
-                                                " ".join(res))
+            print "concatenating (sorted) intermediate BAMs"
+            of = pysam.open(args.correctedFile.name, "wb", template=res[0])
+            for f in res:
+                for e in f.fetch(until_eof=True):
+                    of.write(e)
+            of.close()
 
-        run_shell_command(command)
+        print "indexing BAM"
+        pysam.index(args.correctedFile.name)
 
-        print "indexing bam"
-        run_shell_command("{} index {} ".format(samtools,
-                                                args.correctedFile.name))
         for tempFileName in res:
             os.remove(tempFileName)
 
@@ -670,7 +647,6 @@ class Tester():
         self.bamFile = self.root + "test.bam"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        self.samtools = cfg.config.get('external_tools', 'samtools')
         bam = pysam.Samfile(self.bamFile)
         bit = twobit.TwoBitFile(open(self.tbitFile))
         global debug

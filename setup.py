@@ -72,25 +72,6 @@ class install(_install):
         self.config_file = self.install_platlib + \
             "/deeptools/config/deeptools.cfg"
 
-        # check installation of several components
-        samtools_installed = self.checkProgramIsInstalled(
-            'samtools', 'view',
-            'http://samtools.sourceforge.net/',
-            'correctGCbias')
-
-        bedGraphToBigWig_installed = self.checkProgramIsInstalled(
-            'bedGraphToBigWig', '-h',
-            'http://hgdownload.cse.ucsc.edu/admin/exe/',
-            'bamCoverage, bamCompare, correctGCbias')
-
-        if not samtools_installed or not bedGraphToBigWig_installed:
-            msg = "\n##########\nSome tools were not fund.\n"\
-                "If you already have a copy of these programs installed\n"\
-                "please be sure that they are found in your PATH or\n"\
-                "that they are referred to in the configuration file of deepTools\n"\
-                "located at:\n\n {}\n\n".format(self.config_file)
-            sys.stderr.write(msg)
-
     def checkProgramIsInstalled(self, program, args, where_to_download,
                                 affected_tools):
         try:
@@ -138,7 +119,7 @@ setup(
         "pysam >= 0.8.2",
         "bx-python >= 0.5.0",
         "numpydoc >=0.5",
-        "pyBigWig >=0.1.9"
+        "pyBigWig >=0.2.0"
     ],
     cmdclass={'sdist': sdist, 'install': install}
 )
