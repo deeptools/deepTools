@@ -3,6 +3,7 @@ import sys
 import shutil
 import numpy as np
 import pyBigWig
+import subprocess
 
 # own modules
 from deeptools import mapReduce
@@ -284,10 +285,19 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     from tempfile import NamedTemporaryFile
     from os import remove, system
 
-    # Make a list of tuples for the bigWig header
-    cl = []
+    # Make a list of tuples for the bigWig header, this MUST be sorted identically to the bedGraph file
+    sort_cmd = cfg.config.get('external_tools', 'sort')
+    _file = NamedTemporaryFile(delete=False)
     for chrom, size in chromSizes:
-        cl.append((chrom, size))
+        _file.write("{}\t{}\n".format(chrom, size))
+    _file.close()
+    system("LC_ALL=C {} -k1,1 -k2,2n {} > {}.sorted".format(sort_cmd, _file.name, _file.name))
+    cl = []
+    for line in open("{}.sorted".format(_file.name)):
+        chrom, chromLen = line.split()
+        cl.append((chrom, int(chromLen)))
+    remove(_file.name)
+    remove("{}.sorted".format(_file.name))
 
     # check if the file is empty
     if os.stat(bedGraphPath).st_size < 10:
@@ -298,7 +308,6 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
         exit(1)
 
     if sort:
-        sort_cmd = cfg.config.get('external_tools', 'sort')
         # temporary file to store sorted bedgraph file
         _file = NamedTemporaryFile(delete=False)
         tempfilename1 = _file.name
