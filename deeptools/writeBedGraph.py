@@ -3,7 +3,6 @@ import sys
 import shutil
 import numpy as np
 import pyBigWig
-import subprocess
 
 # own modules
 from deeptools import mapReduce
