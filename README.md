@@ -1,7 +1,7 @@
 ======================================================================
 deepTools
 ======================================================================
-[![Build Status](https://travis-ci.org/fidelram/deepTools.svg](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/)
+[![Build Status](https://travis-ci.org/fidelram/deepTools.svg)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/)
 
 ### user-friendly tools for the normalization and visualization of deep-sequencing data
 
