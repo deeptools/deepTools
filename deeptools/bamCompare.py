@@ -80,18 +80,6 @@ def getOptionalArgs():
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
 
-    optional.add_argument('--bamIndex1', '-bai1',
-                          help='Index for the bam file1 . Default is '
-                          'to consider a the path of the bam file adding '
-                          'the .bai suffix.',
-                          metavar='bam file index')
-
-    optional.add_argument('--bamIndex2', '-bai2',
-                          help='Index for the bam file1. Default is to '
-                          'consider the path of the bam file adding the .bai '
-                          'suffix.',
-                          metavar='bam file index')
-
     optional.add_argument('--scaleFactorsMethod',
                           help='Method to use to scale the samples. '
                           'Default "readCount".',
@@ -166,8 +154,8 @@ def process_args(args=None):
 
 def get_scale_factors(args):
 
-    bam1 = bamHandler.openBam(args.bamfile1, args.bamIndex1)
-    bam2 = bamHandler.openBam(args.bamfile2, args.bamIndex2)
+    bam1 = bamHandler.openBam(args.bamfile1)
+    bam2 = bamHandler.openBam(args.bamfile2)
 
     bam1_mapped = parserCommon.bam_total_reads(bam1, args.ignoreForNormalization)
     bam2_mapped = parserCommon.bam_total_reads(bam2, args.ignoreForNormalization)
@@ -217,17 +205,15 @@ def get_scale_factors(args):
         if scale_factors[0] == 1:
             mappedReads = bam1_mapped
             bamfile = args.bamfile1
-            bamindex = args.bamIndex1
         else:
             mappedReads = bam2_mapped
             bamfile = args.bamfile2
-            bamindex = args.bamIndex2
 
         if args.scaleFactors is None:
             if args.normalizeTo1x:
                 # try to guess fragment length if the bam file contains paired end reads
                 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-                frag_len_dict, read_len_dict = get_read_and_fragment_length(bamfile, bamindex,
+                frag_len_dict, read_len_dict = get_read_and_fragment_length(bamfile,
                                                                             return_lengths=False,
                                                                             numberOfProcessors=args.numberOfProcessors,
                                                                             verbose=args.verbose)

@@ -94,7 +94,6 @@ def computeMatrixRequiredArgs(args=None):
                           'http://genome.ucsc.edu/goldenPath/help/bigWig.html ',
                           metavar='File',
                           nargs='+',
-                          type=argparse.FileType('r'),
                           required=True)
     return parser
 
@@ -364,7 +363,7 @@ def main(args=None):
 
     hm = heatmapper.heatmapper()
 
-    scores_file_list = [x.name for x in args.scoreFileName]
+    scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, bed_file, parameters, verbose=args.verbose)
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)

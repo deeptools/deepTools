@@ -86,7 +86,12 @@ def process_args(args=None):
         print "The number of labels does not match the number of bigWig files."
         exit(0)
     if not args.labels:
-        args.labels = map(lambda x: os.path.basename(x.name), args.bwfiles)
+        args.labels = []
+        for f in args.bwfiles:
+            if f.startswith("http://") or f.startswith("https://") or f.startswith("ftp://"):
+                args.labels.append(f.split("/")[-1])
+            else:
+                args.labels.append(os.path.basename(f))
 
     return args
 
@@ -100,7 +105,6 @@ def bigwigCorrelateArgs(case='bins'):
                           metavar='FILE1 FILE2',
                           help='List of bigWig files, separated by spaces.',
                           nargs='+',
-                          type=argparse.FileType('r'),
                           required=True)
 
     required.add_argument('--outFileName', '-out',
@@ -196,12 +200,7 @@ def main(args=None):
     else:
         bed_regions = None
 
-    bwFiles = []
-    for fname in args.bwfiles:
-        f = fname.name
-        fname.close()
-        if f:
-            bwFiles.append(f)
+    bwFiles = args.bwfiles
 
     if len(bwFiles) == 0:
         print "No valid bigwig files"
