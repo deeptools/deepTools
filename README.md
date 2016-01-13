@@ -44,7 +44,7 @@ Details on the installation routines can be found here.
 
 The easiest way to install deepTools is by using python `pip` or `easy_install tools`:
 
-Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html) installed
+Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html), bx-python, pysam, and pyBigWig
 
 Commands:
 
@@ -52,7 +52,16 @@ Commands:
 Done.
 
 
-__A second option is to clone the repository:__
+__Using anaconda:__
+
+[Anaconda](https://www.continuum.io/downloads) already comes with scipy, numpy and matplotlib, making installation very quick. To install using either Anaconda or Miniconda:
+
+    $ conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
+    $ pip install git+https://github.com/fidelram/deepTools.git@main
+
+Note that deepTools does not yet work with python3.
+
+__Another option is to clone the repository:__
 	
 	$ git clone https://github.com/fidelram/deepTools
 	$ cd deepTools
@@ -76,10 +85,10 @@ For example, to install under a specific location use:
 
 The easiest way to get numpy and scipy dependencies is to install the
 [Anaconda Scientific Python Distribution][]. After installation, open
-a terminal ("Applications" → "Terminal") and follow the [General Installation](#general)
+a terminal ("Applications" → "Terminal") and follow the "Using anaconda" section under [General Installation](#general)
   	   
 If individual installation of the dependencies is preferred, follow 
-those steps:
+these steps:
 
 Requirement: Python 2.7 installed
 
@@ -136,8 +145,8 @@ remember: for support, questions, or feature requests contact: deeptools@googleg
 [bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage
 [bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
 [computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[heatmapper]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[profiler]: https://github.com/fidelram/deepTools/wiki/Visualizations
+[plotHeatmap]: https://github.com/fidelram/deepTools/wiki/Visualizations
+[plotProfile]: https://github.com/fidelram/deepTools/wiki/Visualizations
 [FAQ]: https://github.com/fidelram/deepTools/wiki/FAQ
 
 [Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
