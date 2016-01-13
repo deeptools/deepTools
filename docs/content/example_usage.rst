@@ -25,7 +25,7 @@ So, what does a typical ChIP-seq workflow look like?
 .. image:: ../images/start_workflow.png
 
 As shown in the flow chart above, our work usually begins with one or
-more `FASTQ <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#fastq>`__
+more :ref:`FASTQ <fastq>`_
 file(s) of deeply-sequenced samples. After preliminary quality control using
 `FASTQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__,
 we align the reads to the reference genome, e.g., using
@@ -64,9 +64,9 @@ We then use deepTools to assess the quality of the aligned reads:
 
 Once we're satisfied with the basic quality checks, we normally **convert**
 the large
-`BAM <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bam`__
+:ref:`BAM <bam>`
 files into a leaner data format, typically
-`bigWig <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bigwig`__.
+:ref:`bigWig <#bigwig>`.
 bigWig files have several advantages over BAM files, mainly stemming
 from their significantly decreased size:
 
