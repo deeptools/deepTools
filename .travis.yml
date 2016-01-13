@@ -1,5 +1,5 @@
 language: c
-python: "2.7"
+env: TRAVIS_PYTHON_VERSION="2.7"
 os:
   - linux
   - osx
