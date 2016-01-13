@@ -167,7 +167,7 @@ Now it is possible to make some diagnostic plots from the results:
     axs[1].set_ylabel('fraction of bases sampled >= coverage')
 
 
-.. image:: images/plot_coverage.png
+.. image:: ../images/plot_coverage.png
 
 
 Computing the FRiP score

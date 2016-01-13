@@ -4,9 +4,9 @@ Example usage
 .. toctree::
    :maxdepth: 1
 
-   step_by_step_protocols
-   gallery
-   api_tutorial
+   example_step_by_step
+   example_gallery
+   example_api_tutorial
 
 How we use deepTools 
 --------------------
@@ -25,7 +25,7 @@ So, what does a typical ChIP-seq workflow look like?
 .. image:: ../images/start_workflow.png
 
 As shown in the flow chart above, our work usually begins with one or
-more :ref:`FASTQ <fastq>`_
+more :ref:`FASTQ <fastq>`
 file(s) of deeply-sequenced samples. After preliminary quality control using
 `FASTQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__,
 we align the reads to the reference genome, e.g., using
@@ -66,7 +66,7 @@ Once we're satisfied with the basic quality checks, we normally **convert**
 the large
 :ref:`BAM <bam>`
 files into a leaner data format, typically
-:ref:`bigWig <#bigwig>`.
+:ref:`bigWig <bigwig>`.
 bigWig files have several advantages over BAM files, mainly stemming
 from their significantly decreased size:
 

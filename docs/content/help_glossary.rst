@@ -43,7 +43,7 @@ see the `UCSC data base <http://hgdownload.soe.ucsc.edu/downloads.html>`_.
 | RPKM          | reads per kilobase per million reads     | normalize read numbers: RPKM (per bin) = reads per bin / ( mapped reads (in millions) x bin length (kb))                                      |
 +---------------+------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 
-For a review of popular *-seq applications, see `Zentner and Henikoff`_.
+For a review of popular \*-seq applications, see `Zentner and Henikoff <http://genomebiology.com/2012/13/10/250>`_.
 
 .. _terminology:
 
@@ -80,11 +80,11 @@ Therefore, **specific data formats are often associated with different steps of 
 Here, we just want to give very brief key descriptions of the file, for elaborate information we will link to external websites.
 Be aware, that the file name sorting here is alphabetical, not according to their usage within an analysis pipeline that is depicted here:
 
-.. image:: images/flowChart_FileFormats.png
+.. image:: ../images/flowChart_FileFormats.png
 
 Follow the links for more information on the different tool collections mentioned in the figure:
 
-`samtools <http://samtools.sourceforge.net/http://samtools.sourceforge.net/>`_ |
+`samtools <http://www.htslib.org/>`_ |
 `UCSCtools <http://hgdownload.cse.ucsc.edu/admin/exe/>`_ |
 `BEDtools <http://bedtools.readthedocs.org/en/latest/>`_ |
 
@@ -96,7 +96,7 @@ Follow the links for more information on the different tool collections mentione
 * compressed, binary version of genome sequences that are often stored in :ref:`FASTA` 
 * most genomes in 2bit format can be found `at UCSC <http://hgdownload.cse.ucsc.edu/gbdb/>`_
 * :ref:`FASTA` files can be converted to 2bit using the UCSC programm *faToTwoBit*, which is available for different platforms at `UCSC <http://hgdownload.cse.ucsc.edu/admin/exe/>`_
-* more information can be found `here <http://jcomeau.freeshell.org/www/genome/2bitformat.html>`_ or from `UCSC <http://genome.ucsc.edu/FAQ/FAQformat.html#format7>`_
+* more information can be found `here <http://genome.ucsc.edu/FAQ/FAQformat.html#format7>`_
 
 .. _BAM:
 
@@ -124,17 +124,15 @@ bed
 * typical file extension: .bed
 * text file
 * used for genomic intervals, e.g. genes, peak regions etc.
-* the format can be found at `UCSC`_
+* the format can be found at `UCSC <http://genome.ucsc.edu/FAQ/FAQformat.html#format1>`_
 * for deepTools, the first 3 columns are important: chromosome, start position of the region, end position of the genome
 * do not confuse it with the :ref:`bedgraph` format (although they are related)
-* example lines from a BED file of mouse genes (note that the start position is 0-based, the end-position 1-based, following UCSC conventions for BED files):
-::
+* example lines from a BED file of mouse genes (note that the start position is 0-based, the end-position 1-based, following UCSC conventions for BED files)::
 
     chr1    3204562 3661579 NM_001011874 Xkr4   -
     chr1    4481008 4486494 NM_011441    Sox17  -
     chr1    4763278 4775807 NM_001177658 Mrpl15 -
     chr1    4797973 4836816 NM_008866    Lypla1 +
-
 
 .. _bedgraph:
 
@@ -146,6 +144,7 @@ bedGraph
 * similar to BED file (not the same!), it can *only* contain 4 columns and the 4th column *must* be a score
 * again, read the `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format1.8>`_  for more details
 * 4  example lines from a bedGraph file (like BED files following the UCSC convention, the start position is 0-based, the end-position 1-based in bedGraph files):
+
 ::
 
     chr1 10 20 1.5
@@ -173,7 +172,8 @@ FASTA
 * text file, often gzipped (.fasta.gz)
 * very simple format for **DNA/RNA** or **protein** sequences, this can be anything from small pieces of DNA or proteins to an entire genome (most likely, you will get the genome sequence of your organism of interest in fasta format)
 * see the :ref:`2bit` file format entry for a compressed alternative
-* example from [wikipedia](http://en.wikipedia.org/wiki/FASTA_format "wikipedia entry on FASTA files") showing exactly one sequence:
+* example from `wikipedia <http://en.wikipedia.org/wiki/FASTA_format>`_ showing exactly one sequence:
+
 ::
 
     >gi|5524211|gb|AAD44166.1| cytochrome b [Elephas maximus maximus]
@@ -196,23 +196,13 @@ FASTQ
 	 * additional information or empty line
 	 * sequencing quality measures - 1 per base call
 * note that there is no information about where in the genome the read originated from
-* example from the `wikipedia page <http://en.wikipedia.org/wiki/Fastq>`_
-::
+* example from the `wikipedia page <http://en.wikipedia.org/wiki/Fastq>`_, which contains further information::
 
-  # a FASTQ file containing a single sequence might look like this:
-    
     @read001														# read ID
     GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT	# read sequence
     +																# usually empty line
     !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65	# ASCII-encoded quality scores
 
-* the quality string (here, the line starting with !) contains `ASCII-encoded <http://www.asciitable.com/>`_ measures of probability that the respective base call was correct
-	* the ASCII-encoding usually starts with an offset of at least 33 because the first 32 ASCII representations correspond to invisible entries, such as white spaces
-	* thus, a base call quality of 0 will be 0 + 33 = 33; in ASCII, 33 corresponds to the ! sign -- the first base in the above shown example is therefore a base where the base identification was rather uncertain
-	* however, over the years, Illumina has changed the offset a couple of times, which may sometimes lead to problems with aligners
-	
-.. image:: images/glossary_ascii.png
-	
 * if you need to find out what type of ASCII-encoding your .fastq file contains, you can simply run `FastQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`_ -- its summery file will tell you
 
 .. _SAM:
@@ -224,30 +214,28 @@ SAM
 * usually the result of an alignment of sequenced reads to a reference genome
 * contains a short header section (entries are marked by @ signs) and an alignment section where each line corresponds to a single read (thus, there can be millions of these lines)
 
-.. image:: images/glossary_sam.png
+.. image:: ../images/glossary_sam.png
 
 * **header section**:
-	* tab-delimited lines, beginning with @, followed by tag:value pairs
-	* *tag* = two-letter string that defines the content and the format of *value*
+
+  * tab-delimited lines, beginning with @, followed by tag\:value pairs
+  * *tag* = two-letter string that defines the content and the format of *value*
 	
 * **alignment section**:
-	* each line contains information about its mapping quality, its sequence, its location in the genome etc.
-::
 
-    r001 163 chr1 7 30 8M2I4M1D3M = 37 39 TTAGATAAAGGATACTG *
-    r002 0 chr1 9 30 3S6M1P1I4M * 0 0 AAAAGATAAGGATA *
+  * each line contains information about its mapping quality, its sequence, its location in the genome etc.
+    ::
 
-	* the **flag in the second field** contains the answer to several yes/no assessments that are encoded in a single number
-	* for more details on the flag, see `this thorough explanation <http://ppotato.wordpress.com/2010/08/25/samtool-bitwise-flag-paired-reads/>`_ or `this more technical explanation <http://blog.nextgenetics.net/?e=18>`_
-    * the **CIGAR string in the 6th field** represents the types of operations that were needed in order to align the read to the specific genome location:
-		* insertion
-		* deletion (small deletions denoted with `D`, bigger deletions, e.g., for spliced reads, denoted with `N`)
-		* clipping (deletion at the ends of a read)
+        r001 163 chr1 7 30 8M2I4M1D3M = 37 39 TTAGATAAAGGATACTG *
+        r002 0 chr1 9 30 3S6M1P1I4M * 0 0 AAAAGATAAGGATA *
 
-.. warning::  Although the SAM/BAM format is rather meticulously defined and documented, whether an alignment program 
-will produce a SAM/BAM file that adheres to these principles is completely up to the programmer. The mapping score, CIGAR string,
-and particularly, all optional flags (fields >11) are often very differently defined depending on the program. If you plan on filtering
-your data based on any of these criteria, make sure you know exactly how these entries were calculated!
+  * the **flag in the second field** contains the answer to several yes/no assessments that are encoded in a single number
+  * for more details on the flag, see `this thorough explanation <http://ppotato.wordpress.com/2010/08/25/samtool-bitwise-flag-paired-reads/>`_ or `this more technical explanation <http://blog.nextgenetics.net/?e=18>`_
+  * the **CIGAR string in the 6th field** represents the types of operations that were needed in order to align the read to the specific genome location:
 
-.. _UCSC: <http://genome.ucsc.edu/FAQ/FAQformat.html#format1>
-.. _Zentner and Henikoff: <http://genomebiology.com/2012/13/10/250>
+    * insertion
+    * deletion (small deletions denoted with `D`, bigger deletions, e.g., for spliced reads, denoted with `N`)
+    * clipping (deletion at the ends of a read)
+
+.. warning::  Although the SAM/BAM format is rather meticulously defined and documented, whether an alignment program will produce a SAM/BAM file that adheres to these principles is completely up to the programmer. The mapping score, CIGAR string, and particularly, all optional flags (fields >11) are often very differently defined depending on the program. If you plan on filtering your data based on any of these criteria, make sure you know exactly how these entries were calculated!
+

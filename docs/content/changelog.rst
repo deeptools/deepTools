@@ -31,7 +31,7 @@ Major changes
    separated from the computation of the underlying data. A new tool, :doc:`tools/plotCorrelation` was added. This tool
    can plot correlations as heatmaps or as scatter plots and includes options to adjust a large array of visual features.
 
- * Added hierarchical clustering, besides *k*-means to :doc:`plotProfile` and :doc:`tools/plotHeatmap`
+ * Added hierarchical clustering, besides *k*-means to :doc:`tools/plotProfile` and :doc:`tools/plotHeatmap`
 
  * Correlation coefficients can now be computed even if the data contains NaNs.
 

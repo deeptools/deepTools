@@ -63,7 +63,7 @@ Please cite deepTools as follows:
 	  Nucl. Acids Res., 2014
 	  doi:10.1093/nar/gku365
 	  
-.. image:: ../../images/logo_mpi-ie.jpg
+.. image:: images/logo_mpi-ie.jpg
 	  
 This tool suite is developed by the `Bioinformatics Facility <http://www1.ie-freiburg.mpg.de/bioinformaticsfac>`_ at the
 `Max Planck Institute for Immunobiology and Epigenetics,
