@@ -16,7 +16,7 @@ Citation: Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, a
 
 ![gallery](https://raw.github.com/fidelram/deepTools/master/examples/collage.png)
 
-Our [wiki page](https://github.com/fidelram/deepTools/wiki) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. It also contains an [FAQ][] section that we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
+Our [documentation](http://deeptools.readthedocs.org/) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ For example, to install under a specific location use:
 ### Installation on a MAC
 
 The easiest way to get numpy and scipy dependencies is to install the
-[Anaconda Scientific Python Distribution][]. After installation, open
+[Anaconda Scientific Python Distribution](https://www.continuum.io/downloads). After installation, open
 a terminal ("Applications" → "Terminal") and follow the "Using anaconda" section under [General Installation](#general)
   	   
 If individual installation of the dependencies is preferred, follow 
@@ -133,25 +133,6 @@ You can watch the installation status under: Top Panel → Admin → Manage inst
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
 
 ------------------------------------
-[BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
-[SAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file containing all information about aligned reads"
-[bigWig]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a bedGraph file; contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[FASTQ]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file of raw reads (almost straight out of the sequencer)"
-
-[bamCorrelate]: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamCorrelate
-[bamFingerprint]: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamFingerprint
-[computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
-[bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage
-[bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
-[computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[plotHeatmap]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[plotProfile]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[FAQ]: https://github.com/fidelram/deepTools/wiki/FAQ
-
-[Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
-[Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
-[Anaconda Scientific Python Distribution]: https://store.continuum.io/cshop/anaconda/
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
 

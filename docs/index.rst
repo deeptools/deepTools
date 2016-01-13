@@ -33,6 +33,7 @@ Contents:
    content/example_usage
    content/api
    content/changelog
+   content/help
 
 
 While developing deepTools, we continuously strive to create software
