@@ -23,7 +23,7 @@ install:
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build --ignore=E501,F403
+  - flake8 . --exclude=.venv,.build --ignore=E501,F403,E402
   - nosetests --with-doctest deeptools/test `ls deeptools/*.py | grep -v correct`
 
 sudo: false

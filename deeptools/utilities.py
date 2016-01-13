@@ -50,8 +50,8 @@ def tbitToBamChrName(tbitNames, bamNames):
             chrNameBitToBam = dict([("chr" + x
                                      if x != 'dmel_mitochondrion_genome'
                                      else 'chrM', x) for x in bamNames])
-        elif set([x for x in tbitNames if x.count('random') == 0
-                  and x.count('chrM') == 0]) == set(bamNames):
+        elif set([x for x in tbitNames if x.count('random') == 0 and
+                 x.count('chrM') == 0]) == set(bamNames):
             if debug:
                 print "Removing random and mitochondrial chromosomes"\
                     "fixes the problem"
