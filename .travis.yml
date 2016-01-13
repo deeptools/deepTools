@@ -4,6 +4,7 @@ matrix:
     - os: linux
       python: "2.7"
     - os: osx
+      language: c
 
 # Setup anaconda
 before_install:
