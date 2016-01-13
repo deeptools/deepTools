@@ -1,9 +1,9 @@
 language: python
-python:
-  -  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "2.7" ; fi
-os:
-  - linux
-  - osx
+matrix:
+  include:
+    - os: linux
+      python: "2.7"
+    - os: osx
 
 # Setup anaconda
 before_install:
