@@ -1,6 +1,6 @@
 language: python
 python:
-  - "2.7"
+  -  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then "2.7" ; fi
 os:
   - linux
   - osx
