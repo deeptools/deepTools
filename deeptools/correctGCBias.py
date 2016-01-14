@@ -596,10 +596,14 @@ def main(args=None):
             run_shell_command(command)
         else:
             print "concatenating (sorted) intermediate BAMs"
-            of = pysam.open(args.correctedFile.name, "wb", template=res[0])
+            header = pysam.Samfile(res[0])
+            of = pysam.Samfile(args.correctedFile.name, "wb", template=header)
+            header.close()
             for f in res:
+                f = pysam.Samfile(f)
                 for e in f.fetch(until_eof=True):
                     of.write(e)
+                f.close()
             of.close()
 
         print "indexing BAM"
