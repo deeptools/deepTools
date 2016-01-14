@@ -16,15 +16,19 @@ def parse_arguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
-bamCorrelate computes the read coverage in genomic regions of two or more BAM files.
-This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Most commonly, the output of bamCorrelates is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
+bamCorrelate computes the read coverages for genomic regions for two or more BAM files.
+The analysis can be performed for the entire genome by running the program in 'bins' mode.
+If you want to count the read coverage for specific regions only, use the 'BED-file' mode instead.
+The standard output of bamCorrelate is a compressed numpy array.
+It can be directly used to calculate and visualize pairwise correlation values between
+the read coverages using the tool 'plotCorrelation'.
+Similarly, 'plotPCA' can be used for principal component analysis of the read coverages using the .npz file.
 
-detailed sub-commands help available under:
+Note that a detailed sub-commands help is available by typing:
 
-  bamCorrelate bins -h
+  $ bamCorrelate bins -h
 
-  bamCorrelate BED-file -h
+  $ bamCorrelate BED-file -h
 
 """,
             epilog='example usages:\n'

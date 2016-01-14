@@ -35,6 +35,15 @@ Here we plot a heatmap, this time of the spearman correlation coefficients.
       -o histoneMarks_corr-heatmap.png \
       -T "test data correlations" \
       -p heatmap --removeOutliers -c spearman
+   
+   plotCorrelation -in bamCorrelate/readCounts.npz \
+      --whatToPlot heatmap \
+	  --corMethod pearson \
+	  --colorMap afmhot \
+	  --plotNumbers \
+	  --removeOutliers
+	  -T "Pearson correlation of read coverages" \
+	  -o heatmap_pearson.png  
 
 .. image:: test_plots/histoneMarks_corr-heatmap.png
 
