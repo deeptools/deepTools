@@ -409,7 +409,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--colors',
                               help='List of colors to use '
-                              'for the plotted lines. Color names '
+                              'for the plotted lines (N.B., not applicable to \'--plotType overlapped_lines\'). Color names '
                               'and html hex strings (e.g., #eeff22) '
                               'are accepted. The color names should '
                               'be space separated. For example, '
