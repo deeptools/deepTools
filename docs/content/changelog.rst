@@ -11,12 +11,12 @@ Major changes
  * :doc:`tools/computeMatrix` also now accepts multiple input BED files. Each is treated as a group within a sample
    and is plotted independently.
 
- * Added new analysis tool :doc:`tools/plotPCA` to visualize the results of :doc:`tools/bamCorrelate`
-   or :doc:`tools/bigwigCorrelate` using principal component analysis.
+ * Added new analysis tool :doc:`tools/plotPCA` to visualize the results of :doc:`tools/multiBamCoverage`
+   or :doc:`tools/multiBigwigSummary` using principal component analysis.
 
  * Added new quality control tool :doc:`tools/plotCoverage` to plot the coverage over base pairs for multiple samples
 
- * Dramatically improved the speed of bigwig related tools (:doc:`tools/bigwigCorrelate` and :doc:`tools/computeMatrix`)
+ * Dramatically improved the speed of bigwig related tools (:doc:`tools/multiBigwigSummary` and :doc:`tools/computeMatrix`)
    by using the new `pyBigWig module <https://github.com/dpryan79/pyBigWig>`_.
 
  * Added support for split reads (most commonly found in RNA-seq data).
@@ -27,7 +27,7 @@ Major changes
  * Added ``--samFlagInclude`` and ``--samFlagExclude`` parameters. This is useful to for example
    only include forward reads (or only reverse reads) in an analysis.
 
- * Plotting of correlations (from :doc:`tools/bamCorrelate` or :doc:`tools/bigwigCorrelate`) is now
+ * Plotting of correlations (from :doc:`tools/multiBamCoverage` or :doc:`tools/multiBigwigSummary`) is now
    separated from the computation of the underlying data. A new tool, :doc:`tools/plotCorrelation` was added. This tool
    can plot correlations as heatmaps or as scatter plots and includes options to adjust a large array of visual features.
 
@@ -51,11 +51,11 @@ Minor changes
  * Renamed **heatmapper** to :doc:`tools/plotHeatmap` and **profiler** to :doc:`tools/plotProfile`
  * Improved plotting features for :doc:`tools/plotProfile` when using as plot type: 'overlapped_lines' and 'heatmap'
  * Resolved an error introduced by numpy version 1.10 in :doc:`tools/computeMatrix:
- * Fixed problem with bed intervals in :doc:`tools/bigwigCorrelate` and :doc:`tools/bamCorrelate` and a
+ * Fixed problem with bed intervals in :doc:`tools/multiBigwigSummary` and :doc:`tools/multiBamCoverage` and a
    user specified region that returned wrongly labeled raw counts.
  * :doc:`tools/computeMatrix` can now read files with DOS newline characters.
- * Added option ``--skipChromosomes`` to  :doc:`tools/bigwigCorrelate`, for example to skip all
-   'random' chromosomes. :doc:`tools/bigwigCorrelate` now also considers chromosomes as identical
+ * Added option ``--skipChromosomes`` to  :doc:`tools/multiBigwigSummary`, for example to skip all
+   'random' chromosomes. :doc:`tools/multiBigwigSummary` now also considers chromosomes as identical
    when the names between samples differ by 'chr' prefix 'chr'. E.g. chr1 vs. 1
  * For :doc:`tools/bamCoverage` and :doc:`tools/bamCompare`, behaviour of scaleFactor was updated such that now,
    if given in combination with the normalization options (normalize to 1x or normalize using RPKM) the given scaleFactor

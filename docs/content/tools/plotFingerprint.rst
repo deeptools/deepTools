@@ -1,9 +1,9 @@
-bamFingerprint
-==========================
+plotFingerprint
+===============
 
 .. argparse::
    :ref: deeptools.plotFingerprint.parse_arguments
-   :prog: bamFingerprint
+   :prog: plotFingerprint
 
 
 Usage Example:
@@ -20,10 +20,10 @@ with zero reads using the *--skipZeros* option.
 .. image:: test_plots/bamFP_chrX.png
 
 
-bamFingerprint on Galaxy:
-~~~~~~~~~~~~~~~~~~~~~~~~~
+plotFingerprint on Galaxy:
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below is the screenshot showing how to use bamFingerprint on the deeptools galaxy.
+Below is the screenshot showing how to use plotFingerprint on the deeptools galaxy.
 
 
 .. image:: ../../images/bamFP_galaxy.png

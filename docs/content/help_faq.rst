@@ -1,5 +1,5 @@
 FAQ
-====
+===
 
 Below are issues we have encountered. Feel free to contribute your questions via deeptools@googlegroups.com
 We also have :doc:`faq_galaxy`.
@@ -8,16 +8,16 @@ We also have :doc:`faq_galaxy`.
     :local:
 
 How does deepTools handle data from paired-end sequencing?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Generally, all the modules working with [BAM] files (``bamCorrelate``, ``bamCoverage``, ``bamCompare``, ``bamFingerprint``, ``computeGCbias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Generally, all the modules working with [BAM] files (``multiBamCoverage``, ``bamCoverage``, ``bamCompare``, ``plotFingerprint``, ``computeGCbias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
 
 How can I test a tool with little computation time? 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 When you're playing around with the tools to see what kinds of results they will produce, you can limit the operation to one chromosome or a specific region to save time. In Galaxy, you will find this under "advanced output options" &rarr; "Region of the genome to limit the operation to"; the command line option is called "--region" (CHR:START:END).
 
 The following tools currently have this option:
-* [bamCorrelate](http://deeptools.readthedocs.org/en/latest/content/tools/bamCorrelate.html)
-* [bamFingerprint](http://deeptools.readthedocs.org/en/latest/content/tools/bamFingerprint.html)
+* [multiBamCoverage](http://deeptools.readthedocs.org/en/latest/content/tools/multiBamCoverage.html)
+* [plotFingerprint](http://deeptools.readthedocs.org/en/latest/content/tools/plotFingerprint.html)
 * [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html), [correctGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html)
 * [bamCoverage](http://deeptools.readthedocs.org/en/latest/content/tools/bamCoverage.html), [bamCompare](http://deeptools.readthedocs.org/en/latest/content/tools/bamCompare.html)
 
@@ -28,7 +28,7 @@ If you would like to limit the operation to more than one region, see the next q
 
 
 Can I specify more than one chromosome in the ``--regions`` option?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Several programs allow specifying a specific regions. 
 For these, the input must be in the format of ``chr:start:end``, for example "chr10" or "chr10:456700:891000".
 For these programs, it is not possible to indicate more than one region, e.g. chr10, chr11 - **this will not work**!
@@ -45,22 +45,22 @@ Here are some ideas for workarounds if you none-the-less need to do this:
 
     intersectBed -abam Reads.bam -b regionsOfInterest.bed > ReadsOverlappingWithRegionsOfInterest.bam
 
-However, ``computeGCbias`` and ``bamCorrelate`` do offer in-build solutions:
+However, ``computeGCbias`` and ``multiBamCoverage`` do offer in-build solutions:
  
-* ``bamCorrelate``
-                  bamCorrelate has two modes, ``bins`` and ``BED``.
+* ``multiBamCoverage``
+                  multiBamCoverage has two modes, ``bins`` and ``BED``.
 				  If you make use of the BED mode (for details, see [here](https://github.com/fidelram/deepTools/wiki/QC#important-parameters)),
 				  you can supply a BED file of regions that you would like to limit the operation to. This will do the same thing as in the general workaround mentioned above.
 * ``computeGCbias``: You can make use of the ``--filterOut`` option of [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html) ("go to the list of optional computeGCbias arguments"). You will first need to create a BED file that contains all the regions you are _not_ interested in. Then supply this file of RegionsOf__Non__Interest.bed to computeGCbias.
 
 When should I exclude regions from computeGCbias?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In general, we recommend only correcting for GC bias (using [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html) followed by [correctGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) if the majority of the genome (the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
 
 Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4Me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC-bias, we incorporated the possibility to supply a file of regions to [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched. This allows [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) to focus on background regions.
 
 When should I use bamCoverage or bamCompare?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Both tools produce bigWig files, i.e. they translate the read-centered information from a [BAM](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bam) file into scores for genomic regions of a fixed size. The only difference is the *number of BAM files* that the tools use as input: while bamCoverage will only take one BAM file and produce a coverage file that is mostly normalized for sequencing depth, [bamCompare](http://deeptools.readthedocs.org/en/latest/content/tools/bamCompare.html) will take *two* [BAM](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bam) files that can be compared with each other using several mathematical operations. bamCompare will always normalize for sequencing depth like bamCoverage, but then it will perform additional calculations depending on what the user chose, for example:
 
@@ -70,7 +70,7 @@ Both tools produce bigWig files, i.e. they translate the read-centered informati
    * Replicate 1 and Replicate 2  → obtain a bigWig file where the values from two BAM files are summed up  
 
 How does computeMatrix handle overlapping genome regions?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If the [BED](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bed) file supplied to [computeMatrix](http://deeptools.readthedocs.org/en/latest/content/tools/computeMatrix.html) contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the BED file before using computeMatrix. There are several methods for modifying your BED file.
 Let's say your file looks like this:
 
@@ -212,7 +212,7 @@ bedtools genomecov -ibam sortedBAMfile.bam -g genome.size
 ```
 
 Where can I download the 2bit genome files required for ``computeGCbias``?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.edu/gbdb/).
 Search for the .2bit ending. Otherwise, **fasta files can be converted to 2bit** using the UCSC programm

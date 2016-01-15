@@ -1,9 +1,9 @@
-bamCorrelate
-============
+multiBamCoverage
+================
 
 .. argparse::
    :ref: deeptools.multiBamCoverage.parse_arguments
-   :prog: bamCorrelate
+   :prog: multiBamCoverage
 
 
 Usage hints

@@ -1,9 +1,9 @@
-bigwigCorrelate
-===============
+multiBigwigSummary
+=================
 
 .. argparse::
    :ref: deeptools.multiBigwigSummary.parse_arguments
-   :prog: bigwigCorrelate
+   :prog: multiBigwigSummary
 
 
 Usage Example:
@@ -21,8 +21,8 @@ Chip-Seq datasets.
 The output matrix file can now be plotted using :doc:`plotCorrelation`.
 
 
-bigwigCorrelate on Galaxy:
-~~~~~~~~~~~~~~~~~~~~~~~~~
+multiBigwigSummary on Galaxy:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Below is the screenshot showing how to use multiBigwigSummary on the deeptools galaxy.
 

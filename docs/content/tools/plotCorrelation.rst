@@ -9,7 +9,7 @@ plotCorrelation
 Usage Example:
 ~~~~~~~~~~~~~~
 
-The following example performs a correlation analysis based on the coverage file computed by :doc:`bamCorrelate` for our test ENCODE Chip-Seq datasets.
+The following example performs a correlation analysis based on the coverage file computed by :doc:`multiBamCoverage` for our test ENCODE Chip-Seq datasets.
 
 **Scatterplot**
 

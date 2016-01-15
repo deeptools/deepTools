@@ -6,11 +6,11 @@ The tools
 +================================+===============+===================================+========================================+==============================================================================+
 |:doc:`tools/multiBamCoverage`   | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
 +--------------------------------+               |                                   |                                        |                                                                              |
-|:doc:`tools/bigwigCorrelate`    |               |                                   |                                        |                                                                              |
+|:doc:`tools/multiBigwigSummary`    |               |                                   |                                        |                                                                              |
 +--------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotCorrelation`    | visualization | bam|bigwigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
+|:doc:`tools/plotCorrelation`    | visualization | bam|multiBigwigSummary output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
 +--------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotPCA`            | visualization | bam|bigwigCorrelate output        | 2 PCA plots                            | visualize the principal component analysis                                   |
+|:doc:`tools/plotPCA`            | visualization | bam|multiBigwigSummary output        | 2 PCA plots                            | visualize the principal component analysis                                   |
 +--------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/plotFingerprint`    | QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
 +--------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
