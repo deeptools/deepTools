@@ -216,6 +216,7 @@ class Profile(object):
                     vmin = _vmin
                 if _vmax > vmax:
                     vmax = _vmax
+            self.fig.delaxes(ax)
 
             # iterate again after having computed the vmin and vmax
             ax_list = []
