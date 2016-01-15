@@ -1,40 +1,8 @@
 The tools
 =========
 
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-| tool                         | type          | input files                       | main output file(s)                    | application                                                                  |
-+==============================+===============+===================================+========================================+==============================================================================+
-|:doc:`tools/bamCorrelate`     | QC            | 2 or more BAM or bigWig           | table of values                        | Pearson or Spearman correlation between read distributions                   |
-+------------------------------+               |                                   |                                        |                                                                              |
-|:doc:`tools/bigwigCorrelate`  |               |                                   |                                        |                                                                              |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotCorrelation`  | visualization | bam|bigwigCorrelate output        | clustered heatmap                      | visualize the Pearson/Spearman correlation                                   |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotPCA`          | visualization | bam|bigwigCorrelate output        | 2 PCA plots                            | visualize the principal component analysis                                   |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/bamFingerprint`   | QC            | 2 BAM                             | 1 diagnostic plot                      | assess enrichment strength of a ChIP sample                                  |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/computeGCBias`    | QC            | 1 BAM                             | 2 diagnostic plots                     | calculate the exp. and obs. GC distribution of reads                         |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/correctGCBias`    | QC            | 1 BAM, output from computeGCbias  | 1 GC-corrected BAM                     | obtain a BAM file with reads distributed according to the genome’s GC content|
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/bamCoverage`      | normalization | BAM                               | bedGraph or bigWig                     | obtain the normalized read coverage of a single BAM file                     |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/bamCompare`       | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                     | normalize 2 files to each other (e.g. log2ratio, difference)                 |
-+------------------------------+               |                                   |                                        |                                                                              |
-|:doc:`tools/bigwigCompare`    |               |                                   |                                        |                                                                              |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/computeMatrix`    | visualization | 1 or more bigWig, 1 or more BED   | zipped file for heatmapper or profiler | compute the values needed for heatmaps and summary plots                     |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotHeatmap`      | visualization | computeMatrix output              | heatmap of read coverages              | visualize the read coverages for genomic regions                             |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotProfile`      | visualization | computeMatrix output              | summary plot (“meta-profile”)          | visualize the average read coverages over a group of genomic regions         |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/plotCoverage`     | visualization | 1 or more bam                     | 2 diagnostic plots                     | visualize the average read coverages over sampled genomic  positions         |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/bamPEFragmentSize`| information   | 1  BAM                            | text with paired-end fragment length   | obtain the average fragment length from paired ends                          |
-+------------------------------+---------------+-----------------------------------+----------------------------------------+------------------------------------------------------------------------------+
-
+.. contents:: 
+    :local:
 
 General principles
 ^^^^^^^^^^^^^^^^^^
@@ -118,3 +86,46 @@ The tables on this page list:
 
 The texts here are adjusted for readability, they might not match the
 help text that you see in the command line word by word.
+
+Tools for QC
+^^^^^^^^^^^^^
+
+:doc:`tools/plotCorrelation`
+"""""""""""""""""""""""""""""""
+:doc:`tools/plotPCA`
+"""""""""""""""""""""""""""""""
+:doc:`tools/bamFingerprint`
+"""""""""""""""""""""""""""""""
+:doc:`tools/bamPEFragmentSize`
+"""""""""""""""""""""""""""""""
+:doc:`tools/computeGCBias`
+"""""""""""""""""""""""""""""""
+:doc:`tools/plotCoverage`
+"""""""""""""""""""""""""""""""
+
+Tools for BAM and bigWig file processing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:doc:`tools/bamCorrelate`
+"""""""""""""""""""""""""""""""
+:doc:`tools/bigwigCorrelate`
+"""""""""""""""""""""""""""""""
+:doc:`tools/correctGCBias`
+"""""""""""""""""""""""""""""""
+:doc:`tools/bamCoverage`
+"""""""""""""""""""""""""""""""
+:doc:`tools/bamCompare`
+"""""""""""""""""""""""""""""""
+:doc:`tools/bigwigCompare`
+"""""""""""""""""""""""""""""""
+:doc:`tools/computeMatrix`
+"""""""""""""""""""""""""""""""
+
+
+Heatmaps and summary plots
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:doc:`tools/plotHeatmap`
+"""""""""""""""""""""""""""""""
+:doc:`tools/plotProfile`
+"""""""""""""""""""""""""""""""

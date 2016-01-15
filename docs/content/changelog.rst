@@ -43,6 +43,7 @@ New features and tools
 * Added **new quality control** tools:
       - use :doc:`tools/plotCoverage` to plot the coverage over base pairs
       - use :doc:`tools/plotPCA` for principal component analysis
+      - :doc:`tools/bamPEFragmentSize` can be used to calculate the average fragment size for paired-end read data
 * Added the possibility for **hierarchical clustering**, besides *k*-means to ``plotProfile`` and ``plotHeatmap``
 
 
