@@ -18,8 +18,8 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
-Tool for the analysis and visualization of sample correlations based on the output from bamCorrelate or
-bigwigCorrelate. Pearson or Spearman methods are available to compute correlation
+Tool for the analysis and visualization of sample correlations based on the output from multiBamCoverage or
+multiBigwigSummary. Pearson or Spearman methods are available to compute correlation
 coefficients. Results can be saved into a heatmap image or as multiple
 scatter plots. Further output files are optional.
 
@@ -99,7 +99,7 @@ def plot_correlation_args():
         '--removeOutliers',
         help='If set, bins with very large counts are removed. '
              'Bins with abnormally high reads counts artificially increase '
-             'pearson correlation; that\'s why, by default, bamCorrelate tries '
+             'pearson correlation; that\'s why, by default, multiBamCoverage tries '
              'to remove outliers using the median absolute deviation (MAD) '
              'method applying a threshold of 200 to only consider extremely '
              'large deviations from the median. The ENCODE blacklist page '
