@@ -204,7 +204,7 @@ def plotMatrix(hm, outFileName,
         showSummaryPlot = True
     elif whatToShow == 'heatmap and colorbar':
         showColorbar = True
-    else:
+    elif whatToShow == 'plot, heatmap and colorbar':
         showSummaryPlot = True
         showColorbar = True
 

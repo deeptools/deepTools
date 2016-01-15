@@ -513,12 +513,12 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '--whatToShow',
             help='The default is to include a summary or profile plot on top '
             'of the heatmap and a heatmap colorbar. Other options are: '
-            '"plot and heatmap", "heatmap and '
+            '"plot and heatmap", "heatmap only", "heatmap and '
             'colorbar", and the default "plot, heatmap and '
             'colorbar".',
             choices=["plot, heatmap and colorbar",
                      "plot and heatmap", "heatmap only",
-                     "colorbar only", "heatmap and colorbar"],
+                     "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
         optional.add_argument('--xAxisLabel', '-x',
                               default='gene distance (bp)',
