@@ -1,10 +1,13 @@
-language: python
-python:
-  - "2.7"
+language: c
+env: TRAVIS_PYTHON_VERSION="2.7"
+os:
+  - linux
+  - osx
 
 # Setup anaconda
 before_install:
-  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then curl http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -o miniconda.sh ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -o miniconda.sh ; fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
@@ -16,16 +19,14 @@ before_install:
 
 # Install packages
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose
-  - conda install -c https://conda.anaconda.org/cgat pysam
-  - pip install pyBigWig
-  - pip install bx-python
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib=1.5.0 nose
+  - conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
   - pip install flake8
   - python setup.py install
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build --ignore=E501,F403
+  - flake8 . --exclude=.venv,.build --ignore=E501,F403,E402
   - nosetests --with-doctest deeptools/test `ls deeptools/*.py | grep -v correct`
 
 sudo: false

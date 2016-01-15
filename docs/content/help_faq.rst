@@ -16,12 +16,12 @@ How can I test a tool with little computation time?
 When you're playing around with the tools to see what kinds of results they will produce, you can limit the operation to one chromosome or a specific region to save time. In Galaxy, you will find this under "advanced output options" &rarr; "Region of the genome to limit the operation to"; the command line option is called "--region" (CHR:START:END).
 
 The following tools currently have this option:
-* [bamCorrelate][]
-* [bamFingerprint][]
-* [computeGCbias][], [correctGCbias]
-* [bamCoverage][], [bamCompare][]
+* [bamCorrelate](http://deeptools.readthedocs.org/en/latest/content/tools/bamCorrelate.html)
+* [bamFingerprint](http://deeptools.readthedocs.org/en/latest/content/tools/bamFingerprint.html)
+* [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html), [correctGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html)
+* [bamCoverage](http://deeptools.readthedocs.org/en/latest/content/tools/bamCoverage.html), [bamCompare](http://deeptools.readthedocs.org/en/latest/content/tools/bamCompare.html)
 
-It works as follows: first, the *entire* genome represented in the [BAM][] file will be regarded and sampled, *then* all the regions or sampled bins that do not overlap the region indicated by the user will be discarded.
+It works as follows: first, the *entire* genome represented in the [BAM](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bam) file will be regarded and sampled, *then* all the regions or sampled bins that do not overlap the region indicated by the user will be discarded.
 
 Beware that you can limit the operation to only *one* chromosome (or *one* specific locus on a chromosome).
 If you would like to limit the operation to more than one region, see the next question.
@@ -51,27 +51,27 @@ However, ``computeGCbias`` and ``bamCorrelate`` do offer in-build solutions:
                   bamCorrelate has two modes, ``bins`` and ``BED``.
 				  If you make use of the BED mode (for details, see [here](https://github.com/fidelram/deepTools/wiki/QC#important-parameters)),
 				  you can supply a BED file of regions that you would like to limit the operation to. This will do the same thing as in the general workaround mentioned above.
-* ``computeGCbias``: You can make use of the ``--filterOut`` option of [computeGCbias](https://github.com/fidelram/deepTools/wiki/All-command-line-options#computegcbias-optional-arguments "go to the list of optional computeGCbias arguments"). You will first need to create a BED file that contains all the regions you are _not_ interested in. Then supply this file of RegionsOf__Non__Interest.bed to computeGCbias.
+* ``computeGCbias``: You can make use of the ``--filterOut`` option of [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html) ("go to the list of optional computeGCbias arguments"). You will first need to create a BED file that contains all the regions you are _not_ interested in. Then supply this file of RegionsOf__Non__Interest.bed to computeGCbias.
 
 When should I exclude regions from computeGCbias?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In general, we recommend only correcting for GC bias (using [computeGCbias][] followed by [correctGCbias][]) if the majority of the genome (the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
+In general, we recommend only correcting for GC bias (using [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html) followed by [correctGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) if the majority of the genome (the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
 
-Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4Me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC-bias, we incorporated the possibility to supply a file of regions to [computeGCbias][] that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched. This allows [computeGCbias][] to focus on background regions.
+Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4Me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC-bias, we incorporated the possibility to supply a file of regions to [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched. This allows [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) to focus on background regions.
 
 When should I use bamCoverage or bamCompare?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Both tools produce bigWig files, i.e. they translate the read-centered information from a [BAM][] file into scores for genomic regions of a fixed size. The only difference is the *number of BAM files* that the tools use as input: while bamCoverage will only take one BAM file and produce a coverage file that is mostly normalized for sequencing depth, [bamCompare][] will take *two* [BAM][] files that can be compared with each other using several mathematical operations. [bamCompare][] will always normalize for sequencing depth like bamCoverage, but then it will perform additional calculations depending on what the user chose, for example:
+Both tools produce bigWig files, i.e. they translate the read-centered information from a [BAM](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bam) file into scores for genomic regions of a fixed size. The only difference is the *number of BAM files* that the tools use as input: while bamCoverage will only take one BAM file and produce a coverage file that is mostly normalized for sequencing depth, [bamCompare](http://deeptools.readthedocs.org/en/latest/content/tools/bamCompare.html) will take *two* [BAM](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bam) files that can be compared with each other using several mathematical operations. bamCompare will always normalize for sequencing depth like bamCoverage, but then it will perform additional calculations depending on what the user chose, for example:
 
 * ``bamCompare``:
-   * ChIP vs. [input][] → obtain a bigWig file of log2ratios(ChIP/input)
+   * ChIP vs. [input](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#ngs-and-generic-terminology) → obtain a bigWig file of log2ratios(ChIP/input)
    * treatment vs. control  → obtain a bigWig file of differences (Treatment - control)
    * Replicate 1 and Replicate 2  → obtain a bigWig file where the values from two BAM files are summed up  
 
 How does computeMatrix handle overlapping genome regions?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If the [BED][] file supplied to [computeMatrix][] contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the [BED][] file before using computeMatrix. There are several methods for modifying your [BED][] file.
+If the [BED](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bed) file supplied to [computeMatrix](http://deeptools.readthedocs.org/en/latest/content/tools/computeMatrix.html) contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the BED file before using computeMatrix. There are several methods for modifying your BED file.
 Let's say your file looks like this:
 
 ```
@@ -105,7 +105,7 @@ chr1	7	29	region2;region1;region1Duplicate;region3	4
 chr1	35	40	region4	1
 ```
 
-* if you would like to *keep only regions that do not overlap* with any other region in the same [BED][] file, use the same mergeBed routine but subsequently filter out those regions where several regions were merged
+* if you would like to *keep only regions that do not overlap* with any other region in the same [BED](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bed) file, use the same mergeBed routine but subsequently filter out those regions where several regions were merged
     * the awk command will check the last field of each line ($NF) and will print the original line ($0) only if the last field contained a number smaller than 2
 
 ```
@@ -121,9 +121,9 @@ Additional processing, such as outlier removal, is done on the matrix prior to p
 
 The heatmap I generated looks very "coarse", I would like a much more fine-grained image. 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-* decrease the *bin size* when generating the matrix using [computeMatrix][]
-  * go to "advanced options" &rarr; "Length, in base pairs, of the non-overlapping [bin][] for averaging the score over the regions length" &rarr; define a smaller value, e.g. 50 or 25 bp
-* make sure, however, that you used a sufficiently small [bin][] size when calculating the bigWig file, though (if generated with deepTools, you can check the option "[bin][] size")
+* decrease the *bin size* when generating the matrix using [computeMatrix](http://deeptools.readthedocs.org/en/latest/content/tools/computeMatrix.html)
+  * go to "advanced options" &rarr; "Length, in base pairs, of the non-overlapping [bin](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#ngs-and-generic-terminology) for averaging the score over the regions length" &rarr; define a smaller value, e.g. 50 or 25 bp
+* make sure, however, that you used a sufficiently small [bin](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#ngs-and-generic-terminology) size when calculating the bigWig file, though (if generated with deepTools, you can check the option "[bin](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#ngs-and-generic-terminology) size")
 
 How can I change the automatic labels of the clusters in a k-means clustered heatmap?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -142,8 +142,8 @@ What do I have to pay attention to when working with a draft version of a genome
 
 If your genome isn't included in our standard dataset then you'll need the following:
 
-1. **Effective genome size** - this is mostly needed for [bamCoverage][] and [bamCompare][], see [below](#effGenomeSize) for details
-2. **Reference genome sequence in 2bit format** - this is needed for [computeGCbias][], see [below](#2bit) for details
+1. **Effective genome size** - this is mostly needed for [bamCoverage](http://deeptools.readthedocs.org/en/latest/content/tools/bamCoverage.html) and [bamCompare](http://deeptools.readthedocs.org/en/latest/content/tools/bamCompare.html), see [below](#effGenomeSize) for details
+2. **Reference genome sequence in 2bit format** - this is needed for [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html), see [below](#2bit) for details
 
 
 How do I calculate the effective genome size for an organism that's not in your list?
@@ -168,7 +168,7 @@ There is a tool that promises to calculate the mappability for any genome given 
 
 <a name="faCount"></a>
 **2. Use faCount**
-If you are using [bowtie2][] which reports *multimappers* (i.e., *non-uniquely* mapped reads) as a default setting, you can use **faCount from UCSC tools** to report the total number of bases as well as the number of bases that are missing from the genome assembly indicated by 'N'. The effective genome size would then be the total number of base pairs minus the total number of 'N'.
+If you are using bowtie2, which reports *multimappers* (i.e., *non-uniquely* mapped reads) as a default setting, you can use **faCount from UCSC tools** to report the total number of bases as well as the number of bases that are missing from the genome assembly indicated by 'N'. The effective genome size would then be the total number of base pairs minus the total number of 'N'.
 Here's an example output of faCount on *D. melanogaster* genome version dm3:
 ```
 $ UCSCtools/faCount dm3.fa
@@ -217,38 +217,3 @@ Where can I download the 2bit genome files required for ``computeGCbias``?
 The 2bit files of most genomes can be found [here](http://hgdownload.cse.ucsc.edu/gbdb/).
 Search for the .2bit ending. Otherwise, **fasta files can be converted to 2bit** using the UCSC programm
 faToTwoBit (available for different platforms from [here](http://hgdownload.cse.ucsc.edu/admin/exe/)
-
-
-[bamCorrelate]: https://github.com/fidelram/deepTools/wiki/QC
-[bamFingerprint]: https://github.com/fidelram/deepTools/wiki/QC
-[computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC
-[bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations
-[bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations
-[correctGCbias]: https://github.com/fidelram/deepTools/wiki/Normalizations
-[computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[heatmapper]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[profiler]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[MACS]: http://www.ncbi.nlm.nih.gov/pubmed/22936215 "How to use MACS, Nature Protocols"
-[CCAT]: http://www.ncbi.nlm.nih.gov/pubmed/20371496 "CCAT original publication"
-[SICER]: http://bioinformatics.oxfordjournals.org/content/25/15/1952.full "SICER original publication"
-[bowtie2]: http://bowtie-bio.sourceforge.net/bowtie2/index.shtml "bowtie2 - one of the most popular read alignment programs"
-
-[Galaxy]: http://galaxyproject.org/ "General Galaxy platform from Penn State"
-[GEO]: http://www.ncbi.nlm.nih.gov/geo/ "GEO database"
-[Roadmap project]: http://www.roadmapepigenomics.org/data "Roadmap web site"
-[UCSC]: http://genome.ucsc.edu/ "UCSC Genome web site"
-[BioMart]: http://www.biomart.org/ "Biomart web site"
-[deepTools Galaxy]: http://deeptools.ie-freiburg.mpg.de/ "deepTools Galaxy at the Max-Planck-Institute of Immunobiology and Epigenetics"
-
-[2bit]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-2bit "binary file for storage of genome sequences"
-[BAM]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bam "binary version of a SAM file; contains all information about aligned reads"
-[bed]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed "text file that usually contains gene information such as chromosome, gene start, gene end, gene name, strand information - can be used for any genomic region representation"
-[BED]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed "text file that usually contains gene information such as chromosome, gene start, gene end, gene name, strand information - can be used for any genomic region representation"
-[bedGraph]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bedgraph "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[bigWig]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig "binary version of a bedGraph file; contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[FASTA]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fasta "simple text-file containing nucleotide or protein sequences"
-[FASTQ]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fastq "text file of raw reads (almost straight out of the sequencer)"
-[SAM]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-sam "text file containing all information about aligned reads"
-[bin]: https://github.com/fidelram/deepTools/wiki/Glossary#terminology "typically a small region of the genome, used to 'store' a score; created by artificially dividing the genome"
-[read]: https://github.com/fidelram/deepTools/wiki/Glossary#terminology "the DNA piece that was actually sequenced  ("read") by the sequencing machine (usually between 30 to 100 bp long, depending on the read-length of the sequencing protocol)" 
-[input]: https://github.com/fidelram/deepTools/wiki/Glossary#terminology "confusing, albeit commonly used name for the 'no-antibody' control sample for ChIP experiments"

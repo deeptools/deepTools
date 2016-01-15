@@ -18,7 +18,9 @@ The fastet way to obtain **Python 2.7 together with numpy and scipy** is
 via the `Anaconda Scientific Python
 Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
-follow the directions for its installation.
+follow the directions for its installation. All of the requirements for deepTools can be installed in Anaconda with:
+
+    $ conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
 
 Command line installation using ``pip``
 -----------------------------------------

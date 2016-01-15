@@ -16,7 +16,7 @@ Citation: Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, a
 
 ![gallery](https://raw.github.com/fidelram/deepTools/master/examples/collage.png)
 
-Our [wiki page](https://github.com/fidelram/deepTools/wiki) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. It also contains an [FAQ][] section that we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
+Our [documentation](http://deeptools.readthedocs.org/) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -44,7 +44,7 @@ Details on the installation routines can be found here.
 
 The easiest way to install deepTools is by using python `pip` or `easy_install tools`:
 
-Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html) installed
+Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html), bx-python, pysam, and pyBigWig
 
 Commands:
 
@@ -52,7 +52,16 @@ Commands:
 Done.
 
 
-__A second option is to clone the repository:__
+__Using anaconda:__
+
+[Anaconda](https://www.continuum.io/downloads) already comes with scipy, numpy and matplotlib, making installation very quick. To install using either Anaconda or Miniconda:
+
+    $ conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
+    $ pip install git+https://github.com/fidelram/deepTools.git@main
+
+Note that deepTools does not yet work with python3.
+
+__Another option is to clone the repository:__
 	
 	$ git clone https://github.com/fidelram/deepTools
 	$ cd deepTools
@@ -75,11 +84,11 @@ For example, to install under a specific location use:
 ### Installation on a MAC
 
 The easiest way to get numpy and scipy dependencies is to install the
-[Anaconda Scientific Python Distribution][]. After installation, open
-a terminal ("Applications" → "Terminal") and follow the [General Installation](#general)
+[Anaconda Scientific Python Distribution](https://www.continuum.io/downloads). After installation, open
+a terminal ("Applications" → "Terminal") and follow the "Using anaconda" section under [General Installation](#general)
   	   
 If individual installation of the dependencies is preferred, follow 
-those steps:
+these steps:
 
 Requirement: Python 2.7 installed
 
@@ -124,25 +133,6 @@ You can watch the installation status under: Top Panel → Admin → Manage inst
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
 
 ------------------------------------
-[BAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a SAM file; contains all information about aligned reads"
-[SAM]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file containing all information about aligned reads"
-[bigWig]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "binary version of a bedGraph file; contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[bedGraph]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[FASTQ]: https://docs.google.com/document/d/1Iv9QnuRYWCtV_UCi4xoXxEfmSZYQNyYJPNsFHnvv9C0/edit?usp=sharing "text file of raw reads (almost straight out of the sequencer)"
-
-[bamCorrelate]: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamCorrelate
-[bamFingerprint]: https://github.com/fidelram/deepTools/wiki/QC#wiki-bamFingerprint
-[computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC#wiki-computeGCbias
-[bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCoverage
-[bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations#wiki-bamCompare
-[computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[heatmapper]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[profiler]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[FAQ]: https://github.com/fidelram/deepTools/wiki/FAQ
-
-[Benjamini and Speed]: http://nar.oxfordjournals.org/content/40/10/e72 "Nucleic Acids Research (2012)"
-[Diaz et al.]: http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml "Stat. Appl. Gen. Mol. Biol. (2012)"
-[Anaconda Scientific Python Distribution]: https://store.continuum.io/cshop/anaconda/
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
 

@@ -332,7 +332,6 @@ def main(args=None):
         for bed in args.regionsFileName:
             bed.close()
             # concatenate all intermediate tempfiles into one
-            print "appending {} file".format(bed.name)
             shutil.copyfileobj(open(bed.name, 'U'), bed_file)
             # append hash and label based on the file name
             label = os.path.basename(bed.name)
