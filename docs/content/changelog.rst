@@ -1,65 +1,69 @@
-Changes deepTools2.0
-====================
+Changes in deepTools2.0
+========================
 
 Major changes
-^^^^^^^^^^^^^
+-------------
 
- * :doc:`tools/computeMatrix` now accepts multiple bigwig files that can later be plotted together as heatmaps
-   one after the other or as multiple lines in the same plot. See the documentation of :doc:`tools/plotHeatmap`
-   and :doc:`tools/plotProfile` for examples.
+The major changes encompass features for **increased efficiency**, 
+**new sequencing data types**, and **additional plots**.
 
- * :doc:`tools/computeMatrix` also now accepts multiple input BED files. Each is treated as a group within a sample
-   and is plotted independently.
+Moreover, deepTools modules can now be used by other python programs.
+The :ref:`api` is now part of the documentation.
 
- * Added new analysis tool :doc:`tools/plotPCA` to visualize the results of :doc:`tools/bamCorrelate`
-   or :doc:`tools/bigwigCorrelate` using principal component analysis.
+One of the most visible changes is certainly the move of the
+documentation from the previous github-hosted wiki to http://deeptools.readthedocs.org.
 
- * Added new quality control tool :doc:`tools/plotCoverage` to plot the coverage over base pairs for multiple samples
 
- * Dramatically improved the speed of bigwig related tools (:doc:`tools/bigwigCorrelate` and :doc:`tools/computeMatrix`)
-   by using the new `pyBigWig module <https://github.com/dpryan79/pyBigWig>`_.
+Additional data types
+^^^^^^^^^^^^^^^^^^^^^^
 
- * Added support for split reads (most commonly found in RNA-seq data).
+* **RNA-seq:** split-reads are now natively supported
+ 
+* **MNase-seq:** using the new option ``--MNase`` in ``bamCoverage``, one can now compute read coverage only taking the 2 central base pairs of each mapped fragment into account.
+ 
 
- * Added new option ``--MNase`` in :doc:`tools/bamCoverage` that computes reads coverage only considering two
-   base pairs at the center of the fragment.
+Increased efficiency
+^^^^^^^^^^^^^^^^^^^^^
 
- * Added ``--samFlagInclude`` and ``--samFlagExclude`` parameters. This is useful to for example
-   only include forward reads (or only reverse reads) in an analysis.
+* We dramatically improved the **speed** of bigwig related tools (``bigwigCorrelate`` and ``computeMatrix``) by using the new `pyBigWig module <https://github.com/dpryan79/pyBigWig>`_.
 
- * Plotting of correlations (from :doc:`tools/bamCorrelate` or :doc:`tools/bigwigCorrelate`) is now
-   separated from the computation of the underlying data. A new tool, :doc:`tools/plotCorrelation` was added. This tool
-   can plot correlations as heatmaps or as scatter plots and includes options to adjust a large array of visual features.
+* It is now possible to generate one composite heatmap and/or meta-gene image based on **multiple bigwig files** in one go (see :doc:`tools/computeMatrix`, :doc:`tools/plotHeatmap`, and :doc:`tools/plotProfile` for examples)
 
- * Added hierarchical clustering, besides *k*-means to :doc:`tools/plotProfile` and :doc:`tools/plotHeatmap`
+* ``computeMatrix`` also now accepts multiple input BED files. Each is treated as a group within a sample and is plotted independently.
 
- * Correlation coefficients can now be computed even if the data contains NaNs.
+* We added **additional filtering options for handling BAM files**, decreasing the need for prior filtering using tools other than deepTools: The ``--samFlagInclude`` and ``--samFlagExclude`` parameters can, for example, be used to only include (or exclude) forward reads in an analysis.
 
- * The documentation was migrated to http://deeptools.readthedocs.org
+* We separated the generation of read count tables from the calculation of pairwise correlations that was previously handled by ``bamCorrelate``. Now, read counts are calculated first using ``multiBamCoverage`` or ``multiBigWigCoverage`` and the resulting output file can be used for calculating and plotting pairwise correlations using ``plotCorrelation`` or for doing a principal component analysis using ``plotPCA``.
 
- * deepTools modules can now be used by other python programs. The :ref:`api` is now part of the documentation.
+New features and tools
+^^^^^^^^^^^^^^^^^^^^^^^
 
- * In this new release, most of the core code was rewriting to facilitate API usage and for optimization.
+* Correlation analyses are no longer limited to BAM files -- bigwig files are possible, too! (see :doc:`tools/bigwigCorrelate`)
+* Correlation coefficients can now be computed even if the data contains NaNs.
+* Added **new quality control** tools:
+      - use :doc:`tools/plotCoverage` to plot the coverage over base pairs
+      - use :doc:`tools/plotPCA` for principal component analysis
+* Added the possibility for **hierarchical clustering**, besides *k*-means to ``plotProfile`` and ``plotHeatmap``
+
 
 Minor changes
-^^^^^^^^^^^^^
+-------------
 
- * ``--missingDataAsZero`` was renamed to ``--skipNonCoveredRegions`` for clarity in :doc:`tools/bamCoverage`
-   and :doc:`tools/bamCompare`.
- * Read extension was made optional and removed the need to specify a default fragment length for most of the tools.
-   and ``--fragmentLentgh parameters`` were replaced by the new optional parameter ``--extendReads``.
- * Renamed **heatmapper** to :doc:`tools/plotHeatmap` and **profiler** to :doc:`tools/plotProfile`
- * Improved plotting features for :doc:`tools/plotProfile` when using as plot type: 'overlapped_lines' and 'heatmap'
- * Resolved an error introduced by numpy version 1.10 in :doc:`tools/computeMatrix:
- * Fixed problem with bed intervals in :doc:`tools/bigwigCorrelate` and :doc:`tools/bamCorrelate` and a
-   user specified region that returned wrongly labeled raw counts.
- * :doc:`tools/computeMatrix` can now read files with DOS newline characters.
- * Added option ``--skipChromosomes`` to  :doc:`tools/bigwigCorrelate`, for example to skip all
-   'random' chromosomes. :doc:`tools/bigwigCorrelate` now also considers chromosomes as identical
-   when the names between samples differ by 'chr' prefix 'chr'. E.g. chr1 vs. 1
- * For :doc:`tools/bamCoverage` and :doc:`tools/bamCompare`, behaviour of scaleFactor was updated such that now,
-   if given in combination with the normalization options (normalize to 1x or normalize using RPKM) the given scaleFactor
-   will multiply the scale factor computed for the normalization methods.
- * Fixed problem with wrongly labeled proper pairs in a bam file. deepTools adds further checks to
-   determine if a read pair is a proper pair.
- * Added titles to QC plots,
+Changed parameter names and settings
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* Renamed **heatmapper** to ``plotHeatmap`` and **profiler** to ``plotProfile``
+* ``computeMatrix`` can now read files with DOS newline characters.
+* ``--missingDataAsZero`` was renamed to ``--skipNonCoveredRegions`` for clarity in ``bamCoverage`` and ``bamCompare``.
+* Read extension was made optional and we removed the need to specify a default fragment length for most of the tools: ``--fragmentLength`` was thus replaced by the new optional parameter ``--extendReads``.
+* Added option ``--skipChromosomes`` to ``bigwigCorrelate``, for example to skip all 'random' chromosomes.
+* Added the option for adding titles to QC plots.
+
+Bug fixes
+^^^^^^^^^^
+* ``bigwigCorrelate`` now also considers chromosomes as identical when the names between samples differ by 'chr' prefix, e.g. chr1 vs. 1.
+* Resolved an error introduced by numpy version 1.10 in ``computeMatrix``.
+* Improved plotting features for ``tools/plotProfile`` when using as plot type: 'overlapped_lines' and 'heatmap'
+* Fixed problem with BED intervals in ``bigwigCorrelate`` and ``bamCorrelate`` that returned wrongly labeled raw counts.
+* Fixed problem with wrongly labeled proper read pairs in a BAM file. We now have additional checks to determine if a read pair is a proper pair.
+* For ``bamCoverage`` and ``bamCompare``, behaviour of ``scaleFactor`` was updated such that now, if given in combination with the normalization options (``--normalizeTo1x`` or ``--normalizeUsingRPKM``), the given scaling factor will multiply the scale factor computed for the normalization methods.
