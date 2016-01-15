@@ -28,7 +28,7 @@ Increased efficiency
 * We dramatically improved the **speed** of bigwig related tools (``bigwigCorrelate`` and ``computeMatrix``) by using the new `pyBigWig module <https://github.com/dpryan79/pyBigWig>`_.
 
 * It is now possible to generate one composite heatmap and/or meta-gene image based on **multiple bigwig files** in one go (see :doc:`tools/computeMatrix`, :doc:`tools/plotHeatmap`, and :doc:`tools/plotProfile` for examples)
-
+multiBamCoverage
 * ``computeMatrix`` also now accepts multiple input BED files. Each is treated as a group within a sample and is plotted independently.
 
 * We added **additional filtering options for handling BAM files**, decreasing the need for prior filtering using tools other than deepTools: The ``--samFlagInclude`` and ``--samFlagExclude`` parameters can, for example, be used to only include (or exclude) forward reads in an analysis.
@@ -65,6 +65,6 @@ Bug fixes
 * ``bigwigCorrelate`` now also considers chromosomes as identical when the names between samples differ by 'chr' prefix, e.g. chr1 vs. 1.
 * Resolved an error introduced by numpy version 1.10 in ``computeMatrix``.
 * Improved plotting features for ``tools/plotProfile`` when using as plot type: 'overlapped_lines' and 'heatmap'
-* Fixed problem with BED intervals in ``bigwigCorrelate`` and ``bamCorrelate`` that returned wrongly labeled raw counts.
+* Fixed problem with BED intervals in ``bigwigCorrelate`` and ``multiBamCoverage`` that returned wrongly labeled raw counts.
 * Fixed problem with wrongly labeled proper read pairs in a BAM file. We now have additional checks to determine if a read pair is a proper pair.
 * For ``bamCoverage`` and ``bamCompare``, behaviour of ``scaleFactor`` was updated such that now, if given in combination with the normalization options (``--normalizeTo1x`` or ``--normalizeUsingRPKM``), the given scaling factor will multiply the scale factor computed for the normalization methods.

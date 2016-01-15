@@ -1,15 +1,15 @@
 Example usage
 =============
 
+
 .. toctree::
    :maxdepth: 1
 
    example_step_by_step
    example_gallery
-   example_api_tutorial
 
-How we use deepTools 
---------------------
+How we use deepTools for ChIP-seq analyses 
+-------------------------------------------
 
 deepTools started off as a package for ChIP-seq analysis, which is
 why you'll find many ChIP-seq examples in our documentation.
@@ -17,10 +17,10 @@ why you'll find many ChIP-seq examples in our documentation.
 are slides that we used for teaching at the University of Freiburg, with
 more details on the deepTools usage and aims in regard to ChIP-seq.
 However, while some tools, such as `bamFingerprint`, specifically
-address ChIP-seq-issues, the majority of tools is widely applicable
-to deep-sequencing data, including RNA-seq.
+address ChIP-seq-issues, **the majority of tools is widely applicable
+to deep-sequencing data, including RNA-seq**.
 
-So, what does a typical ChIP-seq workflow look like?
+However, to get a feeling fo what deepTools can do, we'd like to give you a brief glimpse into how we typically use deepTools for ChIP-seq analyses.
 
 .. image:: ../images/start_workflow.png
 
@@ -40,7 +40,7 @@ We then use deepTools to assess the quality of the aligned reads:
    check to assess reproducibility - either between replicates
    and/or between different experiments that might have used the same
    antibody or the same cell type, etc. For instance, replicates should
-   correlate better than differently treated samples.
+       correlate better than differently treated samples.
 #. **Correlation between bigWig files** (``bigwigCorrelate`` and ``plotCorrelation``). 
    Sometimes we want to compare our alignments with genome-wide data stored as "tracks" in public repositories 
    or other more general scores that are not necessarily based on read-coverage. 

@@ -26,14 +26,17 @@ please make sure to check our :doc:`content/help_glossary`.
 Contents:
 ---------
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    content/installation
    content/list_of_tools
    content/example_usage
    content/api
    content/changelog
-   content/help
+   content/help_galaxy_intro
+   content/help_faq
+   content/help_faq_galaxy
+   content/help_glossary
 
 
 While developing deepTools, we continuously strive to create software

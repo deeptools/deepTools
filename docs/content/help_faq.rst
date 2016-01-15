@@ -1,7 +1,8 @@
-FAQ
-====
+General FAQ
+===========
 
-Below are issues we have encountered. Feel free to contribute your questions via deeptools@googlegroups.com
+Below are issues we have frequently encountered.
+Feel free to contribute your questions via deeptools@googlegroups.com
 We also have a :doc:`help_faq_galaxy`.
 
 .. contents:: 
