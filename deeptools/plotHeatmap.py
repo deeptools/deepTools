@@ -400,10 +400,10 @@ def plotMatrix(hm, outFileName,
             ticks[-1].label1.set_horizontalalignment('right')
 
         # reduce the number of yticks by half
+        ax_list[0].set_ylim(yMin, yMax)
         num_ticks = len(ax_list[0].get_yticks())
         yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
         ax_list[0].set_yticks(yticks)
-        ax_list[0].set_ylim(yMin, yMax)
         if legend_location != 'none':
             ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
                                frameon=False, markerscale=0.5)
