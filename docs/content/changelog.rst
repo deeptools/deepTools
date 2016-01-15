@@ -31,7 +31,7 @@ Major changes
    separated from the computation of the underlying data. A new tool, :doc:`tools/plotCorrelation` was added. This tool
    can plot correlations as heatmaps or as scatter plots and includes options to adjust a large array of visual features.
 
- * Added hierarchical clustering, besides *k*-means to :doc:`plotProfile` and :doc:`tools/plotHeatmap`
+ * Added hierarchical clustering, besides *k*-means to :doc:`tools/plotProfile` and :doc:`tools/plotHeatmap`
 
  * Correlation coefficients can now be computed even if the data contains NaNs.
 
@@ -48,9 +48,14 @@ Minor changes
    and :doc:`tools/bamCompare`.
  * Read extension was made optional and removed the need to specify a default fragment length for most of the tools.
    and ``--fragmentLentgh parameters`` were replaced by the new optional parameter ``--extendReads``.
- * Renamed **heatmapper** to :doc:`tools/plotHeatmap` and **profiler** to :doc:`tools/plotProfile`
+ * Renamed:
+    * **heatmapper** to :doc:`tools/plotHeatmap`
+    * **profiler** to :doc:`tools/plotProfile`
+    * **bamCorrelate** to :doc:`tools/multiBamCoverage`
+    * **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
+    * **bamFingerprint** to :doc:`tools/plotFingerprint`.
  * Improved plotting features for :doc:`tools/plotProfile` when using as plot type: 'overlapped_lines' and 'heatmap'
- * Resolved an error introduced by numpy version 1.10 in :doc:`tools/computeMatrix:
+ * Resolved an error introduced by numpy version 1.10 in :doc:`tools/computeMatrix`
  * Fixed problem with bed intervals in :doc:`tools/multiBigwigSummary` and :doc:`tools/multiBamCoverage` and a
    user specified region that returned wrongly labeled raw counts.
  * :doc:`tools/computeMatrix` can now read files with DOS newline characters.

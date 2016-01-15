@@ -6,7 +6,7 @@ Example usage
 
    step_by_step_protocols
    gallery
-   api_tutorial
+   api
 
 How we use deepTools 
 --------------------
