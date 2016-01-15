@@ -160,7 +160,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
     mean = np.array(mean)
     readsPerBin = mean if avg_method == 'mean' else median
-    import ipdb;ipdb.set_trace()
+
     if min(median) == 0:
         idx_zero = [ix + 1 for ix, value in enumerate(median) if value == 0]
         exit("\n*ERROR*: The median coverage computed is zero for sample(s) #{}\n"
