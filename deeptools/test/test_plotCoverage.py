@@ -24,13 +24,14 @@ class TestHeatmapper(object):
             self.run_image_tests = False
 
     def test_plotCoverage_default(self):
-        args = "--bamfiles {0}test1.bam {0}test2.bam --plotFile /tmp/_test.svg" \
-               " --plotFileFormat svg --outRawCounts /tmp/_test.tab".format(TEST_DATA).split()
-        deeptools.plotCoverage.main(args)
-        assert filecmp.cmp(os.path.join(ROOT, 'outRawCounts_default.tabular'), '/tmp/_test.tab') is True
-        assert self.compare_svg(os.path.join(ROOT, 'plotCoverage_default.svg'), '/tmp/_test.svg')
-        os.remove('/tmp/_test.tab')
-        os.remove('/tmp/_test.svg')
+        if self.run_image_tests:
+            args = "--bamfiles {0}test1.bam {0}test2.bam --plotFile /tmp/_test.svg" \
+                   " --plotFileFormat svg --outRawCounts /tmp/_test.tab".format(TEST_DATA).split()
+            deeptools.plotCoverage.main(args)
+            assert filecmp.cmp(os.path.join(ROOT, 'outRawCounts_default.tabular'), '/tmp/_test.tab') is True
+            assert self.compare_svg(os.path.join(ROOT, 'plotCoverage_default.svg'), '/tmp/_test.svg')
+            os.remove('/tmp/_test.tab')
+            os.remove('/tmp/_test.svg')
 
     @staticmethod
     def compare_svg(file1, file2):
