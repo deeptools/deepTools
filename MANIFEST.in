@@ -1,7 +1,6 @@
 include *.txt
 include README.md
 include deeptools/config/deeptools.cfg
-include docs/manual/*
 exclude examples/*
 include scripts/*
 include deeptools/test/test_data/*
