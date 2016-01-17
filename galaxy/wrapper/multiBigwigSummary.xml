@@ -1,4 +1,4 @@
-<tool id="deeptools_bigwig_correlate" name="multiBigwigSummary" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.0">
     <description>calculates average read coverages for a list of two or more bigwig files</description>
     <macros>
         <token name="@BINARY@">multiBigwigSummary</token>
