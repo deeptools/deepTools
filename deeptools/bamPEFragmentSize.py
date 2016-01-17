@@ -17,12 +17,6 @@ def parse_arguments():
                         help='BAM file to process',
                         metavar='bam-file')
 
-    parser.add_argument('-bai',
-                        help='Index for the BAM file. Default is to '
-                        'consider the path of the BAM file adding '
-                        'the .bai suffix.',
-                        metavar='bam-file-index')
-
     parser.add_argument('--histogram', '-hist',
                         help='Save a .png file with a histogram '
                         'of the fragment length distribution.',
@@ -52,7 +46,7 @@ def parse_arguments():
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
-    fragment_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, args.bai, return_lengths=True,
+    fragment_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, return_lengths=True,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
 
