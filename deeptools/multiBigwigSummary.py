@@ -48,7 +48,7 @@ detailed sub-commands help available under:
     subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[bigwigCorrelateArgs(case='bins'),
+        parents=[multiBigwigSummaryArgs(case='bins'),
                  parent_parser,
                  ],
         help="The average score is based on equally sized bins "
@@ -57,7 +57,7 @@ detailed sub-commands help available under:
              "is often smaller. The output of this mode is commonly used to assess the "
              "overall similarity of different bigWig files.",
         add_help=False,
-        usage='bigWigCorrelate '
+        usage='multiBigwigSummary '
               '-b file1.bw file2.bw '
               '-out results.npz\n')
 
@@ -65,7 +65,7 @@ detailed sub-commands help available under:
     subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[bigwigCorrelateArgs(case='BED-file'),
+        parents=[multiBigwigSummaryArgs(case='BED-file'),
                  parent_parser],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
@@ -96,7 +96,7 @@ def process_args(args=None):
     return args
 
 
-def bigwigCorrelateArgs(case='bins'):
+def multiBigwigSummaryArgs(case='bins'):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
 

@@ -18,7 +18,7 @@ def parse_arguments(args=None):
             description="""
 multiBamCoverage computes the read coverage in genomic regions of two or more BAM files.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Most commonly, the output of bamCorrelates is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
+mode. Most commonly, the output of multiBamCoverage is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
 detailed sub-commands help available under:
 
