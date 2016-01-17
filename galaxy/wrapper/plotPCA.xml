@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_pca" name="plotPCA" version="@WRAPPER_VERSION@.0">
-    <description>generate a principal component analysis (PCA) plot from bamCorrelate or bigwigCorrelate output</description>
+    <description>generate a principal component analysis (PCA) plot from multiBamCoverage or multiBigwigSummary output</description>
     <macros>
         <token name="@BINARY@">plotPCA</token>
         <import>deepTools_macros.xml</import>
@@ -15,7 +15,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate or bigwigCorrelate tools"/>
+        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamCoverage or multiBigwigSummary tools"/>
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
     </inputs>
@@ -24,7 +24,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="corData" value="bamCorrelate_result2.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamCoverage_result2.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
             <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="100" />
@@ -36,7 +36,7 @@
 **What it does**
 
 Tool for generating a principal component analysis (PCA)
-plot from bamCorrelate or bigwigCorrelate output.
+plot from multiBamCoverage or multiBigwigSummary output.
 
 -----
 
