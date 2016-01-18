@@ -5,13 +5,13 @@ deepTools: *tools for exploring deep sequencing data*
 .. image:: images/start_collage.png
 
 deepTools is a **suite of python tools** particularly developed for the 
-efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq or
-MNase-seq.
+efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq or MNase-seq.
 
-There are 2 ways for using deepTools:
+There are 3 ways for using deepTools:
 
+* **Galaxy usage** --  our public `deepTools Galaxy server <http://deeptools.ie-freiburg.mpg.de>`_ let's you use the deepTools within the familiar Galaxy framework without the need to master the command line
 * **command line usage** -- simply download and install the tools
-* **Galaxy usage** --  if you would like to see our tools at work, you can test them on our public `deepTools Galaxy server <http://deeptools.ie-freiburg.mpg.de>`_.
+* **API** -- make use of your favorite deepTools modules in your own python programs
 
 The flow chart below depicts the different tool modules that are
 currently available (deepTools modules are written in
@@ -37,6 +37,7 @@ Contents:
    content/help_faq_galaxy
    content/help_glossary
    content/api
+   content/about
 
 
 While developing deepTools, we continuously strive to create software
@@ -54,11 +55,10 @@ that fulfills the following criteria:
 -  **modular approach** - compatibility, flexibility, scalability (i.e.
    we can add more and more modules and make use of established methods)
 
-For support, questions, or feature requests contact:
-deeptools@googlegroups.com
 
-About
------
+.. tip:: For support, questions, or feature requests contact: deeptools@googlegroups.com
+
+
 
 Please cite deepTools as follows:
 	  Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke.
