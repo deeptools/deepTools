@@ -215,7 +215,7 @@ def main(args=None):
                                          )
 
     wr.run(writeBedGraph.scaleCoverage, func_args, args.outFileName,
-           format=args.outFileFormat, smooth_length=args.smoothLength)
+           format=args.outFileFormat, smoothLength=args.smoothLength)
 
 
 class CenterFragment(writeBedGraph.WriteBedGraph):

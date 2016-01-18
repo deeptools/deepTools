@@ -88,7 +88,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
     """
 
-    def run(self, func_to_call, func_args, out_file_name, format="bedgraph", smooth_length=0):
+    def run(self, func_to_call, func_args, out_file_name, format="bedgraph", smoothLength=0):
         r"""
         Given a list of bamfiles, a function and a function arguments,
         this method writes a bedgraph file (or bigwig) file
@@ -109,11 +109,12 @@ class WriteBedGraph(cr.CountReadsPerBin):
         out_file_name : str
             name of the file to save the resulting data.
 
-        smooth_length : int
+        smoothLength : int
             Distance in bp for smoothing the coverage per tile.
 
 
         """
+        self.__dict__["smoothLength"]=smoothLength
         bam_handlers = [bamHandler.openBam(x) for x in self.bamFilesList]
         genome_chunk_length = getGenomeChunkLength(bam_handlers, self.binLength)
         # check if both bam files correspond to the same species
@@ -158,7 +159,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
             os.remove(bedgraph_file)
 
     def writeBedGraph_worker(self, chrom, start, end,
-                             func_to_call, func_args, smooth_length=0,
+                             func_to_call, func_args,
                              bed_regions_list=None):
         r"""Writes a bedgraph based on the read coverage found on bamFiles
 
@@ -180,7 +181,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
             bam files.
         func_args : dict
             dict of arguments to pass to `func`.
-        smooth_length : int
+        smoothLength : int
             Distance in bp for smoothing the coverage per tile.
         bed_regions_list: list
             List of tuples of the form (chrom, start, end)
@@ -228,10 +229,10 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
             tileCoverage = []
             for index in range(len(self.bamFilesList)):
-                if smooth_length > 0:
+                if self.smoothLength > 0:
                     vector_start, vector_end = self.getSmoothRange(tileIndex,
                                                                    self.binLength,
-                                                                   smooth_length,
+                                                                   self.smoothLength,
                                                                    length_coverage)
                     tileCoverage.append(
                         np.mean(coverage[index][vector_start:vector_end]))
