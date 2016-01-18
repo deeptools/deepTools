@@ -1,7 +1,7 @@
-<tool id="deeptools_bigwig_correlate" name="bigwigCorrelate" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.0">
     <description>calculates average read coverages for a list of two or more bigwig files</description>
     <macros>
-        <token name="@BINARY@">bigwigCorrelate</token>
+        <token name="@BINARY@">multiBigwigSummary</token>
         <import>deepTools_macros.xml</import>
     </macros>
    <expand macro="requirements" />
@@ -80,25 +80,25 @@
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
             <param name="corMethod" value="spearman" />
-            <output name="outFileName" file="bigwigCorrelate_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+            <output name="outFileName" file="multiBigwigSummary_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
         <!--test>
             <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
             <param name="modeOpt" value="BED-file" />
-            <param name="region_file" value="bamCorrelate_regions.bed" />
+            <param name="region_file" value="multiBamCoverage_regions.bed" />
             <param name="corMethod" value="pearson" />
             <param name="outRawCounts" value="True" />
-            <output name="outFileRawCounts" file="bigwigCorrelate_result2.tabular" ftype="tabular" />
-            <output name="outFileName" file="bigwigCorrelate_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+            <output name="outFileRawCounts" file="multiBigwigSummary_result2.tabular" ftype="tabular" />
+            <output name="outFileName" file="multiBigwigSummary_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test-->
     </tests>
     <help>
 <![CDATA[
 **What it does**
 
-Given two or more bigWig files, bigwigCorrelate computes the average scores for each of the files in every genomic region.
+Given two or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions
-in 'BED-file' mode. Typically the output of bigwigCorrelate is used by other tools, such as 'plotCorrelation' or 'plotPCA',
+in 'BED-file' mode. Typically the output of multiBigwigSummary is used by other tools, such as 'plotCorrelation' or 'plotPCA',
 for visualization and diagnostic purposes.
 
 

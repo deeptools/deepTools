@@ -287,7 +287,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> args = test.testWriteCorrectedSam()
     >>> tempFile = writeCorrectedSam_worker(*args, \
     ... tag_but_not_change_number=True, verbose=False)
-    >>> pysam.index(tempFile)
+    >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch(args[0], 200, 250)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
@@ -296,7 +296,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> tempFile = \
     ... writeCorrectedSam_worker(*test.testWriteCorrectedSam_paired(),\
     ... tag_but_not_change_number=True, verbose=False)
-    >>> pysam.index(tempFile)
+    >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['CP'] for r in bam.fetch('chr2L', 0, 50)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -596,10 +596,14 @@ def main(args=None):
             run_shell_command(command)
         else:
             print "concatenating (sorted) intermediate BAMs"
-            of = pysam.open(args.correctedFile.name, "wb", template=res[0])
+            header = pysam.Samfile(res[0])
+            of = pysam.Samfile(args.correctedFile.name, "wb", template=header)
+            header.close()
             for f in res:
+                f = pysam.Samfile(f)
                 for e in f.fetch(until_eof=True):
                     of.write(e)
+                f.close()
             of.close()
 
         print "indexing BAM"

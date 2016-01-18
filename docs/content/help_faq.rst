@@ -1,5 +1,8 @@
 General FAQ
 ===========
+=======
+FAQ
+===
 
 Below are issues we have frequently encountered.
 Feel free to contribute your questions via deeptools@googlegroups.com
@@ -9,19 +12,20 @@ We also have a :doc:`help_faq_galaxy`.
     :local:
 
 How does deepTools handle data from paired-end sequencing?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Generally, all the modules working with [BAM] files (``bamCorrelate``, ``bamCoverage``, ``bamCompare``, ``bamFingerprint``, ``computeGCbias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Generally, all the modules working with [BAM] files (``multiBamCoverage``, ``bamCoverage``, ``bamCompare``, ``plotFingerprint``, ``computeGCbias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
 
 How can I test a tool with little computation time? 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 When you're playing around with the tools to see what kinds of results they will produce, you can limit the operation to one chromosome or a specific region to save time. In Galaxy, you will find this under "advanced output options" &rarr; "Region of the genome to limit the operation to"; the command line option is called "--region" (CHR:START:END).
 
 The following tools currently have this option:
 
-* :doc:`bamCorrelate <tools/bamCorrelate>`
-* :doc:`bamFingerprint <tools/bamFingerprint>`
-* :doc:`computeGCbias <tools/computeGCBias>`, :doc:`correctGCbias <tools/correctGCBias>`
-* :doc:`bamCoverage <tools/bamCoverage>`, :doc:`bamCompare <tools/bamCompare>`
+=======
+* [multiBamCoverage](http://deeptools.readthedocs.org/en/latest/content/tools/multiBamCoverage.html)
+* [plotFingerprint](http://deeptools.readthedocs.org/en/latest/content/tools/plotFingerprint.html)
+* [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html), [correctGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html)
+* [bamCoverage](http://deeptools.readthedocs.org/en/latest/content/tools/bamCoverage.html), [bamCompare](http://deeptools.readthedocs.org/en/latest/content/tools/bamCompare.html)
 
 It works as follows: first, the *entire* genome represented in the :ref:`BAM <bam>` file will be regarded and sampled, *then* all the regions or sampled bins that do not overlap the region indicated by the user will be discarded.
 
@@ -49,14 +53,17 @@ or
 
     intersectBed -abam Reads.bam -b regionsOfInterest.bed > ReadsOverlappingWithRegionsOfInterest.bam
 
-However, ``computeGCbias`` and ``bamCorrelate`` have built in solutions:
+However, ``computeGCbias`` and ``multiBamCoverage`` do offer in-build solutions:
  
-* ``bamCorrelate``: bamCorrelate has two modes, ``bins`` and ``BED``. If you make use of the BED mode, you can supply a BED file of regions that you would like to limit the operation to. This will do the same thing as in the general workaround mentioned above.
-* ``computeGCbias``: You can make use of the ``--filterOut`` option of :doc:`computeGCbias <tools/computeGCBias>` (go to the list of optional computeGCbias arguments). You will first need to create a BED file that contains all the regions you are _not_ interested in. Then supply this file of RegionsOf__Non__Interest.bed to computeGCbias.
+* ``multiBamCoverage``
+                  multiBamCoverage has two modes, ``bins`` and ``BED``.
+				  If you make use of the BED mode (for details, see [here](https://github.com/fidelram/deepTools/wiki/QC#important-parameters)),
+				  you can supply a BED file of regions that you would like to limit the operation to. This will do the same thing as in the general workaround mentioned above.
+* ``computeGCbias``: You can make use of the ``--filterOut`` option of [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html) ("go to the list of optional computeGCbias arguments"). You will first need to create a BED file that contains all the regions you are _not_ interested in. Then supply this file of RegionsOf__Non__Interest.bed to computeGCbias.
 
 When should I exclude regions from computeGCbias?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In general, we recommend only correcting for GC bias (using :doc:`computeGCbias <tools/computeGCBias>` followed by :doc:`correctGCbias <tools/correctGCBias>`) if the majority of the genome (the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
+In general, we recommend only correcting for GC bias (using [computeGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html) followed by [correctGCbias](http://deeptools.readthedocs.org/en/latest/content/tools/correctGCBias.html) if the majority of the genome (the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
 
 Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4Me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC-bias, we incorporated the possibility to supply a file of regions to :doc:`computeGCbias <tools/correctGCBias>` that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched. This allows :doc:`computeGCbias <tools/correctGCBias>` to focus on background regions.
 
@@ -72,8 +79,9 @@ Both tools produce bigWig files, i.e. they translate the read-centered informati
 
 How does computeMatrix handle overlapping genome regions?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If the :ref:`bed` file supplied to :doc:`computeMatrix <tools/computeMatrix>` contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the BED file before using computeMatrix. There are several methods for modifying your BED file.
-Let's say your file looks like this::
+
+If the [BED](http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#bed) file supplied to [computeMatrix](http://deeptools.readthedocs.org/en/latest/content/tools/computeMatrix.html) contains regions that overlap, computeMatrix will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the BED file before using computeMatrix. There are several methods for modifying your BED file.
+Let's say your file looks like this:
 
     $ cat testBed.bed
     chr1	10	20	region1

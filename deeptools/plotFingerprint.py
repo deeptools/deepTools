@@ -29,7 +29,7 @@ def parse_arguments(args=None):
         'These counts are then sorted '
         'and the cumulative sum plotted ',
         conflict_handler='resolve',
-        usage='An example usage is: bamFingerprint -b treatment.bam control.bam '
+        usage='An example usage is: plotFingerprint -b treatment.bam control.bam '
         '-o signal.bw',
         add_help=False)
 

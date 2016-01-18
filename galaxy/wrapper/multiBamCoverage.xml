@@ -1,7 +1,7 @@
-<tool id="deeptools_bam_correlate" name="bamCorrelate" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_multi_bam_coverage" name="multiBamCoverage" version="@WRAPPER_VERSION@.0">
     <description>calculates average read coverages for a list of two or more BAM files</description>
     <macros>
-        <token name="@BINARY@">bamCorrelate</token>
+        <token name="@BINARY@">multiBamCoverage</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <expand macro="requirements" />
@@ -88,13 +88,13 @@
             <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
-            <output name="outFile" file="bamCorrelate_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+            <output name="outFile" file="multiBamCoverage_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
         <test>
             <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
             <param name="modeOpt" value="BED-file" />
-            <param name="region_file" value="bamCorrelate_regions.bed" />
-            <output name="outFile" file="bamCorrelate_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+            <param name="region_file" value="multiBamCoverage_regions.bed" />
+            <output name="outFile" file="multiBamCoverage_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
 
 
@@ -117,11 +117,11 @@ A typical follow-up application is to check and visualize the similarity between
 
 =======
 
-.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+.. image:: $PATH_TO_IMAGES/QC_multiBamCoverage_humanSamples.png
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
-You can find more details on the bamCorrelate doc page: https://deeptools.readthedocs.org/en/master/content/tools/bamCorrelate.html
+You can find more details on the multiBamCoverage doc page: https://deeptools.readthedocs.org/en/master/content/tools/multiBamCoverage.html
 
 -----
 

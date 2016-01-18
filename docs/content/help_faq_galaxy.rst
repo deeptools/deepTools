@@ -121,8 +121,8 @@ Simply run MACS on the BAM file in question and check the .xls file from the MAC
 * d = distance = average DNA fragment size
 
 --------------------------------------------
-[bamCorrelate]: https://github.com/fidelram/deepTools/wiki/QC
-[bamFingerprint]: https://github.com/fidelram/deepTools/wiki/QC
+[multiBamCoverage]: https://github.com/fidelram/deepTools/wiki/QC
+[plotFingerprint]: https://github.com/fidelram/deepTools/wiki/QC
 [computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC
 [bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations
 [bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations

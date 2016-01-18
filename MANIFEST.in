@@ -1,6 +1,9 @@
 include *.txt
 include README.md
 include deeptools/config/deeptools.cfg
-include docs/manual/*
 exclude examples/*
 include scripts/*
+include deeptools/test/test_data/*
+include deeptools/test/test_heatmapper/*
+include deeptools/test/test_plotCoverage/*
+include deeptools/test/test_corrGC/*

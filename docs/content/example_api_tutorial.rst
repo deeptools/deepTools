@@ -4,24 +4,20 @@ deepTools API example
 =====================
 
 deepTools consists of several command line and Galaxy wrappers for summarizing
-the information of Next Generation Sequencing data that can be mapped to a reference
-genome.
-Through the API, the engine powering the deepTools commands can be used for other
-purposes as well.
+the information of Next Generation Sequencing data that can be mapped to a reference genome.
+Through the API, the engine powering the deepTools commands can be used for other purposes as well.
 The following is a short overview of the most useful methods and classes
 from deepTools.
 Complete information can be found in the following links: :ref:`genindex` and :ref:`modindex`
 
 
 Finding read coverage over a region
-------------------------------------
+-----------------------------------
 
-With deepTools, the read coverage over multiple genomic regions and
-multiple files can be computed quite quickly using multiple processors.
+With deepTools, the read coverage over multiple genomic regions and multiple files can be computed quite quickly using multiple processors.
 First, we start with a simple example that is later expanded upon to demonstrate
 the use of multipe processors.
-In this example we compute the coverage of reads over a small region for bins of 50bp. For
-this we need the :class:`deeptools.countReadsPerBin` class.
+In this example we compute the coverage of reads over a small region for bins of 50bp. For this we need the :class:`deeptools.countReadsPerBin` class.
 
 
 .. code:: python

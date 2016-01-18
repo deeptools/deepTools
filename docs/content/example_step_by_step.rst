@@ -35,14 +35,14 @@ ___________________________________
 <a name="repCorr"></a>
 #### How can I assess the reproducibility of my sequencing replicates?
 
-* tool: [bamCorrelate][]
+* tool: [multiBamCoverage][]
 * input: BAM files
     * you can compare as many samples as you want, though the more you use the longer the computation will take
 
 * output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages will be
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCorrelate.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCorrelate.png" Title="deepTools Galaxy screenshot of bamCorrelate usage and output" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_multiBamCoverage.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_multiBamCoverage.png" Title="deepTools Galaxy screenshot of multiBamCoverage usage and output" />
 </a>
 
 ___________________________________
@@ -83,11 +83,11 @@ ___________________________________
 <a name="fprint"></a>
 #### How can I compare the ChIP strength for different ChIP experiments?
 
-* tool: [bamFingerprint][]
+* tool: [plotFingerprint][]
 * input: as many BAM files as you'd like to compare. Make sure you get all the labels right!
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamFingerprint.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamFingerprint.png" Title="deepTools Galaxy screenshot of bamFingerprint" />
+<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_plotFingerprint.png" target="_blank">
+     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_plotFingerprint.png" Title="deepTools Galaxy screenshot of plotFingerprint" />
 </a>
 
 ___________________________________
@@ -160,8 +160,8 @@ ___________________________________
 </a>
 
 ------------------------------------
-[bamCorrelate]: https://github.com/fidelram/deepTools/wiki/QC
-[bamFingerprint]: https://github.com/fidelram/deepTools/wiki/QC
+[multiBamCoverage]: https://github.com/fidelram/deepTools/wiki/QC
+[plotFingerprint]: https://github.com/fidelram/deepTools/wiki/QC
 [computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC
 [bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations
 [bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations

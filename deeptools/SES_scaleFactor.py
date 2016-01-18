@@ -93,7 +93,11 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                                  verbose=verbose,
                                  chrsToSkip=chrsToSkip)
 
-    num_reads_per_bin = cr.run()
+    try:
+        num_reads_per_bin = cr.run()
+    except Exception as detail:
+        exit("*ERROR*: {}".format(detail))
+
     sitesSampled = len(num_reads_per_bin)
 
     # the transpose is taken to easily iterate by columns which are now
@@ -157,8 +161,12 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     mean = np.array(mean)
     readsPerBin = mean if avg_method == 'mean' else median
 
-    sizeFactor = sizeFactorsSES
+    if min(median) == 0:
+        idx_zero = [ix + 1 for ix, value in enumerate(median) if value == 0]
+        exit("\n*ERROR*: The median coverage computed is zero for sample(s) #{}\n"
+             "Try selecting a larger sample size or a region with coverage\n".format(idx_zero))
 
+    sizeFactor = sizeFactorsSES
     return {'size_factors': sizeFactor,
             'size_factors_based_on_mapped_reads': sizeFactorBasedOnMappedReads,
             'size_factors_SES': sizeFactorsSES,
