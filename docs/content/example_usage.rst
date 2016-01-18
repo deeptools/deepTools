@@ -6,7 +6,7 @@ Example usage
 
    step_by_step_protocols
    gallery
-   api_tutorial
+   api
 
 How we use deepTools 
 --------------------
@@ -16,7 +16,7 @@ why you'll find many ChIP-seq examples in our documentation.
 `Here <https://https.google.com/file/d/0B8DPnFM4SLr2UjdYNkQ0dElEMm8/edit?usp=sharing>`__
 are slides that we used for teaching at the University of Freiburg, with
 more details on the deepTools usage and aims in regard to ChIP-seq.
-However, while some tools, such as `bamFingerprint`, specifically
+However, while some tools, such as `plotFingerprint`, specifically
 address ChIP-seq-issues, the majority of tools is widely applicable
 to deep-sequencing data, including RNA-seq.
 
@@ -34,14 +34,14 @@ The standard output of bowtie2 (and other mapping tools) is in the form of sorte
 that provide the common input and starting point for all subsequent deepTools analyses. 
 We then use deepTools to assess the quality of the aligned reads:
 
-#. **Correlation between BAM files** (``bamCorrelate`` and ``plotCorrelation``). 
+#. **Correlation between BAM files** (``multiBamCoverage`` and ``plotCorrelation``).
    Together these two modules perform a very basic test to see whether
    the sequenced and aligned reads meet your expectations. We use this
    check to assess reproducibility - either between replicates
    and/or between different experiments that might have used the same
    antibody or the same cell type, etc. For instance, replicates should
    correlate better than differently treated samples.
-#. **Correlation between bigWig files** (``bigwigCorrelate`` and ``plotCorrelation``). 
+#. **Correlation between bigWig files** (``multiBigwigSummary`` and ``plotCorrelation``).
    Sometimes we want to compare our alignments with genome-wide data stored as "tracks" in public repositories 
    or other more general scores that are not necessarily based on read-coverage. 
    To this end, we provide an efficient module to handle bigWig files and compare them and their 

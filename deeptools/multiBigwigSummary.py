@@ -16,26 +16,26 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-Given two or more bigWig files, bigwigCorrelate computes the average scores for each of the files in every genomic region.
+Given two or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Most commonly, the output of bigwigCorrelate is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
+mode. Most commonly, the output of multiBigwigSummary is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
 detailed sub-commands help available under:
 
-  bigwigCorrelate bins -h
+  multiBigwigSummary bins -h
 
-  bigwigCorrelate BED-file -h
+  multiBigwigSummary BED-file -h
 
 """,
-            epilog='example usages:\n bigwigCorrelate bins '
+            epilog='example usages:\n multiBigwigSummary bins '
                    '-b file1.bw file2.bw -out results.npz\n\n'
-                   'bigwigCorrelate BED-file -b file1.bw file2.bw -out results.npz\n'
+                   'multiBigwigSummary BED-file -b file1.bw file2.bw -out results.npz\n'
                    '--BED selection.bed'
                    ' \n\n',
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='bigwigCorrelate {}'.format(__version__))
+                        version='multiBigwigSummary {}'.format(__version__))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',
@@ -48,7 +48,7 @@ detailed sub-commands help available under:
     subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[bigwigCorrelateArgs(case='bins'),
+        parents=[multiBigwigSummaryArgs(case='bins'),
                  parent_parser,
                  ],
         help="The average score is based on equally sized bins "
@@ -57,7 +57,7 @@ detailed sub-commands help available under:
              "is often smaller. The output of this mode is commonly used to assess the "
              "overall similarity of different bigWig files.",
         add_help=False,
-        usage='bigWigCorrelate '
+        usage='multiBigwigSummary '
               '-b file1.bw file2.bw '
               '-out results.npz\n')
 
@@ -65,13 +65,13 @@ detailed sub-commands help available under:
     subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[bigwigCorrelateArgs(case='BED-file'),
+        parents=[multiBigwigSummaryArgs(case='BED-file'),
                  parent_parser],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
              "different samples over a set of pre-defined peak regions.",
-        usage='bigwigCorrelate '
+        usage='multiBigwigSummary '
               '-b file1.bw file2.bw '
               '-out results.npz --BED selection.bed\n',
         add_help=False)
@@ -96,7 +96,7 @@ def process_args(args=None):
     return args
 
 
-def bigwigCorrelateArgs(case='bins'):
+def multiBigwigSummaryArgs(case='bins'):
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
 
@@ -141,7 +141,7 @@ def bigwigCorrelateArgs(case='bins'):
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
-                              help='By default, bigwigCorrelate considers adjacent '
+                              help='By default, multiBigwigSummary considers adjacent '
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can be given. Larger distances '

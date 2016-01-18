@@ -83,7 +83,7 @@
             <param name="method" type="select"
                 label="Method to use for scaling the largest sample to the smallest">
                 <option value="readCount" selected="true">read count</option>
-                <option value="SES">signal extraction scaling (SES), check the bamFingerprint plot before using it!</option>
+                <option value="SES">signal extraction scaling (SES), check with plotFingerprint before using it!</option>
                 <option value="own">enter own scaling factors</option>
             </param>
             <when value="SES">

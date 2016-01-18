@@ -181,13 +181,13 @@
     <tests>
         <test>
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="4000" />
         </test>
         <test>
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="whatToShow" value="heatmap and colorbar" />
-            <output name="outFileName" file="heatmapper_result2.png" ftype="png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="heatmapper_result2.png" ftype="png" compare="sim_size" delta="4000" />
         </test>
     </tests>
     <help>

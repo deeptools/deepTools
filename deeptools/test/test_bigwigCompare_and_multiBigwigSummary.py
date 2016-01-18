@@ -1,5 +1,5 @@
 import deeptools.bigwigCompare as bwComp
-import deeptools.bigwigCorrelate as bwCorr
+import deeptools.multiBigwigSummary as bwCorr
 import numpy as np
 import numpy.testing as nt
 
@@ -57,7 +57,7 @@ def test_bigwigCompare_skipnas():
     unlink(outfile)
 
 
-def test_bigwigCorrelate():
+def test_multiBigwigSummary():
     outfile = '/tmp/result.bg'
     args = "bins -b {} {} --binSize 50 -o {}".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwCorr.main(args)
@@ -72,9 +72,9 @@ def test_bigwigCorrelate():
     unlink(outfile)
 
 
-def test_bigwigCorrelate_outrawcounts():
+def test_multiBigwigSummary_outrawcounts():
     """
-    Test bigwigCorrelate raw counts output
+    Test multiBigwigSummary raw counts output
     """
     outfile = '/tmp/result.bg'
     args = "bins -b {} {} --binSize 50 -o /tmp/null --outRawCounts {} ".format(BIGWIG_A, BIGWIG_B, outfile).split()

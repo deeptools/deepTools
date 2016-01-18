@@ -1,7 +1,7 @@
-<tool id="deeptools_bam_fingerprint" name="bamFingerprint" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_plot_fingerprint" name="plotFingerprint" version="@WRAPPER_VERSION@.0">
     <description>plots profiles of BAM files; useful for assesing ChIP signal strength</description>
     <macros>
-        <token name="@BINARY@">bamFingerprint</token>
+        <token name="@BINARY@">plotFingerprint</token>
         <import>deepTools_macros.xml</import>
     </macros>
     <expand macro="requirements" />
@@ -97,7 +97,7 @@
             <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="no" />
             <param name="showOutputSettings" value="no" />
-            <output name="outFileName" file="bamFingerprint_result1.png" ftype="png" compare="sim_size" />
+            <output name="outFileName" file="plotFingerprint_result1.png" ftype="png" compare="sim_size" />
         </test>
         <test>
             <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
@@ -105,8 +105,8 @@
             <param name="showOutputSettings" value="yes" />
             <param name="saveRawCounts" value="True" />
             <param name="plotTitle" value="Test Fingerprint Plot" />
-            <output name="outFileName" file="bamFingerprint_result2.png" ftype="png" compare="sim_size" />
-            <output name="outFileRawCounts" file="bamFingerprint_result2.tabular" ftype="tabular" />
+            <output name="outFileName" file="plotFingerprint_result2.png" ftype="png" compare="sim_size" />
+            <output name="outFileRawCounts" file="plotFingerprint_result2.tabular" ftype="tabular" />
         </test>
     </tests>
     <help>
@@ -129,7 +129,7 @@ most commonly seen with transcription factors.
 .. image:: $PATH_TO_IMAGES/QC_fingerprint.png
 
 
-You can find more details on the bamFingerprint doc page: https://deeptools.readthedocs.org/en/master/content/tools/bamFingerprint.html
+You can find more details on the plotFingerprint doc page: https://deeptools.readthedocs.org/en/master/content/tools/plotFingerprint.html
 
 
 **Output files**:
@@ -139,7 +139,7 @@ You can find more details on the bamFingerprint doc page: https://deeptools.read
 
 **Output with test dataset**:
 
-What follows is the output of bamFingerPrint with our test ChIP-Seq datasets, limiting analysis to chromosome X. Single-end reads were extended to
+What follows is the output of plotFingerprint with our test ChIP-Seq datasets, limiting analysis to chromosome X. Single-end reads were extended to
 200 bp (advanced options).
 
 .. image:: $PATH_TO_IMAGES/bamFP_galaxy_output.png

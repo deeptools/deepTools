@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding: utf-8 -*-
 
-from deeptools.bigwigCorrelate import main
+from deeptools.plotFingerprint import main
 
 if __name__ == "__main__":
     main()

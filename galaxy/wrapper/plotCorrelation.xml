@@ -27,7 +27,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the bamCorrelate tool"/>
+        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamCoverage tool"/>
         <expand macro="corMethod" />
 
         <conditional name="plotting_type" >
@@ -52,7 +52,7 @@
             help="If set, bins with very large counts are removed. Bins
                 with abnormally high reads counts artificially
                 increase pearson correlation; that's why, by default,
-                bamCorrelate tries to remove outliers using the median
+                plotCorrelation tries to remove outliers using the median
                 absolute deviation (MAD) method applying a threshold
                 of 200 to only consider extremely large deviations
                 from the median. ENCODE blacklist page (https://sites.
@@ -71,14 +71,14 @@
     </outputs>
     <tests>
         <test>
-            <param name="corData" value="bamCorrelate_result1.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamCoverage_result1.npz" ftype="deeptools_coverage_matrix" />
             <param name="outFileFormat" value="png" />
             <param name="outFileCorMatrix" value="True" />
             <output name="matrix" file="plotCorrelation_result1.tabular" ftype="tabular" />
             <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
         <test>
-            <param name="corData" value="bamCorrelate_result1.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamCoverage_result1.npz" ftype="deeptools_coverage_matrix" />
             <param name="outFileFormat" value="png" />
             <param name="whatToPlot" value="scatterplot" />
             <param name="removeOutliers" value="True" />
@@ -93,10 +93,10 @@
 This tools takes a compressed matrix of scores (such as read coverages) for a number of genomic regions
 and different samples. It can visualize the correlation among samples as scatterplots or as
 a heatmap of correlation coefficients. Further output files are optional.
-The compressed input matrices are easily generated using the "bamCorrelate" and "bigwigCorrelate" tools.
+The compressed input matrices are easily generated using the "multiBamCoverage" and "multiBigwigSummary" tools.
 
 
-.. image:: $PATH_TO_IMAGES/QC_bamCorrelate_humanSamples.png
+.. image:: $PATH_TO_IMAGES/QC_multiBamCoverage_humanSamples.png
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 
@@ -112,7 +112,7 @@ You can find more details on plotCorrelation here http://deeptools.readthedocs.o
 **Output with test dataset**:
 
 The following is the output of plotCorrelation with our test ChIP-Seq datasets. Average coverages were computed over 10kb bins for chromosome X,
-from bigwig files using bigwigCorrelate. The output was used by plotCorrelation to make a heatmap of spearman correlation between samples.
+from bigwig files using multiBigwigSummary. The output was used by plotCorrelation to make a heatmap of spearman correlation between samples.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png
 

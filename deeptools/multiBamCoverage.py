@@ -16,20 +16,20 @@ def parse_arguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
-bamCorrelate computes the read coverage in genomic regions of two or more BAM files.
+multiBamCoverage computes the read coverage in genomic regions of two or more BAM files.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Most commonly, the output of bamCorrelates is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
+mode. Most commonly, the output of multiBamCoverage is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
 detailed sub-commands help available under:
 
-  bamCorrelate bins -h
+  multiBamCoverage bins -h
 
-  bamCorrelate BED-file -h
+  multiBamCoverage BED-file -h
 
 """,
             epilog='example usages:\n'
-                   'bamCorrelate bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
-                   'bamCorrelate BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
+                   'multiBamCoverage bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
+                   'multiBamCoverage BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
                    '-out results.npz'
                    ' \n\n',
             conflict_handler='resolve')
@@ -119,7 +119,7 @@ def bamcorrelate_args(case='bins'):
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
-                              help='By default, bamCorrelate considers consecutive '
+                              help='By default, multiBamCoverage considers consecutive '
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can by given. Larger distances '
