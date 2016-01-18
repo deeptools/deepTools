@@ -80,7 +80,8 @@ class TestWriteBedGraph(TestCase):
 
     def test_writeBedGraph_worker_smoothing(self):
         self.c.binLength = 20
-        tempFile = self.c.writeBedGraph_worker('3R', 100, 200, scaleCoverage, self.func_args, smooth_length=60)
+        self.c.smoothLength = 60
+        tempFile = self.c.writeBedGraph_worker('3R', 100, 200, scaleCoverage, self.func_args)
         res = open(tempFile, 'r').readlines()
         assert_equal(res, ['3R\t100\t120\t1.00\n', '3R\t120\t180\t1.33\n', '3R\t180\t200\t1.0\n'])
         os.remove(tempFile)

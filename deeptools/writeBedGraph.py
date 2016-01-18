@@ -114,7 +114,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
 
         """
-        self.__dict__["smoothLength"]=smoothLength
+        self.__dict__["smoothLength"] = smoothLength
         bam_handlers = [bamHandler.openBam(x) for x in self.bamFilesList]
         genome_chunk_length = getGenomeChunkLength(bam_handlers, self.binLength)
         # check if both bam files correspond to the same species
