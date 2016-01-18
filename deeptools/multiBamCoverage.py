@@ -16,31 +16,20 @@ def parse_arguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
-<<<<<<< HEAD:deeptools/bamCorrelate.py
-bamCorrelate computes the read coverages for genomic regions for two or more BAM files.
+
+multiBamCoverage computes the read coverages for genomic regions for two or more BAM files.
 The analysis can be performed for the entire genome by running the program in 'bins' mode.
 If you want to count the read coverage for specific regions only, use the 'BED-file' mode instead.
 The standard output of bamCorrelate is a compressed numpy array.
 It can be directly used to calculate and visualize pairwise correlation values between
 the read coverages using the tool 'plotCorrelation'.
 Similarly, 'plotPCA' can be used for principal component analysis of the read coverages using the .npz file.
-=======
-multiBamCoverage computes the read coverage in genomic regions of two or more BAM files.
-This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Most commonly, the output of multiBamCoverage is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
->>>>>>> 6c23b2312308805a7a7fafc6cf054b9b691eddb8:deeptools/multiBamCoverage.py
 
-Note that a detailed sub-commands help is available by typing:
+A detailed sub-commands help is available by typing:
 
-<<<<<<< HEAD:deeptools/bamCorrelate.py
-  $ bamCorrelate bins -h
-
-  $ bamCorrelate BED-file -h
-=======
   multiBamCoverage bins -h
 
   multiBamCoverage BED-file -h
->>>>>>> 6c23b2312308805a7a7fafc6cf054b9b691eddb8:deeptools/multiBamCoverage.py
 
 """,
             epilog='example usages:\n'
@@ -168,7 +157,7 @@ def bamcorrelate_args(case='bins'):
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outRawCounts',
-                       help='Save raw counts (coverages) to file.',
+                       help='Save the counts per region to a tab-delimited file.',
                        metavar='FILE',
                        type=argparse.FileType('w'))
 
