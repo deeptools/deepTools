@@ -1,5 +1,6 @@
 import argparse
 import deeptools.config as cfg
+import os
 from deeptools._version import __version__
 
 
@@ -272,6 +273,7 @@ def writableFile(string):
     """
     try:
         open(string, 'w').close()
+        os.remove(string)
     except:
         msg = "{} file can be opened for writing".format(string)
         raise argparse.ArgumentTypeError(msg)
