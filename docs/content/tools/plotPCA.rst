@@ -1,27 +1,37 @@
 plotPCA
 =======
 
+.. contents:: 
+    :local:
+
 .. argparse::
    :ref: deeptools.plotPCA.parse_arguments
    :prog: plotPCA
 
 
+Background
+^^^^^^^^^^^
+
+Principal component analysis (PCA) can be used, for example, to determine whether **samples display greater variability** between experimental conditions than between replicates of the same treatment. PCA is also useful to identify unexpected patterns, such as those caused by batch effects or outliers.
+Principal components represent the directions along which the variation in the data is maximal, so that the information (e.g., read coverage values) from thousands of regions can be represented by just a few dimensions.
+
+.. note:: PCA is not designed to discover unknown groupings or clustering; it is up to the researcher to identify the experimental or technical reason underlying the principal components.
+
 Usage example
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
-* First do use multiBigwigSummary :
-
-.. code:: bash
-
-    multiBigwigSummary bins -b testDataset/H3K27Me3.bigWig testDataset/H3K4Me1.bigWig testDataset/H3K4Me3.bigWig \
-    testDataset/H3K9Me3.bigWig testDataset/Input.bigWig -p 20 -o testDatset-results/correlation_testBigwigs.matrix
-
-* Then plot the PCA of the output :
+``plotPCA`` needs the compressed ``numpy array`` output from either :doc:`multiBamCoverage` or :doc:`multiBigwigSummary`
 
 .. code:: bash
 
 
-    plotPCA --corData testDatset-results/correlation_testBigwigs.matrix -o testData_PCAplot.png --labels H3K27me3 H3K4me1 H3K4me3 H3K9me3 input
+    $ deepTools2.0/bin/plotPCA -in readCounts.npz \
+    -o PCA_readCounts.png \
+    -T "PCA of read counts"
 
+After perfoming the PCA on the values supplied as the input, ``plotPCA`` will sort the principal components according to the amount of variability of the data that they explain. Based on this, you will obtain two plots:
 
-.. image:: test_plots/testData_PCAplot.png
+* the values of the **top two principal components** per sample
+* the **Scree plot** for the top five principal components where the bars represent the eigenvalues and the red line traces the variability that is explained by the individual components
+
+.. image:: test_plots/PCA_readCounts.png

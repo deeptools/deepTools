@@ -9,8 +9,8 @@ multiBamCoverage
    :prog: multiBamCoverage
 
 
-Tips
-^^^^^
+Example
+^^^^^^^
 
 The default output of ``multiBamCoverage`` (a compressed ``numpy`` array: `*.npz`) can be visualized using :doc:`plotCorrelation` or :doc:`plotPCA`.
 
