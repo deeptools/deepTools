@@ -4,7 +4,7 @@ The tools
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
 | tool                           | type          | input files                       | main output file(s)                        | application                                                                  |
 +================================+===============+===================================+============================================+==============================================================================+
-|:doc:`tools/multiBamCoverage`   | QC            | 2 or more BAM or bigWig           | table of values                            | Pearson or Spearman correlation between read distributions                   |
+|:doc:`tools/multiBamCoverage`   | data integration | 2 or more BAM or bigWig           | table of values                            | Pearson or Spearman correlation between read distributions                   |
 +--------------------------------+               |                                   |                                            |                                                                              |
 |:doc:`tools/multiBigwigSummary` |               |                                   |                                            |                                                                              |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
@@ -20,11 +20,11 @@ The tools
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/bamCoverage`        | normalization | BAM                               | bedGraph or bigWig                         | obtain the normalized read coverage of a single BAM file                     |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/bamCompare`         | normalization | 2 BAM or 2 bigWig                 | bedGraph or bigWig                         | normalize 2 files to each other (e.g. log2ratio, difference)                 |
+|:doc:`tools/bamCompare`         | normalization | 2 BAM                             | bedGraph or bigWig                         | normalize 2 files to each other (e.g. log2ratio, difference)                 |
 +--------------------------------+               |                                   |                                            |                                                                              |
-|:doc:`tools/multiBigwigSummary` |               |                                   |                                            |                                                                              |
+|                                |               |                                   |                                            |                                                                              |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
-|:doc:`tools/computeMatrix`      | visualization | 1 or more bigWig, 1 or more BED   | zipped file for plotHeatmap or plotProfile | compute the values needed for heatmaps and summary plots                     |
+|:doc:`tools/computeMatrix`      | data integration | 1 or more bigWig, 1 or more BED   | zipped file for plotHeatmap or plotProfile | compute the values needed for heatmaps and summary plots                     |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/plotHeatmap`        | visualization | computeMatrix output              | heatmap of read coverages                  | visualize the read coverages for genomic regions                             |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
