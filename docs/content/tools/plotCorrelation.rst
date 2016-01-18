@@ -8,15 +8,37 @@ plotCorrelation
    :ref: deeptools.plotCorrelation.parse_arguments
    :prog: plotCorrelation
 
+Background
+^^^^^^^^^^^
 
-Example
-~~~~~~~~~~~~~~
+``plotCorrelation`` computes the overall similarity between two or more files based on read coverage (or other scores) within genomic regions, which must be calculated using either :doc:`multiBamCoverage` or :doc:`multiBigwigSummary`.
+
+The result of the correlation computation is a **table of correlation coefficients** that indicates how "strong" the relationship between two samples is and it will consist of numbers between -1 and 1. (-1 indicates perfect anti-correlation, 1 perfect correlation.) 
+
+.. image:: ../../images/QC_bamCorrelate_intro.png
+
+We offer two different functions for the correlation computation: *Pearson* or *Spearman*.
+
+The *Pearson method* measures the **metric differences** between samples and is therefore influenced by outliers.
+The *Spearman method* is based on **rankings**.
+If you imagine a race with 3 participants where the winner and runner-up are very close together while the third person broke her leg and comes in way, way after the first two, then Pearson would be strongly influenced by the fact that the third person had a great distance to the first ones while Spearman would only care about the fact that person 1 came in first, person 2 came in second and person 3 got the third rank, the distances between them are ignored.
+
+.. tip:: Pearson is an appropriate measure for data that follows a normal distribution, while Spearman does not make this assumption and is generally less driven by outliers, but with the caveat of also being less sensitive.
+
+Here's an example of RNA-seq data from different human cell lines that we had downloaded from https://genome.ucsc.edu/ENCODE/dataMatrix/encodeDataMatrixHuman.html. 
+
+.. image:: ../../images/QC_bamCorrelate_RNAseq.png
+
+As you can see, both correlation calculations more or less agree on which samples are nearly identical (the replicates, indicated by 1 or 2 at the end of the label). The Spearman correlation, however, seems to be more robust and meets our expectations more closely as the two different cell types (HUVEC and IMR90) are clearly separated.
+
+Examples
+^^^^^^^^^^^
 
 In the following example, a correlation analysis is performed based on the coverage file computed by :doc:`multiBamCoverage` or :doc:`multiBigwigSummary` for our test ENCODE ChIP-Seq datasets.
 
 **Scatterplot**
 
-Here we make a scatterplot and include pearson correlation coefficients based on the average scores per transcript that were calculated using :doc:`multiBigwigSummary`.
+Here we make pairwose scatterplots of the average scores per transcript that we calculated using :doc:`multiBigwigSummary` and include the Pearson correlation coefficients for each comparison.
 
 .. code:: bash
 
@@ -43,7 +65,9 @@ Here we make a scatterplot and include pearson correlation coefficients based on
 
 **Heatmap**
 
-Here we plot a heatmap, this time of the Spearman correlation coefficients or read counts that were calculated using :doc:`multiBamCoverage`. 
+In addition to scatterplots, heatmaps can be generated where the pairwise correlation coefficients are depicted by varying color intensities and are clustered using hierarchical clustering.
+
+The example here calculates the Spearman correlation coefficients of read counts.
 The dendrogram indicates which samples' read counts are most similar to each other.
 
 .. code:: bash
@@ -60,7 +84,7 @@ The dendrogram indicates which samples' read counts are most similar to each oth
 
 
 plotCorrelation in Galaxy
-~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is the screenshot showing how to use plotCorrelation with deepTools Galaxy.
 
