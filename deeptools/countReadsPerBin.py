@@ -281,7 +281,7 @@ class CountReadsPerBin(object):
                     shutil.copyfileobj(open(tempFileName, 'r'), self.out_file_for_raw_data)
                     os.remove(tempFileName)
 
-            # self.out_file_for_raw_data.close()
+            self.out_file_for_raw_data.close()
 
         try:
             num_reads_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
