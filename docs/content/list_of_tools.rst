@@ -21,8 +21,6 @@ The tools
 |:doc:`tools/bamCoverage`        | normalization | BAM                               | bedGraph or bigWig                         | obtain the normalized read coverage of a single BAM file                     |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/bamCompare`         | normalization | 2 BAM                             | bedGraph or bigWig                         | normalize 2 files to each other (e.g. log2ratio, difference)                 |
-+--------------------------------+               |                                   |                                            |                                                                              |
-|                                |               |                                   |                                            |                                                                              |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
 |:doc:`tools/computeMatrix`      | data integration | 1 or more bigWig, 1 or more BED   | zipped file for plotHeatmap or plotProfile | compute the values needed for heatmaps and summary plots                     |
 +--------------------------------+---------------+-----------------------------------+--------------------------------------------+------------------------------------------------------------------------------+
