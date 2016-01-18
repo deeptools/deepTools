@@ -3,9 +3,6 @@
 deepTools API example
 =====================
 
-deepTools consists of several command line and Galaxy wrappers for summarizing
-the information of Next Generation Sequencing data that can be mapped to a reference genome.
-Through the API, the engine powering the deepTools commands can be used for other purposes as well.
 The following is a short overview of the most useful methods and classes
 from deepTools.
 Complete information can be found in the following links: :ref:`genindex` and :ref:`modindex`

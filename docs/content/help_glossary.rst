@@ -1,5 +1,5 @@
-Glossary
-========
+Glossary of NGS terms
+=====================
 
 Like most specialized fields, next-generation sequencing has inspired many an acronyms.
 We are trying to keep track of those :ref:`abbreviations` that we heavily use.
@@ -237,5 +237,5 @@ SAM
     * deletion (small deletions denoted with `D`, bigger deletions, e.g., for spliced reads, denoted with `N`)
     * clipping (deletion at the ends of a read)
 
-.. warning::  Although the SAM/BAM format is rather meticulously defined and documented, whether an alignment program will produce a SAM/BAM file that adheres to these principles is completely up to the programmer. The mapping score, CIGAR string, and particularly, all optional flags (fields >11) are often very differently defined depending on the program. If you plan on filtering your data based on any of these criteria, make sure you know exactly how these entries were calculated!
+.. warning::  Although the SAM/BAM format is rather meticulously defined and documented, whether an alignment program will produce a SAM/BAM file that adheres to these principles is completely up to the programmer. The mapping score, CIGAR string, and particularly, **all optional flags** (fields >11) are often **very differently defined depending on the program**. If you plan on filtering your data based on any of these criteria, make sure you know exactly how these entries were calculated and set!
 

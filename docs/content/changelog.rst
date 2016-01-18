@@ -26,12 +26,11 @@ Additional data types
 Renamed tools
 ^^^^^^^^^^^^^
 
-* Renamed:
-    * **heatmapper** to :doc:`tools/plotHeatmap`
-    * **profiler** to :doc:`tools/plotProfile`
-    * **bamCorrelate** to :doc:`tools/multiBamCoverage`
-    * **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
-    * **bamFingerprint** to :doc:`tools/plotFingerprint`.
+* **heatmapper** to :doc:`tools/plotHeatmap`
+* **profiler** to :doc:`tools/plotProfile`
+* **bamCorrelate** to :doc:`tools/multiBamCoverage`
+* **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
+* **bamFingerprint** to :doc:`tools/plotFingerprint`
 
 Increased efficiency
 ^^^^^^^^^^^^^^^^^^^^^
@@ -39,7 +38,6 @@ Increased efficiency
 * We dramatically improved the **speed** of bigwig related tools (:doc:`tools/multiBigwigSummary` and ``computeMatrix``) by using the new `pyBigWig module <https://github.com/dpryan79/pyBigWig>`_.
 
 * It is now possible to generate one composite heatmap and/or meta-gene image based on **multiple bigwig files** in one go (see :doc:`tools/computeMatrix`, :doc:`tools/plotHeatmap`, and :doc:`tools/plotProfile` for examples)
-multiBamCoverage
 
 * ``computeMatrix`` now also accepts multiple input BED files. Each is treated as a group within a sample and is plotted independently.
 
@@ -50,12 +48,15 @@ multiBamCoverage
 New features and tools
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-* Correlation analyses are no longer limited to BAM files -- bigwig files are possible, too! (see :doc:`tools/bigwigCorrelate`)
+* Correlation analyses are no longer limited to BAM files -- bigwig files are possible, too! (see :doc:`tools/multiBigwigSummary`)
+
 * Correlation coefficients can now be computed even if the data contains NaNs.
+
 * Added **new quality control** tools:
       - use :doc:`tools/plotCoverage` to plot the coverage over base pairs
       - use :doc:`tools/plotPCA` for principal component analysis
       - :doc:`tools/bamPEFragmentSize` can be used to calculate the average fragment size for paired-end read data
+      
 * Added the possibility for **hierarchical clustering**, besides *k*-means to ``plotProfile`` and ``plotHeatmap``
 
 
