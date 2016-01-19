@@ -18,9 +18,7 @@ are slides that we used for teaching at the University of Freiburg, with
 more details on the deepTools usage and aims in regard to ChIP-seq.
 To get a feeling fo what deepTools can do, we'd like to give you a brief glimpse into how we typically use deepTools for ChIP-seq analyses.
 
-.. note:: While some tools, such as ``plotFingerprint``, specifically
-address ChIP-seq-issues, the majority of tools is widely applicable
-to deep-sequencing data, including RNA-seq.
+.. note:: While some tools, such as ``plotFingerprint``, specifically address ChIP-seq-issues, the majority of tools is widely applicable to deep-sequencing data, including RNA-seq.
 
 .. image:: ../images/start_workflow.png
 

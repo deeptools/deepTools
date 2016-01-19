@@ -225,7 +225,10 @@ strand and -1 for "reverse" or "minus" strand.)
     might lead to incompatibilities, i.e. when working with annotations
     from UCSC and ENSEMBL, you need to make sure to use the same naming!
 
- #### Copy data sets between histories In case you have registered with
+Copy data sets between histories
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In case you have registered with
 deepTools Galaxy you can have more than one history. In order to
 minimize the disk space you're occupying we strongly suggest to **copy**
 data sets between histories when you're using the same data set in
@@ -268,6 +271,7 @@ about the usage of deepTools:
 3. For each tool, you will find specific explanations within the
    `deepTools Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=1xpNM-7I4Z6-ZIJErjnO726mjBKdGH92RCWOc5kGh-U&e=>`__ main
    frame, too.
+
 .. 4. the `example workflows <Example-workflows>`__ might help to get a
    feeling for the kinds of analyses than can be done with `deepTools
    Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=1xpNM-7I4Z6-ZIJErjnO726mjBKdGH92RCWOc5kGh-U&e=>`__

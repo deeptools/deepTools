@@ -1,5 +1,5 @@
 plotCoverage
-===========
+============
 
 .. argparse::
    :ref: deeptools.plotCoverage.parse_arguments

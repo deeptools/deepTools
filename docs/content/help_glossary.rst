@@ -21,7 +21,7 @@ Reference genomes are usually referred to by their abbreviations, such as:
 * ce10 = *Caenorhabditis elegans*, version 10
 
 For a more comprehensive list of available reference genomes and their abbreviations,
-see the `UCSC data base <http://hgdownload.soe.ucsc.edu/downloads.html>`_.
+see the `UCSC data base <http://hgdownload.soe.ucsc.edu/downloads.html>`__.
  
 +---------------+------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 | Acronym       | full phrase                              | Synonyms/Explanation                                                                                                                          |
@@ -43,7 +43,7 @@ see the `UCSC data base <http://hgdownload.soe.ucsc.edu/downloads.html>`_.
 | RPKM          | reads per kilobase per million reads     | normalize read numbers: RPKM (per bin) = reads per bin / ( mapped reads (in millions) x bin length (kb))                                      |
 +---------------+------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 
-For a review of popular \*-seq applications, see `Zentner and Henikoff <http://genomebiology.com/2012/13/10/250>`_.
+For a review of popular \*-seq applications, see `Zentner and Henikoff <http://genomebiology.com/2012/13/10/250>`__.
 
 .. _terminology:
 
@@ -84,9 +84,9 @@ Be aware, that the file name sorting here is alphabetical, not according to thei
 
 Follow the links for more information on the different tool collections mentioned in the figure:
 
-`samtools <http://www.htslib.org/>`_ |
-`UCSCtools <http://hgdownload.cse.ucsc.edu/admin/exe/>`_ |
-`BEDtools <http://bedtools.readthedocs.org/en/latest/>`_ |
+`samtools <http://www.htslib.org/>`__ |
+`UCSCtools <http://hgdownload.cse.ucsc.edu/admin/exe/>`__ |
+`BEDtools <http://bedtools.readthedocs.org/en/latest/>`__ |
 
 .. _2bit:
 
@@ -94,9 +94,9 @@ Follow the links for more information on the different tool collections mentione
 ^^^^
 
 * compressed, binary version of genome sequences that are often stored in :ref:`FASTA` 
-* most genomes in 2bit format can be found `at UCSC <http://hgdownload.cse.ucsc.edu/gbdb/>`_
-* :ref:`FASTA` files can be converted to 2bit using the UCSC programm *faToTwoBit*, which is available for different platforms at `UCSC <http://hgdownload.cse.ucsc.edu/admin/exe/>`_
-* more information can be found `here <http://genome.ucsc.edu/FAQ/FAQformat.html#format7>`_
+* most genomes in 2bit format can be found `at UCSC <http://hgdownload.cse.ucsc.edu/gbdb/>`__
+* :ref:`FASTA` files can be converted to 2bit using the UCSC programm *faToTwoBit*, which is available for different platforms at `UCSC <http://hgdownload.cse.ucsc.edu/admin/exe/>`__
+* more information can be found `here <http://genome.ucsc.edu/FAQ/FAQformat.html#format7>`__
 
 .. _BAM:
 
@@ -124,7 +124,7 @@ bed
 * typical file extension: .bed
 * text file
 * used for genomic intervals, e.g. genes, peak regions etc.
-* the format can be found at `UCSC <http://genome.ucsc.edu/FAQ/FAQformat.html#format1>`_
+* the format can be found at `UCSC <http://genome.ucsc.edu/FAQ/FAQformat.html#format1>`__
 * for deepTools, the first 3 columns are important: chromosome, start position of the region, end position of the genome
 * do not confuse it with the :ref:`bedgraph` format (although they are related)
 * example lines from a BED file of mouse genes (note that the start position is 0-based, the end-position 1-based, following UCSC conventions for BED files)::
@@ -142,7 +142,7 @@ bedGraph
 * typical file extension: .bg, .bedgraph
 * text file
 * similar to BED file (not the same!), it can *only* contain 4 columns and the 4th column *must* be a score
-* again, read the `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format1.8>`_  for more details
+* again, read the `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format1.8>`__  for more details
 * 4  example lines from a bedGraph file (like BED files following the UCSC convention, the start position is 0-based, the end-position 1-based in bedGraph files):
 
 ::
@@ -161,7 +161,7 @@ bigWig
 * *binary* version of a :ref:`bedgraph` or `wiggle` file
 * contains coordinates for an interval and an associated score
 * the score can be anything, e.g. an average read coverage
-* `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format6.1>`_ for more details
+* `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format6.1>`__ for more details
 
 .. _FASTA:
 
@@ -172,7 +172,7 @@ FASTA
 * text file, often gzipped (.fasta.gz)
 * very simple format for **DNA/RNA** or **protein** sequences, this can be anything from small pieces of DNA or proteins to an entire genome (most likely, you will get the genome sequence of your organism of interest in fasta format)
 * see the :ref:`2bit` file format entry for a compressed alternative
-* example from `wikipedia <http://en.wikipedia.org/wiki/FASTA_format>`_ showing exactly one sequence:
+* example from `wikipedia <http://en.wikipedia.org/wiki/FASTA_format>`__ showing exactly one sequence:
 
 ::
 
@@ -196,14 +196,14 @@ FASTQ
 	 * additional information or empty line
 	 * sequencing quality measures - 1 per base call
 * note that there is no information about where in the genome the read originated from
-* example from the `wikipedia page <http://en.wikipedia.org/wiki/Fastq>`_, which contains further information::
+* example from the `wikipedia page <http://en.wikipedia.org/wiki/Fastq>`__, which contains further information::
 
     @read001														# read ID
     GATTTGGGGTTCAAAGCAGTATCGATCAAATAGTAAATCCATTTGTTCAACTCACAGTTT	# read sequence
     +																# usually empty line
     !''*((((***+))%%%++)(%%%%).1***-+*''))**55CCF>>>>>>CCCCCCC65	# ASCII-encoded quality scores
 
-* if you need to find out what type of ASCII-encoding your .fastq file contains, you can simply run `FastQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`_ -- its summery file will tell you
+* if you need to find out what type of ASCII-encoding your .fastq file contains, you can simply run `FastQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__ -- its summery file will tell you
 
 .. _SAM:
 
@@ -230,7 +230,7 @@ SAM
         r002 0 chr1 9 30 3S6M1P1I4M * 0 0 AAAAGATAAGGATA *
 
   * the **flag in the second field** contains the answer to several yes/no assessments that are encoded in a single number
-  * for more details on the flag, see `this thorough explanation <http://ppotato.wordpress.com/2010/08/25/samtool-bitwise-flag-paired-reads/>`_ or `this more technical explanation <http://blog.nextgenetics.net/?e=18>`_
+  * for more details on the flag, see `this thorough explanation <http://ppotato.wordpress.com/2010/08/25/samtool-bitwise-flag-paired-reads/>`__ or `this more technical explanation <http://blog.nextgenetics.net/?e=18>`__
   * the **CIGAR string in the 6th field** represents the types of operations that were needed in order to align the read to the specific genome location:
 
     * insertion
