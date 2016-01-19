@@ -15,7 +15,7 @@ documentation from the previous github-hosted wiki to http://deeptools.readthedo
 
 
 Additional data types
-^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^
 
 * correlation and comparisons can now be calculated for **bigWig files** (in addition to BAM files) using ``multiBigwigSummary`` and ``bigwigCompare``
 
@@ -33,7 +33,7 @@ Renamed tools
 * **bamFingerprint** to :doc:`tools/plotFingerprint`
 
 Increased efficiency
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^
 
 * We dramatically improved the **speed** of bigwig related tools (:doc:`tools/multiBigwigSummary` and ``computeMatrix``) by using the new `pyBigWig module <https://github.com/dpryan79/pyBigWig>`_.
 
@@ -46,7 +46,7 @@ Increased efficiency
 * We separated the generation of read count tables from the calculation of pairwise correlations that was previously handled by ``bamCorrelate``. Now, read counts are calculated first using ``multiBamCoverage`` or ``multiBigWigCoverage`` and the resulting output file can be used for calculating and plotting pairwise correlations using ``plotCorrelation`` or for doing a principal component analysis using ``plotPCA``.
 
 New features and tools
-^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 * Correlation analyses are no longer limited to BAM files -- bigwig files are possible, too! (see :doc:`tools/multiBigwigSummary`)
 
@@ -64,7 +64,7 @@ Minor changes
 -------------
 
 Changed parameters names and settings
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * ``computeMatrix`` can now read files with DOS newline characters.
 * ``--missingDataAsZero`` was renamed to ``--skipNonCoveredRegions`` for clarity in ``bamCoverage`` and ``bamCompare``.
@@ -73,7 +73,7 @@ Changed parameters names and settings
 * Added the option for adding titles to QC plots.
 
 Bug fixes
-^^^^^^^^^^
+^^^^^^^^^
 * ``bigwigCorrelate`` now also considers chromosomes as identical when the names between samples differ by 'chr' prefix, e.g. chr1 vs. 1.
 * Resolved an error introduced by numpy version 1.10 in ``computeMatrix``.
 * Improved plotting features for ``tools/plotProfile`` when using as plot type: 'overlapped_lines' and 'heatmap'
