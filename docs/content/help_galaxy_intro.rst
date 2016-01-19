@@ -1,103 +1,36 @@
-+----------------------------------+
-| # For instructions on using      |
-| deepTools 2.0 or newer, please   |
-| `go                              |
-| here <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.readthedo-20-7C-0A-7C-20cs.org_en_latest_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=L1F0yxO4aPGp-ueX3At--y_sZdIilnLW-JPv43QHK8o&e= >`__.           |
-| This page only applies to        |
-| deepTools 1.5                    |
-+----------------------------------+
-| Using deepTools within Galaxy    |
-| =============================    |
-+----------------------------------+
-| We have a publicly available     |
-| deepTools installation embedded  |
-| within the Galaxy framework:     |
-| `**deeptools.ie-freiburg.mpg.de* |
-| * <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.-20-7C-0A-7C-20mpg.de&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=tUR3gc5V-ZHk41rXEmPHmEE-D98nkt1IN9srIhfxjtU&e= >`__.                      |
-| This server also contains some   |
-| additional tools that will       |
-| enable users to analyse and      |
-| visualize data from              |
-| high-throughput sequencing       |
-| experiments (or: next-generation |
-| sequencing, abbreviated NGS).    |
-+----------------------------------+
-| The information on this page are |
-| meant to:                        |
-+----------------------------------+
-| \* **provide a brief             |
-| introduction into the Galaxy     |
-| framework *in general***:        |
-| `Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__galaxyproject.or-20-7C-0A-7C-20g_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=CRsRLUqzJMQVXFup_IGzt9BRuEK9H1G4lnh14tijNQo&e= >`__                           |
-| is a tremendously useful         |
-| platform developed by the Galaxy |
-| Team at Penn State and the Emory |
-| University. This platform is     |
-| meant to offer access to a large |
-| variety of bioinformatics tools  |
-| that can be used without         |
-| computer programming             |
-| experiences. That means, that    |
-| the basic features of Galaxy     |
-| will apply to every tool, i.e.   |
-| every tool provided within a     |
-| Galaxy framework will look very  |
-| similar and will follow the      |
-| concepts of Galaxy. \*           |
-| **introduce you to the specific  |
-| tools that are available in      |
-| *our* web server dedicated to    |
-| NGS data analysis**              |
-+----------------------------------+
-| If you do not know the           |
-| difference between a BAM and a   |
-| BED file, that's fine - just     |
-| make sure you have a look at     |
-| this brief overview              |
-| `here <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelr-20-7C-0A-7C-20am_deepTools_raw_master_manual_P-20-7C-0A-7C-20DFs_Galaxy-5FDataFormats-5FNGS.pdf&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=uA151FasFH21Fkn4j7hD_qUvzmxGCqoecnaR7UGQ42o&e= >` |
-| __                               |
-| before starting your analysis as |
-| NGS data relies on several       |
-| specific **data formats**.       |
-+----------------------------------+
-| For more specific help, check    |
-| our `FAQ <FAQ>`__ and the        |
-| `example                         |
-| workflows <Example-workflows>`__ |
-| .                                |
-+----------------------------------+
+Using deepTools within Galaxy    
+================================
 
-Table of Content
-----------------
+We have a publicly available deepTools installation embedded within the Galaxy framework: `deeptools.ie-freiburg.mpg.de <http://deeptools.ie-freiburg.mpg.de/>`_
 
--  `Basic features of Galaxy <#basics>`__
--  `Data import <#upload>`__
+This server also contains some additional tools that will enable users to analyse and visualize data from high-throughput sequencing experiments 
 
-   -  `upload files <#dataup>`__
-   -  `import shared files <#dataim>`__
-   -  `download annotation and publicly available
-      tracks <#downloadann>`__
+The information on this page are meant to: 
 
--  `Tools <#tools>`__
+* **provide a brief introduction into the Galaxy framework in general:** `Galaxy <http://galaxyproject.org/>`_ is a tremendously useful platform developed by the Galaxy Team at Penn State and the Emory University. This platform is meant to offer access to a large variety of bioinformatics tools that can be used without computer programming experiences. That means, that the basic features of Galaxy will apply to every tool, i.e. every tool provided within a Galaxy framework will look very similar and will follow the concepts of Galaxy.
 
-   -  `deepTools - NGS data handling <#deepTools>`__
-   -  `peak calling (ChIP-seq specific) <#peaks>`__
-   -  `operating on genomic intervals <#BED>`__
-   -  `working with text files and tables <#textfiles>`__
+* **introduce you to the specific tools that are available in our web server dedicated to NGS data analysis**
 
--  `Galaxy workflows <#workflows>`__
--  `deepTools Galaxy Tips and FAQ <Galaxy-related-FAQs>`__
+| If you do not know the difference between a BAM and a BED file, that's fine.
+You can read up on them in our :doc:`help_glossary`.
 
-`Go to deepTools Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=kkXe05VMJtEmtM4AyDDr65YUban-IpW26l6mRQrMjEI&e= >`__
+For more specific help, check our :doc:`help_faq_galaxy` and the :doc:`example_step_by_step`.
 
- Basic features of Galaxy -------------------------
+Table of contents
+------------------
+
+.. contents:: 
+    :local:
+
+Basic features of Galaxy
+-------------------------
 
 The Galaxy team develops the platform, but since it is impossible to
 meet all bioinformatics needs (that can range from evolutionary analysis
 to data from mass spectrometry to high-throughput DNA sequencing (and
 way beyond)) with one single web server, many institutes have installed
 their own versions of Galaxy tuned to their specific needs. Our
-`deepTools Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=1xpNM-7I4Z6-ZIJErjnO726mjBKdGH92RCWOc5kGh-U&e= >`__ is such a
+`deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de/>`_ is such a
 specialized server dedicated to the analysis of high-throughput DNA
 sequencing data. The overall makeup of this web server, however, is the
 same as for any other Galaxy installation, so if you've used Galaxy
@@ -106,8 +39,9 @@ before, you will learn to use deepTools in no time!
 The start site
 ~~~~~~~~~~~~~~
 
-Here is a screenshot of what you should see at
-`deeptools.ie-freiburg.mpg.de <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=kkXe05VMJtEmtM4AyDDr65YUban-IpW26l6mRQrMjEI&e= >`__:
+Here is a screenshot of what the start site will approximately look like: 
+
+.. image:: ../images/Gal_startsite.png
 
 The start site contains 4 main features:
 
@@ -123,16 +57,14 @@ The start site contains 4 main features:
    tool here
 -  **History panel** "What did I do?": here you can find all *files*
    that one produces or uploads
-
-   -  the history is like a log book: everything you ever did is
-      recorded here (unless you deleted things permanently)
-   -  histories can be shared with other users, they can also be
-      downloaded
-   -  for each file that was produced, you will find all kinds of useful
-      information such as the tool that was used to create the file, the
-      tool's parameters etc.
+       - the history is like a log book: everything you ever did is recorded here (unless you deleted things permanently)
+       - histories can be shared with other users
+       - histories can also be downloaded
+       - for each file that was produced, you will find all kinds of useful  information such as the tool that was used to create the file, the tool's parameters etc.
 
 For those visual learners, here's an annotated screenshot:
+
+.. image:: ../images/Gal_startsite_with_comments.png
 
 In the default state of the tool panel you see the **tool categories**,
 e.g. "Get Data". If you click on them, you will see the **individual
