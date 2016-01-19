@@ -51,7 +51,7 @@ def plot_correlation_args():
     required.add_argument('--plotFile', '-o',
                           help='File to save the heatmap to. The file extension determines the format, '
                           'so heatmap.pdf will save the heatmap in PDF format. '
-                          'The available formats are: .png, .emf, '
+                          'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
                           type=argparse.FileType('w'),
                           metavar='FILE',
@@ -92,9 +92,9 @@ def plot_correlation_args():
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
-                          'ending. The available options are: png, emf, '
+                          'ending. The available options are: png, '
                           'eps, pdf and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument(
         '--removeOutliers',

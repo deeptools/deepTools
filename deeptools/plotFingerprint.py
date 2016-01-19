@@ -93,9 +93,9 @@ def get_optional_args():
                           help='image format type. If given, this option '
                           'overrides the image format based on the ending '
                           'given via --plotFile '
-                          'ending. The available options are: "png", "emf", '
+                          'ending. The available options are: "png", '
                           '"eps", "pdf" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
@@ -118,7 +118,7 @@ def get_output_args():
     group.add_argument('--plotFile', '-plot',
                        help='File name of the output figure. The file '
                        'ending will be used to determine the image '
-                       'format. The available options are typically: "png", "emf", '
+                       'format. The available options are typically: "png", '
                        '"eps", "pdf" and "svg", e.g. : fingerprint.png.',
                        metavar='',
                        type=argparse.FileType('w'),

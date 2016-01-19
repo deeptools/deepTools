@@ -158,9 +158,9 @@ def getRequiredArgs():
                        help='image format type. If given, this '
                        'option overrides the '
                        'image format based on the plotFile ending. '
-                       'The available options are: "png", "emf", '
+                       'The available options are: "png", '
                        '"eps", "pdf" and "svg"',
-                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                       choices=['png', 'pdf', 'svg', 'eps'])
 
     return parser
 
