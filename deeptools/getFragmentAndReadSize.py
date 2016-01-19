@@ -13,12 +13,23 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
     """
     Queries the reads at the given region for the distance between
     reads and the read length
-    :param chrom: chromosome name
-    :param start: int region start
-    :param end:  int region end
-    :param bamFile: bamfile name
-    :return: np.array, where first column is fragment length, the
-     second is for read length
+
+    Parameters
+    ----------
+    chrom : str
+        chromosome name
+    start : int
+        region start
+    end : int
+        region end
+    bamFile : str
+        BAM file name
+
+    Returns
+    -------
+    np.array
+        an np.array, where first column is fragment length, the
+        second is for read length
     """
     bam = bamHandler.openBam(bamFile)
     end = min(end, start + 5e4)
@@ -45,12 +56,20 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
                                  numberOfProcessors=None, verbose=False):
     """
     Estimates the fragment length and read length through sampling
-    :param bamFile: bamfile name
-    :param return_lengths: bool,
-    :param numberOfProcessors:
-    :param verbose:
-    :return: tuple of two dictionaries, one for the fragment length and the other
-                    for the read length. The dictionaries summarise the mean, median etc. values
+
+    Parameters
+    ----------
+    bamFile : str
+        BAM file name
+    return_lengths : bool
+    numberOfProcessors : int
+    verbose : bool
+
+    Returns
+    -------
+    d : dict
+        tuple of two dictionaries, one for the fragment length and the other
+        for the read length. The dictionaries summarise the mean, median etc. values
     """
 
     bam_handle = bamHandler.openBam(bamFile)

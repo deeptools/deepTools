@@ -5,23 +5,34 @@ import matplotlib.colors as pltcolors
 def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     """
     Adds a line to the plot in the given ax using the specified method
-    Args:
-        ax: matplotlib axis
-        ma: numpy array The data on this matrix is summarized according
-            to the `average_type` argument.
-        average_type: string values are sum mean median min max std
-        color: a valid color: either a html color name, hex
+
+    Parameters
+    ----------
+    ax : matplotlib axis
+        matplotlib axis
+    ma : numpy array
+        numpy array The data on this matrix is summarized according
+        to the `average_type` argument.
+    average_type : str
+        string values are sum mean median min max std
+    color : str
+        a valid color: either a html color name, hex
         (e.g #002233), RGB + alpha tuple or list or RGB tuple or list
-        label: string
-        plot_type: type of plot. Either 'se' for standard error, 'std' for
-          standard deviation, 'overlapped_lines' to plot each line of the matrix,
-          fill to plot the area between the x axis and the value or None, just to
-          plot the average line.
+    label : str
+        label
+    plot_type: str
+        type of plot. Either 'se' for standard error, 'std' for
+        standard deviation, 'overlapped_lines' to plot each line of the matrix,
+        fill to plot the area between the x axis and the value or None, just to
+        plot the average line.
 
-    Returns:
-        ax
+    Returns
+    -------
+    ax
+        matplotlib axis
 
-    Examples:
+    Examples
+    --------
 
     >>> import matplotlib.pyplot as plt
     >>> fig = plt.figure()

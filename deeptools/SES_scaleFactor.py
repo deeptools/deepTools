@@ -63,9 +63,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
             'sites_sampled'
 
 
-    Example
-    ------
-
+    Examples
+    --------
     >>> test = Tester()
     >>> bin_length = 50
     >>> num_samples = 4

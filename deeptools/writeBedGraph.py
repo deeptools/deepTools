@@ -41,8 +41,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
     when calling the `run` method, the following parameters have
     to be passed
 
-    Example
-    _______
+    Examples
+    --------
 
     Given the following distribution of reads that cover 200 on
     a chromosome named '3R'::
@@ -192,8 +192,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
         -------
         temporary file with the bedgraph results for the region queried.
 
-        Example
-        -------
+        Examples
+        --------
         >>> test_path = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
         >>> bamFile1 = test_path +  "testA.bam"
         >>> bin_length = 50

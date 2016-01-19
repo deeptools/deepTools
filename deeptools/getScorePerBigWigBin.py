@@ -37,18 +37,18 @@ def countFragmentsInRegions_worker(chrom, start, end,
     Fragment coverage.
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200, [test.bwFile1, test.bwFile2], 50, 25, False)[0])
     array([[ 1.,  1.,  2.,  2.],
-           [ 1.,  1.,  1.,  3.]])
+    ...    [ 1.,  1.,  1.,  3.]])
 
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200, [test.bwFile1, test.bwFile2], 200, 200, False)[0])
     array([[ 1.5],
-           [ 1.5]])
+    ...    [ 1.5]])
 
     BED regions:
     >>> bedRegions = [(test.chrom, 45, 55), (test.chrom, 95, 105), (test.chrom, 145, 155)]
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,[test.bwFile1, test.bwFile2], 200, 200, False,
     ... bedRegions=bedRegions)[0])
     array([[ 1. ,  1.5,  2. ],
-           [ 1. ,  1. ,  2. ]])
+    ...    [ 1. ,  1. ,  2. ]])
     """
     assert start < end, "start {} bigger that end {}".format(start, end)
 
@@ -191,7 +191,7 @@ def getScorePerBin(bigWigFiles, binLength,
     >>> test = Tester()
     >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 50, 3))
     array([[ 1.,  1.,  2.,  2.],
-           [ 1.,  1.,  1.,  3.]])
+    ...    [ 1.,  1.,  1.,  3.]])
 
     """
 

@@ -166,6 +166,7 @@ class Correlation:
 
         The matrix should contain the values of each sample per column
         that's why the transpose is used.
+
         >>> matrix = np.array([[1, 2, 3, np.nan],
         ...                    [1, 2, 3, 4],
         ...                    [6, 4, 3, 1]]).T
@@ -174,6 +175,7 @@ class Correlation:
         >>> c = Correlation("/tmp/test_matrix.npz", corr_method='pearson')
 
         the results should be  as in R
+
         >>> c.compute_correlation().filled(np.nan)
         array([[ 1.        ,  1.        , -0.98198051],
                [ 1.        ,  1.        , -0.98198051],
