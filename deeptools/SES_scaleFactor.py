@@ -25,23 +25,19 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     ----------
     bamFilesList : list
         list of bam files to normalize
-
     binLength : int
         the window size in bp, where reads are going to be
-                         counted.
+        counted.
     numberOfSamples : int
         number of sites to sample from the genome. For more info see
         the documentation of the CountReadsPerBin class
-
     normalizationLength : int
         length, in bp, to normalize the data.
         For a value of 1, on average
         1 read per base pair is found
-
     avg_method : str
         defines how the different values are to be summarized.
         The options are 'mean' and 'median'
-
     chrsToSkip : list
         name of the chromosomes to be excluded from the
         scale estimation. Usually the chrX is included.
