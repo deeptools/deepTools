@@ -1,6 +1,9 @@
 plotFingerprint
 ===============
 
+.. contents:: 
+    :local:
+
 .. argparse::
    :ref: deeptools.plotFingerprint.parse_arguments
    :prog: plotFingerprint
@@ -9,7 +12,7 @@ plotFingerprint
 Usage Example:
 ~~~~~~~~~~~~~~
 
-The following example plots the the fingerprint for our test ENCODE
+The following example,  plots the the fingerprint for our test ENCODE
 Chip-Seq datasets, for chromosome X. Here we are skipping the regions
 with zero reads using the *--skipZeros* option.
 

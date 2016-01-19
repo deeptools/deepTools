@@ -1,5 +1,5 @@
 multiBigwigSummary
-=================
+===================
 
 .. contents:: 
     :local:
