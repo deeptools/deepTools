@@ -71,7 +71,8 @@ def get_optional_args():
     optional.add_argument('--MNase',
                           help='Determine nucleosome positions from MNase-seq data. '
                           'Only 3 nucleotides at the center of each fragment are counted. '
-                          'The fragment ends are defined by the two mate reads. '
+                          'The fragment ends are defined by the two mate reads. Only fragment lengths'
+                          'between 130 - 200 bp are considered to avoid dinucleosomes or other artifacts.'
                           '*NOTE*: Requires paired-end data.',
                           action='store_true')
 
@@ -233,7 +234,9 @@ class CenterFragment(writeBedGraph.WriteBedGraph):
         fragment_start = fragment_end = None
 
         # only paired forward reads are considered
-        if read.is_proper_pair and not read.is_reverse and abs(read.tlen) < 250:
+        # that are about one nuclesome turn long (130 - 200 bp)
+        # TODO: this size range could be an input parameter.
+        if read.is_proper_pair and not read.is_reverse and 130 < abs(read.tlen) < 200:
             # distance between pairs is even return two bases at the center
             if read.tlen % 2 == 0:
                 fragment_start = read.pos + read.tlen / 2 - 1
