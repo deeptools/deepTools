@@ -21,16 +21,15 @@ def parse_arguments(args=None):
         parents=[required_args, output_args, read_options_parser,
                  optional_args, parent_parser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Samples indexed BAM files '
-        'and plots a profile for each. '
-        'At each sample position, all reads '
-        'overlapping a window (bin) of the '
-        'specified length are counted. '
-        'These counts are then sorted '
-        'and the cumulative sum plotted ',
+        description='This tool samples indexed BAM files '
+        'and plots a profile of cumulative read coverages for each. '
+        'All reads overlapping a window (bin) of the '
+        'specified length are counted; '
+        'these counts are sorted '
+        'and the cumulative sum is finally plotted. ',
         conflict_handler='resolve',
         usage='An example usage is: plotFingerprint -b treatment.bam control.bam '
-        '-o signal.bw',
+        '-plot fingerprint.png',
         add_help=False)
 
     return parser
@@ -58,7 +57,7 @@ def get_required_args():
     required.add_argument('--bamfiles', '-b',
                           metavar='bam files',
                           nargs='+',
-                          help='List of sorted BAM files',
+                          help='List of indexed BAM files',
                           required=True)
     return parser
 
@@ -78,21 +77,22 @@ def get_optional_args():
                           nargs='+')
 
     optional.add_argument('--binSize', '-bs',
-                          help='Length in bases for a window used to '
+                          help='Window size in base pairs to '
                           'sample the genome.',
                           default=500,
                           type=int)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of bins, sampled from the genome '
-                          'to compute the average number of reads.',
+                          help='Number of bins that sampled from the genome, '
+                          'for which the overlapping number of reads is computed.',
                           default=5e5,
                           type=int)
 
     optional.add_argument('--plotFileFormat',
                           metavar='',
                           help='image format type. If given, this option '
-                          'overrides the image format based on the plotFile '
+                          'overrides the image format based on the ending '
+                          'given via --plotFile '
                           'ending. The available options are: "png", "emf", '
                           '"eps", "pdf" and "svg"',
                           choices=['png', 'pdf', 'svg', 'eps', 'emf'])
@@ -103,8 +103,8 @@ def get_optional_args():
                           default='')
 
     optional.add_argument('--skipZeros',
-                          help='If set, then zero counts that happen '
-                          'for *all* BAM files given are ignored. This '
+                          help='If set, then regions with zero overlapping reads'
+                          'for *all* given BAM files are ignored. This '
                           'will result in a reduced number of read '
                           'counts than that specified in --numberOfSamples',
                           action='store_true')
@@ -125,7 +125,7 @@ def get_output_args():
                        required=True)
 
     group.add_argument('--outRawCounts',
-                       help='Output file name to save the bin counts',
+                       help='Output file name to save the read counts per bin.',
                        metavar='',
                        type=argparse.FileType('w'))
 
