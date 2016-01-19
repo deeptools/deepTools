@@ -14,9 +14,9 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
         (e.g #002233), RGB + alpha tuple or list or RGB tuple or list
         label: string
         plot_type: type of plot. Either 'se' for standard error, 'std' for
-                                 standard deviation, 'overlapped_lines' to plot each line of the matrix,
-                                 fill to plot the area between the x axis and the value or None, just to
-                                 plot the average line.
+          standard deviation, 'overlapped_lines' to plot each line of the matrix,
+          fill to plot the area between the x axis and the value or None, just to
+          plot the average line.
 
     Returns:
         ax

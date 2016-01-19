@@ -402,8 +402,8 @@ class heatmapper(object):
         """
         Changes UCSC chromosome names to ensembl chromosome names
         and vice versa.
-        TODO: mapping from chromosome names ... e.g. mt, unknown_ ...
         """
+        # TODO: mapping from chromosome names, e.g., mt, unknown
         if chrom.startswith('chr'):
             return chrom[3:]
         else:

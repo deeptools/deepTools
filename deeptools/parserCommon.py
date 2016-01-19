@@ -296,7 +296,7 @@ def heatmapperMatrixArgs(args=None):
     required.add_argument('--outFileName', '-out',
                           help='File name to save the image to. The file '
                           'ending will be used to determine the image '
-                          'format. The available options are: "png", "emf", '
+                          'format. The available options are: "png", '
                           '"eps", "pdf" and "svg", e.g., MyHeatmap.png.',
                           type=writableFile,
                           required=True)
@@ -616,9 +616,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           help='Image format type. If given, this '
                           'option overrides the '
                           'image format based on the plotFile ending. '
-                          'The available options are: "png", "emf", '
+                          'The available options are: "png", '
                           '"eps", "pdf" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument('--verbose',
                           help='If set, warning messages and '

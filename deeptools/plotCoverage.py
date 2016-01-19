@@ -112,10 +112,10 @@ def required_args():
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
-                          'ending. The available options are: png, emf, '
+                          'ending. The available options are: png, '
                           'eps, pdf and svg.',
                           default=None,
-                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     return parser
 

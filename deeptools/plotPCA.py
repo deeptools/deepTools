@@ -44,7 +44,7 @@ def plotCorrelationArgs():
                           'The extension determines the file format. '
                           'For example: '
                           'pca.pdf will save the PCA plot in PDF format. '
-                          'The available options are: .png, .emf, '
+                          'The available options are: .png, '
                           '.eps, .pdf and .svg.',
                           type=argparse.FileType('w'),
                           metavar='FILE',
