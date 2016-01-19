@@ -91,7 +91,6 @@
             <option value="pdf">Image in pdf format</option>
             <option value="svg">Image in svg format</option>
             <option value="eps">Image in eps format</option>
-            <option value="emf">Image in emf format</option>
         </param>
     </inputs>
     <outputs>
@@ -106,7 +105,6 @@
                 <when input="image_format" value="pdf" format="pdf" />
                 <when input="image_format" value="svg" format="svg" />
                 <when input="image_format" value="eps" format="eps" />
-                <when input="image_format" value="emf" format="emf" />
             </change_format>
         </data>
     </outputs>
