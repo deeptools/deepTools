@@ -38,8 +38,8 @@ Tools for BAM and bigWig file processing
 | ``computeMatrix``      | compute the values needed for heatmaps and summary plots                       |
 +------------------------+--------------------------------------------------------------------------------+
 
-Tools for QC
-^^^^^^^^^^^^^
+Tools for QC of NGS data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +-----------------------+-------------------------------------------------------------------------------------------------------+
 | ``plotCorrelation``   | calculate and visualize the pairwise Spearman or Pearson correlation of read counts (or other scores) |
@@ -56,7 +56,7 @@ Tools for QC
 +-----------------------+-------------------------------------------------------------------------------------------------------+
 
 Heatmaps and summary plots
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +-------------------+-------------------------------------------------------------------------------------------+
 | ``plotHeatmap``   | visualize read counts or other scores in heatmaps with one row per genomic region         |
@@ -64,123 +64,109 @@ Heatmaps and summary plots
 | ``plotProfile``   | visualize read counts or other scores using average profiles (e.g., meta-gene profiles)   |
 +-------------------+-------------------------------------------------------------------------------------------+
 
+For each tool, you can find example usages and tips within Galaxy once you select the tool.
 
-We have compiled several sources of detailed information specifically
-about the usage of deepTools:
+In addition, you may want to check our pages about :doc:`example_usage`, particularly :doc:`example_step_by_step`.
 
-1. General overview of `how we use deep Tools <About-deepTools>`__
-2. Each individual tool is described in more detail on separate pages -
-   just follow the links in the table above
-3. For each tool, you will find specific explanations within the
-   `deepTools Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=1xpNM-7I4Z6-ZIJErjnO726mjBKdGH92RCWOc5kGh-U&e= >`__ main
-   frame, too.
-4. the `example workflows <Example-workflows>`__ might help to get a
-   feeling for the kinds of analyses than can be done with `deepTools
-   Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=1xpNM-7I4Z6-ZIJErjnO726mjBKdGH92RCWOc5kGh-U&e= >`__
+Working with text files and tables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Peak calling
-^^^^^^^^^^^^^^
+In addition to deepTools that were specifically developed for the handling of NGS data, we have incorporated several standard Galaxy tools that enable you to manipulate tab-separated files such as gene lists, peak lists, data matrices etc.
 
-In ChIP-seq analysis, peak calling algorithms are essential downstream
-analysis tools to identify regions of significant enrichments (i.e.
-where the ChIP sample contained significantly more sequenced reads than
-the input control sample). By now, there must be close to 100 programs
-out there (see `Wilbanks et
-al. <https://urldefense.proofpoint.com/v2/url?u=http-3A__www.plosone.org_article_info-253Adoi-252F10.1371-252Fjournal.pone.0011471&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=lhLQ7qst_E5ZweBT_PdS_mJIE9biseGu2DTBPk2papM&e= >`__
-for a comparison of peak calling programs).
+There are 3 main categories for:
 
-In contrast to deepTools that were developed for handling and generating
-*continuous* genome-wide profiles, peak calling will result in a *list
-of genomic regions*. Have a look at the screenshot to understand the
-difference.
+.. image:: ../images/Gal_textfiles.png
 
-We have included the peak callers
-`MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`__ and
-`SICER <https://urldefense.proofpoint.com/v2/url?u=http-3A__bioinformatics.oxfordjournals.org_content_25_15_1952.full&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=4ZEmdk9_IT-qF0ZDdKMF6Z-vWNUrYB3r76ucGWLaCYo&e= >`__
-within our Galaxy instance with
-`MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`__ being the most
-popular peak calling algorithm for the identification of localized
-transcription factor binding sites while
-`SICER <https://urldefense.proofpoint.com/v2/url?u=http-3A__bioinformatics.oxfordjournals.org_content_25_15_1952.full&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=4ZEmdk9_IT-qF0ZDdKMF6Z-vWNUrYB3r76ucGWLaCYo&e= >`__
-was developed for diffuse ChIP-seq signals. Note that MACS version 1.14
-is quite different from MACS version 2 (which has still not been
-released officially).
+Text manipulation
+~~~~~~~~~~~~~~~~~~
+
+Unlike Excel, where you can easily interact with your text and tables via the mouse, data manipulations within Galaxy are strictly based on commands.
+
+If you feel like you would like to do something to certain *columns* of a data set, go through the tools of this category!
+
+Example actions are:
+* adding columns
+* extracting columns
+* pasting two files side by side
+* selecting random lines
+* etc.
+
+A very useful tool of this category is called ``Trim``: if you need to **remove some characters from a column**, this tool's for you! (for example, sometimes you need to adjust the chromosome naming between two files from different source - using ``Trim``, you can remove the "chr" in front of the chromosome name)
+
+Filter and Sort
+~~~~~~~~~~~~~~~~
+
+In addition to the common sorting and filtering, there's the very useful tool to ``select lines that match an expression``.
+For example, using the expression ``c1=='chrM'`` will select all rows from a BED file with regions located on the mitochondrial chromosome.
+
+.. image:: ../images/Gal_filter.png
+
+Join, Subtract, Group
+~~~~~~~~~~~~~~~~~~~~~
+
+The tools of this category are very useful if you have several data sets that you would like to work with, e.g. by comparing them.
+
+.. image:: ../images/Gal_join.png
+
+Basic arithmetics for tables
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We offer some very basic mathematical operations on values stored with tables.
+The ``Summary Statistics`` can be used to calculate the sum, mean, standard deviation and percentiles for a set of numbers, e.g. for values stored in a specific column.
+
+.. image:: ../images/Gal_statistics.png
 
 Working with genomic intervals
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Galaxy has 2 file formats to store lists of genomic regions:
 
--  INTERVAL
+INTERVAL
+~~~~~~~~~
 
-   -  tab-separated
-   -  requirements:
+- tab-separated
+- requirements:
+    1. Column: chromosome
+    2. Column: start position
+    3. Column: end position
+- all other columns can contain any value or character
 
-      1. Column: chromosome
-      2. Column: start position
-      3. Column: end position
+BED
+~~~~
 
-   -  all other columns can contain any value or character
+- very similar to INTERVAL, but stricter when it comes to what is expected to be kept in which column:
+    - 1. to 3. Column: same as INTERVAL
+    - Column 4: name
+    - Column 5: score
+    - Column 6: strand
 
--  BED
+If you would like to work with several lists of genomic regions, e.g. generate a new list of regions that are found in two different files etc., there are two categories of tools dedicated to performing these tasks:
 
-   -  very similar to INTERVAL, but stricter when it comes to what is
-      expected to be kept in which column:
+* Operate on genomic intervals
+* BEDtools
 
-      -  
+Each tool's function is explained within Galaxy.
+Do browse those tools as they will give you a very good glimpse of the scope of possible analyses!
 
-         1. to 3. Column: same as interval
+Peak calling
+^^^^^^^^^^^^^^
 
-      -  Column 4: name
-      -  Column 5: score
-      -  Column 6: strand
+In ChIP-seq analysis, peak calling algorithms are essential downstream analysis tools to identify regions of significant enrichments (i.e. where the ChIP sample contained significantly more sequenced reads than the input control sample).
+By now, there must be close to 100 programs out there (see `Wilbanks et
+al. <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0011471>`_ for a comparison of peak calling programs).
 
-In case you would like to work with several lists of genomic regions,
-e.g. generate a new list of regions that are found in two different
-files etc., there are two categories of tools dedicated to performing
-these tasks: \* Operate on genomic intervals \* BEDtools
+In contrast to deepTools that were developed for handling and generating *continuous* genome-wide profiles, peak calling will result in a *list of genomic regions*. Have a look at the screenshot to understand the difference.
 
-Each tool's function is explained within Galaxy. Do browse those tools
-as they will give you a very good glimpse of the scope of possible
-analyses!
+.. image:: ../images/Gal_peaksVsBigWigs.png
 
- #### Working with text files and tables In addition to deepTools that
-were specifically developed for the handling of NGS data, we have
-incorporated several standard Galaxy tools that enable you to manipulate
-tab-separated files such as gene lists, peak lists, data matrices etc.
+We have included the peak callers `MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`_ and `SICER <http://bioinformatics.oxfordjournals.org/content/25/15/1952.full>`_ within our Galaxy instance with MACS being the most popular peak calling algorithm for the identification of localized transcription factor binding sites while SICER was developed for diffuse ChIP-seq signals.
 
-There are 3 main categories:
+.. note:: MACS version 1.14 is quite different from MACS version 2.
 
--  **Text manipulation**
-
-   -  unlike Excel where you can easily interact with your text and
-      tables via the mouse, data manipulations within Galaxy are
-      strictly based on commands. If you feel like you would like to do
-      something to certain *columns* of a data set, go through the tools
-      of this category
-   -  e.g. adding columns, cutting columns, pasting two files side by
-      side, selecting random lines etc.
-   -  a very useful tool of this category is called *Trim* - if you need
-      to remove some characters from a column, this tool's for you! (for
-      example, sometimes you need to adjust the chromosome naming
-      between two files from different source - using *Trim*, you can
-      remove the "chr" infront of the chromosome name)
-
--  **Filter and Sort**
-
-   -  in addition to the common sorting and filtering, there's the very
-      useful tool to *select lines that match an expression* (for
-      example, using the expression *c1=='chrM'* will select all rows
-      from a BED file with regions located on the mitochondrial
-      chromosome)
-
--  **Join, Subtract, Group**
--  this category is very useful if you have several data sets that you
-   would like to work with, e.g. by comparing them
 
 **More help**
 
-.. hint:: If you encounter a failing data set (marked in red), please send a bug report via the Galaxy bug report button and we will get in touch if you indicate your email address.
+.. hint:: If you encounter a failing data set (marked in red), please **send a bug report** via the Galaxy bug report button and we will get in touch if you indicate your email address.
 
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
 | `http://wiki.galaxyproject.org/Learn <http://wiki.galaxyproject.org/Learn>`_  | Help for Galaxy usage in general                                |

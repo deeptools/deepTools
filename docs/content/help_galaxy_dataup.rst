@@ -86,12 +86,19 @@ And here's how you would do it for the BioMart approach:
 Copy data sets between histories
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
  
- In case you have registered with deepTools Galaxy you can have more than one history. In order to
-minimize the disk space you're occupying we strongly suggest to **copy** data sets between histories when you're using the same data set in different histories. This can easily be done via the History panel's option button ⟶ "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side and the target history on the right hand side.
+If you have registered with deepTools Galaxy you can have more than one history.
+
+In order to minimize the disk space you're occupying we strongly suggest to **copy** data sets between histories when you're using the same data set in different histories.
+
+.. note:: Copying data sets is only possible for registered users.
+
+.. image:: ../images/Gal_copy.png
+
+Copying can easily be done via the History panel's ``option`` button ⟶ "Copy dataset". In the main frame, you should now be able to select the history you would like to copy from on the left hand side and the target history on the right hand side.
 
 **More help**
 
-.. hint:: If you encounter a failing data set (marked in red), please send a bug report via the Galaxy bug report button and we will get in touch if you indicate your email address.
+.. hint:: If you encounter a failing data set (marked in red), please **send a bug report** via the Galaxy bug report button and we will get in touch if you indicate your email address.
 
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
 | `http://wiki.galaxyproject.org/Learn <http://wiki.galaxyproject.org/Learn>`_  | Help for Galaxy usage in general                                |

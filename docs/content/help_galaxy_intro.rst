@@ -80,7 +80,7 @@ Each data set can have 4 different states that are intuitively color-coded:
 Handling failed files
 ^^^^^^^^^^^^^^^^^^^^^^
 
-.. tip:: If you encounter a failed file after you've run a tool, please do the following steps (in this order):
+ If you encounter a failed file after you've run a tool, please do the following steps (**in this order**):
 
          1. click on the center button on the lower left corner of the failed data set ``(i)``: did you chose the **correct data files**?
          2. if you're sure that you chose the correct files, hit the ``re-run button`` (blue arrow in the lower left corner) - check again whether your files had the **correct file format**. If you suspect that the format might be incorrectly assigned (e.g. a file that should be a BED file is labelled as a tabular file), click the ``edit button`` (the pencil) of the input data file - there you can change the corresponding attributes
@@ -97,7 +97,7 @@ This is the graphical representation of a Galaxy workflow that can easily be mod
 
 **More help**
 
-.. hint:: If you encounter a failing data set (marked in red), please send a bug report via the Galaxy bug report button and we will get in touch if you indicate your email address.
+.. hint:: If you encounter a failing data set (marked in red), please **send a bug report** via the Galaxy bug report button and we will get in touch if you indicate your email address.
 
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
 | `http://wiki.galaxyproject.org/Learn <http://wiki.galaxyproject.org/Learn>`_  | Help for Galaxy usage in general                                |
