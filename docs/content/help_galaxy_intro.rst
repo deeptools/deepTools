@@ -16,8 +16,7 @@ You can read up on them in our :doc:`help_glossary`.
 
 For more specific help, check our :doc:`help_faq_galaxy` and the :doc:`example_step_by_step`.
 
-Table of contents
-------------------
+**Table of contents**
 
 .. contents:: 
     :local:
@@ -37,7 +36,7 @@ same as for any other Galaxy installation, so if you've used Galaxy
 before, you will learn to use deepTools in no time!
 
 The start site
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 Here is a screenshot of what the start site will approximately look like: 
 
@@ -45,22 +44,34 @@ Here is a screenshot of what the start site will approximately look like:
 
 The start site contains 4 main features:
 
--  **Top menu**: will lead you to other sections of Galaxy (away from
-   the actual analysis part), such as workflows (registered users only)
-   and content shared with you by other users such as sample data sets,
-   pages and workflows
--  **Tool panel** "What can be done": this lists all the *tools*
-   installed in this Galaxy instance
--  **Main frame** "What am I doing?": the center frame is your main
-   working space where input will be required from you once you use a
-   tool. In addition, you will always find general information about the
-   tool here
--  **History panel** "What did I do?": here you can find all *files*
-   that one produces or uploads
-       - the history is like a log book: everything you ever did is recorded here (unless you deleted things permanently)
-       - histories can be shared with other users
-       - histories can also be downloaded
-       - for each file that was produced, you will find all kinds of useful  information such as the tool that was used to create the file, the tool's parameters etc.
+Top menu
+~~~~~~~~~~~~~~
+
+This will lead you to other sections of Galaxy, away from the actual analysis part.
+Registered users, for example, can create and access **workflows**.
+You can also find **content shared with you** by other users such as sample data sets, pages and workflows.
+
+Tool panel
+~~~~~~~~~~~~~~
+
+*"What can be done"*: This panel lists all the *tools* installed in this Galaxy instance.
+
+Main frame
+~~~~~~~~~~~~~~
+
+*"What am I doing?"*: the center frame is your main **working space** where input will be required from you once you've selected a specific tool.
+In addition, you will always find **general information about the tool** here.
+
+History panel
+~~~~~~~~~~~~~~
+
+*"What did I do?"*: here you can find all *files*that one produces or uploads
+
+The history is like a **log book**: everything you ever did is recorded here (unless you deleted things permanently)
+
+- histories can be shared with other users
+- histories can also be downloaded
+- for each file that was produced, you will find all kinds of useful  information such as the tool that was used to create the file, the tool's parameters etc.
 
 For those visual learners, here's an annotated screenshot:
 
@@ -96,48 +107,46 @@ Have a look at the following screenshot to get a feeling for how many
 information Galaxy keeps for you (which makes it very feasible to
 reproduce any analysis):
 
+.. image:: ../images/Gal_screenshot_dataSet.png
+
 Each data set can have 4 different states that are intuitively
 color-coded:
 
-If you encounter a failure after you've run a tool, please follow those
+.. image:: ../images/Gal_screenshot_dataSetStates.png
+
+.. tip:: If you encounter a failure after you've run a tool, please follow the
 steps (in this order):
 
-1. click on the center button on the lower left corner of the failed
-   data set ("i"): now check whether you chose the **correct data
-   files**
-2. if you're sure that you chose the correct files, hit the re-run
-   button (blue arrow in the lower left corner) - check again whether
-   your files had the **correct file format**
+1. click on the center button on the lower left corner of the failed data set ``(i)``: did you chose the **correct data files**?
+2. if you're sure that you chose the correct files, hit the ``re-run button`` (blue arrow in the lower left corner) - check again whether your files had the **correct file format**. If you suspect that the format might be incorrectly assigned (e.g. a file that should be a BED file is labelled as a tabular file), click the ``edit button`` (the pencil) of the input data file - there you can change the corresponding attributes
+3. if you've checked your input data and the error is persisting, click on the ``green bug`` (lower left corner of the failed data set) and send the **bug report** to us. You do not need to indicate a valid email-address unless you would like us to get in touch with you once the issue is solved.
 
--  if you suspect that the format might be incorrectly assigned (e.g. a
-   file that should be a bed-file is labelled as a tabular file), click
-   the edit button (the pencil) of the input data file - there you can
-   change the corresponding attributes
-
-3. if you've checked your input data and the error is persisting, click
-   on the green bug (lower left corner of the failed data set) and send
-   the **bug report** to us. You do not need to indicate a valid
-   email-address unless you would like us to get in touch with you once
-   the issue is solved.
-
- Data import into Galaxy -------------------------
+Data import into Galaxy
+-------------------------
 
 There are three main ways to populate your Galaxy history with data
 files:
 
-1. `Data upload from your computer <#dataup>`__
-2. `Import a shared data set from the Galaxy data library <#dataim>`__
-3. `Download annotation data from public servers <#downloadann>`__
+#############################################################
+MAKE INTERNAL LINKS HERE ###
+OR MAKE A NEW PAGE
+############################################################
 
-additional option: `Copy data sets between histories <#copy>`__
+1. Data upload from your computer
+2. Import a shared data set from the Galaxy data library
+3. Download annotation data from public servers
 
- #### Upload files from your computer The data upload of files <2 GB
-that lie on your computer is fairly straight-forward: click on the
-category "Get data" and choose the tool "Upload file". Then select the
-file via the "Browse" button.
+an additional option is to Copy data sets between histories
 
-For files >2GB there's the option to upload via an FTP server. If your
-data is available via an URL that links to an FTP server, you can simply
+
+Upload files from your computer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The data upload of files **smaller than 2 GB** that lie on your computer is fairly straight-forward: click on the category "Get data" and choose the tool "Upload file".
+Then select the file via the "Browse" button.
+
+.. image:: ../images/Gal_DataUpload.png
+
+For files **greater than 2GB**, there's the option to upload via an FTP server. If your data is available via an URL that links to an FTP server, you can simply
 paste the URL in the empty text box.
 
 If you do not have access to an FTP server, you can directly upload to
@@ -156,7 +165,10 @@ copied over via filezilla should appear. Select the files you want and
 hit “execute”. They will be moved from the FTP server to your history
 (i.e. they will be deleted from the FTP once the upload was successful).
 
- #### Import data sets from the Galaxy data library
+.. image:: ../images/Gal_filezilla.png
+
+Import data sets from the Galaxy data library
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you would like to play around with sample data, you can import files
 that we have saved within the general data storage of the deepTools
@@ -175,7 +187,8 @@ project <https://urldefense.proofpoint.com/v2/url?u=http-3A__www.roadmapepigenom
 find signal tracks of DNase-seq data from UCSC, bigWig files with GC
 content for flies and mice and some annotation files.
 
- #### Download annotation files from public data bases
+Download annotation files from public data bases
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In many cases you will want to query your sequencing data results for
 known genome annotation, such as genes, exons, transcription start sites
@@ -248,31 +261,12 @@ We provide the following kinds of tools:
 3. `operating on genomic intervals <#BED>`__
 4. `working with text files and tables <#textfiles>`__
 
- #### deepTools
+deepTools
+^^^^^^^^^^
 
 The most important category is called **"deepTools"** that contains 8
 major tools (for information on the data formats, see our
-`Glossary <Glossary#wiki-formats>`__):
-
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| tool                                                                            | type            | input files            | main output file(s)                                   | application                                                                                                      |
-+=================================================================================+=================+========================+=======================================================+==================================================================================================================+
-| `bamCorrelate <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_QC&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=M287ZN3LtIvrF8jqLOA_lh3SynuDqAvhwvhewnQQtWU&e= >`__                | QC              | 2 or more BAM          | clustered heatmap                                     | Pearson or Spearman correlation between read distributions                                                       |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `bamFingerprint <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_QC&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=M287ZN3LtIvrF8jqLOA_lh3SynuDqAvhwvhewnQQtWU&e= >`__              | QC              | 2 BAM                  | 1 diagnostic plot                                     | assess enrichment strength of a ChIP sample                                                                      |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `computeGCBias <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_QC&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=M287ZN3LtIvrF8jqLOA_lh3SynuDqAvhwvhewnQQtWU&e= >`__               | QC              | 1 BAM                  | 2 diagnostic plots                                    | calculate the exp. and obs. GC distribution of reads                                                             |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `bamCoverage <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Normalizations&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=cNljuZbrwHewZA2KpsBrEyFVmzffajVvGWDfXg6QUsI&e= >`__     | normalization   | BAM                    | bedGraph or bigWig                                    | obtain the normalized read coverage of a single BAM file                                                         |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `bamCompare <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Normalizations&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=cNljuZbrwHewZA2KpsBrEyFVmzffajVvGWDfXg6QUsI&e= >`__      | normalization   | 2 BAM                  | bedGraph or bigWig                                    | normalize 2 BAM files to each other using a mathematical operation of your choice (e.g. log2ratio, difference)   |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `computeMatrix <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Visualizations&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=c1YbtCNRnVyBTK2OhuniY1d3sWFqS8hvLtYpqkPVJJU&e= >`__   | visualization   | 1 bigWig, 1 BED        | zipped file, to be used with heatmapper or profiler   | compute the values needed for heatmaps and summary plots                                                         |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `heatmapper <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Visualizations&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=c1YbtCNRnVyBTK2OhuniY1d3sWFqS8hvLtYpqkPVJJU&e= >`__      | visualization   | computeMatrix output   | heatmap of read coverages                             | visualize the read coverages for genomic regions                                                                 |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
-| `profiler <https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Visualizations&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=c1YbtCNRnVyBTK2OhuniY1d3sWFqS8hvLtYpqkPVJJU&e= >`__        | visualization   | computeMatrix output   | summary plot ("meta-profile")                         | visualize the average read coverages over a group of genomic regions                                             |
-+---------------------------------------------------------------------------------+-----------------+------------------------+-------------------------------------------------------+------------------------------------------------------------------------------------------------------------------+
+:doc:`help_glossary`_)
 
 We have compiled several sources of detailed information specifically
 about the usage of deepTools:
@@ -287,7 +281,8 @@ about the usage of deepTools:
    feeling for the kinds of analyses than can be done with `deepTools
    Galaxy <https://urldefense.proofpoint.com/v2/url?u=http-3A__deeptools.ie-2Dfreiburg.mpg.de_&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=1xpNM-7I4Z6-ZIJErjnO726mjBKdGH92RCWOc5kGh-U&e= >`__
 
- #### Peak calling
+Peak calling
+^^^^^^^^^^^^^^
 
 In ChIP-seq analysis, peak calling algorithms are essential downstream
 analysis tools to identify regions of significant enrichments (i.e.
@@ -314,7 +309,8 @@ was developed for diffuse ChIP-seq signals. Note that MACS version 1.14
 is quite different from MACS version 2 (which has still not been
 released officially).
 
- #### Working with genomic intervals
+Working with genomic intervals
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Galaxy has 2 file formats to store lists of genomic regions:
 
@@ -385,15 +381,20 @@ There are 3 main categories:
 -  this category is very useful if you have several data sets that you
    would like to work with, e.g. by comparing them
 
- Workflows -------------------- Workflows are Galaxy's equivalent of
-protocols. This is a very useful feature as it allows users to *share
+Workflows
+--------------------
+
+Workflows are Galaxy's equivalent of protocols.
+This is a very useful feature as it allows users to *share
 their protocols and bioinformatic analyses* in a very easy and
-transparent way. This is the graphical representation of a Galaxy
+transparent way.
+This is the graphical representation of a Galaxy
 workflow that can easily be modified via drag'n'drop within the
 workflows manual (you must be registered with deepTools Galaxy to be
 able to generate your own workflows or edit published ones).
 
- Where to get help? --------------------
+Where to get help?
+--------------------
 
 Please check our `deepTools Galaxy FAQs <Galaxy-related-FAQs>`__
 
@@ -402,41 +403,3 @@ Please check our `deepTools Galaxy FAQs <Galaxy-related-FAQs>`__
 -  if you encounter a failing data set (marked in red), please send a
    bug report via Galaxy and we will get in touch
 
---------------
-
-[BAM]: https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dbam&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=4s8bNp2xiuSYeg1ciP39Zk5vl1yGRdYsdmm9L6Dt3js&e= 
-"binary version of a SAM file; contains all [2bit]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2D2bit&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=hY3YfYUk1KnxinaAd8GqZ43U55Uj61r4rfQiGr0NXEw&e=  "binary
-file for storage of genome sequences" [BAM]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dbam&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=4s8bNp2xiuSYeg1ciP39Zk5vl1yGRdYsdmm9L6Dt3js&e=  "binary
-version of a SAM file; contains all information about aligned reads"
-[bed]: https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dbed&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=dVLZQh5CDsXp5VX_qzlTGG6faxAnXxc8G3I_9tEfIMk&e= 
-"text file that usually contains gene information such as chromosome,
-gene start, gene end, gene name, strand information - can be used for
-any genomic region representation" [BED]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dbed&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=dVLZQh5CDsXp5VX_qzlTGG6faxAnXxc8G3I_9tEfIMk&e=  "text file
-that usually contains gene information such as chromosome, gene start,
-gene end, gene name, strand information - can be used for any genomic
-region representation" [bedGraph]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dbedgraph&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=hzTadb7yyWFGP2Tw67lqaUzatpJy1oCC0DCkQTn-xg8&e=  "text
-file that contains genomic intervals and corresponding scores, e.g.
-average read numbers per 50 bp" [bigWig]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dbigwig&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=oJY9v7J2NvZ7Z9VZ3mbEVE4y3oFYBsp7ZFYEJwV07fQ&e=  "binary
-version of a bedGraph file; contains genomic intervals and corresponding
-scores, e.g. average read numbers per 50 bp" [FASTA]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dfasta&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=bDZMMpe_KpxkJVz7Ie6rqaZa0arV8SiBF3BskeiuufQ&e=  "simple
-text-file containing nucleotide or protein sequences" [FASTQ]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dfastq&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=pMECqizr5WJD4-RiG4D13WZQ6cPyrDOPhUrrvfng_s8&e=  "text
-file of raw reads (almost straight out of the sequencer)" [SAM]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23wiki-2Dsam&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=tXZY5fBPlaghyABUCjn7Bgsq3WIiwT6aG8AtFdrIhrs&e=  "text file
-containing all information about aligned reads" [bin]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23terminology&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=6eEl4AmbagKPOVR3tr7FOQzc_ZXmkOyVqhQiuYgQozg&e= 
-"typically a small region of the genome, used to 'store' a score;
-created by artificially dividing the genome" [read]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23terminology&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=6eEl4AmbagKPOVR3tr7FOQzc_ZXmkOyVqhQiuYgQozg&e=  "the DNA
-piece that was actually sequenced ("read") by the sequencing machine
-(usually between 30 to 100 bp long, depending on the read-length of the
-sequencing protocol)" [input]:
-https://urldefense.proofpoint.com/v2/url?u=https-3A__github.com_fidelram_deepTools_wiki_Glossary-23terminology&d=BQIGaQ&c=lb62iw4YL4RFalcE2hQUQealT9-RXrryqt9KZX2qu2s&r=YPs4H2QfvX0QdeqqpLIqoKZMYe9vwL5KkadTIhRrkBU&m=V0hrMSIcFCpE37KzRB4Nzvnu1qyvX8PcXgnmi5X4OxU&s=6eEl4AmbagKPOVR3tr7FOQzc_ZXmkOyVqhQiuYgQozg&e= 
-"confusing, albeit commonly used name for the 'no-antibody' control
-sample for ChIP experiments"
