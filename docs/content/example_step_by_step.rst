@@ -21,7 +21,7 @@ There are many more ways in which you can use `deepTools Galaxy <http://deeptool
 I have downloaded/received a :ref:`bam` file - how do I generate a file I can look at in a genome browser?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: :doc:`bamCoverage`
+* tool: :doc:`tools/bamCoverage`
 * input: your BAM file
 
 Note: BAM files can also be viewed in genome browsers, however, they're large and tend to freeze the applications. Generating bigWig files of read coverages will help you a lot in this regard. In addition, if you have more than one sample you'd like to look at, it is helpful to normalize all of them to 1x sequencing depth.
@@ -32,7 +32,7 @@ Note: BAM files can also be viewed in genome browsers, however, they're large an
 How can I assess the reproducibility of my sequencing replicates?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: :doc:`multiBamCoverage`
+* tool: :doc:`tools/multiBamCoverage`
 * input: BAM files
     * you can compare as many samples as you want, though the more you use the longer the computation will take
 
@@ -45,7 +45,7 @@ How do I know whether my sample is GC biased? And if it is, how do I correct for
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * you need a BAM file of your sample
-* use the tool :doc:`computeGCbias` on that BAM file (default settings, just make sure your reference genome and genome size are matching)
+* use the tool :doc:`tools/computeGCBias` on that BAM file (default settings, just make sure your reference genome and genome size are matching)
 
 .. image:: ../images/GalHow_computeGCbias.png
     :target: ../images/GalHow_computeGCbias.png
@@ -54,7 +54,7 @@ How do I know whether my sample is GC biased? And if it is, how do I correct for
 * have a look at the image that is produced and compare it to the examples :ref:`here <computeGCBias_example_image>`
 * if your sample shows an almost linear increase in exp/obs coverage (on the log scale of the lower plot), then you should consider correcting the GC bias - *if* you think that the biological interpretation of this data would otherwise be compromised (e.g. by comparing it to another sample that does not have an inherent GC bias)
 
-    + the GC bias can be corrected with the tool :doc:`correctGCbias` using the second output of the computeGCbias tool that you had to run anyway
+    + the GC bias can be corrected with the tool :doc:`tools/correctGCBias` using the second output of the computeGCbias tool that you had to run anyway
 
     + CAUTION!! correctGCbias will add reads to otherwise depleted regions (typically GC-poor regions), that means that you should **not** remove duplicates in any downstream analyses based on the GC-corrected BAM file (we therefore recommend removing duplicates before doing the correction so that only those duplicate reads are kept that were produced by the GC correction procedure)
 
@@ -65,7 +65,7 @@ How do I get an input-normalized ChIP-seq coverage file?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * input: you need two BAM files, one for the input and one for the ChIP-seq experiment
-* tool: :doc:`bamCompare` with ChIP = treatment, input = control sample
+* tool: :doc:`tools/bamCompare` with ChIP = treatment, input = control sample
 
 .. image:: ../images/GalHow_bamCompare.png
     :target: ../images/GalHow_bamCompare.png
@@ -73,7 +73,7 @@ How do I get an input-normalized ChIP-seq coverage file?
 How can I compare the ChIP strength for different ChIP experiments?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: :doc:`plotFingerprint`
+* tool: :doc:`tools/plotFingerprint`
 * input: as many BAM files as you'd like to compare. Make sure you get all the labels right!
 
 .. image:: ../images/GalHow_plotFingerprint.png
@@ -82,7 +82,7 @@ How can I compare the ChIP strength for different ChIP experiments?
 How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages around the transcription start site of all genes?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tools: :doc:`computeMatrix`, then :doc:`plotHeatmap`
+* tools: :doc:`tools/computeMatrix`, then :doc:`tools/plotHeatmap`
 * inputs:
     * 1 bigWig file of normalized read coverages (e.g. the result of bamCoverage or bamCompare)
     * 1 BED or INTERVAL file of genes, e.g. obtained through Galaxy via "Get Data" --> "UCSC main table browser" --> group: "Genes and Gene Predictions" --> (e.g.) "RefSeqGenes" --> send to Galaxy (see screenshots below)
@@ -90,13 +90,13 @@ How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages
 .. image:: ../images/GalHow_clustHM01.png
     :target: ../images/GalHow_clustHM01.png
 
-* use :doc:`computeMatrix` with the bigWig file and the BED file
+* use :doc:`tools/computeMatrix` with the bigWig file and the BED file
 * indicate "reference-point"  (and whatever other option you would like to tune, see screenshot below)
 
 .. image:: ../images/GalHow_clustHM02.png
     :target: ../images/GalHow_clustHM02.png
 
-* use the output from computeMatrix with :doc:`plotHeatmap`
+* use the output from computeMatrix with :doc:`tools/plotHeatmap`
     * if you would like to cluster the signals, choose "k-means clustering" (last option of "advanced options") with a reasonable number of clusters (usually between 2 to 7)
 
 .. image:: ../images/GalHow_clustHM03.png
@@ -130,12 +130,12 @@ How to obtain a BED file for X chromosomal and autosomal genes each
 Compute the average values for X and autosomal genes 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* use :doc:`computeMatrix` for all of the signal files (bigWig format) at once
+* use :doc:`tools/computeMatrix` for all of the signal files (bigWig format) at once
 
     * supply both filtered BED files (click on "Add new regions to plot" once) and label them
     * indicate the corresponding signal files
 
-* now use :doc:`plotProfile` on the resulting file
+* now use :doc:`tools/plotProfile` on the resulting file
 
     * important: display the "advanced output options" and select "save the data underlying the average profile" --> this will generate a table in addition to the summary plot images
 
