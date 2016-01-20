@@ -64,7 +64,7 @@ To display data in IGV, do the following:
 .. image:: ../images/Gal_FAQ_IGV_dataset.png
     :target: ../images/Gal_FAQ_IGV_dataset.png
 
-Now click on “display with IGV local” to visualize your data set in IGV that should already be running on your computer. _(“display with IGV Web current” can be used if you do not have an installed IGV. It will start an IGV web start version. We do not recommend that option.)_
+Now click on “display with IGV local” to visualize your data set in IGV that should already be running on your computer. *“display with IGV Web current” can be used if you do not have an installed IGV. It will start an IGV web start version. We do not recommend that option*.
 
 Here's a screenshot of a typical bigWig file display:
 

@@ -24,6 +24,8 @@ The profile of the expected DNA fragment distribution is then compared to the **
 In an ideal experiment, the observed GC profile would, of course, look like the expected profile.
 This is indeed the cae when applying ``computeGCBias`` to simulated reads. 
 
+.. _computeGCBias_example_image:
+
 .. image:: ../../images/GC_bias_simulated_reads_2L.png
 
 As you can see, both plots based on **simulated reads** do not show enrichments or depletions for specific GC content bins, there is an almost flat line around the log2ratio of 0 (= ratio(observed/expected) of 1). The fluctuations on the ends of the x axis are due to the fact that only very, very few regions in the *Drosophila* genome have such extreme GC fractions so that the number of fragments that are picked up in the random sampling can vary.
