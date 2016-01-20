@@ -75,12 +75,6 @@ def plotCorrelationArgs():
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
 
-    group = parser.add_argument_group('Output optional options')
-
-    group.add_argument('--outFileCorMatrix',
-                       help='Save correlation matrix to this file.',
-                       metavar='FILE',
-                       type=argparse.FileType('w'))
     return parser
 
 

@@ -305,7 +305,7 @@ def main(args=None):
                                      verbose=args.verbose
                                      )
 
-    wr.run(FUNC, func_args, args.outFileName, format=args.outFileFormat, smooth_length=args.smoothLength)
+    wr.run(FUNC, func_args, args.outFileName, format=args.outFileFormat, smoothLength=args.smoothLength)
 
 if __name__ == "__main__":
     main()
