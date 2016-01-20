@@ -16,26 +16,23 @@ Once you've copied a data set from one history to another, check two things:
 * do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
 * hit the refresh button
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_historyReload.png" Title="Galaxy history refresh button" />
-</a>
+.. image:: ../images/Gal_historyReload.png
+    :target: ../images/Gal_historyReload.png
 
 How can I use a published workflow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You **must register** if you want to use the workflows within [deepTools Galaxy][]. ("User" &rarr; "Register" - all you have to supply is an email address)
+You **must register** if you want to use the workflows within `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__. ("User" --> "Register" - all you have to supply is an email address)
 
-You can find workflows that are public or specifically shared with you by another user via "Shared Data" &rarr; "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
+You can find workflows that are public or specifically shared with you by another user via "Shared Data" --> "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf01.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf01.png" Title="Finding published workflows" />
-</a>
+.. image:: ../images/GalHow_wf01.png
+    :target: ../images/GalHow_wf01.png
 
 A green box should appear, there you select "start using this workflow", which should lead you to your own workflow menu (that you can always access via the top menu "Workflow"). Here, you should now see a workflow labeled "imported: ....". If you want to use the workflow right away, click on the triangle and select "Run". The workflow should now be available within the Galaxy main data frame and should be waiting for your input.
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_wf02.png" Title="Finding published workflows" />
-</a>
+.. image:: ../images/GalHow_wf02.png
+    :target: ../images/GalHow_wf02.png
 
 I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -47,12 +44,12 @@ Go to the workflows, click on the ones you're interested in and go to "Download"
 How can I have a look at the continuous read coverages from bigWig files? Which genome browser do you recommend?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are 2 popular genome browsers for visualizing continuous data: [UCSC](http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu "UCSC") and [IGV](http://www.broadinstitute.org/igv/ "IGV").
+There are 2 popular genome browsers for visualizing continuous data: `UCSC <http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu>`__ and `IGV <http://www.broadinstitute.org/igv/>`__.
 
 IGV (recommended)
 """"""""""""""""""
 
-We recommend downloading [IGV](http://www.broadinstitute.org/igv/ "IGV"), which is free for academic use. IGV itself needs an up-to-date Java installation and a considerable amount of RAM. It's usage is rather intuitive and the display can be easily customized. In addition, you can download genome-wide annotation data that can be displayed together with your own data.
+We recommend downloading `IGV <http://www.broadinstitute.org/igv/>`__, which is free for academic use. IGV itself needs an up-to-date Java installation and a considerable amount of RAM. It's usage is rather intuitive and the display can be easily customized. In addition, you can download genome-wide annotation data that can be displayed together with your own data.
 
 To display data in IGV, do the following:
 
@@ -61,42 +58,39 @@ To display data in IGV, do the following:
 3. Use the igv.bat (Windows), igv.sh (Linux) or igv.command (OSX) to start IGV (for more information please read the included readme.txt file or the IGV documentation)
 4. Choose the genome version of the file(s) you would like to visualize (e.g. dm3) THIS IS THE MOST IMPORTANT STEP! IGV will not detect the genome version automatically, i.e. if you select mm9 but your file is based on human data, it will still be displayed without an error message (but with the wrong positions, obviously!)
 5. Go to your deepTools Galaxy server (http://deeptools.ie-freiburg.mpg.de/) and navigate to your data set of choice
-6. Click on your data set so that you see its details like in the screenshot below (_Keep in mind that not all datasets can be visualized in IGV or UCSC._ We recommend to use [bigWig][] or [BED][] files for visualization.)
+6. Click on your data set so that you see its details like in the screenshot below (**Keep in mind that not all datasets can be visualized in IGV or UCSC.** We recommend to use :ref:`bigwig` or :ref:`bed` files for visualization.)
 
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV_dataset.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV_dataset.png" Title="Screenshot of a bigWig file in Galaxy" />
-</a>
+.. image:: ../images/Gal_FAQ_IGV_dataset.png
+    :target: ../images/Gal_FAQ_IGV_dataset.png
 
 Now click on “display with IGV local” to visualize your data set in IGV that should already be running on your computer. _(“display with IGV Web current” can be used if you do not have an installed IGV. It will start an IGV web start version. We do not recommend that option.)_
 
 Here's a screenshot of a typical bigWig file display:
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_IGV.png" Title="Screenshot of IGV browser display of bigWig files" />
-</a>
+
+.. image:: ../images/Gal_FAQ_IGV.png
+    :target: ../images/Gal_FAQ_IGV.png
 
 
-For more information, check out the [IGV documentation](http://www.broadinstitute.org/software/igv/UserGuide "IGV User Guide").
+For more information, check out the `IGV documentation <http://www.broadinstitute.org/software/igv/UserGuide>`__.
 
 UCSC
 """"""
 
 There is a direct link from within deepTools Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC_dataset.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC_dataset.png" Title="Screenshot of bigWig file in Galaxy" />
-</a>
+.. image:: ../images/Gal_FAQ_UCSC_dataset.png
+    :target: ../images/Gal_FAQ_UCSC_dataset.png
 
 Click on "main" and the UCSC browser should open within a new window, displaying the data set that you chose.
 The default setting for bigWig files is the "dense" display that looks like a heatmap.
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC01.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/Gal_FAQ_UCSC01.png" Title="Screenshot of UCSC browser display of bigWig files" />
-</a>
+.. image:: ../images/Gal_FAQ_UCSC01.png
+    :target: ../images/Gal_FAQ_UCSC01.png
 
 If you would like to display the continuous profile in a "valley-mountain" fashion like the one shown in the IGV screenshot, go to the drop-down menu underneath your custom track and choose "full".
 
-UCSC has large amounts of public data that you can display which you can find by scrolling down the page, beyond your custom track entry. For more information on how to use the UCSC Genome Browser, go [here](https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html "UCSC user guide").
+UCSC has large amounts of public data that you can display which you can find by scrolling down the page, beyond your custom track entry. For more information on how to use the UCSC Genome Browser, go `here <https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html>`__.
 
 **Known issues with UCSC**
 
@@ -109,48 +103,14 @@ What's the best way to integrate the deepTools results with other downstream ana
 * you can save all the data tables underlying every image produced by deepTools, i.e. if you would like to plot the average profiles in a different way, you could download the corresponding data (after ticking the profiler option at "advanced output options") and import them into R, Excel, GraphPadPrism etc.
 
 
-How can I determine basic parameters of a BAM file, such as the number of reads, [read][] length, duplication rate and average DNA fragment length?
+How can I determine basic parameters of a BAM file, such as the number of reads, read length, duplication rate and average DNA fragment length?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Even though [MACS][] is meant to do peak calling for you, it also outputs additional useful information, such as that listed above.
+Even though `MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`__ is meant to do peak calling for you, it also outputs additional useful information, such as that listed above.
 Simply run MACS on the BAM file in question and check the .xls file from the MACS output. It will list:
 
 * tag length = read length
 * duplication rate
 * number of tags = number of reads
 * d = distance = average DNA fragment size
-
---------------------------------------------
-[multiBamCoverage]: https://github.com/fidelram/deepTools/wiki/QC
-[plotFingerprint]: https://github.com/fidelram/deepTools/wiki/QC
-[computeGCBias]: https://github.com/fidelram/deepTools/wiki/QC
-[bamCoverage]: https://github.com/fidelram/deepTools/wiki/Normalizations
-[bamCompare]: https://github.com/fidelram/deepTools/wiki/Normalizations
-[correctGCbias]: https://github.com/fidelram/deepTools/wiki/Normalizations
-[computeMatrix]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[heatmapper]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[profiler]: https://github.com/fidelram/deepTools/wiki/Visualizations
-[MACS]: http://www.ncbi.nlm.nih.gov/pubmed/22936215 "How to use MACS, Nature Protocols"
-[CCAT]: http://www.ncbi.nlm.nih.gov/pubmed/20371496 "CCAT original publication"
-[SICER]: http://bioinformatics.oxfordjournals.org/content/25/15/1952.full "SICER original publication"
-
-[Galaxy]: http://galaxyproject.org/ "General Galaxy platform from Penn State"
-[GEO]: http://www.ncbi.nlm.nih.gov/geo/ "GEO database"
-[Roadmap project]: http://www.roadmapepigenomics.org/data "Roadmap web site"
-[UCSC]: http://genome.ucsc.edu/ "UCSC Genome web site"
-[BioMart]: http://www.biomart.org/ "Biomart web site"
-[deepTools Galaxy]: http://deeptools.ie-freiburg.mpg.de/ "deepTools Galaxy at the Max-Planck-Institute of Immunobiology and Epigenetics"
-
-[2bit]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-2bit "binary file for storage of genome sequences"
-[BAM]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bam "binary version of a SAM file; contains all information about aligned reads"
-[bed]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed "text file that usually contains gene information such as chromosome, gene start, gene end, gene name, strand information - can be used for any genomic region representation"
-[BED]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed "text file that usually contains gene information such as chromosome, gene start, gene end, gene name, strand information - can be used for any genomic region representation"
-[bedGraph]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bedgraph "text file that contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[bigWig]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig "binary version of a bedGraph file; contains genomic intervals and corresponding scores, e.g. average read numbers per 50 bp"
-[FASTA]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fasta "simple text-file containing nucleotide or protein sequences"
-[FASTQ]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-fastq "text file of raw reads (almost straight out of the sequencer)"
-[SAM]: https://github.com/fidelram/deepTools/wiki/Glossary#wiki-sam "text file containing all information about aligned reads"
-[bin]: https://github.com/fidelram/deepTools/wiki/Glossary#terminology "typically a small region of the genome, used to 'store' a score; created by artificially dividing the genome"
-[read]: https://github.com/fidelram/deepTools/wiki/Glossary#terminology "the DNA piece that was actually sequenced  ("read") by the sequencing machine (usually between 30 to 100 bp long, depending on the read-length of the sequencing protocol)" 
-[input]: https://github.com/fidelram/deepTools/wiki/Glossary#terminology "confusing, albeit commonly used name for the 'no-antibody' control sample for ChIP experiments"
 

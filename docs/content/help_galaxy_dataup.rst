@@ -23,12 +23,11 @@ If you do not have access to an FTP server, you can directly upload to
 our Galaxy's FTP.
 
 1. Register with deeptools.ie-freiburg.mpg.de (via “User” ⟶ “register”; registration requires an email address and is free of charge)
-2. You will also need an FTP client, e.g. `filezilla <https://filezilla-project.org/>`_.
+2. You will also need an FTP client, e.g. `filezilla <https://filezilla-project.org/>`__.
 3. Then login to the **FTP client** using your **deepTools Galaxy user name and password** (host: deeptools.ie-freiburg.mpg.de). Down below you see a screenshot of what that looks like with filezilla.
 4. Copy the file you wish to upload to the remote site (in filezilla, you can simply drag the file to the window on the right hand side)
-5. Go back to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de/>`_.
-6. Click on the tool "Upload file" (⟶ "Files uploaded via FTP") - here, the files you just copied over via filezilla should appear. Select the files you want and hit “execute”. They will be moved from the FTP server to your history
-(i.e. they will be deleted from the FTP once the upload was successful).
+5. Go back to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de/>`__.
+6. Click on the tool "Upload file" (⟶ "Files uploaded via FTP") - here, the files you just copied over via filezilla should appear. Select the files you want and hit “execute”. They will be moved from the FTP server to your history (i.e. they will be deleted from the FTP once the upload was successful).
 
 .. image:: ../images/Gal_filezilla.png
 
@@ -45,10 +44,10 @@ select "Data Libraries".
 
 Within the Data Library you will find a folder called "Sample Data" that
 contains data that we downloaded from the `Roadmap
-project <http://www.roadmapepigenomics.org/data>`_ and
-`UCSC <http://genome.ucsc.edu/>`_ 
+project <http://www.roadmapepigenomics.org/data>`__ and
+`UCSC <http://genome.ucsc.edu/>`__ 
 More precisely, we donwloaded the [FASTQ][] files of various ChIP-seq samples and the corresponding input and mapped the reads to the human reference genome (version hg19) to obtain the [BAM][] files you see.
- In addition, you will find bigWig files created using ``bamCoverage`` and some annotation files in BED format as well as RNA-seq data.
+In addition, you will find bigWig files created using ``bamCoverage`` and some annotation files in BED format as well as RNA-seq data.
 
 .. note:: To keep the file size smallish, all files contain data for chromosome 19 and chromosome X only!
 
@@ -60,7 +59,7 @@ Download annotation files from public data bases
 In many cases you will want to query your sequencing data results for
 known genome annotation, such as genes, exons, transcription start sites
 etc. These information can be obtained via the two main sources of
-genome annotation, `UCSC <http://genome.ucsc.edu/>`_ and `BioMart <http://www.biomart.org/>`_.
+genome annotation, `UCSC <http://genome.ucsc.edu/>`__ and `BioMart <http://www.biomart.org/>`__.
 
 .. warning:: UCSC and BioMart cater to different ways of genome annotation, i.e. genes defined in UCSC might not correspond to the same regions in a gene file downloaded from BioMart. (For a brief overview over the issues of genome annotation, you can check out `Wikipedia <http://en.wikipedia.org/wiki/Genome_project>`_, if you always wanted to know much more about those issues, `this <http://www.ncbi.nlm.nih.gov/pubmed/22510764>`_ might be a good start.)
 
@@ -100,10 +99,10 @@ Copying can easily be done via the History panel's ``option`` button ⟶ "Copy d
 
 .. hint:: If you encounter a failing data set (marked in red), please **send a bug report** via the Galaxy bug report button and we will get in touch if you indicate your email address.
 
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| `http://wiki.galaxyproject.org/Learn <http://wiki.galaxyproject.org/Learn>`_  | Help for Galaxy usage in general                                |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| `deepTools Galaxy FAQs <Galaxy-related-FAQs>`_                                | Frequently encountered issues with our specific Galaxy instance |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| deeptools@googlegroups.com                                                    | For issues not addressed in the FAQs                            |
-+-------------------------------------------------------------------------------+-----------------------------------------------------------------+
++--------------------------------------------------------------------------------+-----------------------------------------------------------------+
+| `http://wiki.galaxyproject.org/Learn <http://wiki.galaxyproject.org/Learn>`__  | Help for Galaxy usage in general                                |
++--------------------------------------------------------------------------------+-----------------------------------------------------------------+
+| `deepTools Galaxy FAQs <Galaxy-related-FAQs>`__                                | Frequently encountered issues with our specific Galaxy instance |
++--------------------------------------------------------------------------------+-----------------------------------------------------------------+
+| deeptools@googlegroups.com                                                     | For issues not addressed in the FAQs                            |
++--------------------------------------------------------------------------------+-----------------------------------------------------------------+

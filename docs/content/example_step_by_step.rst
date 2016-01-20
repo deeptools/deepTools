@@ -5,56 +5,50 @@ Step-by-step protocols
     :local:
 
 
-How can I do...? <a name="HowTo"></a>
---------------------------------------------------
+How can I do...?
+----------------
 
 This section should give you a quick overview of how to do many common tasks. We're using screenshots from Galaxy here, so if you're using the command-line version then you can easily follow the given examples by typing the program name and the help option (e.g. /deepTools/bin/bamCoverage --help), which will show you all the parameters and options (most of them named very similarly to those in Galaxy).
 
-For each "recipe" here, you will find the screenshot of the tool and the input parameters on the left hand side (we marked non-default, _user-specified entries_) and screenshots of the output on the right hand side. Do let us know if you spot things that are missing, should be explained better, or are simply confusing!
+For each "recipe" here, you will find the screenshot of the tool and the input parameters on the left hand side (we marked non-default, *user-specified entries*) and screenshots of the output on the right hand side. Do let us know if you spot things that are missing, should be explained better, or are simply confusing!
 
-There are many more ways in which you can use [deepTools Galaxy][] than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
+There are many more ways in which you can use `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__ than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
 
-> All recipes assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g. [deepTools Galaxy][].
+    All recipes assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__
 
-> If you would like to try out the protocols with __sample data__, go to [deepTools Galaxy][]  &rarr; "Shared Data"  &rarr; "Data Libraries"  &rarr; "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test datasets by clicking "Download" at the top.
+    If you would like to try out the protocols with **sample data**, go to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__  --> "Shared Data"  --> "Data Libraries"  --> "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test datasets by clicking "Download" at the top.
 
-___________________________________
-<a name="FASTQ2IGV"></a>
-#### I have downloaded/received a [BAM][] file - how do I generate a file I can look at in a genome browser?
+I have downloaded/received a :ref:`bam` file - how do I generate a file I can look at in a genome browser?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: [bamCoverage][]
+* tool: :doc:`bamCoverage`
 * input: your BAM file
 
 Note: BAM files can also be viewed in genome browsers, however, they're large and tend to freeze the applications. Generating bigWig files of read coverages will help you a lot in this regard. In addition, if you have more than one sample you'd like to look at, it is helpful to normalize all of them to 1x sequencing depth.
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCoverage.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_bamCoverage.png" Title="deepTools Galaxy screenshot of bamCoverage usage and output" />
-</a>
+.. image:: ../images/GalHow_bamCoverage.png
+    :target: ../images/GalHow_bamCoverage.png
 
-___________________________________
-<a name="repCorr"></a>
-#### How can I assess the reproducibility of my sequencing replicates?
+How can I assess the reproducibility of my sequencing replicates?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: [multiBamCoverage][]
+* tool: :doc:`multiBamCoverage`
 * input: BAM files
     * you can compare as many samples as you want, though the more you use the longer the computation will take
 
 * output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages will be
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_multiBamCoverage.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_multiBamCoverage.png" Title="deepTools Galaxy screenshot of multiBamCoverage usage and output" />
-</a>
+.. image:: https://raw.github.com/fidelram/deepTools/master/examples/GalHow_multiBamCoverage.png
+    :target: https://raw.github.com/fidelram/deepTools/master/examples/GalHow_multiBamCoverage.png
 
-___________________________________
-<a name="GC"></a>
-#### How do I know whether my sample is GC biased? And if it is, how do I correct for it?
+How do I know whether my sample is GC biased? And if it is, how do I correct for it?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * you need a BAM file of your sample
-* use the tool [computeGCbias][] on that BAM file (default settings, just make sure your reference genome and genome size are matching)
+* use the tool :doc:`computeGCbias` on that BAM file (default settings, just make sure your reference genome and genome size are matching)
 
-<a href="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_computeGCbias.png" target="_blank">
-     <img src="https://raw.github.com/fidelram/deepTools/master/examples/GalHow_computeGCbias.png" Title="deepTools Galaxy screenshot of computeGCbias" />
-</a>
+.. image:: https://raw.github.com/fidelram/deepTools/master/examples/GalHow_computeGCbias.png
+    :target: https://raw.github.com/fidelram/deepTools/master/examples/GalHow_computeGCbias.png
 
 
 * have a look at the image that is produced and compare it to the examples [here](https://github.com/fidelram/deepTools/wiki/QC)
