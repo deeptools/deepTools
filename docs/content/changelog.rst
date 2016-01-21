@@ -1,17 +1,16 @@
 Changes in deepTools2.0
 ========================
 
+.. contents:: 
+    :local:
+
 Major changes
 -------------
 
-.. note:: The major changes encompass features for **increased efficiency**, 
-**new sequencing data types**, and **additional plots**, particularly for QC.
+.. note:: The major changes encompass features for **increased efficiency**, **new sequencing data types**, and **additional plots**, particularly for QC.
 
 Moreover, deepTools modules can now be used by other python programs.
 The :ref:`api` is now part of the documentation.
-
-.. contents:: 
-    :local:
 
 Accommodating additional data types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -25,9 +24,9 @@ Accommodating additional data types
 Structural updates
 ^^^^^^^^^^^^^^^^^^^
 
-* Virtualization for stability: we now provide a ``docker`` image
-* We provide deepTools in the Galaxy ``toolshed`` for easy deployment.
-* Our documentation is now version-aware thanks to readthedocs
+* All modules have comprehensive and automatic tests that evaluate proper functioning after any modification of the code.
+* Virtualization for stability: we now provide a ``docker`` image and enable the easy deployment of deepTools via the Galaxy ``toolshed``.
+* Our documentation is now version-aware thanks to readthedocs and ``sphinx``.
 * The API is public and documented.
 
 Renamed tools
