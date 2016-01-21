@@ -27,24 +27,23 @@ def parseArguments():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two BAM files based on the number of '
         'mapped reads. To compare the BAM files, the genome is partitioned '
-        'into bins of equal size, then the number of reads found in each is counted per file '
-        'and finally a summary value is '
+        'into bins of equal size, then the number of reads found in each bin'
+        'is counted per file and finally a summary value is '
         'reported. This value can be the ratio of the number of reads per '
-        'bin, the log2 of the ratio or the difference. This tool can '
+        'bin, the log2 of the ratio or the difference. \nThis tool can '
         'normalize the number of reads in each BAM file using the SES method '
-        'proposed in Diaz et al. (2012). "Normalization, bias correction, and '
-        'peak calling for ChIP-seq". Statistical applications in genetics '
-        'and molecular biology, 11(3). Normalization based on read counts '
-        'is also available. The output is either a bedgraph or bigWig file '
-        'containing the bin location and the resulting comparison values. By '
-        'default, if reads are mated, the fragment length reported in the BAM '
-        'file is used. In the case of paired-end mapping, each mate '
+        'proposed by Diaz et al. (2012) "Normalization, bias correction, and '
+        'peak calling for ChIP-seq". Statistical Applications in Genetics '
+        'and Molecular Biology, 11(3). Normalization based on read counts '
+        'is also available. \nThe output is either a bedgraph or bigWig file '
+        'containing the bin location and the resulting comparison value. By '
+        'default, if reads are paired, the fragment length reported in the BAM '
+        'file is used. Each mate, however, '
         'is treated independently to avoid a bias when a mixture of concordant '
         'and discordant pairs is present. This means that *each end* will '
         'be extended to match the fragment length.',
 
-        usage='An example usage is:\n bamCompare '
-        '-b1 treatment.bam -b2 control.bam -o log2ratio.bw',
+        usage=' bamCompare -b1 treatment.bam -b2 control.bam -o log2ratio.bw',
 
         add_help=False)
 
@@ -106,11 +105,11 @@ def getOptionalArgs():
                           type=int)
 
     optional.add_argument('--scaleFactors',
-                          help='Set this parameter to avoid the computation of '
-                          'scaleFactors. The format is '
-                          'scaleFactor1:scaleFactor2. For example 0.7:1 to '
-                          'scale the first BAM file by 0.7 while not scaling '
-                          'the second BAM file',
+                          help='Set this parameter manually to avoid the computation of '
+                          'scaleFactors. The format is scaleFactor1:scaleFactor2.'
+                          'For example, --scaleFactor 0.7:1 will cause the first BAM file to'
+                          'be multiplied by 0.7, while not scaling '
+                          'the second BAM file (multiplication with 1).',
                           default=None,
                           required=False)
 
@@ -269,8 +268,8 @@ def main(args=None):
     """
     The algorithm is composed of two parts.
 
-    1. Using the SES or mapped reads method, appropriate scaling
-       factors are determined.
+    1. Using the SES or read counts method, appropriate scaling
+       factors are determined to account for sequencing depth differences.
 
     2. The genome is transversed, scaling the BAM files, and computing
        the log ratio/ratio/difference for bins of fixed width
