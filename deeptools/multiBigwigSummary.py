@@ -16,9 +16,9 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-Given two or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
+Given one or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
-mode. Most commonly, the output of multiBigwigSummary is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
+mode. Most commonly, the output of multiBigwigSummary is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes. Note that using a single bigWig file is only recommended if you want to produce a bedGraph file (i.e., with the --outRawCounts option).
 
 A detailed sub-commands help is available by typing:
 
@@ -27,7 +27,7 @@ A detailed sub-commands help is available by typing:
   multiBigwigSummary BED-file -h
 
 """,
-            epilog='example usages:\n multiBigwigSummary bins '
+            epilog='example usage:\n multiBigwigSummary bins '
                    '-b file1.bw file2.bw -out results.npz\n\n'
                    'multiBigwigSummary BED-file -b file1.bw file2.bw -out results.npz\n'
                    '--BED selection.bed'
@@ -42,7 +42,6 @@ A detailed sub-commands help is available by typing:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
-    # read_options_parser = parserCommon.read_options()
 
     # bins mode options
     subparsers.add_parser(
@@ -167,7 +166,7 @@ def multiBigwigSummaryArgs(case='bins'):
         required.add_argument('--BED',
                               help='Limits the analysis to '
                               'the regions specified in this file.',
-                              metavar='bedfile',
+                              metavar='BED file',
                               type=argparse.FileType('r'),
                               required=True)
 
@@ -191,10 +190,6 @@ def main(args=None):
     """
     args = process_args(args)
 
-    if len(args.bwfiles) < 2:
-        print "Please input at least two bigWig (.bw) files to compare"
-        exit(1)
-
     if 'BED' in args:
         bed_regions = args.BED
     else:
@@ -203,8 +198,7 @@ def main(args=None):
     bwFiles = args.bwfiles
 
     if len(bwFiles) == 0:
-        print "No valid bigwig files"
-        exit(1)
+        sys.exit("No valid bigWig files\n")
 
     num_reads_per_bin = score_bw.getScorePerBin(
         bwFiles,
