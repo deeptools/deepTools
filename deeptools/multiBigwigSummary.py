@@ -127,8 +127,8 @@ def multiBigwigSummaryArgs(case='bins'):
 
     optional.add_argument('--chromosomesToSkip',
                           metavar='chr1 chr2',
-                          help='List of chromosomes that you do not want to be included '
-                          'for the correlation. Useful to remove "random" or "extra" chr.',
+                          help='List of chromosomes that you do not want to be included. '
+                          ' Useful to remove "random" or "extra" chr.',
                           nargs='+')
 
     if case == 'bins':
@@ -165,7 +165,7 @@ def multiBigwigSummaryArgs(case='bins'):
                               type=int)
 
         required.add_argument('--BED',
-                              help='Limits the correlation analysis to '
+                              help='Limits the analysis to '
                               'the regions specified in this file.',
                               metavar='bedfile',
                               type=argparse.FileType('r'),
@@ -186,7 +186,7 @@ def main(args=None):
     1. get read counts at different positions either
     all of same length or from genomic regions from the BED file
 
-    2. compute  correlation
+    2. compute  the scores
 
     """
     args = process_args(args)
