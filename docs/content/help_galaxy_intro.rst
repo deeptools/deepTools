@@ -4,8 +4,8 @@ Using deepTools within Galaxy
 `Galaxy <http://galaxyproject.org/>`_ is a tremendously useful platform developed by the Galaxy Team at Penn State and the Emory University. This platform is meant to offer access to a large variety of bioinformatics tools that can be used without computer programming experiences. That means, that the basic features of Galaxy will apply to every tool, i.e. every tool provided within a Galaxy framework will look very similar and will follow the concepts of Galaxy.
 
 Our publicly available deepTools Galaxy instance can be found here:
-`deeptools.ie-freiburg.mpg.de <http://deeptools.ie-freiburg.mpg.de/>`_
-This server also contains some additional tools that will enable users to analyse and visualize data from high-throughput sequencing experiments, starting from raw reads. 
+`deeptools.ie-freiburg.mpg.de <http://deeptools.ie-freiburg.mpg.de/>`_.
+This server also contains some additional tools that will enable users to analyse and visualize data from high-throughput sequencing experiments, starting from aligned reads. 
 
 **Table of content**
 
@@ -27,7 +27,11 @@ This server also contains some additional tools that will enable users to analys
 Basic features of Galaxy
 -------------------------
 
-The Galaxy team develops the platform, but since it is impossible to meet all bioinformatics needs (that can range from evolutionary analysis to data from mass spectrometry to high-throughput DNA sequencing (and way beyond)) with one single web server, many institutes have installed their own versions of Galaxy tuned to their specific needs. Our `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de/>`__ is such a specialized server dedicated to the analysis of high-throughput DNA sequencing data. The overall makeup of this web server, however, is the same as for any other Galaxy installation, so if you've used Galaxy before, you will learn to use deepTools in no time!
+Galaxy is a web-based platform for data intensive, bioinformatics-dependent research and it is being developed by Penn State and John Hopkins University. The original Galaxy can be found `here <https://galaxyproject.org/>`_.
+
+Since it is impossible to meet all bioinformatics needs -- that can range from evolutionary analysis to data from mass spectrometry to high-throughput DNA sequencing (and way beyond) -- with one single web server, many institutes have installed their own versions of the Galaxy platform tuned to their specific needs.
+
+Our `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de/>`__ is such a specialized server dedicated to the analysis of high-throughput DNA sequencing data. The overall makeup of this web server, however, is the same as for any other Galaxy installation, so if you've used Galaxy before, you will learn to use deepTools in no time!
 
 The start site
 ^^^^^^^^^^^^^^^

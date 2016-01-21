@@ -73,7 +73,7 @@ Working with text files and tables
 
 In addition to deepTools that were specifically developed for the handling of NGS data, we have incorporated several standard Galaxy tools that enable you to manipulate tab-separated files such as gene lists, peak lists, data matrices etc.
 
-There are 3 main categories for:
+There are 3 main categories;
 
 .. image:: ../images/Gal_textfiles.png
 
@@ -115,53 +115,6 @@ We offer some very basic mathematical operations on values stored with tables.
 The ``Summary Statistics`` can be used to calculate the sum, mean, standard deviation and percentiles for a set of numbers, e.g. for values stored in a specific column.
 
 .. image:: ../images/Gal_statistics.png
-
-Working with genomic intervals
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Galaxy has 2 file formats to store lists of genomic regions:
-
-INTERVAL
-~~~~~~~~~
-
-- tab-separated
-- requirements:
-    1. Column: chromosome
-    2. Column: start position
-    3. Column: end position
-- all other columns can contain any value or character
-
-BED
-~~~~
-
-- very similar to INTERVAL, but stricter when it comes to what is expected to be kept in which column:
-    - 1. to 3. Column: same as INTERVAL
-    - Column 4: name
-    - Column 5: score
-    - Column 6: strand
-
-If you would like to work with several lists of genomic regions, e.g. generate a new list of regions that are found in two different files etc., there are two categories of tools dedicated to performing these tasks:
-
-* Operate on genomic intervals
-* BEDtools
-
-Each tool's function is explained within Galaxy.
-Do browse those tools as they will give you a very good glimpse of the scope of possible analyses!
-
-Peak calling
-^^^^^^^^^^^^^^
-
-In ChIP-seq analysis, peak calling algorithms are essential downstream analysis tools to identify regions of significant enrichments (i.e. where the ChIP sample contained significantly more sequenced reads than the input control sample).
-By now, there must be close to 100 programs out there (see `Wilbanks et
-al. <http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0011471>`_ for a comparison of peak calling programs).
-
-In contrast to deepTools that were developed for handling and generating *continuous* genome-wide profiles, peak calling will result in a *list of genomic regions*. Have a look at the screenshot to understand the difference.
-
-.. image:: ../images/Gal_peaksVsBigWigs.png
-
-We have included the peak callers `MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`_ and `SICER <http://bioinformatics.oxfordjournals.org/content/25/15/1952.full>`_ within our Galaxy instance with MACS being the most popular peak calling algorithm for the identification of localized transcription factor binding sites while SICER was developed for diffuse ChIP-seq signals.
-
-.. note:: MACS version 1.14 is quite different from MACS version 2.
 
 
 **More help**
