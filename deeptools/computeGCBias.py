@@ -28,10 +28,10 @@ def parse_arguments(args=None):
         parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Computes the GC-bias using Benjamini\'s method '
-        '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
-        'The resulting GC-bias can later be used to plot '
-        'or correct the bias.',
-        usage='An example usage is:\n computeGCBias '
+        '[Benjamini & Speed (2012). Nucleic Acids Research, 40(10). doi: 10.1093/nar/gks001]. '
+        'The GC-bias is visualized and the resulting table can be used '
+        'correct the bias using correctGCBias.',
+        usage='\n computeGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt [options]',
         conflict_handler='resolve',
         add_help=False)
@@ -158,9 +158,9 @@ def getRequiredArgs():
                        help='image format type. If given, this '
                        'option overrides the '
                        'image format based on the plotFile ending. '
-                       'The available options are: "png", "emf", '
+                       'The available options are: "png", '
                        '"eps", "pdf" and "svg"',
-                       choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                       choices=['png', 'pdf', 'svg', 'eps'])
 
     return parser
 

@@ -50,7 +50,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of does not match the number of bam files."
+        print "The number of labels does not match the number of bam files."
         exit(0)
     if not args.labels:
         args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
@@ -112,10 +112,10 @@ def required_args():
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
-                          'ending. The available options are: png, emf, '
+                          'ending. The available options are: png, '
                           'eps, pdf and svg.',
                           default=None,
-                          choices=['png', 'pdf', 'svg', 'eps', 'emf'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     return parser
 

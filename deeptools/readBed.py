@@ -8,17 +8,20 @@ class ReadBed(object):
     it tries to guess the type of bed file used. Current options
     are bed3, bed6 and bed12
 
-    Example:
+    Examples
+    --------
     bed = readBed(open("file.bed", 'r'))
     for interval in bed:
-        print bed['start']
+    ... print bed['start']
 
     """
 
     def __init__(self, file_handle):
         """
-        :param file_name: name of the bed file
-        :return:
+        Parameters
+        ----------
+        file_name : str
+            name of the bed file
         """
 
         self.file_type = None
@@ -37,7 +40,6 @@ class ReadBed(object):
         """
         Skips comment lines starting with '#'
         "track" or "browser" in the bed files
-        :return:
         """
         line = self.file_handle.readline()
         if line.startswith("#") or line.startswith("track") or \
@@ -144,14 +146,16 @@ class BedInterval(object):
 
     def __init__(self, field_data_dict, line):
         """
-
-        :param field_data_dict: A dictionary of field values. E.g. {'chrom': 'chr1', 'start': 0 } etc.
-        :param line: string of the file line.
+        Parameters
+        ----------
+        field_data_dict : dict
+            A dictionary of field values. E.g. {'chrom': 'chr1', 'start': 0 } etc.
+        line : str
+            string of the file line.
 
         >>> bed = BedInterval({'chrom': '1', 'start': 1, 'end': 10}, "")
         >>> bed.start
         1
-
         >>> bed['start']
         1
         """

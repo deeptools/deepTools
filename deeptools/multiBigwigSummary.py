@@ -20,7 +20,7 @@ Given two or more bigWig files, multiBigwigSummary computes the average scores f
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
 mode. Most commonly, the output of multiBigwigSummary is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes.
 
-detailed sub-commands help available under:
+A detailed sub-commands help is available by typing:
 
   multiBigwigSummary bins -h
 
@@ -174,7 +174,7 @@ def multiBigwigSummaryArgs(case='bins'):
     group = parser.add_argument_group('Output optional options')
 
     group.add_argument('--outRawCounts',
-                       help='Save raw scores in each bigWig file to a single uncompressed file.',
+                       help='Save average scores per region for each bigWig file to a single tab-delimited file.',
                        metavar='FILE',
                        type=argparse.FileType('w'))
 

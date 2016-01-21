@@ -24,6 +24,8 @@ sequenced (indicative of open chromatin) and black spots indicate
 missing data points. An appropriate labeling of the y-axis was
 neglected.
 
+.. image:: ../images/gallery/hm_DNase.png
+
 **Fast Facts:**
 
 * `computeMatrix` mode: reference-point
@@ -70,6 +72,8 @@ motif sequence. The following heatmap demonstrates that:
 Note that the heatmap shows *all* mouse RefSeq genes, so ca. 15,000
 genes!
 
+.. image:: ../images/gallery/hm_TATApsem.png
+
 **Fast Facts:**
 
 * `computeMatrix mode`: reference-point
@@ -110,6 +114,8 @@ the resulting scores visualized for gene regions.
 The images nicely illustrate the completely opposite GC distributions in
 flies and mice: while the gene starts of mammalian genomes are enriched
 for Gs and Cs, fly promoters show depletion of GC content.
+
+.. image:: ../images/gallery/hm_GC.png
 
 +----------------------+--------------------------------------------------------------------------------------+
 | Fast Facts           |                                                                                      |
@@ -190,14 +196,16 @@ than in NP cells.
 This image was taken from `Chelmicki & Dündar et al. (2014),
 eLife <http://elifesciences.org/content/3/e02024>`__.
 
+.. image:: ../images/gallery/hm_CpG.png
+
 +----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | Fast Facts           |                                                                                                                                                                                                   |
 +======================+===================================================================================================================================================================================================+
 | computeMatrix mode   | reference-point                                                                                                                                                                                   |
 +----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| regions files        | `BED <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bed>`__ file mouse genes expressed in ES cells                                                                                     |
+| regions files        | :ref:`BED <bed>` file mouse genes expressed in ES cells                                                                                                                                           |
 +----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| signal file          | `bigWig <https://github.com/fidelram/deepTools/wiki/Glossary#wiki-bigwig>`__ files with fraction of methylated cytosins (from `Stadler et al., 2011 <http://dx.doi.org/10.1038/nature10716>`__)   |
+| signal file          | :ref:`bigWig <bigwig>` files with fraction of methylated cytosins (from `Stadler et al., 2011 <http://dx.doi.org/10.1038/nature10716>`__)                                                         |
 +----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | heatmap cosmetics    | color scheme, labels, titles, color for missing data was set to customized color, y-axis of profiles were changed, heatmap height                                                                 |
 +----------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -239,6 +247,7 @@ comprise gene bodies flanked by a segment of 200 bases at the 5′ end of
 TSSs and TTSs. Average profile across gene regions ±200 bases for each
 histone modification are shown on top.
 
+.. image:: ../images/gallery/hm_histonesGomez.png
 
 Signals of repressive chromatin marks, their enzymes and repeat element conservation scores
 -------------------------------------------------------------------------------------------
@@ -254,6 +263,7 @@ normalized ChIP-seq signals for H3K9Me3, Suv39h1, Suv39h2, Eset, and
 HP1alpha-EGFP, followed by LINE and ERV content and repeat conservation
 scores.
 
+.. image:: ../images/gallery/hm_Bulut.png
 
 Normalized ChIP-seq signals and peak regions
 --------------------------------------------
@@ -264,4 +274,4 @@ They used deepTools to generate extended reads per kilobase per million
 reads at 10 base resolution and visualized the resulting coverage files in
 `IGV <dx.doi.org/10.1093/bib/bbs017>`__.
 
-
+.. image:: ../images/gallery/coverage_Ibrahim.png
