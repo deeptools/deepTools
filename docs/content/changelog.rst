@@ -4,24 +4,31 @@ Changes in deepTools2.0
 Major changes
 -------------
 
-The major changes encompass features for **increased efficiency**, 
-**new sequencing data types**, and **additional plots**.
+.. note:: The major changes encompass features for **increased efficiency**, 
+**new sequencing data types**, and **additional plots**, particularly for QC.
 
 Moreover, deepTools modules can now be used by other python programs.
 The :ref:`api` is now part of the documentation.
 
-One of the most visible changes is certainly the move of the
-documentation from the previous github-hosted wiki to http://deeptools.readthedocs.org.
+.. contents:: 
+    :local:
 
-
-Additional data types
-^^^^^^^^^^^^^^^^^^^^^
+Accommodating additional data types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 * correlation and comparisons can now be calculated for **bigWig files** (in addition to BAM files) using ``multiBigwigSummary`` and ``bigwigCompare``
 
 * **RNA-seq:** split-reads are now natively supported
  
 * **MNase-seq:** using the new option ``--MNase`` in ``bamCoverage``, one can now compute read coverage only taking the 2 central base pairs of each mapped fragment into account.
+
+Structural updates
+^^^^^^^^^^^^^^^^^^^
+
+* Virtualization for stability: we now provide a ``docker`` image
+* We provide deepTools in the Galaxy ``toolshed`` for easy deployment.
+* Our documentation is now version-aware thanks to readthedocs
+* The API is public and documented.
 
 Renamed tools
 ^^^^^^^^^^^^^
@@ -31,6 +38,7 @@ Renamed tools
 * **bamCorrelate** to :doc:`tools/multiBamCoverage`
 * **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
 * **bamFingerprint** to :doc:`tools/plotFingerprint`
+
 
 Increased efficiency
 ^^^^^^^^^^^^^^^^^^^^
@@ -69,16 +77,17 @@ Changed parameters names and settings
 * ``computeMatrix`` can now read files with DOS newline characters.
 * ``--missingDataAsZero`` was renamed to ``--skipNonCoveredRegions`` for clarity in ``bamCoverage`` and ``bamCompare``.
 * Read extension was made optional and we removed the need to specify a default fragment length for most of the tools: ``--fragmentLength`` was thus replaced by the new optional parameter ``--extendReads``.
-* Added option ``--skipChromosomes`` to ``bigwigCorrelate``, for example to skip all 'random' chromosomes.
+* Added option ``--skipChromosomes`` to ``multiBigwigSummary``, which can be used to, for example, skip all 'random' chromosomes.
 * Added the option for adding titles to QC plots.
 
 Bug fixes
 ^^^^^^^^^
-* ``bigwigCorrelate`` now also considers chromosomes as identical when the names between samples differ by 'chr' prefix, e.g. chr1 vs. 1.
-* Resolved an error introduced by numpy version 1.10 in ``computeMatrix``.
-* Improved plotting features for ``tools/plotProfile`` when using as plot type: 'overlapped_lines' and 'heatmap'
-* Fixed problem with BED intervals in ``bigwigCorrelate`` and ``multiBamCoverage`` that returned wrongly labeled raw counts.
-* Fixed problem with wrongly labeled proper read pairs in a BAM file. We now have additional checks to determine if a read pair is a proper pair.
-* For ``bamCoverage`` and ``bamCompare``, behaviour of ``scaleFactor`` was updated such that now, if given in combination with the normalization options (``--normalizeTo1x`` or ``--normalizeUsingRPKM``), the given scaling factor will be multiplied with the factor computed by the respective normalization method.
+
+* Resolved an error introduced by ``numpy version 1.10`` in ``computeMatrix``.
+* Improved plotting features for ``plotProfile`` when using as plot type: 'overlapped_lines' and 'heatmap'
+* Fixed problem with BED intervals in ``multiBigwigSummary`` and ``multiBamCoverage`` that returned wrongly labeled raw counts.
+* ``multiBigwigSummary`` now also considers chromosomes as identical when the names between samples differ by 'chr' prefix, e.g. chr1 vs. 1.
+* Fixed problem with wrongly labeled proper read pairs in a BAM file. We now have additional checks to determine if a read pair is a proper pair: the reads must face each other and are not allowed to be farther apart than 4x the mean fragment length.
+* For ``bamCoverage`` and ``bamCompare``, the behavior of ``scaleFactor`` was updated such that now, if given in combination with the normalization options (``--normalizeTo1x`` or ``--normalizeUsingRPKM``), the given scaling factor will be multiplied with the factor computed by the respective normalization method.
 
 
