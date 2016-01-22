@@ -38,6 +38,10 @@ class Correlation:
 
             self.labels = labels
 
+        if self.matrix.shape[1] == 1:
+            # There's nothing that can be done with a single sample
+            sys.exit("\nPlease use a matrix with more than one sample\n")
+
         if skip_zeros is True:
             # remove rows containing only nans or zeros
             # that could be unmappable regions.
