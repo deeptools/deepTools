@@ -17,7 +17,7 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-multiBamCoverage computes the read coverages for genomic regions for two or more BAM files.
+multiBamCoverage computes the read coverages for genomic regions for typically two or more BAM files.
 The analysis can be performed for the entire genome by running the program in 'bins' mode.
 If you want to count the read coverage for specific regions only, use the 'BED-file' mode instead.
 The standard output of bamCorrelate is a compressed numpy array.
@@ -30,6 +30,9 @@ A detailed sub-commands help is available by typing:
   multiBamCoverage bins -h
 
   multiBamCoverage BED-file -h
+
+Note that a single BAM file can be used as input, however only the bedGraph file then produced by the --outRawCounts is useful.
+The file specified by -out can not then be used by ANY deepTools program.
 
 """,
             epilog='example usages:\n'
@@ -186,9 +189,10 @@ def main(args=None):
     """
     args = process_args(args)
 
-    if len(args.bamfiles) < 2:
-        print "Please input at least two bam files to compare"
-        exit(1)
+    if len(args.bamfiles) == 1 and not args.outRawCounts:
+        sys.stderr.write("You've input a single BAM file and not specified "
+                         "--outRawCounts. The resulting output will NOT be "
+                         "useful with any deepTools program.")
 
     if 'BED' in args:
         bed_regions = args.BED

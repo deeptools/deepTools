@@ -16,7 +16,7 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-Given one or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
+Given typically two or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
 This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions in 'BED-file'
 mode. Most commonly, the output of multiBigwigSummary is used by other tools such as 'plotCorrelation' or 'plotPCA' for visualization and diagnostic purposes. Note that using a single bigWig file is only recommended if you want to produce a bedGraph file (i.e., with the --outRawCounts option).
 
@@ -25,6 +25,9 @@ A detailed sub-commands help is available by typing:
   multiBigwigSummary bins -h
 
   multiBigwigSummary BED-file -h
+
+Note that a single bigWig file can be used as input, however only the bedGraph file then produced by the --outRawCounts is useful.
+The file specified by -out can not then be used by ANY deepTools program.
 
 """,
             epilog='example usage:\n multiBigwigSummary bins '
@@ -197,8 +200,10 @@ def main(args=None):
 
     bwFiles = args.bwfiles
 
-    if len(bwFiles) == 0:
-        sys.exit("No valid bigWig files\n")
+    if len(bwfiles) == 1 and not args.outRawCounts:
+        sys.stderr.write("You've input a single bigWig file and not specified "
+                         "--outRawCounts. The resulting output will NOT be "
+                         "useful with anydeepTools program.")
 
     num_reads_per_bin = score_bw.getScorePerBin(
         bwFiles,
