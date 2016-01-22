@@ -22,8 +22,8 @@ Usage hints
 .. warning:: If you already normalized for GC bias using `correctGCbias`, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
 
 
-Usage examples
---------------
+Usage examples for ChIP-seq
+---------------------------
 
 This is an example for ChIP-seq data using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
 
@@ -36,7 +36,17 @@ This is an example for ChIP-seq data using additional options (smaller bin size 
         --extendReads
 
 
-Examples for RNA-seq data (`Explain SAM flags <https://broadinstitute.github.io/picard/explain-flags.html>`_):
+`bamCoverage` is also available in `deepTools Galaxy`_:
+
+.. image:: ../../images/norm_bamCoverage.png 
+
+.. _deepTools Galaxy: http://deeptools.ie-freiburg.mpg.de/
+
+
+Usage examples for RNA-seq
+--------------------------
+
+Note that some BAM files are filtered based on SAM flags (`Explain SAM flags <https://broadinstitute.github.io/picard/explain-flags.html>`_).
 
 
 .. code:: bash
@@ -63,13 +73,3 @@ Examples for RNA-seq data (`Explain SAM flags <https://broadinstitute.github.io/
 
     # Reverse strand only (for single-end stranded library)
     bamCoverage -b a.bam -o a.rev.bw --samFlagInclude 16
-
-
-Galaxy
-------
-
-`bamCoverage` is also available in `deepTools Galaxy`_:
-
-.. image:: ../../images/norm_bamCoverage.png 
-
-.. _deepTools Galaxy: http://deeptools.ie-freiburg.mpg.de/
