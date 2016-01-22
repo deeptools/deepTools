@@ -84,9 +84,6 @@ def main(args=None):
     corr = Correlation(args.corData,
                        labels=args.labels,)
 
-    if args.outFileCorMatrix:
-        corr.save_corr_matrix(args.outFileCorMatrix)
-
     args.plotFile.close()
 
     corr.plot_pca(args.plotFile.name,
