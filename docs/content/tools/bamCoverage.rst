@@ -22,18 +22,47 @@ Usage hints
 .. warning:: If you already normalized for GC bias using `correctGCbias`, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
 
 
-Usage example
+Usage examples
 --------------
 
-This is an example using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
+This is an example for ChIP-seq data using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
 
 .. code:: bash
 
-   $ bamCoverage --bam reads.bam -o coverage.SeqDepthNorm.bw
-      --binSize 10
-      --normalizeTo1x 2150570000
-      --ignoreForNormalization chrX
-      --extendReads
+    bamCoverage --bam a.bam -o a.SeqDepthNorm.bw \
+        --binSize 10
+        --normalizeTo1x 2150570000
+        --ignoreForNormalization chrX
+        --extendReads
+
+
+Examples for RNA-seq data (`Explain SAM flags <https://broadinstitute.github.io/picard/explain-flags.html>`_):
+
+
+.. code:: bash
+
+    # Regular bigWig track
+    bamCoverage -b a.bam -o a.bw
+
+    # Forward strand only (for paired-end stranded library)
+    samtools view -b -f 128 -F 16 a.bam > a.fwd1.bam
+    samtools view -b -f 64 -F 32 a.bam > a.fwd2.bam
+    samtools merge -f fwd.bam fwd1.bam fwd2.bam
+    bamCoverage -b fwd.bam -o a.fwd.bw
+    rm *.fwd*.bam
+
+    # Reverse strand only (for paired-end stranded library)
+    samtools view -b -f 144 a.bam > a.rev1.bam
+    samtools view -b -f 96 a.bam > a.rev2.bam
+    samtools merge -f rev.bam rev1.bam rev2.bam
+    bamCoverage -b rev.bam -o a.rev.bw
+    rm *.rev*.bam
+
+    # Forward strand only (for single-end stranded library)
+    bamCoverage -b a.bam -o a.fwd.bw --samFlagExclude 16
+
+    # Reverse strand only (for single-end stranded library)
+    bamCoverage -b a.bam -o a.rev.bw --samFlagInclude 16
 
 
 Galaxy
