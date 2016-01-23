@@ -85,7 +85,7 @@
         <!--test>
             <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
             <param name="modeOpt" value="BED-file" />
-            <param name="region_file" value="multiBamCoverage_regions.bed" />
+            <param name="region_file" value="multiBamSummary_regions.bed" />
             <param name="corMethod" value="pearson" />
             <param name="outRawCounts" value="True" />
             <output name="outFileRawCounts" file="multiBigwigSummary_result2.tabular" ftype="tabular" />

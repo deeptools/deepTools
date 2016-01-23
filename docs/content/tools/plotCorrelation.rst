@@ -11,7 +11,7 @@ plotCorrelation
 Background
 ^^^^^^^^^^^
 
-``plotCorrelation`` computes the overall similarity between two or more files based on read coverage (or other scores) within genomic regions, which must be calculated using either :doc:`multiBamCoverage` or :doc:`multiBigwigSummary`.
+``plotCorrelation`` computes the overall similarity between two or more files based on read coverage (or other scores) within genomic regions, which must be calculated using either :doc:`multiBamSummary` or :doc:`multiBigwigSummary`.
 
 The result of the correlation computation is a **table of correlation coefficients** that indicates how "strong" the relationship between two samples is and it will consist of numbers between -1 and 1. (-1 indicates perfect anti-correlation, 1 perfect correlation.) 
 
@@ -34,7 +34,7 @@ As you can see, both correlation calculations more or less agree on which sample
 Examples
 ^^^^^^^^^^^
 
-In the following example, a correlation analysis is performed based on the coverage file computed by :doc:`multiBamCoverage` or :doc:`multiBigwigSummary` for our test ENCODE ChIP-Seq datasets.
+In the following example, a correlation analysis is performed based on the coverage file computed by :doc:`multiBamSummary` or :doc:`multiBigwigSummary` for our test ENCODE ChIP-Seq datasets.
 
 **Scatterplot**
 

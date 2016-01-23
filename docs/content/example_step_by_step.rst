@@ -32,14 +32,14 @@ Note: BAM files can also be viewed in genome browsers, however, they're large an
 How can I assess the reproducibility of my sequencing replicates?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: :doc:`tools/multiBamCoverage`
+* tool: :doc:`tools/multiBamSummary`
 * input: BAM files
     * you can compare as many samples as you want, though the more you use the longer the computation will take
 
 * output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages will be
 
-.. image:: ../images/GalHow_multiBamCoverage.png
-    :target: ../images/GalHow_multiBamCoverage.png
+.. image:: ../images/GalHow_multiBamSummary.png
+    :target: ../images/GalHow_multiBamSummary.png
 
 How do I know whether my sample is GC biased? And if it is, how do I correct for it?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

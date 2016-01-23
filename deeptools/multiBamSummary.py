@@ -17,7 +17,7 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-multiBamCoverage computes the read coverages for genomic regions for typically two or more BAM files.
+multiBamSummary computes the read coverages for genomic regions for typically two or more BAM files.
 The analysis can be performed for the entire genome by running the program in 'bins' mode.
 If you want to count the read coverage for specific regions only, use the 'BED-file' mode instead.
 The standard output of bamCorrelate is a compressed numpy array.
@@ -27,17 +27,17 @@ Similarly, 'plotPCA' can be used for principal component analysis of the read co
 
 A detailed sub-commands help is available by typing:
 
-  multiBamCoverage bins -h
+  multiBamSummary bins -h
 
-  multiBamCoverage BED-file -h
+  multiBamSummary BED-file -h
 
 Note that a single BAM file can be used as input, however only the bedGraph file then produced by the --outRawCounts is useful.
 The file specified by -out can not then be used by ANY deepTools program.
 
 """,
             epilog='example usages:\n'
-                   'multiBamCoverage bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
-                   'multiBamCoverage BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
+                   'multiBamSummary bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
+                   'multiBamSummary BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
                    '-out results.npz'
                    ' \n\n',
             conflict_handler='resolve')
@@ -127,7 +127,7 @@ def bamcorrelate_args(case='bins'):
 
         optional.add_argument('--distanceBetweenBins', '-n',
                               metavar='INT',
-                              help='By default, multiBamCoverage considers consecutive '
+                              help='By default, multiBamSummary considers consecutive '
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can by given. Larger distances '

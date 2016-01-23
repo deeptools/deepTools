@@ -185,7 +185,7 @@
     <xml name="distanceBetweenBins">
         <param argument="--distanceBetweenBins" type="integer" value="0" min="0"
             label="Distance between bins"
-            help="By default, multiBamCoverage considers consecutive bins of
+            help="By default, multiBamSummary considers consecutive bins of
                 the specified 'Bin size'. However, to reduce the
                 computation time, a larger distance between bins can
                 be given. Larger distances result in fewer bins being

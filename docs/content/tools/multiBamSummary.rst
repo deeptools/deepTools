@@ -1,24 +1,24 @@
-multiBamCoverage
+multiBamSummary
 ================
 
 .. contents:: 
     :local:
 
 .. argparse::
-   :ref: deeptools.multiBamCoverage.parse_arguments
-   :prog: multiBamCoverage
+   :ref: deeptools.multiBamSummary.parse_arguments
+   :prog: multiBamSummary
 
 
 Example
 ^^^^^^^
 
-The default output of ``multiBamCoverage`` (a compressed ``numpy`` array: `*.npz`) can be visualized using :doc:`plotCorrelation` or :doc:`plotPCA`.
+The default output of ``multiBamSummary`` (a compressed ``numpy`` array: `*.npz`) can be visualized using :doc:`plotCorrelation` or :doc:`plotPCA`.
 
 The optional output (``--outRawCounts``) is a simple tab-delimited file that can be used with any other program. The first three columns define the region of the genome for which the reads were summarized.
 
 .. code:: bash
 
-    $ deepTools2.0/bin/multiBamCoverage bins \
+    $ deepTools2.0/bin/multiBamSummary bins \
      --bamfiles testFiles/*bam \ # using all BAM files in the folder
      --minMappingQuality 30 \
      --region 19 \ # limiting the binning of the genome to chromosome 19
