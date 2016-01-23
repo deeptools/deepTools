@@ -25,7 +25,7 @@ These counts are then sorted according to their rank and the cumulative sum of r
 
 
 What the plots tell you
-^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 An ideal [input][] with perfect uniform distribution of reads along the genome (i.e. without enrichments in open chromatin etc.) should generate a straight diagonal line. A very specific and strong ChIP enrichment will be indicated by a prominent and steep rise of the cumulative sum towards the highest rank. This means that a big chunk of reads from the ChIP sample is located in few bins which corresponds to high, narrow enrichments typically seen for transcription factors.
 
@@ -35,7 +35,7 @@ We chose these examples to show you how the nature of the ChIP signal (narrow an
 .. image:: ../../images/QC_fingerprint.png
 
 Usage example
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
 The following example generates the fingerprints for the invididual ENCODE histone mark ChIP-seq data sets and their corresponding input (focusing on chromosome 19 and thus adjusting the number of 500 bp bins that are being sampled using ``--numberOfSamples`` to avoid overlapping bins).
 
@@ -69,7 +69,7 @@ The table that you can obtain via ``--outRawCounts`` simply contains the number 
         1	0	0	0	0
 
 plotFingerprint on Galaxy
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is the screenshot showing how to use plotFingerprint on the deeptools galaxy.
 

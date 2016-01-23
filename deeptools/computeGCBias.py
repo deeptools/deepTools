@@ -29,8 +29,8 @@ def parse_arguments(args=None):
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='Computes the GC-bias using Benjamini\'s method '
         '[Benjamini & Speed (2012). Nucleic Acids Research, 40(10). doi: 10.1093/nar/gks001]. '
-        'The GC-bias is visualized and the resulting table can be used '
-        'correct the bias using correctGCBias.',
+        'The GC-bias is visualized and the resulting table can be used to'
+        'correct the bias with `correctGCBias`.',
         usage='\n computeGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt [options]',
         conflict_handler='resolve',
