@@ -192,7 +192,7 @@ def main(args=None):
     if len(args.bamfiles) == 1 and not args.outRawCounts:
         sys.stderr.write("You've input a single BAM file and not specified "
                          "--outRawCounts. The resulting output will NOT be "
-                         "useful with any deepTools program.")
+                         "useful with any deepTools program!\n")
 
     if 'BED' in args:
         bed_regions = args.BED
