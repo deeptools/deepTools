@@ -3,7 +3,7 @@ plotFingerprint
 
 This quality control will most likely be of interest for you if you are dealing with ChIP-seq samples as a pressing question in ChIP-seq experiments is "Did my ChIP work?", i.e. did the antibody-treatment enrich sufficiently so that the ChIP signal can be separated from the background signal? (After all, around 90% of all DNA fragments in a ChIP experiment will represent the genomic background).
 
-.. note:: We've termed the plots described here "fingerprints" because we feel that they help us judging individual ChIP-seq files, but the original idea came from `Diaz et al. <https://github.com/songlab/chance/wiki/CHANCE-Manual#checking-the-strength-of-enrichment-in-the-ip>`_
+.. note:: We've termed the plots described here "fingerprints" because we feel that they help us judging individual ChIP-seq files, but the original idea came from `Diaz et al. <https://github.com/songlab/chance/wiki/CHANCE-Manual#checking-the-strength-of-enrichment-in-the-ip>`__
 
 .. contents:: 
     :local:
@@ -15,7 +15,7 @@ This quality control will most likely be of interest for you if you are dealing 
 Background
 ^^^^^^^^^^^
 
-This tool is based on a method developed by `Diaz et al. <http://www.ncbi.nlm.nih.gov/pubmed/22499706>`_.
+This tool is based on a method developed by `Diaz et al. <http://www.ncbi.nlm.nih.gov/pubmed/22499706>`__.
 It determines how well the signal in the ChIP-seq sample can be differentiated from the background distribution of reads in the control sample.
 For factors that will enrich well-defined, rather narrow regions (e.g. transcription factors such as p300), the resulting plot can be used to assess the strength of a ChIP, but the broader the enrichments are to be expected, the less clear the plot will be.
 Vice versa, if you do not know what kind of signal to expect, the fingerprint plot will give you a straight-forward indication of how careful you will have to be during your downstream analyses to separate biological noise from meaningful signal.

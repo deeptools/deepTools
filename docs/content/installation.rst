@@ -20,7 +20,7 @@ Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
 follow the directions for its installation. All of the requirements for deepTools can be installed in Anaconda with:
 
-    $ conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
+    $ conda install -c bioconda deeptools
 
 Command line installation using ``pip``
 -----------------------------------------
@@ -28,7 +28,7 @@ Command line installation using ``pip``
 Install deepTools using the following command:
 ::
 
-	$ pip install git+https://github.com/fidelram/deepTools.git
+	$ pip install deeptools
 
 All python requirements are automatically installed.
 
