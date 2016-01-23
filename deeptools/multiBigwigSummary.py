@@ -198,15 +198,13 @@ def main(args=None):
     else:
         bed_regions = None
 
-    bwFiles = args.bwfiles
-
-    if len(bwfiles) == 1 and not args.outRawCounts:
+    if len(args.bwfiles) == 1 and not args.outRawCounts:
         sys.stderr.write("You've input a single bigWig file and not specified "
                          "--outRawCounts. The resulting output will NOT be "
                          "useful with anydeepTools program.")
 
     num_reads_per_bin = score_bw.getScorePerBin(
-        bwFiles,
+        args.bwfiles,
         args.binSize,
         numberOfProcessors=args.numberOfProcessors,
         stepSize=args.binSize + args.distanceBetweenBins,
