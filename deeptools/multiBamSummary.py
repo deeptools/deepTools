@@ -20,7 +20,7 @@ def parse_arguments(args=None):
 multiBamSummary computes the read coverages for genomic regions for typically two or more BAM files.
 The analysis can be performed for the entire genome by running the program in 'bins' mode.
 If you want to count the read coverage for specific regions only, use the 'BED-file' mode instead.
-The standard output of bamCorrelate is a compressed numpy array.
+The standard output of multiBamSummary is a compressed numpy array.
 It can be directly used to calculate and visualize pairwise correlation values between
 the read coverages using the tool 'plotCorrelation'.
 Similarly, 'plotPCA' can be used for principal component analysis of the read coverages using the .npz file.
