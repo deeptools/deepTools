@@ -1,7 +1,7 @@
 ======================================================================
 deepTools
 ======================================================================
-[![Build Status](https://travis-ci.org/fidelram/deepTools.svg)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/)
+[![Build Status](https://travis-ci.org/fidelram/deepTools.svg?branch=master)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) [![PyPI version](https://badge.fury.io/py/deeptools.svg)](https://badge.fury.io/py/deeptools) [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io)
 
 ### user-friendly tools for the normalization and visualization of deep-sequencing data
 
@@ -40,7 +40,7 @@ Details on the installation routines can be found here.
 
 
 <a name="general"/></a>
-### General Installation
+### Linux/Mac Installation
 
 The easiest way to install deepTools is by using python `pip` or `easy_install tools`:
 
@@ -48,7 +48,7 @@ Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html), bx-p
 
 Commands:
 
-      $ pip install deeptools
+      $ pip install deeptools --user
 Done.
 
 
@@ -56,10 +56,9 @@ __Using anaconda:__
 
 [Anaconda](https://www.continuum.io/downloads) already comes with scipy, numpy and matplotlib, making installation very quick. To install using either Anaconda or Miniconda:
 
-    $ conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
-    $ pip install git+https://github.com/fidelram/deepTools.git@main
+    $ conda install -c bioconda deeptools
 
-Note that deepTools does not yet work with python3.
+Note that deepTools does not (yet) work with python3.
 
 __Another option is to clone the repository:__
 	
@@ -80,41 +79,23 @@ For example, to install under a specific location use:
 
 	$ python setup.py install --prefix <target directory>
 
-<a name="mac"></a>
-### Installation on a MAC
+To install into your home directory, use:
 
-The easiest way to get numpy and scipy dependencies is to install the
-[Anaconda Scientific Python Distribution](https://www.continuum.io/downloads). After installation, open
-a terminal ("Applications" → "Terminal") and follow the "Using anaconda" section under [General Installation](#general)
-  	   
-If individual installation of the dependencies is preferred, follow 
-these steps:
-
-Requirement: Python 2.7 installed
-
-Download the packages and install them using dmg images:
-- http://sourceforge.net/projects/numpy/files/NumPy/
-- http://sourceforge.net/projects/scipy/files/scipy/
-
-Then open terminal ("Applications" → "Terminal")
-and follow the [General Installation](#general)
-
-
-<a name="trouble"/></a>
+	$ python setup.py install --user
 
 <a name="galaxy"/></a>
-#### Galaxy Installation
+### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
 available in the [Galaxy Tool Shed](http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools).
 
 
-##### Installation via Galaxy API (recommended)
+#### Installation via Galaxy API (recommended)
 
 At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin 
 user and run the the installation script:
 
-	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost:8080 --url http://toolshed.g2.bx.psu.edu/ -o bgruening -r <revision> --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
+	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost --url http://toolshed.g2.bx.psu.edu/ -o bgruening -r <revision> --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
 
 The -r argument specifies the version of deepTools. You can get the latest revsion number from the test tool shed or with the following command:
 
@@ -123,7 +104,7 @@ The -r argument specifies the version of deepTools. You can get the latest revsi
 You can watch the installation status under: Top Panel → Admin → Manage installed tool shed repositories
 
 
-##### Installation via webbrowser
+#### Installation via web browser
 
 - go to the [admin page](http://localhost:8080/admin)
 - select *Search and browse tool sheds*
