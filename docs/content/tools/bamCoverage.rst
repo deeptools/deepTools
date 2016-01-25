@@ -22,25 +22,64 @@ Usage hints
 .. warning:: If you already normalized for GC bias using `correctGCbias`, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
 
 
-Usage example
---------------
+Usage examples for ChIP-seq
+---------------------------
 
-This is an example using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
+This is an example for ChIP-seq data using additional options (smaller bin size for higher resolution, normalizing coverage to 1x mouse genome size, excluding chromosome X during the normalization step, and extending reads):
 
 .. code:: bash
 
-   $ bamCoverage --bam reads.bam -o coverage.SeqDepthNorm.bw
-      --binSize 10
-      --normalizeTo1x 2150570000
-      --ignoreForNormalization chrX
-      --extendReads
+    bamCoverage --bam a.bam -o a.SeqDepthNorm.bw \
+        --binSize 10
+        --normalizeTo1x 2150570000
+        --ignoreForNormalization chrX
+        --extendReads
 
-
-Galaxy
-------
 
 `bamCoverage` is also available in `deepTools Galaxy`_:
 
 .. image:: ../../images/norm_bamCoverage.png 
 
 .. _deepTools Galaxy: http://deeptools.ie-freiburg.mpg.de/
+
+
+Usage examples for RNA-seq
+--------------------------
+
+Note that some BAM files are filtered based on SAM flags (`Explain SAM flags <https://broadinstitute.github.io/picard/explain-flags.html>`_).
+
+Regular bigWig track
+
+.. code:: bash
+
+    bamCoverage -b a.bam -o a.bw
+
+
+Separate tracks for each strand (for a stranded **paired-end** library)
+
+.. code:: bash
+
+    # Forward strand
+    samtools view -b -f 128 -F 16 a.bam > a.fwd1.bam
+    samtools view -b -f 64 -F 32 a.bam > a.fwd2.bam
+    samtools merge -f fwd.bam fwd1.bam fwd2.bam
+    bamCoverage -b fwd.bam -o a.fwd.bw
+    rm a.fwd*.bam
+
+    # Reverse strand
+    samtools view -b -f 144 a.bam > a.rev1.bam
+    samtools view -b -f 96 a.bam > a.rev2.bam
+    samtools merge -f rev.bam rev1.bam rev2.bam
+    bamCoverage -b rev.bam -o a.rev.bw
+    rm a.rev*.bam
+
+
+Separate tracks for each strand (for a stranded **single-end** library)
+
+.. code:: bash
+
+    # Forward strand
+    bamCoverage -b a.bam -o a.fwd.bw --samFlagExclude 16
+
+    # Reverse strand
+    bamCoverage -b a.bam -o a.rev.bw --samFlagInclude 16

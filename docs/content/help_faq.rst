@@ -219,3 +219,11 @@ Where can I download the 2bit genome files required for ``computeGCBias``?
 The 2bit files of most genomes can be found `here <http://hgdownload.cse.ucsc.edu/gbdb/>`__.
 Search for the .2bit ending. Otherwise, **fasta files can be converted to 2bit** using the UCSC program
 faToTwoBit (available for different platforms from `UCSC here <http://hgdownload.cse.ucsc.edu/admin/exe/>`__).
+
+What should I pay attention to when dealing with RNA-seq data?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By default, deepTools (**since version 2**) makes use of the information stored in the so-called CIGAR string of the alignment file (`SAM/BAM specification
+<https://samtools.github.io/hts-specs/SAMv1.pdf>`_). The CIGAR tells precisely to which bases of the reference a read maps - and accordingly which bases are skipped. The ability to split reads is extremely useful for RNA-seq reads which e.g. map with one part to an exon, then span over an intron, and map to another exon with the rest of the read.
+
+*Attention*: It is generally **not** recommended to activate the deepTools parameter ``--extendReads`` for RNA-seq data. The reason is that there is no verified information on the fragment alignment outside of the read sequence. A simple extension of a read over uncovered parts would probably be wrong for a lot of fragments! Activating the read extension also **deactivates** the utilization of the CIGAR (recommended for ChIP-seq).
