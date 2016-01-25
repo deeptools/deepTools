@@ -1,4 +1,12 @@
-2.0
+2.0.1
+
+ * A critical bug that prevented plotPCA from running was fixed.
+ * multiBamCoverage was renamed to multiBamSummary, to be in better alignment with multiBigwigSummary.
+ * computeGCBias and correctGCBias are now more tolerant of chromosome name mismatches.
+ * multiBigwigSummary and multiBamSummary can accept a single bigWig/BAM input file, though one should use the
+   --outRawCounts argument.
+
+2.0.0
 
  * Documentation improved and migrated to http://deeptools.readthedocs.org The API to use deepTools modules is now
    part of the documentation and includes a tutorial.
