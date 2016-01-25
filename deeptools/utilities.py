@@ -37,7 +37,7 @@ def tbitToBamChrName(tbitNames, bamNames):
 
         if len(set(bamNames).intersection(set(tbitNames))) > 0:
             sys.stderr.write("Using the following common chromosomes between "
-                             "bam chromosome names  and 2bit chromosome "
+                             "bam chromosome names and 2bit chromosome "
                              "names:\n")
             for item in set(bamNames).intersection(set(tbitNames)):
                 sys.stderr.write(item + "\n")
@@ -58,6 +58,30 @@ def tbitToBamChrName(tbitNames, bamNames):
             chrNameBitToBam = dict([(x, x) for x in tbitNames
                                     if x.count('random') == 0 and
                                     x.count('chrM') == 0])
+        elif len(set(["chr" + x for x in bamNames if x != 'dmel_mitochondrion_genome']).intersection(set(tbitNames))) > 0:
+            bamNames2 = ["chr" + x for x in bamNames if x != 'dmel_mitochondrion_genome']
+            sys.stderr.write("Adding 'chr' seems to solve the problem for the following "
+                             "chromosomes...")
+            for item in set(bamNames2).intersection(set(tbitNames)):
+                sys.stderr.write(item + "\n")
+
+            chrNameBitToBam = {"chrM": "MT"}
+            for i in xrange(len(bamNames)):
+                if bamNames2[i] in tbitNames:
+                    chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
+        elif len(set([x[3:] for x in bamNames if x.startswith("chr")]).intersection(set(tbitNames))) > 0:
+            bamNames = [x for x in bamNames]
+            bamNames2 = [x[3:] for x in bamNames if x.startswith("chr")]
+            if debug:
+                sys.stderr.write("Removing 'chr' seems to solve the problem for the following "
+                                 "chromosomes...")
+                for item in set(bamNames).intersection(set(tbitNames)):
+                    sys.stderr.write(item + "\n")
+
+            chrNameBitToBam = {"MT": "chrM"}
+            for i in xrange(len(bamNames)):
+                if bamNames2[i] in tbitNames:
+                    chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
         else:
             if debug:
                 print "Index and reference do not have matching "
