@@ -70,7 +70,7 @@ def tbitToBamChrName(tbitNames, bamNames):
                 if bamNames2[i] in tbitNames:
                     chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
         elif len(set([x[3:] for x in bamNames if x.startswith("chr")]).intersection(set(tbitNames))) > 0:
-            bamNames = [x for x in bamNames ]
+            bamNames = [x for x in bamNames]
             bamNames2 = [x[3:] for x in bamNames if x.startswith("chr")]
             if debug:
                 sys.stderr.write("Removing 'chr' seems to solve the problem for the following "
