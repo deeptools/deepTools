@@ -73,7 +73,7 @@ def get_optional_args():
                           'Only 3 nucleotides at the center of each fragment are counted. '
                           'The fragment ends are defined by the two mate reads. Only fragment lengths'
                           'between 130 - 200 bp are considered to avoid dinucleosomes or other artifacts.'
-                          '*NOTE*: Requires paired-end data.',
+                          '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
 
     return parser
