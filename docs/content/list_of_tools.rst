@@ -5,7 +5,7 @@ The tools
 
     * **heatmapper** to :doc:`tools/plotHeatmap`
     * **profiler** to :doc:`tools/plotProfile`
-    * **bamCorrelate** to :doc:`tools/multiBamCoverage`
+    * **bamCorrelate** to :doc:`tools/multiBamSummary`
     * **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
     * **bamFingerprint** to :doc:`tools/plotFingerprint`.
 
@@ -17,7 +17,7 @@ The tools
 +--------------------------------+------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 | tool                           | type             | input files                       | main output file(s)                        | application                                                                       |
 +================================+==================+===================================+============================================+===================================================================================+
-|:doc:`tools/multiBamCoverage`   | data integration | 2 or more BAM                     | interval-based table of values             | perform cross-sample analyses of read counts --> plotCorrelation, plotPCA         |
+|:doc:`tools/multiBamSummary`    | data integration | 2 or more BAM                     | interval-based table of values             | perform cross-sample analyses of read counts --> plotCorrelation, plotPCA         |
 +--------------------------------+------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/multiBigwigSummary` | data integration | 2 or more bigWig                  | interval-based table of values             |  perform cross-sample analyses of genome-wide scores --> plotCorrelation, plotPCA |
 +--------------------------------+------------------+-----------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
@@ -108,7 +108,7 @@ These parameters are optional and available throughout deepTools.
 Tools for BAM and bigWig file processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-:doc:`tools/multiBamCoverage`
+:doc:`tools/multiBamSummary`
 """""""""""""""""""""""""""""""
 :doc:`tools/multiBigwigSummary`
 """""""""""""""""""""""""""""""

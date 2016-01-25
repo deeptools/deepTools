@@ -20,7 +20,7 @@ Principal components represent the directions along which the variation in the d
 Usage example
 ^^^^^^^^^^^^^^^
 
-``plotPCA`` needs the compressed ``numpy array`` output from either :doc:`multiBamCoverage` or :doc:`multiBigwigSummary`
+``plotPCA`` needs the compressed ``numpy array`` output from either :doc:`multiBamSummary` or :doc:`multiBigwigSummary`
 
 .. code:: bash
 

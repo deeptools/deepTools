@@ -23,7 +23,7 @@ Tools for BAM and bigWig file processing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 +------------------------+--------------------------------------------------------------------------------+
-| ``multiBamCoverage``   | get read counts for the binned genome or user-specified regions                |
+| ``multiBamSummary``    | get read counts for the binned genome or user-specified regions                |
 +------------------------+--------------------------------------------------------------------------------+
 | ``multiBigwigSummary`` | calculate score summaries for the binned genome or user-specified regions      |
 +------------------------+--------------------------------------------------------------------------------+

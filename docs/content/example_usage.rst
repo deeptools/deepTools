@@ -32,7 +32,7 @@ The standard output of bowtie2 (and other mapping tools) is in the form of sorte
 that provide the common input and starting point for all subsequent deepTools analyses. 
 We then use deepTools to assess the quality of the aligned reads:
 
-#. **Correlation between BAM files** (``multiBamCoverage`` and ``plotCorrelation``).
+#. **Correlation between BAM files** (``multiBamSummary`` and ``plotCorrelation``).
    Together these two modules perform a very basic test to see whether
    the sequenced and aligned reads meet your expectations. We use this
    check to assess reproducibility - either between replicates

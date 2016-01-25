@@ -27,7 +27,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamCoverage tool"/>
+        <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamSummary tool"/>
         <expand macro="corMethod" />
 
         <conditional name="plotting_type" >
@@ -71,14 +71,14 @@
     </outputs>
     <tests>
         <test>
-            <param name="corData" value="multiBamCoverage_result1.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" />
             <param name="outFileFormat" value="png" />
             <param name="outFileCorMatrix" value="True" />
             <output name="matrix" file="plotCorrelation_result1.tabular" ftype="tabular" />
             <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="100" />
         </test>
         <test>
-            <param name="corData" value="multiBamCoverage_result1.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" />
             <param name="outFileFormat" value="png" />
             <param name="whatToPlot" value="scatterplot" />
             <param name="removeOutliers" value="True" />
@@ -93,10 +93,10 @@
 This tools takes a compressed matrix of scores (such as read coverages) for a number of genomic regions
 and different samples. It can visualize the correlation among samples as scatterplots or as
 a heatmap of correlation coefficients. Further output files are optional.
-The compressed input matrices are easily generated using the "multiBamCoverage" and "multiBigwigSummary" tools.
+The compressed input matrices are easily generated using the "multiBamSummary" and "multiBigwigSummary" tools.
 
 
-.. image:: $PATH_TO_IMAGES/QC_multiBamCoverage_humanSamples.png
+.. image:: $PATH_TO_IMAGES/QC_multiBamSummary_humanSamples.png
    :alt: Heatmap of RNA Polymerase II ChIP-seq
 
 

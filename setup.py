@@ -100,7 +100,7 @@ setup(
     author='Fidel Ramirez, Friederike Dündar, Björn Grüning, Sarah Diehl',
     author_email='deeptools@googlegroups.com',
     packages=['deeptools', 'deeptools/config', 'deeptools.test'],
-    scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/multiBamCoverage',
+    scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/multiBamSummary',
              'bin/plotHeatmap', 'bin/plotFingerprint', 'bin/estimateScaleFactor',
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/plotProfile',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/multiBigwigSummary',

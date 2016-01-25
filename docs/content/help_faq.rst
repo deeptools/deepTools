@@ -10,7 +10,7 @@ We also have a :doc:`help_faq_galaxy`.
 
 How does deepTools handle data from paired-end sequencing?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Generally, all the modules working with [BAM] files (``multiBamCoverage``, ``bamCoverage``, ``bamCompare``, ``plotFingerprint``, ``computeGCBias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
+Generally, all the modules working with [BAM] files (``multiBamSummary``, ``bamCoverage``, ``bamCompare``, ``plotFingerprint``, ``computeGCBias``) recognize paired-end sequencing data. You can by-pass the typical fragment handling on mate paires using the option ``--doNotExtendPairedEnds`` ("advanced options" in Galaxy).
 
 How can I test a tool with little computation time? 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -18,7 +18,7 @@ When you're playing around with the tools to see what kinds of results they will
 
 The following tools currently have this option:
 
-* :doc:`tools/multiBamCoverage`
+* :doc:`tools/multiBamSummary`
 * :doc:`tools/plotFingerprint`
 * :doc:`tools/computeGCBias`, :doc:`tools/correctGCBias`
 * :doc:`tools/bamCoverage`, :doc:`tools/bamCompare`
@@ -49,10 +49,10 @@ or
 
     intersectBed -abam Reads.bam -b regionsOfInterest.bed > ReadsOverlappingWithRegionsOfInterest.bam
 
-However, ``computeGCBias`` and ``multiBamCoverage`` do offer in-build solutions:
+However, ``computeGCBias`` and ``multiBamSummary`` do offer in-build solutions:
  
-* ``multiBamCoverage``
-                  multiBamCoverage has two modes, ``bins`` and ``BED``.
+* ``multiBamSummary``
+                  multiBamSummary has two modes, ``bins`` and ``BED``.
 				  If you make use of the BED mode (as opposed to ``bin``, wherein consecutive bins of equal size are used for the coverage calculation), 
 				  you can supply a BED file of regions that you would like to limit the operation to. This will do the same thing as in the general workaround mentioned above.
 * ``computeGCBias``: You can make use of the ``--filterOut`` option of :doc:`tools/computeGCBias`. You will first need to create a BED file that contains all the regions you are **not** interested in. Then supply this file of RegionsOf__Non__Interest.bed to computeGCBias.

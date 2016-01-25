@@ -34,7 +34,7 @@ Renamed tools
 
 * **heatmapper** to :doc:`tools/plotHeatmap`
 * **profiler** to :doc:`tools/plotProfile`
-* **bamCorrelate** to :doc:`tools/multiBamCoverage`
+* **bamCorrelate** to :doc:`tools/multiBamSummary`
 * **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
 * **bamFingerprint** to :doc:`tools/plotFingerprint`
 
@@ -50,7 +50,7 @@ Increased efficiency
 
 * We added **additional filtering options for handling BAM files**, decreasing the need for prior filtering using tools other than deepTools: The ``--samFlagInclude`` and ``--samFlagExclude`` parameters can, for example, be used to only include (or exclude) forward reads in an analysis.
 
-* We separated the generation of read count tables from the calculation of pairwise correlations that was previously handled by ``bamCorrelate``. Now, read counts are calculated first using ``multiBamCoverage`` or ``multiBigWigCoverage`` and the resulting output file can be used for calculating and plotting pairwise correlations using ``plotCorrelation`` or for doing a principal component analysis using ``plotPCA``.
+* We separated the generation of read count tables from the calculation of pairwise correlations that was previously handled by ``bamCorrelate``. Now, read counts are calculated first using ``multiBamSummary`` or ``multiBigWigCoverage`` and the resulting output file can be used for calculating and plotting pairwise correlations using ``plotCorrelation`` or for doing a principal component analysis using ``plotPCA``.
 
 New features and tools
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -84,7 +84,7 @@ Bug fixes
 
 * Resolved an error introduced by ``numpy version 1.10`` in ``computeMatrix``.
 * Improved plotting features for ``plotProfile`` when using as plot type: 'overlapped_lines' and 'heatmap'
-* Fixed problem with BED intervals in ``multiBigwigSummary`` and ``multiBamCoverage`` that returned wrongly labeled raw counts.
+* Fixed problem with BED intervals in ``multiBigwigSummary`` and ``multiBamSummary`` that returned wrongly labeled raw counts.
 * ``multiBigwigSummary`` now also considers chromosomes as identical when the names between samples differ by 'chr' prefix, e.g. chr1 vs. 1.
 * Fixed problem with wrongly labeled proper read pairs in a BAM file. We now have additional checks to determine if a read pair is a proper pair: the reads must face each other and are not allowed to be farther apart than 4x the mean fragment length.
 * For ``bamCoverage`` and ``bamCompare``, the behavior of ``scaleFactor`` was updated such that now, if given in combination with the normalization options (``--normalizeTo1x`` or ``--normalizeUsingRPKM``), the given scaling factor will be multiplied with the factor computed by the respective normalization method.

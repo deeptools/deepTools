@@ -20,7 +20,7 @@ It determines how well the signal in the ChIP-seq sample can be differentiated f
 For factors that will enrich well-defined, rather narrow regions (e.g. transcription factors such as p300), the resulting plot can be used to assess the strength of a ChIP, but the broader the enrichments are to be expected, the less clear the plot will be.
 Vice versa, if you do not know what kind of signal to expect, the fingerprint plot will give you a straight-forward indication of how careful you will have to be during your downstream analyses to separate biological noise from meaningful signal.
 
-Similar to ``multiBamCoverage``, ``plotFingerprint`` randomly samples genome regions (bins) of a specified length and counts the reads from indexed [BAM][] files that overlap with those regions.
+Similar to ``multiBamSummary``, ``plotFingerprint`` randomly samples genome regions (bins) of a specified length and counts the reads from indexed [BAM][] files that overlap with those regions.
 These counts are then sorted according to their rank and the cumulative sum of read counts is plotted. 
 
 

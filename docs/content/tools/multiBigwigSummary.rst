@@ -57,7 +57,7 @@ To compute the average values for a set of genes, use the `BED-file` mode.
     19	66345	71535	0.877430197151	5.49036608863	43.978805395	0.746026011561	1.43545279383
 
 
-The default output of ``multiBamCoverage`` (a compressed ``numpy`` array: `*.npz`) can be visualized using :doc:`plotCorrelation` or :doc:`plotPCA`.
+The default output of ``multiBamSummary`` (a compressed ``numpy`` array: `*.npz`) can be visualized using :doc:`plotCorrelation` or :doc:`plotPCA`.
 
 The optional output (``--outRawCounts``) is a simple tab-delimited file that can be used with any other program. The first three columns define the region of the genome for which the reads were summarized.
 
