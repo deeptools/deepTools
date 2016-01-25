@@ -32,9 +32,7 @@ deepTools are available for:
 
 Details on the installation routines can be found here.
 
-[General Installation](#general)
-
-[Installation on a Mac](#mac)
+[Linux/Mac Installation](#general)
 
 [Galaxy installation](#galaxy)
 
