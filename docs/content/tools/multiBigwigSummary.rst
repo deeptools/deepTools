@@ -1,5 +1,5 @@
 multiBigwigSummary
-===================
+==================
 
 .. contents:: 
     :local:
@@ -10,7 +10,7 @@ multiBigwigSummary
 
 
 Example
-~~~~~~~~~~~~~~
+~~~~~~~
 
 In the following example, the average values for our test ENCODE
 ChIP-Seq datasets are computed for consecutive genome bins (default size: 10kb) by using the `bins` mode.
@@ -63,7 +63,7 @@ The optional output (``--outRawCounts``) is a simple tab-delimited file that can
 
 
 multiBigwigSummary in Galaxy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Below is the screenshot showing how to use multiBigwigSummary on the deeptools galaxy.
 

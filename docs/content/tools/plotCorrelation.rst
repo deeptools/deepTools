@@ -9,7 +9,7 @@ plotCorrelation
    :prog: plotCorrelation
 
 Background
-^^^^^^^^^^^
+^^^^^^^^^^
 
 ``plotCorrelation`` computes the overall similarity between two or more files based on read coverage (or other scores) within genomic regions, which must be calculated using either :doc:`multiBamSummary` or :doc:`multiBigwigSummary`.
 
@@ -32,7 +32,7 @@ Here's an example of RNA-seq data from different human cell lines that we had do
 As you can see, both correlation calculations more or less agree on which samples are nearly identical (the replicates, indicated by 1 or 2 at the end of the label). The Spearman correlation, however, seems to be more robust and meets our expectations more closely as the two different cell types (HUVEC and IMR90) are clearly separated.
 
 Examples
-^^^^^^^^^^^
+^^^^^^^^
 
 In the following example, a correlation analysis is performed based on the coverage file computed by :doc:`multiBamSummary` or :doc:`multiBigwigSummary` for our test ENCODE ChIP-Seq datasets.
 
@@ -84,7 +84,7 @@ The dendrogram indicates which samples' read counts are most similar to each oth
 
 
 plotCorrelation in Galaxy
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Below is the screenshot showing how to use plotCorrelation with deepTools Galaxy.
 
