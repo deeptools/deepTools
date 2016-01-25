@@ -48,28 +48,38 @@ Usage examples for RNA-seq
 
 Note that some BAM files are filtered based on SAM flags (`Explain SAM flags <https://broadinstitute.github.io/picard/explain-flags.html>`_).
 
+Regular bigWig track
 
 .. code:: bash
 
-    # Regular bigWig track
     bamCoverage -b a.bam -o a.bw
 
-    # Forward strand only (for paired-end stranded library)
+
+Separate tracks for each strand (for a stranded **paired-end** library)
+
+.. code:: bash
+
+    # Forward strand
     samtools view -b -f 128 -F 16 a.bam > a.fwd1.bam
     samtools view -b -f 64 -F 32 a.bam > a.fwd2.bam
     samtools merge -f fwd.bam fwd1.bam fwd2.bam
     bamCoverage -b fwd.bam -o a.fwd.bw
-    rm *.fwd*.bam
+    rm a.fwd*.bam
 
-    # Reverse strand only (for paired-end stranded library)
+    # Reverse strand
     samtools view -b -f 144 a.bam > a.rev1.bam
     samtools view -b -f 96 a.bam > a.rev2.bam
     samtools merge -f rev.bam rev1.bam rev2.bam
     bamCoverage -b rev.bam -o a.rev.bw
-    rm *.rev*.bam
+    rm a.rev*.bam
 
-    # Forward strand only (for single-end stranded library)
+
+Separate tracks for each strand (for a stranded **single-end** library)
+
+.. code:: bash
+
+    # Forward strand
     bamCoverage -b a.bam -o a.fwd.bw --samFlagExclude 16
 
-    # Reverse strand only (for single-end stranded library)
+    # Reverse strand
     bamCoverage -b a.bam -o a.rev.bw --samFlagInclude 16
