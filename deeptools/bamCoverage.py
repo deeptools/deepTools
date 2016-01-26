@@ -207,7 +207,7 @@ def main(args=None):
                             )
 
     elif args.filterRNAstrand:
-        wr = filter_rna_strand([args.bam],
+        wr = filterRnaStrand([args.bam],
                                binLength=args.binSize,
                                stepSize=args.binSize,
                                region=args.region,
@@ -326,3 +326,4 @@ class filterRnaStrand(writeBedGraph.WriteBedGraph):
             elif self.filter_strand == 'reverse' and read.flag & 16 == 0:
                 return read.get_blocks()
 
+        return [(fragment_start, fragment_end)]
