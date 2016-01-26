@@ -12,13 +12,13 @@ computeMatrix has two main modes of use: for computing the signal distribution r
 
 .. code:: bash
 
-    computeMatrix reference-point \
+    $ computeMatrix reference-point \
         -q --skipZeros \
         -S *.bigWig \
         -R genes.bed \
         -out matrix_one_group_TSS.gz
     
-    plotHeatmap -m matrix_one_group_TSS.gz \
+    $ plotHeatmap -m matrix_one_group_TSS.gz \
         -out ExampleComputeMatrix1.png \
         --plotTitle "Test data as one group"
 
@@ -28,17 +28,17 @@ Alternatively, for RNAseq and many other ChIP signals it's more informative to p
 
 .. code:: bash
 
-    computeMatrix scale-regions \
+    $ computeMatrix scale-regions \
         -q --skipZeros \
         -S *.bigWig \
         -R genes.bed \
         -out matrix_one_group.gz
     
-    plotHeatmap -m matrix_one_group.gz \
+    $ plotHeatmap -m matrix_one_group.gz \
         -out ExampleComputeMatrix2.png \
         --plotTitle "Test data as one group with regions"
 
-.. image:: test_plots/ExampleComputeMatrix2.png
+.. image:: ../../images/test_plots/ExampleComputeMatrix2.png
 
 It's often the case that one has multiple groups of regions to consider per sample. For such cases, you can simply specify multiple BED files (in this case, we've split the BED file by chromosome).
 
@@ -55,6 +55,6 @@ It's often the case that one has multiple groups of regions to consider per samp
         --perGroup \
         --plotTitle "Test data with multiple groups"
 
-.. image:: test_plots/ExampleComputeMatrix3.png
+.. image:: ../../images/test_plots/ExampleComputeMatrix3.png
 
 Note that computeMatrix can use multiple threads, which significantly decreases the time required.

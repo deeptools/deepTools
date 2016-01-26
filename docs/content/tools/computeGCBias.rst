@@ -61,7 +61,7 @@ Usage example
       --region X --biasPlot test_gc.png
 
 
-.. image:: test_plots/ExampleComputeGCBias.png
+.. image:: ../../images/test_plots/ExampleComputeGCBias.png
 
 
 Galaxy

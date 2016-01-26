@@ -17,7 +17,7 @@ The following example creates a heatmap over hg19 transcripts for our test ENCOD
         -out ExampleHeatmap1.png \
         --plotTitle "Test data with default settings"
 
-.. image:: test_plots/ExampleHeatmap1.png
+.. image:: ../../images/test_plots/ExampleHeatmap1.png
 
 plotHeatmap has many options, including the ability to do k-means clustering and change the color map.
 
@@ -29,4 +29,4 @@ plotHeatmap has many options, including the ability to do k-means clustering and
         --kmeans 5 \
         --plotTitle "Test data with k-means clustering"
 
-.. image:: test_plots/ExampleHeatmap2.png
+.. image:: ../../images/test_plots/ExampleHeatmap2.png

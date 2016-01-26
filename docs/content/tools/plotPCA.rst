@@ -34,4 +34,4 @@ After perfoming the PCA on the values supplied as the input, ``plotPCA`` will so
 * the values of the **top two principal components** per sample
 * the **Scree plot** for the top five principal components where the bars represent the eigenvalues and the red line traces the variability that is explained by the individual components
 
-.. image:: test_plots/PCA_readCounts.png
+.. image:: ../../images/test_plots/PCA_readCounts.png

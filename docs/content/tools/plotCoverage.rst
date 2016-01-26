@@ -23,4 +23,4 @@ Usage Example:
 Example output plot:
 ~~~~~~~~~~~~~~~~~~~~
       
-.. image:: test_plots/ExamplePlotCoverage.png
+.. image:: ../../images/test_plots/ExamplePlotCoverage.png

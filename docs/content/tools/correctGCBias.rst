@@ -26,7 +26,7 @@ Example output plot
 
 The example shows the GC-bias of a corrected BAM file (output from ``computeGCBias``). 
 
-.. image:: test_plots/ExampleCorrectGCBias.png
+.. image:: ../../images/test_plots/ExampleCorrectGCBias.png
 
 Galaxy
 ------

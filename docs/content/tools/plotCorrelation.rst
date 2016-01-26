@@ -50,7 +50,7 @@ Here we make pairwose scatterplots of the average scores per transcript that we 
     -o scatterplot_PearsonCorr_bigwigScores.png   \
     --outFileCorMatrix PearsonCorr_bigwigScores.tab 
 
-.. image:: test_plots/scatterplot_PearsonCorr_bigwigScores.png
+.. image:: ../../images/test_plots/scatterplot_PearsonCorr_bigwigScores.png
 
 .. code:: bash
 
@@ -80,7 +80,7 @@ The dendrogram indicates which samples' read counts are most similar to each oth
         -o heatmap_SpearmanCorr_readCounts.png   \
         --outFileCorMatrix SpearmanCorr_readCounts.tab 
 
-.. image:: test_plots/heatmap_SpearmanCorr_readCounts.png
+.. image:: ../../images/test_plots/heatmap_SpearmanCorr_readCounts.png
 
 
 plotCorrelation in Galaxy
