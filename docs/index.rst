@@ -10,8 +10,8 @@ efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq
 There are 3 ways for using deepTools:
 
 * **Galaxy usage** --  our public `deepTools Galaxy server <http://deeptools.ie-freiburg.mpg.de>`_ let's you use the deepTools within the familiar Galaxy framework without the need to master the command line
-* **command line usage** -- simply download and install the tools
-* **API** -- make use of your favorite deepTools modules in your own python programs
+* **command line usage** -- simply download and install the tools (see :doc:`content/installation` and :doc:`content/list_of_tools`)
+* **API** -- make use of your favorite deepTools modules in your own python programs (see :doc:`content/api`)
 
 The flow chart below depicts the different tool modules that are
 currently available (deepTools modules are written in
@@ -57,7 +57,6 @@ that fulfills the following criteria:
 
 
 .. tip:: For support, questions, or feature requests contact: deeptools@googlegroups.com
-
 
 
 Please cite deepTools as follows:
