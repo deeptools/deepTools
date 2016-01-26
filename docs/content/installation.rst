@@ -20,6 +20,8 @@ Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
 follow the directions for its installation. All of the requirements for deepTools can be installed in Anaconda with:
 
+.. code:: bash
+
     $ conda install -c bioconda deeptools
 
 Command line installation using ``pip``
@@ -31,6 +33,12 @@ Install deepTools using the following command:
 	$ pip install deeptools
 
 All python requirements are automatically installed.
+
+If you need to specify a specific path for the installation of the tools, make use of `pip install`'s numerous options:
+
+.. code:: bash
+
+    $ pip install --install-option="--prefix=/MyPath/Tools/deepTools2.0" git+https://github.com/fidelram/deepTools.git
 
 
 Command line installation without ``pip``
@@ -81,7 +89,7 @@ or if you want a particular release, choose one from https://github.com/fidelram
 a specific folder using the ``--prefix`` option)
 ::
 
-	$ python setup.py install --prefix /Users/frd2007/Tools/deepTools
+	$ python setup.py install --prefix /User/Tools/deepTools2.0
 
 Galaxy installation
 --------------------
@@ -104,7 +112,7 @@ for your admin user and run the the installation script:
 		--tool-deps --repository-deps --panel-section-name deepTools
 
 The ``-r`` argument specifies the version of deepTools. You can get the
-latest revsion number from the test tool shed or with the following
+latest revision number from the test tool shed or with the following
 command:
 ::
 
@@ -121,5 +129,5 @@ Installation via web browser
 -  Galaxy tool shed --> Sequence Analysis --> deeptools
 -  install deeptools
 
-remember: for support, questions, or feature requests contact:
+.. tip:: For support, questions, or feature requests contact:
 deeptools@googlegroups.com
