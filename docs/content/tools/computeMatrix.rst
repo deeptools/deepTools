@@ -22,7 +22,7 @@ computeMatrix has two main modes of use: for computing the signal distribution r
         -out ExampleComputeMatrix1.png \
         --plotTitle "Test data as one group"
 
-.. image:: test_plots/ExampleComputeMatrix1.png
+.. image:: ../../images/test_plots/ExampleComputeMatrix1.png
 
 Alternatively, for RNAseq and many other ChIP signals it's more informative to plot the signal distribution over exons or other feature types. For such cases, one can use the "scale-regions" method.
 
