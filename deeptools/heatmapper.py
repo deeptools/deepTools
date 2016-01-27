@@ -7,7 +7,6 @@ import multiprocessing
 
 # NGS packages
 import pysam
-import os
 
 import pyBigWig
 import deeptools.readBed
@@ -484,7 +483,6 @@ class heatmapper(object):
         if not nansAsZeros:
             values_array[:] = np.nan
         bw_array = None
-
         if chrom not in bigwig.chroms().keys():
             unmod_name = chrom
             if chrom.startswith('chr'):
@@ -496,25 +494,26 @@ class heatmapper(object):
             if chrom not in bigwig.chroms().keys():
 
                 sys.stderr.write("Warning: Your chromosome names do not match.\nPlease check that the "
-                     "chromosome names in your BED file\ncorrespond to the names in your "
-                     "bigWig file.\nAn empty line will be added to your heatmap.\nThe problematic "
-                     "chromosome name is {}\n\n".format(unmod_name))
+                                 "chromosome names in your BED file\ncorrespond to the names in your "
+                                 "bigWig file.\nAn empty line will be added to your heatmap.\nThe problematic "
+                                 "chromosome name is {}\n\n".format(unmod_name))
 
+                # return empty nan array
+                return heatmapper.coverage_from_array(values_array, zones, binSize, avgType)
+        try:
+            bw_array = bigwig.values(chrom, max(0, zones[0][0]), zones[-1][1])
+        except Exception as detail:
+                sys.stderr.write("Exception found. Message: "
+                                 "{}\n".format(detail))
+                sys.stderr.write("Problematic region: {}:{}-{}\n".format(chrom, zones[-1][1], zones[0][0]))
+
+        if bw_array is not None:
+            if zones[0][0] < 0:
+                values_array = np.zeros(zones[-1][1] - zones[0][0])
+                values_array[:] = np.nan
+                values_array[abs(zones[0][0]):] = bw_array
             else:
-                try:
-                    bw_array = bigwig.values(chrom, max(0, zones[0][0]), zones[-1][1])
-                except Exception as detail:
-                        sys.stderr.write("Exception found. Message: "
-                                         "{}\n".format(detail))
-                        sys.stderr.write("Problematic region: {}:{}-{}\n".format(chrom, zones[-1][1], zones[0][0]))
-
-                if bw_array is not None:
-                    if zones[0][0] < 0:
-                        values_array = np.zeros(zones[-1][1] - zones[0][0])
-                        values_array[:] = np.nan
-                        values_array[abs(zones[0][0]):] = bw_array
-                    else:
-                        values_array = np.array(bw_array)
+                values_array = np.array(bw_array)
 
         # replaces nans for zeros
         if nansAsZeros:
