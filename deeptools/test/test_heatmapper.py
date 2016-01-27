@@ -59,6 +59,14 @@ class TestHeatmapper(object):
         assert filecmp.cmp(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
+    def test_computeMatrix_region_extend_over_chr_end(self):
+        args = "reference-point -R {0}/group1.bed {0}/group2.bed -S {0}/test.bw  -b 100 -a 500 " \
+               "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
+        #os.remove('/tmp/_test.mat')
+
     def test_plotHeatmap_simple_plot(self):
         """
         Test a simple plot generated using a matrix from
