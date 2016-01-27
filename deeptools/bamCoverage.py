@@ -76,6 +76,12 @@ def get_optional_args():
                           '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
 
+    optional.add_argument('--filterRNAstrand',
+                          help='Selects RNA-seq reads (single-end or paired-end) in '
+                               'the given strand.',
+                          choices=['forward', 'reverse'],
+                          default=None)
+
     return parser
 
 
@@ -173,6 +179,7 @@ def main(args=None):
         debug = 0
 
     func_args = {'scaleFactor': get_scale_factor(args)}
+
     if args.MNase:
         # check that library is paired end
         # using getFragmentAndReadSize
@@ -199,6 +206,23 @@ def main(args=None):
                             verbose=args.verbose,
                             )
 
+    elif args.filterRNAstrand:
+        wr = filterRnaStrand([args.bam],
+                               binLength=args.binSize,
+                               stepSize=args.binSize,
+                               region=args.region,
+                               numberOfProcessors=args.numberOfProcessors,
+                               extendReads=args.extendReads,
+                               minMappingQuality=args.minMappingQuality,
+                               ignoreDuplicates=args.ignoreDuplicates,
+                               center_read=args.centerReads,
+                               zerosToNans=args.skipNonCoveredRegions,
+                               samFlag_include=args.samFlagInclude,
+                               samFlag_exclude=args.samFlagExclude,
+                               verbose=args.verbose,
+                               )
+
+        wr.filter_strand = args.filterRNAstrand
     else:
         wr = writeBedGraph.WriteBedGraph([args.bam],
                                          binLength=args.binSize,
@@ -246,5 +270,60 @@ class CenterFragment(writeBedGraph.WriteBedGraph):
             else:
                 fragment_start = read.pos + read.tlen / 2 - 1
                 fragment_end = fragment_start + 3
+
+        return [(fragment_start, fragment_end)]
+
+
+class filterRnaStrand(writeBedGraph.WriteBedGraph):
+    """
+    Class to redefine the get_fragment_from_read for the --filterRNAstrand case
+
+    Only reads either forward or reverse are kept as follows:
+
+    For paired-end
+    --------------
+    reads forward:
+
+     1. alignments of the second in pair (128) if they map to the forward strand (~16)
+     2. alignments of the first in pair (64) if they map to the reverse  strand (~32)
+
+     1. include 128, exclude 16
+     or
+     2. include 64 exclude 32
+
+    reads reverse:
+    1. alignments of the second in pair (128) if it maps to the reverse strand (16) 128 & 16 = 144
+    2. alignments of the first in pair (64) if their mates map to the reverse strand (32) 64 & 32 = 96
+
+     1. include 144
+     or
+     2. include 96
+
+    For single-end
+    --------------
+    forward: include 16 (map forward strand)
+    reverse: exclude 16
+
+    """
+
+    def get_fragment_from_read(self, read):
+        """
+        Gets only reads for the given strand
+        """
+        fragment_start = fragment_end = None
+
+        # only paired forward reads are considered
+        if read.is_paired:
+            if self.filter_strand == 'forward':
+                if (read.flag & 128 == 128 and read.flag & 16 == 0) or (read.flag & 64 == 64 and read.flag & 32 == 0):
+                    return read.get_blocks()
+            else:
+                if read.flag & 144 == 144 or read.flag & 96 == 96:
+                    return read.get_blocks()
+        else:
+            if self.filter_strand == 'forward' and read.flag & 16 == 16:
+                return read.get_blocks()
+            elif self.filter_strand == 'reverse' and read.flag & 16 == 0:
+                return read.get_blocks()
 
         return [(fragment_start, fragment_end)]
