@@ -96,18 +96,23 @@
 <![CDATA[
 **What it does**
 
-Given two or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
-This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions
-in 'BED-file' mode. Typically the output of multiBigwigSummary is used by other tools, such as 'plotCorrelation' or 'plotPCA',
-for visualization and diagnostic purposes.
+This tool computes the average scores for every genomic region for every bigWig file that is provided.
+The analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions (e.g., genes) in 'BED-file' mode.
+Typically the output of ``multiBigwigSummary`` is used by other tools, such as ``plotCorrelation`` or ``plotPCA``, for visualization and diagnostic purposes.
 
 
 **Output files**:
 
-- **Coverage scores**: Coverage scores computed and saved in a format appropriate for 'plotCorrelation' or 'plotPCA'.
+* the default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``
 
-- Data matrix (optional,select to save raw counts to a file above): If you want to have a look at the coverage values
-  or compute statistics yourself using a different program (like R).
+* to analyze the average scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
+
+.. image:: $PATH_TO_IMAGES/multiBigwigSummary_output.png
+
+**Example plots** generated with plotCorrelation after running multiBamSummary on several ENCODE RNA-seq data sets
+
+.. image:: $PATH_TO_IMAGES/QC_plotCorrelate_RNAseq.png
+   :alt: Heatmaps of correlations of RNA-seq samples
 
 -----
 

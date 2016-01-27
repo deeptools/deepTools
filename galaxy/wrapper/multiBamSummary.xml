@@ -112,7 +112,7 @@ A typical follow-up application is to check and visualize the similarity and var
 
 **Output files**:
 
-* the default output is a compressed file that **can only be used with plotPCA or plotCorrelation**
+* the default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``
 
 * to analyze the coverage scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 

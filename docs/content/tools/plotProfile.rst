@@ -18,7 +18,7 @@ The following example plots the signal profile over hg19 transcripts for our tes
 
 .. image:: test_plots/ExampleProfile1.png
 
-plotProfile has many options, including the ability to change the type of lines plotted and to plot by group rather than sample.
+``plotProfile`` has many options, including the ability to change the type of lines plotted and to plot by group rather than sample.
 
 .. code:: bash
 

@@ -35,7 +35,7 @@
 
 **What it does**
 
-This tool takes the **default output file of multiBamSummary** or multiBigwigSummary to perform a principal component analysis (PCA).
+This tool takes the **default output file of ``multiBamSummary``** or ``multiBigwigSummary`` to perform a principal component analysis (PCA).
 
 
 Background
