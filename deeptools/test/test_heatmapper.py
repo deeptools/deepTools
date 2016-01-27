@@ -65,7 +65,7 @@ class TestHeatmapper(object):
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
         assert filecmp.cmp(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
-        #os.remove('/tmp/_test.mat')
+        os.remove('/tmp/_test.mat')
 
     def test_plotHeatmap_simple_plot(self):
         """
