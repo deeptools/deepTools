@@ -361,18 +361,18 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
             read_repetitions = 0
 
         readName = read.qname
-        readTag = read.tags
+        readTag = read.get_tags(with_value_type=True)
         if gc:
             GC = int(100 * np.round(float(gc) / fragmentLength,
                                     decimals=2))
             readTag.append(
-                ('CO', float(round(float(1) / R_gc[gc], 2))))
-            readTag.append(('CP', copies))
+                ('YA', float(round(float(1) / R_gc[gc], 2)), 'f'))
+            readTag.append(('YC', copies, 'i'))
         else:
             GC = -1
 
-        readTag.append(('GC', GC))
-        read.tags = readTag
+        readTag.append(('YG', GC, 'i'))
+        read.set_tags(readTag)
 
         if read.is_paired and read.is_proper_pair \
                 and not read.mate_is_unmapped \
