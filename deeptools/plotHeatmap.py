@@ -418,8 +418,7 @@ def plotMatrix(hm, outFileName,
         ax = fig.add_subplot(grids[grid_start:, -1])
         fig.colorbar(img, cax=ax)
 
-    plt.subplots_adjust(wspace=0.12, hspace=0.025, top=0.85,
-                        bottom=0, left=0.04, right=0.96)
+    plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
 
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)

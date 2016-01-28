@@ -8,7 +8,7 @@ gunzip -c  master_nan_to_zero.mat.gz > master_nan_to_zero.mat
 computeMatrix scale-regions -a 100 -b 100 -m 100 -S test.bw -R test2.bed -o master_scale_reg.mat.gz -bs 1
 gunzip -c master_scale_reg.mat.gz > master_scale_reg.mat
 
-plotHeatmap -m master.mat.gz --outFileName -m master.mat.gz
+plotHeatmap -m master.mat.gz --outFileName master.svg
 plotHeatmap -m master.mat.gz --outFileName master_relabeled.svg --regionsLabel uno,dos
 plotHeatmap -m master_scale_reg.mat.gz --outFileName master_scale_reg.svg
 
