@@ -498,7 +498,7 @@ def main(args=None):
         hm.save_tabulated_values(args.outFileNameData, reference_point_label=args.refPointLabel,
                    start_label=args.startLabel,
                    end_label=args.endLabel,
-		   averagetype=args.averageType)
+                   averagetype=args.averageType)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)
