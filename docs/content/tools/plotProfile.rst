@@ -16,7 +16,7 @@ The following example plots the signal profile over hg19 transcripts for our tes
         -out ExampleProfile1.png \
         --plotTitle "Test data profile"
 
-.. image:: test_plots/ExampleProfile1.png
+.. image:: ../../images/test_plots/ExampleProfile1.png
 
 ``plotProfile`` has many options, including the ability to change the type of lines plotted and to plot by group rather than sample.
 
@@ -29,5 +29,5 @@ The following example plots the signal profile over hg19 transcripts for our tes
         --colors red orange yellow green blue purple \
         --plotTitle "Test data profile"
 
-.. image:: test_plots/ExampleProfile2.png
+.. image:: ../../images/test_plots/ExampleProfile2.png
 

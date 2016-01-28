@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_pe_fragmentsize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
-    <description>Estimate the paired-end fragment length in a BAM file</description>
+    <description>Estimate the predominant cDNA fragment length from a paired-end sequenced BAM file</description>
     <macros>
         <token name="@BINARY@">bamPEFragmentSize</token>
         <import>deepTools_macros.xml</import>
@@ -48,7 +48,14 @@
 **What it does**
 
 This tool samples a BAM file containing paired-end data to estimate the fragment length distribution.
-Properly paired reads are preferred for computation. The output can be obtained as a histogram.
+Properly paired reads are preferred for computation.
+
+**Output**
+
+* **default** output is a simply summary table of the observed fragment lengths
+* **optionally*, you can obtain a histogram of fragment sizes, which will give you a better idea of the distribution of fragment lengths
+
+.. image:: $PATH_TO_IMAGES/bamPEFragmentSize_output.png
 
 -----
 

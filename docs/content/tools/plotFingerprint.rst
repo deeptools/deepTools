@@ -50,7 +50,7 @@ The following example generates the fingerprints for the invididual ENCODE histo
     --plotFile fingerprints.png \
     --outRawCounts fingerprints.tab
 
-.. image:: test_plots/fingerprints.png
+.. image:: ../../images/test_plots/fingerprints.png
 
 The table that you can obtain via ``--outRawCounts`` simply contains the number of reads overlapping with each individually sampled genome bin. For the plot above, each column is sorted in increasing order and then the cumulative sum is plotted.
 

@@ -1,5 +1,5 @@
 <tool id="deeptools_compute_gc_bias" name="computeGCBias" version="@WRAPPER_VERSION@.0">
-    <description>to see whether your samples should be normalized for GC bias</description>
+    <description>Determine the GC bias of your sequenced reads</description>
     <macros>
         <token name="@BINARY@">computeGCBias</token>
         <import>deepTools_macros.xml</import>
@@ -132,7 +132,7 @@ This tool computes the GC bias using the method proposed in Benjamini and Speed 
 The output is used to plot the results and can also be used later on to correct the bias with the tool ``correctGCbias``.
 There are two plots produced by the tool: a boxplot showing the absolute read numbers per GC-content bin and an x-y plot depicting the ratio of observed/expected reads per GC-content bin.
 
-**Output files**:
+**Output files**
 
 - Diagnostic plots:
       - box plot of absolute read numbers per GC-content bin

@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_correlation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap or scatterplot of correlation scores between different samples </description>
+    <description>Create a heatmap or scatterplot of correlation scores between different samples </description>
     <macros>
         <token name="@BINARY@">plotCorrelation</token>
         <import>deepTools_macros.xml</import>
@@ -105,14 +105,14 @@ The *Spearman method* is based on **rankings**.
 
 If you imagine a race with 3 participants where the winner and runner-up are very close together while the third person broke her leg and comes in way, way after the first two, then Pearson would be strongly influenced by the fact that the third person had a great distance to the first ones while Spearman would only care about the fact that person 1 came in first, person 2 came in second and person 3 got the third rank, the distances between them are ignored.
 
-**Output files**:
+**Output files**
 
 - default: **diagnostic plot** -- either a scatterplot or a clustered heatmap displaying the values for each pair-wise correlation (see below for example plots)
 - optional: table of the pairwise correlation coefficients
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_output.png
 
-**Example plots**:
+**Example plots**
 
 The following is the output of ``plotCorrelation`` with our test ChIP-Seq datasets (to be found under "Shared Data" --> "Data Library").
 Average coverages were computed over 10 kb bins for chromosome X,
