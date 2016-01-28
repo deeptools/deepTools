@@ -654,10 +654,10 @@ class heatmapper(object):
 
         Args:
             file_handle: file name to save the file
-	    reference_point_label: Name of the reference point label
-	    start_label: Name of the star label
-	    end_label: Name of the end label
-            avg_type: average type (e.g. mean, median, std)
+            reference_point_label: Name of the reference point label
+            start_label: Name of the star label
+            end_label: Name of the end label
+            averagetype: average type (e.g. mean, median, std)
 
         """
         #  get X labels
@@ -674,7 +674,7 @@ class heatmapper(object):
             symbol = 'Mb'
 
         if m == 0:
-            xticks = [(k / w)  for k in [w, b, b + a]]
+            xticks = [(k / w) for k in [w, b, b + a]]
             xtickslabel = ['{0:.1f}{1}'.format(-(float(b) / quotient), symbol), reference_point_label,
                            '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
 
@@ -696,14 +696,14 @@ class heatmapper(object):
                 xticks_values.append(b + m + a)
                 xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
-            xticks = [(k / w)  for k in xticks_values]
+            xticks = [(k / w) for k in xticks_values]
         x_axis = np.arange(xticks[-1]) + 1
         labs = []
         for x_value in x_axis:
             if x_value in xticks:
-             labs.append(xtickslabel[xticks.index(x_value)])
+                labs.append(xtickslabel[xticks.index(x_value)])
             else:
-             labs.append("")
+                labs.append("")
 
         with open(file_handle, 'w') as fh:
             # write labels
@@ -714,7 +714,7 @@ class heatmapper(object):
                 for group_idx in range(self.matrix.get_num_groups()):
                     sub_matrix = self.matrix.get_matrix(group_idx, sample_idx)
                     values = [str(x) for x in np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
-	            fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
+                    fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
 
     def save_matrix_values(self, file_name):
         # print a header telling the group names and their length
