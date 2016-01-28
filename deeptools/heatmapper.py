@@ -697,7 +697,6 @@ class heatmapper(object):
                 xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
             xticks = [(k / w)  for k in xticks_values]
-	print(xticks, xtickslabel)
         x_axis = np.arange(xticks[-1]) + 1
         labs = []
         for x_value in x_axis:
@@ -717,34 +716,6 @@ class heatmapper(object):
                     values = [str(x) for x in np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
                     print(len(values))
 	            fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
-
-    def saveTabulatedValues(self, file_handle):
-        range(self.parameters['upstream'] * -1,
-              self.parameters['body'] + self.parameters['downstream'],
-              self.parameters['bin size'])
-
-        # TODO this function must be updated
-        print "save tabulated values is not yet implemented."
-        """
-        avgDict = OrderedDict()
-        stdDict = OrderedDict()
-
-        for label, heatmapMatrix in self.matrixDict.iteritems():
-            avgDict[label] = heatmapper.matrix_avg(heatmapMatrix, 'mean')
-            stdDict[label] = heatmapper.matrix_avg(heatmapMatrix, 'std')
-
-        file_handle.write(
-            '#bin No.\t{}\n'.format(" mean\t std\t".join(avgDict.keys())))
-
-        for j in range(0, len(avgDict[avgDict.keys()[0]])):
-            file_handle.write('{}\t'.format(bin[j]))
-            for label in self.matrixDict.keys():
-                file_handle.write(
-                    '{}\t{}\t'.format(avgDict[label][j], stdDict[label][j]))
-            file_handle.write('\n')
-
-        file_handle.close()
-        """
 
     def save_matrix_values(self, file_name):
         # print a header telling the group names and their length
