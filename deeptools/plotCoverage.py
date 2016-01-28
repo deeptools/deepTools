@@ -159,8 +159,10 @@ def main(args=None):
     # plot up to two std from mean
     sample_mean = num_reads_per_bin.mean(axis=0)
     std = max(num_reads_per_bin.std(axis=0))
-    y_max = max(sample_mean) + 3 * std
 
+    y_max = max(sample_mean) + (1.5 * std)
+    y_max = 40
+    print(sample_mean, std)
     # plot coverage
     for idx, col in enumerate(num_reads_per_bin.T):
         axs[0].plot(np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0],
