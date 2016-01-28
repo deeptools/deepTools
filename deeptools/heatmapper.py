@@ -714,7 +714,6 @@ class heatmapper(object):
                 for group_idx in range(self.matrix.get_num_groups()):
                     sub_matrix = self.matrix.get_matrix(group_idx, sample_idx)
                     values = [str(x) for x in np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
-                    print(len(values))
 	            fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
 
     def save_matrix_values(self, file_name):
