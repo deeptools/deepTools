@@ -506,10 +506,11 @@ class heatmapper(object):
             unmod_name = chrom
             chrom = heatmapper.change_chrom_names(chrom)
             if chrom not in bigwig.chroms().keys():
-                sys.stderr.write("Warning: Your chromosome names do not match.\nPlease check that the "
-                                 "chromosome names in your BED file\ncorrespond to the names in your "
-                                 "bigWig file.\nAn empty line will be added to your heatmap.\nThe problematic "
-                                 "chromosome name is {}\n\n".format(unmod_name))
+                if verbose:
+                    sys.stderr.write("Warning: Your chromosome names do not match.\nPlease check that the "
+                                     "chromosome names in your BED file\ncorrespond to the names in your "
+                                     "bigWig file.\nAn empty line will be added to your heatmap.\nThe problematic "
+                                     "chromosome name is {}\n\n".format(unmod_name))
 
                 # return empty nan array
                 return heatmapper.coverage_from_array(values_array, zones, binSize, avgType)
