@@ -470,8 +470,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '--colorMap', default='RdYlBu',
             help='Color map to use for the heatmap. Available values can be '
             'seen here: '
-            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/ The available options are: \'' +
+            'http://matplotlib.org/users/colormaps.html '
+            'The available options are: \'' +
             color_options + '\'')
 
         optional.add_argument(
@@ -500,7 +500,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               help='Maximum value for the heatmap intensities.')
         optional.add_argument('--heatmapHeight',
                               help='Plot height in cm. The default for the heatmap '
-                              'height is 25. The minimum value is '
+                              'height is 28. The minimum value is '
                               '3 and the maximum is 100.',
                               type=float,
                               default=28)

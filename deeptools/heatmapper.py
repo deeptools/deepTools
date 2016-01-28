@@ -266,6 +266,21 @@ class heatmapper(object):
                                                         feature.chrom,
                                                         feature.start,
                                                         feature.end))
+                # check if after extension, the region extends beyond the
+                # chromosome length
+                if feature.chrom not in score_file_handlers[0].chroms().keys():
+                    chrom = heatmapper.change_chrom_names(feature.chrom)
+                else:
+                    chrom = feature.chrom
+                if feature.end + a * parameters['bin size'] > score_file_handlers[0].chroms(chrom):
+                    if parameters['verbose']:
+                        sys.stderr.write(
+                            "Warning:region extends beyond chromosome end "
+                            "for {} {}:{}:{}.\n".format(feature.name,
+                                                        feature.chrom,
+                                                        feature.start,
+                                                        feature.end))
+
                 coverage = []
                 # compute the values (coverage in the case of bam files)
                 # for each of the files being processed.
@@ -405,9 +420,13 @@ class heatmapper(object):
         """
         # TODO: mapping from chromosome names, e.g., mt, unknown
         if chrom.startswith('chr'):
-            return chrom[3:]
+            # remove the chr part from chromosome name
+            chrom = chrom[3:]
         else:
-            return 'chr%s' % chrom
+            # prefix with 'chr' the chromosome name
+            chrom = 'chr' + chrom
+
+        return chrom
 
     @staticmethod
     def coverage_from_bam(bamfile, chrom, zones, binSize, avgType, verbose=True):
@@ -483,48 +502,42 @@ class heatmapper(object):
         if not nansAsZeros:
             values_array[:] = np.nan
         bw_array = None
+        if chrom not in bigwig.chroms().keys():
+            unmod_name = chrom
+            chrom = heatmapper.change_chrom_names(chrom)
+            if chrom not in bigwig.chroms().keys():
+                sys.stderr.write("Warning: Your chromosome names do not match.\nPlease check that the "
+                                 "chromosome names in your BED file\ncorrespond to the names in your "
+                                 "bigWig file.\nAn empty line will be added to your heatmap.\nThe problematic "
+                                 "chromosome name is {}\n\n".format(unmod_name))
+
+                # return empty nan array
+                return heatmapper.coverage_from_array(values_array, zones, binSize, avgType)
         try:
-            bw_array = bigwig.values(chrom, max(0, zones[0][0]), zones[-1][1])
+
+            start = max(0, zones[0][0])
+            end = min(bigwig.chroms(chrom), zones[-1][1])
+            bw_array = bigwig.values(chrom, start, end)
         except Exception as detail:
                 sys.stderr.write("Exception found. Message: "
                                  "{}\n".format(detail))
                 sys.stderr.write("Problematic region: {}:{}-{}\n".format(chrom, zones[-1][1], zones[0][0]))
-        # TODO: pyBigWig allows this to work like a BAM file...
-        if bw_array is None:
-            # When bigwig.get_as_array queries a
-            # chromosome that is not known
-            # it returns None. Ideally, the bigwig should
-            # be able to inform the known chromosome names
-            # as is the case for bam files, but the
-            # bx-python function does not allow access to
-            # this info.
-            altered_chrom = heatmapper.change_chrom_names(chrom)
-            bw_array = bigwig.values(altered_chrom,
-                                     max(0, zones[0][0]),
-                                     zones[-1][1])
-            # test again if with the altered chromosome name
-            # the bigwig returns something.
-            if bw_array is None and verbose:
-                sys.stderr.write("Warning: Your chromosome names do "
-                                 "not match.\nPlease check that the "
-                                 "chromosome names in your BED "
-                                 "file\ncorrespond to the names in your "
-                                 "bigWig file.\nAn empty line will be "
-                                 "added you your heatmap.\nThe offending "
-                                 "chromosome name is "
-                                 "{}\n\n".format(chrom))
 
+        # adjust bw_array if it extends beyond chromosome limits
         if bw_array is not None:
-            if zones[0][0] < 0:
-                values_array = np.zeros(zones[-1][1] - zones[0][0])
-                values_array[:] = np.nan
+            if zones[0][0] < 0 and zones[-1][1] > bigwig.chroms(chrom):
+                values_array[abs(zones[0][0]):len(bw_array) + abs(zones[0][0])] = bw_array
+            elif zones[0][0] < 0:
                 values_array[abs(zones[0][0]):] = bw_array
+            elif zones[-1][1] > bigwig.chroms(chrom):
+                values_array[:len(bw_array)] = bw_array
             else:
                 values_array = np.array(bw_array)
 
         # replaces nans for zeros
         if nansAsZeros:
             values_array[np.isnan(values_array)] = 0
+
         return heatmapper.coverage_from_array(values_array, zones,
                                               binSize, avgType)
 
@@ -999,7 +1012,7 @@ class _matrix(object):
         matrix = np.asarray(self.matrix)
         if np.any(np.isnan(matrix)):
             # replace nans for 0 otherwise kmeans produces a weird behaviour
-            sys.stderr.write("Warning nan values replaced by zeros\n")
+            sys.stderr.write("*Warning* For clustering nan values have to be replaced by zeros\n")
             matrix[np.isnan(matrix)] = 0
 
         if method == 'kmeans':
