@@ -27,12 +27,12 @@ def parse_arguments(args=None):
             description="""
 
 This tool is useful to assess the sequencing depth of a given sample. 
-It samples 1 million bp, counts the number of overlapping reads and reports 
-a coverage histogram that tells you how many bases are covered how many times.
-Multiple BAM files are accepted but all should correspond to the same genome assembly.
+It samples 1 million bp, counts the number of overlapping reads and can report 
+a histogram that tells you how many bases are covered how many times.
+Multiple BAM files are accepted, but they all should correspond to the same genome assembly.
 
 detailed usage help:
-  plotCoverage  -h
+ $ plotCoverage  -h
 
 """,
             epilog='example usages:\nplotCoverage '
@@ -92,7 +92,7 @@ def required_args():
 
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
-                          'that have zero or nan values in all samples '
+                          'that have zero or nan values in _all_ samples '
                           'are excluded.',
                           action='store_true',
                           required=False)

@@ -96,7 +96,7 @@
 <![CDATA[
 **What it does**
 
-This tool computes the average scores for every genomic region for every bigWig file that is provided.
+This tool computes the average scores for every genomic region for every bigWig file that is provided. In principle, it does the same as ``multiBamSummary``, but for bigWig files.
 The analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions (e.g., genes) in 'BED-file' mode.
 Typically the output of ``multiBigwigSummary`` is used by other tools, such as ``plotCorrelation`` or ``plotPCA``, for visualization and diagnostic purposes.
 
@@ -109,7 +109,7 @@ Typically the output of ``multiBigwigSummary`` is used by other tools, such as `
 
 .. image:: $PATH_TO_IMAGES/multiBigwigSummary_output.png
 
-**Example plots** generated with plotCorrelation after running multiBamSummary on several ENCODE RNA-seq data sets
+**Example plots** generated with plotCorrelation after running ``multiBigwigSummary`` on several ENCODE RNA-seq data sets
 
 .. image:: $PATH_TO_IMAGES/QC_plotCorrelate_RNAseq.png
    :alt: Heatmaps of correlations of RNA-seq samples
