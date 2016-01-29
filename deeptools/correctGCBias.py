@@ -289,7 +289,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     ... tag_but_not_change_number=True, verbose=False)
     >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
-    >>> [dict(r.tags)['CP'] for r in bam.fetch(args[0], 200, 250)]
+    >>> [dict(r.tags)['YN'] for r in bam.fetch(args[0], 200, 250)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
@@ -298,7 +298,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     ... tag_but_not_change_number=True, verbose=False)
     >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
-    >>> [dict(r.tags)['CP'] for r in bam.fetch('chr2L', 0, 50)]
+    >>> [dict(r.tags)['YN'] for r in bam.fetch('chr2L', 0, 50)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
@@ -361,17 +361,19 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
             read_repetitions = 0
 
         readName = read.qname
-        readTag = read.get_tags(with_value_type=True)
+        # Each tag is a tuple of (tag name, value, type)
+        # Note that get_tags() returns ord(type) rather than type and this must be fixed!
+        readTag = [(x[0], x[1], chr(x[2])) for x in read.get_tags(with_value_type=True)]
         if gc:
             GC = int(100 * np.round(float(gc) / fragmentLength,
                                     decimals=2))
             readTag.append(
-                ('YA', float(round(float(1) / R_gc[gc], 2)), 'f'))
-            readTag.append(('YC', copies, 'i'))
+                ('YC', float(round(float(1) / R_gc[gc], 2)), "f"))
+            readTag.append(('YN', copies, "i"))
         else:
             GC = -1
 
-        readTag.append(('YG', GC, 'i'))
+        readTag.append(('YG', GC, "i"))
         read.set_tags(readTag)
 
         if read.is_paired and read.is_proper_pair \
