@@ -51,18 +51,26 @@ NGS and generic terminology
 ---------------------------
 The following are terms that may be new to some:
 
-**bin**
+.. _bin:
+
+bin
+^^^
 
 * synonyms: window, region
 * A 'bin' is a subset of a larger grouping. Many calculations calculation are performed by first dividing the genome into small regions (bins), on which the calculations are actually performed.
 
+.. _input:
 
-**Input**
+Input
+^^^^^^^^
 
 * Control experiment typically done for ChIP-seq experiments 
 * While ChIP-seq relies on antibodies to enrich for DNA fragments bound to a certain protein, the input sample should be processed exactly the same way, excluding the antibody. This allows one to account for biases introduced by sample handling and the general chromatin structure of the cells 
 
-**read**
+.. _read:
+
+read
+^^^^^^^^
 
 * synonym: tag
 * This term refers to the piece of DNA that is sequenced ("read") by the sequencers. We try to differentiate between "read" and "DNA fragment" as the fragments that are put into the sequencer tend to be in the range of 200-1000 bases, of which only the first 50 to 300 bases are typically sequenced. Most of the deepTools will not only take these reads into account, but also extend them to match the original DNA fragment size. (The original size will either be given by you or, if you used paired-end sequencing, be calculated from the distance between the two read mates).
@@ -91,7 +99,7 @@ Follow the links for more information on the different tool collections mentione
 .. _2bit:
 
 2bit
-^^^^
+^^^^^
 
 * compressed, binary version of genome sequences that are often stored in :ref:`FASTA` 
 * most genomes in 2bit format can be found `at UCSC <http://hgdownload.cse.ucsc.edu/gbdb/>`__
@@ -134,7 +142,7 @@ bed
     chr1    4763278 4775807 NM_001177658 Mrpl15 -
     chr1    4797973 4836816 NM_008866    Lypla1 +
 
-.. _bedgraph:
+.. _bedGraph:
 
 bedGraph 
 ^^^^^^^^
@@ -152,7 +160,7 @@ bedGraph
     chr1 30 40 2.0
     chr1 40 50 1.8
 
-.. _bigwig:
+.. _bigWig:
 
 bigWig 
 ^^^^^^
@@ -183,7 +191,7 @@ FASTA
      GLMPFLHTSKHRSMMLRPLSQALFWTLTMDLLTLTWIGSQPVEYPYTIIGQMASILYFSIILAFLPIAGX
      IENY
 
-.. _fastq:
+.. _FASTQ:
 
 FASTQ
 ^^^^^
