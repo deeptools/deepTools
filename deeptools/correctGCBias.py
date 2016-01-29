@@ -362,8 +362,21 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
 
         readName = read.qname
         # Each tag is a tuple of (tag name, value, type)
-        # Note that get_tags() returns ord(type) rather than type and this must be fixed!
-        readTag = [(x[0], x[1], chr(x[2])) for x in read.get_tags(with_value_type=True)]
+        # Note that get_tags() returns ord(type) rather than type and this must
+        # be fixed!
+        # It turns out that the "with_value_type" option only started working in
+        # pysam-0.8.4, so we can't reliably add tags on earlier versions without
+        # potentially creating BAM files that break HTSJDK/IGV/etc.
+
+        readTag = read.get_tags(with_value_type=True)
+        replace_tags = False
+        if len(readTag) > 0:
+            if len(readTag[0]) == 3:
+                readTag = [(x[0], x[1], chr(x[2])) for x in readTag]
+                replace_tags = True
+        else:
+            replace_tags = True
+
         if gc:
             GC = int(100 * np.round(float(gc) / fragmentLength,
                                     decimals=2))
@@ -374,7 +387,8 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
             GC = -1
 
         readTag.append(('YG', GC, "i"))
-        read.set_tags(readTag)
+        if replace_tags:
+            read.set_tags(readTag)
 
         if read.is_paired and read.is_proper_pair \
                 and not read.mate_is_unmapped \
