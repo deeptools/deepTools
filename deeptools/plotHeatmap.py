@@ -303,6 +303,7 @@ def plotMatrix(hm, outFileName,
                             vmax=zMax,
                             cmap=cmap,
                             extent=[0, cols, rows, 0])
+
             # plot border at the end of the regions
             # if ordered by length
             if regions_length_in_bins is not None:

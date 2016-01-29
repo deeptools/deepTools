@@ -197,7 +197,6 @@ class Profile(object):
             else:
                 title = self.hm.matrix.sample_labels[plot]
 
-            ax.set_title(title)
             vmin = np.inf
             vmax = -np.inf
             for data_idx in range(self.numlines):
@@ -222,6 +221,8 @@ class Profile(object):
             ax_list = []
             for data_idx in range(self.numlines)[::-1]:
                 ax = self.fig.add_subplot(sub_grid[data_idx, 0])
+                if data_idx == 0:
+                    ax.set_title(title)
                 if data_idx != self.numlines - 1:
                     plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -335,7 +336,7 @@ class Profile(object):
                 mat.append(np.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
 
             img = ax.imshow(np.vstack(mat), interpolation='nearest',
-                            cmap='jet', aspect='auto', vmin=self.y_min, vmax=self.y_max)
+                            cmap='RdYlBu_r', aspect='auto', vmin=self.y_min, vmax=self.y_max)
             self.fig.colorbar(img, cax=cax)
 
             ax.axes.set_xticks(self.xticks)
@@ -354,7 +355,7 @@ class Profile(object):
             yticks = [x + d_half for x in pos]
 
             ax.axes.set_yticks(yticks)
-            ax.axes.set_yticklabels(labels)
+            ax.axes.set_yticklabels(labels, rotation='vertical')
 
             ax_list.append(ax)
 
@@ -493,8 +494,11 @@ def main(args=None):
     if args.samplesLabel and len(args.samplesLabel):
         hm.matrix.set_sample_labels(args.samplesLabel)
 
-    # if args.outFileNameData:
-    #    hm.saveTabulatedValues(args.outFileNameData)
+    if args.outFileNameData:
+        hm.save_tabulated_values(args.outFileNameData, reference_point_label=args.refPointLabel,
+                                 start_label=args.startLabel,
+                                 end_label=args.endLabel,
+                                 averagetype=args.averageType)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

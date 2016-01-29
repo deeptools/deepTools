@@ -648,33 +648,74 @@ class heatmapper(object):
                     matrix_values))
         fh.close()
 
-    def saveTabulatedValues(self, file_handle):
-        range(self.parameters['upstream'] * -1,
-              self.parameters['body'] + self.parameters['downstream'],
-              self.parameters['bin size'])
-
-        # TODO this function must be updated
-        print "save tabulated values is not yet implemented."
+    def save_tabulated_values(self, file_handle, reference_point_label='TSS', start_label='TSS', end_label='TES', averagetype='mean'):
         """
-        avgDict = OrderedDict()
-        stdDict = OrderedDict()
+        Saves the values averaged by col using the avg_type
+        given
 
-        for label, heatmapMatrix in self.matrixDict.iteritems():
-            avgDict[label] = heatmapper.matrix_avg(heatmapMatrix, 'mean')
-            stdDict[label] = heatmapper.matrix_avg(heatmapMatrix, 'std')
+        Args:
+            file_handle: file name to save the file
+            reference_point_label: Name of the reference point label
+            start_label: Name of the star label
+            end_label: Name of the end label
+            averagetype: average type (e.g. mean, median, std)
 
-        file_handle.write(
-            '#bin No.\t{}\n'.format(" mean\t std\t".join(avgDict.keys())))
-
-        for j in range(0, len(avgDict[avgDict.keys()[0]])):
-            file_handle.write('{}\t'.format(bin[j]))
-            for label in self.matrixDict.keys():
-                file_handle.write(
-                    '{}\t{}\t'.format(avgDict[label][j], stdDict[label][j]))
-            file_handle.write('\n')
-
-        file_handle.close()
         """
+        #  get X labels
+        w = self.parameters['bin size']
+        b = self.parameters['upstream']
+        a = self.parameters['downstream']
+        m = self.parameters['body']
+
+        if b < 1e5:
+            quotient = 1000
+            symbol = 'Kb'
+        else:
+            quotient = 1e6
+            symbol = 'Mb'
+
+        if m == 0:
+            xticks = [(k / w) for k in [w, b, b + a]]
+            xtickslabel = ['{0:.1f}{1}'.format(-(float(b) / quotient), symbol), reference_point_label,
+                           '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+
+        else:
+            xticks_values = [w]
+            xtickslabel = []
+
+            # only if upstream region is set, add a x tick
+            if self.parameters['upstream'] > 0:
+                xticks_values.append(b)
+                xtickslabel.append('{0:.1f}{1}'.format(-(float(b) / quotient), symbol))
+
+            # set the x tick for the body parameter, regardless if
+            # upstream is 0 (not set)
+            xticks_values.append(b + m)
+            xtickslabel.append(start_label)
+            xtickslabel.append(end_label)
+            if a > 0:
+                xticks_values.append(b + m + a)
+                xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+
+            xticks = [(k / w) for k in xticks_values]
+        x_axis = np.arange(xticks[-1]) + 1
+        labs = []
+        for x_value in x_axis:
+            if x_value in xticks:
+                labs.append(xtickslabel[xticks.index(x_value)])
+            else:
+                labs.append("")
+
+        with open(file_handle, 'w') as fh:
+            # write labels
+            fh.write("bin labels\t\t{}\n".format("\t".join(labs)))
+            fh.write('bins\t\t{}\n'.format("\t".join([str(x) for x in x_axis])))
+
+            for sample_idx in range(self.matrix.get_num_samples()):
+                for group_idx in range(self.matrix.get_num_groups()):
+                    sub_matrix = self.matrix.get_matrix(group_idx, sample_idx)
+                    values = [str(x) for x in np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
+                    fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
 
     def save_matrix_values(self, file_name):
         # print a header telling the group names and their length
