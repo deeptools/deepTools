@@ -208,19 +208,19 @@ def main(args=None):
 
     elif args.filterRNAstrand:
         wr = filterRnaStrand([args.bam],
-                               binLength=args.binSize,
-                               stepSize=args.binSize,
-                               region=args.region,
-                               numberOfProcessors=args.numberOfProcessors,
-                               extendReads=args.extendReads,
-                               minMappingQuality=args.minMappingQuality,
-                               ignoreDuplicates=args.ignoreDuplicates,
-                               center_read=args.centerReads,
-                               zerosToNans=args.skipNonCoveredRegions,
-                               samFlag_include=args.samFlagInclude,
-                               samFlag_exclude=args.samFlagExclude,
-                               verbose=args.verbose,
-                               )
+                             binLength=args.binSize,
+                             stepSize=args.binSize,
+                             region=args.region,
+                             numberOfProcessors=args.numberOfProcessors,
+                             extendReads=args.extendReads,
+                             minMappingQuality=args.minMappingQuality,
+                             ignoreDuplicates=args.ignoreDuplicates,
+                             center_read=args.centerReads,
+                             zerosToNans=args.skipNonCoveredRegions,
+                             samFlag_include=args.samFlagInclude,
+                             samFlag_exclude=args.samFlagExclude,
+                             verbose=args.verbose,
+                             )
 
         wr.filter_strand = args.filterRNAstrand
     else:
