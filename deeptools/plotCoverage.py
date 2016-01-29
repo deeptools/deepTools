@@ -133,7 +133,8 @@ def main(args=None):
                                  ignoreDuplicates=args.ignoreDuplicates,
                                  center_read=args.centerReads,
                                  samFlag_include=args.samFlagInclude,
-                                 samFlag_exclude=args.samFlagExclude)
+                                 samFlag_exclude=args.samFlagExclude,
+                                 out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
 
@@ -147,12 +148,6 @@ def main(args=None):
 
     if args.skipZeros:
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
-
-    if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
-        for row in num_reads_per_bin:
-            args.outRawCounts.write(fmt % tuple(row))
 
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     plt.suptitle(args.plotTitle)
