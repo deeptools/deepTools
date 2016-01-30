@@ -77,17 +77,16 @@
 
         <param name="scoreFileName" format="bigwig" type="data"
             label="Score file" multiple="True"
-            help="You can generate a bigWig file from either a
-            bedGraph or WIG file using UCSC tools or from a BAM file using the
+            help="You can generate a bigWig file from a BAM file using the
             bamCoverage tool. (--scoreFileName)"/>
 
         <conditional name="mode" >
             <param name="mode_select" type="select"
                 label="computeMatrix has two main output options"
                 help="In the scale-regions mode, all regions in the BED file are
-                stretched or shrunk to the same length (in bases) that is indicated
+                stretched or shrunken to the same length (in bases) that is indicated
                 by the user. Reference-point refers to a position within the BED
-                regions (e.g start of region). In the reference-point mode only
+                regions (start or end of each region). In the reference-point mode only
                 those genomic positions before (upstream) and/or after (downstream)
                 the reference point will be considered.">
                 <option value="scale-regions" selected="true">scale-regions</option>
@@ -236,24 +235,47 @@
 **What it does**
 
 This tool prepares an intermediate file (a gzipped table of values)
-that contains scores associated with genomic regions and can be used
-afterwards to plot a heatmap or profile.
+that contains scores associated with genomic regions. This intermediate file is meant to be used with ``plotHeatmap`` and ``plotProfile``.
+See the descriptions of ``plotHeatmap`` and ``plotProfile`` for example plots.
 
-Genomic regions can really be anything - genes, parts of genes, ChIP-seq
-peaks, favorite genome regions... as long as you provide a proper file
-in BED or INTERVAL format. If you would like to compare different groups of regions
-(i.e. genes from chromosome 2 and 3), you can supply more than 1 BED file, one for each group.
-
-computeMatrix can also be used to filter and sort
-regions according to their score by making use of its advanced output options.
-
-
-.. image:: $PATH_TO_IMAGES/flowChart_computeMatrixetc.png
+.. image:: $PATH_TO_IMAGES/computeMatrix_overview   .png
    :alt: Relationship between computeMatrix, heatmapper and profiler
 
+The supplied genomic regions can really be anything - genes, parts of genes, ChIP-seq peaks, favorite genome regions... as long as you provide a proper file
+in BED or INTERVAL format. If you would like to compare different groups of regions (e.g., genes from chromosome 2 and 3), you can supply more than 1 BED file, one for each group by selecting "Insert Select regions".
 
-You can find more details on the computeMatrix doc page: https://deeptools.readthedocs.org/en/master/content/tools/computeMatrix.html
+.. image:: $PATH_TO_IMAGES/computeMatrix_selectRegions.png
 
+You can select as many score (bigWig) files as you like. Simply use the Shift and/or Command key while clicking on the files of interest.
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_selectScores.png
+
+
+**Output files**
+
+* the default output is a **gzipped table of values** that is used by both ``plotHeatmap`` and ``plotProfile``
+* the optional output files include
+    - the **regions after sorting and filtering** as they were used to calculate the values for the plotting
+    - the uncompressed table that *underlies the heatmap*
+
+.. tip:: ``computeMatrix`` can also be used to filter and sort regions according to their score by making use of its advanced output settings.
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_advancedOutput.png
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_output.png
+
+Note that these options are available for ``plotHeatmap`` and ``plotProfile``, too.
+
+
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+|  **optional output type**         | **command**                    | **computeMatrix** | **plotHeatmap** | **plotProfile** |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| values underlying the heatmap     | ``--outFileNameMatrix``        | yes               | yes             | no              |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| values underlying the profile     | ``--outFileNameData``          | no                | yes             | yes             |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| sorted and/or filtered regions    | ``--outFileSortedRegions``     | yes               | yes             | yes             |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
 
 -----
 

@@ -99,9 +99,9 @@ a coverage histogram that tells you how many bases are covered how many times.
 
 * the default output is a panel of two plots (see below for an example)
     - one is a density plot visualizing the frequencies of read coverages
-    - the other one let's you estimate what fraction of the genome has a depth of sequencing of 2 or more
+    - the other one let's you estimate what fraction of the genome has a depth of sequencing of, for example, 2 overlapping reads or more
 
-* the optional output is a table where each row represents the number of reads overlapping with a given sampled bp
+* the optional output is a table where each row represents the number of reads overlapping with a sampled bp
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_output.png
 
