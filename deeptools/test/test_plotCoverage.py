@@ -4,6 +4,7 @@ import filecmp
 import matplotlib as mpl
 import deeptools.plotCoverage
 import deeptools.utilities
+from matplotlib.testing.decorators import cleanup
 
 __author__ = 'Bjoern'
 
@@ -23,15 +24,17 @@ class TestHeatmapper(object):
                              "different matplotlib version ({}) != 1.5.0\n".format(mpl.__version__))
             self.run_image_tests = False
 
+    @cleanup
     def test_plotCoverage_default(self):
         if self.run_image_tests:
             args = "--bamfiles {0}test1.bam {0}test2.bam --plotFile /tmp/_test.svg" \
                    " --plotFileFormat svg --outRawCounts /tmp/_test.tab".format(TEST_DATA).split()
             deeptools.plotCoverage.main(args)
+	    print args
             assert filecmp.cmp(os.path.join(ROOT, 'outRawCounts_default.tabular'), '/tmp/_test.tab') is True
             assert self.compare_svg(os.path.join(ROOT, 'plotCoverage_default.svg'), '/tmp/_test.svg')
             os.remove('/tmp/_test.tab')
-            os.remove('/tmp/_test.svg')
+            #os.remove('/tmp/_test.svg')
 
     @staticmethod
     def compare_svg(file1, file2):
@@ -47,6 +50,8 @@ class TestHeatmapper(object):
         os.system('cat {} | perl -lane \'s/xlink:href=".+?"//g; s/id=".+?"//g; s/"url\(.+?\)"//g; print $_\' > {}'.format(file1, f1))
         os.system('cat {} | perl -lane \'s/xlink:href=".+?"//g; s/id=".+?"//g; s/"url\(.+?\)"//g; print $_\' > {}'.format(file2, f2))
         res = filecmp.cmp(f1, f2)
+        if res == False:
+            os.system("diff {} {}".format(f1, f2))
         os.remove(f1)
         os.remove(f2)
         return res
