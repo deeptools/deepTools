@@ -5,8 +5,21 @@ plotProfile
    :ref: deeptools.plotProfile.parse_arguments
    :prog: plotProfile
 
-Usage Example:
-~~~~~~~~~~~~~~
+Details
+^^^^^^^^
+
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+|  **optional output type**         | **command**                    | **computeMatrix** | **plotHeatmap** | **plotProfile** |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| values underlying the heatmap     | ``--outFileNameMatrix``        | yes               | yes             | no              |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| values underlying the profile     | ``--outFileNameData``          | no                | yes             | yes             |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| sorted and/or filtered regions    | ``--outFileSortedRegions``     | yes               | yes             | yes             |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+
+Usage example
+^^^^^^^^^^^^^^
 
 The following example plots the signal profile over hg19 transcripts for our test ENCODE datasets. Note that the matrix contains multiple groups of regions (in this case, one for each chromosome used).
 
@@ -30,4 +43,5 @@ The following example plots the signal profile over hg19 transcripts for our tes
         --plotTitle "Test data profile"
 
 .. image:: ../../images/test_plots/ExampleProfile2.png
+
 

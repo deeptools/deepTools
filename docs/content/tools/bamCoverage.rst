@@ -4,6 +4,10 @@ bamCoverage
 .. contents:: 
     :local:
 
+.. image:: ../../images/norm_IGVsnapshot_indFiles.png
+
+If you are not familiar with BAM, bedGraph and bigWig formats, you can read up on that in our :doc:`../help_glossary`
+
 .. argparse::
    :ref: deeptools.bamCoverage.parseArguments
    :prog: bamCoverage
@@ -16,11 +20,14 @@ Usage hints
 * The 1x normalization (RPGC) requires the input of a value for the **effective genome size**, which is the mappable part of the reference genome. Of course, this value is species-specific. The command line help of this tool offers suggestions for a number of model species.
 * It might be useful for some studies to exclude certain chromosomes in order to avoid biases, e.g. chromosome X, as male mice contain a pair of each autosome, but usually only a single X chromosome.
 * By default, the read length is **NOT** extended! This is the preferred setting for **spliced-read** data like RNA-seq, where one usually wants to rely on the detected read locations only. A read extension would neglect potential splice sites in the unmapped part of the fragment.
-  Other data, e.g. Chip-seq, where fragments are known to map contiguously, should be processed with read extension (``--extendReads [INT]``).
+  Other data, e.g. Chip-seq, where fragments are known to map contiguously, should be processed with read extension (``--extendReads [INTEGER]``).
 * For paired-end data, the fragment length is generally defined by the two read mates. The user provided fragment length is only used as a fallback for singletons or mate reads that map too far apart (with a distance greater than four times the fragment length or are located on different chromosomes).
 
 .. warning:: If you already normalized for GC bias using ``correctGCbias``, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
 
+.. warning:: If you know that your files will be **strongly affected by the kind of filtering** you would like to apply (e.g., removal of duplicates with ``--ignoreDuplicates`` or ignoring reads of low quality) then consider removing those reads *beforehand*. 
+
+.. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output via ``--outFileFormat``.
 
 Usage example for ChIP-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -35,8 +42,25 @@ This is an example for ChIP-seq data using additional options (smaller bin size 
         --ignoreForNormalization chrX
         --extendReads
 
+If you had run the command with ``--outFileFormat bedgraph``, you could easily peak into the resulting file.
 
-Usage example for RNA-seq
+.. code:: bash
+
+    $ head SeqDepthNorm_chr19.bedgraph 
+    19	60150	60250	9.32
+    19	60250	60450	18.65
+    19	60450	60650	27.97
+    19	60650	60950	37.29
+    19	60950	61000	27.97
+    19	61000	61050	18.65
+    19	61050	61150	27.97
+    19	61150	61200	18.65
+    19	61200	61300	9.32
+    19	61300	61350	18.65
+
+As you can see, each row corresponds to one region. If consecutive bins have the same number of reads overlapping, they will be merged.
+
+Usage examples for RNA-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Note that some BAM files are filtered based on SAM flags (`Explain SAM flags <https://broadinstitute.github.io/picard/explain-flags.html>`_).

@@ -64,11 +64,3 @@ Usage example
 .. image:: ../../images/test_plots/ExampleComputeGCBias.png
 
 
-Galaxy
-^^^^^^^
-
-`computeGCBias` is also available in `deepTools Galaxy`_:
-
-.. image:: ../../images/computeGCBias_Galaxy.png 
-
-.. _deepTools Galaxy: http://deeptools2.ie-freiburg.mpg.de/

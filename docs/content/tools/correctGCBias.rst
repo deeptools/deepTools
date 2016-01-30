@@ -9,9 +9,9 @@ correctGCBias
 
    
 Usage example
-~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^
 
-.. note:: ``correctGCBias`` requires the output of ``computeGCBias``.
+.. note:: ``correctGCBias`` requires the output of ``computeGCBias`` and a genome file in 2bit format. Most genomes can be found here: http://hgdownload.cse.ucsc.edu/gbdb/. Search for the ``.2bit`` ending. Otherwise, FASTA files can be converted to 2bit using ``faToTwoBit``, which is available here: http://hgdownload.cse.ucsc.edu/admin/exe/
 
 .. code:: bash
 	
@@ -21,18 +21,5 @@ Usage example
       --GCbiasFrequenciesFile freq_test.txt # output of computeGCBias
       -o gc_corrected.bam
 
-Example output plot
-~~~~~~~~~~~~~~~~~~~~
+.. warning:: The GC-corrected BAM file will most likely contain several duplicated reads in regions where the coverage had to increased in order to match the expected read density. This means that you should absolutely avoid using any filtering of duplicate reads during your downstream analyses!
 
-The example shows the GC-bias of a corrected BAM file (output from ``computeGCBias``). 
-
-.. image:: test_plots/ExampleCorrectGCBias.png
-
-Galaxy
-------
-
-`correctGCBias` is also available in `deepTools Galaxy`_:
-
-.. image:: ../../images/correctGCBias_Galaxy.png 
-
-.. _deepTools Galaxy: http://deeptools2.ie-freiburg.mpg.de/

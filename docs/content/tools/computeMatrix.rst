@@ -1,60 +1,40 @@
 computeMatrix
 =============
 
+.. contents:: 
+    :local:
+
 .. argparse::
    :ref: deeptools.computeMatrix.parse_arguments
    :prog: computeMatrix
 
-Usage Example:
-~~~~~~~~~~~~~~
+Details
+^^^^^^^^^^^^^^^
 
-computeMatrix has two main modes of use: for computing the signal distribution relative to a point ("reference-point") and for computing the signal over a region ("scale-regions"). The "reference-point" method is commonly used before plotting the signal around the transcription start site. An example of that with our test ENCODE dataset is depicted below:
+``computeMatrix`` is tightly connected to ``plotHeatmap`` and ``plotProfile``: it takes the values of all the signal files and all genomic regions that you would like to plot and computes the corresponding data matrix.
 
-.. code:: bash
+See :doc:`plotHeatmap` and :doc:`plotProfile` for example plots.
 
-    computeMatrix reference-point \
-        -q --skipZeros \
-        -S *.bigWig \
-        -R genes.bed \
-        -out matrix_one_group_TSS.gz
-    
-    plotHeatmap -m matrix_one_group_TSS.gz \
-        -out ExampleComputeMatrix1.png \
-        --plotTitle "Test data as one group"
+.. image:: ../../images/computeMatrix_overview.png
 
-.. image:: test_plots/ExampleComputeMatrix1.png
+``computeMatrix`` has two main modes of use:
 
-Alternatively, for RNAseq and many other ChIP signals it's more informative to plot the signal distribution over exons or other feature types. For such cases, one can use the "scale-regions" method.
+* for computing the signal distribution **relative to a point** (``reference-point``), e.g., the beginning or end of each genomic region
+* for computing the signal **over a set of regions** (``scale-regions``) where all regions are scaled to the same size
 
-.. code:: bash
+.. tip:: ``computeMatrix`` can use multiple threads (``-p`` option), which significantly decreases the time for calculating the values.
 
-    computeMatrix scale-regions \
-        -q --skipZeros \
-        -S *.bigWig \
-        -R genes.bed \
-        -out matrix_one_group.gz
-    
-    plotHeatmap -m matrix_one_group.gz \
-        -out ExampleComputeMatrix2.png \
-        --plotTitle "Test data as one group with regions"
+In addition to generating the intermediate, gzipped file for ``plotHeatmap`` and ``plotProfile``, ``computeMatrix`` can also be used to simply output the values underlying the heatmap or to **filter and sort BED files** using, for example, the ``--skipZeros`` and the ``--sortUsing`` parameters.
 
-.. image:: test_plots/ExampleComputeMatrix2.png
+The following tables summarizes the kinds of optional outputs that are available with the three tools.
 
-It's often the case that one has multiple groups of regions to consider per sample. For such cases, you can simply specify multiple BED files (in this case, we've split the BED file by chromosome).
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+|  **optional output type**         | **command**                    | **computeMatrix** | **plotHeatmap** | **plotProfile** |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| values underlying the heatmap     | ``--outFileNameMatrix``        | yes               | yes             | no              |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| values underlying the profile     | ``--outFileNameData``          | no                | yes             | yes             |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+| sorted and/or filtered regions    | ``--outFileSortedRegions``     | yes               | yes             | yes             |
++-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
 
-.. code:: bash
-
-    computeMatrix scale-regions \
-        -q --skipZeros \
-        -S *.bigWig \
-        -R genes19.bed genesX.bed \
-        -out matrix_two_groups.gz
-    
-    plotHeatmap -m matrix_two_groups.gz \
-        -out ExampleComputeMatrix3.png \
-        --perGroup \
-        --plotTitle "Test data with multiple groups"
-
-.. image:: test_plots/ExampleComputeMatrix3.png
-
-Note that computeMatrix can use multiple threads, which significantly decreases the time required.

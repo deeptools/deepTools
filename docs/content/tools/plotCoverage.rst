@@ -31,7 +31,8 @@ Usage example
       --ignoreDuplicates \
       --minMappingQuality 10 \ 
       --region 19
-      
+
+  # have a look at the optional tabular output: each row represents the number of reads overlapping with a sampled bp
   $ head coverage.tab
       'H3K27me3'	'H3K4me1'	'H3K4me3'	'H3K9me3'	
       0	0	0	0	
