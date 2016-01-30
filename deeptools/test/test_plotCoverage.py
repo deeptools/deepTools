@@ -4,7 +4,6 @@ import filecmp
 import matplotlib as mpl
 import deeptools.plotCoverage
 import deeptools.utilities
-from matplotlib.testing.decorators import cleanup
 
 __author__ = 'Bjoern'
 
@@ -24,7 +23,6 @@ class TestHeatmapper(object):
                              "different matplotlib version ({}) != 1.5.0\n".format(mpl.__version__))
             self.run_image_tests = False
 
-    @cleanup
     def test_plotCoverage_default(self):
         if self.run_image_tests:
             args = "--bamfiles {0}test1.bam {0}test2.bam --plotFile /tmp/_test.svg" \
