@@ -26,9 +26,15 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Corrects the GC-bias using Benjamini\'s method '
-        '[Benjamini & Speed (2012). Nucleic acids research, 40(10)]. '
-        'The tool computeGC bias needs to be run first.',
+        description='This tool corrects the GC-bias using the'
+        ' method proposed by [Benjamini & Speed (2012). '
+        'Nucleic Acids Research, 40(10)]. It will remove reads'
+        ' from regions with too high coverage compared to the'
+        ' expected values (typically GC-rich regions) and will'
+        ' add reads to regions where too few reads are seen '
+        '(typically AT-rich regions). '
+        'The tool ``computeGCBias`` needs to be run first to generate the'
+        .'frequency table needed here.',
         usage='An example usage is:\n correctGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit '
         '--GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '

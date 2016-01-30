@@ -20,21 +20,21 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-This tool summarizes and prepares an intermediate file containing
-scores associated with genomic regions. This file can be used to
-plot a heatmap or profile. Typically, these genomic regions are
-genes, but any other regions defined in a BED format can be
-used. This tool can also be used to filter and sort regions according
+This tool calculates scores per genome regions and prepares an intermediate file that can be used with ``plotHeatmap`` and ``plotProfiles``.
+Typically, the genome regions are genes, but any other regions defined in a BED file can be used.
+computeMatrix accepts multiple score files (bigWig format) and multiple regions files (BED format).
+This tool can also be used to filter and sort regions according
 to their score.
 
-To learn more about the specific parameters type:
+To learn more about the specific parameters, type:
 
-computeMatrix reference-point --help or
-computeMatrix scale-regions --help
+$ computeMatrix reference-point --help or 
+
+$ computeMatrix scale-regions --help
 
 """,
             epilog='An example usage is:\n  computeMatrix reference-point -S '
-            '<bigwig file> -R <bed file> -b 1000\n \n')
+            '<bigwig file(s)> -R <bed file(s)> -b 1000\n \n')
 
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(__version__))
@@ -52,7 +52,7 @@ computeMatrix scale-regions --help
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='scale-regions')],
         help="In the scale-regions mode, all regions in the BED file are "
-        "stretched or shrunk to the length (in bases) indicated by the user.",
+        "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix -S '
         '<biwig file> -R <bed file> -b 1000\n\n')
 
