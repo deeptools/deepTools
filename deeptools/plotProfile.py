@@ -28,11 +28,11 @@ def parse_arguments(args=None):
                  parserCommon.heatmapperOutputArgs(mode='profile'),
                  parserCommon.heatmapperOptionalArgs(mode='profile')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='This tool creates a profile plot for a '
-        'score associated to genomic regions. '
+        description='This tool creates a profile plot for '
+        'scores over sets of genomic regions. '
         'Typically, these regions are genes, but '
-        'any other regions defined in a BED or GFF '
-        'format will work. A preprocessed matrix generated '
+        'any other regions defined in BED '
+        ' will work. A matrix generated '
         'by computeMatrix is required.',
         epilog='An example usage is: plotProfile -m <matrix file>',
         add_help=False)
