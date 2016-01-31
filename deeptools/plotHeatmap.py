@@ -55,12 +55,14 @@ def process_args(args=None):
         "not valid".format(args.missingDataColor)
         exit(1)
 
+    """
     if args.regionsLabel != 'genes':
         args.regionsLabel = \
             [x.strip() for x in args.regionsLabel.split(',')]
 
     else:
         args.regionsLabel = []
+    """
 
     return args
 
@@ -303,7 +305,6 @@ def plotMatrix(hm, outFileName,
                             vmax=zMax,
                             cmap=cmap,
                             extent=[0, cols, rows, 0])
-
             # plot border at the end of the regions
             # if ordered by length
             if regions_length_in_bins is not None:
@@ -466,7 +467,7 @@ def main(args=None):
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
-    hm.read_matrix_file(matrix_file, default_group_name=args.regionsLabel)
+    hm.read_matrix_file(matrix_file)
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
@@ -491,7 +492,7 @@ def main(args=None):
                   "heatmapper with --outFileSortedRegions to save the clustered output. "
         exit(1)
 
-    if len(args.regionsLabel):
+    if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
 
     if args.samplesLabel and len(args.samplesLabel):

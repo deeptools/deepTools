@@ -68,9 +68,23 @@
 
                 --startLabel '$advancedOpt.startLabel'
                 --endLabel '$advancedOpt.endLabel'
+
                 --refPointLabel '$advancedOpt.referencePointLabel'
-                --samplesLabel '$advancedOpt.samplesLabel'
-                --regionsLabel '$advancedOpt.regionsLabel'
+
+                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
+                    --samplesLabel '$advancedOpt.samplesLabel'
+                #end if
+
+                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
+                    --regionsLabel '$advancedOpt.regionsLabel'
+                #end if
+                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
+                    --samplesLabel '$advancedOpt.samplesLabel'
+                #end if
+
+                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
+                    --regionsLabel '$advancedOpt.regionsLabel'
+                #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                     --plotTitle '$advancedOpt.plotTitle'
@@ -154,7 +168,7 @@
                 <param argument="--referencePointLabel" type="text" value="TSS" size="10"
                     label="Reference point label"
                     help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
-                <param argument="--samplesLabel" type="text" value="" size="30"
+                <param argument="--samplesLabel" type="text" size="30"
                     label="Labels for the samples (each bigwig) plotted"
                     help="The default is to use the file name of the sample. The sample labels should be separated by
                     spaces and quoted if a label itselfcontains a space E.g. label-1 'label 2'" />
@@ -163,7 +177,7 @@
                         </valid>
                     </sanitizer>
                 </param>
-                <param argument="--regionsLabel" type="text" value="genes" size="30"
+                <param argument="--regionsLabel" type="text"  size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted then a list of labels separated by comma is required. For example, label1, label2.">
                     <sanitizer>

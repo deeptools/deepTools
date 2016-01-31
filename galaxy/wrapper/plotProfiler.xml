@@ -35,8 +35,13 @@
                 --plotHeight $advancedOpt.plotHeight
                 --plotWidth $advancedOpt.plotWidth
                 --plotType $advancedOpt.plotType
-                --samplesLabel '$advancedOpt.samplesLabel'
-                --regionsLabel '$advancedOpt.regionsLabel'
+                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
+                    --samplesLabel '$advancedOpt.samplesLabel'
+                #end if
+
+                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
+                    --regionsLabel '$advancedOpt.regionsLabel'
+                #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
                     --plotTitle '$advancedOpt.plotTitle'
@@ -121,7 +126,7 @@
                     <option value="se">add standard error</option>
                     <option value="overlapped_lines">overlapped lines</option>
                 </param>
-                <param argument="--samplesLabel" type="text" value="" size="30"
+                <param argument="--samplesLabel" type="text" size="30"
                     label="Labels for the samples (each bigwig) plotted"
                     help="The default is to use the file name of the sample. The sample labels should be separated by
                     spaces and quoted if a label itselfcontains a space E.g. label-1 'label 2'" />
@@ -130,7 +135,7 @@
                         </valid>
                     </sanitizer>
                 </param>
-                <param argument="--regionsLabel" type="text" value="genes" size="30"
+                <param argument="--regionsLabel" type="text" size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated
                     by commas is required. For example, &quot;label1, label2&quot;."/>

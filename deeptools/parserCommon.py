@@ -194,7 +194,7 @@ def getParentArgParse(args=None, binSize=True):
                               'of the bigwig/bedgraph file.',
                               metavar="INT bp",
                               type=int,
-                              default=10)
+                              default=50)
 
     optional.add_argument('--region', '-r',
                           help='Region of the genome to limit the operation '
@@ -553,19 +553,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           default=False)
 
     optional.add_argument('--regionsLabel', '-z',
-                          default='genes',
                           help='Labels for the regions plotted in the '
                           'heatmap. If more than one region is being '
-                          'plotted a list of labels '
-                          'separated by comma and limited by quotes, '
-                          'is required. For example, '
-                          ' --regionsLabel "label1, label2". '
-                          'Default is "genes".')
+                          'plotted a list of labels separated by space. '
+                          'If a label itself contains a space quotes are '
+                          'needed. For example, --regionsLabel label_1, "label 2". ',
+                          nargs='+')
 
     optional.add_argument('--samplesLabel',
                           help='Labels for the samples plotted. The '
                           'default is to use the file name of the '
-                          'sample. The sample names should be separated '
+                          'sample. The sample labels should be separated '
                           'by spaces and quoted if a label itself'
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
