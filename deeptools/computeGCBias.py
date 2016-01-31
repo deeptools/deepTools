@@ -456,6 +456,7 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
 
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
     chunkSize = int(min(2e6, 4e5 / global_vars['reads_per_bp']))
+    chromSizes = [(k,v) for k,v in chromSizes if k in chrNameBamToBit.keys()]
 
     imap_res = mapReduce.mapReduce((stepSize,
                                     fragmentLength, chrNameBamToBit,
