@@ -103,9 +103,9 @@
                     label="Plot height"
                     help="Height in cm. The default for the plot height is 5 centimeters. The minimum value is 3 cm." />
 
-                <param argument="--plotWidth" type="integer" value="8" min="1"
+                <param argument="--plotWidth" type="integer" value="11" min="1"
                     label="Plot width"
-                    help="Width in cm. The default value is 8 centimeters. The minimum value is 1 cm." />
+                    help="Width in cm. The default value is 11 centimeters. The minimum value is 1 cm." />
 
                 <param argument="--plotType" type="select" label="Plot type"
                     help="The &quot;lines&quot; option will
