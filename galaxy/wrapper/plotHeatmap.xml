@@ -156,7 +156,8 @@
                     help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
                 <param argument="--samplesLabel" type="text" value="" size="30"
                     label="Labels for the samples (each bigwig) plotted"
-                    help="The default is to use the file name of the sample. The sample labels should be separated by spaces and quoted if a label itselfcontains a space E.g. label-1 'label 2'"
+                    help="The default is to use the file name of the sample. The sample labels should be separated by
+                    spaces and quoted if a label itselfcontains a space E.g. label-1 'label 2'" />
                     <sanitizer>
                         <valid initial="string.printable">
                         </valid>
