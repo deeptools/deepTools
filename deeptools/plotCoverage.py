@@ -177,13 +177,26 @@ def main(args=None):
     # plot coverage
     # print headers for text output
     print("sample\tmean\tstd\tmin\t25%\t50%\t75%\tmax")
-    for idx, col in enumerate(num_reads_per_bin.T):
-        axs[0].plot(np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0],
-                    label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
-        csum = np.bincount(col.astype(int))[::-1].cumsum()
-        axs[1].plot(csum.astype(float)[::-1] / csum.max(),
-                    label=args.labels[idx])
+    # the determination of a sensible value for y_max of the first plot (fraction of bases sampled vs.
+    # coverage) is important because, depending on the data,
+    # it becomes very difficult to see the lines in the plot. For example, if the coverage of a sample
+    # is a nice gaussian curve with a large mean of 50. Then a sensible range for the y axis (fraction of
+    # reads having coverage=x) is (0, 0.02) which nicely shows the coverage curve. If instead the coverage is
+    # very por and centers close to 1 then a good y axis range is (0,1).
 
+    # the current implementation aims to find the y_value for which 50% of the reads >= x (coverage) and
+    # sets that as the x_axis range.
+    y_max = []
+    for idx, col in enumerate(num_reads_per_bin.T):
+        frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
+        axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+        csum = np.bincount(col.astype(int))[::-1].cumsum()
+        csum_frac = csum.astype(float)[::-1] / csum.max()
+        axs[1].plot(csum_frac, label=args.labels[idx])
+        # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
+        # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
+        # then find the fraction of bases sampled that that have the largest x
+        y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac>0.5))])
         print("{}\t{:0.2f}\t{:0.2f}\t{}\t{}\t{}\t{}\t{}\t".format(args.labels[idx],
                                                                   sample_mean[idx],
                                                                   sample_std[idx],
@@ -194,7 +207,10 @@ def main(args=None):
                                                                   sample_max[idx],
                                                                   ))
 
-    axs[0].set_ylim(0, 0.02)
+    # The 'good' x-axis is computed for each sample. The lower value is favored in which
+    # distributions with a wider x-range can better be seen.
+    y_max = min(y_max)
+    axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
     axs[0].set_xlim(0, x_max)
     axs[0].set_xlabel('coverage (#reads per bp)')
     axs[0].legend(fancybox=True, framealpha=0.5)
