@@ -171,20 +171,19 @@
                 <param argument="--samplesLabel" type="text" size="30"
                     label="Labels for the samples (each bigwig) plotted"
                     help="The default is to use the file name of the sample. The sample labels should be separated by
-                    spaces and quoted if a label itselfcontains a space E.g. label-1 'label 2'" />
+                    spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;" />
                     <sanitizer>
                         <valid initial="string.printable">
                         </valid>
                     </sanitizer>
                 </param>
-                <param argument="--regionsLabel" type="text"  size="30"
+                <param argument="--regionsLabel" type="text" size="30"
                     label="Labels for the regions plotted in the heatmap"
-                    help="If more than one region is being plotted then a list of labels separated by comma is required. For example, label1, label2.">
-                    <sanitizer>
-                        <valid initial="string.printable">
-                        </valid>
-                    </sanitizer>
+                    help="If more than one region is being plotted a list of labels separated by space is required.
+                          If a label itself contains a space, then quotes are needed.
+                          For example, label_1, &quot;label 2&quot;" />
                 </param>
+
                 <expand macro="plotTitle" />
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Do one plot per group"
