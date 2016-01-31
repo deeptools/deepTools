@@ -194,7 +194,7 @@ def getParentArgParse(args=None, binSize=True):
                               'of the bigwig/bedgraph file.',
                               metavar="INT bp",
                               type=int,
-                              default=50)
+                              default=10)
 
     optional.add_argument('--region', '-r',
                           help='Region of the genome to limit the operation '
