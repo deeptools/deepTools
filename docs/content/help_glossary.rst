@@ -127,7 +127,7 @@ BAM
 
 .. _bed:
 
-bed
+BED
 ^^^
 
 * typical file extension: ``.bed``
