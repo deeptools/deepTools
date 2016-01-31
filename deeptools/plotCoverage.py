@@ -196,7 +196,7 @@ def main(args=None):
         # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
         # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
         # then find the fraction of bases sampled that that have the largest x
-        y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac>0.5))])
+        y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac > 0.5))])
         print("{}\t{:0.2f}\t{:0.2f}\t{}\t{}\t{}\t{}\t{}\t".format(args.labels[idx],
                                                                   sample_mean[idx],
                                                                   sample_std[idx],
