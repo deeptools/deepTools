@@ -55,15 +55,6 @@ def process_args(args=None):
         "not valid".format(args.missingDataColor)
         exit(1)
 
-    """
-    if args.regionsLabel != 'genes':
-        args.regionsLabel = \
-            [x.strip() for x in args.regionsLabel.split(',')]
-
-    else:
-        args.regionsLabel = []
-    """
-
     return args
 
 

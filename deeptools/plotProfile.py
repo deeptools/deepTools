@@ -56,20 +56,6 @@ def process_args(args=None):
     elif args.plotHeight > 100:
         args.plotHeight = 100
 
-    """
-    if args.regionsLabel != 'genes':
-        args.regionsLabel = \
-            [x.strip() for x in args.regionsLabel.split(',')]
-
-        if len(set(args.regionsLabel)) != len(args.regionsLabel):
-            print "The group labels given contain repeated names. Please "
-            "give a unique name to each value. The values given are "
-            "{}\n".format(args.regionsLabel)
-            exit(1)
-    else:
-        args.regionsLabel = []
-    """
-
     return args
 
 
