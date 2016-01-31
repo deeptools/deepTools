@@ -135,9 +135,8 @@
                 </param>
 
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
-                    label="Do one plot per group"
-                    help="When clustering is applied to the data or multiple BED files were used,
-                    plot the groups next to each other. The default is to plot the samples next to each other." />
+                    label="Make one plot per group of regions"
+                    help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions. " />
 
 
                 <param argument="--yMin" type="float" value="" size="3" optional="true"
@@ -173,25 +172,27 @@
 
 This tool plots the average enrichments over all genomic
 regions supplied to computeMarix. It requires that computeMatrix was successfully run.
-It is a very useful complement to the heatmapper, especially in cases where you want to
-compare the scores for many different groups. Like heatmapper, profiler does not change the
+It is a very useful complement to plotHeatmap, especially in cases where you want to
+compare the scores for many different groups. Like plotHeatmap, profiler does not change the
 values that were compute by computeMatrix, but you can modify the color and other display properties of the plots.
 
+   **Output**
+   
+.. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
 
-.. image:: $PATH_TO_IMAGES/visual_profiler_DmelPolII.png
-   :alt: Meta-gene profile of Rna Polymerase II
+   In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
 
+See the following table for the optional output options:
 
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   |  **optional output type**         | **command**                    | **computeMatrix** | **plotHeatmap** | **plotProfile** |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   | values underlying the heatmap     | ``--outFileNameMatrix``        | yes               | yes             | no              |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   | values underlying the profile     | ``--outFileNameData``          | no                | yes             | yes             |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   | sorted and/or filtered regions    | ``--outFileSortedRegions``     | yes               | yes             | yes             |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-
++-----------------------------------+--------------------+-----------------+-----------------+
+|  **optional output type**         |  **computeMatrix** | **plotHeatmap** | **plotProfile** |
++-----------------------------------+--------------------+-----------------+-----------------+
+| values underlying the heatmap     |  yes               | yes             | no              |
++-----------------------------------+--------------------+-----------------+-----------------+
+| values underlying the profile     | no                 | no              | yes             |
++-----------------------------------+--------------------+-----------------+-----------------+
+| sorted and/or filtered regions    | yes                | yes             | yes             |
++-----------------------------------+--------------------+-----------------+-----------------+
 
 -----
 

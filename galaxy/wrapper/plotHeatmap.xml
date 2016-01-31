@@ -163,11 +163,8 @@
                 </param>
                 <expand macro="plotTitle" />
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
-                    label="Do one plot per group"
-                    help="When clustering is applied to the data, or the computematrix was performed on multiple BED files,
-                    plot the groups next to each other. The default is to plot
-                    the samples next to each other. If this option is set, each group (or cluster) will get its own plot,
-                    with different samples stacked on top of each other."/>
+                    label="Make one plot per group of regions"
+                    help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions."/>
 
                 <expand macro="kmeans_clustering" />
             </when>
@@ -198,22 +195,35 @@ The heatmapper visualizes scores associated with genomic regions, for example Ch
 Like profiler, it requires that computeMatrix was run first to calculate the values.
 
 We have implemented number of optional parameters to optimize the visual output and we encourage you to play around with the min/max values
-displayed in the heatmap as well as with the different coloring options. The most powerful option is the k-means/hierarchical clustering,
-where you simply need to indicate the number of groups with similar read distributions that you expect and the algorithm will do the sorting for you.
+displayed in the heatmap as well as with the different coloring options.
 
+.. tip:: If your data is rathe sparse and the resulting heatmap is too black, change the "Missing data color" to white (via "Advanced options").
 
-.. image:: $PATH_TO_IMAGES/visual_hm_DmelPolII.png
-   :alt: Heatmap of RNA Polymerase II ChIP-seq
+The most powerful option is probably the k-means/hierarchical clustering where you can sort your regions into groups of regions with similar score distributions.
 
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   |  **optional output type**         | **command**                    | **computeMatrix** | **plotHeatmap** | **plotProfile** |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   | values underlying the heatmap     | ``--outFileNameMatrix``        | yes               | yes             | no              |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   | values underlying the profile     | ``--outFileNameData``          | no                | yes             | yes             |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
-   | sorted and/or filtered regions    | ``--outFileSortedRegions``     | yes               | yes             | yes             |
-   +-----------------------------------+--------------------------------+-------------------+-----------------+-----------------+
+.. note:: The clustering will only work if you supplied a single BED file to computeMatrix. plotHeatmap cannot cluster regions within pre-defined groups.
+
+**Output**
+
+This is a heatmap based on two bigWig files generated with default settings and k-means clustering.
+
+.. image:: $PATH_TO_IMAGES/plotHeatmap_example.png
+
+In addition to the image, ``plotHeatmap`` can also generate the values underlying both the heatmap.
+
+See the following table for the optional output options:
+
++-----------------------------------+--------------------+-----------------+-----------------+
+|  **optional output type**         |  **computeMatrix** | **plotHeatmap** | **plotProfile** |
++-----------------------------------+--------------------+-----------------+-----------------+
+| values underlying the heatmap     |  yes               | yes             | no              |
++-----------------------------------+--------------------+-----------------+-----------------+
+| values underlying the profile     | no                 | no              | yes             |
++-----------------------------------+--------------------+-----------------+-----------------+
+| sorted and/or filtered regions    | yes                | yes             | yes             |
++-----------------------------------+--------------------+-----------------+-----------------+
+
+.. tip:: **More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
 
 -----
 
