@@ -27,6 +27,6 @@ install:
 # command to run tests
 script:
   - flake8 . --exclude=.venv,.build --ignore=E501,F403,E402
-  - nosetests --with-doctest deeptools
-
+  - nosetests --with-doctest --ignore-files=plotCoverage deeptools
+  - nosetests deeptools/test/test_plotCoverage.py
 sudo: false
