@@ -130,7 +130,7 @@
                         </valid>
                     </sanitizer>
                 </param>
-                <param argument="--regionsLabel" type="text" value="coverage" size="30"
+                <param argument="--regionsLabel" type="text" value="genes" size="30"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated
                     by commas is required. For example, &quot;label1, label2&quot;."/>
