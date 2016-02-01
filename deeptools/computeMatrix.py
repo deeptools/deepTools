@@ -229,7 +229,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortUsing',
                           help='Indicate which method should be used for '
-                          'sorting. The value is computed for each row.',
+                          'sorting. The value is computed for each row.'
+                          'Note that the region_length option will lead '
+                          'to a dotted line within the heatmap that indicates '
+                          'the end of the regions.',
                           choices=["mean", "median", "max", "min", "sum",
                                    "region_length"],
                           default='mean')
