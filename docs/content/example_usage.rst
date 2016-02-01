@@ -15,7 +15,7 @@ How we use deepTools for ChIP-seq analyses
 
 To get a feeling for what deepTools can do, we'd like to give you a brief glimpse into how we typically use deepTools for ChIP-seq analyses. For more detailed exampes and descriptions of the tools, simply follow the respective links.
 
-.. note:: While some tools, such as :ref:`plotFingerprint`, specifically address ChIP-seq-issues, the majority of tools is widely applicable to deep-sequencing data, including RNA-seq.
+.. note:: While some tools, such as :doc:`tools/plotFingerprint`, specifically address ChIP-seq-issues, the majority of tools is widely applicable to deep-sequencing data, including RNA-seq.
 
 .. image:: ../images/start_workflow.png
 
@@ -47,7 +47,7 @@ We then use deepTools to assess the quality of the aligned reads:
 .. image:: ../images/test_plots/ExamplePlotCoverage.png
     :width: 70%
     
-    For paired-end samples, we often additionally check whether the fragment sizes are more or less what we would expected based on the library preparation. The module :doc:`tools/bamPEFragmentSize` can be used for that.
+For paired-end samples, we often additionally check whether the fragment sizes are more or less what we would expected based on the library preparation. The module :doc:`tools/bamPEFragmentSize` can be used for that.
     
 .. image:: ../images/test_plots/fragmentSize.png
     :width: 60%

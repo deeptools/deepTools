@@ -33,8 +33,8 @@ def parse_arguments(args=None):
         ' expected values (typically GC-rich regions) and will'
         ' add reads to regions where too few reads are seen '
         '(typically AT-rich regions). '
-        'The tool ``computeGCBias`` needs to be run first to generate the'
-        .'frequency table needed here.',
+        'The tool ``computeGCBias`` needs to be run first to generate the '
+        'frequency table needed here.',
         usage='An example usage is:\n correctGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit '
         '--GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '
