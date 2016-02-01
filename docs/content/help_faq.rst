@@ -275,7 +275,7 @@ Total no. 'N' = 6,368,725
 Use ``bamCoverage``
 ~~~~~~~~~~~~~~~~~~~~
 
-If you have a sample where you expect the genome to be covered completely, e.g. from genome sequencing, a very trivial solution is to use :doc:`bamCoverage` with a bin size of 1 bp and the ``--outFileFormat`` option set to 'bedgraph'. You can then count the number of non-Zero bins (bases) which will indicate the mappable genome size for this specific sample.
+If you have a sample where you expect the genome to be covered completely, e.g. from genome sequencing, a very trivial solution is to use :doc:`tools/bamCoverage` with a bin size of 1 bp and the ``--outFileFormat`` option set to 'bedgraph'. You can then count the number of non-Zero bins (bases) which will indicate the mappable genome size for this specific sample.
 
 .. _mapp_genomeCov:
 
