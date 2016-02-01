@@ -14,9 +14,9 @@ def parse_arguments():
         'Several regions are sampled depending on the '
         'size of the genome and number of processors to estimate the'
         'summary statistics on the fragment lengths. '
-        'Properly paired reads are preferred for computation, i.e.'
-        'it will only use discordant pairs if no concordant alignments'
-        ' overlap with a given region.' 
+        'Properly paired reads are preferred for computation, i.e., '
+        'it will only use discordant pairs if no concordant alignments '
+        'overlap with a given region. '
         'The default setting simply prints the summary statistics to the screen.')
     parser.add_argument('bam',
                         help='BAM file to process',
