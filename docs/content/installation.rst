@@ -129,5 +129,15 @@ Installation via web browser
 -  Galaxy tool shed --> Sequence Analysis --> deeptools
 -  install deeptools
 
+Installation with Docker
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The deepTools Galaxy instance is also available as a docker container, for those wishing to use the Galaxy framework but who also prefer a virtualized solution. This container is quite simple to install:
+::
+
+    $ sudo docker pull quay.io/bgruening/galaxy-deeptools
+
+To start and otherwise modify this container, please see the instructions on `the docker-galaxy-stable github repository <https://github.com/bgruening/docker-galaxy-stable>`__. Note that you must use `bgruening/galaxy-deeptools` in place of `bgruening/galaxy-stable` in the examples, as the deepTools Galaxy container is built on top of the galaxy-stable container.
+
 .. tip:: For support, questions, or feature requests contact:
     deeptools@googlegroups.com
