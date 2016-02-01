@@ -555,7 +555,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     optional.add_argument('--regionsLabel', '-z',
                           help='Labels for the regions plotted in the '
                           'heatmap. If more than one region is being '
-                          'plotted a list of labels separated by space is required. '
+                          'plotted, a list of labels separated by spaces is required. '
                           'If a label itself contains a space, then quotes are '
                           'needed. For example, --regionsLabel label_1, "label 2". ',
                           nargs='+')
