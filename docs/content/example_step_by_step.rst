@@ -104,12 +104,12 @@ How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages
 How can I compare the average signal for X- and autosomal genes for 2 or more different sequencing experiments?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Make sure you're familiar with computeMatrix and profiler before using this protocol.
+Make sure you're familiar with computeMatrix and plotProfile before using this protocol.
 
 * tools:
     * Filter data on any column using simple expressions
     * computeMatrix
-    * profiler
+    * plotProfile
     * (plotting the summary plots for multiple samples)
 
 * inputs:

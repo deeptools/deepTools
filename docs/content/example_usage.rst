@@ -47,7 +47,7 @@ We then use deepTools to assess the quality of the aligned reads:
 .. image:: ../images/test_plots/ExamplePlotCoverage.png
     :width: 70%
     
-    For paired-end samples, we often additionally check whether the fragment sizes are more or less what we would expected based on the library preparation. The module :doc:`tools/bamPEFragmentSize` can be used for that.
+For paired-end samples, we often additionally check whether the fragment sizes are more or less what we would expected based on the library preparation. The module :doc:`tools/bamPEFragmentSize` can be used for that.
     
 .. image:: ../images/test_plots/fragmentSize.png
     :width: 60%

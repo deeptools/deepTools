@@ -100,7 +100,7 @@ UCSC has large amounts of public data that you can display which you can find by
 What's the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* you can save all the data tables underlying every image produced by deepTools, i.e. if you would like to plot the average profiles in a different way, you could download the corresponding data (after ticking the profiler option at "advanced output options") and import them into R, Excel, GraphPadPrism etc.
+* you can save all the data tables underlying every image produced by deepTools, i.e. if you would like to plot the average profiles in a different way, you could download the corresponding data (after ticking the relevant plotProfile option under "advanced output options") and import them into R, Excel, GraphPadPrism etc.
 
 
 How can I determine basic parameters of a BAM file, such as the number of reads, read length, duplication rate and average DNA fragment length?

@@ -28,7 +28,7 @@ to their score.
 
 To learn more about the specific parameters, type:
 
-$ computeMatrix reference-point --help or 
+$ computeMatrix reference-point --help or
 
 $ computeMatrix scale-regions --help
 

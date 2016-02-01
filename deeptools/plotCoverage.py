@@ -26,8 +26,8 @@ def parse_arguments(args=None):
             add_help=False,
             description="""
 
-This tool is useful to assess the sequencing depth of a given sample. 
-It samples 1 million bp, counts the number of overlapping reads and can report 
+This tool is useful to assess the sequencing depth of a given sample.
+It samples 1 million bp, counts the number of overlapping reads and can report
 a histogram that tells you how many bases are covered how many times.
 Multiple BAM files are accepted, but they all should correspond to the same genome assembly.
 

@@ -130,4 +130,4 @@ Installation via web browser
 -  install deeptools
 
 .. tip:: For support, questions, or feature requests contact:
-deeptools@googlegroups.com
+    deeptools@googlegroups.com
