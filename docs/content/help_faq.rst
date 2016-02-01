@@ -1,14 +1,13 @@
 General FAQ
 ===========
 
-Below are issues we have frequently encountered.
-
 Feel free to contribute your questions via deeptools@googlegroups.com
 
 .. Note:: We also have a :doc:`help_faq_galaxy` with questions that are more specific to Galaxy rather than deepTools usage.
 
 .. contents:: 
     :local:
+
     
 --------------------------------------------------
 
