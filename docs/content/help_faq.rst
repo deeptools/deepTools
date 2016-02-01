@@ -127,7 +127,7 @@ The heatmap I generated looks very "coarse", I would like a much more fine-grain
 
 How can I change the automatic labels of the clusters in a k-means clustered heatmap?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Each cluster will get its own box, exactly the same way as different groups of regions. Therefore, you can use the same option to define the labels of the final heatmap: In Galaxy: Heatmapper --> "Advanced output options" --> "Labels for the regions plotted in the heatmap".
+Each cluster will get its own box, exactly the same way as different groups of regions. Therefore, you can use the same option to define the labels of the final heatmap: In Galaxy: plotHeatmap --> "Advanced output options" --> "Labels for the regions plotted in the heatmap".
 
 If you indicated 3 clusters for k-means clustering, enter here: C1, C2, C3 --> instead of the full default label ("cluster 1"), the heatmap will be labeled with the abbreviations.
 
