@@ -14,8 +14,7 @@ There are 3 ways for using deepTools:
 * **API** -- make use of your favorite deepTools modules in your own python programs (see :doc:`content/api`)
 
 The flow chart below depicts the different tool modules that are
-currently available (deepTools modules are written in
-bold red and black font).
+currently available.
 
 .. image:: images/start_workflow.png
 

@@ -4,42 +4,41 @@ Step-by-step protocols
 .. contents:: 
     :local:
 
-
 How can I do...?
 ----------------
 
-This section should give you a quick overview of how to do many common tasks. We're using screenshots from Galaxy here, so if you're using the command-line version then you can easily follow the given examples by typing the program name and the help option (e.g. /deepTools/bin/bamCoverage --help), which will show you all the parameters and options (most of them named very similarly to those in Galaxy).
+This section should give you an overview of how to do many common tasks. We're using screenshots from Galaxy here, so if you're using the command-line version then you can easily follow the given examples by typing the program name and the help option (e.g. ``/deepTools/bin/bamCoverage --help``), which will show you all the parameters and options. Alternatively, you can follow the link to the tool documentation.
 
 For each "recipe" here, you will find the screenshot of the tool and the input parameters on the left hand side (we marked non-default, *user-specified entries*) and screenshots of the output on the right hand side. Do let us know if you spot things that are missing, should be explained better, or are simply confusing!
 
-There are many more ways in which you can use `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__ than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
+.. hint:: There are many more ways in which you can use `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__ than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
 
     All recipes assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__
 
-    If you would like to try out the protocols with **sample data**, go to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__  --> "Shared Data"  --> "Data Libraries"  --> "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test datasets by clicking "Download" at the top.
+.. tip:: If you would like to try out the protocols with **sample data**, go to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__  --> "Shared Data"  --> "Data Libraries"  --> "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test datasets by clicking "Download" at the top.
 
-I have downloaded/received a :ref:`bam` file - how do I generate a file I can look at in a genome browser?
+-----------------------------------
+
+I have downloaded/received a BAM file - how do I generate a file I can look at in a genome browser?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * tool: :doc:`tools/bamCoverage`
-* input: your BAM file
+* input: your :ref:`BAM` file with aligned reads
 
-Note: BAM files can also be viewed in genome browsers, however, they're large and tend to freeze the applications. Generating bigWig files of read coverages will help you a lot in this regard. In addition, if you have more than one sample you'd like to look at, it is helpful to normalize all of them to 1x sequencing depth.
+Of course, you could also look at your BAM file in the genome browser.
+However, generating a bigWig file of read coverages will not drastically reduce the size of the file, it also allows you to normalize the coverage to 1x sequencing depth, which makes a visual comparison of multiple files more feasible.
 
 .. image:: ../images/GalHow_bamCoverage.png
-    :target: ../images/GalHow_bamCoverage.png
 
 How can I assess the reproducibility of my sequencing replicates?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* tool: :doc:`tools/multiBamSummary`
+* tools: :doc:`tools/multiBamSummary` followed by :doc:`tools/plotCorrelation`
 * input: BAM files
-    * you can compare as many samples as you want, though the more you use the longer the computation will take
-
-* output: heatmap of correlations - the closer two samples are to each other, the more similar their read coverages will be
+    - you can compare as many samples as you want, though the more you use the longer the computation will take
 
 .. image:: ../images/GalHow_multiBamSummary.png
-    :target: ../images/GalHow_multiBamSummary.png
+
 
 How do I know whether my sample is GC biased? And if it is, how do I correct for it?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

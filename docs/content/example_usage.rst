@@ -15,7 +15,7 @@ How we use deepTools for ChIP-seq analyses
 
 To get a feeling for what deepTools can do, we'd like to give you a brief glimpse into how we typically use deepTools for ChIP-seq analyses. For more detailed exampes and descriptions of the tools, simply follow the respective links.
 
-.. note:: While some tools, such as :ref:`plotFingerprint`, specifically address ChIP-seq-issues, the majority of tools is widely applicable to deep-sequencing data, including RNA-seq.
+.. note:: While some tools, such as :doc:`tools/plotFingerprint`, specifically address ChIP-seq-issues, the majority of tools is widely applicable to deep-sequencing data, including RNA-seq.
 
 .. image:: ../images/start_workflow.png
 
@@ -62,7 +62,7 @@ We then use deepTools to assess the quality of the aligned reads:
 4. **Assessing the ChIP strength**. We do this quality control step to get a
    feeling for the signal-to-noise ratio in samples from ChIP-seq
    experiments. It is based on the insights published by `Diaz et
-   al. <http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml>`__.
+   al. <http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml>`_
 
 .. image:: ../images/test_plots/fingerprints.png
     :width: 70%
