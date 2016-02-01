@@ -1,5 +1,5 @@
 <tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.0">
-    <description>calculates average read coverages for a list of two or more bigwig files</description>
+    <description>calculates average scores for a list of two or more bigwig files</description>
     <macros>
         <token name="@BINARY@">multiBigwigSummary</token>
         <import>deepTools_macros.xml</import>
@@ -65,7 +65,7 @@
         </conditional>
 
         <expand macro="region_limit_operation" />
-        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (scores) to file" help=""/>
 
     </inputs>
     <outputs>
@@ -106,7 +106,7 @@ for visualization and diagnostic purposes.
 
 - **Coverage scores**: Coverage scores computed and saved in a format appropriate for 'plotCorrelation' or 'plotPCA'.
 
-- Data matrix (optional,select to save raw counts to a file above): If you want to have a look at the coverage values
+- Data matrix (optional,select to save raw counts to a file above): If you want to have a look at the scores
   or compute statistics yourself using a different program (like R).
 
 -----
