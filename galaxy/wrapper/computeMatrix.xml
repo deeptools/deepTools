@@ -8,19 +8,24 @@
     <command>
 <![CDATA[
         #import tempfile
+        #set bw_files=[]
+        #for $counter, $bigwig in enumerate($scoreFileName):
+            ln -s "${bigwig}" "file_${counter}.bw" &&
+            #silent $bw_files.append('file_%s.bw' % $counter)
+        #end for
+
+        #set bed_files=[]
+        #for $counter, $rf in enumerate($regionsFiles):
+            ln -s "${rf.regionsFile}" "group_${counter}.bed" &&
+            #silent $bed_files.append('group_%s.bed' % $counter)
+        #end for
 
         @BINARY@
 
             $mode.mode_select
-            --regionsFileName
-            #for $rf in $regionsFiles:
-                '$rf.regionsFile' 
-            #end for
-            --scoreFileName
-            #for $bw in $scoreFileName:
-                '$bw' 
-            #end for
-            --outFileName '$outFileName'
+            --regionsFileName '#echo "' '".join($bed_files)#'
+
+            --scoreFileName '#echo "' '".join($bw_files)#'
 
             @THREADS@
 
