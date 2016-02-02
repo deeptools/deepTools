@@ -56,18 +56,6 @@ def process_args(args=None):
     elif args.plotHeight > 100:
         args.plotHeight = 100
 
-    if args.regionsLabel != 'genes':
-        args.regionsLabel = \
-            [x.strip() for x in args.regionsLabel.split(',')]
-
-        if len(set(args.regionsLabel)) != len(args.regionsLabel):
-            print "The group labels given contain repeated names. Please "
-            "give a unique name to each value. The values given are "
-            "{}\n".format(args.regionsLabel)
-            exit(1)
-    else:
-        args.regionsLabel = []
-
     return args
 
 
@@ -483,12 +471,12 @@ def main(args=None):
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
-    hm.read_matrix_file(matrix_file, default_group_name=args.regionsLabel)
+    hm.read_matrix_file(matrix_file)
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
 
-    if len(args.regionsLabel):
+    if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
 
     if args.samplesLabel and len(args.samplesLabel):

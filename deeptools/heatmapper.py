@@ -562,7 +562,7 @@ class heatmapper(object):
         self.lengthDict = OrderedDict()
         self.matrixAvgsDict = OrderedDict()
 
-    def read_matrix_file(self, matrix_file, verbose=None, default_group_name='label_1'):
+    def read_matrix_file(self, matrix_file):
         # reads a bed file containing the position
         # of genomic intervals
         # In case a hash sign '#' is found in the

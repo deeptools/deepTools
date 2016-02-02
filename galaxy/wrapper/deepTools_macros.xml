@@ -310,6 +310,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             help="Title of the plot, to be printed on top of the generated image." />
     </xml>
 
+
     <token name="@multiple_input_bams@">
 <![CDATA[
         #set files=[]

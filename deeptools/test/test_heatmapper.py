@@ -86,7 +86,7 @@ class TestHeatmapper(object):
 
     def test_plotHeatmap_rename_labels(self):
         if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno,dos".format(ROOT).split()
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno dos".format(ROOT).split()
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/master_relabeled.svg', '/tmp/_test2.svg') is True
             os.remove('/tmp/_test2.svg')
@@ -100,14 +100,15 @@ class TestHeatmapper(object):
 
     def test_plotHeatmap_multi_bigwig_pergroup(self):
         if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --perGroup --outFileName /tmp/_test.svg".format(ROOT).split()
+            args = "-m {}/master_multi.mat.gz --perGroup --samplesLabel file1 file2 file3 file4 " \
+                   "--outFileName /tmp/_test.svg".format(ROOT).split()
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/heatmap_master_multi_pergroup.svg', '/tmp/_test.svg') is True
             os.remove('/tmp/_test.svg')
 
     def test_plotProfiler(self):
         if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno,dos " \
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno dos " \
                    "--plotType std".format(ROOT).split()
             deeptools.plotProfile.main(args)
             assert self.compare_svg(ROOT + '/profile_master.svg', '/tmp/_test.svg')
