@@ -51,8 +51,8 @@
                 --sortRegions '$advancedOpt.sortRegions'
                 --sortUsing '$advancedOpt.sortUsing'
                 --averageTypeBins '$advancedOpt.averageTypeBins'
-                $advancedOpt.skipNAs
                 $advancedOpt.skipZeros
+                $advancedOpt.missingDataAsZero
                 --binSize $advancedOpt.binSize
 
                 #if $advancedOpt.minThreshold is not None and str($advancedOpt.minThreshold) != '':
@@ -170,7 +170,6 @@
                           depicted as black areas once a heatmap is created." />
 
                 <expand macro="skipZeros" />
-                <expand macro="skipNAs" />
 
                 <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"
@@ -206,7 +205,6 @@
             <param name="binSize" value="10" />
             <param name="sortUsing" value="sum" />
             <param name="averageTypeBins" value="sum" />
-            <param name="skipNAs" value="False" />
             <param name="beforeRegionStartLength" value="10" />
             <param name="afterRegionStartLength" value="10" />
             <output name="outFileName" file="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
