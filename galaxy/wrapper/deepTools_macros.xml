@@ -104,10 +104,18 @@
                     <param name="clustering_options" type="select" label="Clustering algorithm">
                         <option value="none">No clustering</option>
                         <option value="kmeans">Kmeans clustering</option>
+                        <option value="hclust">Hierarchical clustering</option>
                     </param>
                     <when value="kmeans">
                         <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
                             help="When this option is set, the matrix is split into clusters using the k-means algorithm.
+                            This only works for data that is not grouped, otherwise only the first group will be clustered.
+                            If more specific clustering methods are required it is advisable to save the underlying matrix and
+                            run the clustering using other software."/>
+                    </when>
+                    <when value="hclust">
+                        <param name="n_hclust" type="integer" value="0" label="number of clusters to compute."
+                            help="When this option is set, the matrix is split into clusters using the hierarchical clustering algorithm, using ward linkage.
                             This only works for data that is not grouped, otherwise only the first group will be clustered.
                             If more specific clustering methods are required it is advisable to save the underlying matrix and
                             run the clustering using other software."/>
@@ -124,6 +132,9 @@
             #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
                 #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
                     --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
+                #end if
+                #if int($advancedOpt.used_multiple_regions.clustering.n_hclust) > 0:
+                    --hclust $advancedOpt.used_multiple_regions.clustering.n_hclust
                 #end if
             #end if
         #end if
