@@ -355,7 +355,7 @@ class Profile(object):
             yticks = [x + d_half for x in pos]
 
             ax.axes.set_yticks(yticks)
-            ax.axes.set_yticklabels(labels, rotation='vertical')
+            ax.axes.set_yticklabels(labels[::-1], rotation='vertical')
 
             ax_list.append(ax)
 
