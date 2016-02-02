@@ -92,4 +92,3 @@ The dendrogram indicates which samples' read counts are most similar to each oth
         --outFileCorMatrix SpearmanCorr_readCounts.tab 
 
 .. image:: ../../images/test_plots/heatmap_SpearmanCorr_readCounts.png
-

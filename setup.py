@@ -32,7 +32,7 @@ def update_version_py():
     if p.returncode != 0:
         print "unable to run git, leaving deeptools/_version.py alone"
         return
-    ver = stdout.strip()
+    ver = stdout.strip().replace("-g", "-")
     f = open("deeptools/_version.py", "w")
     f.write(VERSION_PY % ver)
     f.close()

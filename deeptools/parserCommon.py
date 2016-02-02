@@ -308,11 +308,11 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
 
-    # output.add_argument('--outFileNameData',
-    #                    help='File name to save the data '
-    #                    'underlying data for the average profile, e.g. '
-    #                    'myProfile.tab.',
-    #                    type=argparse.FileType('w'))
+    output.add_argument('--outFileNameData',
+                        help='File name to save the data '
+                        'underlying data for the average profile, e.g. '
+                        'myProfile.tab.',
+                        type=writableFile)
 
     output.add_argument(
         '--outFileSortedRegions',
@@ -470,8 +470,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '--colorMap', default='RdYlBu',
             help='Color map to use for the heatmap. Available values can be '
             'seen here: '
-            'http://www.astro.lsa.umich.edu/~msshin/science/code/'
-            'matplotlib_cm/ The available options are: \'' +
+            'http://matplotlib.org/users/colormaps.html '
+            'The available options are: \'' +
             color_options + '\'')
 
         optional.add_argument(
@@ -500,7 +500,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               help='Maximum value for the heatmap intensities.')
         optional.add_argument('--heatmapHeight',
                               help='Plot height in cm. The default for the heatmap '
-                              'height is 25. The minimum value is '
+                              'height is 28. The minimum value is '
                               '3 and the maximum is 100.',
                               type=float,
                               default=28)
@@ -553,19 +553,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           default=False)
 
     optional.add_argument('--regionsLabel', '-z',
-                          default='genes',
                           help='Labels for the regions plotted in the '
                           'heatmap. If more than one region is being '
-                          'plotted a list of labels '
-                          'separated by comma and limited by quotes, '
-                          'is required. For example, '
-                          ' --regionsLabel "label1, label2". '
-                          'Default is "genes".')
+                          'plotted, a list of labels separated by spaces is required. '
+                          'If a label itself contains a space, then quotes are '
+                          'needed. For example, --regionsLabel label_1, "label 2". ',
+                          nargs='+')
 
     optional.add_argument('--samplesLabel',
                           help='Labels for the samples plotted. The '
                           'default is to use the file name of the '
-                          'sample. The sample names should be separated '
+                          'sample. The sample labels should be separated '
                           'by spaces and quoted if a label itself'
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')

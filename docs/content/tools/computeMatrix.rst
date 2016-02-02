@@ -56,7 +56,7 @@ Here, we start with a single :ref:`bigWig` and a single :ref:`BED` file, i.e., `
 
 .. code:: bash
 
-    $ deepTools2.0/bin/computeMatrix reference-point \ # choose the mode
+    $ computeMatrix reference-point \ # choose the mode
            --referencePoint TSS \ # alternatives: TES, center
            -b 3000 -a 10000 \ # define the region you are interested in
            -R testFiles/genes.bed \

@@ -35,7 +35,13 @@
                 --plotHeight $advancedOpt.plotHeight
                 --plotWidth $advancedOpt.plotWidth
                 --plotType $advancedOpt.plotType
-                --regionsLabel '$advancedOpt.regionsLabel'
+                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
+                    --samplesLabel '$advancedOpt.samplesLabel'
+                #end if
+
+                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
+                    --regionsLabel '$advancedOpt.regionsLabel'
+                #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
                     --plotTitle '$advancedOpt.plotTitle'
@@ -102,9 +108,9 @@
                     label="Plot height"
                     help="Height in cm. The default for the plot height is 5 centimeters. The minimum value is 3 cm." />
 
-                <param argument="--plotWidth" type="integer" value="8" min="1"
+                <param argument="--plotWidth" type="integer" value="11" min="1"
                     label="Plot width"
-                    help="Width in cm. The default value is 8 centimeters. The minimum value is 1 cm." />
+                    help="Width in cm. The default value is 11 centimeters. The minimum value is 1 cm." />
 
                 <param argument="--plotType" type="select" label="Plot type"
                     help="The &quot;lines&quot; option will
@@ -120,10 +126,21 @@
                     <option value="se">add standard error</option>
                     <option value="overlapped_lines">overlapped lines</option>
                 </param>
-                <param argument="--regionsLabel" type="text" value="coverage" size="30"
+                <param argument="--samplesLabel" type="text" size="30"
+                    label="Labels for the samples (each bigwig) plotted"
+                    help="The default is to use the file name of the sample. The sample labels should be separated by
+                    spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;" />
+                    <sanitizer>
+                        <valid initial="string.printable">
+                        </valid>
+                    </sanitizer>
+                </param>
+                <param argument="--regionsLabel" type="text" size="30"
                     label="Labels for the regions plotted in the heatmap"
-                    help="If more than one region is being plotted a list of labels separated
-                    by commas is required. For example, &quot;label1, label2&quot;."/>
+                    help="If more than one region is being plotted a list of labels separated by space is required.
+                          If a label itself contains a space, then quotes are needed.
+                          For example, label_1, &quot;label 2&quot;" />
+                </param>
 
                 <expand macro="plotTitle" />
                 <param argument="--colors" type="text" value="" size="40"

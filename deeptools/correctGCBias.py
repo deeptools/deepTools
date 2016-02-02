@@ -295,7 +295,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     ... tag_but_not_change_number=True, verbose=False)
     >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
-    >>> [dict(r.tags)['CP'] for r in bam.fetch(args[0], 200, 250)]
+    >>> [dict(r.tags)['YN'] for r in bam.fetch(args[0], 200, 250)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
@@ -304,7 +304,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     ... tag_but_not_change_number=True, verbose=False)
     >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
-    >>> [dict(r.tags)['CP'] for r in bam.fetch('chr2L', 0, 50)]
+    >>> [dict(r.tags)['YN'] for r in bam.fetch('chr2L', 0, 50)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
@@ -367,18 +367,34 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
             read_repetitions = 0
 
         readName = read.qname
-        readTag = read.tags
+        # Each tag is a tuple of (tag name, value, type)
+        # Note that get_tags() returns ord(type) rather than type and this must
+        # be fixed!
+        # It turns out that the "with_value_type" option only started working in
+        # pysam-0.8.4, so we can't reliably add tags on earlier versions without
+        # potentially creating BAM files that break HTSJDK/IGV/etc.
+
+        readTag = read.get_tags(with_value_type=True)
+        replace_tags = False
+        if len(readTag) > 0:
+            if len(readTag[0]) == 3:
+                readTag = [(x[0], x[1], chr(x[2])) for x in readTag]
+                replace_tags = True
+        else:
+            replace_tags = True
+
         if gc:
             GC = int(100 * np.round(float(gc) / fragmentLength,
                                     decimals=2))
             readTag.append(
-                ('CO', float(round(float(1) / R_gc[gc], 2))))
-            readTag.append(('CP', copies))
+                ('YC', float(round(float(1) / R_gc[gc], 2)), "f"))
+            readTag.append(('YN', copies, "i"))
         else:
             GC = -1
 
-        readTag.append(('GC', GC))
-        read.tags = readTag
+        readTag.append(('YG', GC, "i"))
+        if replace_tags:
+            read.set_tags(readTag)
 
         if read.is_paired and read.is_proper_pair \
                 and not read.mate_is_unmapped \

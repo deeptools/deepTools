@@ -55,13 +55,6 @@ def process_args(args=None):
         "not valid".format(args.missingDataColor)
         exit(1)
 
-    if args.regionsLabel != 'genes':
-        args.regionsLabel = \
-            [x.strip() for x in args.regionsLabel.split(',')]
-
-    else:
-        args.regionsLabel = []
-
     return args
 
 
@@ -294,8 +287,7 @@ def plotMatrix(hm, outFileName,
                 ax.set_title(title)
 
             rows, cols = sub_matrix['matrix'].shape
-            interpolation_type = 'bicubic' if rows > 200 and \
-                cols > 1000 else 'nearest'
+            interpolation_type = None if rows >= 1000 and cols >= 200 else 'nearest'
             img = ax.imshow(sub_matrix['matrix'],
                             aspect='auto',
                             interpolation=interpolation_type,
@@ -419,8 +411,7 @@ def plotMatrix(hm, outFileName,
         ax = fig.add_subplot(grids[grid_start:, -1])
         fig.colorbar(img, cax=ax)
 
-    plt.subplots_adjust(wspace=0.05, hspace=0.025, top=0.85,
-                        bottom=0, left=0.04, right=0.96)
+    plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
 
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
@@ -467,7 +458,7 @@ def main(args=None):
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
-    hm.read_matrix_file(matrix_file, default_group_name=args.regionsLabel)
+    hm.read_matrix_file(matrix_file)
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
@@ -492,7 +483,7 @@ def main(args=None):
                   "heatmapper with --outFileSortedRegions to save the clustered output. "
         exit(1)
 
-    if len(args.regionsLabel):
+    if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
 
     if args.samplesLabel and len(args.samplesLabel):

@@ -36,8 +36,11 @@ The following example plots the signal profile over hg19 transcripts for our tes
         --plotTitle "Test data profile"
 
 .. image:: ../../images/test_plots/ExampleProfile1.png
+<<<<<<< HEAD
 
 ``plotProfile`` has many options, including the ability to change the type of lines plotted and to plot by group rather than sample.
+=======
+>>>>>>> master
 
 Here's the same data set, but plotted with a different set of parameters.
 

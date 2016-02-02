@@ -22,4 +22,3 @@ Usage example
       -o gc_corrected.bam
 
 .. warning:: The GC-corrected BAM file will most likely contain several duplicated reads in regions where the coverage had to increased in order to match the expected read density. This means that you should absolutely avoid using any filtering of duplicate reads during your downstream analyses!
-
