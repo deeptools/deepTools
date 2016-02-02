@@ -4,15 +4,11 @@ Step-by-step protocols
 This section should give you an overview of how to do many common tasks. We're using **screenshots from Galaxy** here.
 If you're using the command-line version you can easily follow the given examples since the vast majority of parameters is either indicated in Galaxy, too. Otherwise, just type the program name and the help option (e.g. ``/deepTools/bin/bamCoverage --help``), which will show you all the parameters and options available. Alternatively, you can follow the respective link to the tool documentation here on readthedocs.
 
-.. note:: Do let us know if you spot things that are missing, should be explained better, or are simply confusing! Just send an email to deeptools@googlegroups.com.
-
-For each Galaxy protocol, you will find the screenshot of the tool and the input parameters on the left hand side and screenshots of the output on the right hand side.
-
-.. tip:: There are many more ways in which you can use `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__ than those described here, so be creative once you're comfortable with using them. For detailed explanations of what the tools do, follow the links.
+.. note:: Do let us know if you spot things that are missing or should be explained better! Just send an email to deeptools@googlegroups.com.
 
 All protocols assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_. If you need help to get started with Galaxy in general, e.g. to upload your data, see :doc:`help_galaxy_intro` and :doc:`help_galaxy_dataup`.
 
-.. tip:: If you would like to try out the protocols with **sample data**, go to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__  --> "Shared Data"  --> "Data Libraries"  --> "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test datasets by clicking "Download" at the top.
+.. tip:: If you would like to try out the protocols with **sample data**, go to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__  --> "Shared Data"  --> "Data Libraries"  --> "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test data sets to your computer by clicking "Download" at the top.
 
 .. contents:: How to do...?
     :local:
@@ -109,19 +105,17 @@ How do I get a (clustered) heatmap of sequencing-depth-normalized read coverages
     * 1 :ref:`BED` or INTERVAL file of genes, e.g. obtained through Galaxy via "Get Data" --> "UCSC main table browser" --> group: "Genes and Gene Predictions" --> (e.g.) "RefSeqGenes" --> send to Galaxy (see screenshots below)
 
 .. image:: ../images/GalHow_clustHM01.png
-    :target: ../images/GalHow_clustHM01.png
+
 
 * use :doc:`tools/computeMatrix` with the bigWig file and the BED file
 * indicate ``reference-point`` (and whatever other option you would like to tune, see screenshot below)
 
 .. image:: ../images/GalHow_clustHM02.png
-    :target: ../images/GalHow_clustHM02.png
 
-* use the output from computeMatrix with :doc:`tools/plotHeatmap`
+* use the output from :doc:`tools/computeMatrix` with :doc:`tools/plotHeatmap`
     * if you would like to cluster the signals, choose ``k-means clustering`` (last option of "advanced options") with a reasonable number of clusters (usually between 2 to 7)
 
 .. image:: ../images/GalHow_clustHM03.png
-    :target: ../images/GalHow_clustHM03.png
 
 -------------------------------------------------------------------
 
