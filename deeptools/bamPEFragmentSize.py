@@ -10,9 +10,14 @@ from deeptools._version import __version__
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='Given a BAM file, several regions are sampled depending on the '
-        'size of the genome and number of processors to estimate the paired-end '
-        'fragment length. Properly paired reads are preferred for computation. ')
+        description='This tool calculates the fragment sizes for read pairs given a BAM file from paired-end sequencing.'
+        'Several regions are sampled depending on the '
+        'size of the genome and number of processors to estimate the'
+        'summary statistics on the fragment lengths. '
+        'Properly paired reads are preferred for computation, i.e., '
+        'it will only use discordant pairs if no concordant alignments '
+        'overlap with a given region. '
+        'The default setting simply prints the summary statistics to the screen.')
     parser.add_argument('bam',
                         help='BAM file to process',
                         metavar='bam-file')
@@ -51,7 +56,7 @@ def main(args=None):
                                                                     verbose=args.verbose)
 
     if fragment_len_dict['mean'] == 0:
-        print "No pairs were found. Is the dataset paired-end?"
+        print "No pairs were found. Is the data from a paired-end sequencing experiment?"
 
     print "Sample size: {}\n".format(fragment_len_dict['sample_size'])
 

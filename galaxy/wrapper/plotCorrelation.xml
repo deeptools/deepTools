@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_correlation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap or scatterplot of correlation scores between different samples </description>
+    <description>Create a heatmap or scatterplot of correlation scores between different samples </description>
     <macros>
         <token name="@BINARY@">plotCorrelation</token>
         <import>deepTools_macros.xml</import>
@@ -90,32 +90,40 @@
 <![CDATA[
 **What it does**
 
-This tools takes a compressed matrix of scores (such as read coverages) for a number of genomic regions
-and different samples. It can visualize the correlation among samples as scatterplots or as
-a heatmap of correlation coefficients. Further output files are optional.
-The compressed input matrices are easily generated using the "multiBamSummary" and "multiBigwigSummary" tools.
+This tools takes the default output of ``multiBamSummary`` or ``multiBigwigSummary``, and computes the pairwise correlation among samples.
+Results can be visualized as **scatterplots** or as
+a **heatmap** of correlation coefficients (see below for examples). 
 
+**Background**
 
-.. image:: $PATH_TO_IMAGES/QC_multiBamSummary_humanSamples.png
-   :alt: Heatmap of RNA Polymerase II ChIP-seq
+The result of the correlation computation is a **table of correlation coefficients** that indicates how "strong" the relationship between two samples is and it will consist of numbers between -1 and 1. (-1 indicates perfect anti-correlation, 1 perfect correlation.) 
 
+We offer two different functions for the correlation computation: *Pearson* or *Spearman*.
 
-You can find more details on plotCorrelation here http://deeptools.readthedocs.org/en/master/content/tools/plotCorrelation.html
+The *Pearson method* measures the **metric differences** between samples and is therefore influenced by outliers.
+The *Spearman method* is based on **rankings**.
 
+If you imagine a race with 3 participants where the winner and runner-up are very close together while the third person broke her leg and comes in way, way after the first two, then Pearson would be strongly influenced by the fact that the third person had a great distance to the first ones while Spearman would only care about the fact that person 1 came in first, person 2 came in second and person 3 got the third rank, the distances between them are ignored.
 
-**Output files**:
+**Output files**
 
-- **diagnostic plot**: Either a scatterplot or clustered heatmap (select above) displaying the values for each pair-wise correlation,
-  see below for an example
-- data matrix (optional): if you want to analyze or plot the correlation values using a different program, e.g. R, this matrix can be used
+- default: **diagnostic plot** -- either a scatterplot or a clustered heatmap displaying the values for each pair-wise correlation (see below for example plots)
+- optional: table of the pairwise correlation coefficients
 
-**Output with test dataset**:
+.. image:: $PATH_TO_IMAGES/plotCorrelation_output.png
 
-The following is the output of plotCorrelation with our test ChIP-Seq datasets. Average coverages were computed over 10kb bins for chromosome X,
-from bigwig files using multiBigwigSummary. The output was used by plotCorrelation to make a heatmap of spearman correlation between samples.
+**Example plots**
+
+The following is the output of ``plotCorrelation`` with our test ChIP-Seq datasets (to be found under "Shared Data" --> "Data Library").
+Average coverages were computed over 10 kb bins for chromosome X,
+from bigWig files using ``multiBigwigSummary``.
+The output was used with ``plotCorrelation`` to make a heatmap of Spearman correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png
 
+The scatterplot could look like this:
+
+.. image:: $PATH_TO_IMAGES/plotCorrelation_scatterplot_PearsonCorr_bigwigScores.png
 
 -----
 

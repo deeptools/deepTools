@@ -9,30 +9,34 @@ I've reached my quota - what can I do to save some space?
 1. make sure that all the data sets you deleted are **permanently** eliminated from our disks: go to the history option button and select "Purge deleted data sets", then hit the "refresh" button on top of your history panel
 2. download all data sets for which you've completed the analysis, then remove the data sets (click on the "x" and then **make sure they're purged** (see above))
 
+----------------------------------------------------------------------
+
 Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Once you've copied a data set from one history to another, check two things:
-* do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
-* hit the refresh button
+    * do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
+    * hit the refresh button
 
 .. image:: ../images/Gal_historyReload.png
-    :target: ../images/Gal_historyReload.png
+
+----------------------------------------------------------------------
 
 How can I use a published workflow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You **must register** if you want to use the workflows within `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__. ("User" --> "Register" - all you have to supply is an email address)
+You **must register** if you want to use the workflows within `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__. ("User" --> "Register" - all you have to supply is an email address). Make sure to read the Terms of Use, though!
 
 You can find workflows that are public or specifically shared with you by another user via "Shared Data" --> "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
 
 .. image:: ../images/GalHow_wf01.png
-    :target: ../images/GalHow_wf01.png
+
 
 A green box should appear, there you select "start using this workflow", which should lead you to your own workflow menu (that you can always access via the top menu "Workflow"). Here, you should now see a workflow labeled "imported: ....". If you want to use the workflow right away, click on the triangle and select "Run". The workflow should now be available within the Galaxy main data frame and should be waiting for your input.
 
 .. image:: ../images/GalHow_wf02.png
-    :target: ../images/GalHow_wf02.png
+
+----------------------------------------------------------------------
 
 I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -41,13 +45,15 @@ Yes, it is possible. The only requirement is that your local Galaxy has a recent
 
 Go to the workflows, click on the ones you're interested in and go to "Download". This will save the workflows into .ga files on your computer. Now go to your local Galaxy installation and login. Go to the workflow menu and select "import workflow" (top right hand corner of the page). Click on "Browse" and select the saved workflow. If you have the same tool versions installed in your local Galaxy, these workflows should work right away.
 
+----------------------------------------------------------------------
+
 How can I have a look at the continuous read coverages from bigWig files? Which genome browser do you recommend?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 There are 2 popular genome browsers for visualizing continuous data: `UCSC <http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu>`__ and `IGV <http://www.broadinstitute.org/igv/>`__.
 
 IGV (recommended)
-""""""""""""""""""
+~~~~~~~~~~~~~~~~~~~
 
 We recommend downloading `IGV <http://www.broadinstitute.org/igv/>`__, which is free for academic use. IGV itself needs an up-to-date Java installation and a considerable amount of RAM. It's usage is rather intuitive and the display can be easily customized. In addition, you can download genome-wide annotation data that can be displayed together with your own data.
 
@@ -62,20 +68,20 @@ To display data in IGV, do the following:
 
 
 .. image:: ../images/Gal_FAQ_IGV_dataset.png
-    :target: ../images/Gal_FAQ_IGV_dataset.png
+
 
 Now click on “display with IGV local” to visualize your data set in IGV that should already be running on your computer. *“display with IGV Web current” can be used if you do not have an installed IGV. It will start an IGV web start version. We do not recommend that option*.
 
 Here's a screenshot of a typical bigWig file display:
 
 .. image:: ../images/Gal_FAQ_IGV.png
-    :target: ../images/Gal_FAQ_IGV.png
 
 
 For more information, check out the `IGV documentation <http://www.broadinstitute.org/software/igv/UserGuide>`__.
 
+
 UCSC
-""""""
+~~~~~~~~
 
 There is a direct link from within deepTools Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
 
@@ -97,16 +103,21 @@ UCSC has large amounts of public data that you can display which you can find by
 * **chromosome naming**: UCSC expects chromosome names to be indicated in the format "chr"Number, e.g. chr1. If you mapped your reads to a non-UCSC-standard genome, chances are that chromosomes are labeled just with their number. bigWig files generated from these BAM files will not be recognized by UCSC, i.e. you will see the data set name, but no signal.
 * **no upload of bigWig files from your hard drive**: to minimize the computational strains, UCSC relies on streaming bigWig files (i.e. there's no need to load the entire file at once, the browser will always just load the data for the specific region a user is looking at).
 
+----------------------------------------------------------------------
+
 What's the best way to integrate the deepTools results with other downstream analyses (outside of Galaxy)?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-* you can save all the data tables underlying every image produced by deepTools, i.e. if you would like to plot the average profiles in a different way, you could download the corresponding data (after ticking the profiler option at "advanced output options") and import them into R, Excel, GraphPadPrism etc.
+You can **save all the data tables** underlying every image produced by deepTools, i.e. if you would like to plot the average profiles in a different way, you could download the corresponding data (after ticking the relevant plotProfile option under "advanced output options") and import them into R, Excel, GraphPadPrism etc.
 
+The descriptions of the tools within Galaxy will also contain details on how to save the data and what sort of format to expect.
+
+----------------------------------------------------------------------
 
 How can I determine basic parameters of a BAM file, such as the number of reads, read length, duplication rate and average DNA fragment length?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Even though `MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`__ is meant to do peak calling for you, it also outputs additional useful information, such as that listed above.
+Even though `MACS <http://www.ncbi.nlm.nih.gov/pubmed/22936215>`_ is meant to do peak calling for you, it also outputs additional useful information, such as that listed above.
 Simply run MACS on the BAM file in question and check the .xls file from the MACS output. It will list:
 
 * tag length = read length
@@ -114,3 +125,6 @@ Simply run MACS on the BAM file in question and check the .xls file from the MAC
 * number of tags = number of reads
 * d = distance = average DNA fragment size
 
+.. Note:: Since version 2.0, deepTools also offers a tool to calculate the distribution of fragment sizes for paired-end sequenced samples: :doc:`tools/bamPEFragmentSize`.
+
+`FastQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`_ will also return all of the above points (except the fragment size).

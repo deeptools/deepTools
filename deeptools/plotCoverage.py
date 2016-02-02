@@ -26,13 +26,13 @@ def parse_arguments(args=None):
             add_help=False,
             description="""
 
-plotCoverage samples 1 million positions of the genome to build
-a coverage histogram. Multiple BAM files are accepted but all should
-correspond to the same genome assembly.
+This tool is useful to assess the sequencing depth of a given sample.
+It samples 1 million bp, counts the number of overlapping reads and can report
+a histogram that tells you how many bases are covered how many times.
+Multiple BAM files are accepted, but they all should correspond to the same genome assembly.
 
-
-detailed help:
-  plotCoverage  -h
+detailed usage help:
+ $ plotCoverage  -h
 
 """,
             epilog='example usages:\nplotCoverage '
@@ -50,7 +50,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of labels does not match the number of bam files."
+        print "The number of labels does not match the number of BAM files."
         exit(0)
     if not args.labels:
         args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
@@ -69,7 +69,7 @@ def required_args():
                           required=True)
 
     required.add_argument('--plotFile', '-o',
-                          help='File name to save the plot to',
+                          help='File name to save the plot to.',
                           type=argparse.FileType('w'),
                           required=True)
 
@@ -92,13 +92,13 @@ def required_args():
 
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
-                          'that have zero or nan values in all samples '
+                          'that have zero or nan values in _all_ samples '
                           'are excluded.',
                           action='store_true',
                           required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of 1 base regions to sample. Default 1 million',
+                          help='Number of 1 bp regions to sample. Default 1 million.',
                           required=False,
                           type=int,
                           default=1000000)
@@ -153,7 +153,7 @@ def main(args=None):
             f.write(header + content)
 
     if num_reads_per_bin.shape[0] < 2:
-        exit("ERROR: too few non zero bins found.\n"
+        exit("ERROR: too few non-zero bins found.\n"
              "If using --region please check that this "
              "region is covered by reads.\n")
 

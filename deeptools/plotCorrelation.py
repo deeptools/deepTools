@@ -20,8 +20,9 @@ def parse_arguments(args=None):
         description="""
 Tool for the analysis and visualization of sample correlations based on the output of multiBamSummary or
 multiBigwigSummary. Pearson or Spearman methods are available to compute correlation
-coefficients. Results can be saved into a heatmap image or as multiple
-scatter plots depicting the pairwise correlations.
+coefficients. Results can be saved as multiple
+scatter plots depicting the pairwise correlations or as a clustered heatmap,
+where the colors represent the correlation coefficients and the clusters are joined using the Nearest Point Algorithm (also known as "single").
 Optionally, the values can be saved as tables, too.
 
 
@@ -100,12 +101,13 @@ def plot_correlation_args():
         '--removeOutliers',
         help='If set, bins with very large counts are removed. '
              'Bins with abnormally high reads counts artificially increase '
-             'pearson correlation; that\'s why, by default, multiBamSummary tries '
+             'pearson correlation; that\'s why, multiBamSummary tries '
              'to remove outliers using the median absolute deviation (MAD) '
              'method applying a threshold of 200 to only consider extremely '
              'large deviations from the median. The ENCODE blacklist page '
              '(https://sites.google.com/site/anshulkundaje/projects/blacklists) '
-             'contains useful information about regions with unusually high counts.',
+             'contains useful information about regions with unusually high counts'
+             'that may be worth removing.',
         action='store_true')
 
     optional.add_argument('--version', action='version',

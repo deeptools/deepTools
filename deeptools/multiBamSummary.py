@@ -17,13 +17,13 @@ def parse_arguments(args=None):
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
-multiBamSummary computes the read coverages for genomic regions for typically two or more BAM files.
+``multiBamSummary`` computes the read coverages for genomic regions for typically two or more BAM files.
 The analysis can be performed for the entire genome by running the program in 'bins' mode.
-If you want to count the read coverage for specific regions only, use the 'BED-file' mode instead.
-The standard output of multiBamSummary is a compressed numpy array.
-It can be directly used to calculate and visualize pairwise correlation values between
-the read coverages using the tool 'plotCorrelation'.
-Similarly, 'plotPCA' can be used for principal component analysis of the read coverages using the .npz file.
+If you want to count the read coverage for specific regions only, use the ``BED-file`` mode instead.
+The standard output of ``multiBamSummary`` is a compressed numpy array (``.npz``).
+It can be directly used to calculate and visualize pairwise correlation values between the read coverages using the tool 'plotCorrelation'.
+Similarly, ``plotPCA`` can be used for principal component analysis of the read coverages using the .npz file.
+Note that using a single bigWig file is only recommended if you want to produce a bedGraph file (i.e., with the ``--outRawCounts`` option; the default output file cannot be used by ANY deepTools program if only a single file was supplied!).
 
 A detailed sub-commands help is available by typing:
 
@@ -31,8 +31,6 @@ A detailed sub-commands help is available by typing:
 
   multiBamSummary BED-file -h
 
-Note that a single BAM file can be used as input, however only the bedGraph file then produced by the --outRawCounts is useful.
-The file specified by -out can not then be used by ANY deepTools program.
 
 """,
             epilog='example usages:\n'
