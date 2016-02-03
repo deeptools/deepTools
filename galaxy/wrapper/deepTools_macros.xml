@@ -133,6 +133,8 @@
                 #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
                     --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
                 #end if
+            #end if
+            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'hclust':
                 #if int($advancedOpt.used_multiple_regions.clustering.n_hclust) > 0:
                     --hclust $advancedOpt.used_multiple_regions.clustering.n_hclust
                 #end if
