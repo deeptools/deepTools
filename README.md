@@ -14,11 +14,10 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 
 Citation: Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke. [_deepTools: a flexible platform for exploring deep-sequencing data._](http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract) Nucl. Acids Res. first published online May 5, 2014 doi:10.1093/nar/gku365
 
-![Gallery](http://deeptools.readthedocs.org/en/latest/content/example_gallery.html)
-
->Our [documentation](http://deeptools.readthedocs.org/) contains more details on the [individual tool scopes and usages](http://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](http://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](http://deeptools.readthedocs.org/en/latest/content/example_usage.html).
+>Our **[documentation](http://deeptools.readthedocs.org/)** contains more details on the [individual tool scopes and usages](http://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](http://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](http://deeptools.readthedocs.org/en/latest/content/example_usage.html).
 
 Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly.
+Our [Gallery](http://deeptools.readthedocs.org/en/latest/content/example_gallery.html) may give you some more ideas about the scope of deepTools.
 
 For more specific **troubleshooting, feedback, and tool suggestions**, contact us via deeptools@googlegroups.com.
 
