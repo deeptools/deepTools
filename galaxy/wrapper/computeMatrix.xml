@@ -27,6 +27,8 @@
 
             --scoreFileName '#echo "' '".join($bw_files)#'
 
+            --outFileName '$outFileName'
+
             @THREADS@
 
             #if $output.showOutputSettings == "yes"
@@ -171,7 +173,7 @@
                     label="Convert missing values to 0?."
                     help="If set to 'yes', missing values (NAs) are converted to 0.
                           The default is to ignore such cases, which will be
-                          depicted as black areas once a heatmap is created." />
+                          depicted as black areas once a heatmap is created. (--missingDataAsZero)" />
 
                 <expand macro="skipZeros" />
 
