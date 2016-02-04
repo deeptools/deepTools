@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap for a score associated to genomic regions</description>
+    <description>creates a heatmap for score distributions across genomic regions</description>
     <macros>
         <token name="@BINARY@">plotHeatmap</token>
         <import>deepTools_macros.xml</import>
@@ -212,25 +212,30 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
 
-The heatmapper visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes.
-Like profiler, it requires that computeMatrix was run first to calculate the values.
+What it does
+--------------
 
-We have implemented number of optional parameters to optimize the visual output and we encourage you to play around with the min/max values
+``plotHeatmap`` visualizes scores associated with genomic regions, for example ChIP enrichment values around the TSS of genes.
+Like ``plotProfile``, it requires that computeMatrix was run first to calculate the values.
+
+We have implemented a number of optional parameters to optimize the visual output and we encourage you to play around with the min/max values
 displayed in the heatmap as well as with the different coloring options.
 
-.. tip:: If your data is rathe sparse and the resulting heatmap is too black, change the "Missing data color" to white (via "Advanced options").
+.. note:: If your data is rathe sparse and the resulting heatmap is too black, change the "Missing data color" to white (via "Advanced options").
 
-The most powerful option is probably the k-means/hierarchical clustering where you can sort your regions into groups of regions with similar score distributions.
+The most powerful option is probably the **k-means/hierarchical clustering** where you can sort your regions into groups of regions with similar score distributions.
 
-.. note:: The clustering will only work if you supplied a single BED file to computeMatrix. plotHeatmap cannot cluster regions within pre-defined groups.
+.. note:: The clustering will only work if you supplied a *single* BED file to computeMatrix. plotHeatmap cannot cluster regions within pre-defined groups.
 
-**Output**
+Output
+--------------
 
 This is a heatmap based on two bigWig files generated with default settings and k-means clustering.
 
 .. image:: $PATH_TO_IMAGES/plotHeatmap_example.png
+    :scale: 70 %
+    :align: center
 
 In addition to the image, ``plotHeatmap`` can also generate the values underlying both the heatmap.
 
@@ -246,7 +251,7 @@ See the following table for the optional output options:
 | sorted and/or filtered regions    | yes                | yes             | yes             |
 +-----------------------------------+--------------------+-----------------+-----------------+
 
-.. tip:: **More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
+**More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
 
 -----
 
