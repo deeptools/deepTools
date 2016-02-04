@@ -42,7 +42,7 @@ def read_options():
                        'match the fragment size defined by the two read mates. '
                        'Unmated reads, mate reads that map too far apart '
                        '(>4x fragment length) or even map to different '
-                       'chromosomes are treated like singe-end reads. The input '
+                       'chromosomes are treated like single-end reads. The input '
                        'of a fragment length value is optional. If '
                        'no value is specified, it is estimated from the '
                        'data (mean of the fragment size of all mate reads).\n',
@@ -169,7 +169,7 @@ def normalization_options():
                        'example, if the --binSize is set to 20 and the '
                        '--smoothLength is set to 60, then, for each '
                        'bin, the average of the bin and its left and right '
-                       'neighbors is considered. Any value smaller than '
+                       'neighbours is considered. Any value smaller than '
                        '--binSize will be ignored and no smoothing will be '
                        'applied.',
                        type=int)
@@ -275,7 +275,7 @@ def writableFile(string):
         open(string, 'w').close()
         os.remove(string)
     except:
-        msg = "{} file can be opened for writing".format(string)
+        msg = "{} file can't be opened for writing".format(string)
         raise argparse.ArgumentTypeError(msg)
     return string
 
