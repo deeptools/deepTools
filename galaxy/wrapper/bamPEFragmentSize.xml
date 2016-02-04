@@ -53,7 +53,7 @@ Properly paired reads are preferred for computation, i.e., unless a region does 
 **Output**
 
 * **default** output is a simple summary statistic for the observed fragment lengths
-* **optionally*, you can obtain a histogram of fragment sizes, which will give you a better idea of the distribution of fragment lengths
+* **optionally**, you can obtain a histogram of fragment sizes, which will give you a better idea of the distribution of fragment lengths
 
 .. image:: $PATH_TO_IMAGES/bamPEFragmentSize_output.png
 

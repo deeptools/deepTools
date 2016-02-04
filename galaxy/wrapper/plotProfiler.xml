@@ -36,11 +36,11 @@
                 --plotWidth $advancedOpt.plotWidth
                 --plotType $advancedOpt.plotType
                 #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel '$advancedOpt.samplesLabel'
+                    --samplesLabel $advancedOpt.samplesLabel
                 #end if
 
                 #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel '$advancedOpt.regionsLabel'
+                    --regionsLabel $advancedOpt.regionsLabel
                 #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
@@ -192,11 +192,11 @@ It is a very useful complement to plotHeatmap, especially in cases where you wan
 compare the scores for many different groups. Like plotHeatmap, profiler does not change the
 values that were compute by computeMatrix, but you can modify the color and other display properties of the plots.
 
-   **Output**
+**Output**
    
 .. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
 
-   In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
+In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
 
 See the following table for the optional output options:
 
