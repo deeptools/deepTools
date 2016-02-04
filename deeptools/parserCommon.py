@@ -169,7 +169,7 @@ def normalization_options():
                        'example, if the --binSize is set to 20 and the '
                        '--smoothLength is set to 60, then, for each '
                        'bin, the average of the bin and its left and right '
-                       'neighbours is considered. Any value smaller than '
+                       'neighbors is considered. Any value smaller than '
                        '--binSize will be ignored and no smoothing will be '
                        'applied.',
                        type=int)
