@@ -193,8 +193,9 @@ compare the scores for many different groups. Like plotHeatmap, profiler does no
 values that were compute by computeMatrix, but you can modify the color and other display properties of the plots.
 
    **Output**
-   
+
 .. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
+   :scale: 50 %
 
    In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
 

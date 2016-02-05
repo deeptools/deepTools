@@ -205,7 +205,7 @@ This value can be the ratio of the number of reads per bin, the log2 of the rati
 
 This tool can normalize the number of reads in each BAM file using the SES method proposed in Diaz et al. (2012). "Normalization, bias correction, and peak
 calling for ChIP-seq". Statistical applications in genetics and molecular
-biology, 11(3). 
+biology, 11(3).
 
 Normalization based on read counts is also available.
 
@@ -224,6 +224,7 @@ By default, if reads are from a paired-end sequencing run and reads are properly
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output. For more information on typical NGS file formats, see our `Glossary <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#file-formats>`_
 
 .. image:: $PATH_TO_IMAGES/bamCompare_output.png
+   :scale: 50 %
 
 -----
 
