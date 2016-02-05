@@ -475,6 +475,11 @@ def main(args=None):
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
+    else:
+        if args.hclust is not None:
+            print "Performing hierarchical clustering." \
+                  "Please note that it might be very slow for large datasets.\n"
+            hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)

@@ -21,6 +21,7 @@ before_install:
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib=1.5.0 nose
   - conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then conda install libgfortran ; fi
   - pip install flake8
   - python setup.py install
 
