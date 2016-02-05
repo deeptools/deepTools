@@ -141,7 +141,8 @@ There are two plots produced by the tool: a boxplot showing the absolute read nu
 - Tabular file: to be used for GC correction with ``correctGCbias``
 
 .. image:: $PATH_TO_IMAGES/computeGCBias_output.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 ---------------------------------------------
 

@@ -245,19 +245,22 @@ See the descriptions of ``plotHeatmap`` and ``plotProfile`` for example plots.
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_overview   .png
    :alt: Relationship between computeMatrix, heatmapper and profiler
-   :scale: 50 %
+   :height: 650
+   :width: 500
 =======
 
 The supplied genomic regions can really be anything - genes, parts of genes, ChIP-seq peaks, favorite genome regions... as long as you provide a proper file
 in BED or INTERVAL format. If you would like to compare different groups of regions (e.g., genes from chromosome 2 and 3), you can supply more than 1 BED file, one for each group by selecting "Insert Select regions".
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_selectRegions.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 You can select as many score (bigWig) files as you like. Simply use the Shift and/or Command key while clicking on the files of interest.
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_selectScores.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 
 **Output files**
@@ -270,10 +273,12 @@ You can select as many score (bigWig) files as you like. Simply use the Shift an
 .. tip:: ``computeMatrix`` can also be used to filter and sort regions according to their score by making use of the "advanced output settings".
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_advancedOutput.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_output.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 Note that these options are available for ``plotHeatmap`` and ``plotProfile``, too.
 

@@ -56,7 +56,9 @@ Properly paired reads are preferred for computation, i.e., unless a region does 
 * **optionally**, you can obtain a histogram of fragment sizes, which will give you a better idea of the distribution of fragment lengths
 
 .. image:: $PATH_TO_IMAGES/bamPEFragmentSize_output.png
-   :scale: 70 %
+   :height: 650
+   :width: 500
+
 
 -----
 

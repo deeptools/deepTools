@@ -195,7 +195,8 @@ values that were compute by computeMatrix, but you can modify the color and othe
 **Output**
 
 .. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 =======
 

@@ -119,7 +119,8 @@ A typical follow-up application is to check and visualize the similarity and var
 * to analyze the coverage scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 
 .. image:: $PATH_TO_IMAGES/multiBamSummary_output.png
-   :scale: 50 %
+   :height: 650
+   :width: 500
 
 =======
 
@@ -127,7 +128,8 @@ A typical follow-up application is to check and visualize the similarity and var
 
 .. image:: $PATH_TO_IMAGES/QC_plotCorrelate_RNAseq.png
    :alt: Heatmaps of correlations of RNA-seq samples
-
+   :height: 650
+   :width: 500
 
 -----
 
