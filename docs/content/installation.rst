@@ -106,9 +106,9 @@ for your admin user and run the the installation script:
 ::
 
 	$ python ./scripts/api/install_tool_shed_repositories.py \
-		--api YOUR_API_KEY -l http://localhost:8080 \
+		--api YOUR_API_KEY -l http://localhost/ \
 		--url http://toolshed.g2.bx.psu.edu/ \
-		-o bgruening -r <revision> --name deeptools \
+		-o bgruening -r <revision> --name suite_deeptools \
 		--tool-deps --repository-deps --panel-section-name deepTools
 
 The ``-r`` argument specifies the version of deepTools. You can get the

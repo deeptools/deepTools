@@ -1,9 +1,71 @@
 <?xml version='1.0' encoding='utf-8'?>
 <tool_dependency>
+    <package name="numpy" version="1.9">
+        <repository name="package_python_2_7_numpy_1_9" owner="iuc" prior_installation_required="True" />
+    </package>
+    <package name="pybigwig" version="0.2.4">
+        <repository name="package_python_2_7_10_pybigwig_0_2_4" owner="iuc" prior_installation_required="True"/>
+    </package>
+    <package name="matplotlib" version="1.4">
+        <repository name="package_python_2_7_matplotlib_1_4" owner="iuc" prior_installation_required="True" />
+    </package>
+    <package name="scipy" version="0.14">
+        <repository name="package_python_2_7_scipy_0_14" owner="iuc" prior_installation_required="True" />
+    </package>
+    <package name="pysam" version="0.8.3">
+        <repository name="package_python_2_7_pysam_0_8_3" owner="iuc" prior_installation_required="True" />
+    </package>
+    <package name="bx-python" version="0.7.2">
+        <repository name="package_python_2_7_bx_python_0_7" owner="iuc" prior_installation_required="True" />
+    </package>
     <package name="python" version="2.7.10">
-        <repository name="package_python_2_7_10" owner="iuc" />
+        <repository name="package_python_2_7_10" owner="iuc" prior_installation_required="True" />
     </package>
-    <package name="deepTools" version="2.0">
-        <repository name="package_python_2_7_deeptools_2_0" owner="iuc"/>
-    </package>
+    <package name="deepTools" version="2.0.1">
+        <install version="1.0">
+            <actions>
+                <action type="setup_python_environment">
+                    <repository name="package_python_2_7_10" owner="iuc">
+                        <package name="python" version="2.7.10" />
+                    </repository>
+                    <repository name="package_python_2_7_pysam_0_8_3" owner="iuc">
+                        <package name="pysam" version="0.8.3" />
+                    </repository>
+                    <repository name="package_python_2_7_numpy_1_9" owner="iuc">
+                        <package name="numpy" version="1.9" />
+                    </repository>
+                    <repository name="package_python_2_7_matplotlib_1_4" owner="iuc">
+                        <package name="matplotlib" version="1.4" />
+                    </repository>
+                    <repository name="package_python_2_7_scipy_0_14" owner="iuc">
+                        <package name="scipy" version="0.14" />
+                    </repository>
+                    <repository name="package_python_2_7_bx_python_0_7" owner="iuc">
+                        <package name="bx-python" version="0.7.2" />
+                    </repository>
+                    <repository name="package_python_2_7_10_pybigwig_0_2_4" owner="iuc">
+                        <package name="pybigwig" version="0.2.4" />
+                    </repository>
+                    <package sha256sum="cc5590aaf34815ccb6290ee12b3d22e18c52ca5f54a5a30b94f1f3c1e75fc406">https://pypi.python.org/packages/source/d/deepTools/deepTools-2.0.1.0.tar.gz</package>
+                </action>
+
+                <action type="set_environment">
+                    <environment_variable name="PATH" action="prepend_to">$INSTALL_DIR/bin</environment_variable>
+                    <environment_variable name="PYTHONPATH" action="prepend_to">$INSTALL_DIR</environment_variable>
+                    <environment_variable name="DEEPTOOLS_ROOT_PATH" action="set_to">$INSTALL_DIR</environment_variable>
+                    <environment_variable name="DEEPTOOLS_PYTHONPATH" action="set_to">$INSTALL_DIR</environment_variable>
+                    <environment_variable name="DEEPTOOLS_PATH" action="set_to">$INSTALL_DIR/bin</environment_variable>
+                    <!-- libpng lib path -->
+                    <environment_variable action="set_to" name="LIBPNG_LIB_PATH">$ENV[LIBPNG_LIB_PATH]</environment_variable>
+                    <environment_variable action="prepend_to" name="LD_LIBRARY_PATH">$ENV[LIBPNG_LIB_PATH]</environment_variable>
+                    <!-- disable the config file of deepTools -->
+                    <environment_variable name="DEEP_TOOLS_NO_CONFIG" action="set_to">TRUE</environment_variable>
+                </action>
+             </actions>
+         </install>
+         <readme>
+            Installation of deepTools from Fidel Ramirez.
+            https://github.com/fidelram/deepTools
+         </readme>
+     </package>
 </tool_dependency>
