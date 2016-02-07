@@ -116,7 +116,7 @@ latest revision number from the test tool shed or with the following
 command:
 ::
 
-	$ hg identify http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools
+	$ hg identify http://toolshed.g2.bx.psu.edu/repos/bgruening/suite_deeptools
 
 You can watch the installation status under: Top Panel --> Admin --> Manage
 installed tool shed repositories
