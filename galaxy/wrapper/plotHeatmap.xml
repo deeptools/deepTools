@@ -223,8 +223,8 @@ The most powerful option is probably the k-means/hierarchical clustering where y
 This is a heatmap based on two bigWig files generated with default settings and k-means clustering.
 
 .. image:: $PATH_TO_IMAGES/plotHeatmap_example.png
-   :height: 694
    :width: 600
+   :height: 694
 
 In addition to the image, ``plotHeatmap`` can also generate the values underlying both the heatmap.
 

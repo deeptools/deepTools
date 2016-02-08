@@ -224,8 +224,8 @@ By default, if reads are from a paired-end sequencing run and reads are properly
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output. For more information on typical NGS file formats, see our `Glossary <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#file-formats>`_
 
 .. image:: $PATH_TO_IMAGES/bamCompare_output.png
-   :height: 600
-   :width: 436
+   :width: 600
+   :height: 436
 
 -----
 
