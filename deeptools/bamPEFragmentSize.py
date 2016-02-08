@@ -49,7 +49,9 @@ def parse_arguments():
                         'bin is sampled. This option allows you to set the distance '
                         'between bins actually sampled from. Larger numbers are sufficient '
                         'for high coverage samples, while smaller values are useful for '
-                        'lower coverage samples. (default 1e6)',
+                        'lower coverage samples. Note that if you specify a value that '
+                        'results in too few (<1000) reads sampled, the value will be '
+                        'decreased. (default 1e6)',
                         default=1e6,
                         type=int)
     parser.add_argument('--verbose',
