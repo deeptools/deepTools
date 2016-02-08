@@ -40,9 +40,9 @@ def parse_arguments():
                         default='')
     parser.add_argument('--binSize', '-bs',
                         metavar='INT',
-                         help='Length in bases of the window used to sample the genome. (default 1000)',
-                         default=1000,
-                         type=int)
+                        help='Length in bases of the window used to sample the genome. (default 1000)',
+                        default=1000,
+                        type=int)
     parser.add_argument('--distanceBetweenBins', '-n',
                         metavar='INT',
                         help='To reduce the computation time, not every possible genomic '

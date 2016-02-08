@@ -34,7 +34,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
         second is for read length
     """
     bam = bamHandler.openBam(bamFile)
-    end = max(start+1, end-distanceBetweenBins)
+    end = max(start + 1, end - distanceBetweenBins)
     if chrom in bam.references:
         reads = np.array([(abs(r.template_length), r.infer_query_length())
                           for r in bam.fetch(chrom, start, end)
@@ -82,15 +82,19 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
     bam_handle = bamHandler.openBam(bamFile)
     chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
 
-    stepsize = binSize + distanceBetweenBins
-    imap_res = mapReduce.mapReduce((bam_handle.filename, distanceBetweenBins),
-                                   getFragmentLength_wrapper,
-                                   chrom_sizes,
-                                   genomeChunkLength=stepsize,
-                                   numberOfProcessors=numberOfProcessors,
-                                   verbose=verbose)
+    distanceBetweenBins *= 2
+    fl = []
+    while len(fl) == 0 and distanceBetweenBins > 1:
+        distanceBetweenBins /= 2
+        stepsize = binSize + distanceBetweenBins
+        imap_res = mapReduce.mapReduce((bam_handle.filename, distanceBetweenBins),
+                                       getFragmentLength_wrapper,
+                                       chrom_sizes,
+                                       genomeChunkLength=stepsize,
+                                       numberOfProcessors=numberOfProcessors,
+                                       verbose=verbose)
 
-    fl = np.concatenate(imap_res)
+        fl = np.concatenate(imap_res)
 
     if len(fl):
         fragment_length = fl[:, 0]
