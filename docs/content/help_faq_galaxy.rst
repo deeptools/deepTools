@@ -47,6 +47,15 @@ Go to the workflows, click on the ones you're interested in and go to "Download"
 
 ----------------------------------------------------------------------
 
+``plotProfile`` says that one option will only work if "computeMatrix was run with --missingDataAsZero". How can I find out whether I ran ``computeMatrix`` that way?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Galaxy keeps track of everything you do. To see which options you chose to generate a specific data set, simply click on the "info" button.
+
+.. image:: ../images/Gal_FAQ_info.png
+
+----------------------------------------------------------------------
+
 How can I have a look at the continuous read coverages from bigWig files? Which genome browser do you recommend?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
