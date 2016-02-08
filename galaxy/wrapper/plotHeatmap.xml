@@ -214,11 +214,11 @@ Like ``plotProfile``, it requires that computeMatrix was run first to calculate 
 We have implemented a number of optional parameters to optimize the visual output and we encourage you to play around with the min/max values
 displayed in the heatmap as well as with the different coloring options.
 
-.. note:: If your data is rathe sparse and the resulting heatmap is too black, change the "Missing data color" to white (via "Advanced options").
+**TIP:** *If your data is rather sparse and the resulting heatmap is too black, change the "Missing data color" to white (via "Advanced options").*
 
 The most powerful option is probably the **k-means/hierarchical clustering** where you can sort your regions into groups of regions with similar score distributions.
 
-.. note:: The clustering will only work if you supplied a *single* BED file to computeMatrix. plotHeatmap cannot cluster regions within pre-defined groups.
+**NOTE:** *The clustering will only work if you supplied a single BED file to computeMatrix. plotHeatmap cannot cluster regions within pre-defined groups. Moreover, k-means will be much faster than hierarchical clustering.*
 
 Output
 --------------

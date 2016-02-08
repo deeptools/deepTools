@@ -171,9 +171,12 @@
 
                 <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" checked="False"
                     label="Convert missing values to 0?."
-                    help="If set to 'yes', missing values (NAs) are converted to 0.
-                          The default is to ignore such cases, which will be
-                          depicted as black areas once a heatmap is created. (--missingDataAsZero)" />
+                    help="If set to 'yes', missing values (NAs) are converted
+                     to 0. If you want to use clustering with plotHeatmap
+                     or plotProfile, set this to 'yes'.
+                          The default is to ignore missing values, which will be
+                          depicted as black areas once a heatmap is created.
+                           (--missingDataAsZero)" />
 
                 <expand macro="skipZeros" />
 
@@ -181,7 +184,7 @@
                     label="Minimum threshold"
                     help="Any region containing a value that is equal or less than this numeric
                     value will be skipped. This is useful to skip, for example, genes where the
-                    read count is zero for any of the bins. This could be the result of
+                    read count is zero for any of the bins which could be the result of
                     unmappable areas and can bias the overall results. (--minThreshold)"/>
                 <param name="maxThreshold" type="float" optional="True"
                     label="Maximum threshold"
