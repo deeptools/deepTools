@@ -21,13 +21,13 @@
 
             #if $scaling.type=='rpkm':
                 --normalizeUsingRPKM
+                --scaleFactor $scaling.scaleFactor
             #elif $scaling.type=='1x':
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
                 #end if
-            #elif $scaling.type=='own':
                 --scaleFactor $scaling.scaleFactor
             #end if
 
