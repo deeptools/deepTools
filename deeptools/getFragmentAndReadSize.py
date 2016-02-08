@@ -84,7 +84,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
 
     distanceBetweenBins *= 2
     fl = []
-    while len(fl) == 0 and distanceBetweenBins > 1:
+    while len(fl) < 1000 and distanceBetweenBins > 1:
         distanceBetweenBins /= 2
         stepsize = binSize + distanceBetweenBins
         imap_res = mapReduce.mapReduce((bam_handle.filename, distanceBetweenBins),
