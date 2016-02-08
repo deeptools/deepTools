@@ -51,8 +51,6 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
     if not len(reads):
         reads = np.array([]).reshape(0, 2)
 
-    if len(reads):
-        print(len(reads))
     return reads
 
 

@@ -51,8 +51,8 @@ def parse_arguments():
                         'for high coverage samples, while smaller values are useful for '
                         'lower coverage samples. Note that if you specify a value that '
                         'results in too few (<1000) reads sampled, the value will be '
-                        'decreased. (default 1e6)',
-                        default=1e6,
+                        'decreased. (default 1000000)',
+                        default=1000000,
                         type=int)
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
