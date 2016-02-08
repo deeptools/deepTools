@@ -111,8 +111,8 @@ If you imagine a race with 3 participants where the winner and runner-up are ver
 - optional: table of the pairwise correlation coefficients
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_output.png
-   :height: 400
-   :width: 650
+   :height: 271
+   :width: 600
 
 **Example plots**
 
@@ -122,14 +122,14 @@ from bigWig files using ``multiBigwigSummary``.
 The output was used with ``plotCorrelation`` to make a heatmap of Spearman correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png
-   :height: 400
-   :width: 650
+   :height: 518
+   :width: 600
 
 The scatterplot could look like this:
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_scatterplot_PearsonCorr_bigwigScores.png
-   :height: 400
-   :width: 400
+   :height: 600
+   :width: 600
 
 -----
 

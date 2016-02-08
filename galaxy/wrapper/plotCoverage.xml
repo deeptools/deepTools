@@ -104,14 +104,14 @@ a coverage histogram that tells you how many bases are covered how many times.
 * the optional output is a table where each row represents the number of reads overlapping with a sampled bp
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_output.png
-   :height: 500
-   :width: 650
+   :height: 345
+   :width: 600
 
 **Example plot**
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_annotated.png
-   :height: 500
-   :width: 650
+   :height: 291
+   :width: 600
 
 
 @REFERENCES@

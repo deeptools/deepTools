@@ -125,7 +125,7 @@ and is based on a method described in Diaz et al. (2012) Stat Appl Genet Mol Bio
 - (optional) Data matrix of raw counts
 
 .. image:: $PATH_TO_IMAGES/plotFingerprint_output.png
-  :height: 500
+  :height: 395
   :width: 500
 
 
@@ -135,7 +135,7 @@ What follows is the output of ``plotFingerprint`` with our test ChIP-Seq data se
 200 bp (advanced options).
 
 .. image:: $PATH_TO_IMAGES/bamFP_galaxy_output.png
-   :height: 500
+   :height: 450
    :width: 500
 
 -----------------------------
@@ -151,8 +151,8 @@ most commonly seen with transcription factors.
 
 
 .. image:: $PATH_TO_IMAGES/QC_fingerprint.png
-   :height: 500
-   :width: 500
+   :height: 294
+   :width: 600
 
 -----
 
