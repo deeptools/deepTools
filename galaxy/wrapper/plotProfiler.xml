@@ -36,11 +36,11 @@
                 --plotWidth $advancedOpt.plotWidth
                 --plotType $advancedOpt.plotType
                 #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel '$advancedOpt.samplesLabel'
+                    --samplesLabel $advancedOpt.samplesLabel
                 #end if
 
                 #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel '$advancedOpt.regionsLabel'
+                    --regionsLabel $advancedOpt.regionsLabel
                 #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
@@ -129,7 +129,7 @@
                 <param argument="--samplesLabel" type="text" size="30"
                     label="Labels for the samples (each bigwig) plotted"
                     help="The default is to use the file name of the sample. The sample labels should be separated by
-                    spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;" />
+                    spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;">
                     <sanitizer>
                         <valid initial="string.printable">
                         </valid>
@@ -140,7 +140,6 @@
                     help="If more than one region is being plotted a list of labels separated by space is required.
                           If a label itself contains a space, then quotes are needed.
                           For example, label_1, &quot;label 2&quot;" />
-                </param>
 
                 <expand macro="plotTitle" />
                 <param argument="--colors" type="text" value="" size="40"
@@ -193,11 +192,15 @@ It is a very useful complement to plotHeatmap, especially in cases where you wan
 compare the scores for many different groups. Like plotHeatmap, profiler does not change the
 values that were compute by computeMatrix, but you can modify the color and other display properties of the plots.
 
-   **Output**
-   
-.. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
+**Output**
 
-   In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
+.. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
+   :width: 600
+   :height: 858
+
+=======
+
+In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
 
 See the following table for the optional output options:
 

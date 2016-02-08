@@ -72,18 +72,11 @@
                 --refPointLabel '$advancedOpt.referencePointLabel'
 
                 #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel '$advancedOpt.samplesLabel'
+                    --samplesLabel $advancedOpt.samplesLabel
                 #end if
 
                 #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel '$advancedOpt.regionsLabel'
-                #end if
-                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel '$advancedOpt.samplesLabel'
-                #end if
-
-                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel '$advancedOpt.regionsLabel'
+                    --regionsLabel $advancedOpt.regionsLabel
                 #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
@@ -171,7 +164,7 @@
                 <param argument="--samplesLabel" type="text" size="30"
                     label="Labels for the samples (each bigwig) plotted"
                     help="The default is to use the file name of the sample. The sample labels should be separated by
-                    spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;" />
+                    spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;">
                     <sanitizer>
                         <valid initial="string.printable">
                         </valid>
@@ -182,7 +175,6 @@
                     help="If more than one region is being plotted a list of labels separated by space is required.
                           If a label itself contains a space, then quotes are needed.
                           For example, label_1, &quot;label 2&quot;" />
-                </param>
 
                 <expand macro="plotTitle" />
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
@@ -234,8 +226,8 @@ Output
 This is a heatmap based on two bigWig files generated with default settings and k-means clustering.
 
 .. image:: $PATH_TO_IMAGES/plotHeatmap_example.png
-    :scale: 70 %
-    :align: center
+   :width: 600
+   :height: 694
 
 In addition to the image, ``plotHeatmap`` can also generate the values underlying both the heatmap.
 

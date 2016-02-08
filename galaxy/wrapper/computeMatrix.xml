@@ -27,6 +27,8 @@
 
             --scoreFileName '#echo "' '".join($bw_files)#'
 
+            --outFileName '$outFileName'
+
             @THREADS@
 
             #if $output.showOutputSettings == "yes"
@@ -171,7 +173,7 @@
                     label="Convert missing values to 0?."
                     help="If set to 'yes', missing values (NAs) are converted to 0.
                           The default is to ignore such cases, which will be
-                          depicted as black areas once a heatmap is created." />
+                          depicted as black areas once a heatmap is created. (--missingDataAsZero)" />
 
                 <expand macro="skipZeros" />
 
@@ -241,31 +243,43 @@ This tool prepares an intermediate file (a gzipped table of values)
 that contains scores associated with genomic regions. This intermediate file is meant to be used with ``plotHeatmap`` and ``plotProfile``.
 See the descriptions of ``plotHeatmap`` and ``plotProfile`` for example plots.
 
-.. image:: $PATH_TO_IMAGES/computeMatrix_overview   .png
+.. image:: $PATH_TO_IMAGES/computeMatrix_overview.png
    :alt: Relationship between computeMatrix, heatmapper and profiler
+   :width: 600
+   :height: 418
+
+=======
 
 The supplied genomic regions can really be anything - genes, parts of genes, ChIP-seq peaks, favorite genome regions... as long as you provide a proper file
 in BED or INTERVAL format. If you would like to compare different groups of regions (e.g., genes from chromosome 2 and 3), you can supply more than 1 BED file, one for each group by selecting "Insert Select regions".
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_selectRegions.png
+   :width: 600
+   :height: 150
 
 You can select as many score (bigWig) files as you like. Simply use the Shift and/or Command key while clicking on the files of interest.
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_selectScores.png
+   :width: 600
+   :height: 136
 
 
 **Output files**
 
 * the default output is a **gzipped table of values** that is used by both ``plotHeatmap`` and ``plotProfile``
 * the optional output files include
-    - the **regions after sorting and filtering (if selected)** as they were used to calculate the values for the plotting
-    - the uncompressed table that **underlies the heatmap**
+  - the **regions after sorting and filtering (if selected)** as they were used to calculate the values for the plotting
+  - the uncompressed table that **underlies the heatmap**
 
 .. tip:: ``computeMatrix`` can also be used to filter and sort regions according to their score by making use of the "advanced output settings".
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_advancedOutput.png
+   :width: 600
+   :height: 189
 
 .. image:: $PATH_TO_IMAGES/computeMatrix_output.png
+   :width: 600
+   :height: 297
 
 Note that these options are available for ``plotHeatmap`` and ``plotProfile``, too.
 
