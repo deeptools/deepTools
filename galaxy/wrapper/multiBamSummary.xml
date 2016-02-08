@@ -44,10 +44,10 @@
         <expand macro="multiple_input_bams" />
 
         <conditional name="mode">
-            <param name="modeOpt" type="select" label="Choose computation mode" 
+            <param name="modeOpt" type="select" label="Choose computation mode"
                     help="In the bins mode, the coverage is computed for equally
                     sized bins. \nIn BED file mode, a list of genomic regions
-                    in BED or INTERVAL format has to be given. For each region 
+                    in BED or INTERVAL format has to be given. For each region
                     in the BED file, the number of overlapping reads from each BAM file is counted.
                     ">
                 <option value="bins" selected="true">Bins</option>
@@ -106,7 +106,7 @@
 
 This tool generates a matrix of read-coverages for a list of genomic regions and at least two samples (BAM files).
 The genome is split into bins of the given size. For each bin, the number of reads found in each BAM file is counted.
-Alternatively, an interval file with pre-defined genomic regions can be provided. 
+Alternatively, an interval file with pre-defined genomic regions can be provided.
 
 In principle, this tool does the same as ``multiBigwigSummary``, but for BAM files.
 
@@ -119,14 +119,8 @@ A typical follow-up application is to check and visualize the similarity and var
 * to analyze the coverage scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 
 .. image:: $PATH_TO_IMAGES/multiBamSummary_output.png
-
-=======
-
-**Example plots** generated with plotCorrelation after running ``multiBamSummary`` on several ENCODE RNA-seq data sets
-
-.. image:: $PATH_TO_IMAGES/QC_plotCorrelate_RNAseq.png
-   :alt: Heatmaps of correlations of RNA-seq samples
-
+   :width: 600
+   :height: 443
 
 -----
 

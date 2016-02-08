@@ -44,9 +44,11 @@ The result is a panel of two plots:
 * the eigenvalues of the **top two principal components**
 * the **Scree plot** for the top five principal components where the bars represent the amount of variability explained by the individual factors and the red line traces the amount of variability is explained by the individual components in a cumulative manner
 
-**Example plot** 
+**Example plot**
 
 .. image:: $PATH_TO_IMAGES/plotPCA_annotated.png
+   :width: 600
+   :height: 315
 
 ===================
 

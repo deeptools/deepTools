@@ -89,8 +89,8 @@
 <![CDATA[
 **What it does**
 
-This tool is useful to **assess the sequencing depth** of a given sample. 
-It samples 1 million bp, counts the number of overlapping reads and reports 
+This tool is useful to **assess the sequencing depth** of a given sample.
+It samples 1 million bp, counts the number of overlapping reads and reports
 a coverage histogram that tells you how many bases are covered how many times.
 
 .. warning:: Multiple BAM files are accepted but all should correspond to the same genome assembly.
@@ -104,10 +104,14 @@ a coverage histogram that tells you how many bases are covered how many times.
 * the optional output is a table where each row represents the number of reads overlapping with a sampled bp
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_output.png
+   :width: 600
+   :height: 345
 
-**Example plot** 
+**Example plot**
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_annotated.png
+   :width: 600
+   :height: 291
 
 
 @REFERENCES@

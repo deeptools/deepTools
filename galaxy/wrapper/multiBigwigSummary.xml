@@ -108,11 +108,8 @@ Typically the output of ``multiBigwigSummary`` is used by other tools, such as `
 * to analyze the average scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 
 .. image:: $PATH_TO_IMAGES/multiBigwigSummary_output.png
-
-**Example plots** generated with plotCorrelation after running ``multiBigwigSummary`` on several ENCODE RNA-seq data sets
-
-.. image:: $PATH_TO_IMAGES/QC_plotCorrelate_RNAseq.png
-   :alt: Heatmaps of correlations of RNA-seq samples
+   :width: 600
+   :height: 358
 
 -----
 
