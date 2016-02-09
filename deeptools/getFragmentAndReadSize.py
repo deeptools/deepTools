@@ -52,7 +52,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
     return reads
 
 
-def get_read_and_fragment_length(bamFile, return_lengths=False,
+def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFile=None
                                  numberOfProcessors=None, verbose=False):
     """
     Estimates the fragment length and read length through sampling
@@ -82,6 +82,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
                                    getFragmentLength_wrapper,
                                    chrom_sizes,
                                    genomeChunkLength=chunk_size,
+                                   blackListFile=blackListFile,
                                    numberOfProcessors=numberOfProcessors,
                                    verbose=verbose)
 

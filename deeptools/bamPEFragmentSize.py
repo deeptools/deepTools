@@ -38,6 +38,11 @@ def parse_arguments():
                         help='Title of the plot, to be printed on top of '
                         'the generated image. Leave blank for no title.',
                         default='')
+    parser.add_argument('--blackList', '-bl',
+                        help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered."
+                        metavar="BED file",
+                        required=False)
+
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
                         action='store_true',
@@ -52,6 +57,7 @@ def parse_arguments():
 def main(args=None):
     args = parse_arguments().parse_args(args)
     fragment_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, return_lengths=True,
+                                                                    blackListFile=args.blackListFile,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
 

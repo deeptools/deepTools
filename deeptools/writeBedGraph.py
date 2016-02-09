@@ -88,7 +88,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
     """
 
-    def run(self, func_to_call, func_args, out_file_name, format="bedgraph", smoothLength=0):
+    def run(self, func_to_call, func_args, out_file_name, blackListFile=None, format="bedgraph", smoothLength=0):
         r"""
         Given a list of bamfiles, a function and a function arguments,
         this method writes a bedgraph file (or bigwig) file
@@ -134,6 +134,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
                                   self_=self,
                                   genomeChunkLength=genome_chunk_length,
                                   region=self.region,
+                                  blackListFile=blackListFile,
                                   numberOfProcessors=self.numberOfProcessors)
 
         # concatenate intermediary bedgraph files

@@ -7,6 +7,7 @@ def mapReduce(staticArgs, func, chromSize,
               genomeChunkLength=None,
               region=None,
               bedFile=None,
+              blackListFile=None,
               numberOfProcessors=4,
               verbose=False,
               self_=None):
@@ -39,6 +40,7 @@ def mapReduce(staticArgs, func, chromSize,
     :param bedFile: Is a bed file is given, the args to the func to be
                     called are extended to include a list of bed
                     defined regions.
+    :param blackListFile: A list of regions to exclude from all computations.
     :param self_: In case mapreduce should make a call to an object
                 the self variable has to be passed.
     """
@@ -81,6 +83,9 @@ def mapReduce(staticArgs, func, chromSize,
             if bed_in_region[-1].end > chromSize[0][1]:
                 chromSize[0] = (chromSize[0][0], bed_in_region[-1].end)
 
+    if blackListFile:
+        blacklist = BED_to_interval_tree(blackListFile)
+
     TASKS = []
     # iterate over all chromosomes
     for chrom, size in chromSize:
@@ -88,6 +93,12 @@ def mapReduce(staticArgs, func, chromSize,
         start = 0 if region_start == 0 else region_start
         for startPos in xrange(start, size, genomeChunkLength):
             endPos = min(size, startPos + genomeChunkLength)
+
+            # Reject a chunk if it overlaps 
+            if blackListFile:
+                if blOverlap(blackList, [chrom, startPos, endPos]):
+                    continue
+
             if self_ is not None:
                 argsList = [self_]
             else:
@@ -236,3 +247,32 @@ def BED_to_interval_tree(BED_file):
         bed_interval_tree[chrom].add_interval(Interval(start_bed, end_bed))
 
     return bed_interval_tree
+
+def blOverlap(t, chunk):
+    """
+    Test for an overlap between an IntervalTree and a given genomic chunk.
+
+    This attempts to account for differences in chromosome naming.
+
+    Returns True on an overlap, otherwise false
+    """
+
+    if t is None:
+        return False
+
+    chrom = chunk[0]
+    if chrom not in t.keys():
+        chrom2 = "chr" + chrom
+        if chrom2 in t.keys():
+            chrom = chrom2
+        elif len(chrom)>3:
+            chrom2 = chrom[3:]
+            if chrom2 in t.keys():
+                chrom = chrom2
+            else:
+                return False
+
+    if len(t[chrom].find(chunk[1], chunk[2])):
+        return True
+
+    return False

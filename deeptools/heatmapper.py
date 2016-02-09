@@ -27,8 +27,9 @@ class heatmapper(object):
         self.lengthDict = None
         self.matrix = None
         self.regions = None
+        self.blackList = None
 
-    def computeMatrix(self, score_file_list, regions_file, parameters, verbose=False):
+    def computeMatrix(self, score_file_list, regions_file, parameters, blackListFile=None, verbose=False):
         """
         Splits into
         multiple cores the computation of the scores
@@ -54,7 +55,7 @@ class heatmapper(object):
             exit("Length of region before the body has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['upstream']))
 
-        regions, group_labels = self.get_regions_and_groups(regions_file, verbose=verbose)
+        regions, group_labels = self.get_regions_and_groups(regions_file, blackListFile=blackListFile, verbose=verbose)
 
         # args to pass to the multiprocessing workers
         mp_args = []
@@ -771,6 +772,7 @@ class heatmapper(object):
     @staticmethod
     def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
                                default_group_name='genes',
+                               blackListFile=None,
                                verbose=None):
         """
         Reads a bed file.
@@ -790,6 +792,10 @@ class heatmapper(object):
         group_labels = []
         group_idx = 0
         bed_file = deeptools.readBed.ReadBed(regions_file)
+        blackList = None
+        if blackListFile is not None:
+            blackList = BED_to_interval_tree(blackListFile)
+
         for ginterval in bed_file:
             totalintervals += 1
             if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
@@ -809,6 +815,11 @@ class heatmapper(object):
 
                 group_labels.append(label)
                 continue
+
+            # Exclude blacklist overlaps
+            if mapReduce.blOverlap(blackList, [ginterval.chrom, ginterval.start, ginterval.end]):
+                continue
+
             # if the list of regions is to big, only
             # consider a fraction of the data
             # if totalintervals % onlyMultiplesOf != 0:

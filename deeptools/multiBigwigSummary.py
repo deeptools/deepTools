@@ -206,6 +206,7 @@ def main(args=None):
     num_reads_per_bin = score_bw.getScorePerBin(
         args.bwfiles,
         args.binSize,
+        blackListFile=args.blackListFile,
         numberOfProcessors=args.numberOfProcessors,
         stepSize=args.binSize + args.distanceBetweenBins,
         verbose=args.verbose,

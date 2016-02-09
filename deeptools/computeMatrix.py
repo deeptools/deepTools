@@ -279,6 +279,11 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           '(e.g. micro satellites) that may bias the average '
                           'values.')
 
+    optional.add_argument('--blackList', '-bl',
+                          help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered."
+                          metavar="BED file",
+                          required=False)
+
     # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
@@ -366,7 +371,7 @@ def main(args=None):
     hm = heatmapper.heatmapper()
 
     scores_file_list = args.scoreFileName
-    hm.computeMatrix(scores_file_list, bed_file, parameters, verbose=args.verbose)
+    hm.computeMatrix(scores_file_list, bed_file, parameters, blackListFile=args.blackListFile, verbose=args.verbose)
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
 

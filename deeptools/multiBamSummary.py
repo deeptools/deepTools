@@ -206,6 +206,7 @@ def main(args=None):
         verbose=args.verbose,
         region=args.region,
         bedFile=bed_regions,
+        blackListFile=args.blackListFile,
         extendReads=args.extendReads,
         minMappingQuality=args.minMappingQuality,
         ignoreDuplicates=args.ignoreDuplicates,

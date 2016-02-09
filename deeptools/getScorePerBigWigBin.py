@@ -20,7 +20,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                                    bigWigFiles,
                                    stepSize, binLength,
                                    save_data,
-                                   bedRegions=None,
+                                   bedRegions=None
                                    ):
     """ returns the average score in each bigwig file at each 'stepSize'
     position within the interval start, end for a 'binLength' window.
@@ -179,6 +179,7 @@ def getScorePerBin(bigWigFiles, binLength,
                    numberOfProcessors=1,
                    verbose=False, region=None,
                    bedFile=None,
+                   blackListFile=None,
                    stepSize=None,
                    chrsToSkip=[],
                    out_file_for_raw_data=None):
@@ -236,6 +237,7 @@ def getScorePerBin(bigWigFiles, binLength,
                                    chrom_sizes,
                                    genomeChunkLength=chunkSize,
                                    bedFile=bedFile,
+                                   blackListFile=blackListFile,
                                    region=region,
                                    numberOfProcessors=numberOfProcessors)
 
