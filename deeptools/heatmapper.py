@@ -10,6 +10,7 @@ import pysam
 
 import pyBigWig
 import deeptools.readBed
+from deeptools import mapReduce
 
 
 def compute_sub_matrix_wrapper(args):
@@ -794,7 +795,7 @@ class heatmapper(object):
         bed_file = deeptools.readBed.ReadBed(regions_file)
         blackList = None
         if blackListFile is not None:
-            blackList = BED_to_interval_tree(blackListFile)
+            blackList = mapReduce.BED_to_interval_tree(blackListFile)
 
         for ginterval in bed_file:
             totalintervals += 1

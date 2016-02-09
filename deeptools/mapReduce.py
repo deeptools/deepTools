@@ -84,7 +84,7 @@ def mapReduce(staticArgs, func, chromSize,
                 chromSize[0] = (chromSize[0][0], bed_in_region[-1].end)
 
     if blackListFile:
-        blacklist = BED_to_interval_tree(blackListFile)
+        blackList = BED_to_interval_tree(blackListFile)
 
     TASKS = []
     # iterate over all chromosomes
@@ -94,7 +94,7 @@ def mapReduce(staticArgs, func, chromSize,
         for startPos in xrange(start, size, genomeChunkLength):
             endPos = min(size, startPos + genomeChunkLength)
 
-            # Reject a chunk if it overlaps 
+            # Reject a chunk if it overlaps
             if blackListFile:
                 if blOverlap(blackList, [chrom, startPos, endPos]):
                     continue
@@ -248,6 +248,7 @@ def BED_to_interval_tree(BED_file):
 
     return bed_interval_tree
 
+
 def blOverlap(t, chunk):
     """
     Test for an overlap between an IntervalTree and a given genomic chunk.
@@ -265,7 +266,7 @@ def blOverlap(t, chunk):
         chrom2 = "chr" + chrom
         if chrom2 in t.keys():
             chrom = chrom2
-        elif len(chrom)>3:
+        elif len(chrom) > 3:
             chrom2 = chrom[3:]
             if chrom2 in t.keys():
                 chrom = chrom2

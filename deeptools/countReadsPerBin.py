@@ -155,6 +155,7 @@ class CountReadsPerBin(object):
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
         self.blackList = None
+        self.blackListFile = blackListFile
         if blackListFile:
             self.blackList = mapReduce.BED_to_interval_tree(blackListFile)
 
@@ -274,7 +275,7 @@ class CountReadsPerBin(object):
                                        self_=self,
                                        genomeChunkLength=chunkSize,
                                        bedFile=self.bedFile,
-                                       blackListFile=blackListFile,
+                                       blackListFile=self.blackListFile,
                                        region=self.region,
                                        numberOfProcessors=self.numberOfProcessors)
 

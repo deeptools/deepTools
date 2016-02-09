@@ -279,8 +279,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           '(e.g. micro satellites) that may bias the average '
                           'values.')
 
-    optional.add_argument('--blackList', '-bl',
-                          help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered."
+    optional.add_argument('--blackListFile', '-bl',
+                          help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
                           metavar="BED file",
                           required=False)
 
