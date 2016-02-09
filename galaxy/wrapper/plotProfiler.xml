@@ -1,6 +1,6 @@
 <tool id="deeptools_plot_profile" name="plotProfile" version="@WRAPPER_VERSION@.0">
     <description>
-        creates a profile plot for a score associated to genomic regions
+        creates a profile plot for score distributions across genomic regions
     </description>
     <macros>
         <token name="@BINARY@">plotProfile</token>
@@ -184,15 +184,17 @@
     <help>
 <![CDATA[
 
-**What it does**
+What it does
+-------------
 
 This tool plots the average enrichments over all genomic
-regions supplied to computeMarix. It requires that computeMatrix was successfully run.
-It is a very useful complement to plotHeatmap, especially in cases where you want to
-compare the scores for many different groups. Like plotHeatmap, profiler does not change the
-values that were compute by computeMatrix, but you can modify the color and other display properties of the plots.
+regions supplied to ``computeMarix``. It requires that ``computeMatrix`` was successfully run.
+It is a very useful complement to ``plotHeatmap``, especially in cases where you want to
+compare the scores for many different groups. Like ``plotHeatmap``, ``plotProfile`` does not change the
+values that were computed by ``computeMatrix``, but you can modify the color and other display properties of the plots.
 
-**Output**
+Output
+-------------
 
 .. image:: $PATH_TO_IMAGES/plotProfiler_examples.png
    :width: 600
@@ -202,7 +204,7 @@ values that were compute by computeMatrix, but you can modify the color and othe
 
 In addition to the image, ``plotProfile`` can also generate the values underlying the profile.
 
-See the following table for the optional output options:
+See the following table for the **optional output** options:
 
 +-----------------------------------+--------------------+-----------------+-----------------+
 |  **optional output type**         |  **computeMatrix** | **plotHeatmap** | **plotProfile** |
