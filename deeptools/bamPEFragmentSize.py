@@ -38,11 +38,26 @@ def parse_arguments():
                         help='Title of the plot, to be printed on top of '
                         'the generated image. Leave blank for no title.',
                         default='')
+    parser.add_argument('--binSize', '-bs',
+                        metavar='INT',
+                        help='Length in bases of the window used to sample the genome. (default 1000)',
+                        default=1000,
+                        type=int)
+    parser.add_argument('--distanceBetweenBins', '-n',
+                        metavar='INT',
+                        help='To reduce the computation time, not every possible genomic '
+                        'bin is sampled. This option allows you to set the distance '
+                        'between bins actually sampled from. Larger numbers are sufficient '
+                        'for high coverage samples, while smaller values are useful for '
+                        'lower coverage samples. Note that if you specify a value that '
+                        'results in too few (<1000) reads sampled, the value will be '
+                        'decreased. (default 1000000)',
+                        default=1000000,
+                        type=int)
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
                         action='store_true',
                         required=False)
-
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(__version__))
 
@@ -53,22 +68,27 @@ def main(args=None):
     args = parse_arguments().parse_args(args)
     fragment_len_dict, read_len_dict = get_read_and_fragment_length(args.bam, return_lengths=True,
                                                                     numberOfProcessors=args.numberOfProcessors,
-                                                                    verbose=args.verbose)
+                                                                    verbose=args.verbose,
+                                                                    binSize=args.binSize,
+                                                                    distanceBetweenBins=args.distanceBetweenBins)
 
-    if fragment_len_dict['mean'] == 0:
+    if fragment_len_dict:
+        if fragment_len_dict['mean'] == 0:
+            print "No pairs were found. Is the data from a paired-end sequencing experiment?"
+
+        print "Sample size: {}\n".format(fragment_len_dict['sample_size'])
+
+        print "\nFragment lengths:"
+        print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n" \
+              "3rd Qu.: {}\nMax.: {}\nStd: {}".format(fragment_len_dict['min'],
+                                                      fragment_len_dict['qtile25'],
+                                                      fragment_len_dict['mean'],
+                                                      fragment_len_dict['median'],
+                                                      fragment_len_dict['qtile75'],
+                                                      fragment_len_dict['max'],
+                                                      fragment_len_dict['std'])
+    else:
         print "No pairs were found. Is the data from a paired-end sequencing experiment?"
-
-    print "Sample size: {}\n".format(fragment_len_dict['sample_size'])
-
-    print "\nFragment lengths:"
-    print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n" \
-          "3rd Qu.: {}\nMax.: {}\nStd: {}".format(fragment_len_dict['min'],
-                                                  fragment_len_dict['qtile25'],
-                                                  fragment_len_dict['mean'],
-                                                  fragment_len_dict['median'],
-                                                  fragment_len_dict['qtile75'],
-                                                  fragment_len_dict['max'],
-                                                  fragment_len_dict['std'])
 
     print "\nRead lengths:"
     print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n" \
