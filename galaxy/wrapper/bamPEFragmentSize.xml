@@ -31,18 +31,6 @@
             label="Get the distribution of fragment lengths as a histogram"
             help=""/>
         <expand macro="plotTitle" />
-        <param name="binSize" type="integer" value="1000" min="1"
-            label="Bin size in bp"
-            help="Length in bases of the window used to sample the genome. (--binSize)"/>
-        <param argument="--distanceBetweenBins" type="integer" value="1000000" min="0"
-            label="Distance between bins"
-            help="To reduce the computation time, not every possible
-                 genomic bin is sampled. This option allows you to set
-                 the distance between bins actually sampled from.
-                 Larger numbers are sufficient for high coverage
-                 samples, while smaller values are useful for lower
-                 coverage samples."/>
-
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
