@@ -55,8 +55,8 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
 
 
 def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFile=None,
-                                 numberOfProcessors=None, verbose=False
-                                 binSize=50000, distanceBetweenBins=1000000):
+                                 binSize=50000, distanceBetweenBins=1000000,
+                                 numberOfProcessors=None, verbose=False):
     """
     Estimates the fragment length and read length through sampling
 
