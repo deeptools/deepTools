@@ -109,7 +109,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
         else:
             fragment_len_dict = None
 
-        if return_lengths:
+        if return_lengths and fragment_len_dict is not None:
             fragment_len_dict['lengths'] = fragment_length
 
         read_len_dict = {'sample_size': len(read_length),
