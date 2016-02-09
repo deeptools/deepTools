@@ -16,6 +16,10 @@
                 --histogram ./hist.png
             #end if
             --plotTitle "$plotTitle"
+            #if $advancedOpt.showAdvancedOpt == 'yes'
+                --binSize '$advancedOpt.binSize'
+                --distanceBetweenBins '$advancedOpt.distanceBetweenBins'
+            #end if
             one.bam
             > $outfile
 ]]>
@@ -27,6 +31,21 @@
             label="Get the distribution of fragment lengths as a histogram"
             help=""/>
         <expand macro="plotTitle" />
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param argument="--binSize" type="integer" value="1000" min="1" optional="true"
+                    label="bin size, in bases" help="Length in bases of the window used to sample the genome. (--binSize)"/>
+                <param argument="--distanceBetweenBins" type="integer" value="1000000" min="0" optional="true"
+                    label="bin spacing, in bases"
+                    help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased. (--distanceBetweenBins)"/>
+            </when>
+        </conditional>
+
     </inputs>
     <outputs>
         <data name="outfile" format="txt"/>
