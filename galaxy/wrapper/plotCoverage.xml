@@ -87,27 +87,28 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+What it does
+-------------
 
 This tool is useful to **assess the sequencing depth** of a given sample.
 It samples 1 million bp, counts the number of overlapping reads and reports
 a coverage histogram that tells you how many bases are covered how many times.
 
-.. warning:: Multiple BAM files are accepted but all should correspond to the same genome assembly.
+**Note:** Multiple BAM files are accepted but all should correspond to the same genome assembly.
 
-**Output**
+Output
+---------
 
-* the default output is a panel of two plots (see below for an example)
-    - one is a density plot visualizing the frequencies of read coverages
-    - the other one let's you estimate what fraction of the genome has a depth of sequencing of, for example, 2 overlapping reads or more
+The default output is a **panel of two plots** (see below for an example): One is a density plot visualizing the frequencies of read coverages, the other one lets you estimate what fraction of the genome has a depth of sequencing of, for example, 2 overlapping reads or more.
 
-* the optional output is a table where each row represents the number of reads overlapping with a sampled bp
+The optional output is a table where each row represents the number of reads overlapping with a sampled bp.
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_output.png
    :width: 600
    :height: 345
 
-**Example plot**
+Example plot
+-----------------
 
 .. image:: $PATH_TO_IMAGES/plotCoverage_annotated.png
    :width: 600

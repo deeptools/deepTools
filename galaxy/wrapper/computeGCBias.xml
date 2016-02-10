@@ -126,13 +126,15 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+What it does
+------------------
 
 This tool computes the GC bias using the method proposed in Benjamini and Speed (2012) Nucleic Acids Res. (see below for further details).
 The output is used to plot the results and can also be used later on to correct the bias with the tool ``correctGCbias``.
 There are two plots produced by the tool: a boxplot showing the absolute read numbers per GC-content bin and an x-y plot depicting the ratio of observed/expected reads per GC-content bin.
 
-**Output files**
+Output files
+--------------
 
 - Diagnostic plots:
       - box plot of absolute read numbers per GC-content bin
@@ -146,7 +148,8 @@ There are two plots produced by the tool: a boxplot showing the absolute read nu
 
 ---------------------------------------------
 
-**Background**
+Background
+-------------
 
 ``computeGCBias`` is based on a paper by `Benjamini and Speed <http://nar.oxfordjournals.org/content/40/10/e72>`_.
 The basic assumption of the GC bias diagnosis is that an ideal sample should show a uniform distribution of sequenced reads across the genome, i.e. all regions of the genome should have similar numbers of reads, regardless of their base-pair composition.
@@ -172,7 +175,7 @@ Now, let's have a look at **real-life data** from genomic DNA sequencing. Panels
    :width: 600
    :height: 452
 
-.. note:: The expected GC profile depends on the reference genome as different organisms have very different GC contents. For example, one would expect more fragments with GC fractions between 30% to 60% in mouse samples (average GC content of the mouse genome: 45 %) than for genome fragments from, for example, *Plasmodium falciparum* (average genome GC content *P. falciparum*: 20%).
+**Note:** The expected GC profile depends on the reference genome as different organisms have very different GC contents. For example, one would expect more fragments with GC fractions between 30% to 60% in mouse samples (average GC content of the mouse genome: 45 %) than for genome fragments from, for example, *Plasmodium falciparum* (average genome GC content *P. falciparum*: 20%).
 
 For more details, for example about when to exclude regions from the read distribution calculation, go `here <http://deeptools.readthedocs.org/en/latest/content/tools/computeGCBias.html#excluding-regions-from-the-read-distribution-calculation>`_
 
