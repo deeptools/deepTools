@@ -1054,7 +1054,7 @@ class _matrix(object):
         matrix = np.asarray(self.matrix)
         if np.any(np.isnan(matrix)):
             # replace nans for 0 otherwise kmeans produces a weird behaviour
-            sys.stderr.write("*Warning* For clustering nan values have to be replaced by zeros\n")
+            sys.stderr.write("*Warning* For clustering nan values have to be replaced by zeros \n")
             matrix[np.isnan(matrix)] = 0
 
         if method == 'kmeans':
@@ -1068,10 +1068,8 @@ class _matrix(object):
 
         if method == 'hierarchical':
             # normally too slow for large data sets
-            from scipy.cluster.hierarchy import fcluster, linkage
-            Z = linkage(matrix, method='ward')
-            cluster_labels = fcluster(Z, k, criterion='maxclust')
-
+            from scipy.cluster.hierarchy import fclusterdata
+            cluster_labels = fclusterdata(matrix, k, criterion='maxclust', metric='euclidean', depth=2, method='ward')
         # create groups using the clustering
         self.group_labels = []
         self.group_boundaries = [0]
