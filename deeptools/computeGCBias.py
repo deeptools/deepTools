@@ -22,7 +22,7 @@ debug = 0
 
 
 def parse_arguments(args=None):
-    parentParser = parserCommon.getParentArgParse(binSize=False)
+    parentParser = parserCommon.getParentArgParse(binSize=False, blackList=False)
     requiredArgs = getRequiredArgs()
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
