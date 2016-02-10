@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
+import sys
 
 # own modules
 from deeptools import parserCommon
@@ -471,17 +472,8 @@ def main(args=None):
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
-        group_len = np.diff(hm.matrix.group_boundaries)
-        print "Group '{}' contains too few regions {}. It can't "\
-            "be plotted. Try removing this group.\n".format(hm.matrix.group_labels[problem[0]],
-                                                            group_len[problem])
-        if args.outFileSortedRegions:
-            hm.save_BED(args.outFileSortedRegions)
-            print 'Clustered output written in : ' + args.outFileSortedRegions.name
-        else:
-            print "No Output file defined for sorted regions. Please re-run "\
-                  "heatmapper with --outFileSortedRegions to save the clustered output. "
-        exit(1)
+        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. "
+                         "There will likely be an error message from matplotlib regarding this below.\n".format(hm.matrix.group_labels[problem[0]]))
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
