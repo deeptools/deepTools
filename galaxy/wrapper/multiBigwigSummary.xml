@@ -94,18 +94,23 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+
+What it does
+--------------
 
 This tool computes the average scores for every genomic region for every bigWig file that is provided. In principle, it does the same as ``multiBamSummary``, but for bigWig files.
+
 The analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions (e.g., genes) in 'BED-file' mode.
+
 Typically the output of ``multiBigwigSummary`` is used by other tools, such as ``plotCorrelation`` or ``plotPCA``, for visualization and diagnostic purposes.
 
 
-**Output files**:
+Output
+--------
 
-* the default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``
+The default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``.
 
-* to analyze the average scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
+To analyze the average scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 
 .. image:: $PATH_TO_IMAGES/multiBigwigSummary_output.png
    :width: 600

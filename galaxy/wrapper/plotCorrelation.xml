@@ -88,13 +88,15 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+What it does
+--------------
 
 This tools takes the default output of ``multiBamSummary`` or ``multiBigwigSummary``, and computes the pairwise correlation among samples.
 Results can be visualized as **scatterplots** or as
 a **heatmap** of correlation coefficients (see below for examples).
 
-**Background**
+Background
+------------
 
 The result of the correlation computation is a **table of correlation coefficients** that indicates how "strong" the relationship between two samples is and it will consist of numbers between -1 and 1. (-1 indicates perfect anti-correlation, 1 perfect correlation.)
 
@@ -103,23 +105,24 @@ We offer two different functions for the correlation computation: *Pearson* or *
 The *Pearson method* measures the **metric differences** between samples and is therefore influenced by outliers.
 The *Spearman method* is based on **rankings**.
 
-If you imagine a race with 3 participants where the winner and runner-up are very close together while the third person broke her leg and comes in way, way after the first two, then Pearson would be strongly influenced by the fact that the third person had a great distance to the first ones while Spearman would only care about the fact that person 1 came in first, person 2 came in second and person 3 got the third rank, the distances between them are ignored.
+Output
+--------
 
-**Output files**
+The default output is a **diagnostic plot** -- either a scatterplot or a clustered heatmap displaying the values for each pair-wise correlation (see below for example plots).
 
-- default: **diagnostic plot** -- either a scatterplot or a clustered heatmap displaying the values for each pair-wise correlation (see below for example plots)
-- optional: table of the pairwise correlation coefficients
+Optionally, you can also obtain a table of the pairwise correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_output.png
    :width: 600
    :height: 271
 
-**Example plots**
+Example plots
+--------------
 
 The following is the output of ``plotCorrelation`` with our test ChIP-Seq datasets (to be found under "Shared Data" --> "Data Library").
+
 Average coverages were computed over 10 kb bins for chromosome X,
-from bigWig files using ``multiBigwigSummary``.
-The output was used with ``plotCorrelation`` to make a heatmap of Spearman correlation coefficients.
+from bigWig files using ``multiBigwigSummary``. This was then used with ``plotCorrelation`` to make a heatmap of Spearman correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png
    :width: 600

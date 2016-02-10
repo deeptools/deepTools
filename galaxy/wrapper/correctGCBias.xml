@@ -53,7 +53,9 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+
+What it does
+-------------
 
 This tool requires the output from computeGCBias to correct a given BAM file according to the method proposed in Benjamini and Speed (2012) Nucleic Acids Res. It will simply remove reads from regions with too high coverage compared to the expected values (typically GC-rich regions) and will add reads to regions where too few reads are seen (typically AT-rich regions). 
 The resulting BAM file can be used in any downstream analyses, but be aware that you should not filter out duplicates from here on.
@@ -61,11 +63,12 @@ The resulting BAM file can be used in any downstream analyses, but be aware that
 See the description of ``computeGCBias`` to read up on the details of the GC bias assessment and correction method.
 
 
-**Output files**:
+Output files
+----------------
 
-- ``correctGCbias`` only has one output: a BAM file where read densities have been changed to reflect the expected read distribution based on the genome
+``correctGCbias`` only has one output: a BAM file where read densities have been changed to reflect the expected read distribution based on the genome.
 
-.. warning:: The GC-corrected BAM file will most likely contain several duplicated reads in regions where the coverage had to increased in order to match the expected read density. This means that you should absolutely avoid using any filtering of duplicate reads during your downstream analyses!
+**Warning!** The GC-corrected BAM file will most likely contain several duplicated reads in regions where the coverage had to increased in order to match the expected read density. This means that you should absolutely avoid using any filtering of duplicate reads during your downstream analyses!
 
 -----
 

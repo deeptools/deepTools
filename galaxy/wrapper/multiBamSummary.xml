@@ -102,9 +102,10 @@
     <help>
 <![CDATA[
 
-**What it does**
+What it does
+-------------
 
-This tool generates a matrix of read-coverages for a list of genomic regions and at least two samples (BAM files).
+This tool generates a matrix of read coverages for a list of genomic regions and at least two samples (BAM files).
 The genome is split into bins of the given size. For each bin, the number of reads found in each BAM file is counted.
 Alternatively, an interval file with pre-defined genomic regions can be provided.
 
@@ -112,11 +113,12 @@ In principle, this tool does the same as ``multiBigwigSummary``, but for BAM fil
 
 A typical follow-up application is to check and visualize the similarity and variability between replicates or published data sets (see: ``plotPCA`` and ``plotCorrelation``).
 
-**Output files**:
+Output
+--------
 
-* the default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``
+The default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``.
 
-* to analyze the coverage scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
+To analyze the coverage scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 
 .. image:: $PATH_TO_IMAGES/multiBamSummary_output.png
    :width: 600

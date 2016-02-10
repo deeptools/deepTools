@@ -229,6 +229,10 @@ This is a heatmap based on two bigWig files generated with default settings and 
    :width: 600
    :height: 694
 
+.. image:: $PATH_TO_IMAGES/plotHeatmap_example02.png
+    :width: 600
+    :height: 694
+
 In addition to the image, ``plotHeatmap`` can also generate the values underlying both the heatmap.
 
 See the following table for the optional output options:
