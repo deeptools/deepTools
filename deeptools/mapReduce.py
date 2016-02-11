@@ -84,7 +84,7 @@ def mapReduce(staticArgs, func, chromSize,
                 chromSize[0] = (chromSize[0][0], bed_in_region[-1].end)
 
     if blackListFileName:
-        blackList = BED_to_interval_tree(blackListFileName)
+        blackList = BED_to_interval_tree(open(blackListFileName, "r"))
 
     TASKS = []
     # iterate over all chromosomes

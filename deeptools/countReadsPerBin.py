@@ -157,7 +157,7 @@ class CountReadsPerBin(object):
         self.blackList = None
         self.blackListFileName = blackListFileName
         if blackListFileName:
-            self.blackList = mapReduce.BED_to_interval_tree(blackListFileName)
+            self.blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length

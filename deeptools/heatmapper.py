@@ -795,7 +795,7 @@ class heatmapper(object):
         bed_file = deeptools.readBed.ReadBed(regions_file)
         blackList = None
         if blackListFileName is not None:
-            blackList = mapReduce.BED_to_interval_tree(blackListFileName)
+            blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
 
         for ginterval in bed_file:
             totalintervals += 1
