@@ -59,7 +59,7 @@ class CountReadsPerBin(object):
         File handle of a bed file containing the regions for wich to compute the coverage. This option
         overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
 
-    blackListFile : str
+    blackListFileName : str
         A string containing a BED file with blacklist regions.
 
     extendReads : bool, int
@@ -139,7 +139,7 @@ class CountReadsPerBin(object):
     def __init__(self, bamFilesList, binLength=50, numberOfSamples=None, numberOfProcessors=1,
                  verbose=False, region=None,
                  bedFile=None, extendReads=False,
-                 blackListFile=None,
+                 blackListFileName=None,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
                  chrsToSkip=[],
@@ -155,15 +155,15 @@ class CountReadsPerBin(object):
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
         self.blackList = None
-        self.blackListFile = blackListFile
-        if blackListFile:
-            self.blackList = mapReduce.BED_to_interval_tree(blackListFile)
+        self.blackListFileName = blackListFileName
+        if blackListFileName:
+            self.blackList = mapReduce.BED_to_interval_tree(blackListFileName)
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
             frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
                                                                         return_lengths=False,
-                                                                        blackListFile=blackListFile,
+                                                                        blackListFileName=blackListFileName,
                                                                         numberOfProcessors=numberOfProcessors,
                                                                         verbose=verbose)
             if extendReads is True:
@@ -275,7 +275,7 @@ class CountReadsPerBin(object):
                                        self_=self,
                                        genomeChunkLength=chunkSize,
                                        bedFile=self.bedFile,
-                                       blackListFile=self.blackListFile,
+                                       blackListFileName=self.blackListFileName,
                                        region=self.region,
                                        numberOfProcessors=self.numberOfProcessors)
 

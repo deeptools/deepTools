@@ -139,7 +139,7 @@ def main(args=None):
         args.bamfiles,
         args.binSize,
         args.numberOfSamples,
-        blackListFile=args.blackListFile,
+        blackListFileName=args.blackListFileName,
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,

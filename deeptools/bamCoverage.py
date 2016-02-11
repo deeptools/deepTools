@@ -116,7 +116,7 @@ def get_scale_factor(args):
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
         frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                     return_lengths=False,
-                                                                    blackListFile=args.blackListFile,
+                                                                    blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
         if args.extendReads:
@@ -181,7 +181,7 @@ def main(args=None):
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
         frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                     return_lengths=False,
-                                                                    blackListFile=args.blackListFile,
+                                                                    blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
         if frag_len_dict is None:
@@ -191,7 +191,7 @@ def main(args=None):
                             binLength=args.binSize,
                             stepSize=args.binSize,
                             region=args.region,
-                            blackListFile=args.blackListFile,
+                            blackListFileName=args.blackListFileName,
                             numberOfProcessors=args.numberOfProcessors,
                             extendReads=args.extendReads,
                             minMappingQuality=args.minMappingQuality,
@@ -208,7 +208,7 @@ def main(args=None):
                                          binLength=args.binSize,
                                          stepSize=args.binSize,
                                          region=args.region,
-                                         blackListFile=args.blackListFile,
+                                         blackListFileName=args.blackListFileName,
                                          numberOfProcessors=args.numberOfProcessors,
                                          extendReads=args.extendReads,
                                          minMappingQuality=args.minMappingQuality,

@@ -7,7 +7,7 @@ def mapReduce(staticArgs, func, chromSize,
               genomeChunkLength=None,
               region=None,
               bedFile=None,
-              blackListFile=None,
+              blackListFileName=None,
               numberOfProcessors=4,
               verbose=False,
               self_=None):
@@ -40,7 +40,7 @@ def mapReduce(staticArgs, func, chromSize,
     :param bedFile: Is a bed file is given, the args to the func to be
                     called are extended to include a list of bed
                     defined regions.
-    :param blackListFile: A list of regions to exclude from all computations.
+    :param blackListFileName: A list of regions to exclude from all computations.
     :param self_: In case mapreduce should make a call to an object
                 the self variable has to be passed.
     """
@@ -83,8 +83,8 @@ def mapReduce(staticArgs, func, chromSize,
             if bed_in_region[-1].end > chromSize[0][1]:
                 chromSize[0] = (chromSize[0][0], bed_in_region[-1].end)
 
-    if blackListFile:
-        blackList = BED_to_interval_tree(blackListFile)
+    if blackListFileName:
+        blackList = BED_to_interval_tree(blackListFileName)
 
     TASKS = []
     # iterate over all chromosomes
@@ -95,7 +95,7 @@ def mapReduce(staticArgs, func, chromSize,
             endPos = min(size, startPos + genomeChunkLength)
 
             # Reject a chunk if it overlaps
-            if blackListFile:
+            if blackListFileName:
                 if blOverlap(blackList, [chrom, startPos, endPos]):
                     continue
 
@@ -263,15 +263,15 @@ def blOverlap(t, chunk):
 
     chrom = chunk[0]
     if chrom not in t.keys():
-        chrom2 = "chr" + chrom
-        if chrom2 in t.keys():
-            chrom = chrom2
-        elif len(chrom) > 3:
-            chrom2 = chrom[3:]
-            if chrom2 in t.keys():
-                chrom = chrom2
-            else:
-                return False
+        if chrom.startswith("chr"):
+            chrom = chrom[3:]
+        elif chrom == "MT":
+            chrom = "chrM"
+        else:
+            chrom = "chr" + chrom
+
+        if chrom not in t.keys():
+            return False
 
     if len(t[chrom].find(chunk[1], chunk[2])):
         return True

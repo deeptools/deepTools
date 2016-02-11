@@ -179,7 +179,7 @@ def getScorePerBin(bigWigFiles, binLength,
                    numberOfProcessors=1,
                    verbose=False, region=None,
                    bedFile=None,
-                   blackListFile=None,
+                   blackListFileName=None,
                    stepSize=None,
                    chrsToSkip=[],
                    out_file_for_raw_data=None):
@@ -237,7 +237,7 @@ def getScorePerBin(bigWigFiles, binLength,
                                    chrom_sizes,
                                    genomeChunkLength=chunkSize,
                                    bedFile=bedFile,
-                                   blackListFile=blackListFile,
+                                   blackListFileName=blackListFileName,
                                    region=region,
                                    numberOfProcessors=numberOfProcessors)
 

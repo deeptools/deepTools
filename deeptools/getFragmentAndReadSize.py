@@ -54,7 +54,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
     return reads
 
 
-def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFile=None,
+def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileName=None,
                                  binSize=50000, distanceBetweenBins=1000000,
                                  numberOfProcessors=None, verbose=False):
     """
@@ -89,7 +89,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFile=No
                                        getFragmentLength_wrapper,
                                        chrom_sizes,
                                        genomeChunkLength=stepsize,
-                                       blackListFile=blackListFile,
+                                       blackListFileName=blackListFileName,
                                        numberOfProcessors=numberOfProcessors,
                                        verbose=verbose)
 

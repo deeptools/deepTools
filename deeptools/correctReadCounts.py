@@ -64,7 +64,7 @@ def computeCorrectedReadcounts(tileCoverage, args):
 def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentLength,
                       outFileName, outFileFormat, outFileNameCorr=None, region=None,
                       extendPairedEnds=True,
-                      numberOfProcessors=1, Nsigmas=2, maxSignalRatio=10, blackListFile=None, verbose=False):
+                      numberOfProcessors=1, Nsigmas=2, maxSignalRatio=10, blackListFileName=None, verbose=False):
 
     bam1 = writeBedGraph.openBam(bamFilesList[0])
     bam2 = writeBedGraph.openBam(bamFilesList[1])
@@ -81,7 +81,7 @@ def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentL
                                            numberOfSamples,
                                            defaultFragmentLength,
                                            1,
-                                           blackListFile=blackListFile,
+                                           blackListFileName=blackListFileName,
                                            numberOfProcessors=numberOfProcessors,
                                            verbose=verbose)
 
@@ -153,7 +153,7 @@ def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentL
                                 funcArgs, tileSize=binLength, region=region,
                                 format=outFileFormat,
                                 zerosToNans=False,
-                                blackListFile=blackListFile,
+                                blackListFileName=blackListFileName,
                                 numberOfProcessors=numberOfProcessors,
                                 extendPairedEnds=extendPairedEnds)
 
@@ -164,7 +164,7 @@ def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentL
                                     funcArgs, tileSize=binLength, region=region,
                                     format=outFileFormat,
                                     zerosToNans=False,
-                                    blackListFile=blackListFile,
+                                    blackListFileName=blackListFileName,
                                     numberOfProcessors=numberOfProcessors,
                                     extendPairedEnds=extendPairedEnds)
 
