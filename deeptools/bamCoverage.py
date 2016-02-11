@@ -221,6 +221,7 @@ def main(args=None):
                                          )
 
     wr.run(writeBedGraph.scaleCoverage, func_args, args.outFileName,
+           blackListFileName=args.blackListFileName,
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 

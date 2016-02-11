@@ -818,7 +818,7 @@ class heatmapper(object):
                 continue
 
             # Exclude blacklist overlaps
-            if mapReduce.blOverlap(blackList, [ginterval.chrom, ginterval.start, ginterval.end]):
+            if mapReduce.blOverlap(blackList, ginterval.chrom, [ginterval.start, ginterval.end]):
                 continue
 
             # if the list of regions is to big, only

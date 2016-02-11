@@ -374,14 +374,14 @@ class CountReadsPerBin(object):
         regionsToConsider = []
         if bed_regions_list is not None:
             for chrom, start, end in bed_regions_list:
-                if mapReduce.blOverlap(self.blackList, [chrom, start, end]):
+                if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
                     continue
                 regionsToConsider.append((chrom, start, end, end - start))
         else:
             for i in xrange(start, end, self.stepSize):
                 if i + self.binLength > end:
                     break
-                if mapReduce.blOverlap(self.blackList, [chrom, i, i + self.binLength]):
+                if mapReduce.blOverlap(self.blackList, chrom, [i, i + self.binLength]):
                     continue
                 regionsToConsider.append((chrom, i, i + self.binLength, self.binLength))
 
@@ -466,7 +466,7 @@ class CountReadsPerBin(object):
         coverage = np.zeros(vector_length, dtype='float64')
 
         # Return 0 for overlap with a blacklisted region
-        if mapReduce.blOverlap(self.blackList, [chrom, start, end]):
+        if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
             return coverge
 
         start_time = time.time()
