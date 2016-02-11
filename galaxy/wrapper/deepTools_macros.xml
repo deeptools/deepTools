@@ -115,7 +115,8 @@
                     </when>
                     <when value="hclust">
                         <param name="n_hclust" type="integer" value="0" label="number of clusters to compute."
-                            help="When this option is set, the matrix is split into clusters using the hierarchical clustering algorithm, using ward linkage.
+                            help="WARNING: This option causes the tool to run for a very long time! When this option is
+                            set, the matrix is split into clusters using the hierarchical clustering algorithm, using ward linkage.
                             This only works for data that is not grouped, otherwise only the first group will be clustered.
                             Note that you must have used the '--missingDataAsZero' option within computeMatrix!
                             If more specific clustering methods are required it is advisable to save the underlying matrix and
