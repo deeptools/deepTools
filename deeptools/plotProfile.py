@@ -481,6 +481,11 @@ def main(args=None):
                   "Please note that it might be very slow for large datasets.\n"
             hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
+    group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
+    if np.any(group_len_ratio < 5.0 / 1000):
+        problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
+        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. \n".format(hm.matrix.group_labels[problem[0]]))
+
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
 
