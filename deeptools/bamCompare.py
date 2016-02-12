@@ -157,7 +157,12 @@ def get_scale_factors(args):
     bam2 = bamHandler.openBam(args.bamfile2)
 
     bam1_mapped = parserCommon.bam_total_reads(bam1, args.ignoreForNormalization)
+    blacklisted = parserCommon.bam_blacklisted_reads(bam1, args.ignoreForNormalization, args.blackListFileName)
+    bam1_mapped -= blacklisted
+
     bam2_mapped = parserCommon.bam_total_reads(bam2, args.ignoreForNormalization)
+    blacklisted = parserCommon.bam_blacklisted_reads(bam2, args.ignoreForNormalization, args.blackListFileName)
+    bam2_mapped -= blacklisted
 
     if args.scaleFactors:
         scale_factors = map(float, args.scaleFactors.split(":"))
