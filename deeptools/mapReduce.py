@@ -263,7 +263,7 @@ def blOverlap(t, chrom, chunk):
     """
 
     if t is None:
-        return False
+        return []
 
     if chrom not in t.keys():
         if chrom.startswith("chr"):
@@ -274,7 +274,7 @@ def blOverlap(t, chrom, chunk):
             chrom = "chr" + chrom
 
         if chrom not in t.keys():
-            return None
+            return []
 
     return t[chrom].find(chunk[0], chunk[1])
 
