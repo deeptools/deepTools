@@ -649,3 +649,26 @@ def bam_total_reads(bam_handle, chroms_to_ignore):
         tot_mapped_reads = bam_handle.mapped
 
     return tot_mapped_reads
+
+
+def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
+    blacklisted = 0
+    if blackListFileName is None:
+        return blacklisted
+
+    import pysam
+    import deeptools.mapReduce as mapReduce
+
+    # Get the chromosome lengths
+    chromLens = {}
+    for line in pysam.idxstats(bam_handle.filename):
+        chrom, _len, nmapped, _nunmapped = line.split('\t')
+        chromLens[chrom] = int(_len)
+
+    bl = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
+    for chrom in bl.keys():
+        if not chroms_to_ignore or chrom not in chroms_to_ignore:
+            for reg in bl[chrom].find(0, chromLens[chrom]):
+                blacklisted += bam_handle.count(reference=chrom, start=reg.start, end=reg.end)
+
+    return blacklisted

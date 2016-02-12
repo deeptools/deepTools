@@ -110,6 +110,8 @@ def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
+    bam_mapped -= blacklisted
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
