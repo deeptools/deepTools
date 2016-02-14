@@ -21,7 +21,7 @@
     <package name="python" version="2.7.10">
         <repository name="package_python_2_7_10" owner="iuc" prior_installation_required="True" />
     </package>
-    <package name="deepTools" version="2.0.1">
+    <package name="deepTools" version="2.1.0">
         <install version="1.0">
             <actions>
                 <action type="setup_python_environment">
@@ -46,7 +46,7 @@
                     <repository name="package_python_2_7_10_pybigwig_0_2_4" owner="iuc">
                         <package name="pybigwig" version="0.2.4" />
                     </repository>
-                    <package sha256sum="cc5590aaf34815ccb6290ee12b3d22e18c52ca5f54a5a30b94f1f3c1e75fc406">https://pypi.python.org/packages/source/d/deepTools/deepTools-2.0.1.0.tar.gz</package>
+                    <package sha256sum="3bf835afde02cd5247198db3e01f690899e1fdb86e1821a83ac940d807baa857">https://pypi.python.org/packages/source/d/deepTools/deepTools-2.1.0.tar.gz</package>
                 </action>
 
                 <action type="set_environment">
