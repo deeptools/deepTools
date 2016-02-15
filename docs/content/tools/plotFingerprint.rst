@@ -50,7 +50,7 @@ The following example generates the fingerprints for the invididual ENCODE histo
     --plotFile fingerprints.png \
     --outRawCounts fingerprints.tab
 
-.. image:: test_plots/fingerprints.png
+.. image:: ../../images/test_plots/fingerprints.png
 
 The table that you can obtain via ``--outRawCounts`` simply contains the number of reads overlapping with each individually sampled genome bin. For the plot above, each column is sorted in increasing order and then the cumulative sum is plotted.
 
@@ -67,11 +67,3 @@ The table that you can obtain via ``--outRawCounts`` simply contains the number 
         1	0	0	0	0
         4	1	1	1	0
         1	0	0	0	0
-
-plotFingerprint on Galaxy
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Below is the screenshot showing how to use plotFingerprint on the deeptools galaxy.
-
-
-.. image:: ../../images/bamFP_galaxy.png

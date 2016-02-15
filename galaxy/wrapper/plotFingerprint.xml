@@ -113,10 +113,39 @@
 <![CDATA[
 
 
-**What it does**
+What it does
+---------------
 
 This tool is useful for assessing the strength of a ChIP (i.e. how clearly the enrichment signal can be separated from the background)
 and is based on a method described in Diaz et al. (2012) Stat Appl Genet Mol Biol 11(3).
+
+
+Output
+---------
+
+The default output is a diagnostic plot (see below for an example and further down for some background information).
+
+Optionally, you can obtain the table of raw counts that was used to generate the plot.
+
+.. image:: $PATH_TO_IMAGES/plotFingerprint_output.png
+  :width: 600
+  :height: 395
+
+
+Example plot
+-------------
+
+What follows is the output of ``plotFingerprint`` with our test ChIP-Seq data sets, limiting the analysis to chromosome X. Single-end reads were extended to
+200 bp (advanced options).
+
+.. image:: $PATH_TO_IMAGES/bamFP_galaxy_output.png
+   :width: 600
+   :height: 450
+
+-----------------------------
+
+Background
+--------------
 
 The tool first samples indexed BAM files and counts all reads overlapping a window (bin) of the specified length.
 These counts are then sorted according to their rank (the bin with the highest number of reads has the highest rank)
@@ -127,23 +156,8 @@ most commonly seen with transcription factors.
 
 
 .. image:: $PATH_TO_IMAGES/QC_fingerprint.png
-
-
-You can find more details on the plotFingerprint doc page: https://deeptools.readthedocs.org/en/master/content/tools/plotFingerprint.html
-
-
-**Output files**:
-
-- Diagnostic plot
-- (optional) Data matrix of raw counts
-
-**Output with test dataset**:
-
-What follows is the output of plotFingerprint with our test ChIP-Seq datasets, limiting analysis to chromosome X. Single-end reads were extended to
-200 bp (advanced options).
-
-.. image:: $PATH_TO_IMAGES/bamFP_galaxy_output.png
-
+   :width: 600
+   :height: 294
 
 -----
 

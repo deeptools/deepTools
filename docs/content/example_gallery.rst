@@ -12,6 +12,17 @@ We're trying to collect a wide variety of plots generated using deepTools.
 For the plots that we created ourselves, we try to point out the options that were used to create 
 each image, so perhaps these can serve as inspiration for you.
 
+Normalized ChIP-seq signals and peak regions
+--------------------------------------------
+
+This image was published by `Ibrahim et al., 2014
+(NAR) <http://bioinformatics.oxfordjournals.org/content/early/2014/09/26/bioinformatics.btu568>`__.
+They used deepTools to generate extended reads per kilobase per million
+reads at 10 base resolution and visualized the resulting coverage files in
+`IGV <dx.doi.org/10.1093/bib/bbs017>`__.
+
+.. image:: ../images/gallery/coverage_Ibrahim.png
+
 DNase accessibility at enhancers in murine ES cells
 ---------------------------------------------------
 
@@ -37,14 +48,14 @@ neglected.
 
 ::
 
-    $ deepTools-1.5.7/bin/computeMatrix reference-point \
+    $ computeMatrix reference-point \
      -S DNase_mouse.bigwig \
      -R Whyte_TypicalEnhancers_ESC.bed \
      --referencePoint center \
      -a 2000 -b 2000 \ ## regions before and after the enhancer centers
      -out matrix_Enhancers_DNase_ESC.tab.gz 
 
-    $ deepTools-1.5.7/bin/heatmapper \
+    $ plotHeatmap \
      -m matrix_Enhancers_DNase_ESC.tab.gz\
      -out hm_DNase_ESC.png \
      --heatmapHeight 15  \
@@ -85,14 +96,14 @@ genes!
 
 ::
 
-    $ deepTools-1.5.7/bin/computeMatrix reference-point \
+    $ computeMatrix reference-point \
      -S TATA_01_pssm.bw \
      -R RefSeq_genes.bed \
      --referencePoint TSS \
      -a 100 -b 100 \
      --binSize 5 \
 
-    $ deepTools-1.5.7/bin/heatmapper \
+    $ plotHeatmap \
      -m matrix_Genes_TATA.tab.gz  \
      -out hm_allGenes_TATA.png \
      --colorMap hot_r \
@@ -133,12 +144,12 @@ Fly and mouse genes were scaled to different sizes due to the different
 median sizes of the two species' genes (genes of *D.melanogaster*
 contain many fewer introns and are considerably shorter than mammalian
 genes). Thus, computeMatrix had to be run with slightly different
-parameters while the heatmapper commands were virtually identical
+parameters while the plotHeatmap commands were virtually identical
 (except for the labels).
 
 ::
 
-    $ deepTools-1.5.7/bin/computeMatrix scale-regions \
+    $ computeMatrix scale-regions \
      -S GCcontent_Mm9_50_5.bw \
      -R RefSeq_genes_uniqNM.bed \
      -bs 50 
@@ -147,7 +158,7 @@ parameters while the heatmapper commands were virtually identical
      --skipZeros \
      --missingDataAsZero
 
-    $ deepTools-1.5.7/bin/computeMatrix scale-regions \
+    $ computeMatrix scale-regions \
      -S GCcontent_Dm3_50_5.bw \
      -R Dm530.genes.bed \ 
      -bs 50
@@ -155,7 +166,7 @@ parameters while the heatmapper commands were virtually identical
      -out matrix_GCcont_Dm3_scaledGenes.tab.gz \
      --skipZeros --missingDataAsZero
 
-    $ deepTools-1.5.7/bin/heatmapper \
+    $ plotHeatmap \
      -m matrix_GCcont_Dm3_scaledGenes.tab.gz \
      -out hm_GCcont_Dm3_scaledGenes.png \
      --colorMap YlGnBu \
@@ -163,7 +174,7 @@ parameters while the heatmapper commands were virtually identical
      --heatmapHeight 15 \
      --plotTitle 'GC content fly' &
 
-    $ deepTools-1.5.7/bin/heatmapper \
+    $ plotHeatmap \
      -m matrix_GCcont_Mm9_scaledGenes.tab.gz \
      -out hm_GCcont_Mm9_scaledGenes.png \
      --colorMap YlGnBu \
@@ -215,14 +226,14 @@ were the same:
 
 ::
 
-    $ deepTools-1.5.7/bin/computeMatrix reference-point \
+    $ computeMatrix reference-point \
      -S GSE30202_ES_CpGmeth.bw \
      -R activeGenes_ESConly.bed \
      --referencePoint TSS \
      -a 2000 -b 2000 \
      -out matrix_Genes_ES_CpGmeth.tab.gz
 
-    $ deepTools-1.5.7/bin/heatmapper \
+    $ plotHeatmap \
      -m matrix_Genes_ES_CpGmeth.tab.gz \
      -out hm_activeESCGenes_CpG_ES_indSort.png \
      --colorMap jet \
@@ -265,13 +276,3 @@ scores.
 
 .. image:: ../images/gallery/hm_Bulut.png
 
-Normalized ChIP-seq signals and peak regions
---------------------------------------------
-
-This image was published by `Ibrahim et al., 2014
-(NAR) <http://bioinformatics.oxfordjournals.org/content/early/2014/09/26/bioinformatics.btu568>`__.
-They used deepTools to generate extended reads per kilobase per million
-reads at 10 base resolution and visualized the resulting coverage files in
-`IGV <dx.doi.org/10.1093/bib/bbs017>`__.
-
-.. image:: ../images/gallery/coverage_Ibrahim.png

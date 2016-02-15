@@ -9,7 +9,7 @@ def getFragmentLength_wrapper(args):
     return getFragmentLength_worker(*args)
 
 
-def getFragmentLength_worker(chrom, start, end, bamFile):
+def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
     """
     Queries the reads at the given region for the distance between
     reads and the read length
@@ -24,6 +24,8 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
         region end
     bamFile : str
         BAM file name
+    distanceBetweenBins : int
+        the number of bases at the end of each bin to ignore
 
     Returns
     -------
@@ -32,9 +34,9 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
         second is for read length
     """
     bam = bamHandler.openBam(bamFile)
-    end = min(end, start + 5e4)
+    end = max(start + 1, end - distanceBetweenBins)
     if chrom in bam.references:
-        reads = np.array([(abs(r.template_length), r.query_length)
+        reads = np.array([(abs(r.template_length), r.infer_query_length())
                           for r in bam.fetch(chrom, start, end)
                           if r.is_proper_pair and r.is_read1])
         if not len(reads):
@@ -53,7 +55,8 @@ def getFragmentLength_worker(chrom, start, end, bamFile):
 
 
 def get_read_and_fragment_length(bamFile, return_lengths=False,
-                                 numberOfProcessors=None, verbose=False):
+                                 numberOfProcessors=None, verbose=False,
+                                 binSize=50000, distanceBetweenBins=1000000):
     """
     Estimates the fragment length and read length through sampling
 
@@ -64,6 +67,8 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
     return_lengths : bool
     numberOfProcessors : int
     verbose : bool
+    binSize : int
+    distanceBetweenBins : int
 
     Returns
     -------
@@ -75,17 +80,19 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
     bam_handle = bamHandler.openBam(bamFile)
     chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
 
-    chunk_size = int(float(sum(bam_handle.lengths)) * 0.3 / max(numberOfProcessors, len(bam_handle.lengths)))
-    # avoid small chunk sizes to split the computation
-    chunk_size = max(chunk_size, 100000)
-    imap_res = mapReduce.mapReduce((bam_handle.filename, ),
-                                   getFragmentLength_wrapper,
-                                   chrom_sizes,
-                                   genomeChunkLength=chunk_size,
-                                   numberOfProcessors=numberOfProcessors,
-                                   verbose=verbose)
+    distanceBetweenBins *= 2
+    fl = []
+    while len(fl) < 1000 and distanceBetweenBins > 1:
+        distanceBetweenBins /= 2
+        stepsize = binSize + distanceBetweenBins
+        imap_res = mapReduce.mapReduce((bam_handle.filename, distanceBetweenBins),
+                                       getFragmentLength_wrapper,
+                                       chrom_sizes,
+                                       genomeChunkLength=stepsize,
+                                       numberOfProcessors=numberOfProcessors,
+                                       verbose=verbose)
 
-    fl = np.concatenate(imap_res)
+        fl = np.concatenate(imap_res)
 
     if len(fl):
         fragment_length = fl[:, 0]
@@ -102,7 +109,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False,
         else:
             fragment_len_dict = None
 
-        if return_lengths:
+        if return_lengths and fragment_len_dict is not None:
             fragment_len_dict['lengths'] = fragment_length
 
         read_len_dict = {'sample_size': len(read_length),

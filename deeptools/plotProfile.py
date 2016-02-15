@@ -28,11 +28,11 @@ def parse_arguments(args=None):
                  parserCommon.heatmapperOutputArgs(mode='profile'),
                  parserCommon.heatmapperOptionalArgs(mode='profile')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='This tool creates a profile plot for a '
-        'score associated to genomic regions. '
+        description='This tool creates a profile plot for '
+        'scores over sets of genomic regions. '
         'Typically, these regions are genes, but '
-        'any other regions defined in a BED or GFF '
-        'format will work. A preprocessed matrix generated '
+        'any other regions defined in BED '
+        ' will work. A matrix generated '
         'by computeMatrix is required.',
         epilog='An example usage is: plotProfile -m <matrix file>',
         add_help=False)
@@ -55,18 +55,6 @@ def process_args(args=None):
         args.plotHeight = 0.5
     elif args.plotHeight > 100:
         args.plotHeight = 100
-
-    if args.regionsLabel != 'genes':
-        args.regionsLabel = \
-            [x.strip() for x in args.regionsLabel.split(',')]
-
-        if len(set(args.regionsLabel)) != len(args.regionsLabel):
-            print "The group labels given contain repeated names. Please "
-            "give a unique name to each value. The values given are "
-            "{}\n".format(args.regionsLabel)
-            exit(1)
-    else:
-        args.regionsLabel = []
 
     return args
 
@@ -197,7 +185,6 @@ class Profile(object):
             else:
                 title = self.hm.matrix.sample_labels[plot]
 
-            ax.set_title(title)
             vmin = np.inf
             vmax = -np.inf
             for data_idx in range(self.numlines):
@@ -222,6 +209,8 @@ class Profile(object):
             ax_list = []
             for data_idx in range(self.numlines)[::-1]:
                 ax = self.fig.add_subplot(sub_grid[data_idx, 0])
+                if data_idx == 0:
+                    ax.set_title(title)
                 if data_idx != self.numlines - 1:
                     plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -335,7 +324,7 @@ class Profile(object):
                 mat.append(np.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
 
             img = ax.imshow(np.vstack(mat), interpolation='nearest',
-                            cmap='jet', aspect='auto', vmin=self.y_min, vmax=self.y_max)
+                            cmap='RdYlBu_r', aspect='auto', vmin=self.y_min, vmax=self.y_max)
             self.fig.colorbar(img, cax=cax)
 
             ax.axes.set_xticks(self.xticks)
@@ -354,7 +343,7 @@ class Profile(object):
             yticks = [x + d_half for x in pos]
 
             ax.axes.set_yticks(yticks)
-            ax.axes.set_yticklabels(labels)
+            ax.axes.set_yticklabels(labels[::-1], rotation='vertical')
 
             ax_list.append(ax)
 
@@ -482,19 +471,32 @@ def main(args=None):
     hm = heatmapper.heatmapper()
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
-    hm.read_matrix_file(matrix_file, default_group_name=args.regionsLabel)
+    hm.read_matrix_file(matrix_file)
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
+    else:
+        if args.hclust is not None:
+            print "Performing hierarchical clustering." \
+                  "Please note that it might be very slow for large datasets.\n"
+            hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
-    if len(args.regionsLabel):
+    group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
+    if np.any(group_len_ratio < 5.0 / 1000):
+        problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
+        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. \n".format(hm.matrix.group_labels[problem[0]]))
+
+    if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
 
     if args.samplesLabel and len(args.samplesLabel):
         hm.matrix.set_sample_labels(args.samplesLabel)
 
-    # if args.outFileNameData:
-    #    hm.saveTabulatedValues(args.outFileNameData)
+    if args.outFileNameData:
+        hm.save_tabulated_values(args.outFileNameData, reference_point_label=args.refPointLabel,
+                                 start_label=args.startLabel,
+                                 end_label=args.endLabel,
+                                 averagetype=args.averageType)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

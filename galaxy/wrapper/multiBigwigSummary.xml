@@ -1,5 +1,5 @@
 <tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.0">
-    <description>calculates average read coverages for a list of two or more bigwig files</description>
+    <description>calculates average scores for a list of two or more bigwig files</description>
     <macros>
         <token name="@BINARY@">multiBigwigSummary</token>
         <import>deepTools_macros.xml</import>
@@ -65,7 +65,7 @@
         </conditional>
 
         <expand macro="region_limit_operation" />
-        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (scores) to file" help=""/>
 
     </inputs>
     <outputs>
@@ -94,20 +94,27 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
 
-Given two or more bigWig files, multiBigwigSummary computes the average scores for each of the files in every genomic region.
-This analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions
-in 'BED-file' mode. Typically the output of multiBigwigSummary is used by other tools, such as 'plotCorrelation' or 'plotPCA',
-for visualization and diagnostic purposes.
+What it does
+--------------
+
+This tool computes the average scores for every genomic region for every bigWig file that is provided. In principle, it does the same as ``multiBamSummary``, but for bigWig files.
+
+The analysis is performed for the entire genome by running the program in 'bins' mode, or for certain user selected regions (e.g., genes) in 'BED-file' mode.
+
+Typically the output of ``multiBigwigSummary`` is used by other tools, such as ``plotCorrelation`` or ``plotPCA``, for visualization and diagnostic purposes.
 
 
-**Output files**:
+Output
+--------
 
-- **Coverage scores**: Coverage scores computed and saved in a format appropriate for 'plotCorrelation' or 'plotPCA'.
+The default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``.
 
-- Data matrix (optional,select to save raw counts to a file above): If you want to have a look at the coverage values
-  or compute statistics yourself using a different program (like R).
+To analyze the average scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
+
+.. image:: $PATH_TO_IMAGES/multiBigwigSummary_output.png
+   :width: 600
+   :height: 358
 
 -----
 

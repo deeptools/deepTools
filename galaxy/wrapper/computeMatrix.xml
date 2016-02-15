@@ -8,18 +8,25 @@
     <command>
 <![CDATA[
         #import tempfile
+        #set bw_files=[]
+        #for $counter, $bigwig in enumerate($scoreFileName):
+            ln -s "${bigwig}" "file_${counter}.bw" &&
+            #silent $bw_files.append('file_%s.bw' % $counter)
+        #end for
+
+        #set bed_files=[]
+        #for $counter, $rf in enumerate($regionsFiles):
+            ln -s "${rf.regionsFile}" "group_${counter}.bed" &&
+            #silent $bed_files.append('group_%s.bed' % $counter)
+        #end for
 
         @BINARY@
 
             $mode.mode_select
-            --regionsFileName
-            #for $rf in $regionsFiles:
-                '$rf.regionsFile' 
-            #end for
-            --scoreFileName
-            #for $bw in $scoreFileName:
-                '$bw' 
-            #end for
+            --regionsFileName '#echo "' '".join($bed_files)#'
+
+            --scoreFileName '#echo "' '".join($bw_files)#'
+
             --outFileName '$outFileName'
 
             @THREADS@
@@ -51,8 +58,8 @@
                 --sortRegions '$advancedOpt.sortRegions'
                 --sortUsing '$advancedOpt.sortUsing'
                 --averageTypeBins '$advancedOpt.averageTypeBins'
-                $advancedOpt.skipNAs
                 $advancedOpt.skipZeros
+                $advancedOpt.missingDataAsZero
                 --binSize $advancedOpt.binSize
 
                 #if $advancedOpt.minThreshold is not None and str($advancedOpt.minThreshold) != '':
@@ -77,17 +84,16 @@
 
         <param name="scoreFileName" format="bigwig" type="data"
             label="Score file" multiple="True"
-            help="You can generate a bigWig file from either a
-            bedGraph or WIG file using UCSC tools or from a BAM file using the
+            help="You can generate a bigWig file from a BAM file using the
             bamCoverage tool. (--scoreFileName)"/>
 
         <conditional name="mode" >
             <param name="mode_select" type="select"
                 label="computeMatrix has two main output options"
                 help="In the scale-regions mode, all regions in the BED file are
-                stretched or shrunk to the same length (in bases) that is indicated
+                stretched or shrunken to the same length (in bases) that is indicated
                 by the user. Reference-point refers to a position within the BED
-                regions (e.g start of region). In the reference-point mode only
+                regions (start or end of each region). In the reference-point mode only
                 those genomic positions before (upstream) and/or after (downstream)
                 the reference point will be considered.">
                 <option value="scale-regions" selected="true">scale-regions</option>
@@ -164,19 +170,21 @@
                 </param>
 
                 <param name="missingDataAsZero" type="boolean" truevalue="--missingDataAsZero" falsevalue="" checked="False"
-                    label="Convert missing values to 0?."
-                    help="If set to 'yes', missing values (NAs) are converted to 0.
-                          The default is to ignore such cases, which will be
-                          depicted as black areas once a heatmap is created." />
+                    label="Convert missing values to 0?"
+                    help="If set to 'yes', missing values (NAs) are converted
+                     to 0. If you want to use clustering with plotHeatmap
+                     or plotProfile, set this to 'yes'.
+                          The default is to ignore missing values, which will be
+                          depicted as black areas once a heatmap is created.
+                           (--missingDataAsZero)" />
 
                 <expand macro="skipZeros" />
-                <expand macro="skipNAs" />
 
                 <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"
                     help="Any region containing a value that is equal or less than this numeric
                     value will be skipped. This is useful to skip, for example, genes where the
-                    read count is zero for any of the bins. This could be the result of
+                    read count is zero for any of the bins which could be the result of
                     unmappable areas and can bias the overall results. (--minThreshold)"/>
                 <param name="maxThreshold" type="float" optional="True"
                     label="Maximum threshold"
@@ -206,7 +214,6 @@
             <param name="binSize" value="10" />
             <param name="sortUsing" value="sum" />
             <param name="averageTypeBins" value="sum" />
-            <param name="skipNAs" value="False" />
             <param name="beforeRegionStartLength" value="10" />
             <param name="afterRegionStartLength" value="10" />
             <output name="outFileName" file="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
@@ -233,27 +240,80 @@
     </tests>
   <help>
 <![CDATA[
-**What it does**
+
+What it does
+----------------
 
 This tool prepares an intermediate file (a gzipped table of values)
-that contains scores associated with genomic regions and can be used
-afterwards to plot a heatmap or profile.
+that contains scores associated with genomic regions.
+The regions can either be scaled to the same size (using the ``scale-regions`` mode) or you can choose the start, end, or center of each region as the focus point for the score calculations.
+For more details, check out the explanation `here <file:///Users/frd2007/Documents/MPI/deepTools/docs/_build/html/content/tools/computeMatrix.html#details>`_.
 
-Genomic regions can really be anything - genes, parts of genes, ChIP-seq
-peaks, favorite genome regions... as long as you provide a proper file
-in BED or INTERVAL format. If you would like to compare different groups of regions
-(i.e. genes from chromosome 2 and 3), you can supply more than 1 BED file, one for each group.
+The intermediate file produced by ``computeMatrix`` is meant to be used with ``plotHeatmap`` and ``plotProfile``.
+See the descriptions of ``plotHeatmap`` and ``plotProfile`` for example plots.
 
-computeMatrix can also be used to filter and sort
-regions according to their score by making use of its advanced output options.
-
-
-.. image:: $PATH_TO_IMAGES/flowChart_computeMatrixetc.png
+.. image:: $PATH_TO_IMAGES/computeMatrix_overview.png
    :alt: Relationship between computeMatrix, heatmapper and profiler
+   :width: 600
+   :height: 418
+
+=======
+
+Usage hints
+-------------
+
+The supplied genomic regions can really be anything - genes, parts of genes, ChIP-seq peaks, favorite genome regions... as long as you provide a proper file
+in BED or INTERVAL format. If you would like to compare different groups of regions (e.g., genes from chromosome 2 and 3), you can supply more than 1 regions file, one for each group by selecting "Insert Select regions".
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_selectRegions.png
+   :width: 600
+   :height: 150
+
+You can select as many score (bigWig) files as you like. Simply use the Shift and/or Command key while clicking on the files of interest.
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_selectScores.png
+   :width: 600
+   :height: 136
+
+The multitude of parameters can seem daunting at first - here are the options that we tend to tune most often:
+
+* ``bin Size`` -- The default value works well most of the time, but if you want to have a more finely grained image, decrease the default value (but not smaller than your bigWig file(s)' bin size). If you want to reduce the computation time, increase it.
+* ``Skip zeros`` -- useful to avoid completely blank lines in the heatmap.
+* ``Convert missing values to 0?`` -- If you want to identify clusters of similar regions in an unsupervised fashion using ``plotHeatmap`` and/or ``plotProfile``, you should definitely set this to 'yes'.
 
 
-You can find more details on the computeMatrix doc page: https://deeptools.readthedocs.org/en/master/content/tools/computeMatrix.html
+Output files
+---------------
 
+The default output is a **gzipped table of values** that is used by both ``plotHeatmap`` and ``plotProfile``.
+
+The optional output files include a) the **regions after sorting and filtering (if selected)** as they were used to calculate the values for the plotting, and b) the uncompressed table that **underlies the heatmap**.
+
+**TIP:** ``computeMatrix`` can also be used to filter and sort regions according to their score by making use of the "advanced output settings".
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_advancedOutput.png
+   :width: 600
+   :height: 189
+
+.. image:: $PATH_TO_IMAGES/computeMatrix_output.png
+   :width: 600
+   :height: 297
+
+Note that these advanced output options are available for ``plotHeatmap`` and ``plotProfile``, too.
+
+See the following table for the optional output options:
+
++-----------------------------------+--------------------+-----------------+-----------------+
+|  **optional output type**         |  **computeMatrix** | **plotHeatmap** | **plotProfile** |
++-----------------------------------+--------------------+-----------------+-----------------+
+| values underlying the heatmap     |  yes               | yes             | no              |
++-----------------------------------+--------------------+-----------------+-----------------+
+| values underlying the profile     | no                 | no              | yes             |
++-----------------------------------+--------------------+-----------------+-----------------+
+| sorted and/or filtered regions    | yes                | yes             | yes             |
++-----------------------------------+--------------------+-----------------+-----------------+
+
+**More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
 
 -----
 

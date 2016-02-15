@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_pca" name="plotPCA" version="@WRAPPER_VERSION@.0">
-    <description>generate a principal component analysis (PCA) plot from multiBamSummary or multiBigwigSummary output</description>
+    <description>Generate principal component analysis (PCA) plots from multiBamSummary or multiBigwigSummary output</description>
     <macros>
         <token name="@BINARY@">plotPCA</token>
         <import>deepTools_macros.xml</import>
@@ -33,10 +33,36 @@
     <help>
 <![CDATA[
 
-**What it does**
+What it does
+---------------
 
-Tool for generating a principal component analysis (PCA)
-plot from multiBamSummary or multiBigwigSummary output.
+This tool takes the **default output file of ``multiBamSummary``** or ``multiBigwigSummary`` to perform a principal component analysis (PCA).
+
+Output
+-------------
+
+The result is a panel of two plots:
+
+1. The eigenvalues of the **top two principal components**.
+2. The **Scree plot** for the top five principal components where the bars represent the amount of variability explained by the individual factors and the red line traces the amount of variability is explained by the individual components in a cumulative manner
+
+Example plot
+---------------
+
+.. image:: $PATH_TO_IMAGES/plotPCA_annotated.png
+   :width: 600
+   :height: 315
+
+===================
+
+Background
+-----------------
+
+Principal component analysis (PCA) can be used, for example, to determine whether **samples display greater variability** between experimental conditions than between replicates of the same treatment. PCA is also useful to identify unexpected patterns, such as those caused by batch effects or outliers.
+Principal components represent the directions along which the variation in the data is maximal, so that the information (e.g., read coverage values) from thousands of regions can be represented by just a few dimensions.
+
+PCA is not necessarily meant to identify unknown groupings or clustering; it is up to the researcher to determine the experimental or technical reason underlying the principal components.
+
 
 -----
 

@@ -59,6 +59,14 @@ class TestHeatmapper(object):
         assert filecmp.cmp(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
+    def test_computeMatrix_region_extend_over_chr_end(self):
+        args = "reference-point -R {0}/group1.bed {0}/group2.bed -S {0}/test.bw  -b 100 -a 500 " \
+               "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_extend_beyond_chr_size.mat', '/tmp/_test.mat') is True
+        os.remove('/tmp/_test.mat')
+
     def test_plotHeatmap_simple_plot(self):
         """
         Test a simple plot generated using a matrix from
@@ -78,7 +86,7 @@ class TestHeatmapper(object):
 
     def test_plotHeatmap_rename_labels(self):
         if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno,dos".format(ROOT).split()
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno dos".format(ROOT).split()
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/master_relabeled.svg', '/tmp/_test2.svg') is True
             os.remove('/tmp/_test2.svg')
@@ -92,14 +100,15 @@ class TestHeatmapper(object):
 
     def test_plotHeatmap_multi_bigwig_pergroup(self):
         if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --perGroup --outFileName /tmp/_test.svg".format(ROOT).split()
+            args = "-m {}/master_multi.mat.gz --perGroup --samplesLabel file1 file2 file3 file4 " \
+                   "--outFileName /tmp/_test.svg".format(ROOT).split()
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/heatmap_master_multi_pergroup.svg', '/tmp/_test.svg') is True
             os.remove('/tmp/_test.svg')
 
     def test_plotProfiler(self):
         if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno,dos " \
+            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno dos " \
                    "--plotType std".format(ROOT).split()
             deeptools.plotProfile.main(args)
             assert self.compare_svg(ROOT + '/profile_master.svg', '/tmp/_test.svg')

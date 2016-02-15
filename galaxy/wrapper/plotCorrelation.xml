@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_correlation" name="plotCorrelation" version="@WRAPPER_VERSION@.0">
-    <description>creates a heatmap or scatterplot of correlation scores between different samples </description>
+    <description>Create a heatmap or scatterplot of correlation scores between different samples </description>
     <macros>
         <token name="@BINARY@">plotCorrelation</token>
         <import>deepTools_macros.xml</import>
@@ -88,34 +88,51 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+What it does
+--------------
 
-This tools takes a compressed matrix of scores (such as read coverages) for a number of genomic regions
-and different samples. It can visualize the correlation among samples as scatterplots or as
-a heatmap of correlation coefficients. Further output files are optional.
-The compressed input matrices are easily generated using the "multiBamSummary" and "multiBigwigSummary" tools.
+This tools takes the default output of ``multiBamSummary`` or ``multiBigwigSummary``, and computes the pairwise correlation among samples.
+Results can be visualized as **scatterplots** or as
+a **heatmap** of correlation coefficients (see below for examples).
 
+Background
+------------
 
-.. image:: $PATH_TO_IMAGES/QC_multiBamSummary_humanSamples.png
-   :alt: Heatmap of RNA Polymerase II ChIP-seq
+The result of the correlation computation is a **table of correlation coefficients** that indicates how "strong" the relationship between two samples is and it will consist of numbers between -1 and 1. (-1 indicates perfect anti-correlation, 1 perfect correlation.)
 
+We offer two different functions for the correlation computation: *Pearson* or *Spearman*.
 
-You can find more details on plotCorrelation here http://deeptools.readthedocs.org/en/master/content/tools/plotCorrelation.html
+The *Pearson method* measures the **metric differences** between samples and is therefore influenced by outliers.
+The *Spearman method* is based on **rankings**.
 
+Output
+--------
 
-**Output files**:
+The default output is a **diagnostic plot** -- either a scatterplot or a clustered heatmap displaying the values for each pair-wise correlation (see below for example plots).
 
-- **diagnostic plot**: Either a scatterplot or clustered heatmap (select above) displaying the values for each pair-wise correlation,
-  see below for an example
-- data matrix (optional): if you want to analyze or plot the correlation values using a different program, e.g. R, this matrix can be used
+Optionally, you can also obtain a table of the pairwise correlation coefficients.
 
-**Output with test dataset**:
+.. image:: $PATH_TO_IMAGES/plotCorrelation_output.png
+   :width: 600
+   :height: 271
 
-The following is the output of plotCorrelation with our test ChIP-Seq datasets. Average coverages were computed over 10kb bins for chromosome X,
-from bigwig files using multiBigwigSummary. The output was used by plotCorrelation to make a heatmap of spearman correlation between samples.
+Example plots
+--------------
+
+The following is the output of ``plotCorrelation`` with our test ChIP-Seq datasets (to be found under "Shared Data" --> "Data Library").
+
+Average coverages were computed over 10 kb bins for chromosome X,
+from bigWig files using ``multiBigwigSummary``. This was then used with ``plotCorrelation`` to make a heatmap of Spearman correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png
+   :width: 600
+   :height: 518
 
+The scatterplot could look like this:
+
+.. image:: $PATH_TO_IMAGES/plotCorrelation_scatterplot_PearsonCorr_bigwigScores.png
+   :width: 600
+   :height: 600
 
 -----
 
