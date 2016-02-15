@@ -22,3 +22,4 @@ galaxy/wrapper/multiBamSummary.xml \
 galaxy/wrapper/multiBigwigSummary.xml \
 galaxy/wrapper/plotCoverage.xml \
 galaxy/wrapper/plotFingerprint.xml 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
+test ${PIPESTATUS[0]} -eq 0
