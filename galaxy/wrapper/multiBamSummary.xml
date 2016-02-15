@@ -41,7 +41,7 @@
     </command>
 
     <inputs>
-        <expand macro="multiple_input_bams" />
+        <expand macro="multiple_input_bams_min2" />
 
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode"
