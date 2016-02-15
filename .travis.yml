@@ -28,7 +28,7 @@ install:
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build --ignore=E501,F403,E402
+  - flake8 . --exclude=.venv,.build,foo --ignore=E501,F403,E402
   - nosetests --with-doctest --ignore-files=plotCoverage deeptools
   - nosetests deeptools/test/test_plotCoverage.py
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export PATH=`echo $PATH | sed -e 's/\/home\/travis\/miniconda\/bin://'` ; fi
