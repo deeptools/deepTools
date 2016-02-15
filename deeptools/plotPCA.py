@@ -72,6 +72,12 @@ def plotCorrelationArgs():
                           'eps, pdf and svg.',
                           choices=['png', 'pdf', 'svg', 'eps'])
 
+    optional.add_argument('--outFileNameData',
+                          help='File name to save the data '
+                          'underlying data for the average profile, e.g., '
+                          'myProfile.tab.',
+                          type=argparse.FileType('w'))
+
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
 
@@ -89,6 +95,18 @@ def main(args=None):
     corr.plot_pca(args.plotFile.name,
                   plot_title=args.plotTitle,
                   image_format=args.plotFileFormat)
+
+    if args.outFileNameData is not None:
+        import matplotlib
+        mlab_pca = matplotlib.mlab.PCA(corr.matrix)
+        n = len(corr.labels)
+        of = args.outFileNameData
+        of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
+        for i in xrange(n):
+            of.write("{}".format(i+1))
+            for v in mlab_pca.Wt[i,:]:
+                of.write("\t{}".format(v))
+            of.write("\t{}\n".format(n * mlab_pca.fracs[i]))
 
 
 if __name__ == "__main__":
