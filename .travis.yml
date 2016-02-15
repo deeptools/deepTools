@@ -6,6 +6,8 @@ os:
 
 # Setup anaconda
 before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install virtualenv --user ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then virtualenv foo; source foo/bin/activate; pip install planemo ; deactivate ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then curl http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -o miniconda.sh ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -o miniconda.sh ; fi
   - bash miniconda.sh -b -p $HOME/miniconda
@@ -26,7 +28,10 @@ install:
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build --ignore=E501,F403,E402
+  - flake8 . --exclude=.venv,.build,foo --ignore=E501,F403,E402
   - nosetests --with-doctest --ignore-files=plotCoverage deeptools
   - nosetests deeptools/test/test_plotCoverage.py
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export PATH=`echo $PATH | sed -e 's/\/home\/travis\/miniconda\/bin://'` ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./.planemo.sh ; fi
 sudo: false
