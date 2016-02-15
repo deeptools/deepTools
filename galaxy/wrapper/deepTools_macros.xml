@@ -308,6 +308,12 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bams">
+        <param argument="--bamfiles" type="data" format="bam" min="1"
+            label="Bam file" multiple="true"
+            help="The BAM file must be sorted."/>
+    </xml>
+
+    <xml name="multiple_input_bams_min2">
         <param argument="--bamfiles" type="data" format="bam" min="2"
             label="Bam file" multiple="true"
             help="The BAM file must be sorted."/>
