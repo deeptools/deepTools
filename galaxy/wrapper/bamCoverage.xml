@@ -165,6 +165,14 @@
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph" />
         </test>
+        <test>
+            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="showAdvancedOpt.filterRNAstrand" value="forward" />
+            <param name="binSize" value="10" />
+            <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
+        </test>
     </tests>
     <help>
 <![CDATA[
