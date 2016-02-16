@@ -49,7 +49,7 @@
 
                 #if $advancedOpt.filterRNAstrand != "no":
                     --filterRNAstrand '$advancedOpt.filterRNAstrand'
-                #end of
+                #end if
             #end if
 ]]>
     </command>
