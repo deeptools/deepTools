@@ -83,7 +83,7 @@
             <param name="whatToPlot" value="scatterplot" />
             <param name="removeOutliers" value="True" />
             <param name="plotTitle" value="Test Plot" />
-            <output name="outFileName" file="plotCorrelation_result2.png" ftpye="png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotCorrelation_result2.png" ftpye="png" compare="sim_size" delta="200" />
         </test>
     </tests>
     <help>
