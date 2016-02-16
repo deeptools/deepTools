@@ -103,10 +103,10 @@ def main(args=None):
         of = args.outFileNameData
         of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
         for i in xrange(n):
-            of.write("{}".format(i+1))
-            for v in mlab_pca.Wt[i,:]:
+            of.write("{}".format(i + 1))
+            for v in mlab_pca.Wt[i, :]:
                 of.write("\t{}".format(v))
-            of.write("\t{}\n".format(n * mlab_pca.fracs[i]))
+            of.write("\t{}\n".format(mlab_pca.s[i]))
 
 
 if __name__ == "__main__":

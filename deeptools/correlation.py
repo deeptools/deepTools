@@ -440,7 +440,7 @@ class Correlation:
                          prop={'size': 12}, markerscale=0.9)
 
         # Scree plot
-        eigenvalues = map(lambda x: x * n, mlab_pca.fracs)
+        eigenvalues = mlab_pca.s
 
         cumulative = []
         c = 0
