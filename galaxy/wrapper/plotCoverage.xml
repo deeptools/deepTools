@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_coverage" name="plotCoverage" version="@WRAPPER_VERSION@.0">
-    <description>plots a histogram of coverage on genomic regions </description>
+    <description>assesses the sequencing depth of BAM files </description>
     <macros>
         <token name="@BINARY@">plotCoverage</token>
         <import>deepTools_macros.xml</import>
@@ -82,16 +82,37 @@
             <param name="plotTitle" value="Test Title from Galaxy" />
             <param name="outRawCounts" value="True" />
             <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
-            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="500" />
         </test>
     </tests>
     <help>
 <![CDATA[
-**What it does**
+What it does
+-------------
 
-This tools samples 1 million positions in the genome to build
-a coverage histogram. Multiple bam files are accepted but all should
-correspond to the same genome assembly.
+This tool is useful to **assess the sequencing depth** of a given sample.
+It samples 1 million bp, counts the number of overlapping reads and reports
+a coverage histogram that tells you how many bases are covered how many times.
+
+**Note:** Multiple BAM files are accepted but all should correspond to the same genome assembly.
+
+Output
+---------
+
+The default output is a **panel of two plots** (see below for an example): One is a density plot visualizing the frequencies of read coverages, the other one lets you estimate what fraction of the genome has a depth of sequencing of, for example, 2 overlapping reads or more.
+
+The optional output is a table where each row represents the number of reads overlapping with a sampled bp.
+
+.. image:: $PATH_TO_IMAGES/plotCoverage_output.png
+   :width: 600
+   :height: 345
+
+Example plot
+-----------------
+
+.. image:: $PATH_TO_IMAGES/plotCoverage_annotated.png
+   :width: 600
+   :height: 291
 
 
 @REFERENCES@

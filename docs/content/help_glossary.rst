@@ -5,8 +5,9 @@ Like most specialized fields, next-generation sequencing has inspired many an ac
 We are trying to keep track of those :ref:`abbreviations` that we heavily use.
 Do make us aware if something is unclear: deeptools@googlegroups.com
 
-We have also assembled a short glossary of common :ref:`terminology` and
-:ref:`file formats` of next-generation sequencing data.
+
+.. contents:: 
+    :local:
 
 .. _abbreviations:
 
@@ -51,18 +52,26 @@ NGS and generic terminology
 ---------------------------
 The following are terms that may be new to some:
 
-**bin**
+.. _bin:
+
+bin
+^^^
 
 * synonyms: window, region
 * A 'bin' is a subset of a larger grouping. Many calculations calculation are performed by first dividing the genome into small regions (bins), on which the calculations are actually performed.
 
+.. _input:
 
-**Input**
+Input
+^^^^^^^^
 
 * Control experiment typically done for ChIP-seq experiments 
 * While ChIP-seq relies on antibodies to enrich for DNA fragments bound to a certain protein, the input sample should be processed exactly the same way, excluding the antibody. This allows one to account for biases introduced by sample handling and the general chromatin structure of the cells 
 
-**read**
+.. _read:
+
+read
+^^^^^^^^
 
 * synonym: tag
 * This term refers to the piece of DNA that is sequenced ("read") by the sequencers. We try to differentiate between "read" and "DNA fragment" as the fragments that are put into the sequencer tend to be in the range of 200-1000 bases, of which only the first 50 to 300 bases are typically sequenced. Most of the deepTools will not only take these reads into account, but also extend them to match the original DNA fragment size. (The original size will either be given by you or, if you used paired-end sequencing, be calculated from the distance between the two read mates).
@@ -91,7 +100,7 @@ Follow the links for more information on the different tool collections mentione
 .. _2bit:
 
 2bit
-^^^^
+^^^^^
 
 * compressed, binary version of genome sequences that are often stored in :ref:`FASTA` 
 * most genomes in 2bit format can be found `at UCSC <http://hgdownload.cse.ucsc.edu/gbdb/>`__
@@ -103,7 +112,7 @@ Follow the links for more information on the different tool collections mentione
 BAM
 ^^^^
 
-* typical file extension: .bam
+* typical file extension: ``.bam``
 * *binary* file format (complement to :ref:`SAM`)
 * contains information about sequenced reads (typically) *after alignment* to a reference genome
 * each line = 1 mapped read, with information about:
@@ -118,10 +127,10 @@ BAM
 
 .. _bed:
 
-bed
+BED
 ^^^
 
-* typical file extension: .bed
+* typical file extension: ``.bed``
 * text file
 * used for genomic intervals, e.g. genes, peak regions etc.
 * the format can be found at `UCSC <http://genome.ucsc.edu/FAQ/FAQformat.html#format1>`__
@@ -134,12 +143,12 @@ bed
     chr1    4763278 4775807 NM_001177658 Mrpl15 -
     chr1    4797973 4836816 NM_008866    Lypla1 +
 
-.. _bedgraph:
+.. _bedGraph:
 
 bedGraph 
 ^^^^^^^^
 
-* typical file extension: .bg, .bedgraph
+* typical file extension: ``.bg``, ``.bedGraph``
 * text file
 * similar to BED file (not the same!), it can *only* contain 4 columns and the 4th column *must* be a score
 * again, read the `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format1.8>`__  for more details
@@ -152,13 +161,13 @@ bedGraph
     chr1 30 40 2.0
     chr1 40 50 1.8
 
-.. _bigwig:
+.. _bigWig:
 
 bigWig 
 ^^^^^^
 
-* typical file extension: .bw, .bigwig
-* *binary* version of a :ref:`bedgraph` or `wiggle` file
+* typical file extension: ``.bw``, ``.bigwig``
+* *binary* version of a :ref:`bedgraph` or ``wig`` file
 * contains coordinates for an interval and an associated score
 * the score can be anything, e.g. an average read coverage
 * `UCSC description <https://genome.ucsc.edu/FAQ/FAQformat.html#format6.1>`__ for more details
@@ -168,8 +177,8 @@ bigWig
 FASTA 
 ^^^^^^
 
-* typical file extension: .fasta
-* text file, often gzipped (.fasta.gz)
+* typical file extension: ``.fasta``
+* text file, often gzipped (``.fasta.gz``)
 * very simple format for **DNA/RNA** or **protein** sequences, this can be anything from small pieces of DNA or proteins to an entire genome (most likely, you will get the genome sequence of your organism of interest in fasta format)
 * see the :ref:`2bit` file format entry for a compressed alternative
 * example from `wikipedia <http://en.wikipedia.org/wiki/FASTA_format>`__ showing exactly one sequence:
@@ -183,13 +192,13 @@ FASTA
      GLMPFLHTSKHRSMMLRPLSQALFWTLTMDLLTLTWIGSQPVEYPYTIIGQMASILYFSIILAFLPIAGX
      IENY
 
-.. _fastq:
+.. _FASTQ:
 
 FASTQ
 ^^^^^
 
-* typical file extension: .fastq, fq
-* text file, often gzipped (--> .fastq.gz)
+* typical file extension: ``.fastq``, ``.fq``
+* text file, often gzipped (--> ``.fastq.gz``)
 * contains raw read information -- 4 lines per read:
 	 * read ID
 	 * base calls
@@ -210,18 +219,20 @@ FASTQ
 SAM
 ^^^ 
 
-* typical file extension: .sam
+* typical file extension: ``.sam``
 * usually the result of an alignment of sequenced reads to a reference genome
 * contains a short header section (entries are marked by @ signs) and an alignment section where each line corresponds to a single read (thus, there can be millions of these lines)
 
 .. image:: ../images/glossary_sam.png
 
-* **header section**:
+SAM header section
+~~~~~~~~~~~~~~~~~~~
 
   * tab-delimited lines, beginning with @, followed by tag\:value pairs
   * *tag* = two-letter string that defines the content and the format of *value*
 	
-* **alignment section**:
+SAM alignment section
+~~~~~~~~~~~~~~~~~~~~~~
 
   * each line contains information about its mapping quality, its sequence, its location in the genome etc.
     ::

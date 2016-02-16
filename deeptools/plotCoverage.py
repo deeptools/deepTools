@@ -26,13 +26,13 @@ def parse_arguments(args=None):
             add_help=False,
             description="""
 
-plotCoverage samples 1 million positions of the genome to build
-a coverage histogram. Multiple BAM files are accepted but all should
-correspond to the same genome assembly.
+This tool is useful to assess the sequencing depth of a given sample.
+It samples 1 million bp, counts the number of overlapping reads and can report
+a histogram that tells you how many bases are covered how many times.
+Multiple BAM files are accepted, but they all should correspond to the same genome assembly.
 
-
-detailed help:
-  plotCoverage  -h
+detailed usage help:
+ $ plotCoverage  -h
 
 """,
             epilog='example usages:\nplotCoverage '
@@ -50,7 +50,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of labels does not match the number of bam files."
+        print "The number of labels does not match the number of BAM files."
         exit(0)
     if not args.labels:
         args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
@@ -69,7 +69,7 @@ def required_args():
                           required=True)
 
     required.add_argument('--plotFile', '-o',
-                          help='File name to save the plot to',
+                          help='File name to save the plot to.',
                           type=argparse.FileType('w'),
                           required=True)
 
@@ -92,13 +92,13 @@ def required_args():
 
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
-                          'that have zero or nan values in all samples '
+                          'that have zero or nan values in _all_ samples '
                           'are excluded.',
                           action='store_true',
                           required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of 1 base regions to sample. Default 1 million',
+                          help='Number of 1 bp regions to sample. Default 1 million.',
                           required=False,
                           type=int,
                           default=1000000)
@@ -133,51 +133,93 @@ def main(args=None):
                                  ignoreDuplicates=args.ignoreDuplicates,
                                  center_read=args.centerReads,
                                  samFlag_include=args.samFlagInclude,
-                                 samFlag_exclude=args.samFlagExclude)
+                                 samFlag_exclude=args.samFlagExclude,
+                                 out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
 
     sys.stderr.write("Number of non zero bins "
                      "used: {}\n".format(num_reads_per_bin.shape[0]))
 
+    if args.outRawCounts:
+        print "test"
+        # append to the generated file the
+        # labels
+        header = "#'chr'\t'start'\t'end'\t"
+        header += "'" + "'\t'".join(args.labels) + "'\n"
+        with open(args.outRawCounts.name, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header + content)
+
     if num_reads_per_bin.shape[0] < 2:
-        exit("ERROR: too few non zero bins found.\n"
+        exit("ERROR: too few non-zero bins found.\n"
              "If using --region please check that this "
              "region is covered by reads.\n")
 
     if args.skipZeros:
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
 
-    if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
-        for row in num_reads_per_bin:
-            args.outRawCounts.write(fmt % tuple(row))
-
     fig, axs = plt.subplots(1, 2, figsize=(15, 5))
     plt.suptitle(args.plotTitle)
     # plot up to two std from mean
+    num_reads_per_bin = num_reads_per_bin.astype(int)
     sample_mean = num_reads_per_bin.mean(axis=0)
-    std = max(num_reads_per_bin.std(axis=0))
-    y_max = max(sample_mean) + 3 * std
+    sample_std = num_reads_per_bin.std(axis=0)
+    sample_max = num_reads_per_bin.max(axis=0)
+    sample_min = num_reads_per_bin.min(axis=0)
+    sample_25 = np.percentile(num_reads_per_bin, 25, axis=0)
+    sample_50 = np.percentile(num_reads_per_bin, 50, axis=0)
+    sample_75 = np.percentile(num_reads_per_bin, 75, axis=0)
 
+    # use the largest 99th percentile from all samples to set the x_max value
+    x_max = np.max(np.percentile(num_reads_per_bin, 99, axis=0))
     # plot coverage
-    for idx, col in enumerate(num_reads_per_bin.T):
-        axs[0].plot(np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0],
-                    label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
-        csum = np.bincount(col.astype(int))[::-1].cumsum()
-        axs[1].plot(csum.astype(float)[::-1] / csum.max(),
-                    label=args.labels[idx])
+    # print headers for text output
+    print("sample\tmean\tstd\tmin\t25%\t50%\t75%\tmax")
+    # the determination of a sensible value for y_max of the first plot (fraction of bases sampled vs.
+    # coverage) is important because, depending on the data,
+    # it becomes very difficult to see the lines in the plot. For example, if the coverage of a sample
+    # is a nice gaussian curve with a large mean of 50. Then a sensible range for the y axis (fraction of
+    # reads having coverage=x) is (0, 0.02) which nicely shows the coverage curve. If instead the coverage is
+    # very por and centers close to 1 then a good y axis range is (0,1).
 
-    axs[0].set_xlim(0, y_max)
-    axs[0].set_xlabel('coverage')
-    axs[0].legend()
+    # the current implementation aims to find the y_value for which 50% of the reads >= x (coverage) and
+    # sets that as the x_axis range.
+    y_max = []
+    for idx, col in enumerate(num_reads_per_bin.T):
+        frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
+        axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+        csum = np.bincount(col.astype(int))[::-1].cumsum()
+        csum_frac = csum.astype(float)[::-1] / csum.max()
+        axs[1].plot(csum_frac, label=args.labels[idx])
+        # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
+        # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
+        # then find the fraction of bases sampled that that have the largest x
+        y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac > 0.5))])
+        print("{}\t{:0.2f}\t{:0.2f}\t{}\t{}\t{}\t{}\t{}\t".format(args.labels[idx],
+                                                                  sample_mean[idx],
+                                                                  sample_std[idx],
+                                                                  sample_min[idx],
+                                                                  sample_25[idx],
+                                                                  sample_50[idx],
+                                                                  sample_75[idx],
+                                                                  sample_max[idx],
+                                                                  ))
+
+    # The 'good' x-axis is computed for each sample. The lower value is favored in which
+    # distributions with a wider x-range can better be seen.
+    y_max = min(y_max)
+    axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
+    axs[0].set_xlim(0, x_max)
+    axs[0].set_xlabel('coverage (#reads per bp)')
+    axs[0].legend(fancybox=True, framealpha=0.5)
     axs[0].set_ylabel('fraction of bases sampled')
     # plot cumulative coverage
-    axs[1].set_xlim(0, y_max)
-    axs[1].set_xlabel('coverage')
+    axs[1].set_xlim(0, x_max)
+    axs[1].set_xlabel('coverage (#reads per bp)')
     axs[1].set_ylabel('fraction of bases sampled >= coverage')
-    axs[1].legend()
+    axs[1].legend(fancybox=True, framealpha=0.5)
     plt.savefig(args.plotFile.name, format=args.plotFileFormat)
 
 if __name__ == "__main__":

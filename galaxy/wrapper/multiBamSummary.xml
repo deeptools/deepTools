@@ -41,14 +41,14 @@
     </command>
 
     <inputs>
-        <expand macro="multiple_input_bams" />
+        <expand macro="multiple_input_bams_min2" />
 
         <conditional name="mode">
-            <param name="modeOpt" type="select" label="Choose computation mode" 
+            <param name="modeOpt" type="select" label="Choose computation mode"
                     help="In the bins mode, the coverage is computed for equally
-                    sized bins. In the BED file mode, a list of genomic regions in BED
-                    format has to be given. For each region in the BED file the number of
-                    overlapping reads is counted in each of the BAM files.
+                    sized bins. \nIn BED file mode, a list of genomic regions
+                    in BED or INTERVAL format has to be given. For each region
+                    in the BED file, the number of overlapping reads from each BAM file is counted.
                     ">
                 <option value="bins" selected="true">Bins</option>
                 <option value="BED-file">Limit calculation to certain regions (BED file)</option>
@@ -63,7 +63,7 @@
             </when>
             <when value="BED-file">
                 <param name="region_file" type="data" format="bed"
-                    label="Region file in BED format"
+                    label="Region file in BED or INTERVAL format"
                     help="Coverage is computed for the number of reads that overlap such regions."/>
             </when>
         </conditional>
@@ -102,26 +102,27 @@
     <help>
 <![CDATA[
 
-**What it does**
+What it does
+-------------
 
-This tool generates a matrix of read-coverages for a list of genomic regions and at least two samples (BAM files).
-The genome is split into bins of the given size. For each bin, the number of reads found in it in each BAM file is counted.
-Alternatively, a bed file with pre-defined genomic regions can be provided. In each case the calculation can further be limited to
-a given genomic interval (e.g. a given chromosome). This option is mostly used for testing and efficiency.
-A typical follow-up application is to check and visualize the similarity between replicates or published data sets (see: plotPCA and plotCorrelation).
+This tool generates a matrix of read coverages for a list of genomic regions and at least two samples (BAM files).
+The genome is split into bins of the given size. For each bin, the number of reads found in each BAM file is counted.
+Alternatively, an interval file with pre-defined genomic regions can be provided.
 
-**Output files**:
+In principle, this tool does the same as ``multiBigwigSummary``, but for BAM files.
 
-- **score matrix**: a compressed matrix where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file)
-- Optional : Uncompressed **score matrix**, in case you want to analyse the coverage scores yourself. (Select to "Save raw counts" from above)
+A typical follow-up application is to check and visualize the similarity and variability between replicates or published data sets (see: ``plotPCA`` and ``plotCorrelation``).
 
-=======
+Output
+--------
 
-.. image:: $PATH_TO_IMAGES/QC_multiBamSummary_humanSamples.png
-   :alt: Heatmap of RNA Polymerase II ChIP-seq
+The default output is a **compressed file** that can only be used with ``plotPCA`` or ``plotCorrelation``.
 
+To analyze the coverage scores yourself, you can get the **uncompressed score matrix** where every row corresponds to a genomic region (or bin) and each column corresponds to a sample (BAM file). (To obtain this output file, select "Save raw counts (coverages) to file" )
 
-You can find more details on the multiBamSummary doc page: https://deeptools.readthedocs.org/en/master/content/tools/multiBamSummary.html
+.. image:: $PATH_TO_IMAGES/multiBamSummary_output.png
+   :width: 600
+   :height: 443
 
 -----
 

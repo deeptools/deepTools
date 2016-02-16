@@ -72,12 +72,12 @@
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.0.0</token>
+    <token name="@WRAPPER_VERSION@">2.1.0</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
             <requirement type="binary">@BINARY@</requirement>
-            <requirement type="package" version="2.0">deepTools</requirement>
+            <requirement type="package" version="2.1.0">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -104,11 +104,21 @@
                     <param name="clustering_options" type="select" label="Clustering algorithm">
                         <option value="none">No clustering</option>
                         <option value="kmeans">Kmeans clustering</option>
+                        <option value="hclust">Hierarchical clustering</option>
                     </param>
                     <when value="kmeans">
                         <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
                             help="When this option is set, the matrix is split into clusters using the k-means algorithm.
                             This only works for data that is not grouped, otherwise only the first group will be clustered.
+                            If more specific clustering methods are required it is advisable to save the underlying matrix and
+                            run the clustering using other software."/>
+                    </when>
+                    <when value="hclust">
+                        <param name="n_hclust" type="integer" value="0" label="number of clusters to compute."
+                            help="WARNING: This option causes the tool to run for a very long time! When this option is
+                            set, the matrix is split into clusters using the hierarchical clustering algorithm, using ward linkage.
+                            This only works for data that is not grouped, otherwise only the first group will be clustered.
+                            Note that you must have used the '--missingDataAsZero' option within computeMatrix!
                             If more specific clustering methods are required it is advisable to save the underlying matrix and
                             run the clustering using other software."/>
                     </when>
@@ -124,6 +134,11 @@
             #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
                 #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
                     --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
+                #end if
+            #end if
+            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'hclust':
+                #if int($advancedOpt.used_multiple_regions.clustering.n_hclust) > 0:
+                    --hclust $advancedOpt.used_multiple_regions.clustering.n_hclust
                 #end if
             #end if
         #end if
@@ -293,6 +308,12 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bams">
+        <param argument="--bamfiles" type="data" format="bam" min="1"
+            label="Bam file" multiple="true"
+            help="The BAM file must be sorted."/>
+    </xml>
+
+    <xml name="multiple_input_bams_min2">
         <param argument="--bamfiles" type="data" format="bam" min="2"
             label="Bam file" multiple="true"
             help="The BAM file must be sorted."/>
@@ -309,6 +330,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             label="Title of the plot"
             help="Title of the plot, to be printed on top of the generated image." />
     </xml>
+
 
     <token name="@multiple_input_bams@">
 <![CDATA[

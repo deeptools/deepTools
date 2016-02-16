@@ -21,13 +21,13 @@
 
             #if $scaling.type=='rpkm':
                 --normalizeUsingRPKM
+                --scaleFactor $scaling.scaleFactor
             #elif $scaling.type=='1x':
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
                 #end if
-            #elif $scaling.type=='own':
                 --scaleFactor $scaling.scaleFactor
             #end if
 
@@ -176,7 +176,9 @@
     </tests>
     <help>
 <![CDATA[
-**What it does**
+
+What it does
+--------------
 
 Given a BAM file, this tool generates a bigWig or bedGraph file of fragment or
 read coverages. The way the method works is by first calculating all the
@@ -188,15 +190,35 @@ independently to avoid a bias when a mixture of concordant and discordant
 pairs is present. This means that *each end* will be extended to match the
 fragment length.
 
+See the usage hints below.
+
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
+   :width: 600
+   :height: 336
 
+Output
+-------------
 
-You can find more details on the bamCoverage doc page: https://deeptools.readthedocs.org/en/master/content/tools/bamCoverage.html
+``bamCoverage`` produces a coverage file, either in bigWig or bedGraph format, where for each bin the number of overlapping reads (possibly normalized) is noted.
 
+Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output. For more information on typical NGS file formats, see our `Glossary <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#file-formats>`_
 
-**Output files**:
+.. image:: $PATH_TO_IMAGES/bamCoverage_output.png
+   :width: 600
+   :height: 450
 
-- coverage file either in bigWig or bedGraph format
+Usage hints
+------------
+
+* A smaller ``bin size`` value will result in a higher resolution of the coverage track but also in a larger file size.
+* The ``1x normalization`` (RPGC) requires the input of a value for the **effective genome size**, which is the mappable part of the reference genome. Of course, this value is species-specific.
+* It might be useful for some studies to exclude certain chromosomes in order to avoid biases, e.g. chromosome X for many mammals where the males contain a pair of each autosome, but often only a single X chromosome.
+* By default, the read length is **NOT** extended! This is the preferred setting for **spliced-read** data like RNA-seq, where one usually wants to rely on the detected read locations only. A read extension would neglect potential splice sites in the unmapped part of the fragment.
+  Other data, e.g. ChIP-seq, where fragments are known to map contiuously, should be processed with read extension (``--extendReads [INT]``).
+* For paired-end data, the fragment length is generally defined by the two read mates. The user-provided fragment length is only used as a fallback for singletons or mate reads that map too far apart (with a distance greater than four times the fragment length or if the mates are located on different chromosomes).
+
+WARNING: If you already normalized for GC bias using ``correctGCbias``, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
+
 
 -----
 

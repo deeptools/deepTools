@@ -32,7 +32,8 @@ def parseArguments():
             'offers normalization by scaling factor, Reads Per Kilobase per '
             'Million mapped reads (RPKM), and 1x depth (reads per genome '
             'coverage, RPGC).\n',
-            usage='An example usage is: bamCoverage -b signal.bam -o signal.bw',
+            usage='An example usage is:'
+            '$ bamCoverage -b reads.bam -o coverage.bw',
             add_help=False)
 
     return parser

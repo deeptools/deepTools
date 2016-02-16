@@ -10,7 +10,7 @@ Major changes
 .. note:: The major changes encompass features for **increased efficiency**, **new sequencing data types**, and **additional plots**, particularly for QC.
 
 Moreover, deepTools modules can now be used by other python programs.
-The :ref:`api` is now part of the documentation.
+The :ref:`api` is part of the new documentation.
 
 Accommodating additional data types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -65,6 +65,8 @@ New features and tools
       - :doc:`tools/bamPEFragmentSize` can be used to calculate the average fragment size for paired-end read data
       
 * Added the possibility for **hierarchical clustering**, besides *k*-means to ``plotProfile`` and ``plotHeatmap``
+
+* ``plotProfile`` has many more options to make compelling summary plots
 
 
 Minor changes

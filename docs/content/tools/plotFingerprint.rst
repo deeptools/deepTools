@@ -67,11 +67,3 @@ The table that you can obtain via ``--outRawCounts`` simply contains the number 
         1	0	0	0	0
         4	1	1	1	0
         1	0	0	0	0
-
-plotFingerprint on Galaxy
-^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Below is the screenshot showing how to use plotFingerprint on the deeptools galaxy.
-
-
-.. image:: ../../images/bamFP_galaxy.png

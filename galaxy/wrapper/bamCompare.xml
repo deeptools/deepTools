@@ -196,34 +196,39 @@
     <help>
 <![CDATA[
 
-**What it does**
+What it does
+-------------
 
-This tool compares two BAM files based on the number of mapped reads. To
-compare the BAM files, the genome is partitioned into bins of equal size, then
-the number of reads found in each BAM file is counted per bin and
-finally a summary value reported. This value can be the ratio of the
-number of reads per bin, the log2 of the ratio or the difference. This tool
-can normalize the number of reads in each BAM file using the SES method
-proposed in Diaz et al. (2012). "Normalization, bias correction, and peak
+This tool can be used to generate a bigWig or bedGraph file based on **two BAM** files that are compared to each other while being simultaneously normalized for sequencing depth.
+
+To compare the BAM files to each other, the genome is partitioned into bins of equal size, then the number of reads found in each BAM file is counted per bin, and finally a summary value reported.
+This value can be the ratio of the number of reads per bin, the log2 of the ratio, or the difference.
+
+This tool can normalize the number of reads in each BAM file using the SES method proposed in Diaz et al. (2012). "Normalization, bias correction, and peak
 calling for ChIP-seq". Statistical applications in genetics and molecular
-biology, 11(3). Normalization based on read counts is also available. The
-output is either a bedgraph or a bigwig file containing the bin location and
-the resulting comparison values. By default, if reads are mated, the fragment
-length reported in the BAM file is used. In the case of paired-end mapping,
-each read mate is treated independently to avoid a bias when a mixture of
-concordant and discordant pairs are present. This means that *each end* will be
-extended to match the fragment length.
+biology, 11(3).
 
+Normalization based on read counts is also available.
+
+By default, if reads are from a paired-end sequencing run and reads are properly paired, the fragment length reported in the BAM file is used.
+
+**Note:** *For paired-end sequencing samples, each read mate is treated independently to avoid a bias when a mixture of concordant and discordant pairs are present. This means that _each end_ will be extended to match the fragment length.*
 
 .. image:: $PATH_TO_IMAGES/norm_IGVsnapshot_indFiles.png
+   :width: 600
+   :height: 336
 
+Output files
+--------------
 
-You can find more details on the bamCompare doc page: https://deeptools.readthedocs.org/en/master/content/tools/bamCompare.html
+``bamCompare`` produces the same kind of output as ``bamCoverage``.
+The difference is that you now obtain 1 coverage file that is based on 2 BAM files: a bedGraph or a bigwig file containing the bin location and the resulting comparison values.
 
+Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output. For more information on typical NGS file formats, see our `Glossary <http://deeptools.readthedocs.org/en/latest/content/help_glossary.html#file-formats>`_
 
-**Output files**:
-
-- same as for bamCoverage, except that you now obtain 1 coverage file that is based on 2 BAM files.
+.. image:: $PATH_TO_IMAGES/bamCompare_output.png
+   :width: 600
+   :height: 436
 
 -----
 

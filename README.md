@@ -14,9 +14,12 @@ For support, questions, or feature requests contact: deeptools@googlegroups.com
 
 Citation: Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke. [_deepTools: a flexible platform for exploring deep-sequencing data._](http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract) Nucl. Acids Res. first published online May 5, 2014 doi:10.1093/nar/gku365
 
-![gallery](https://raw.github.com/fidelram/deepTools/master/examples/collage.png)
+>Our **[documentation](http://deeptools.readthedocs.org/)** contains more details on the [individual tool scopes and usages](http://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](http://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](http://deeptools.readthedocs.org/en/latest/content/example_usage.html).
 
-Our [documentation](http://deeptools.readthedocs.org/) contains more information on **why we built deepTools**, details on the **individual tool scopes and usages** and an introduction to our deepTools Galaxy web server. Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly. For more specific troubleshooting, feedback, and tool suggestions, contact us via deeptools@googlegroups.com
+Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly.
+Our [Gallery](http://deeptools.readthedocs.org/en/latest/content/example_gallery.html) may give you some more ideas about the scope of deepTools.
+
+For more specific **troubleshooting, feedback, and tool suggestions**, contact us via deeptools@googlegroups.com.
 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -115,4 +118,4 @@ remember: for support, questions, or feature requests contact: deeptools@googleg
 
 This tool suite is developed by the [Bioinformatics Facility](http://www1.ie-freiburg.mpg.de/bioinformaticsfac) at the [Max Planck Institute for Immunobiology and Epigenetics, Freiburg](http://www1.ie-freiburg.mpg.de/).
 
-[Wiki Start Page](https://github.com/fidelram/deepTools/wiki) | [deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de) | [FAQ](https://github.com/fidelram/deepTools/wiki/FAQ)
+[Documentation](http://deeptools.readthedocs.org/en/latest/index.html) | [deepTools Galaxy](http://deeptools.ie-freiburg.mpg.de) | [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html)
