@@ -47,7 +47,7 @@
                     --ignoreForNormalization $advancedOpt.ignoreForNormalization
                 #end if
 
-                #if $advancedOpt.filterRNAstrand != "no":
+                #if str($advancedOpt.filterRNAstrand) != 'no':
                     --filterRNAstrand '$advancedOpt.filterRNAstrand'
                 #end if
             #end if
@@ -169,7 +169,7 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
-            <param name="showAdvancedOpt.filterRNAstrand" value="forward" />
+            <param name="filterRNAstrand" value="reverse" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
         </test>
