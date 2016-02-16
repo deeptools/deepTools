@@ -794,8 +794,6 @@ class heatmapper(object):
         for ginterval in bed_file:
             if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
                 continue
-            if ginterval.line.startswith('#') and totalintervals == 0:
-                continue
 
             if ginterval.line.startswith('#'):
                 # check for labels with no associated entries
