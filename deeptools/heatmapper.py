@@ -54,6 +54,14 @@ class heatmapper(object):
             exit("Length of region before the body has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['upstream']))
 
+        if parameters['unscaled 5 prime'] % parameters['bin size'] > 0:
+            exit("Length of the unscaled 5 prime region has to be a multiple of "
+                 "--binSize\nCurrent value is {}\n".format(parameters['unscaled 5 prime']))
+
+        if parameters['unscaled 3 prime'] % parameters['bin size'] > 0:
+            exit("Length of the unscaled 5 prime region has to be a multiple of "
+                 "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
+
         regions, group_labels = self.get_regions_and_groups(regions_file, verbose=verbose)
 
         # args to pass to the multiprocessing workers
@@ -199,6 +207,7 @@ class heatmapper(object):
         # given by the user, times the number of score files
         matrix_cols = len(score_file_list) * \
             ((parameters['downstream'] +
+              parameters['unscaled 5 prime'] + parameters['unscaled 3 prime'] +
               parameters['upstream'] + parameters['body']) /
              parameters['bin size'])
 
@@ -212,38 +221,43 @@ class heatmapper(object):
         for feature in regions:
             # print some information
             if parameters['body'] > 0 and \
-                    feature.end - feature.start < parameters['bin size']:
+                feature.end-feature.start-(parameters['unscaled 5 prime'] + parameters['unscaled 3 prime']) < parameters['bin size']:
                 if parameters['verbose']:
-                    sys.stderr.write("A region that is shorter than "
-                                     "then bin size was found: "
+                    sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
                                      "({}) {} {}:{}:{}. Skipping...\n".format((feature.end - feature.start),
                                                                               feature.name, feature.chrom,
                                                                               feature.start, feature.end))
-
                 coverage = np.zeros(matrix_cols)
                 coverage[:] = np.nan
-
             else:
                 if feature.strand == '-':
                     a = parameters['upstream'] / parameters['bin size']
                     b = parameters['downstream'] / parameters['bin size']
-                    start = feature.end
-                    end = feature['start']
+                    d = parameters['unscaled 5 prime'] / parameters['bin size']
+                    c = parameters['unscaled 3 prime'] / parameters['bin size']
+                    start = feature.end - parameters['unscaled 5 prime']
+                    end = feature['start'] + parameters['unscaled 3 prime']
                 else:
                     b = parameters['upstream'] / parameters['bin size']
                     a = parameters['downstream'] / parameters['bin size']
-                    start = feature['start']
-                    end = feature.end
+                    c = parameters['unscaled 5 prime'] / parameters['bin size']
+                    d = parameters['unscaled 3 prime'] / parameters['bin size']
+                    start = feature['start'] +  parameters['unscaled 5 prime']
+                    end = feature.end - parameters['unscaled 3 prime']
 
                 # build zones:
                 #  zone0: region before the region start,
-                #  zone1: the body of the region (not always present)
-                #  zone2: the region from the end of the region downstream
+                #  zone1: unscaled 5 prime region
+                #  zone2: the body of the region (not always present)
+                #  zone3: unscaled 3 prime region
+                #  zone4: the region from the end of the region downstream
                 #  the format for each zone is: start, end, number of bins
                 if parameters['body'] > 0:
                     zones = \
                         [(feature.start - b * parameters['bin size'], feature.start, b),
+                         (feature.start, feature.start + c * parameters['bin size'], c),
                          (feature.start, feature.end, parameters['body'] / parameters['bin size']),
+                         (feature.end - d * parameters['bin size'], feature.end, d),
                          (feature.end, feature.end + a * parameters['bin size'], a)]
                 elif parameters['ref point'] == 'TES':  # around TES
                     zones = [(end - b * parameters['bin size'], end, b),
@@ -483,8 +497,10 @@ class heatmapper(object):
         no regions are skipped.
 
         zones: array as follows zone0: region before the region start,
-                                zone1: the body of the region (not always present)
-                                zone2: the region from the end of the region downstream
+                                zone1: 5' unscaled region (if present)
+                                zone2: the body of the region (not always present)
+                                zone3: 3' unscaled region (if present)
+                                zone4: the region from the end of the region downstream
 
                each zone is a tuple containing start, end, and number of bins
 
@@ -665,6 +681,8 @@ class heatmapper(object):
         w = self.parameters['bin size']
         b = self.parameters['upstream']
         a = self.parameters['downstream']
+        c = self.parameters['unscaled 5 prime']
+        d = self.parameters['unscaled 3 prime']
         m = self.parameters['body']
 
         if b < 1e5:
