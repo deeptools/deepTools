@@ -221,10 +221,10 @@ class heatmapper(object):
         for feature in regions:
             # print some information
             if parameters['body'] > 0 and \
-                feature.end-feature.start-(parameters['unscaled 5 prime'] + parameters['unscaled 3 prime']) < parameters['bin size']:
+                feature.end-feature.start-parameters['unscaled 5 prime']-parameters['unscaled 3 prime'] < parameters['bin size']:
                 if parameters['verbose']:
                     sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
-                                     "({}) {} {}:{}:{}. Skipping...\n".format((feature.end - feature.start),
+                                     "({}) {} {}:{}:{}. Skipping...\n".format((feature.end - feature.start - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
                                                                               feature.name, feature.chrom,
                                                                               feature.start, feature.end))
                 coverage = np.zeros(matrix_cols)
@@ -745,11 +745,13 @@ class heatmapper(object):
                                        groups_len[i]))
         fh.write("#{}\n".format("\t".join(info)))
         # add to header the x axis values
-        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
+        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
                  self.parameters['downstream'],
                  self.parameters['upstream'],
                  self.parameters['body'],
-                 self.parameters['bin size']))
+                 self.parameters['bin size'],
+                 self.parameters['unscaled 5 prime'],
+                 self.parameters['unscaled 3 prime']))
 
         fh.close()
         # reopen again using append mode
@@ -922,7 +924,7 @@ class heatmapper(object):
         of smaller matrices that are merged one after
         the other.
         """
-        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body']) /
+        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body'] + self.parameters['unscaled 5 prime'] + self.parameters['unscaled 3 prime']) /
                       self.parameters['bin size'])
 
         return matrixCols
