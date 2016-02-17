@@ -221,7 +221,7 @@ class heatmapper(object):
         for feature in regions:
             # print some information
             if parameters['body'] > 0 and \
-                feature.end-feature.start-parameters['unscaled 5 prime']-parameters['unscaled 3 prime'] < parameters['bin size']:
+                    feature.end - feature.start - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime'] < parameters['bin size']:
                 if parameters['verbose']:
                     sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
                                      "({}) {} {}:{}:{}. Skipping...\n".format((feature.end - feature.start - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
@@ -242,7 +242,7 @@ class heatmapper(object):
                     a = parameters['downstream'] / parameters['bin size']
                     c = parameters['unscaled 5 prime'] / parameters['bin size']
                     d = parameters['unscaled 3 prime'] / parameters['bin size']
-                    start = feature['start'] +  parameters['unscaled 5 prime']
+                    start = feature['start'] + parameters['unscaled 5 prime']
                     end = feature.end - parameters['unscaled 3 prime']
 
                 # build zones:
@@ -702,17 +702,25 @@ class heatmapper(object):
             xtickslabel = []
 
             # only if upstream region is set, add a x tick
-            if self.parameters['upstream'] > 0:
+            if b > 0:
                 xticks_values.append(b)
                 xtickslabel.append('{0:.1f}{1}'.format(-(float(b) / quotient), symbol))
 
-            # set the x tick for the body parameter, regardless if
-            # upstream is 0 (not set)
-            xticks_values.append(b + m)
             xtickslabel.append(start_label)
+
+            if c > 0:
+                xticks_values.append(b + c)
+                xtickslabel.append("")
+
+            if d > 0:
+                xticks_values.append(b + c + m)
+                xtickslabel.append("")
+
+            xticks_values.append(b + c + m + d)
             xtickslabel.append(end_label)
+
             if a > 0:
-                xticks_values.append(b + m + a)
+                xticks_values.append(b + c + m + d + a)
                 xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
             xticks = [(k / w) for k in xticks_values]
