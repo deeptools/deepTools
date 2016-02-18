@@ -786,16 +786,21 @@ class heatmapper(object):
         previnterval = None
         duplicates = 0
         totalintervals = 0
+        groupintervals = 0
         includedintervals = 0
         group_labels = []
         group_idx = 0
         bed_file = deeptools.readBed.ReadBed(regions_file)
         for ginterval in bed_file:
-            totalintervals += 1
             if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
                 continue
 
             if ginterval.line.startswith('#'):
+                # check for labels with no associated entries
+                if groupintervals == 0:
+                    continue
+                else:
+                    groupintervals = 0
                 group_idx += 1
                 label = ginterval.line[1:].strip()
                 if label in group_labels:
@@ -815,6 +820,7 @@ class heatmapper(object):
             #    continue
             # check for regions that have the same position as the previous.
             # This assumes that the regions file given is sorted
+            totalintervals += 1
             if previnterval is not None:
                 if previnterval.chrom == ginterval.chrom and \
                    previnterval.start == ginterval.start and \
@@ -832,6 +838,7 @@ class heatmapper(object):
                                                                  ginterval.end))
                     duplicates += 1
 
+            groupintervals += 1
             previnterval = ginterval
             ginterval.group_idx = group_idx
             regions.append(ginterval)
@@ -844,8 +851,10 @@ class heatmapper(object):
         if not group_labels:
             group_labels.append(default_group_name)
             using_default_group_name = True
+            groupintervals = 0
 
-        if len(group_labels) < group_idx - 1:
+        # If there are any remaining intervals with no group label then add a fake one
+        if groupintervals > 0:
             # There was a missing "#" at the end
             label = default_group_name
             if label in group_labels:

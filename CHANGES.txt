@@ -1,3 +1,22 @@
+2.2.0
+
+ * The Galaxy wrappers are now automatically tested with each modification.
+ * plotCoverage and plotFingerprint in Galaxy now accept 1 or more BAM files rather than at least 2 files.
+ * A bug involving processing comment lines in BED files was corrected (issue #288)
+
+2.1.0
+
+ * Updates to many of the Galaxy wrappers and associated documentation.
+ * A bug was fixed in how chromosome names were dealt with in bigWig files. If you ever received errors due to illegal intervals then that should now be fixed. This was issue #250
+ * plotProfile now has an --outFileNameData option for saving the underlying data in a text format.
+ * correctGCBias ensures that the resulting BAM file will pass picard/HTSJDK's validation if the input file did (issue #248)
+ * The default bin size was changed to 10, which is typically a bit more useful
+ * The --regionsLabel option to plotProfile and plotHeatmap now accepts a space-separated list, in line with --samplesLabel
+ * BAM files that have had their sequences stripped no longer cause an error
+ * bamPEFragmentSize now has -bs and -n options to allow adjusting the number of alignments sampled. Note that the default value is auto-adjusted if the sampling is too sparse.
+ * bamPEFragmentSize now accepts single-end files.
+ * The --hclust option to plotProfile and plotHeatmap continues even if one of the groups is too small for plotting (matplotlib will produce a warning that you can ignore). This was issue #280.
+ 
 2.0.1
 
  * A critical bug that prevented plotPCA from running was fixed.
