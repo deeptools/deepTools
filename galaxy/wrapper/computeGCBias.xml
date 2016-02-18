@@ -127,14 +127,14 @@
     <help>
 <![CDATA[
 What it does
-------------------
+------------
 
 This tool computes the GC bias using the method proposed in Benjamini and Speed (2012) Nucleic Acids Res. (see below for further details).
 The output is used to plot the results and can also be used later on to correct the bias with the tool ``correctGCbias``.
 There are two plots produced by the tool: a boxplot showing the absolute read numbers per GC-content bin and an x-y plot depicting the ratio of observed/expected reads per GC-content bin.
 
 Output files
---------------
+------------
 
 - Diagnostic plots:
       - box plot of absolute read numbers per GC-content bin
@@ -146,10 +146,10 @@ Output files
    :width: 600
    :height: 455
 
----------------------------------------------
+-----
 
 Background
--------------
+----------
 
 ``computeGCBias`` is based on a paper by `Benjamini and Speed <http://nar.oxfordjournals.org/content/40/10/e72>`_.
 The basic assumption of the GC bias diagnosis is that an ideal sample should show a uniform distribution of sequenced reads across the genome, i.e. all regions of the genome should have similar numbers of reads, regardless of their base-pair composition.

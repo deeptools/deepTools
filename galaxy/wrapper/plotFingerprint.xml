@@ -114,14 +114,14 @@
 
 
 What it does
----------------
+------------
 
 This tool is useful for assessing the strength of a ChIP (i.e. how clearly the enrichment signal can be separated from the background)
 and is based on a method described in Diaz et al. (2012) Stat Appl Genet Mol Biol 11(3).
 
 
 Output
----------
+------
 
 The default output is a diagnostic plot (see below for an example and further down for some background information).
 
@@ -142,10 +142,10 @@ What follows is the output of ``plotFingerprint`` with our test ChIP-Seq data se
    :width: 600
    :height: 450
 
------------------------------
+-----
 
 Background
---------------
+----------
 
 The tool first samples indexed BAM files and counts all reads overlapping a window (bin) of the specified length.
 These counts are then sorted according to their rank (the bin with the highest number of reads has the highest rank)

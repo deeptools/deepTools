@@ -66,13 +66,13 @@
 <![CDATA[
 
 What it does
----------------
+------------
 
 This tool samples a BAM file with paired-end data to estimate the fragment length distribution.
 Properly paired reads are preferred for computation, i.e., unless a region does not contain any concordant pairs, discordant pairs are ignored.
 
 Output
-----------
+------
 
 The **default** output is a simple summary statistic for the observed fragment lengths.
 
