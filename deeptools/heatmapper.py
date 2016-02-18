@@ -256,7 +256,7 @@ class heatmapper(object):
                     zones = \
                         [(feature.start - b * parameters['bin size'], feature.start, b),
                          (feature.start, feature.start + c * parameters['bin size'], c),
-                         (feature.start, feature.end, parameters['body'] / parameters['bin size']),
+                         (feature.start + c * parameters['bin size'], feature.end - d * parameters['bin size'], parameters['body'] / parameters['bin size']),
                          (feature.end - d * parameters['bin size'], feature.end, d),
                          (feature.end, feature.end + a * parameters['bin size'], a)]
                 elif parameters['ref point'] == 'TES':  # around TES
