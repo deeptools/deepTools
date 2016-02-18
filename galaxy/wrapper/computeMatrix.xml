@@ -52,6 +52,9 @@
                     --beforeRegionStartLength $mode.regionStartLength.beforeRegionStartLength
                     --afterRegionStartLength $mode.regionStartLength.afterRegionStartLength
                 #end if
+
+                --unscaled5prime $mode.unscaled5prime
+                --unscaled3prime $mode.unscaled3prime
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
@@ -71,7 +74,6 @@
                 #if $advancedOpt.scale is not None and str($advancedOpt.scale) != '':
                     --scale $advancedOpt.scale
                 #end if
-
             #end if
 ]]>
     </command>
@@ -118,6 +120,14 @@
                             label="Distance downstream of the region end position"
                             help="If the regions are genes, this would be the
                             distance downstream of the transcription end site."/>
+                        <param name="unscaled5prime" type="int" min="0" value="0"
+                            label="Number of bases within the gene body at the 5-prime end to exclude from scaling."
+                            help="By default, each region is scaled to a given length (see the --regionBodyLength
+                             option). In some cases it is useful to look at unscaled signals around region boundaries, so this
+                             setting specifies the number of unscaled bases on the 5-prime end of each boundary. (--unscaled5prime)" />
+                        <param name="unscaled3prime" type="int" min="0" value="0"
+                            label="Number of bases within the gene body at the 3-prime end to exclude from scaling."
+                            help="As with --unscaled5prime, but for the 3-prime end." />
                     </when>
                 </conditional>
             </when>
