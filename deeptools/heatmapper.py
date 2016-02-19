@@ -1077,8 +1077,10 @@ class _matrix(object):
 
         if method == 'hierarchical':
             # normally too slow for large data sets
-            from scipy.cluster.hierarchy import fclusterdata
-            cluster_labels = fclusterdata(matrix, k, criterion='maxclust', metric='euclidean', depth=2, method='ward')
+            from scipy.cluster.hierarchy import fcluster, linkage
+            Z = linkage(matrix, method='ward', metric='euclidean')
+            cluster_labels = fcluster(Z, k, criterion='maxclust')
+
         # create groups using the clustering
         self.group_labels = []
         self.group_boundaries = [0]
