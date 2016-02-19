@@ -156,7 +156,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
 
 def plotMatrix(hm, outFileName,
-               colorMapDict={'colorMap': 'binary', 'missingDataColor': 'black'},
+               colorMapDict={'colorMap': 'binary', 'missingDataColor': 'black', 'alpha': 1.0},
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -189,7 +189,6 @@ def plotMatrix(hm, outFileName,
 
     plt.rcParams['font.size'] = 8.0
     fontP = FontProperties()
-#    fontP.set_size('small')
 
     showSummaryPlot = False
     showColorbar = False
@@ -229,12 +228,14 @@ def plotMatrix(hm, outFileName,
     xticks_heat, xtickslabel_heat = get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel)
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
 
-    # colormap for the heatmap
+    # colormap(s) for the heatmap
     if colorMapDict['colorMap']:
-        cmap = plt.get_cmap(colorMapDict['colorMap'])
+        cmap = [plt.get_cmap(foo) for foo in colorMapDict['colorMap']]
     if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'my_cmap', colorMapDict['colorList'], N=colorMapDict['colorNumber'])
+
+    
 
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
@@ -497,7 +498,8 @@ def main(args=None):
     colormap_dict = {'colorMap': args.colorMap,
                      'colorList': args.colorList,
                      'colorNumber': args.colorNumber,
-                     'missingDataColor': args.missingDataColor}
+                     'missingDataColor': args.missingDataColor,
+                     'alpha': args.alpha}
 
     plotMatrix(hm,
                args.outFileName,

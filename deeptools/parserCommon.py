@@ -4,6 +4,12 @@ import os
 from deeptools._version import __version__
 
 
+def check_float_0_1(value):
+    v = float(value)
+    if v < 0.0 or v > 1.0:
+        raise argparse.ArgumentTypeError("%s is an invalid floating point value. It must be between 0.0 and 1.0" % value)
+    return v
+
 def output(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
@@ -472,7 +478,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'seen here: '
             'http://matplotlib.org/users/colormaps.html '
             'The available options are: \'' +
-            color_options + '\'')
+            color_options + '\'\n'
+            'Note that you can specify a different colormap for each heatmap if you separate colormaps by spaces.',
+            nargs='+')
+
+        optional.add_argument(
+            '--alpha',
+            default=1.0,
+            type=check_float_0_1,
+            help='The alpha channel (transparency) to use for each heatmap. '
+            'The default is 1.0 and values must be between 0 and 1. You supply a space-separated list to get a different alpha channel per-heatmap',
+            nargs='+')
 
         optional.add_argument(
             '--colorList',
