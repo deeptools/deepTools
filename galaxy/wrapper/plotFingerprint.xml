@@ -144,8 +144,8 @@ What follows is the output of ``plotFingerprint`` with our test ChIP-Seq data se
 
 -----
 
-Background
-----------
+Theoretical Background
+----------------------
 
 The tool first samples indexed BAM files and counts all reads overlapping a window (bin) of the specified length.
 These counts are then sorted according to their rank (the bin with the highest number of reads has the highest rank)

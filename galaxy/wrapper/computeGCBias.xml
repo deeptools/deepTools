@@ -137,19 +137,19 @@ Output files
 ------------
 
 - Diagnostic plots:
-      - box plot of absolute read numbers per GC-content bin
-      - x-y plot of observed/expected read ratios per GC-content bin
+    - box plot of absolute read numbers per GC-content bin
+    - x-y plot of observed/expected read ratios per GC-content bin
 
 - Tabular file: to be used for GC correction with ``correctGCbias``
 
 .. image:: $PATH_TO_IMAGES/computeGCBias_output.png
-   :width: 600
-   :height: 455
+    :width: 600
+    :height: 455
 
 -----
 
-Background
-----------
+Theoretical Background
+----------------------
 
 ``computeGCBias`` is based on a paper by `Benjamini and Speed <http://nar.oxfordjournals.org/content/40/10/e72>`_.
 The basic assumption of the GC bias diagnosis is that an ideal sample should show a uniform distribution of sequenced reads across the genome, i.e. all regions of the genome should have similar numbers of reads, regardless of their base-pair composition.
@@ -172,8 +172,8 @@ As you can see, both plots based on **simulated reads** do not show enrichments 
 Now, let's have a look at **real-life data** from genomic DNA sequencing. Panels A and B can be clearly distinguished and the major change that took place between the experiments underlying the plots was that the samples in panel A were prepared with too many PCR cycles and a standard polymerase whereas the samples of panel B were subjected to very few rounds of amplification using a high fidelity DNA polymerase.
 
 .. image:: $PATH_TO_IMAGES/QC_GCplots_input.png
-   :width: 600
-   :height: 452
+    :width: 600
+    :height: 452
 
 **Note:** The expected GC profile depends on the reference genome as different organisms have very different GC contents. For example, one would expect more fragments with GC fractions between 30% to 60% in mouse samples (average GC content of the mouse genome: 45 %) than for genome fragments from, for example, *Plasmodium falciparum* (average genome GC content *P. falciparum*: 20%).
 
