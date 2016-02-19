@@ -1078,6 +1078,12 @@ class _matrix(object):
         if method == 'hierarchical':
             # normally too slow for large data sets
             from scipy.cluster.hierarchy import fclusterdata
+            from scipy.spatial.distance import pdist
+            print(("the type is ", type(matrix)))
+            print(("original ndim is ", np.asarray(matrix).ndim))
+            foo = pdist(np.asarray(matrix, order='c', dtype=np.double), metric='euclidean')
+            print(("the pdist ndim is ", foo.ndim))
+            del foo
             cluster_labels = fclusterdata(matrix, k, criterion='maxclust', metric='euclidean', depth=2, method='ward')
         # create groups using the clustering
         self.group_labels = []
