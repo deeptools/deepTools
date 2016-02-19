@@ -67,6 +67,14 @@ class TestHeatmapper(object):
         assert filecmp.cmp(ROOT + '/master_extend_beyond_chr_size.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
+    def test_computeMatrix_unscaled(self):
+        args = "scale-regions -S {0}/unscaled.bigWig -R {0}/unscaled.bed -a 300 -b 500 --unscaled5prime 100 --unscaled3prime 50 " \
+               "--outFileName /tmp/_test.mat.gz -bs 10 -p 1".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_unscaled.mat', '/tmp/_test.mat') is True
+        os.remove('/tmp/_test.mat')
+
     def test_plotHeatmap_simple_plot(self):
         """
         Test a simple plot generated using a matrix from
