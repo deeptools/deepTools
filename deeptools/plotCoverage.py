@@ -221,6 +221,7 @@ def main(args=None):
     axs[1].set_ylabel('fraction of bases sampled >= coverage')
     axs[1].legend(fancybox=True, framealpha=0.5)
     plt.savefig(args.plotFile.name, format=args.plotFileFormat)
+    plt.close()
 
 if __name__ == "__main__":
     main()
