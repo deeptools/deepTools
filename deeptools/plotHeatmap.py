@@ -418,6 +418,7 @@ def plotMatrix(hm, outFileName,
                 format=image_format)
     plt.close()
 
+
 def mergeSmallGroups(matrixDict):
     group_lengths = [len(x) for x in matrixDict.values()]
     min_group_length = sum(group_lengths) * 0.01
