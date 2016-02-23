@@ -416,7 +416,7 @@ def plotMatrix(hm, outFileName,
 
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
-
+    plt.close(fig)
 
 def mergeSmallGroups(matrixDict):
     group_lengths = [len(x) for x in matrixDict.values()]
