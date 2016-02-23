@@ -262,6 +262,7 @@ class Profile(object):
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
         plt.close()
 
+
     def plot_heatmap(self):
         matrix_flatten = None
         if self.y_min is None:
@@ -352,6 +353,7 @@ class Profile(object):
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
         plt.close()
+
 
     def plot_profile(self):
 
@@ -467,6 +469,7 @@ class Profile(object):
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
         plt.close()
+
 
 def main(args=None):
     args = process_args(args)
