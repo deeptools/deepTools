@@ -181,6 +181,7 @@ def main(args=None):
         args.plotFileFormat = None
 
     plt.savefig(args.plotFile.name, bbox_inches=0, format=args.plotFileFormat)
+    plt.close()
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
