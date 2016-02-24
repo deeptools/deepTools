@@ -98,6 +98,7 @@ def main(args=None):
          (args.bigwig2, 'bigwig')],
         args.outFileName, 0, FUNC,
         function_args, tileSize=args.binSize, region=args.region,
+        blackListFileName=args.blackListFileName,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
         smoothLength=False,
