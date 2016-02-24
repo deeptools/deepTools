@@ -107,7 +107,7 @@ def main(args=None):
             for v in mlab_pca.Wt[i, :]:
                 of.write("\t{}".format(v))
             of.write("\t{}\n".format(mlab_pca.s[i]))
-        of.close()
+        args.outFileNameData.close()
 
 
 if __name__ == "__main__":

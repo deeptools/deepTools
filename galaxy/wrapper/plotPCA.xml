@@ -12,8 +12,8 @@
             --plotTitle "$plotTitle"
             --plotFile "$outFileName"
             --plotFileFormat "$outFileFormat"
-            #if $outFileNameData
-                --outFileNameData "$matrix"
+            #if $outFileNameDataBool
+                --outFileNameData "$outFileNameData"
             #end if
 ]]>
     </command>
@@ -25,8 +25,8 @@
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
-        <data format="tabular" name="matrix" label="${tool.name} on ${on_string}: PCA matrix">
-            <filter>outFileNameData is True</filter>
+        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: PCA matrix">
+            <filter>outFileNameDataBool is true</filter>
         </data>
     </outputs>
     <tests>
@@ -40,7 +40,7 @@
             <param name="corData" value="multiBamSummary_result2.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
-            <param name="outFileNameData" value="true" />
+            <param name="outFileNameDataBool" value="true" />
             <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="4000" />
             <output name="outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
         </test>
