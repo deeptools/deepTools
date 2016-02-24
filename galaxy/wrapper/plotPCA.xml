@@ -39,9 +39,9 @@
         <test>
             <param name="corData" value="multiBamSummary_result2.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
+            <output name="outFileNameData" value="True" file="plotPCA_result2.tabular" ftype="tabular" />
             <param name="outFileFormat" value="png" />
             <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="4000" />
-            <output name="outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
         </test>
     </tests>
     <help>
