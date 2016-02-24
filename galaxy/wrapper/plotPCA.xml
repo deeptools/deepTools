@@ -41,7 +41,7 @@
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
             <param name="outFileNameData" value="True" />
-            <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="100" />
+            <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="2000" />
             <output name="outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
         </test>
     </tests>
