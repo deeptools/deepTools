@@ -21,7 +21,7 @@ from deeptools import utilities
 
 
 def parse_arguments(args=None):
-    parentParser = parserCommon.getParentArgParse(binSize=True)
+    parentParser = parserCommon.getParentArgParse(binSize=True, blackList=False)
     requiredArgs = getRequiredArgs()
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],

@@ -110,12 +110,15 @@ def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
+    bam_mapped -= blacklisted
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
         frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                     return_lengths=False,
+                                                                    blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
         if args.extendReads:
@@ -180,6 +183,7 @@ def main(args=None):
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
         frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                     return_lengths=False,
+                                                                    blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
         if frag_len_dict is None:
@@ -189,6 +193,7 @@ def main(args=None):
                             binLength=args.binSize,
                             stepSize=args.binSize,
                             region=args.region,
+                            blackListFileName=args.blackListFileName,
                             numberOfProcessors=args.numberOfProcessors,
                             extendReads=args.extendReads,
                             minMappingQuality=args.minMappingQuality,
@@ -205,6 +210,7 @@ def main(args=None):
                                          binLength=args.binSize,
                                          stepSize=args.binSize,
                                          region=args.region,
+                                         blackListFileName=args.blackListFileName,
                                          numberOfProcessors=args.numberOfProcessors,
                                          extendReads=args.extendReads,
                                          minMappingQuality=args.minMappingQuality,
@@ -217,6 +223,7 @@ def main(args=None):
                                          )
 
     wr.run(writeBedGraph.scaleCoverage, func_args, args.outFileName,
+           blackListFileName=args.blackListFileName,
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 

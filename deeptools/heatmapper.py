@@ -10,6 +10,7 @@ import pysam
 
 import pyBigWig
 import deeptools.readBed
+from deeptools import mapReduce
 
 
 def compute_sub_matrix_wrapper(args):
@@ -27,8 +28,9 @@ class heatmapper(object):
         self.lengthDict = None
         self.matrix = None
         self.regions = None
+        self.blackList = None
 
-    def computeMatrix(self, score_file_list, regions_file, parameters, verbose=False):
+    def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False):
         """
         Splits into
         multiple cores the computation of the scores
@@ -54,7 +56,7 @@ class heatmapper(object):
             exit("Length of region before the body has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['upstream']))
 
-        regions, group_labels = self.get_regions_and_groups(regions_file, verbose=verbose)
+        regions, group_labels = self.get_regions_and_groups(regions_file, blackListFileName=blackListFileName, verbose=verbose)
 
         # args to pass to the multiprocessing workers
         mp_args = []
@@ -771,6 +773,7 @@ class heatmapper(object):
     @staticmethod
     def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
                                default_group_name='genes',
+                               blackListFileName=None,
                                verbose=None):
         """
         Reads a bed file.
@@ -786,16 +789,25 @@ class heatmapper(object):
         previnterval = None
         duplicates = 0
         totalintervals = 0
+        groupintervals = 0
         includedintervals = 0
         group_labels = []
         group_idx = 0
         bed_file = deeptools.readBed.ReadBed(regions_file)
+        blackList = None
+        if blackListFileName is not None:
+            blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
+
         for ginterval in bed_file:
-            totalintervals += 1
             if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
                 continue
 
             if ginterval.line.startswith('#'):
+                # check for labels with no associated entries
+                if groupintervals == 0:
+                    continue
+                else:
+                    groupintervals = 0
                 group_idx += 1
                 label = ginterval.line[1:].strip()
                 if label in group_labels:
@@ -809,12 +821,18 @@ class heatmapper(object):
 
                 group_labels.append(label)
                 continue
+
+            # Exclude blacklist overlaps
+            if mapReduce.blOverlap(blackList, ginterval.chrom, [ginterval.start, ginterval.end]):
+                continue
+
             # if the list of regions is to big, only
             # consider a fraction of the data
             # if totalintervals % onlyMultiplesOf != 0:
             #    continue
             # check for regions that have the same position as the previous.
             # This assumes that the regions file given is sorted
+            totalintervals += 1
             if previnterval is not None:
                 if previnterval.chrom == ginterval.chrom and \
                    previnterval.start == ginterval.start and \
@@ -832,6 +850,7 @@ class heatmapper(object):
                                                                  ginterval.end))
                     duplicates += 1
 
+            groupintervals += 1
             previnterval = ginterval
             ginterval.group_idx = group_idx
             regions.append(ginterval)
@@ -844,8 +863,10 @@ class heatmapper(object):
         if not group_labels:
             group_labels.append(default_group_name)
             using_default_group_name = True
+            groupintervals = 0
 
-        if len(group_labels) < group_idx - 1:
+        # If there are any remaining intervals with no group label then add a fake one
+        if groupintervals > 0:
             # There was a missing "#" at the end
             label = default_group_name
             if label in group_labels:
@@ -1068,8 +1089,10 @@ class _matrix(object):
 
         if method == 'hierarchical':
             # normally too slow for large data sets
-            from scipy.cluster.hierarchy import fclusterdata
-            cluster_labels = fclusterdata(matrix, k, criterion='maxclust', metric='euclidean', depth=2, method='ward')
+            from scipy.cluster.hierarchy import fcluster, linkage
+            Z = linkage(matrix, method='ward', metric='euclidean')
+            cluster_labels = fcluster(Z, k, criterion='maxclust')
+
         # create groups using the clustering
         self.group_labels = []
         self.group_boundaries = [0]
