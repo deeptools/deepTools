@@ -21,7 +21,7 @@
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamSummary or multiBigwigSummary tools"/>
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
-        <param name="outFileNameData" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
+        <param name="outFileNameDataBool" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
