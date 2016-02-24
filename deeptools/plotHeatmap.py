@@ -67,8 +67,8 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
-    c = hm.parameters.get('unscaled 5 prime',0)
-    d = hm.parameters.get('unscaled 3 prime',0)
+    c = hm.parameters.get('unscaled 5 prime', 0)
+    d = hm.parameters.get('unscaled 3 prime', 0)
     m = hm.parameters['body']
 
     if b < 1e5:
