@@ -67,6 +67,8 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
+    c = hm.parameters.get('unscaled 5 prime', 0)
+    d = hm.parameters.get('unscaled 3 prime', 0)
     m = hm.parameters['body']
 
     if b < 1e5:
@@ -86,17 +88,28 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
         xticks_label = []
 
         # only if upstream region is set, add a x tick
-        if hm.parameters['upstream'] > 0:
+        if b > 0:
             xticks_values.append(b)
             xticks_label.append('{0:.1f}'.format(-(float(b) / quotient)))
 
+        xticks_label.append(startLabel)
+
+        # 5 prime unscaled tick/label, if needed
+        if c > 0:
+            xticks_values.append(b + c)
+            xticks_label.append('')
+
         # set the x tick for the body parameter, regardless if
         # upstream is 0 (not set)
-        xticks_values.append(b + m)
-        xticks_label.append(startLabel)
+        if d > 0:
+            xticks_values.append(b + c + m)
+            xticks_label.append('')
+
+        xticks_values.append(b + c + m + d)
         xticks_label.append(endLabel)
+
         if a > 0:
-            xticks_values.append(b + m + a)
+            xticks_values.append(b + c + m + d + a)
             xticks_label.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
         xticks = [k / w for k in xticks_values]
@@ -218,11 +231,6 @@ def plotMatrix(hm, outFileName,
     if showColorbar:
         total_figwidth += 1 / 2.54
     fig = plt.figure(figsize=(total_figwidth, figheight))
-
-    hm.parameters['upstream']
-    hm.parameters['downstream']
-    hm.parameters['body']
-    hm.parameters['bin size']
 
     xticks, xtickslabel = getProfileTicks(hm, reference_point_label, startLabel, endLabel)
 
@@ -489,8 +497,8 @@ def main(args=None):
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
 
-    # if args.outFileNameData:
-    #    hm.saveTabulatedValues(args.outFileNameData)
+    if args.outFileNameData:
+        hm.save_tabulated_values(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

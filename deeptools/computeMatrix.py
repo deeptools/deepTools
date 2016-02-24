@@ -176,6 +176,17 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'of the given regions. If the '
                               'regions are genes, this would be the distance '
                               'downstream of the transcription end site.')
+        optional.add_argument("--unscaled5prime",
+                              default=0,
+                              type=int,
+                              help='Number of bases at the 5-prime end of the '
+                              'region to exclude from scaling. By default, '
+                              'each region is scaled to a given length (see the --regionBodyLength option). In some cases it is useful to look at unscaled signals around region boundaries, so this setting specifies the number of unscaled bases on the 5-prime end of each boundary.')
+        optional.add_argument("--unscaled3prime",
+                              default=0,
+                              type=int,
+                              help='Like --unscaled3prime, but for the 3-prime '
+                              'end.')
 
     elif case == 'reference-point':
         optional.add_argument('--referencePoint',
@@ -191,6 +202,8 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
         # set region body length to zero for reference point mode
         optional.add_argument('--regionBodyLength', help=argparse.SUPPRESS,
                               default=0, type=int)
+        optional.add_argument('--unscaled5prime', default=0, type=int, help=argparse.SUPPRESS)
+        optional.add_argument('--unscaled3prime', default=0, type=int, help=argparse.SUPPRESS)
         optional.add_argument('--beforeRegionStartLength', '-b', '--upstream',
                               default=500,
                               type=int,
@@ -365,7 +378,9 @@ def main(args=None):
                   'nan after end': args.nanAfterEnd,
                   'proc number': args.numberOfProcessors,
                   'sort regions': args.sortRegions,
-                  'sort using': args.sortUsing
+                  'sort using': args.sortUsing,
+                  'unscaled 5 prime': args.unscaled5prime,
+                  'unscaled 3 prime': args.unscaled3prime
                   }
 
     hm = heatmapper.heatmapper()
