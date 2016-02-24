@@ -111,6 +111,7 @@ def main(args=None):
         plt.ylabel('Frequency')
         plt.title(args.plotTitle)
         plt.savefig(args.histogram, bbox_inches=0)
+        plt.close()
 
 
 if __name__ == "__main__":

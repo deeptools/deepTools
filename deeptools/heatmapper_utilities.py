@@ -48,6 +48,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     >>> ax = plot_single(ax, matrix + 30, 'mean', color=(0.9, 0.5, 0.9, 0.5), label='violet with alpha', plot_type='std')
     >>> leg = ax.legend()
     >>> plt.savefig("/tmp/test.pdf")
+    >>> plt.close()
     >>> fig = plt.figure()
 
 

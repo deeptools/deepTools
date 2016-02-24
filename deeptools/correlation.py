@@ -307,6 +307,7 @@ class Correlation:
                                   ha='center', va='center')
 
         fig.savefig(plot_fiilename, format=image_format)
+        fig.close()
 
     def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
         """
@@ -411,6 +412,7 @@ class Correlation:
             ax.set_xlim(min_value, ax.get_xlim()[1])
 
         plt.savefig(plot_fiilename, format=image_format)
+        plt.close()
 
     def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False):
         """
@@ -468,3 +470,4 @@ class Correlation:
         plt.subplots_adjust(top=3.85)
         plt.tight_layout()
         plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+        plt.close()
