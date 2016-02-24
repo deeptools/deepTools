@@ -147,7 +147,7 @@ def writeBedGraph_worker(
 
 def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
-        func, funcArgs, tileSize=25, region=None, numberOfProcessors=None,
+        func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=None,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
         smoothLength=0, fixed_step=False):
     r"""
@@ -207,6 +207,7 @@ def writeBedGraph(
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,
                               region=region,
+                              blackListFileName=blackListFileName,
                               numberOfProcessors=numberOfProcessors)
 
     # concatenate intermediary bedgraph files

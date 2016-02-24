@@ -139,6 +139,7 @@ def main(args=None):
         args.bamfiles,
         args.binSize,
         args.numberOfSamples,
+        blackListFileName=args.blackListFileName,
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
@@ -166,10 +167,12 @@ def main(args=None):
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
     i = 0
+    # matplotlib won't iterate through line styles by itself
+    pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"], 7 * ["."]], [])
     for reads in num_reads_per_bin.T:
         count = np.cumsum(np.sort(reads))
-        count = count / count[-1]  # to normalyze y from 0 to 1
-        plt.plot(x, count, label=args.labels[i])
+        count = count / count[-1]  # to normalize y from 0 to 1
+        plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[i])
         plt.xlabel('rank')
         plt.ylabel('fraction w.r.t. bin with highest coverage')
         i += 1
@@ -181,6 +184,7 @@ def main(args=None):
         args.plotFileFormat = None
 
     plt.savefig(args.plotFile.name, bbox_inches=0, format=args.plotFileFormat)
+    plt.close()
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")

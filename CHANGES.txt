@@ -1,8 +1,10 @@
-2.2.0
 
+2.1.1
+
+ * Fixed a how the --hclust option was handled in plotHeatmap/plotProfile. This gets around a quirk in scipy.
+ * A bug involving processing comment lines in BED files was corrected (issue #288)
  * The Galaxy wrappers are now automatically tested with each modification.
  * plotCoverage and plotFingerprint in Galaxy now accept 1 or more BAM files rather than at least 2 files.
- * A bug involving processing comment lines in BED files was corrected (issue #288)
 
 2.1.0
 
