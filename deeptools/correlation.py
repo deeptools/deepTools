@@ -307,7 +307,6 @@ class Correlation:
                                   ha='center', va='center')
 
         fig.savefig(plot_fiilename, format=image_format)
-        fig.close()
 
     def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
         """
