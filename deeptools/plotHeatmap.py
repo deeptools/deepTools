@@ -67,14 +67,8 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
-    try:
-        c = hm.parameters['unscaled 5 prime']
-    except:
-        c = 0
-    try:
-        d = hm.parameters['unscaled 3 prime']
-    except:
-        d = 0
+    c = hm.parameters.get('unscaled 5 prime',0)
+    d = hm.parameters.get('unscaled 3 prime',0)
     m = hm.parameters['body']
 
     if b < 1e5:
@@ -237,11 +231,6 @@ def plotMatrix(hm, outFileName,
     if showColorbar:
         total_figwidth += 1 / 2.54
     fig = plt.figure(figsize=(total_figwidth, figheight))
-
-    # hm.parameters['upstream']
-    # hm.parameters['downstream']
-    # hm.parameters['body']
-    # hm.parameters['bin size']
 
     xticks, xtickslabel = getProfileTicks(hm, reference_point_label, startLabel, endLabel)
 
