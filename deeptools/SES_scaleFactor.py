@@ -13,7 +13,7 @@ debug = 0
 
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                         normalizationLength,
-                        avg_method='median', numberOfProcessors=1,
+                        avg_method='median', blackListFileName=None, numberOfProcessors=1,
                         verbose=False, chrsToSkip=[]):
     r"""
     Subdivides the genome into chunks to be analyzed in parallel
@@ -41,6 +41,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     chrsToSkip : list
         name of the chromosomes to be excluded from the
         scale estimation. Usually the chrX is included.
+    blackListFileName : str
+        BED file containing blacklisted regions
 
     Returns
     -------
@@ -84,6 +86,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                                  binLength=binLength,
                                  numberOfSamples=numberOfSamples,
                                  extendReads=False,
+                                 blackListFileName=blackListFileName,
                                  numberOfProcessors=numberOfProcessors,
                                  verbose=verbose,
                                  chrsToSkip=chrsToSkip)

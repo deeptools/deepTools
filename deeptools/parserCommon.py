@@ -177,7 +177,7 @@ def normalization_options():
     return parser
 
 
-def getParentArgParse(args=None, binSize=True):
+def getParentArgParse(args=None, binSize=True, blackList=True):
     """
     Typical arguments for several tools
     """
@@ -205,6 +205,12 @@ def getParentArgParse(args=None, binSize=True):
                           metavar="CHR:START:END",
                           required=False,
                           type=genomicRegion)
+
+    if blackList:
+        optional.add_argument('--blackListFileName', '-bl',
+                              help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
+                              metavar="BED file",
+                              required=False)
 
     optional.add_argument('--numberOfProcessors', '-p',
                           help='Number of processors to use. Type "max/2" to '
@@ -643,3 +649,26 @@ def bam_total_reads(bam_handle, chroms_to_ignore):
         tot_mapped_reads = bam_handle.mapped
 
     return tot_mapped_reads
+
+
+def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
+    blacklisted = 0
+    if blackListFileName is None:
+        return blacklisted
+
+    import pysam
+    import deeptools.mapReduce as mapReduce
+
+    # Get the chromosome lengths
+    chromLens = {}
+    for line in pysam.idxstats(bam_handle.filename):
+        chrom, _len, nmapped, _nunmapped = line.split('\t')
+        chromLens[chrom] = int(_len)
+
+    bl = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
+    for chrom in bl.keys():
+        if not chroms_to_ignore or chrom not in chroms_to_ignore:
+            for reg in bl[chrom].find(0, chromLens[chrom]):
+                blacklisted += bam_handle.count(reference=chrom, start=reg.start, end=reg.end)
+
+    return blacklisted

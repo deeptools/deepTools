@@ -10,6 +10,7 @@ import pysam
 
 import pyBigWig
 import deeptools.readBed
+from deeptools import mapReduce
 
 
 def compute_sub_matrix_wrapper(args):
@@ -27,8 +28,9 @@ class heatmapper(object):
         self.lengthDict = None
         self.matrix = None
         self.regions = None
+        self.blackList = None
 
-    def computeMatrix(self, score_file_list, regions_file, parameters, verbose=False):
+    def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False):
         """
         Splits into
         multiple cores the computation of the scores
@@ -54,7 +56,7 @@ class heatmapper(object):
             exit("Length of region before the body has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['upstream']))
 
-        regions, group_labels = self.get_regions_and_groups(regions_file, verbose=verbose)
+        regions, group_labels = self.get_regions_and_groups(regions_file, blackListFileName=blackListFileName, verbose=verbose)
 
         # args to pass to the multiprocessing workers
         mp_args = []
@@ -771,6 +773,7 @@ class heatmapper(object):
     @staticmethod
     def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
                                default_group_name='genes',
+                               blackListFileName=None,
                                verbose=None):
         """
         Reads a bed file.
@@ -791,6 +794,10 @@ class heatmapper(object):
         group_labels = []
         group_idx = 0
         bed_file = deeptools.readBed.ReadBed(regions_file)
+        blackList = None
+        if blackListFileName is not None:
+            blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
+
         for ginterval in bed_file:
             if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
                 continue
@@ -814,6 +821,11 @@ class heatmapper(object):
 
                 group_labels.append(label)
                 continue
+
+            # Exclude blacklist overlaps
+            if mapReduce.blOverlap(blackList, ginterval.chrom, [ginterval.start, ginterval.end]):
+                continue
+
             # if the list of regions is to big, only
             # consider a fraction of the data
             # if totalintervals % onlyMultiplesOf != 0:
