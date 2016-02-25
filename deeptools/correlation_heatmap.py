@@ -100,3 +100,4 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
                               ha='center', va='center')
 
     fig.savefig(plotFileName, format=image_format)
+    fig.close()

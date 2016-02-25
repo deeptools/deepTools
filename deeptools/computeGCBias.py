@@ -612,6 +612,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     ax2.set_xlim(0.2, 0.7)
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
+    plt.close()
 
 
 def main(args=None):
