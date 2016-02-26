@@ -22,7 +22,7 @@ debug = 0
 
 
 def parse_arguments(args=None):
-    parentParser = parserCommon.getParentArgParse(binSize=False)
+    parentParser = parserCommon.getParentArgParse(binSize=False, blackList=True)
     requiredArgs = getRequiredArgs()
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
@@ -95,26 +95,6 @@ def getRequiredArgs():
                           default=5e7,
                           help='Number of sampling points to be considered.',
                           type=int)
-
-    optional.add_argument(
-        '--filterOut', '-fo',
-        help='BED file containing genomic regions to be excluded '
-        'from the estimation of the correction. Such regions '
-        'usually contain repetitive regions and peaks that, if '
-        'included, would bias the correction. '
-        'It is recommended to filter out known repetitive regions '
-        'if multimappers (reads that map to more than one genomic '
-        'position) were excluded. In the case of ChIP-seq data, '
-        'it is recommended to first use '
-        'a peak caller to identify and filter out the identified peaks.\n\n'
-        'Mappability tracks for different read lengths can be '
-        'found at: http://hgdownload.cse.ucsc.edu/gbdb/mm9/bbi/ '
-        'and http://hgdownload.cse.ucsc.edu/gbdb/hg19/bbi \n\n'
-        'The script: scripts/mappabilityBigWig_to_unmappableBed.sh '
-        'can be used to get a BED file from the mappability '
-        'bigWig.',
-        type=argparse.FileType('r'),
-        metavar='BED file')
 
     optional.add_argument('--extraSampling',
                           help='BED file containing genomic regions for which '
@@ -632,13 +612,14 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     ax2.set_xlim(0.2, 0.7)
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
+    plt.close()
 
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
     # check if directory is writable
-    if args.filterOut:
-        filter_out_file = args.filterOut.name
+    if args.blackListFileName:
+        filter_out_file = args.BlackListFileName
         args.filterOut.close()
     else:
         filter_out_file = None

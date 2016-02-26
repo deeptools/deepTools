@@ -260,6 +260,7 @@ class Profile(object):
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.close()
 
     def plot_heatmap(self):
         matrix_flatten = None
@@ -352,6 +353,7 @@ class Profile(object):
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.close()
 
     def plot_profile(self):
 
@@ -466,6 +468,7 @@ class Profile(object):
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.close()
 
 
 def main(args=None):

@@ -10,6 +10,7 @@ import pysam
 
 import pyBigWig
 import deeptools.readBed
+from deeptools import mapReduce
 
 
 def compute_sub_matrix_wrapper(args):
@@ -27,8 +28,9 @@ class heatmapper(object):
         self.lengthDict = None
         self.matrix = None
         self.regions = None
+        self.blackList = None
 
-    def computeMatrix(self, score_file_list, regions_file, parameters, verbose=False):
+    def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False):
         """
         Splits into
         multiple cores the computation of the scores
@@ -54,7 +56,15 @@ class heatmapper(object):
             exit("Length of region before the body has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['upstream']))
 
-        regions, group_labels = self.get_regions_and_groups(regions_file, verbose=verbose)
+        if parameters['unscaled 5 prime'] % parameters['bin size'] > 0:
+            exit("Length of the unscaled 5 prime region has to be a multiple of "
+                 "--binSize\nCurrent value is {}\n".format(parameters['unscaled 5 prime']))
+
+        if parameters['unscaled 3 prime'] % parameters['bin size'] > 0:
+            exit("Length of the unscaled 5 prime region has to be a multiple of "
+                 "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
+
+        regions, group_labels = self.get_regions_and_groups(regions_file, blackListFileName=blackListFileName, verbose=verbose)
 
         # args to pass to the multiprocessing workers
         mp_args = []
@@ -199,6 +209,7 @@ class heatmapper(object):
         # given by the user, times the number of score files
         matrix_cols = len(score_file_list) * \
             ((parameters['downstream'] +
+              parameters['unscaled 5 prime'] + parameters['unscaled 3 prime'] +
               parameters['upstream'] + parameters['body']) /
              parameters['bin size'])
 
@@ -212,38 +223,43 @@ class heatmapper(object):
         for feature in regions:
             # print some information
             if parameters['body'] > 0 and \
-                    feature.end - feature.start < parameters['bin size']:
+                    feature.end - feature.start - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime'] < parameters['bin size']:
                 if parameters['verbose']:
-                    sys.stderr.write("A region that is shorter than "
-                                     "then bin size was found: "
-                                     "({}) {} {}:{}:{}. Skipping...\n".format((feature.end - feature.start),
+                    sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
+                                     "({}) {} {}:{}:{}. Skipping...\n".format((feature.end - feature.start - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
                                                                               feature.name, feature.chrom,
                                                                               feature.start, feature.end))
-
                 coverage = np.zeros(matrix_cols)
                 coverage[:] = np.nan
-
             else:
                 if feature.strand == '-':
                     a = parameters['upstream'] / parameters['bin size']
                     b = parameters['downstream'] / parameters['bin size']
-                    start = feature.end
-                    end = feature['start']
+                    d = parameters['unscaled 5 prime'] / parameters['bin size']
+                    c = parameters['unscaled 3 prime'] / parameters['bin size']
+                    start = feature.end - parameters['unscaled 5 prime']
+                    end = feature['start'] + parameters['unscaled 3 prime']
                 else:
                     b = parameters['upstream'] / parameters['bin size']
                     a = parameters['downstream'] / parameters['bin size']
-                    start = feature['start']
-                    end = feature.end
+                    c = parameters['unscaled 5 prime'] / parameters['bin size']
+                    d = parameters['unscaled 3 prime'] / parameters['bin size']
+                    start = feature['start'] + parameters['unscaled 5 prime']
+                    end = feature.end - parameters['unscaled 3 prime']
 
                 # build zones:
                 #  zone0: region before the region start,
-                #  zone1: the body of the region (not always present)
-                #  zone2: the region from the end of the region downstream
+                #  zone1: unscaled 5 prime region
+                #  zone2: the body of the region (not always present)
+                #  zone3: unscaled 3 prime region
+                #  zone4: the region from the end of the region downstream
                 #  the format for each zone is: start, end, number of bins
                 if parameters['body'] > 0:
                     zones = \
                         [(feature.start - b * parameters['bin size'], feature.start, b),
-                         (feature.start, feature.end, parameters['body'] / parameters['bin size']),
+                         (feature.start, feature.start + c * parameters['bin size'], c),
+                         (feature.start + c * parameters['bin size'], feature.end - d * parameters['bin size'], parameters['body'] / parameters['bin size']),
+                         (feature.end - d * parameters['bin size'], feature.end, d),
                          (feature.end, feature.end + a * parameters['bin size'], a)]
                 elif parameters['ref point'] == 'TES':  # around TES
                     zones = [(end - b * parameters['bin size'], end, b),
@@ -483,8 +499,10 @@ class heatmapper(object):
         no regions are skipped.
 
         zones: array as follows zone0: region before the region start,
-                                zone1: the body of the region (not always present)
-                                zone2: the region from the end of the region downstream
+                                zone1: 5' unscaled region (if present)
+                                zone2: the body of the region (not always present)
+                                zone3: 3' unscaled region (if present)
+                                zone4: the region from the end of the region downstream
 
                each zone is a tuple containing start, end, and number of bins
 
@@ -665,6 +683,8 @@ class heatmapper(object):
         w = self.parameters['bin size']
         b = self.parameters['upstream']
         a = self.parameters['downstream']
+        c = self.parameters['unscaled 5 prime']
+        d = self.parameters['unscaled 3 prime']
         m = self.parameters['body']
 
         if b < 1e5:
@@ -684,17 +704,25 @@ class heatmapper(object):
             xtickslabel = []
 
             # only if upstream region is set, add a x tick
-            if self.parameters['upstream'] > 0:
+            if b > 0:
                 xticks_values.append(b)
                 xtickslabel.append('{0:.1f}{1}'.format(-(float(b) / quotient), symbol))
 
-            # set the x tick for the body parameter, regardless if
-            # upstream is 0 (not set)
-            xticks_values.append(b + m)
             xtickslabel.append(start_label)
+
+            if c > 0:
+                xticks_values.append(b + c)
+                xtickslabel.append("")
+
+            if d > 0:
+                xticks_values.append(b + c + m)
+                xtickslabel.append("")
+
+            xticks_values.append(b + c + m + d)
             xtickslabel.append(end_label)
+
             if a > 0:
-                xticks_values.append(b + m + a)
+                xticks_values.append(b + c + m + d + a)
                 xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
             xticks = [(k / w) for k in xticks_values]
@@ -727,11 +755,13 @@ class heatmapper(object):
                                        groups_len[i]))
         fh.write("#{}\n".format("\t".join(info)))
         # add to header the x axis values
-        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\n".format(
+        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
                  self.parameters['downstream'],
                  self.parameters['upstream'],
                  self.parameters['body'],
-                 self.parameters['bin size']))
+                 self.parameters['bin size'],
+                 self.parameters['unscaled 5 prime'],
+                 self.parameters['unscaled 3 prime']))
 
         fh.close()
         # reopen again using append mode
@@ -771,6 +801,7 @@ class heatmapper(object):
     @staticmethod
     def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
                                default_group_name='genes',
+                               blackListFileName=None,
                                verbose=None):
         """
         Reads a bed file.
@@ -791,6 +822,10 @@ class heatmapper(object):
         group_labels = []
         group_idx = 0
         bed_file = deeptools.readBed.ReadBed(regions_file)
+        blackList = None
+        if blackListFileName is not None:
+            blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
+
         for ginterval in bed_file:
             if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
                 continue
@@ -814,6 +849,11 @@ class heatmapper(object):
 
                 group_labels.append(label)
                 continue
+
+            # Exclude blacklist overlaps
+            if mapReduce.blOverlap(blackList, ginterval.chrom, [ginterval.start, ginterval.end]):
+                continue
+
             # if the list of regions is to big, only
             # consider a fraction of the data
             # if totalintervals % onlyMultiplesOf != 0:
@@ -904,7 +944,7 @@ class heatmapper(object):
         of smaller matrices that are merged one after
         the other.
         """
-        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body']) /
+        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body'] + self.parameters['unscaled 5 prime'] + self.parameters['unscaled 3 prime']) /
                       self.parameters['bin size'])
 
         return matrixCols

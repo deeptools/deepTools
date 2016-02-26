@@ -60,6 +60,10 @@
                     --yMax $advancedOpt.yMax
                 #end if
 
+                #if $advancedOpt.outFileNameData:
+                    --outFileNameData $outFileNameData
+                #end if
+
                 @KMEANS_CLUSTERING@
 
             #end if
@@ -154,6 +158,8 @@
                     label="Make one plot per group of regions"
                     help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions. " />
 
+                <param argument="--outFileNameData" type="boolean" label="Save the data underlying the average profile"
+                    help="This option will create an additional output file." />
 
                 <param argument="--yMin" type="float" value="" size="3" optional="true"
                     label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
@@ -168,6 +174,11 @@
     <outputs>
         <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
+
+        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: Underlying data">
+            <filter>outFileNameData is True</filter>
+        </data>
+
     </outputs>
     <tests>
         <test>
