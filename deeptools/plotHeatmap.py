@@ -129,9 +129,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     numcols = hm_matrix.get_num_samples()
     numrows = hm_matrix.get_num_groups()
     if perGroup:
-        temp = numcols
-        numcols = numrows
-        numrows = temp
+        numcols, numrows = numrows, numcols
 
     # the rows have different size depending
     # on the number of regions contained in the
@@ -227,7 +225,11 @@ def plotMatrix(hm, outFileName,
         figheight += figwidth
 
     numsamples = hm.matrix.get_num_samples()
-    total_figwidth = figwidth * numsamples
+    if perGroup:
+        num_cols = hm.matrix.get_num_groups()
+    else:
+        num_cols = numsamples
+    total_figwidth = figwidth * num_cols
     if showColorbar:
         total_figwidth += 1 / 2.54
     fig = plt.figure(figsize=(total_figwidth, figheight))
@@ -330,22 +332,26 @@ def plotMatrix(hm, outFileName,
             elif not perGroup and sample == 0:
                 ax.axes.set_ylabel(sub_matrix['group'])
 
-        # add xticks to the bottom heatmap (last group)
-        ax.axes.get_xaxis().set_visible(True)
-        ax.axes.set_xticks(xticks_heat)
-        ax.axes.set_xticklabels(xtickslabel_heat, size=8)
+            # add labels to last block in a column
+            if (perGroup and sample == hm.matrix.get_num_samples() - 1) or \
+               (not perGroup and group_idx == numgroups - 1):
 
-        # align the first and last label
-        # such that they don't fall off
-        # the heatmap sides
-        ticks = ax.xaxis.get_major_ticks()
-        ticks[0].label1.set_horizontalalignment('left')
-        ticks[-1].label1.set_horizontalalignment('right')
+                # add xticks to the bottom heatmap (last group)
+                ax.axes.get_xaxis().set_visible(True)
+                ax.axes.set_xticks(xticks_heat)
+                ax.axes.set_xticklabels(xtickslabel_heat, size=8)
 
-        ax.get_xaxis().set_tick_params(
-            which='both',
-            top='off',
-            direction='out')
+                # align the first and last label
+                # such that they don't fall off
+                # the heatmap sides
+                ticks = ax.xaxis.get_major_ticks()
+                ticks[0].label1.set_horizontalalignment('left')
+                ticks[-1].label1.set_horizontalalignment('right')
+
+                ax.get_xaxis().set_tick_params(
+                    which='both',
+                    top='off',
+                    direction='out')
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
