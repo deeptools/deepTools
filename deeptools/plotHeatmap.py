@@ -228,14 +228,13 @@ def plotMatrix(hm, outFileName,
     xticks_heat, xtickslabel_heat = get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel)
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
 
-    # colormap(s) for the heatmap
+    # colormap for the heatmap
     if colorMapDict['colorMap']:
-        cmap = [plt.get_cmap(foo) for foo in colorMapDict['colorMap']]
+        cmap = plt.get_cmap(colorMapDict['colorMap'])
     if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'my_cmap', colorMapDict['colorList'], N=colorMapDict['colorNumber'])
 
-    
 
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
@@ -260,7 +259,6 @@ def plotMatrix(hm, outFileName,
                 for ind_reg in _group:
                     _len = ind_reg['end'] - ind_reg['start']
                     _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
-#                    print hm.parameters['upstream'] + (_len / hm.parameters['bin size'])
                 regions_length_in_bins.append(_reg_len)
     else:
         regions_length_in_bins = None
