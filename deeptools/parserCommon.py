@@ -485,7 +485,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             '--alpha',
             default=1.0,
             type=check_float_0_1,
-            help='The alpha channel (transparency) to use for each heatmap. '
+            help='The alpha channel (transparency) to use for the heatmaps. '
             'The default is 1.0 and values must be between 0 and 1.')
 
         optional.add_argument(

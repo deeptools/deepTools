@@ -43,6 +43,7 @@
                 #end if
 
                 --colorMap '$advancedOpt.colorMap'
+                --alpha '$advancedOpt.alpha'
 
                 #if str($advancedOpt.zMin).strip() != "":
                     --zMin $advancedOpt.zMin
@@ -125,6 +126,10 @@
                     Alternatively colors can be specified using the #rrggbb notation." />
 
                 <expand macro="colorMap" />
+                <param argument="--alpha" type="float" value="1.0" min="0.0"
+                    max="1.0" optional="True"
+                    label="Alpha channel (transparency)"
+                    help="The alpha channel (transparency) to use for the heatmaps. The default is 1.0 and values must be between 0 and 1. A value of 0.0 would be fully transparent." />
 
                 <param argument="--zMin" type="float" value="" size="3" optional="True"
                     label="Minimum value for the heatmap intensities. Leave empty for automatic values" help=""/>

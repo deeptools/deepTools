@@ -168,13 +168,13 @@ def main(args=None):
     i = 0
     # matplotlib won't iterate through line styles by itself
     pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"], 7 * ["."]], [])
-    for reads in num_reads_per_bin.T:
+    for i, reads in enumerate(num_reads_per_bin.T):
         count = np.cumsum(np.sort(reads))
         count = count / count[-1]  # to normalize y from 0 to 1
-        plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[i])
+        j = i % 35
+        plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
         plt.xlabel('rank')
         plt.ylabel('fraction w.r.t. bin with highest coverage')
-        i += 1
     plt.legend(loc='upper left')
     plt.suptitle(args.plotTitle)
     # set the plotFileFormat explicitly to None to trigger the
