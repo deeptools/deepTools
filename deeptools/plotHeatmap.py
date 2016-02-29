@@ -235,7 +235,6 @@ def plotMatrix(hm, outFileName,
         cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
             'my_cmap', colorMapDict['colorList'], N=colorMapDict['colorNumber'])
 
-
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
     numgroups = hm.matrix.get_num_groups()
