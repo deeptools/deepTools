@@ -46,6 +46,10 @@
                 #if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization $advancedOpt.ignoreForNormalization
                 #end if
+
+                #if str($advancedOpt.filterRNAstrand) != 'no':
+                    --filterRNAstrand '$advancedOpt.filterRNAstrand'
+                #end if
             #end if
 ]]>
     </command>
@@ -105,6 +109,14 @@
                     label="Determine nucleosome positions from MNase-seq data"
                     help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data." />
 
+                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
+                    help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
+                          Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
+                    <option value="no" selected="true">no</option>
+                    <option value="forward">forward</option>
+                    <option value="reverse">reverse</option>
+                </param>
+
             </when>
         </conditional>
     </inputs>
@@ -152,6 +164,14 @@
             <param name="showAdvancedOpt" value="yes" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph" />
+        </test>
+        <test>
+            <param name="bamInput" value="phiX.bam" ftype="bam" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="filterRNAstrand" value="reverse" />
+            <param name="binSize" value="10" />
+            <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
         </test>
     </tests>
     <help>

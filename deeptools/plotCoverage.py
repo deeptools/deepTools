@@ -128,6 +128,7 @@ def main(args=None):
                                  numberOfProcessors=args.numberOfProcessors,
                                  verbose=args.verbose,
                                  region=args.region,
+                                 blackListFileName=args.blackListFileName,
                                  extendReads=args.extendReads,
                                  minMappingQuality=args.minMappingQuality,
                                  ignoreDuplicates=args.ignoreDuplicates,

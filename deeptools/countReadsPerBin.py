@@ -59,6 +59,9 @@ class CountReadsPerBin(object):
         File handle of a bed file containing the regions for wich to compute the coverage. This option
         overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
 
+    blackListFileName : str
+        A string containing a BED file with blacklist regions.
+
     extendReads : bool, int
 
         Whether coverage should be computed for the extended read length (i.e. the region covered
@@ -136,6 +139,7 @@ class CountReadsPerBin(object):
     def __init__(self, bamFilesList, binLength=50, numberOfSamples=None, numberOfProcessors=1,
                  verbose=False, region=None,
                  bedFile=None, extendReads=False,
+                 blackListFileName=None,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
                  chrsToSkip=[],
@@ -150,11 +154,16 @@ class CountReadsPerBin(object):
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
+        self.blackList = None
+        self.blackListFileName = blackListFileName
+        if blackListFileName:
+            self.blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
             frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
                                                                         return_lengths=False,
+                                                                        blackListFileName=blackListFileName,
                                                                         numberOfProcessors=numberOfProcessors,
                                                                         verbose=verbose)
             if extendReads is True:
@@ -266,6 +275,7 @@ class CountReadsPerBin(object):
                                        self_=self,
                                        genomeChunkLength=chunkSize,
                                        bedFile=self.bedFile,
+                                       blackListFileName=self.blackListFileName,
                                        region=self.region,
                                        numberOfProcessors=self.numberOfProcessors)
 
@@ -364,11 +374,15 @@ class CountReadsPerBin(object):
         regionsToConsider = []
         if bed_regions_list is not None:
             for chrom, start, end in bed_regions_list:
+                if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
+                    continue
                 regionsToConsider.append((chrom, start, end, end - start))
         else:
             for i in xrange(start, end, self.stepSize):
                 if i + self.binLength > end:
                     break
+                if mapReduce.blOverlap(self.blackList, chrom, [i, i + self.binLength]):
+                    continue
                 regionsToConsider.append((chrom, i, i + self.binLength, self.binLength))
 
         if self.save_data:
@@ -450,6 +464,10 @@ class CountReadsPerBin(object):
 
         vector_length = length / tileSize
         coverage = np.zeros(vector_length, dtype='float64')
+
+        # Return 0 for overlap with a blacklisted region
+        if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
+            return coverge
 
         start_time = time.time()
         # caching seems faster. TODO: profile the function

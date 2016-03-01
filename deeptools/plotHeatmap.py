@@ -67,6 +67,8 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
+    c = hm.parameters.get('unscaled 5 prime', 0)
+    d = hm.parameters.get('unscaled 3 prime', 0)
     m = hm.parameters['body']
 
     if b < 1e5:
@@ -86,17 +88,28 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
         xticks_label = []
 
         # only if upstream region is set, add a x tick
-        if hm.parameters['upstream'] > 0:
+        if b > 0:
             xticks_values.append(b)
             xticks_label.append('{0:.1f}'.format(-(float(b) / quotient)))
 
+        xticks_label.append(startLabel)
+
+        # 5 prime unscaled tick/label, if needed
+        if c > 0:
+            xticks_values.append(b + c)
+            xticks_label.append('')
+
         # set the x tick for the body parameter, regardless if
         # upstream is 0 (not set)
-        xticks_values.append(b + m)
-        xticks_label.append(startLabel)
+        if d > 0:
+            xticks_values.append(b + c + m)
+            xticks_label.append('')
+
+        xticks_values.append(b + c + m + d)
         xticks_label.append(endLabel)
+
         if a > 0:
-            xticks_values.append(b + m + a)
+            xticks_values.append(b + c + m + d + a)
             xticks_label.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
         xticks = [k / w for k in xticks_values]
@@ -116,9 +129,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     numcols = hm_matrix.get_num_samples()
     numrows = hm_matrix.get_num_groups()
     if perGroup:
-        temp = numcols
-        numcols = numrows
-        numrows = temp
+        numcols, numrows = numrows, numcols
 
     # the rows have different size depending
     # on the number of regions contained in the
@@ -214,15 +225,14 @@ def plotMatrix(hm, outFileName,
         figheight += figwidth
 
     numsamples = hm.matrix.get_num_samples()
-    total_figwidth = figwidth * numsamples
+    if perGroup:
+        num_cols = hm.matrix.get_num_groups()
+    else:
+        num_cols = numsamples
+    total_figwidth = figwidth * num_cols
     if showColorbar:
         total_figwidth += 1 / 2.54
     fig = plt.figure(figsize=(total_figwidth, figheight))
-
-    hm.parameters['upstream']
-    hm.parameters['downstream']
-    hm.parameters['body']
-    hm.parameters['bin size']
 
     xticks, xtickslabel = getProfileTicks(hm, reference_point_label, startLabel, endLabel)
 
@@ -322,22 +332,26 @@ def plotMatrix(hm, outFileName,
             elif not perGroup and sample == 0:
                 ax.axes.set_ylabel(sub_matrix['group'])
 
-        # add xticks to the bottom heatmap (last group)
-        ax.axes.get_xaxis().set_visible(True)
-        ax.axes.set_xticks(xticks_heat)
-        ax.axes.set_xticklabels(xtickslabel_heat, size=8)
+            # add labels to last block in a column
+            if (perGroup and sample == hm.matrix.get_num_samples() - 1) or \
+               (not perGroup and group_idx == numgroups - 1):
 
-        # align the first and last label
-        # such that they don't fall off
-        # the heatmap sides
-        ticks = ax.xaxis.get_major_ticks()
-        ticks[0].label1.set_horizontalalignment('left')
-        ticks[-1].label1.set_horizontalalignment('right')
+                # add xticks to the bottom heatmap (last group)
+                ax.axes.get_xaxis().set_visible(True)
+                ax.axes.set_xticks(xticks_heat)
+                ax.axes.set_xticklabels(xtickslabel_heat, size=8)
 
-        ax.get_xaxis().set_tick_params(
-            which='both',
-            top='off',
-            direction='out')
+                # align the first and last label
+                # such that they don't fall off
+                # the heatmap sides
+                ticks = ax.xaxis.get_major_ticks()
+                ticks[0].label1.set_horizontalalignment('left')
+                ticks[-1].label1.set_horizontalalignment('right')
+
+                ax.get_xaxis().set_tick_params(
+                    which='both',
+                    top='off',
+                    direction='out')
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
@@ -489,8 +503,8 @@ def main(args=None):
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
 
-    # if args.outFileNameData:
-    #    hm.saveTabulatedValues(args.outFileNameData)
+    if args.outFileNameData:
+        hm.save_tabulated_values(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

@@ -76,7 +76,10 @@ Regular bigWig track
 Separate tracks for each strand 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes it makes sense to generate two independent :ref:`bigWig` files for all reads on the forward and reverse strand, respectively.
+Sometimes it makes sense to generate two independent :ref:`bigWig` files for all reads on the forward and reverse strand, respectively. As of deepTools version 2.2, one can simply use the ``--filterRNAstrand`` option, such as ``--filterRNAstrand forward`` or ``--filterRNAstrand reverse``. This handles paired-end and single-end datasets. For older versions of deepTools, please see the instructions below.
+
+Versions before 2.2
+*******************
 
 To follow the examples, you need to know that ``-f`` will tell ``samtools view`` to **include** reads with the indicated flag, while ``-F`` will lead to the **exclusion** of reads with the respective flag.
 
