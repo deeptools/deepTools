@@ -89,14 +89,13 @@
     <help>
 <![CDATA[
 What it does
---------------
+------------
 
 This tools takes the default output of ``multiBamSummary`` or ``multiBigwigSummary``, and computes the pairwise correlation among samples.
-Results can be visualized as **scatterplots** or as
-a **heatmap** of correlation coefficients (see below for examples).
+Results can be visualized as **scatterplots** or as a **heatmap** of correlation coefficients (see below for examples).
 
-Background
-------------
+Theoretical Background
+----------------------
 
 The result of the correlation computation is a **table of correlation coefficients** that indicates how "strong" the relationship between two samples is and it will consist of numbers between -1 and 1. (-1 indicates perfect anti-correlation, 1 perfect correlation.)
 
@@ -106,18 +105,18 @@ The *Pearson method* measures the **metric differences** between samples and is 
 The *Spearman method* is based on **rankings**.
 
 Output
---------
+------
 
 The default output is a **diagnostic plot** -- either a scatterplot or a clustered heatmap displaying the values for each pair-wise correlation (see below for example plots).
 
 Optionally, you can also obtain a table of the pairwise correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_output.png
-   :width: 600
-   :height: 271
+    :width: 600
+    :height: 271
 
 Example plots
---------------
+-------------
 
 The following is the output of ``plotCorrelation`` with our test ChIP-Seq datasets (to be found under "Shared Data" --> "Data Library").
 
@@ -125,14 +124,14 @@ Average coverages were computed over 10 kb bins for chromosome X,
 from bigWig files using ``multiBigwigSummary``. This was then used with ``plotCorrelation`` to make a heatmap of Spearman correlation coefficients.
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_galaxy_bw_heatmap_output.png
-   :width: 600
-   :height: 518
+    :width: 600
+    :height: 518
 
 The scatterplot could look like this:
 
 .. image:: $PATH_TO_IMAGES/plotCorrelation_scatterplot_PearsonCorr_bigwigScores.png
-   :width: 600
-   :height: 600
+    :width: 600
+    :height: 600
 
 -----
 

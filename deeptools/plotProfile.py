@@ -260,6 +260,7 @@ class Profile(object):
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.close()
 
     def plot_heatmap(self):
         matrix_flatten = None
@@ -343,13 +344,16 @@ class Profile(object):
             yticks = [x + d_half for x in pos]
 
             ax.axes.set_yticks(yticks)
-            ax.axes.set_yticklabels(labels[::-1], rotation='vertical')
+            # TODO: make rotation a parameter
+            # ax.axes.set_yticklabels(labels[::-1], rotation='vertical')
+            ax.axes.set_yticklabels(labels[::-1])
 
             ax_list.append(ax)
 
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.close()
 
     def plot_profile(self):
 
@@ -464,6 +468,7 @@ class Profile(object):
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
         plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.close()
 
 
 def main(args=None):

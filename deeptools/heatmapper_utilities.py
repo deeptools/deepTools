@@ -48,6 +48,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     >>> ax = plot_single(ax, matrix + 30, 'mean', color=(0.9, 0.5, 0.9, 0.5), label='violet with alpha', plot_type='std')
     >>> leg = ax.legend()
     >>> plt.savefig("/tmp/test.pdf")
+    >>> plt.close()
     >>> fig = plt.figure()
 
 
@@ -87,6 +88,14 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
+    try:
+        c = hm.parameters['unscaled 5 prime']
+    except:
+        c = 0
+    try:
+        d = hm.parameters['unscaled 3 prime']
+    except:
+        d = 0
     m = hm.parameters['body']
     tickPlotAdj = 0.5
 
@@ -108,17 +117,27 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
         xtickslabel = []
 
         # only if upstream region is set, add a x tick
-        if hm.parameters['upstream'] > 0:
+        if b > 0:
             xticks_values.append(b)
             xtickslabel.append('{0:.1f}'.format(-(float(b) / quotient)))
 
+        xtickslabel.append(startLabel)
+
         # set the x tick for the body parameter, regardless if
         # upstream is 0 (not set)
-        xticks_values.append(b + m)
-        xtickslabel.append(startLabel)
+        if c > 0:
+            xticks_values.append(b + c)
+            xtickslabel.append("")
+
+        if d > 0:
+            xticks_values.append(b + c + m)
+            xtickslabel.append("")
+
+        xticks_values.append(b + c + m + d)
         xtickslabel.append(endLabel)
+
         if a > 0:
-            xticks_values.append(b + m + a)
+            xticks_values.append(b + c + m + d + a)
             xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
         xticks = [(k / w) - tickPlotAdj for k in xticks_values]

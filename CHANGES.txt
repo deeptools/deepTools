@@ -1,8 +1,21 @@
 2.2.0
 
+ * plotFingerprint now iterates through line styles as well as colors. This allows up to 35 samples per plot without repeating (not that that many would ever be recommended). This was issue #80.
+ * Fixed a number of Galaxy wrappers, which were rendered incorrectly due to including a section title of "Background".
+ * A number of image file handles were previously not explicitly closed, which caused occasional completion of a plot* program but without the files actually being there. This only happened on some NFS mount points.
+ * The Galaxy wrappers now support the `--outFileNameData` option on plotProfile and plotHeatmap.
+ * Added support for blacklist regions. These can be supplied as a BED file and the regions will largely be skipped in processing (they'll also be ignored during normalization). This is very useful to skip regions known to attract excess signal. This was issue #101.
+ * Modified plotPCA to include the actual eigenvalues rather than rescaled ones. Also, plotPCA can now output the underlying values (issue #231).
+ * Regions within each feature body can now be unscaled when using `computeMatrix`. Thus, if you're interested in unscaled signal around the TSS/TES then you can now use the `--unscaled5prime` and `--unscaled3prime` options. This was issue #108.
+ * bamCoverage now has a `--filterRNAstrand` option, that will produce coverage for only a single strand. Note that the strand referred to is the DNA strand and not sense/anti-sense.
+ * Issues with plotHeatmap x-axis labels were fixed (issue #301).
+
+2.1.1
+
+ * Fixed a how the --hclust option was handled in plotHeatmap/plotProfile. This gets around a quirk in scipy.
+ * A bug involving processing comment lines in BED files was corrected (issue #288)
  * The Galaxy wrappers are now automatically tested with each modification.
  * plotCoverage and plotFingerprint in Galaxy now accept 1 or more BAM files rather than at least 2 files.
- * A bug involving processing comment lines in BED files was corrected (issue #288)
 
 2.1.0
 

@@ -12,15 +12,22 @@
             --plotTitle "$plotTitle"
             --plotFile "$outFileName"
             --plotFileFormat "$outFileFormat"
+            #if $outFileNameDataBool
+                --outFileNameData "$outFileNameData"
+            #end if
 ]]>
     </command>
     <inputs>
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamSummary or multiBigwigSummary tools"/>
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
+        <param name="outFileNameDataBool" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
+        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: PCA matrix">
+            <filter>outFileNameDataBool is True</filter>
+        </data>
     </outputs>
     <tests>
         <test>
@@ -29,17 +36,25 @@
             <param name="outFileFormat" value="png" />
             <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="4000" />
         </test>
+        <test>
+            <param name="corData" value="multiBamSummary_result2.npz" ftype="deeptools_coverage_matrix" />
+            <param name="plotTitle" value="Test Plot" />
+            <param name="outFileFormat" value="png" />
+            <param name="outFileNameDataBool" value="True" />
+            <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="4000" />
+            <output name="outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
+        </test>
     </tests>
     <help>
 <![CDATA[
 
 What it does
----------------
+------------
 
-This tool takes the **default output file of ``multiBamSummary``** or ``multiBigwigSummary`` to perform a principal component analysis (PCA).
+This tool takes the **default output file** of ``multiBamSummary`` or ``multiBigwigSummary`` to perform a principal component analysis (PCA).
 
 Output
--------------
+------
 
 The result is a panel of two plots:
 
@@ -47,16 +62,16 @@ The result is a panel of two plots:
 2. The **Scree plot** for the top five principal components where the bars represent the amount of variability explained by the individual factors and the red line traces the amount of variability is explained by the individual components in a cumulative manner
 
 Example plot
----------------
+------------
 
 .. image:: $PATH_TO_IMAGES/plotPCA_annotated.png
    :width: 600
    :height: 315
 
-===================
+-----
 
-Background
------------------
+Theoretical Background
+----------------------
 
 Principal component analysis (PCA) can be used, for example, to determine whether **samples display greater variability** between experimental conditions than between replicates of the same treatment. PCA is also useful to identify unexpected patterns, such as those caused by batch effects or outliers.
 Principal components represent the directions along which the variation in the data is maximal, so that the information (e.g., read coverage values) from thousands of regions can be represented by just a few dimensions.
