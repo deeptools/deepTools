@@ -683,8 +683,8 @@ class heatmapper(object):
         w = self.parameters['bin size']
         b = self.parameters['upstream']
         a = self.parameters['downstream']
-        c = self.parameters.get('unscaled 5 prime',0)
-        d = self.parameters.get('unscaled 3 prime',0)
+        c = self.parameters.get('unscaled 5 prime', 0)
+        d = self.parameters.get('unscaled 3 prime', 0)
         m = self.parameters['body']
 
         if b < 1e5:
@@ -760,8 +760,8 @@ class heatmapper(object):
                  self.parameters['upstream'],
                  self.parameters['body'],
                  self.parameters['bin size'],
-                 self.parameters.get('unscaled 5 prime',0),
-                 self.parameters.get('unscaled 3 prime',0)))
+                 self.parameters.get('unscaled 5 prime', 0),
+                 self.parameters.get('unscaled 3 prime', 0)))
 
         fh.close()
         # reopen again using append mode
