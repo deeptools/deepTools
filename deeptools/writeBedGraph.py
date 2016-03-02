@@ -240,7 +240,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 else:
                     tileCoverage.append(coverage[index][tileIndex])
 
-            print("func_to_call is {}".format(func_to_call))
             value = func_to_call(tileCoverage, func_args)
             """
             # uncomment this lines if fixed step bedgraph is wanted
