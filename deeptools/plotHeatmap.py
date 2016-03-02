@@ -243,6 +243,7 @@ def plotMatrix(hm, outFileName,
     else:
         color_list = cmap_plot(np.arange(numgroups) / numgroups)
     cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+    alpha = colorMapDict['alpha']
 
     # check if matrix is reference-point based using the upstream >0 value
     # and is sorted by region length. If this is
@@ -294,6 +295,7 @@ def plotMatrix(hm, outFileName,
                             vmin=zMin,
                             vmax=zMax,
                             cmap=cmap,
+                            alpha=alpha,
                             extent=[0, cols, rows, 0])
             # plot border at the end of the regions
             # if ordered by length
@@ -408,7 +410,7 @@ def plotMatrix(hm, outFileName,
             grid_start = 0
 
         ax = fig.add_subplot(grids[grid_start:, -1])
-        fig.colorbar(img, cax=ax)
+        fig.colorbar(img, cax=ax, alpha=alpha)
 
     plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
 
