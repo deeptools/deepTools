@@ -43,16 +43,20 @@
         <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
 
         <conditional name="comparison">
-            <param name="comparison_select" type="select" 
+            <param name="type" type="select"
                 label="How to compare the two files"
                 help="The default is to output the log2ratio between the two samples.
                 The reciprocal ratio returns the negative of the inverse of the ratio if
-                the ratio is less than 0. The resulting values are interpreted as negative fold changes. (--ratio)">
-                <option value="log2" selected="true">compute log2 of the number of reads ratio</option>
-                <option value="ratio">compute the ratio of the number of reads</option>
-                <option value="subtract">compute difference (subtract input from treatment) of the number of reads</option>
-                <option value="add">compute the sum over all reads</option>
+                the ratio is less than 0. The resulting values are interpreted as negative
+                fold changes. To output the scaled values from the first or second BAM file,
+                select &quote;first&quote; or &quote;second&quote;.">
+                <option value="log2" selected="true">Compute log2 of the number of reads ratio</option>
+                <option value="ratio">Compute the ratio of the number of reads</option>
+                <option value="subtract">Compute difference (subtract input from treatment) of the number of reads</option>
+                <option value="add">Compute the sum of number of reads</option>
                 <option value="reciprocal_ratio">Computes the fold change. If the fold change is less than 1, the negative of the inverse is reported. E.g. A fold change of 10 to 5 would be reported not as 0.5 but as -2</option>
+                <option value="first">Returns the scaled value of the first BAM file</option>
+                <option value="second">Returns the scaled value of the second BAM file</option>
             </param>
             <when value="log2">
                 <expand macro="pseudocount" />
