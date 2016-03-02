@@ -107,7 +107,7 @@
                 The reciprocal ratio returns the negative of the inverse of the ratio if
                 the ratio is less than 0. The resulting values are interpreted as negative
                 fold changes. To output the scaled values from the first or second BAM file,
-                select &quote;first&quote; or &quote;second&quote;.">
+                select 'first' or 'second'.">
                 <option value="log2" selected="true">Compute log2 of the number of reads ratio</option>
                 <option value="ratio">Compute the ratio of the number of reads</option>
                 <option value="subtract">Compute difference (subtract input from treatment) of the number of reads</option>
@@ -123,6 +123,8 @@
                 <expand macro="pseudocount" />
             </when>
             <when value="add" />
+            <when value="first" />
+            <when value="second" />
             <when value="reciprocal_ratio">
                 <expand macro="pseudocount" />
             </when>
