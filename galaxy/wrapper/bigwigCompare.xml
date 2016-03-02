@@ -43,7 +43,7 @@
         <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
 
         <conditional name="comparison">
-            <param name="type" type="select"
+            <param name="comparison_select" type="select"
                 label="How to compare the two files"
                 help="The default is to output the log2ratio between the two samples.
                 The reciprocal ratio returns the negative of the inverse of the ratio if
