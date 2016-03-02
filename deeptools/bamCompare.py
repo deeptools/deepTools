@@ -120,10 +120,13 @@ def getOptionalArgs():
                           'if the ratio is less than 0. The resulting '
                           'values are interpreted as negative fold changes. '
                           '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
-                          '--normalizeUsingRPKM be used.',
+                          '--normalizeUsingRPKM be used. Instead of performing a '
+                          'computation using both files, the scaled signal can '
+                          'alternatively be output for the first or second file using '
+                          'the \'--ratio first\' or \'--ratio second\'',
                           default='log2',
                           choices=['log2', 'ratio', 'subtract', 'add',
-                                   'reciprocal_ratio'],
+                                   'reciprocal_ratio', 'first', 'second'],
                           required=False)
 
     optional.add_argument('--pseudocount',

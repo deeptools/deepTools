@@ -70,5 +70,9 @@ def getRatio(tileCoverage, args):
             bin_value = value1 - value2
         elif args['valueType'] == 'add':
             bin_value = value1 + value2
+        elif args['valueType'] == 'first':
+            bin_value = value1
+        elif args['valueType'] == 'second':
+            bin_value = value2
 
     return bin_value
