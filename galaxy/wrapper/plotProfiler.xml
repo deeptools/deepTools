@@ -61,7 +61,7 @@
                 #end if
 
                 #if $advancedOpt.outFileNameData:
-                    --outFileNameData $outFileNameData
+                    --outFileNameData "$output_outFileNameData"
                 #end if
 
                 @KMEANS_CLUSTERING@
@@ -175,8 +175,8 @@
         <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
 
-        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: Underlying data">
-            <filter>outFileNameData is True</filter>
+        <data format="tabular" name="output_outFileNameData" label="${tool.name} on ${on_string}: Underlying data">
+            <filter>outFileNameData</filter>
         </data>
 
     </outputs>
@@ -189,7 +189,9 @@
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="showScaleRegionsOpt" value="yes" />
+            <param name="outFileNameData" value="True" />
             <output name="outFileName" file="profiler_result2.png" ftype="png" compare="sim_size" delta="4000" />
+            <output name="output_outFileNameData" file="profiler_result2.tabular" ftype="tabular" />
         </test>
     </tests>
     <help>
