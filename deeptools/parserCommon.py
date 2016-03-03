@@ -314,12 +314,6 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
 
-    output.add_argument('--outFileNameData',
-                        help='File name to save the data '
-                        'underlying data for the average profile, e.g. '
-                        'myProfile.tab.',
-                        type=writableFile)
-
     output.add_argument(
         '--outFileSortedRegions',
         help='File name into which the regions are saved '
@@ -337,6 +331,12 @@ def heatmapperOutputArgs(args=None,
                             'of values underlying the heatmap will be saved '
                             'using this name, e.g. MyMatrix.tab.',
                             metavar='FILE',
+                            type=writableFile)
+    elif mode == 'profile':
+        output.add_argument('--outFileNameData',
+                            help='File name to save the data '
+                            'underlying data for the average profile, e.g. '
+                            'myProfile.tab.',
                             type=writableFile)
     return parser
 

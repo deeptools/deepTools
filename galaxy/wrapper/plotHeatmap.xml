@@ -83,10 +83,6 @@
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
 
-                #if $advancedOpt.outFileNameData:
-                    --outFileNameData $outFileNameData
-                #end if
-
                 $advancedOpt.perGroup
 
                 @KMEANS_CLUSTERING@
@@ -130,8 +126,6 @@
 
                 <expand macro="colorMap" />
 
-                <param argument="--outFileNameData" type="boolean" label="Save the data underlying the heatmap"
-                    help="This option will create an additional output file." />
                 <param argument="--zMin" type="float" value="" size="3" optional="True"
                     label="Minimum value for the heatmap intensities. Leave empty for automatic values" help=""/>
                 <param argument="--zMax" type="float" value="" size="3" optional="True"
@@ -195,9 +189,6 @@
         <expand macro="output_image_file_format" />
         <expand macro="output_graphic_outputs" />
         <expand macro="output_save_matrix_values" />
-        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: Underlying data">
-            <filter>outFileNameData is True</filter>
-        </data>
     </outputs>
     <tests>
         <test>
