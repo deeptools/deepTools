@@ -503,9 +503,6 @@ def main(args=None):
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
 
-    if args.outFileNameData:
-        hm.save_tabulated_values(args.outFileNameData)
-
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)
 
