@@ -639,6 +639,8 @@ def bam_total_reads(bam_handle, chroms_to_ignore):
         import pysam
 
         lines = pysam.idxstats(bam_handle.filename)
+        if type(lines) is str:
+            lines = lines.strip().split('\n')
         tot_mapped_reads = 0
         for line in lines:
             chrom, _len, nmapped, _nunmapped = line.split('\t')
@@ -661,7 +663,10 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
 
     # Get the chromosome lengths
     chromLens = {}
-    for line in pysam.idxstats(bam_handle.filename):
+    lines = pysam.idxstats(bam_handle.filename)
+    if type(lines) is str:
+        lines = lines.strip().split('\n')
+    for line in lines:
         chrom, _len, nmapped, _nunmapped = line.split('\t')
         chromLens[chrom] = int(_len)
 
