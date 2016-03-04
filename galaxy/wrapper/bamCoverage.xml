@@ -56,7 +56,7 @@
 
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
-            help="The BAM file must be sorted."/>
+            help=""/>
 
         <param name="binSize" type="integer" value="50" min="1"
             label="Bin size in bases"
