@@ -12,6 +12,8 @@ import pyBigWig
 import deeptools.readBed
 from deeptools import mapReduce
 
+old_settings = np.seterr(all='ignore')
+
 
 def compute_sub_matrix_wrapper(args):
     return heatmapper.compute_sub_matrix_worker(*args)

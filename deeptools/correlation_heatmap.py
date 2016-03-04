@@ -5,6 +5,8 @@ import numpy as np
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
 
+old_settings = np.seterr(all='ignore')
+
 
 def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
                      vmin=None, colormap='jet', image_format=None,

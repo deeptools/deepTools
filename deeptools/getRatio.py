@@ -1,5 +1,7 @@
 import numpy as np
 
+old_settings = np.seterr(all='ignore')
+
 
 def compute_ratio(value1, value2, args):
     value1 = value1 + args['pseudocount']

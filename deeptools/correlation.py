@@ -11,6 +11,8 @@ import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
 
+old_settings = np.seterr(all='ignore')
+
 
 class Correlation:
     """

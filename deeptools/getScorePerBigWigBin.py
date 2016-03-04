@@ -10,6 +10,8 @@ import deeptools.mapReduce as mapReduce
 import deeptools.utilities
 # debug = 0
 
+old_settings = np.seterr(all='ignore')
+
 
 def countReadsInRegions_wrapper(args):
     # Using arguments unpacking!
