@@ -70,9 +70,9 @@
     </command>
     <inputs>
         <param argument="--bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
-            help="The BAM file must be sorted."/>
+            help=""/>
         <param argument="--bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
-            help="The BAM file must be sorted."/>
+            help=""/>
 
         <param argument="--binSize" type="integer" value="50" min="1"
             label="Bin size in bases"

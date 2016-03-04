@@ -49,7 +49,7 @@
     </command>
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
-            help="The BAM file must be sorted."/>
+            help=""/>
 
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
