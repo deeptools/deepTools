@@ -81,12 +81,12 @@ def fraction_kept(args):
             distanceBetweenBins = 50000
 
         res = mapReduce.mapReduce((bam_handle.filename, args),
-                                       getFractionKept_wrapper,
-                                       chrom_sizes,
-                                       genomeChunkLength=distanceBetweenBins,
-                                       blackListFileName=args.blackListFileName,
-                                       numberOfProcessors=args.numberOfProcessors,
-                                       verbose=args.verbose)
+                                  getFractionKept_wrapper,
+                                  chrom_sizes,
+                                  genomeChunkLength=distanceBetweenBins,
+                                  blackListFileName=args.blackListFileName,
+                                  numberOfProcessors=args.numberOfProcessors,
+                                  verbose=args.verbose)
 
         if len(res):
             filtered, total = np.sum(res, axis=0)
