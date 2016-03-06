@@ -82,7 +82,7 @@
             <param name="plotTitle" value="Test Title from Galaxy" />
             <param name="outRawCounts" value="True" />
             <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
-            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="500" />
+            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="2200" />
         </test>
     </tests>
     <help>

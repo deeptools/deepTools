@@ -12,8 +12,8 @@
             --plotTitle "$plotTitle"
             --plotFile "$outFileName"
             --plotFileFormat "$outFileFormat"
-            #if $outFileNameDataBool
-                --outFileNameData "$outFileNameData"
+            #if $outFileNameData
+                --outFileNameData "$output_outFileNameData"
             #end if
 ]]>
     </command>
@@ -21,12 +21,12 @@
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamSummary or multiBigwigSummary tools"/>
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
-        <param name="outFileNameDataBool" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
+        <param argument="--outFileNameData" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
-        <data format="tabular" name="outFileNameData" label="${tool.name} on ${on_string}: PCA matrix">
-            <filter>outFileNameDataBool is True</filter>
+        <data format="tabular" name="output_outFileNameData" label="${tool.name} on ${on_string}: PCA matrix">
+            <filter>outFileNameData</filter>
         </data>
     </outputs>
     <tests>
@@ -40,9 +40,9 @@
             <param name="corData" value="multiBamSummary_result2.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
-            <param name="outFileNameDataBool" value="True" />
-            <output name="outFileName" file="plotPCA_result1.png" ftpye="png" compare="sim_size" delta="4000" />
-            <output name="outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
+            <param name="outFileNameData" value="True" />
+            <output name="outFileName" file="plotPCA_result2.png" ftpye="png" compare="sim_size" delta="4000" />
+            <output name="output_outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
         </test>
     </tests>
     <help>
