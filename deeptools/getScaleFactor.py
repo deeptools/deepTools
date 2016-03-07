@@ -112,7 +112,7 @@ def get_scale_factor(args):
     ftk = fraction_kept(args)
     bam_mapped *= ftk
     if args.verbose:
-        print("Due to filtering, {}%% of the aforementioned alignments will be used {}".format(100*ftk, bam_mapped))
+        print("Due to filtering, {}%% of the aforementioned alignments will be used {}".format(100 * ftk, bam_mapped))
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
