@@ -12,6 +12,7 @@ from deeptools import bamHandler
 from deeptools.getRatio import getRatio
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 
 
 def parseArguments():

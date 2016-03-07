@@ -19,6 +19,7 @@ from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools import bamHandler
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 
 
 def parse_arguments(args=None):

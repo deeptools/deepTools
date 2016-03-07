@@ -18,6 +18,7 @@ from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, getProfileTicks
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 plt.ioff()
 
 
@@ -502,9 +503,6 @@ def main(args=None):
 
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
-
-    if args.outFileNameData:
-        hm.save_tabulated_values(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)
