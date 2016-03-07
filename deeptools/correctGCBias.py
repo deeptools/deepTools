@@ -296,7 +296,11 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> tempFile = writeCorrectedSam_worker(*args, \
     ... tag_but_not_change_number=True, verbose=False)
     >>> from StringIO import StringIO
+    >>> ostdout = sys.stdout
+    >>> import tempfile
+    >>> sys.stdout = tempfile.TemporaryFile()
     >>> idx = pysam.index(tempFile)
+    >>> sys.stdout = ostdout
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['YN'] for r in bam.fetch(args[0], 200, 250)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
@@ -305,7 +309,9 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> tempFile = \
     ... writeCorrectedSam_worker(*test.testWriteCorrectedSam_paired(),\
     ... tag_but_not_change_number=True, verbose=False)
+    >>> sys.stdout = tempfile.TemporaryFile()
     >>> idx = pysam.index(tempFile)
+    >>> sys.stdout = ostdout
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['YN'] for r in bam.fetch('chr2L', 0, 50)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
