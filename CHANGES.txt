@@ -1,6 +1,7 @@
 2.2.2
 
  * Fixed labels when hierarchical clustering is used (they were off by one previously).
+ * Fixed a bug wherein bamCompare couldn't work with a blacklist
 
 2.2.1
 
