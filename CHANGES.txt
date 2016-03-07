@@ -1,3 +1,7 @@
+2.2.2
+
+ * Fixed labels when hierarchical clustering is used (they were off by one previously).
+
 2.2.1
 
  * Fixed a bug introduced in version 2.2.0 wherein sometimes a pre-2.2.0 produced matrix file could no longer be used with plotHeatmap or plotProfile (this only happened when --outFileNameData was then used).
