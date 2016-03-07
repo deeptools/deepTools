@@ -200,7 +200,7 @@ def get_scale_factors(args):
             s1 = get_scale_factor(args)
             args.bam = args.bamfile2
             s2 = get_scale_factor(args)
-            scale_factors = np.array([s1, s2]) / max(s1, s2)
+            scale_factors = np.array([s1, s2]) / float(max(s1, s2))
             if args.verbose:
                 print "Size factors using total number " \
                     "of mapped reads: {}".format(scale_factors)
@@ -321,7 +321,7 @@ def main(args=None):
                                      verbose=args.verbose
                                      )
 
-    wr.run(FUNC, func_args, args.outFileName, format=args.outFileFormat, smoothLength=args.smoothLength)
+    wr.run(FUNC, func_args, args.outFileName, blackListFileName=args.blackListFileName, format=args.outFileFormat, smoothLength=args.smoothLength)
 
 if __name__ == "__main__":
     main()
