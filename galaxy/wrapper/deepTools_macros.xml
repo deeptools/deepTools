@@ -241,7 +241,7 @@
     </xml>
 
     <xml name="minMappingQuality">
-        <param argument="--minMappingQuality" type="integer" optional="true" value="0" min="0"
+        <param argument="--minMappingQuality" type="integer" optional="true" value="1" min="0"
             label="Minimum mapping quality"
             help= "If set, only reads with a mapping quality score higher than this value are considered."/>
     </xml>
