@@ -97,7 +97,6 @@ def fraction_kept(args):
         # This should never happen
         total = 1
 
-    print("filtered {} total {}".format(filtered, total))
     return 1.0 - float(filtered) / float(total)
 
 
@@ -164,5 +163,8 @@ def get_scale_factor(args):
 
         if debug:
             print "scale factor using RPKM is {0}".format(args.scaleFactor)
+
+    if args.verbose:
+        print("Final scaling factor: {}".format(scale_factor))
 
     return scale_factor

@@ -200,11 +200,7 @@ def get_scale_factors(args):
             s1 = get_scale_factor(args)
             args.bam = args.bamfile2
             s2 = get_scale_factor(args)
-            print("s1 {} s2 {}".format(s1, s2))
-            print("np.min(s1, s2) {}".format(min(s1, s2)))
-            print("np.array([s1, s2])  {}".format(np.array([s1, s2])))
-            print("np.min(s1, s2) / np.array([s1, s2])  {}".format(min(s1, s2) / np.array([s1, s2])))
-            scale_factors = min(s1, s2) / np.array([s1, s2])
+            scale_factors = np.array([s1, s2]) / max(s1, s2)
             if args.verbose:
                 print "Size factors using total number " \
                     "of mapped reads: {}".format(scale_factors)
