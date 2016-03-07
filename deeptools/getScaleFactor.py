@@ -31,7 +31,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 continue
 
             # filter reads based on SAM flag
-            if args.samFlagInclude and read.flag & args.samFlagEnclude == 0:
+            if args.samFlagInclude and read.flag & args.samFlagInclude == 0:
                 filtered += 1
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
@@ -44,6 +44,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 filtered += 1
                 continue
+            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
 
     return (filtered, tot)
 
@@ -60,7 +61,8 @@ def fraction_kept(args):
 
     Black list regions are already accounted for. This works by sampling the
     genome (by default, we'll iterate until we sample 1% or 100,000 alignments,
-    whichever is smaller).
+    whichever is smaller (unless there are fewer than 100,000 alignments, in
+    which case sample everything).
 
     The sampling works by dividing the genome into bins and only looking at the
     first 50000 bases. If this doesn't yield sufficient alignments then the bin
@@ -71,7 +73,7 @@ def fraction_kept(args):
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    num_needed_to_sample = 100000 if 0.01 * bam_mapped > 100000 else 0.01 * bam_mapped
+    num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
     chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
 
     while total < num_needed_to_sample and distanceBetweenBins > 50000:
@@ -95,7 +97,8 @@ def fraction_kept(args):
         # This should never happen
         total = 1
 
-    return 1 - filtered / total
+    print("filtered {} total {}".format(filtered, total))
+    return 1.0 - float(filtered) / float(total)
 
 
 def get_scale_factor(args):
@@ -157,4 +160,5 @@ def get_scale_factor(args):
         if debug:
             print "scale factor using RPKM is {0}".format(args.scaleFactor)
 
+    print("returning {}".format(scale_factor))
     return scale_factor
