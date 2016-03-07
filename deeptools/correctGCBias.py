@@ -295,6 +295,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> args = test.testWriteCorrectedSam()
     >>> tempFile = writeCorrectedSam_worker(*args, \
     ... tag_but_not_change_number=True, verbose=False)
+    >>> from StringIO import StringIO
     >>> idx = pysam.index(tempFile)
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['YN'] for r in bam.fetch(args[0], 200, 250)]
@@ -380,7 +381,8 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         replace_tags = False
         if len(readTag) > 0:
             if len(readTag[0]) == 3:
-                readTag = [(x[0], x[1], chr(x[2])) for x in readTag]
+                if type(readTag[2]) is int:
+                    readTag = [(x[0], x[1], chr(x[2])) for x in readTag]
                 replace_tags = True
         else:
             replace_tags = True

@@ -2,6 +2,7 @@
 
  * Fixed labels when hierarchical clustering is used (they were off by one previously).
  * Fixed a bug wherein bamCompare couldn't work with a blacklist
+ * Fixed yet another change in pysam, though at least in this case is was fixing a previous problem
 
 2.2.1
 
