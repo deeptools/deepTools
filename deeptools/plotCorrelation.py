@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 from deeptools.correlation import Correlation
 from deeptools._version import __version__
 
+old_settings = np.seterr(all='ignore')
+
 
 def parse_arguments(args=None):
     basic_args = plot_correlation_args()

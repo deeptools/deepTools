@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 
+old_settings = np.seterr(all='ignore')
+
 
 def parse_arguments(args=None):
     parent_parser = parserCommon.getParentArgParse(binSize=False)

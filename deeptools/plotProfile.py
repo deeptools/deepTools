@@ -19,6 +19,7 @@ from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, getProfileTicks
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 plt.ioff()
 
 

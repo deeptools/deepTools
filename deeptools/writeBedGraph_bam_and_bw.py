@@ -15,6 +15,8 @@ from utilities import getCommonChrNames
 from writeBedGraph import *
 from deeptools import bamHandler
 
+old_settings = np.seterr(all='ignore')
+
 
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):

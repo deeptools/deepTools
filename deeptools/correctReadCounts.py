@@ -7,6 +7,7 @@ from deeptools import writeBedGraph
 from deeptools.SES_scaleFactor import estimateScaleFactor
 
 debug = 1
+old_settings = np.seterr(all='ignore')
 
 
 def computeLambda(tileCoverage, args):

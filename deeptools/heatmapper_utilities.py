@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.colors as pltcolors
 
+old_settings = np.seterr(all='ignore')
+
 
 def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     """

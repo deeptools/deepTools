@@ -13,6 +13,7 @@ from deeptools import utilities
 import config as cfg
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 
 
 def writeBedGraph_wrapper(args):

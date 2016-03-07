@@ -19,6 +19,8 @@ from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
 
+old_settings = np.seterr(all='ignore')
+
 
 def parse_arguments(args=None):
     parentParser = parserCommon.getParentArgParse(binSize=True, blackList=False)
