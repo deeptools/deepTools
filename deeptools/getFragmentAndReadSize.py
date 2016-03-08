@@ -4,6 +4,8 @@ import numpy as np
 import bamHandler
 import mapReduce
 
+old_settings = np.seterr(all='ignore')
+
 
 def getFragmentLength_wrapper(args):
     return getFragmentLength_worker(*args)

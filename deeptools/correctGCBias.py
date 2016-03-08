@@ -19,6 +19,8 @@ from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
 
+old_settings = np.seterr(all='ignore')
+
 
 def parse_arguments(args=None):
     parentParser = parserCommon.getParentArgParse(binSize=True, blackList=False)
@@ -293,7 +295,12 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> args = test.testWriteCorrectedSam()
     >>> tempFile = writeCorrectedSam_worker(*args, \
     ... tag_but_not_change_number=True, verbose=False)
+    >>> from StringIO import StringIO
+    >>> ostdout = sys.stdout
+    >>> import tempfile
+    >>> sys.stdout = tempfile.TemporaryFile()
     >>> idx = pysam.index(tempFile)
+    >>> sys.stdout = ostdout
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['YN'] for r in bam.fetch(args[0], 200, 250)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
@@ -302,7 +309,9 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> tempFile = \
     ... writeCorrectedSam_worker(*test.testWriteCorrectedSam_paired(),\
     ... tag_but_not_change_number=True, verbose=False)
+    >>> sys.stdout = tempfile.TemporaryFile()
     >>> idx = pysam.index(tempFile)
+    >>> sys.stdout = ostdout
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['YN'] for r in bam.fetch('chr2L', 0, 50)]
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -378,7 +387,8 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         replace_tags = False
         if len(readTag) > 0:
             if len(readTag[0]) == 3:
-                readTag = [(x[0], x[1], chr(x[2])) for x in readTag]
+                if type(readTag[2]) is int:
+                    readTag = [(x[0], x[1], chr(x[2])) for x in readTag]
                 replace_tags = True
         else:
             replace_tags = True

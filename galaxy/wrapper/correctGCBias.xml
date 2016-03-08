@@ -32,7 +32,7 @@
     <inputs>
         <param argument="--GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" help="" />
         <param argument="--bamInput" format="bam" type="data"
-            label="BAM file" help="This should be same file that was used for computeGCbias. The BAM file must be sorted." />
+            label="BAM file" help="This should be same file that was used for computeGCbias." />
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
         <expand macro="region_limit_operation" />

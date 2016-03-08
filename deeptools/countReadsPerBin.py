@@ -11,6 +11,7 @@ import bamHandler
 import mapReduce
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 
 
 def countReadsInRegions_wrapper(args):

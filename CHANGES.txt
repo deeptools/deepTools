@@ -1,3 +1,15 @@
+2.2.2
+
+ * Fixed labels when hierarchical clustering is used (they were off by one previously).
+ * Fixed a bug wherein bamCompare couldn't work with a blacklist
+ * Fixed yet another change in pysam, though at least in this case is was fixing a previous problem
+
+2.2.1
+
+ * Fixed a bug introduced in version 2.2.0 wherein sometimes a pre-2.2.0 produced matrix file could no longer be used with plotHeatmap or plotProfile (this only happened when --outFileNameData was then used).
+ * Finally suppressed all of the runtime warnings that numpy likes to randomly throw.
+ * Worked around an undocumented change in pysam-0.9.0 that tended to break things.
+
 2.2.0
 
  * plotFingerprint now iterates through line styles as well as colors. This allows up to 35 samples per plot without repeating (not that that many would ever be recommended). This was issue #80.

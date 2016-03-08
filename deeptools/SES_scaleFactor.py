@@ -8,6 +8,7 @@ import numpy as np
 from deeptools import bamHandler
 import deeptools.countReadsPerBin as countR
 
+old_settings = np.seterr(all='ignore')
 debug = 0
 
 

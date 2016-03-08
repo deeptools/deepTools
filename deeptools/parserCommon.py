@@ -323,12 +323,6 @@ def heatmapperOutputArgs(args=None,
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
 
-    output.add_argument('--outFileNameData',
-                        help='File name to save the data '
-                        'underlying data for the average profile, e.g. '
-                        'myProfile.tab.',
-                        type=writableFile)
-
     output.add_argument(
         '--outFileSortedRegions',
         help='File name into which the regions are saved '
@@ -346,6 +340,12 @@ def heatmapperOutputArgs(args=None,
                             'of values underlying the heatmap will be saved '
                             'using this name, e.g. MyMatrix.tab.',
                             metavar='FILE',
+                            type=writableFile)
+    elif mode == 'profile':
+        output.add_argument('--outFileNameData',
+                            help='File name to save the data '
+                            'underlying data for the average profile, e.g. '
+                            'myProfile.tab.',
                             type=writableFile)
     return parser
 
@@ -655,6 +655,8 @@ def bam_total_reads(bam_handle, chroms_to_ignore):
         import pysam
 
         lines = pysam.idxstats(bam_handle.filename)
+        if type(lines) is str:
+            lines = lines.strip().split('\n')
         tot_mapped_reads = 0
         for line in lines:
             chrom, _len, nmapped, _nunmapped = line.split('\t')
@@ -674,7 +676,10 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
 
     # Get the chromosome lengths
     chromLens = {}
-    for line in pysam.idxstats(bam_handle.filename):
+    lines = pysam.idxstats(bam_handle.filename)
+    if type(lines) is str:
+        lines = lines.strip().split('\n')
+    for line in lines:
         chrom, _len, nmapped, _nunmapped = line.split('\t')
         chromLens[chrom] = int(_len)
 

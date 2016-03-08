@@ -12,6 +12,8 @@ import pyBigWig
 import deeptools.readBed
 from deeptools import mapReduce
 
+old_settings = np.seterr(all='ignore')
+
 
 def compute_sub_matrix_wrapper(args):
     return heatmapper.compute_sub_matrix_worker(*args)
@@ -683,8 +685,8 @@ class heatmapper(object):
         w = self.parameters['bin size']
         b = self.parameters['upstream']
         a = self.parameters['downstream']
-        c = self.parameters['unscaled 5 prime']
-        d = self.parameters['unscaled 3 prime']
+        c = self.parameters.get('unscaled 5 prime', 0)
+        d = self.parameters.get('unscaled 3 prime', 0)
         m = self.parameters['body']
 
         if b < 1e5:
@@ -760,8 +762,8 @@ class heatmapper(object):
                  self.parameters['upstream'],
                  self.parameters['body'],
                  self.parameters['bin size'],
-                 self.parameters['unscaled 5 prime'],
-                 self.parameters['unscaled 3 prime']))
+                 self.parameters.get('unscaled 5 prime', 0),
+                 self.parameters.get('unscaled 3 prime', 0)))
 
         fh.close()
         # reopen again using append mode
@@ -1120,6 +1122,10 @@ class _matrix(object):
             from scipy.cluster.hierarchy import fcluster, linkage
             Z = linkage(matrix, method='ward', metric='euclidean')
             cluster_labels = fcluster(Z, k, criterion='maxclust')
+            # hierarchical clustering labels from 1 .. k
+            # while k-means labels 0 .. k -1
+            # Thus, for consistency, we subtract 1
+            cluster_labels -= 1
 
         # create groups using the clustering
         self.group_labels = []

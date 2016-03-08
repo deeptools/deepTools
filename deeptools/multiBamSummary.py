@@ -10,6 +10,8 @@ import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools._version import __version__
 
+old_settings = np.seterr(all='ignore')
+
 
 def parse_arguments(args=None):
     parser = \

@@ -26,7 +26,7 @@
     </command>
     <inputs>
         <param name="bamInput" format="bam" type="data" label="BAM file"
-            help="The BAM file must be sorted."/>
+            help=""/>
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribution of fragment lengths as a histogram"
             help=""/>

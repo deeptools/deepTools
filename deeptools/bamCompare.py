@@ -13,6 +13,7 @@ from deeptools.getRatio import getRatio
 from deeptools.getScaleFactor import get_scale_factor
 
 debug = 0
+old_settings = np.seterr(all='ignore')
 
 
 def parseArguments():
