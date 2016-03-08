@@ -1,3 +1,8 @@
+2.3.0
+
+ * Modified how normalization is done when filtering is used. Previously, the filtering wasn't taken into account when computing the total number of alignments. That is now being done. Note that this uses sampling and will try to sample at least 100000 alignments and see what fraction of them are filtered. The total number of aligned reads is then scaled accordingly (#309).
+ * Modified how normalization is done when a blacklist is used. Previously, the number of alignments overlapping a blacklisted region was subtracted from the total number of alignments in the file. This decreased things a bit too much, since only alignments falling completely within a blacklisted region are actually excluded completely (#312).
+
 2.2.2
 
  * Fixed labels when hierarchical clustering is used (they were off by one previously).

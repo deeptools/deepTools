@@ -10,6 +10,7 @@ from deeptools.SES_scaleFactor import estimateScaleFactor
 from deeptools import parserCommon
 from deeptools import bamHandler
 from deeptools.getRatio import getRatio
+from deeptools.getScaleFactor import get_scale_factor
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -189,13 +190,18 @@ def get_scale_factors(args):
                     (scalefactors_dict['sites_sampled'],
                      args.sampleLength)
 
-                print "size factor if the number of mapped " \
+                print "ignoring filtering, size factors if the number of mapped " \
                     "reads would have been used:"
                 print tuple(
                     float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped]))
 
         elif args.scaleFactorsMethod == 'readCount':
-            scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
+            args.bam = args.bamfile1
+            args.scaleFactor = 1.0
+            s1 = get_scale_factor(args)
+            args.bam = args.bamfile2
+            s2 = get_scale_factor(args)
+            scale_factors = np.array([s1, s2]) / float(max(s1, s2))
             if args.verbose:
                 print "Size factors using total number " \
                     "of mapped reads: {}".format(scale_factors)

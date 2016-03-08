@@ -1,7 +1,9 @@
 import argparse
 import deeptools.config as cfg
 import os
+import pysam
 from deeptools._version import __version__
+import deeptools.mapReduce as mapReduce
 
 
 def check_float_0_1(value):
@@ -215,7 +217,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
 
     if blackList:
         optional.add_argument('--blackListFileName', '-bl',
-                              help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
+                              help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered. Please note that you should adjust the effective genome size, if relevant.",
                               metavar="BED file",
                               required=False)
 
@@ -672,9 +674,6 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
     if blackListFileName is None:
         return blacklisted
 
-    import pysam
-    import deeptools.mapReduce as mapReduce
-
     # Get the chromosome lengths
     chromLens = {}
     lines = pysam.idxstats(bam_handle.filename)
@@ -688,6 +687,8 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
     for chrom in bl.keys():
         if not chroms_to_ignore or chrom not in chroms_to_ignore:
             for reg in bl[chrom].find(0, chromLens[chrom]):
-                blacklisted += bam_handle.count(reference=chrom, start=reg.start, end=reg.end)
+                for r in bam_handle.fetch(reference=chrom, start=reg.start, end=reg.end):
+                    if r.reference_start >= reg.start and r.reference_start + r.infer_query_length() - 1 <= reg.end:
+                        blacklisted += 1
 
     return blacklisted
