@@ -468,7 +468,7 @@ class CountReadsPerBin(object):
 
         # Return 0 for overlap with a blacklisted region
         if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
-            return coverge
+            return coverage
 
         start_time = time.time()
         # caching seems faster. TODO: profile the function
