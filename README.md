@@ -59,7 +59,7 @@ __Using anaconda:__
 
     $ conda install -c bioconda deeptools
 
-Note that deepTools does not (yet) work with python3.
+Note that deepTools does not (yet) work with python3. Also, it is generally unadvisable to mix `conda install ...` and `pip install ...`.
 
 __Another option is to clone the repository:__
 	
