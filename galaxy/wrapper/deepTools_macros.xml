@@ -72,12 +72,12 @@
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.1.0</token>
+    <token name="@WRAPPER_VERSION@">2.2.2</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
             <requirement type="binary">@BINARY@</requirement>
-            <requirement type="package" version="2.1.0">deepTools</requirement>
+            <requirement type="package" version="2.2.2">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -340,7 +340,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             ln -s "${bamfile}" "./${counter}.bam" &&
             ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
             #silent $files.append('%s.bam' % $counter)
-            #silent $labels.append('%s' % ($bamfile.display_name))
+            #silent $labels.append("'%s'" % ($bamfile.display_name))
         #end for
 ]]>
     </token>
@@ -352,7 +352,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         #for $counter, $bigwig in enumerate($bigwigfiles):
             ln -s "${bigwig}" "${counter}.bw" &&
             #silent $files.append('%s.bw' % $counter)
-            #silent $labels.append('%s' % ($bigwig.display_name))
+            #silent $labels.append("'%s'" % ($bigwig.display_name))
         #end for
 ]]>
     </token>
