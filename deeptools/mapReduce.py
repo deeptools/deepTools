@@ -1,4 +1,5 @@
 import multiprocessing
+from deeptoolsintervals import GTF
 
 debug = 0
 
@@ -9,6 +10,7 @@ def mapReduce(staticArgs, func, chromSize,
               bedFile=None,
               blackListFileName=None,
               numberOfProcessors=4,
+              keepExons=False,
               verbose=False,
               self_=None):
     """
@@ -43,7 +45,9 @@ def mapReduce(staticArgs, func, chromSize,
     :param blackListFileName: A list of regions to exclude from all computations.
                               Note that this has genomeChunkLength resolution...
     :param self_: In case mapreduce should make a call to an object
-                the self variable has to be passed.
+                  the self variable has to be passed.
+    :param keepExons: Boolean that defaults to False, regarding whether to bother
+                      storing exons in a region interval tree.
     """
 
     if not genomeChunkLength:
@@ -66,26 +70,10 @@ def mapReduce(staticArgs, func, chromSize,
                   "genome chunk length sent to each procesor: {}".format(chromSize, region_start, region_end, genomeChunkLength)
 
     if bedFile:
-        bed_interval_tree = BED_to_interval_tree(bedFile)
-        # modify chromSize such that it only contains
-        # chromosomes that are in the bed file
-        if not region:
-            chromSize = [x for x in chromSize if x[0] in bed_interval_tree.keys()]
-            if not len(chromSize):
-                exit("*ERROR*\nChromosome names in bed file do not match the chromosome names files to process")
-
-        else:
-            bed_in_region = bed_interval_tree[chromSize[0][0]].find(region_start, region_end)
-            if chromSize[0][0] not in bed_interval_tree.keys() or len(bed_in_region) == 0:
-                exit("*ERROR*\nThe specified region {} does not contain any of the "
-                     "intervals in the bed file".format(region))
-            # the user region has to be extended, otherwise if a bed interval ends after the region is not counted
-            # since the user region has been already added to the chromSize, the chrom size is extended instead.
-            if bed_in_region[-1].end > chromSize[0][1]:
-                chromSize[0] = (chromSize[0][0], bed_in_region[-1].end)
+        bed_interval_tree = GTF(bedFile)
 
     if blackListFileName:
-        blackList = BED_to_interval_tree(open(blackListFileName, "r"))
+        blackList = GTF(blackListFileName)
 
     TASKS = []
     # iterate over all chromosomes
@@ -115,24 +103,11 @@ def mapReduce(staticArgs, func, chromSize,
                 # a list of bed regions that overlap with the
                 # current genomeChunk.
                 if bedFile:
-                    # this method to get the bedFile regions may seem
-                    # cumbersome but I (fidel) think is better to
-                    # balance the load between multiple processors.
-                    # This method first partitions the genome into smaller
-                    # chunks and then, for each chunk, the list of
-                    # regions overlapping the chunk interval is added.
-                    # This is preferable to sending each worker a
-                    # single region because of the overhead of initiating
-                    # the data.
-                    bed_regions_list = []
-                    for bed_region in bed_interval_tree[chrom].find(reg[0], reg[1]):
-                        # start + 1 is used to avoid regions that may overlap
-                        # with two genomeChunks to be counted twice. Such region
-                        # is only added for the genomeChunk that contains the start
-                        # of the bed region.
-                        if bed_region.start < endPos < bed_region.end:
-                            continue
-                        bed_regions_list.append([chrom, bed_region.start, bed_region.end])
+                    # This effectively creates batches of intervals, which is
+                    # generally more performant due to the added overhead of
+                    # initializing additional workers.
+                    bed_regions_list = [[chrom, x[4]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlaps=True)]
+
                     if len(bed_regions_list) == 0:
                         continue
                     # add to argument list, the position of the bed regions to use
@@ -223,62 +198,6 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
     return chrom_sizes, region_start, region_end, int(chunk_size)
 
 
-def BED_to_interval_tree(BED_file):
-    """
-    Creates an index of intervals, using an interval tree, for each BED entry
-
-    :param BED_file: file handler of a BED file
-
-    :return interval tree
-    """
-    from bx.intervals.intersection import IntervalTree, Interval
-
-    bed_interval_tree = {}
-    for line in BED_file:
-        if line[0] == "#":
-            continue
-        fields = line.strip().split()
-        chrom, start_bed, end_bed, = fields[0], int(fields[1]), int(fields[2])
-
-        if chrom not in bed_interval_tree.keys():
-            bed_interval_tree[chrom] = IntervalTree()
-
-        # skip if a region overlaps with a region already seen
-        """
-        if len(bed_interval_tree[chrom].find(start_bed, start_bed + 1)) > 0:
-            continue
-        """
-        bed_interval_tree[chrom].add_interval(Interval(start_bed, end_bed))
-
-    return bed_interval_tree
-
-
-def blOverlap(t, chrom, chunk):
-    """
-    Test for an overlap between an IntervalTree and a given genomic chunk.
-
-    This attempts to account for differences in chromosome naming.
-
-    Returns the overlaps
-    """
-
-    if t is None:
-        return []
-
-    if chrom not in t.keys():
-        if chrom.startswith("chr"):
-            chrom = chrom[3:]
-        elif chrom == "MT":
-            chrom = "chrM"
-        else:
-            chrom = "chr" + chrom
-
-        if chrom not in t.keys():
-            return []
-
-    return t[chrom].find(chunk[0], chunk[1])
-
-
 def blSubtract(t, chrom, chunk):
     """
     If a genomic region overlaps with a blacklisted region, then subtract that region out
@@ -289,15 +208,15 @@ def blSubtract(t, chrom, chunk):
     if t is None:
         return [chunk]
 
-    overlaps = blOverlap(t, chrom, chunk)
+    overlaps = t.findOverlaps(chrom, chunk[0], chunk[1])
     if len(overlaps) > 0:
         output = []
         for o in overlaps:
             if chunk[1] <= chunk[0]:
                 break
-            if chunk[0] < o.start:
-                output.append([chunk[0], o.start])
-            chunk[0] = o.end
+            if chunk[0] < o[0]:
+                output.append([chunk[0], o[0]])
+            chunk[0] = o[1]
         if chunk[0] < chunk[1]:
             output.append([chunk[0], chunk[1]])
     else:
