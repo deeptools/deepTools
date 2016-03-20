@@ -220,7 +220,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
         for bam in bam_handlers:
             coverage.append(
-                self.get_coverage_of_region(bam, chrom, start, end, self.binLength))
+                self.get_coverage_of_region(bam, chrom, [(start, end)], self.binLength))
             bam.close()
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')

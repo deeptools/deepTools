@@ -9,6 +9,7 @@ import numpy as np
 import deeptools.utilities
 import bamHandler
 import mapReduce
+from deeptoolsintervals import GTF
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -57,7 +58,7 @@ class CountReadsPerBin(object):
         Region to limit the computation in the form chrom:start:end.
 
     bedFile : file_handle
-        File handle of a bed file containing the regions for wich to compute the coverage. This option
+        File handle of a bed file containing the regions for which to compute the coverage. This option
         overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
 
     blackListFileName : str
@@ -158,7 +159,7 @@ class CountReadsPerBin(object):
         self.blackList = None
         self.blackListFileName = blackListFileName
         if blackListFileName:
-            self.blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
+            self.blackList = GTF(blackListFileName)
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -328,7 +329,7 @@ class CountReadsPerBin(object):
         end : int
             end coordinate
         bed_regions_list: list
-            List of tuples of the form (chrom, start, end)
+            List of list of tuples of the form (start, end)
             corresponding to bed regions to be processed.
             If not bed file was passed to the object constructor
             then this list is empty.
@@ -372,19 +373,18 @@ class CountReadsPerBin(object):
 
         bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
 
-        regionsToConsider = []
+        # A list of lists of tuples
+        transcriptsToConsider = []
         if bed_regions_list is not None:
-            for chrom, start, end in bed_regions_list:
-                if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
-                    continue
-                regionsToConsider.append((chrom, start, end, end - start))
+            transcriptsToConsider = bed_regions_list
         else:
             for i in xrange(start, end, self.stepSize):
                 if i + self.binLength > end:
                     break
-                if mapReduce.blOverlap(self.blackList, chrom, [i, i + self.binLength]):
+                if self.blackList is not None and self.blackList.findOverlaps(chrom, i, i + self.binLength):
                     continue
-                regionsToConsider.append((chrom, i, i + self.binLength, self.binLength))
+                transcriptsToConsider.append((i, i + self.binLength))
+            transcriptsToConsider = [transcriptsToConsider]
 
         if self.save_data:
             _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
@@ -392,16 +392,17 @@ class CountReadsPerBin(object):
         else:
             _file_name = ''
 
-        for chrom, start, end, region_length in regionsToConsider:
+        for trans in transcriptsToConsider:
             coverage_array = []
             for bam in bam_handlers:
                 coverage_array.append(
-                    self.get_coverage_of_region(bam, chrom, start, end, region_length)[0])
+                    self.get_coverage_of_region(bam, chrom, trans, self.binLength))
 
             subnum_reads_per_bin.extend(coverage_array)
-            rows += 1
+            rows += len(trans)
 
             if self.save_data:
+                # TODO What should the format be?
                 _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
                 _file.write("\t".join(["{}".format(x) for x in coverage_array]) + "\n")
 
@@ -414,9 +415,9 @@ class CountReadsPerBin(object):
         if self.save_data:
             _file.close()
 
-        return np.array(subnum_reads_per_bin).reshape(rows, len(self.bamFilesList)), _file_name
+        return np.concatenate(subnum_reads_per_bin).reshape(rows, len(self.bamFilesList), order='F'), _file_name
 
-    def get_coverage_of_region(self, bamHandle, chrom, start, end, tileSize,
+    def get_coverage_of_region(self, bamHandle, chrom, regions, tileSize,
                                fragmentFromRead_func=None):
         """
         Returns a numpy array that corresponds to the number of reads
@@ -430,7 +431,7 @@ class CountReadsPerBin(object):
         read fragments is 4 and 5 for the positions tested.
 
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
-        ... 5000833, 5000835, 1)
+        ... [(5000833, 5000835)], 1)
         array([ 4.,  5.])
 
         In the following example a paired read is extended to the fragment length which is 100
@@ -440,118 +441,127 @@ class CountReadsPerBin(object):
         there should be zero reads.
 
         >>> c.zerosToNans = True
-        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2', 5000090, 5000110, 10)
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2', [(5000090, 5000110)], 10)
         array([  1.,  nan])
 
         In the following  case the reads length is 50. Reads are not extended.
 
         >>> c.extendReads=False
-        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', 148, 154, 2)
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', [(148, 154)], 2)
         array([ 1.,  2.,  2.])
 
 
         """
         if not fragmentFromRead_func:
             fragmentFromRead_func = self.get_fragment_from_read
-        length = end - start
         assert tileSize > 0, "bin length has to be an integer greater than zero. Current value {}".format(tileSize)
-        if length % tileSize > 0:
-            new_length = length - (length % tileSize)
-            end = start + new_length
-            if debug:
-                print "length of region ({}) is not a multiple of " \
-                      "tileSize {}\nThe region is being chopped to length " \
-                      "{} bp".format(length, tileSize, new_length)
+        coverages = np.empty(shape=(0,0), dtype='float64')
+        for reg in regions:
+            length = reg[1] - reg[0]
+            # TODO: Right, this screws up small regions
+            if length % tileSize > 0:
+                new_length = length - (length % tileSize)
+                reg = (reg[0], reg[0] + new_length)
+                if debug:
+                    print "length of region ({}) is not a multiple of " \
+                          "tileSize {}\nThe region is being chopped to length " \
+                          "{} bp".format(length, tileSize, new_length)
+            vector_length = (reg[1] - reg[0]) // tileSize
 
-        vector_length = length / tileSize
-        coverage = np.zeros(vector_length, dtype='float64')
+            coverage = np.zeros(vector_length, dtype='float64')
 
-        # Return 0 for overlap with a blacklisted region
-        if mapReduce.blOverlap(self.blackList, chrom, [start, end]):
-            return coverage
-
-        start_time = time.time()
-        # caching seems faster. TODO: profile the function
-        c = 0
-        if chrom in bamHandle.references:
-            # r.flag & 4 == 0 is to skip unmapped reads
-            reads = [r for r in bamHandle.fetch(chrom, start, end)
-                     if r.flag & 4 == 0]
-        else:
-            raise NameError("chromosome {} not found in bam file".format(chrom))
-
-        prev_start_pos = None  # to store the start positions
-        # of previous processed read pair
-        for read in reads:
-            if self.minMappingQuality and read.mapq < self.minMappingQuality:
+            # Blacklisted regions have a coverage of 0
+            if self.blackList and self.blackList.findOverlaps(chrom, reg[0], reg[1]):
+                coverages = np.concatenate([coverages, coverage])
                 continue
 
-            # filter reads based on SAM flag
-            if self.samFlag_include and read.flag & self.samFlag_include == 0:
-                continue
-            if self.samFlag_exclude and read.flag & self.samFlag_exclude != 0:
-                continue
+            start_time = time.time()
+            # caching seems faster. TODO: profile the function
+            c = 0
+            if chrom in bamHandle.references:
+                # r.flag & 4 == 0 is to skip unmapped reads
+                reads = [r for r in bamHandle.fetch(chrom, reg[0], reg[1])
+                         if r.flag & 4 == 0]
+            else:
+                raise NameError("chromosome {} not found in bam file".format(chrom))
 
-            # get rid of duplicate reads that have same position on each of the
-            # pairs
-            if self.ignoreDuplicates and prev_start_pos \
-                    and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                continue
-
-            # since reads can be split (e.g. RNA-seq reads) each part of the
-            # read that maps is called a position block.
-            try:
-                position_blocks = fragmentFromRead_func(read)
-            except TypeError:
-                # the get_fragment_from_read functions returns None in some cases.
-                # Those cases are to be skipped, hence the continue line.
-                continue
-
-            for fragmentStart, fragmentEnd in position_blocks:
-                if fragmentEnd is None or fragmentStart is None:
-                    continue
-                fragmentLength = fragmentEnd - fragmentStart
-                if fragmentLength == 0:
-                    continue
-                # skip reads that are not in the region being
-                # evaluated.
-                if fragmentEnd <= start or fragmentStart >= end:
+            prev_start_pos = None  # to store the start positions
+            # of previous processed read pair
+            for read in reads:
+                if self.minMappingQuality and read.mapq < self.minMappingQuality:
                     continue
 
-                vector_start = max((fragmentStart - start) / tileSize, 0)
-                # np.ceil is to consider the next closest start of a bin
-                # for example in the following situation:
-                #
-                # A  =======>
-                # B               ===>
-                # |------|------|------|------|------|------|------|
-                # 0      1      2      3      4      5      6      7 bin
-                # 0         10         20         30         40      genomic position
+                # filter reads based on SAM flag
+                if self.samFlag_include and read.flag & self.samFlag_include == 0:
+                    continue
+                if self.samFlag_exclude and read.flag & self.samFlag_exclude != 0:
+                    continue
 
-                # for the A case the vector_start is 0 and the vector_end should be 2
-                # while for the B case the vector_start is 2 and the vector_end is 3.
+                # get rid of duplicate reads that have same position on each of the
+                # pairs
+                if self.ignoreDuplicates and prev_start_pos \
+                        and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
+                    continue
 
-                vector_end = min(np.ceil(float(fragmentEnd - start) / tileSize).astype('int'),
-                                 vector_length)
+                # since reads can be split (e.g. RNA-seq reads) each part of the
+                # read that maps is called a position block.
+                try:
+                    position_blocks = fragmentFromRead_func(read)
+                except TypeError:
+                    # the get_fragment_from_read functions returns None in some cases.
+                    # Those cases are to be skipped, hence the continue line.
+                    continue
 
-                assert vector_end > vector_start, "Error, vector end < " \
-                                                  "than vector start {}:{}:{}".format(chrom, start, end)
+                for fragmentStart, fragmentEnd in position_blocks:
+                    if fragmentEnd is None or fragmentStart is None:
+                        continue
+                    fragmentLength = fragmentEnd - fragmentStart
+                    if fragmentLength == 0:
+                        continue
+                    # skip reads that are not in the region being
+                    # evaluated.
+                    if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
+                        continue
 
-                coverage[vector_start:vector_end] += 1
+                    vector_start = max((fragmentStart - reg[0]) // tileSize, 0)
+                    # np.ceil is to consider the next closest start of a bin
+                    # for example in the following situation:
+                    #
+                    # A  =======>
+                    # B               ===>
+                    # |------|------|------|------|------|------|------|
+                    # 0      1      2      3      4      5      6      7 bin
+                    # 0         10         20         30         40      genomic position
 
-            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
-            c += 1
+                    # for the A case the vector_start is 0 and the vector_end should be 2
+                    # while for the B case the vector_start is 2 and the vector_end is 3.
 
-        if self.verbose:
-            endTime = time.time()
-            print "%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
-                multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, start, end)
+                    vector_end = min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'),
+                                     vector_length)
 
-        # change zeros to NAN
-        if self.zerosToNans:
-            coverage[coverage == 0] = np.nan
+                    assert vector_end > vector_start, "Error, vector end < " \
+                                                      "than vector start {}:{}:{}".format(chrom, reg[0], reg[1])
 
-        return coverage
+                    coverage[vector_start:vector_end] += 1
+
+                prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+                c += 1
+
+            if self.verbose:
+                endTime = time.time()
+                print "%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
+                    multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1])
+
+            # change zeros to NAN
+            if self.zerosToNans:
+                coverage[coverage == 0] = np.nan
+
+            if coverages.shape[0] > 0:
+                coverages = np.concatenate([coverages, coverage])
+            else:
+                coverages = coverage
+
+        return coverages
 
     def getReadLength(self, read):
         return len(read)

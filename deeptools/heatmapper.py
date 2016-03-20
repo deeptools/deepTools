@@ -9,7 +9,7 @@ import multiprocessing
 import pysam
 
 import pyBigWig
-import deeptools.readBed
+from deeptoolsintervals import GTF
 from deeptools import mapReduce
 
 old_settings = np.seterr(all='ignore')
@@ -66,6 +66,7 @@ class heatmapper(object):
             exit("Length of the unscaled 5 prime region has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
 
+        # TODO: Replace this whole section with mapReduce
         regions, group_labels = self.get_regions_and_groups(regions_file, blackListFileName=blackListFileName, verbose=verbose)
 
         # args to pass to the multiprocessing workers
@@ -801,10 +802,9 @@ class heatmapper(object):
         return np.__getattribute__(avgType)(matrix, axis=0)
 
     @staticmethod
-    def get_regions_and_groups(regions_file, onlyMultiplesOf=1,
+    def get_regions_and_groups(regions_file,
                                default_group_name='genes',
-                               blackListFileName=None,
-                               verbose=None):
+                               blackListFileName=None):
         """
         Reads a bed file.
         In case is hash sign '#' is found in the
@@ -814,115 +814,12 @@ class heatmapper(object):
         Returns a list of regions with a label
         index appended to each and a list of labels
         """
+        # TODO default_group_name is unused
 
-        regions = []
-        previnterval = None
-        duplicates = 0
-        totalintervals = 0
-        groupintervals = 0
-        includedintervals = 0
-        group_labels = []
-        group_idx = 0
-        bed_file = deeptools.readBed.ReadBed(regions_file)
         blackList = None
         if blackListFileName is not None:
-            blackList = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
-
-        for ginterval in bed_file:
-            if ginterval.line.startswith("track") or ginterval.line.startswith("browser"):
-                continue
-
-            if ginterval.line.startswith('#'):
-                # check for labels with no associated entries
-                if groupintervals == 0:
-                    continue
-                else:
-                    groupintervals = 0
-                group_idx += 1
-                label = ginterval.line[1:].strip()
-                if label in group_labels:
-                    # loop to find a unique label name
-                    i = 0
-                    while True:
-                        i += 1
-                        newlabel = label + "_r" + str(i)
-                        if newlabel not in group_labels:
-                            break
-
-                group_labels.append(label)
-                continue
-
-            # Exclude blacklist overlaps
-            if mapReduce.blOverlap(blackList, ginterval.chrom, [ginterval.start, ginterval.end]):
-                continue
-
-            # if the list of regions is to big, only
-            # consider a fraction of the data
-            # if totalintervals % onlyMultiplesOf != 0:
-            #    continue
-            # check for regions that have the same position as the previous.
-            # This assumes that the regions file given is sorted
-            totalintervals += 1
-            if previnterval is not None:
-                if previnterval.chrom == ginterval.chrom and \
-                   previnterval.start == ginterval.start and \
-                   previnterval.end == ginterval.end and \
-                   previnterval.strand == ginterval.strand:
-                    if verbose:
-                        try:
-                            genename = ginterval.name
-                        except:
-                            genename = ''
-                        sys.stderr.write("*Warning* Duplicated region: "
-                                         "{} {}:{}-{}.\n".format(genename,
-                                                                 ginterval.chrom,
-                                                                 ginterval.start,
-                                                                 ginterval.end))
-                    duplicates += 1
-
-            groupintervals += 1
-            previnterval = ginterval
-            ginterval.group_idx = group_idx
-            regions.append(ginterval)
-            includedintervals += 1
-
-        # in case we reach the end of the file
-        # without encountering a hash,
-        # a default name is given to regions
-        using_default_group_name = False
-        if not group_labels:
-            group_labels.append(default_group_name)
-            using_default_group_name = True
-            groupintervals = 0
-
-        # If there are any remaining intervals with no group label then add a fake one
-        if groupintervals > 0:
-            # There was a missing "#" at the end
-            label = default_group_name
-            if label in group_labels:
-                # loop to find a unique label name
-                i = 0
-                while True:
-                    i += 1
-                    newlabel = label + "_r" + str(i)
-                    if newlabel not in group_labels:
-                        break
-            group_labels.append(label)
-
-        if verbose and duplicates > 0:
-            sys.stderr.write(
-                "{} ({:.2f}) regions covering the exact same interval "
-                "were found".format(duplicates,
-                                    float(duplicates) * 100 / totalintervals))
-
-        if verbose:
-            sys.stderr.write("Found:\n\tintervals: {}\n".format(len(regions)))
-            if using_default_group_name:
-                sys.stderr.write("\tno groups found\n")
-            else:
-                sys.stderr.write("\tgroups: {} [{}]\n\n".format(len(group_labels), ", ".join(group_labels)))
-
-        return regions, group_labels
+            blackList = GTF(blackListFileName)
+        return blackList, GTF(regions_file, defaultGroup=default_group_name)
 
     def get_individual_matrices(self, matrix):
         """In case multiple matrices are saved one after the other

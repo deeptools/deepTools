@@ -3,7 +3,7 @@ import deeptools.config as cfg
 import os
 import pysam
 from deeptools._version import __version__
-import deeptools.mapReduce as mapReduce
+from deeptoolsintervals import GTF
 
 
 def check_float_0_1(value):
@@ -683,12 +683,12 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
         chrom, _len, nmapped, _nunmapped = line.split('\t')
         chromLens[chrom] = int(_len)
 
-    bl = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
-    for chrom in bl.keys():
+    bl = GTF(blackListFileName)
+    for chrom in bl.chroms:
         if not chroms_to_ignore or chrom not in chroms_to_ignore:
-            for reg in bl[chrom].find(0, chromLens[chrom]):
-                for r in bam_handle.fetch(reference=chrom, start=reg.start, end=reg.end):
-                    if r.reference_start >= reg.start and r.reference_start + r.infer_query_length() - 1 <= reg.end:
+            for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
+                for r in bam_handle.fetch(reference=chrom, start=reg[0], end=reg[1]):
+                    if r.reference_start >= reg[0] and r.reference_start + r.infer_query_length() - 1 <= reg[1]:
                         blacklisted += 1
 
     return blacklisted
