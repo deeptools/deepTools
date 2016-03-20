@@ -29,10 +29,12 @@ install:
 # command to run tests
 script:
   - flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402
-  - cd ~/ && nosetests --with-doctest --ignore-files=plotCoverage -s deeptools
-  - cd ~/ && nosetests deeptools.test.test_plotCoverage
+  - export owd=`pwd`
+  - cd ~/ && nosetests --with-doctest --ignore-files=plotCoverage -sv deeptools
+  - nosetests deeptools.test.test_plotCoverage
+  - nosetests --with-doctest -sv deeptoolsintervals
+  - cd ${owd}
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export PATH=`echo $PATH | sed -e 's/\/home\/travis\/miniconda\/bin://'` ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./.planemo.sh ; fi
-  - cd ~/ && nosetests --with-doctest -s deeptoolsintervals
 sudo: false
