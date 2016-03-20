@@ -455,7 +455,7 @@ class CountReadsPerBin(object):
         if not fragmentFromRead_func:
             fragmentFromRead_func = self.get_fragment_from_read
         assert tileSize > 0, "bin length has to be an integer greater than zero. Current value {}".format(tileSize)
-        coverages = np.empty(shape=(0,0), dtype='float64')
+        coverages = np.empty(shape=(0, 0), dtype='float64')
         for reg in regions:
             length = reg[1] - reg[0]
             # TODO: Right, this screws up small regions

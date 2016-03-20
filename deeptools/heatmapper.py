@@ -10,7 +10,7 @@ import pysam
 
 import pyBigWig
 from deeptoolsintervals import GTF
-from deeptools import mapReduce
+# from deeptools import mapReduce
 
 old_settings = np.seterr(all='ignore')
 
