@@ -10,8 +10,8 @@ def mapReduce(staticArgs, func, chromSize,
               bedFile=None,
               blackListFileName=None,
               numberOfProcessors=4,
-              keepExons=False,
               verbose=False,
+              includeLabels=False,
               self_=None):
     """
     Split the genome into parts that are sent to workers using a defined
@@ -46,15 +46,19 @@ def mapReduce(staticArgs, func, chromSize,
                               Note that this has genomeChunkLength resolution...
     :param self_: In case mapreduce should make a call to an object
                   the self variable has to be passed.
-    :param keepExons: Boolean that defaults to False, regarding whether to bother
-                      storing exons in a region interval tree.
+    :param includeLabels: Pass group and transcript labels into the calling
+                          function. These are added to the static args
+                          (groupLabel and transcriptName).
+
+    If "includeLabels" is true, a tuple of (results, labels) is returned
     """
 
     if not genomeChunkLength:
         genomeChunkLength = 1e5
+    genomeChunkLength = int(genomeChunkLength)
 
     if verbose:
-        print "genome partition size for multiprocessing: {}".format(
+        print "genome partition size for multiprocessing: {0}".format(
             genomeChunkLength)
 
     region_start = 0
@@ -66,11 +70,11 @@ def mapReduce(staticArgs, func, chromSize,
     if region:
         chromSize, region_start, region_end, genomeChunkLength = getUserRegion(chromSize, region)
         if verbose:
-            print "chrom size: {}, region start: {}, region end: {}, " \
-                  "genome chunk length sent to each procesor: {}".format(chromSize, region_start, region_end, genomeChunkLength)
+            print "chrom size: {0}, region start: {1}, region end: {2}, " \
+                  "genome chunk length sent to each procesor: {3}".format(chromSize, region_start, region_end, genomeChunkLength)
 
     if bedFile:
-        bed_interval_tree = GTF(bedFile)
+        bed_interval_tree = GTF(bedFile, defaultGroup="genes")
 
     if blackListFileName:
         blackList = GTF(blackListFileName)
@@ -106,7 +110,12 @@ def mapReduce(staticArgs, func, chromSize,
                     # This effectively creates batches of intervals, which is
                     # generally more performant due to the added overhead of
                     # initializing additional workers.
-                    bed_regions_list = [[chrom, x[4]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlaps=True)]
+
+                    # TODO, there's no point in including the chromosome
+                    if includeLabels:
+                        bed_regions_list = [[chrom, x[4], x[2], x[3], x[-1]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlap=True, numericGroups=True, includeStrand=True)]
+                    else:
+                        bed_regions_list = [[chrom, x[4], x[-1]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlap=True, includeStrand=True)]
 
                     if len(bed_regions_list) == 0:
                         continue
@@ -126,6 +135,11 @@ def mapReduce(staticArgs, func, chromSize,
     else:
         res = map(func, TASKS)
 
+    if includeLabels:
+        if bedFile:
+            return res, bed_interval_tree.labels
+        else:
+            return res, None
     return res
 
 

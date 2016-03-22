@@ -148,15 +148,15 @@ static PyObject *pyIsTree(pyGTFtree_t *self, PyObject *args) {
 
 static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
     GTFtree *t = self->t;
-    char *chrom = NULL, *name = NULL, *transcript_id = NULL;
+    char *chrom = NULL, *name = NULL, *transcript_id = NULL, strandChar;
     int32_t i;
     uint32_t start, end;
     int strand = 3, strandType = 0, matchType = 0;
     unsigned long lstrand, lstart, lend, lmatchType, lstrandType, llabelIdx;
     overlapSet *os = NULL;
-    PyObject *olist = NULL, *otuple = NULL;
+    PyObject *olist = NULL, *otuple = NULL, *includeStrand = Py_False;
 
-    if(!(PyArg_ParseTuple(args, "skkkkks", &chrom, &lstart, &lend, &lstrand, &lmatchType, &lstrandType, &transcript_id))) {
+    if(!(PyArg_ParseTuple(args, "skkkkksO", &chrom, &lstart, &lend, &lstrand, &lmatchType, &lstrandType, &transcript_id, &includeStrand))) {
         PyErr_SetString(PyExc_RuntimeError, "pyFindOverlaps received an invalid or missing argument!");
         return NULL;
     }
@@ -187,13 +187,27 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
     if(!olist) goto error;
     for(i=0; i<os->l; i++) {
         // Make the tuple
-        otuple = PyTuple_New(4);
+        if(includeStrand == Py_True) {
+            otuple = PyTuple_New(5);
+        } else {
+            otuple = PyTuple_New(4);
+        }
         if(!otuple) goto error;
         lstart = (unsigned long) os->overlaps[i]->start;
         lend = (unsigned long) os->overlaps[i]->end;
         name = getAttribute(t, os->overlaps[i], transcript_id);
         llabelIdx = (unsigned long) os->overlaps[i]->labelIdx;
-        otuple = Py_BuildValue("(kksk)", lstart, lend, name, llabelIdx);
+        strandChar = '.';
+        if(os->overlaps[i]->strand == 0) {
+            strandChar = '+';
+        } else if(os->overlaps[i]->strand == 1) {
+            strandChar = '-';
+        }
+        if(includeStrand == Py_True) {
+            otuple = Py_BuildValue("(kkskc)", lstart, lend, name, llabelIdx, strandChar);
+        } else {
+            otuple = Py_BuildValue("(kksk)", lstart, lend, name, llabelIdx);
+        }
         if(!otuple) goto error;
 
         // Add the tuple

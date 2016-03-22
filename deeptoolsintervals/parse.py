@@ -111,6 +111,8 @@ class GTF(object):
     [(11868, 14409, 'ENST00000456328', 'group 1', [(11868, 14409)]), (12009, 13670, 'ENST00000450305', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)])]
     >>> gtf.findOverlaps("1", 12000, 20000, trimOverlap=True)
     [(12009, 13670, 'ENST00000450305', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)])]
+    >>> gtf.findOverlaps("1", 1, 20000, numericGroups=True, includeStrand=True)
+    [(11868, 14409, 'ENST00000456328', 0, [(11868, 14409)], '+'), (12009, 13670, 'ENST00000450305', 0, [(12009, 13670)], '+'), (14403, 29570, 'ENST00000488147', 0, [(14403, 29570)], '-'), (17368, 17436, 'ENST00000619216', 1, [(17368, 17436)], '-')]
     """
 
     def firstNonComment(self, fp):
@@ -139,7 +141,7 @@ class GTF(object):
             sys.stderr.write("Warning, {0} has an abnormal number of fields. Assuming BED3 format.\n".format(self.filename))
             return 'BED3'
         elif len(cols) == 6:
-            return 'BED3'
+            return 'BED6'
         elif len(cols) == 9 and seemsLikeGTF(cols, self.gene_id_regex):
             return 'GTF'
         elif len(cols) == 12:
@@ -228,14 +230,13 @@ class GTF(object):
         >>> from os.path import dirname
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed6".format(dirname(parse.__file__)), keepExons=True)
         >>> gtf.findOverlaps("1", 1, 20000)
-        [(11868, 14409, '1:11868-14409', 'group 1', [(11868, 14409)]), (12009, 13670, '1:12009-13670', 'group 1', [(12009, 13670)]), (14403, 29570, '1:14403-29570', 'group 1', [(14403, 29570)]), (17368, 17436, '1:17368-17436', 'group 1', [(17368, 17436)])]
+        [(11868, 14409, 'ENST00000456328.2', 'group 1', [(11868, 14409)]), (12009, 13670, 'ENST00000450305.2', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147.1', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216.1', 'group 1', [(17368, 17436)])]
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed".format(dirname(parse.__file__)), keepExons=True, labels=["foo", "bar", "quux", "sniggly"])
         >>> gtf.findOverlaps("1", 1, 20000)
         [(11868, 14409, '1:11868-14409', 'foo', [(11868, 14409)]), (12009, 13670, '1:12009-13670', 'foo', [(12009, 13670)]), (14403, 29570, '1:14403-29570', 'foo', [(14403, 29570)]), (17368, 17436, '1:17368-17436', 'foo', [(17368, 17436)])]
         """
         groupLabelsFound = 0
         groupEntries = 0
-        startingIdx = self.labelIdx
 
         # Handle the first line
         if self.parseBEDcore(line, ncols):
@@ -246,6 +247,10 @@ class GTF(object):
             if not isinstance(line, str):
                 line = line.decode('ascii')
             line = line.strip()
+            if len(line) == 0:
+                # Apparently this happens, some people seem to like trying to break things
+                continue
+
             if line.startswith("#"):
                 # If there was a previous group AND it had no entries then remove it
                 if groupLabelsFound > 0:
@@ -269,9 +274,11 @@ class GTF(object):
                 if self.parseBEDcore(line, ncols):
                     groupEntries += 1
 
-        if groupLabelsFound == 0 or self.labelIdx - startingIdx + 1 > groupLabelsFound:
-            # This can only happen once
-            self.labels.append(findRandomLabel(self.labels, self.filename))
+        if groupEntries > 0:
+            if self.defaultGroup is not None:
+                self.labels.append(findRandomLabel(self.labels, self.defaultGroup))
+            else:
+                self.labels.append(findRandomLabel(self.labels, self.filename))
             self.labelIdx += 1
 
     def parseGTFtranscript(self, cols, label):
@@ -289,6 +296,8 @@ class GTF(object):
         m = self.deepTools_group_regex.search(cols[8])
         if m:
             label = m.groups()[0]
+        elif self.defaultGroup is not None:
+            label = self.defaultGroup
 
         m = self.transcript_id_regex.search(cols[8])
         if not m:
@@ -381,6 +390,9 @@ class GTF(object):
                 line = line.decode('ascii')
             if not line.startswith('#'):
                 cols = line.split("\t")
+                if len(cols) == 0:
+                    continue
+
                 if cols[2].lower() == self.transcriptID:
                     self.parseGTFtranscript(cols, file_label)
                 elif cols[2].lower() == self.exonID and self.keepExons is True:
@@ -389,7 +401,7 @@ class GTF(object):
         # Reset self.labelIdx
         self.labelIdx = len(self.labels) - 1
 
-    def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id"):
+    def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id", defaultGroup=None):
         """
         Driver function to actually parse files. The steps are as follows:
 
@@ -419,6 +431,7 @@ class GTF(object):
                       transcript_id_designator would need to be changed to
                       'gene_id' or 'gene_name' to extract the gene ID/name from
                       the attributes.
+        defaultGroup: The default group name. If None, the file name is used.
         """
         self.fname = []
         self.filename = ""
@@ -434,6 +447,7 @@ class GTF(object):
         self.exonID = exonID
         self.transcriptID = transcriptID
         self.keepExons = keepExons
+        self.defaultGroup = defaultGroup
 
         if labels != []:
             self.already_input_labels = True
@@ -476,7 +490,7 @@ class GTF(object):
         self.tree.finish()
 
     # findOverlaps()
-    def findOverlaps(self, chrom, start, end, strand=".", matchType=0, strandType=0, trimOverlap=False):
+    def findOverlaps(self, chrom, start, end, strand=".", matchType=0, strandType=0, trimOverlap=False, numericGroups=False, includeStrand=False):
         """
         Given a chromosome and start/end coordinates with an optional strand,
         return a list of tuples comprised of:
@@ -486,6 +500,7 @@ class GTF(object):
          * name
          * label
          * [(exon start, exon end), ...]
+         * strand (optional)
 
         If there are no overlaps, return None. This function allows stranded
         searching, though the default is to ignore strand!
@@ -509,6 +524,12 @@ class GTF(object):
                        dividing the genome into large bins. In that case,
                        'trimOverlap=True' can be used to ensure that a given
                        interval is never seen more than once.
+
+        numericGroups: Whether to return group labels or simply the numeric
+                       index. The latter is more useful when these are passed to
+                       a function whose output will be sorted according to group.
+
+        includeStrand: Whether to include the strand in the output. The default is False
 
         >>> from deeptoolsintervals import parse
         >>> from os.path import dirname, basename
@@ -545,7 +566,7 @@ class GTF(object):
         else:
             strand = 0
 
-        overlaps = self.tree.findOverlaps(chrom, start, end, strand, matchType, strandType, "transcript_id")
+        overlaps = self.tree.findOverlaps(chrom, start, end, strand, matchType, strandType, "transcript_id", includeStrand)
         if not overlaps:
             return None
 
@@ -555,7 +576,13 @@ class GTF(object):
             else:
                 exons = sorted(self.exons[o[2]])
 
-            overlaps[i] = (o[0], o[1], o[2], self.labels[o[3]], exons)
+            if numericGroups:
+                overlaps[i] = (o[0], o[1], o[2], o[3], exons)
+            else:
+                overlaps[i] = (o[0], o[1], o[2], self.labels[o[3]], exons)
+
+            if includeStrand:
+                overlaps[i] = overlaps[i] + (str(o[-1].decode("ascii")),)
 
         # Ensure that the intervals are sorted by their 5'-most bound. This enables trimming
         overlaps = sorted(overlaps)

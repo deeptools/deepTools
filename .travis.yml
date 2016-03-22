@@ -30,8 +30,7 @@ install:
 script:
   - flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402
   - export owd=`pwd`
-  - cd ~/ && nosetests --with-doctest --ignore-files=plotCoverage -sv deeptools
-  - nosetests deeptools.test.test_plotCoverage
+  - cd ~/ && nosetests --with-doctest -sv deeptools
   - nosetests --with-doctest -sv deeptoolsintervals
   - cd ${owd}
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export PATH=`echo $PATH | sed -e 's/\/home\/travis\/miniconda\/bin://'` ; fi

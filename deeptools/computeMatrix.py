@@ -82,7 +82,6 @@ def computeMatrixRequiredArgs(args=None):
                                'the regions to plot. If multiple bed files are given, each one is considered a '
                                'group that can be plotted separately. Also, adding a "#" symbol in the bed file '
                                'causes all the regions until the previous "#" to be considered one group.',
-                          type=argparse.FileType('U'),
                           nargs='+',
                           required=True)
     required.add_argument('--scoreFileName', '-S',
@@ -347,22 +346,6 @@ def main(args=None):
 
     args = process_args(args)
 
-    # if more than one bed file is given, they are concatenated into one file.
-    if len(args.regionsFileName) > 1:
-        bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-        for bed in args.regionsFileName:
-            bed.close()
-            # concatenate all intermediate tempfiles into one
-            shutil.copyfileobj(open(bed.name, 'U'), bed_file)
-            # append hash and label based on the file name
-            label = os.path.basename(bed.name)
-            if label.endswith(".bed"):
-                label = label[:-4]
-            bed_file.write("# {}\n".format(label))
-        bed_file.seek(0)
-    else:
-        bed_file = args.regionsFileName[0]
-
     parameters = {'upstream': args.beforeRegionStartLength,
                   'downstream': args.afterRegionStartLength,
                   'body': args.regionBodyLength,
@@ -386,22 +369,14 @@ def main(args=None):
     hm = heatmapper.heatmapper()
 
     scores_file_list = args.scoreFileName
-    hm.computeMatrix(scores_file_list, bed_file, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose)
+    hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose)
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
 
     hm.save_matrix(args.outFileName)
-    bed_file.close()
-
-    if len(args.regionsFileName) > 1:
-        os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
-
-    # TODO This isn't implemented
-    # if args.outFileNameData:
-    #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

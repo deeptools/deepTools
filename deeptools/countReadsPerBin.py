@@ -402,9 +402,9 @@ class CountReadsPerBin(object):
             rows += len(trans)
 
             if self.save_data:
-                # TODO What should the format be?
-                _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
-                _file.write("\t".join(["{}".format(x) for x in coverage_array]) + "\n")
+                for i, exon in enumerate(trans):
+                    _file.write("\t".join(map(str, [chrom, exon[0], exon[1]])) + "\t")
+                    _file.write("\t".join(["{}".format(x[i]) for x in coverage_array]) + "\n")
 
         if self.verbose:
             endTime = time.time()
