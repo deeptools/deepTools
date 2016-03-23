@@ -152,9 +152,9 @@ def bamcorrelate_args(case='bins'):
 
         required.add_argument('--BED',
                               help='Limits the coverage analysis to '
-                              'the regions specified in this file.',
-                              metavar='bedfile',
-                              type=argparse.FileType('U'),
+                              'the regions specified in these files.',
+                              metavar='FILE1.bed FILE2.bed',
+                              nargs='+',
                               required=True)
 
     group = parser.add_argument_group('Output optional options')
@@ -194,11 +194,6 @@ def main(args=None):
                          "--outRawCounts. The resulting output will NOT be "
                          "useful with any deepTools program!\n")
 
-    if 'BED' in args:
-        bed_regions = args.BED
-    else:
-        bed_regions = None
-
     stepsize = args.binSize + args.distanceBetweenBins
     c = countR.CountReadsPerBin(
         args.bamfiles,
@@ -207,7 +202,7 @@ def main(args=None):
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
-        bedFile=bed_regions,
+        bedFile=args.BED,
         blackListFileName=args.blackListFileName,
         extendReads=args.extendReads,
         minMappingQuality=args.minMappingQuality,
