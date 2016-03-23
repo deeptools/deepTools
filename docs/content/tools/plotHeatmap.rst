@@ -39,9 +39,18 @@ The following example creates a heatmap over hg19 transcripts for our test ENCOD
 
 .. code:: bash
 
-   $ plotHeatmap -m matrix_two_groups.gz \
-        -out ExampleHeatmap1.png \
-        --plotTitle "Test data with default settings"
+   # run compute matrix to collect the data needed for plotting
+   $ computeMatrix scale-regions -S H3K27Me3-input.bigWig \
+                                    H3K4Me1-Input.bigWig  \
+                                    H3K4Me3-Input.bigWig \
+                                 -R genes19.bed genesX.bed \
+                                 --beforeRegionStartLength 3000 \
+                                 --regionBodyLength 5000 \
+                                 --afterRegionStartLength 3000
+                                 --skipZeros -o matrix.mat.gz
+
+   $ plotHeatap -m matrix.mat.gz \
+         -out ExampleHeatmap1.png \
 
 .. image:: ../../images/test_plots/ExampleHeatmap1.png
 
@@ -51,9 +60,10 @@ As mentioned above, ``plotHeatmap`` has many options, including the ability to d
 
    $ plotHeatmap -m matrix_two_groups.gz \
         -out ExampleHeatmap2.png \
-        --colorMap Spectral \
-        --kmeans 5 \
-        --plotTitle "Test data with k-means clustering"
+        --colorMap RdBu \
+        --whatToShow 'heatmap and colorbar' \
+        --zMin -3 --zMax 3 \
+        --kmeans 4
 
 .. image:: ../../images/test_plots/ExampleHeatmap2.png
 
