@@ -3,14 +3,10 @@
 
 import argparse
 import sys
-import os
-import os.path
-import shutil
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
 import deeptools.config as cfg
-import deeptools.utilities
 from deeptools import heatmapper
 
 

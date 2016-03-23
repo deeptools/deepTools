@@ -5,6 +5,7 @@ import re
 import sys
 import gzip
 import bz2
+import os.path
 
 
 def getNext(fp):
@@ -266,7 +267,7 @@ class GTF(object):
                     self.labels.append(findRandomLabel(self.labels, label))
                 else:
                     # I'm sure someone will try an empty label...
-                    self.labels.append(findRandomLabel(self.labels, self.filename))
+                    self.labels.append(findRandomLabel(self.labels, os.path.basename(self.filename)))
                 self.labelIdx += 1
                 groupLabelsFound += 1
                 groupEntries = 0
@@ -278,7 +279,7 @@ class GTF(object):
             if self.defaultGroup is not None:
                 self.labels.append(findRandomLabel(self.labels, self.defaultGroup))
             else:
-                self.labels.append(findRandomLabel(self.labels, self.filename))
+                self.labels.append(findRandomLabel(self.labels, os.path.basename(self.filename)))
             self.labelIdx += 1
 
     def parseGTFtranscript(self, cols, label):
@@ -375,7 +376,7 @@ class GTF(object):
         >>> assert(labels['group 1'] == 5)
         >>> assert(labels['group 2'] == 3)
         """
-        file_label = findRandomLabel(self.labels, self.filename)
+        file_label = findRandomLabel(self.labels, os.path.basename(self.filename))
 
         # Handle the first line
         cols = line.split("\t")

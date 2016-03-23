@@ -74,7 +74,10 @@ def mapReduce(staticArgs, func, chromSize,
                   "genome chunk length sent to each procesor: {3}".format(chromSize, region_start, region_end, genomeChunkLength)
 
     if bedFile:
-        bed_interval_tree = GTF(bedFile, defaultGroup="genes")
+        defaultGroup = None
+        if len(bedFile) == 1:
+            defaultGroup = "genes"
+        bed_interval_tree = GTF(bedFile, defaultGroup=defaultGroup)
 
     if blackListFileName:
         blackList = GTF(blackListFileName)

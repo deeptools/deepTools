@@ -3,10 +3,6 @@ from os.path import splitext, basename
 import gzip
 from collections import OrderedDict
 import numpy as np
-import multiprocessing
-
-# NGS packages
-import pysam
 
 import pyBigWig
 from deeptools import getScorePerBigWigBin
@@ -73,7 +69,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     """
     leftBins = []
     rightBins = []
-    size = np.sum([x[1] - x[0] for x in exons])
+    size = np.sum([x[1] - x[0] for x in exonsInput])
     middle = size // 2
     cumulativeSum = 0
     middleIdx = 0
@@ -103,14 +99,14 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         cumulativeSum += size
 
     # Truncate the exons tuple
-    exons = exons[0:middleIdx+1]
+    exons = exons[0:middleIdx + 1]
 
     # Fill in leftBins, from the right
     while left > 0 and len(exons) > 0:
         exon = exons[-1]
         size = exon[1] - exon[0]
         if left > size:
-            exon = (exon[1] - left ,exon[1])
+            exon = (exon[1] - left, exon[1])
             size = left
         leftBins.insert(0, exon)
         left -= size
@@ -128,22 +124,28 @@ def trimZones(zones, maxLength, binSize, padRight):
     """
     Given a (variable length) list of lists of (start, end) tuples, trim/remove and tuple that extends past maxLength (e.g., the end of a chromosome)
 
-    Returns the trimmed zones and incremented padding
+    Returns the trimmed zones and padding
     """
     output = []
     for zone, nbins in zones:
         outZone = []
+        changed = False
         for reg in zone:
             if reg[0] >= maxLength:
+                changed = True
                 padRight += reg[1] - reg[0]
                 continue
 
             if reg[1] > maxLength:
+                changed = True
                 padRight += reg[1] - maxLength
                 reg = (reg[0], maxLength)
             if reg[1] > reg[0]:
                 outZone.append(reg)
-        nBins = np.sum(x[1] - x[0] for x in outZone) // binSize
+        if changed:
+            nBins = np.sum(x[1] - x[0] for x in outZone) // binSize
+        else:
+            nBins = nbins
         output.append((outZone, nBins))
     return output, padRight
 
@@ -222,9 +224,9 @@ class heatmapper(object):
                 regions.extend(res[idx][1])
                 regions_no_score += res[idx][2]
         groups = [x[3] for x in regions]
-        foo = sorted(zip(groups, regions))
-        sortIdx = [x[0] for x in foo]
-        regions = [x[1] for x in foo]
+        foo = sorted(zip(groups, range(len(regions)), regions))
+        sortIdx = [x[1] for x in foo]
+        regions = [x[2] for x in foo]
         matrix = matrix[sortIdx]
 
         # mask invalid (nan) values
@@ -330,13 +332,14 @@ class heatmapper(object):
             feature_start = exons[0][0]
             feature_end = exons[-1][1]
             feature_name = transcript[2]
-            feature_group = transcript[3]
             feature_strand = transcript[4]
             padLeft = 0
             padRight = 0
+            padLeftNaN = 0
+            padRightNaN = 0
 
             # get the body length
-            body_length = np.sum([x[1] - x[0] for x in exons])
+            body_length = np.sum([x[1] - x[0] for x in exons]) - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']
 
             # print some information
             if parameters['body'] > 0 and \
@@ -344,8 +347,8 @@ class heatmapper(object):
                 if parameters['verbose']:
                     sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
                                      "({0}) {1} {2}:{3}:{4}. Skipping...\n".format((body_length - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
-                                                                                    feature_name, feature_chrom,
-                                                                                    feature_start, feature_end))
+                                                                                   feature_name, feature_chrom,
+                                                                                   feature_start, feature_end))
                 coverage = np.zeros(matrix_cols)
                 coverage[:] = np.nan
             else:
@@ -356,7 +359,6 @@ class heatmapper(object):
                     # bins per zone
                     a = parameters['downstream'] // parameters['bin size']
                     b = parameters['unscaled 3 prime'] // parameters['bin size']
-                    c = (body_length - parameters['unscaled 3 prime'] - parameters['unscaled 5 prime']) // parameters['bin size']
                     d = parameters['unscaled 5 prime'] // parameters['bin size']
                     e = parameters['upstream'] // parameters['bin size']
                 else:
@@ -365,9 +367,9 @@ class heatmapper(object):
                     unscaled5prime, body, unscaled3prime, padLeft, padRight = chopRegions(exons, left=parameters['unscaled 5 prime'], right=parameters['unscaled 3 prime'])
                     a = parameters['upstream'] // parameters['bin size']
                     b = parameters['unscaled 5 prime'] // parameters['bin size']
-                    c = (body_length - parameters['unscaled 3 prime'] - parameters['unscaled 5 prime']) // parameters['bin size']
                     d = parameters['unscaled 3 prime'] // parameters['bin size']
                     e = parameters['downstream'] // parameters['bin size']
+                c = parameters['body'] // parameters['bin size']
 
                 # build zones (each is a list of tuples)
                 #  zone0: region before the region start,
@@ -375,55 +377,69 @@ class heatmapper(object):
                 #  zone2: the body of the region
                 #  zone3: unscaled 3 prime region
                 #  zone4: the region from the end of the region downstream
-                #  the format for each zone is: start, end, number of bins
+                #  the format for each zone is: [(start, end), ...], number of bins
+                # Note that for "reference-point", upstream/downstream will go
+                # through the exons (if requested) and then possibly continue
+                # on the other side (unless parameters['nan after end'] is true)
                 if parameters['body'] > 0:
                     zones = [(upstream, a), (unscaled5prime, b), (body, c), (unscaled3prime, d), (downstream, e)]
-
                 elif parameters['ref point'] == 'TES':  # around TES
                     if feature_strand == '-':
-                        downstream, body, unscaled3prime, _, padRight = chopRegions(exons, left=parameters['downstream'])
-                        e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
+                        downstream, body, unscaled3prime, _, padRight = chopRegions(exons, left=parameters['upstream'])
+                        if padRight > 0 and parameters['nan after end'] is True:
+                            padRightNaN += padRight
+                        elif padRight > 0:
+                            downstream.append((downstream[-1][1], downstream[-1][1] + padRight))
+                        padRight = 0
                     else:
                         unscale5prime, body, upstream, padLeft, _ = chopRegions(exons, right=parameters['upstream'])
-                        a = np.sum([x[1] - x[0] for x in upstream]) // parameters['bin size']
+                        if padLeft > 0 and parameters['nan after end'] is True:
+                            padLeftNaN += padLeft
+                        elif padLeft > 0:
+                            upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                        padLeft = 0
+                    e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
+                    a = np.sum([x[1] - x[0] for x in upstream]) // parameters['bin size']
                     zones = [(upstream, a), (downstream, e)]
                 elif parameters['ref point'] == 'center':  # at the region center
                     if feature_strand == '-':
-                        upstream, downstream, padLeft, padRight = chopRegionsFromMiddle(exons, left=parameters['downstream'], right = parameters['upstream'])
+                        upstream, downstream, padLeft, padRight = chopRegionsFromMiddle(exons, left=parameters['downstream'], right=parameters['upstream'])
                     else:
-                        upstream, downstream, padLeft, padRight = chopRegionsFromMiddle(exons, left=parameters['upstream'], right = parameters['downstream'])
+                        upstream, downstream, padLeft, padRight = chopRegionsFromMiddle(exons, left=parameters['upstream'], right=parameters['downstream'])
+                    if padLeft > 0 and parameters['nan after end'] is True:
+                        padLeftNaN += padLeft
+                    elif padLeft > 0:
+                        upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                    padLeft = 0
+                    if padRight > 0 and parameters['nan after end'] is True:
+                        padRightNaN += padRight
+                    elif padRight > 0:
+                        downstream.append((downstream[-1][1], downstream[-1][1] + padRight))
+                    padRight = 0
                     a = np.sum([x[1] - x[0] for x in upstream]) // parameters['bin size']
                     e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
                     zones = [(upstream, a), (downstream, e)]
                 else:  # around TSS
                     if feature_strand == '-':
-                        unscale5prime, body, upstream, _, padLeft = chopRegions(exons, right=parameters['upstream'])
+                        unscale5prime, body, upstream, _, padLeft = chopRegions(exons, right=parameters['downstream'])
+                        if padLeft > 0 and parameters['nan after end'] is True:
+                            padLeftNaN += padLeft
+                        elif padLeft > 0:
+                            upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                        padLeft = 0
                     else:
-                        downstream, body, unscaled3prime , padRight, _ = chopRegions(exons, left=parameters['downstream'])
+                        downstream, body, unscaled3prime, padRight, _ = chopRegions(exons, left=parameters['downstream'])
+                        if padRight > 0 and parameters['nan after end'] is True:
+                            padRightNaN += padRight
+                        elif padRight > 0:
+                            downstream.append((downstream[-1][1], downstream[-1][1] + padRight))
+                        padRight = 0
                     a = np.sum([x[1] - x[0] for x in upstream]) // parameters['bin size']
                     e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
                     zones = [(upstream, a), (downstream, e)]
 
-                # Trim illegal upstream regions
-                if zones[0][0][0][0] < 0:
-                    padLeft += abs(zones[0][0][0][0])
-                    zones[0][0][0] = (0, zones[0][0][0][1])
-                    if parameters['verbose']:
-                        sys.stderr.write("Warning: region too close to start of "
-                                         "the chromosome: {0} {1}:{2}-{3}."
-                                         "\n".format(feature_name,
-                                                     feature_chrom,
-                                                     feature_start,
-                                                     feature_end))
-
-                # Trim illegal downstream regions
-                if feature_chrom not in score_file_handlers[0].chroms().keys():
-                    chrom = heatmapper.change_chrom_names(feature_chrom)
-                else:
-                    chrom = feature_chrom
-                zones, padRight = trimZones(zones, score_file_handlers[0].chroms(chrom), parameters['bin size'], padRight)
-                padLeft = padLeft // parameters['bin size']
-                padRight = padRight // parameters['bin size']
+                padLeftNaN = int(round(float(padLeftNaN) / parameters['bin size']))
+                padRightNaN = int(round(float(padRightNaN) / parameters['bin size']))
 
                 coverage = []
                 # compute the values for each of the files being processed.
@@ -437,21 +453,13 @@ class heatmapper(object):
                         parameters['missing data as zero'],
                         parameters['verbose'])
 
-                    if padLeft > 0:
-                        cov = np.concatenate([[0.0] * padLeft, cov])
-                    if padRight > 0:
-                        cov = np.concatenate([cov, [0.0] * padRight])
+                    if padLeftNaN > 0:
+                        cov = np.concatenate([[np.nan] * padLeftNaN, cov])
+                    if padRightNaN > 0:
+                        cov = np.concatenate([cov, [np.nan] * padRightNaN])
 
                     if feature_strand == "-":
                         cov = cov[::-1]
-
-                    if parameters['nan after end'] and parameters['body'] == 0 \
-                            and parameters['ref point'] == 'TSS':
-                        # convert the gene length to bin length
-                        region_length_in_bins = body_length // parameters['bin size']
-                        b = parameters['upstream'] / parameters['bin size']
-                        # convert to nan any region after the end of the region
-                        cov[b + region_length_in_bins:] = np.nan
 
                     coverage = np.hstack([coverage, cov])
 
@@ -519,7 +527,7 @@ class heatmapper(object):
                 zoneStart = zoneEnd
                 zoneEnd += nBins
                 valStart = valEnd
-                valEnd = np.sum([x[1] - x[0] for x in zone])
+                valEnd += np.sum([x[1] - x[0] for x in zone])
                 counts_list = []
 
                 # Partition the space into bins
@@ -527,7 +535,7 @@ class heatmapper(object):
                     pos_array = np.array([zoneStart])
                 else:
                     pos_array = np.linspace(valStart, valEnd, nBins, endpoint=False)
-                pos_array = np.append(pos_array, valEnd - 1)
+                pos_array = np.append(pos_array, valEnd)
 
                 idx = 0
                 while idx < nBins:
@@ -590,7 +598,6 @@ class heatmapper(object):
         or if the sorted BED output of one computeMatrix operation
         needs to be used for other cases
         """
-        nBins = np.sum([x[1] for x in zones])
         nVals = 0
         for zone, _ in zones:
             for region in zone:
@@ -612,22 +619,24 @@ class heatmapper(object):
                 # return empty nan array
                 return heatmapper.coverage_from_array(values_array, zones, binSize, avgType)
 
-        bw_array = []
+        maxLen = bigwig.chroms(chrom)
+        startIdx = 0
+        endIdx = 0
         for zone, _ in zones:
             for region in zone:
+                startIdx = endIdx
+                if region[0] < 0:
+                    endIdx += abs(region[0])
+                    values_array[startIdx:endIdx] = np.nan
+                    startIdx = endIdx
                 start = max(0, region[0])
-                end = min(bigwig.chroms(chrom), region[1])
-                bw_array.extend(bigwig.values(chrom, start, end))
-
-        # adjust bw_array if it extends beyond chromosome limits
-        if len(bw_array) > 0:
-            startIdx = 0
-            endIdx = nVals
-            if zones[0][0][0][0] < 0:
-                startIdx = abs(zones[0][0][0][0])
-            if zones[-1][0][-1][1] > bigwig.chroms(chrom):
-                endIdx = startIdx + len(bw_array)
-            values_array[startIdx:endIdx] = bw_array
+                end = min(maxLen, region[1])
+                endIdx += end - start
+                values_array[startIdx:endIdx] = bigwig.values(chrom, start, end)
+                if end < region[1]:
+                    startIdx = endIdx
+                    endIdx += region[1] - end
+                    values_array[startIdx:endIdx] = np.nan
 
         # replaces nans for zeros
         if nansAsZeros:
@@ -735,9 +744,9 @@ class heatmapper(object):
             ends = ["{0}".format(x[1]) for x in region[1]]
             starts = ",".join(starts)
             ends = ",".join(ends)
-            # TODO we don't currently store the score
+            # BEDish format (we don't currently store the score)
             fh.write(
-                '{0}\t{1}\t{2}\t.\t{3}\t{4}\t{5}\n'.format(
+                '{0}\t{1}\t{2}\t{3}\t.\t{4}\t{5}\n'.format(
                     region[0],
                     starts,
                     ends,
@@ -877,29 +886,6 @@ class heatmapper(object):
     def matrix_avg(matrix, avgType='mean'):
         matrix = np.ma.masked_invalid(matrix)
         return np.__getattribute__(avgType)(matrix, axis=0)
-
-    @staticmethod
-    def get_regions_and_groups(regions_file,
-                               default_group_name='genes',
-                               blackListFileName=None):
-        """
-        Reads one or more BED3/6/12 or GTF files
-
-        default_group_name is only used if a single file is input. Otherwise the
-        file name is used.
-
-        Returns GTF objects containing the trees
-        """
-        # TODO this is largely non-functional
-
-        blackList = None
-        if blackListFileName is not None:
-            blackList = GTF(blackListFileName)
-
-        if len(regions_file) > 1:
-            default_group_name = None
-
-        return blackList, GTF(regions_file, defaultGroup=default_group_name)
 
     def get_individual_matrices(self, matrix):
         """In case multiple matrices are saved one after the other
