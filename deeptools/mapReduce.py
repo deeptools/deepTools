@@ -81,7 +81,7 @@ def mapReduce(staticArgs, func, chromSize,
         defaultGroup = None
         if len(bedFile) == 1:
             defaultGroup = "genes"
-        bed_interval_tree = GTF(bedFile, defaultGroup=defaultGroup, transcriptID=transcriptID, exonID=exonID, transcript_id_designator=transcript_id_designator)
+        bed_interval_tree = GTF(bedFile, defaultGroup=defaultGroup, transcriptID=transcriptID, exonID=exonID, transcript_id_designator=transcript_id_designator, keepExons=keepExons)
 
     if blackListFileName:
         blackList = GTF(blackListFileName)
