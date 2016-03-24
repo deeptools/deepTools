@@ -189,6 +189,11 @@ def main(args=None):
     """
     args = process_args(args)
 
+    if 'BED' in args:
+        bed_regions = args.BED
+    else:
+        bed_regions = None
+
     if len(args.bamfiles) == 1 and not args.outRawCounts:
         sys.stderr.write("You've input a single BAM file and not specified "
                          "--outRawCounts. The resulting output will NOT be "
@@ -202,7 +207,7 @@ def main(args=None):
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
-        bedFile=args.BED,
+        bedFile=bed_regions,
         blackListFileName=args.blackListFileName,
         extendReads=args.extendReads,
         minMappingQuality=args.minMappingQuality,

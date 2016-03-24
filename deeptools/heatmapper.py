@@ -337,6 +337,8 @@ class heatmapper(object):
             padRight = 0
             padLeftNaN = 0
             padRightNaN = 0
+            upstream = []
+            downstream = []
 
             # get the body length
             body_length = np.sum([x[1] - x[0] for x in exons]) - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']
@@ -353,8 +355,10 @@ class heatmapper(object):
                 coverage[:] = np.nan
             else:
                 if feature_strand == '-':
-                    upstream = [(feature_start - parameters['downstream'], feature_start)]
-                    downstream = [(feature_end, feature_end + parameters['upstream'])]
+                    if parameters['downstream'] > 0:
+                        upstream = [(feature_start - parameters['downstream'], feature_start)]
+                    if parameters['upstream'] > 0:
+                        downstream = [(feature_end, feature_end + parameters['upstream'])]
                     unscaled5prime, body, unscaled3prime, padLeft, padRight = chopRegions(exons, left=parameters['unscaled 3 prime'], right=parameters['unscaled 5 prime'])
                     # bins per zone
                     a = parameters['downstream'] // parameters['bin size']
@@ -362,8 +366,10 @@ class heatmapper(object):
                     d = parameters['unscaled 5 prime'] // parameters['bin size']
                     e = parameters['upstream'] // parameters['bin size']
                 else:
-                    upstream = [(feature_start - parameters['upstream'], feature_start)]
-                    downstream = [(feature_end, feature_end + parameters['downstream'])]
+                    if parameters['upstream'] > 0:
+                        upstream = [(feature_start - parameters['upstream'], feature_start)]
+                    if parameters['downstream'] > 0:
+                        downstream = [(feature_end, feature_end + parameters['downstream'])]
                     unscaled5prime, body, unscaled3prime, padLeft, padRight = chopRegions(exons, left=parameters['unscaled 5 prime'], right=parameters['unscaled 3 prime'])
                     a = parameters['upstream'] // parameters['bin size']
                     b = parameters['unscaled 5 prime'] // parameters['bin size']

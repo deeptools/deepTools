@@ -376,7 +376,7 @@ class CountReadsPerBin(object):
         # A list of lists of tuples
         transcriptsToConsider = []
         if bed_regions_list is not None:
-            transcriptsToConsider = bed_regions_list
+            transcriptsToConsider = [x[1] for x in bed_regions_list]
         else:
             for i in xrange(start, end, self.stepSize):
                 if i + self.binLength > end:
@@ -458,15 +458,17 @@ class CountReadsPerBin(object):
         coverages = np.empty(shape=(0, 0), dtype='float64')
         for reg in regions:
             length = reg[1] - reg[0]
-            # TODO: Right, this screws up small regions
             if length % tileSize > 0:
+                # TODO: The regions should just get filtered upstream, rather than having their size increased...
+                if length < tileSize:
+                    length = tileSize
                 new_length = length - (length % tileSize)
                 reg = (reg[0], reg[0] + new_length)
                 if debug:
                     print "length of region ({}) is not a multiple of " \
                           "tileSize {}\nThe region is being chopped to length " \
                           "{} bp".format(length, tileSize, new_length)
-            vector_length = (reg[1] - reg[0]) // tileSize
+            vector_length = length // tileSize
 
             coverage = np.zeros(vector_length, dtype='float64')
 

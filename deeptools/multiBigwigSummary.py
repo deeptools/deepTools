@@ -171,8 +171,8 @@ def multiBigwigSummaryArgs(case='bins'):
         required.add_argument('--BED',
                               help='Limits the analysis to '
                               'the regions specified in this file.',
-                              metavar='BED file',
-                              type=argparse.FileType('r'),
+                              metavar='file1.bed file2.bed',
+                              nargs='+',
                               required=True)
 
     group = parser.add_argument_group('Output optional options')

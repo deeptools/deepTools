@@ -98,7 +98,7 @@ class TestCountReadsPerBin(object):
 
     def test_count_reads_in_region_ignore_bed_regions(self):
         # Test bed regions:
-        bed_regions = [[(10, 20), (150, 160)]]
+        bed_regions = [[self.chrom, [(10, 20), (150, 160)], "."]]
         self.c.skipZeros = False
         self.c.binLength = 10
         resp, _ = self.c.count_reads_in_region(self.chrom, 0, 200, bed_regions_list=bed_regions)
