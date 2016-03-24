@@ -167,7 +167,7 @@ class heatmapper(object):
         self.regions = None
         self.blackList = None
 
-    def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False):
+    def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """
         Splits into
         multiple cores the computation of the scores
@@ -201,6 +201,18 @@ class heatmapper(object):
             exit("Length of the unscaled 5 prime region has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
 
+        # Take care of GTF options
+        transcriptID = "transcript"
+        exonID = "exon"
+        transcript_id_designator = "transcript_id"
+        keepExons = False
+        if allArgs is not None:
+            allArgs = vars(allArgs)
+            transcriptID = allArgs.get("transcriptID", transcriptID)
+            exonID = allArgs.get("exonID", exonID)
+            transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
+            keepExons = allArgs.get("keepExons", keepExons)
+
         chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list)
         res, labels = mapReduce.mapReduce([score_file_list, parameters],
                                           compute_sub_matrix_wrapper,
@@ -209,7 +221,11 @@ class heatmapper(object):
                                           bedFile=regions_file,
                                           blackListFileName=blackListFileName,
                                           numberOfProcessors=parameters['proc number'],
-                                          includeLabels=True)
+                                          includeLabels=True,
+                                          transcriptID=transcriptID,
+                                          exonID=exonID,
+                                          transcript_id_designator=transcript_id_designator,
+                                          keepExons=keepExons)
         # each worker in the pool returns a tuple containing
         # the submatrix data, the regions that correspond to the
         # submatrix, and the number of regions lacking scores

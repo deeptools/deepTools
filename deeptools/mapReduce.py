@@ -12,6 +12,10 @@ def mapReduce(staticArgs, func, chromSize,
               numberOfProcessors=4,
               verbose=False,
               includeLabels=False,
+              keepExons=False,
+              transcriptID="transcriptID",
+              exonID="exonID",
+              transcript_id_designator="transcript_id",
               self_=None):
     """
     Split the genome into parts that are sent to workers using a defined
@@ -77,7 +81,7 @@ def mapReduce(staticArgs, func, chromSize,
         defaultGroup = None
         if len(bedFile) == 1:
             defaultGroup = "genes"
-        bed_interval_tree = GTF(bedFile, defaultGroup=defaultGroup)
+        bed_interval_tree = GTF(bedFile, defaultGroup=defaultGroup, transcriptID=transcriptID, exonID=exonID, transcript_id_designator=transcript_id_designator)
 
     if blackListFileName:
         blackList = GTF(blackListFileName)

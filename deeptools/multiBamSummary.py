@@ -53,6 +53,7 @@ A detailed sub-commands help is available by typing:
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
     read_options_parser = parserCommon.read_options()
+    gtf_options = parserCommon.gtf_options()
 
     # bins mode options
     subparsers.add_parser(
@@ -76,6 +77,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='BED-file'),
                  parent_parser, read_options_parser,
+                 gtf_options,
                  ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the coverage analysis. A "
@@ -219,7 +221,7 @@ def main(args=None):
         zerosToNans=False,
         out_file_for_raw_data=args.outRawCounts)
 
-    num_reads_per_bin = c.run()
+    num_reads_per_bin = c.run(allArgs=args)
 
     sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))

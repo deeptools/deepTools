@@ -47,6 +47,7 @@ A detailed sub-commands help is available by typing:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
+    gtf_options = parserCommon.gtf_options()
 
     # bins mode options
     subparsers.add_parser(
@@ -70,7 +71,7 @@ A detailed sub-commands help is available by typing:
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='BED-file'),
-                 parent_parser],
+                 parent_parser, gtf_options],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
@@ -215,7 +216,8 @@ def main(args=None):
         region=args.region,
         bedFile=bed_regions,
         chrsToSkip=args.chromosomesToSkip,
-        out_file_for_raw_data=args.outRawCounts)
+        out_file_for_raw_data=args.outRawCounts,
+        allArgs=args)
 
     sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))

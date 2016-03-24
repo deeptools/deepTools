@@ -221,7 +221,7 @@ class CountReadsPerBin(object):
         else:
             self.maxPairedFragmentLength = 1000
 
-    def run(self):
+    def run(self, allArgs=None):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
@@ -270,6 +270,18 @@ class CountReadsPerBin(object):
             # in case a region is used, append the tilesize
             self.region += ":{}".format(self.binLength)
 
+        # Handle GTF options
+        transcriptID = "transcript"
+        exonID = "exon"
+        transcript_id_designator = "transcript_id"
+        keepExons = False
+        if allArgs is not None:
+            allArgs = vars(allArgs)
+            transcriptID = allArgs.get("transcriptID", transcriptID)
+            exonID = allArgs.get("exonID", exonID)
+            transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
+            keepExons = allArgs.get("keepExons", keepExons)
+
         # use map reduce to call countReadsInRegions_wrapper
         imap_res = mapReduce.mapReduce([],
                                        countReadsInRegions_wrapper,
@@ -279,7 +291,11 @@ class CountReadsPerBin(object):
                                        bedFile=self.bedFile,
                                        blackListFileName=self.blackListFileName,
                                        region=self.region,
-                                       numberOfProcessors=self.numberOfProcessors)
+                                       numberOfProcessors=self.numberOfProcessors,
+                                       transcriptID=transcriptID,
+                                       exonID=exonID,
+                                       keepExons=keepExons,
+                                       transcript_id_designator=transcript_id_designator)
 
         if self.out_file_for_raw_data:
             if len(non_common):

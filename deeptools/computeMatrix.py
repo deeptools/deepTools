@@ -7,6 +7,7 @@ import sys
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
 import deeptools.config as cfg
+from deeptools import parserCommon
 from deeptools import heatmapper
 
 
@@ -40,13 +41,16 @@ $ computeMatrix scale-regions --help
         dest='command',
         metavar='')
 
+    gtf_options = parserCommon.gtf_options()
+
     # scale-regions mode options
     subparsers.add_parser(
         'scale-regions',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
-                 computeMatrixOptArgs(case='scale-regions')],
+                 computeMatrixOptArgs(case='scale-regions'),
+                 gtf_options],
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix -S '
@@ -365,7 +369,7 @@ def main(args=None):
     hm = heatmapper.heatmapper()
 
     scores_file_list = args.scoreFileName
-    hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose)
+    hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions != 'no':
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
 

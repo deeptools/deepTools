@@ -184,7 +184,8 @@ def getScorePerBin(bigWigFiles, binLength,
                    blackListFileName=None,
                    stepSize=None,
                    chrsToSkip=[],
-                   out_file_for_raw_data=None):
+                   out_file_for_raw_data=None,
+                   allArgs=None):
     """
     This function returns a matrix containing scores (median) for the coverage
     of fragments within a region. Each row corresponds to a sampled region.
@@ -234,6 +235,18 @@ def getScorePerBin(bigWigFiles, binLength,
     else:
         save_file = False
 
+    # Handle GTF options
+    transcriptID = "transcript"
+    exonID = "exon"
+    transcript_id_designator = "transcript_id"
+    keepExons = False
+    if allArgs is not None:
+        allArgs = vars(allArgs)
+        transcriptID = allArgs.get("transcriptID", transcriptID)
+        exonID = allArgs.get("exonID", exonID)
+        transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
+        keepExons = allArgs.get("keepExons", keepExons)
+
     imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
                                    countReadsInRegions_wrapper,
                                    chrom_sizes,
@@ -241,7 +254,11 @@ def getScorePerBin(bigWigFiles, binLength,
                                    bedFile=bedFile,
                                    blackListFileName=blackListFileName,
                                    region=region,
-                                   numberOfProcessors=numberOfProcessors)
+                                   numberOfProcessors=numberOfProcessors,
+                                   transcriptID=transcriptID,
+                                   exonID=exonID,
+                                   keepExons=keepExons,
+                                   transcript_id_designator=transcript_id_designator)
 
     if out_file_for_raw_data:
         if len(non_common):
