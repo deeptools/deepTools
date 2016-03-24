@@ -91,6 +91,7 @@ def test_multiBigwigSummary_outrawcounts():
     unlink(outfile)
     unlink("/tmp/null")
 
+
 def test_multiBigwigSummary_gtf():
     outfile = '/tmp/_test.npz'
     args = "BED-file -b {0} {0} --BED {1}/test.gtf -o {2}".format(BIGWIG_C, ROOT, outfile).split()
@@ -102,6 +103,7 @@ def test_multiBigwigSummary_gtf():
     nt.assert_allclose(matrix, np.array([[27.475, 27.475],
                                          [27.31248719, 27.31248719]]))
     unlink(outfile)
+
 
 def test_multiBigwigSummary_metagene():
     outfile = '/tmp/_test.npz'
