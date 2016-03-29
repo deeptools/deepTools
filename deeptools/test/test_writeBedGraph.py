@@ -80,6 +80,7 @@ class TestWriteBedGraph(TestCase):
 
     def test_writeBedGraph_worker_smoothing(self):
         self.c.binLength = 20
+        self.c.stepSize = 20
         self.c.smoothLength = 60
         tempFile = self.c.writeBedGraph_worker('3R', 100, 200, scaleCoverage, self.func_args)
         res = open(tempFile, 'r').readlines()

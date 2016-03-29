@@ -214,7 +214,7 @@ class CountReadsPerBin(object):
 
         # check that wither numberOfSamples or stepSize are set
         if numberOfSamples is None and stepSize is None and bedFile is None:
-            raise ValueError("either stepSize, numberOfSamples or beFile has to be set")
+            raise ValueError("either stepSize, numberOfSamples or bedFile have to be set")
 
         if self.defaultFragmentLength != 'read length':
             self.maxPairedFragmentLength = 4 * self.defaultFragmentLength
@@ -399,8 +399,7 @@ class CountReadsPerBin(object):
                     break
                 if self.blackList is not None and self.blackList.findOverlaps(chrom, i, i + self.binLength):
                     continue
-                transcriptsToConsider.append((i, i + self.binLength))
-            transcriptsToConsider = [transcriptsToConsider]
+                transcriptsToConsider.append([(i, i + self.binLength)])
 
         if self.save_data:
             _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
@@ -408,19 +407,21 @@ class CountReadsPerBin(object):
         else:
             _file_name = ''
 
+        rows = len(transcriptsToConsider)
         for trans in transcriptsToConsider:
-            coverage_array = []
             for bam in bam_handlers:
-                coverage_array.append(
-                    self.get_coverage_of_region(bam, chrom, trans, self.binLength))
+                tcov = self.get_coverage_of_region(bam, chrom, trans)
+                subnum_reads_per_bin.append(np.sum(tcov))
 
-            subnum_reads_per_bin.extend(coverage_array)
-            rows += len(trans)
+        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(rows, len(self.bamFilesList))
 
-            if self.save_data:
-                for i, exon in enumerate(trans):
-                    _file.write("\t".join(map(str, [chrom, exon[0], exon[1]])) + "\t")
-                    _file.write("\t".join(["{}".format(x[i]) for x in coverage_array]) + "\n")
+        if self.save_data:
+            for i, trans in enumerate(transcriptsToConsider):
+                starts = ",".join([str(x[0]) for x in trans])
+                ends = ",".join([str(x[1]) for x in trans])
+                _file.write("\t".join([chrom, starts, ends]) + "\t")
+                _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
+            _file.close()
 
         if self.verbose:
             endTime = time.time()
@@ -428,12 +429,10 @@ class CountReadsPerBin(object):
                   "(%.1f per sec) @ %s:%s-%s" % \
                   (multiprocessing.current_process().name,
                    rows, rows / (endTime - start_time), chrom, start, end)
-        if self.save_data:
-            _file.close()
 
-        return np.concatenate(subnum_reads_per_bin).reshape(rows, len(self.bamFilesList), order='F'), _file_name
+        return subnum_reads_per_bin, _file_name
 
-    def get_coverage_of_region(self, bamHandle, chrom, regions, tileSize,
+    def get_coverage_of_region(self, bamHandle, chrom, regions,
                                fragmentFromRead_func=None):
         """
         Returns a numpy array that corresponds to the number of reads
@@ -447,7 +446,7 @@ class CountReadsPerBin(object):
         read fragments is 4 and 5 for the positions tested.
 
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
-        ... [(5000833, 5000835)], 1)
+        ... [(5000833, 5000834), (5000834, 5000835)])
         array([ 4.,  5.])
 
         In the following example a paired read is extended to the fragment length which is 100
@@ -457,48 +456,51 @@ class CountReadsPerBin(object):
         there should be zero reads.
 
         >>> c.zerosToNans = True
-        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2', [(5000090, 5000110)], 10)
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
+        ... [(5000090, 5000100), (5000100, 5000110)])
         array([  1.,  nan])
 
         In the following  case the reads length is 50. Reads are not extended.
 
         >>> c.extendReads=False
-        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', [(148, 154)], 2)
+        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', [(148, 150), (150, 152), (152, 154)])
         array([ 1.,  2.,  2.])
 
 
         """
         if not fragmentFromRead_func:
             fragmentFromRead_func = self.get_fragment_from_read
-        assert tileSize > 0, "bin length has to be an integer greater than zero. Current value {}".format(tileSize)
-        coverages = np.empty(shape=(0, 0), dtype='float64')
-        for reg in regions:
-            length = reg[1] - reg[0]
-            if length % tileSize > 0:
-                # TODO: The regions should just get filtered upstream, rather than having their size increased...
-                if length < tileSize:
-                    length = tileSize
-                new_length = length - (length % tileSize)
-                reg = (reg[0], reg[0] + new_length)
-                if debug:
-                    print "length of region ({}) is not a multiple of " \
-                          "tileSize {}\nThe region is being chopped to length " \
-                          "{} bp".format(length, tileSize, new_length)
-            vector_length = length // tileSize
+        coverages = np.zeros(len(regions), dtype='float64')
 
-            coverage = np.zeros(vector_length, dtype='float64')
+        if self.defaultFragmentLength == 'read length':
+            extension = 0
+        else:
+            extension = self.maxPairedFragmentLength
+
+        for idx, reg in enumerate(regions):
+            coverage = 0.0
 
             # Blacklisted regions have a coverage of 0
             if self.blackList and self.blackList.findOverlaps(chrom, reg[0], reg[1]):
-                coverages = np.concatenate([coverages, coverage])
                 continue
+            regStart = max(0, reg[0] - extension)
+            regEnd = reg[1] + extension
+
+            # If alignments are extended and there's a blacklist, ensure that no
+            # reads originating in a blacklist are fetched
+            if self.blackList and reg[0] > 0 and extension > 0:
+                o = self.blackList.findOverlaps(chrom, regStart, reg[0])
+                if o is not None:
+                    regStart = o[-1][1]
+                o = self.blackList.findOverlaps(chrom, reg[1], regEnd)
+                if o is not None:
+                    regEnd = o[0][0]
 
             start_time = time.time()
             # caching seems faster. TODO: profile the function
             c = 0
             if chrom in bamHandle.references:
-                # r.flag & 4 == 0 is to skip unmapped reads
-                reads = [r for r in bamHandle.fetch(chrom, reg[0], reg[1])
+                reads = [r for r in bamHandle.fetch(chrom, regStart, regEnd)
                          if r.flag & 4 == 0]
             else:
                 raise NameError("chromosome {} not found in bam file".format(chrom))
@@ -541,26 +543,8 @@ class CountReadsPerBin(object):
                     if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
                         continue
 
-                    vector_start = max((fragmentStart - reg[0]) // tileSize, 0)
-                    # np.ceil is to consider the next closest start of a bin
-                    # for example in the following situation:
-                    #
-                    # A  =======>
-                    # B               ===>
-                    # |------|------|------|------|------|------|------|
-                    # 0      1      2      3      4      5      6      7 bin
-                    # 0         10         20         30         40      genomic position
-
-                    # for the A case the vector_start is 0 and the vector_end should be 2
-                    # while for the B case the vector_start is 2 and the vector_end is 3.
-
-                    vector_end = min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'),
-                                     vector_length)
-
-                    assert vector_end > vector_start, "Error, vector end < " \
-                                                      "than vector start {}:{}:{}".format(chrom, reg[0], reg[1])
-
-                    coverage[vector_start:vector_end] += 1
+                    coverage += 1
+                    break
 
                 prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
@@ -571,13 +555,10 @@ class CountReadsPerBin(object):
                     multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1])
 
             # change zeros to NAN
-            if self.zerosToNans:
-                coverage[coverage == 0] = np.nan
+            if self.zerosToNans and coverage == 0.0:
+                coverage = np.nan
 
-            if coverages.shape[0] > 0:
-                coverages = np.concatenate([coverages, coverage])
-            else:
-                coverages = coverage
+            coverages[idx] = coverage
 
         return coverages
 
