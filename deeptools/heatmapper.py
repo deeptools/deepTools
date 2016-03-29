@@ -3,6 +3,7 @@ from os.path import splitext, basename
 import gzip
 from collections import OrderedDict
 import numpy as np
+from copy import deepcopy
 
 import pyBigWig
 from deeptools import getScorePerBigWigBin
@@ -32,7 +33,7 @@ def chopRegions(exonsInput, left=0, right=0):
     rightBins = []
     padLeft = 0
     padRight = 0
-    exons = [x for x in exonsInput]
+    exons = deepcopy(exonsInput)
     while len(exons) > 0 and left > 0:
         width = exons[0][1] - exons[0][0]
         if width <= left:
@@ -54,12 +55,12 @@ def chopRegions(exonsInput, left=0, right=0):
             right -= width
         else:
             rightBins.append((exons[-1][1] - right, exons[-1][1]))
-            exons[0] = (exons[-1][0], exons[-1][1] - right)
+            exons[-1] = (exons[-1][0], exons[-1][1] - right)
             right = 0
     if right > 0:
         padRight = right
 
-    return leftBins, exons, rightBins, padLeft, padRight
+    return leftBins, exons, rightBins[::-1], padLeft, padRight
 
 
 def chopRegionsFromMiddle(exonsInput, left=0, right=0):
@@ -117,7 +118,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     if right > 0:
         padRight = right
 
-    return leftBins, rightBins, padLeft, padRight
+    return leftBins, rightBins[::-1], padLeft, padRight
 
 
 def trimZones(zones, maxLength, binSize, padRight):
@@ -654,7 +655,9 @@ class heatmapper(object):
                 start = max(0, region[0])
                 end = min(maxLen, region[1])
                 endIdx += end - start
-                values_array[startIdx:endIdx] = bigwig.values(chrom, start, end)
+                if start < end:
+                    # This won't be the case if we extend off the front of a chromosome, such as (-100, 0)
+                    values_array[startIdx:endIdx] = bigwig.values(chrom, start, end)
                 if end < region[1]:
                     startIdx = endIdx
                     endIdx += region[1] - end

@@ -251,7 +251,7 @@ class CountReadsPerBin(object):
                 self.stepSize = max(int(float(end - start) / self.numberOfSamples), 1)
 
         # number of samples is better if large
-        if np.mean(chrLengths) < self.stepSize:
+        if np.mean(chrLengths) < self.stepSize and self.bedFile is None:
             min_num_of_samples = int(genomeSize / np.mean(chrLengths))
             raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
 
