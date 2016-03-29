@@ -47,7 +47,6 @@ A detailed sub-commands help is available by typing:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
-    gtf_options = parserCommon.gtf_options()
 
     # bins mode options
     subparsers.add_parser(
@@ -55,6 +54,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='bins'),
                  parent_parser,
+                 parserCommon.gtf_options(suppress=True)
                  ],
         help="The average score is based on equally sized bins "
              "(10 kilobases by default), which consecutively cover the "
@@ -71,7 +71,9 @@ A detailed sub-commands help is available by typing:
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='BED-file'),
-                 parent_parser, gtf_options],
+                 parent_parser,
+                 parserCommon.gtf_options()
+                 ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "

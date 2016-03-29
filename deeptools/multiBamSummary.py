@@ -53,7 +53,6 @@ A detailed sub-commands help is available by typing:
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
     read_options_parser = parserCommon.read_options()
-    gtf_options = parserCommon.gtf_options()
 
     # bins mode options
     subparsers.add_parser(
@@ -61,6 +60,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='bins'),
                  parent_parser, read_options_parser,
+                 parserCommon.gtf_options(suppress=True)
                  ],
         help="The coverage calculation is done for consecutive bins of equal "
              "size (10 kilobases by default). This mode is useful to assess the "
@@ -77,7 +77,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='BED-file'),
                  parent_parser, read_options_parser,
-                 gtf_options,
+                 parserCommon.gtf_options()
                  ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the coverage analysis. A "

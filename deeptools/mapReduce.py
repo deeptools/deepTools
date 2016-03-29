@@ -192,7 +192,7 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
         elif chrom == "chrM":
             chromUse = "MT"
         elif chrom[0:3] == "chr":
-            chromUse = chrom[3:] 
+            chromUse = chrom[3:]
         else:
             chromUse = "chr" + chrom
         if chromUse not in chrom_sizes.keys():
