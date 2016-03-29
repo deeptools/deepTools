@@ -36,6 +36,7 @@
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 @ADVANCED_OPTS_READ_PROCESSING@
+                @ADVANCED_OPTS_GTF@
             #end if
 ]]>
     </command>
@@ -72,6 +73,7 @@
 
         <expand macro="advancedOpt_scaffold">
             <expand macro="read_processing_options" />
+            <expand macro="gtf_options" />
         </expand>
 
         <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>

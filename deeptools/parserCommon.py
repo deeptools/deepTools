@@ -131,14 +131,14 @@ def gtf_options():
     group.add_argument('--transcriptID',
                        help='When a GTF file is used to provide regions, only '
                        'entries with this value as their feature (column 2) '
-                       'will be processed as transcripts. Default: transcript.',
+                       'will be processed as transcripts.',
                        default='transcript')
 
     group.add_argument('--exonID',
                        help='When a GTF file is used to provide regions, only '
                        'entries with this value as their feature (column 2) '
                        'will be processed as exons. CDS would be another common '
-                       'value for this. Default: exon',
+                       'value for this.',
                        default='exon')
 
     group.add_argument('--transcript_id_designator',
@@ -149,7 +149,7 @@ def gtf_options():
                        '\'transcript_id "ACTB"\', for a key of transcript_id '
                        'and a value of ACTB). In some cases it can be '
                        'convenient to use a different identifier. To do so, set '
-                       'this to the desired key. Default: transcript_id',
+                       'this to the desired key.',
                        default='transcript_id')
 
     return parser
