@@ -78,6 +78,7 @@
                 #end if
 
                 @ADVANCED_OPTS_GTF@
+
             #end if
 ]]>
     </command>
@@ -208,9 +209,10 @@
                     bias the average values. (--maxThreshold)"/>
                 <param name="scale" type="float" optional="True" label="Scaling factor"
                     help="If set, all values are multiplied by this number. (--scale)"/>
-            </when>
 
-            <expand macro="gtf_options" />
+                <expand macro="gtf_options" />
+
+            </when>
         </conditional>
     </inputs>
     <outputs>
