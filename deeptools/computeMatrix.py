@@ -61,7 +61,7 @@ $ computeMatrix scale-regions --help
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='reference-point'),
-                 parserCommon.gtf_options(suppress=True)],
+                 parserCommon.gtf_options()],
         help="Reference-point refers to a position within a BED region "
         "(e.g., the starting point). In this mode, only those genomic"
         "positions before (upstream) and/or after (downstream) of the "
