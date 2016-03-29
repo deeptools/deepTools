@@ -175,16 +175,30 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
     Test chunk and regions size reduction to match tile size
     >>> getUserRegion({'chr2': 200000}, "chr2:10:123344:3")
     ([('chr2', 123344)], 9, 123345, 123336)
+
+    Test chromosome name mismatch
+    >>> getUserRegion({'2': 200000}, "chr2:10:123344:3")
+    ([('2', 123344)], 9, 123345, 123336)
+    >>> getUserRegion({'chrM': 200000}, "MT:10:123344:3")
+    ([('chrM', 123344)], 9, 123345, 123336)
     """
     region = region_string.split(":")
     chrom = region[0]
     chrom_sizes = dict(chrom_sizes)
 
-    try:
-        chrom_sizes[chrom]
-    except KeyError:
-        raise NameError("Unknown chromosome: %s\nKnown "
-                        "chromosomes are: %s " % (chrom, chrom_sizes.keys()))
+    if chrom not in chrom_sizes.keys():
+        if chrom == "MT":
+            chromUse = "chrM"
+        elif chrom == "chrM":
+            chromUse = "MT"
+        elif chrom[0:3] == "chr":
+            chromUse = chrom[3:] 
+        else:
+            chromUse = "chr" + chrom
+        if chromUse not in chrom_sizes.keys():
+            raise NameError("Unknown chromosome: %s\nKnown "
+                            "chromosomes are: %s " % (chrom, chrom_sizes.keys()))
+        chrom = chromUse
     try:
         region_start = int(region[1])
     except IndexError:
