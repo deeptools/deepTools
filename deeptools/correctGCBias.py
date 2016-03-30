@@ -7,7 +7,7 @@ import time
 import subprocess
 import sys
 
-import twobitreader as twobit
+from bx.seq import twobit
 import pysam
 import multiprocessing
 import numpy as np
@@ -153,10 +153,8 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
             fragStart = read.pos
             fragEnd = fragStart + fragmentLength
     try:
-        gc = getGC_content(tbit[chrNameBit][fragStart-1:fragEnd], as_fraction=True)
+        gc = getGC_content(tbit[chrNameBit].get(fragStart, fragEnd), as_fraction=True)
     except Exception:
-        return None
-    if gc is None:
         return None
 
     # match the gc to the given fragmentLength
@@ -185,7 +183,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
 
     i = 0
 
-    tbit = twobit.TwoBitFile(global_vars['2bit'])
+    tbit = twobit.TwoBitFile(open(global_vars['2bit']))
     bam = pysam.Samfile(global_vars['bam'])
     read_repetitions = 0
     removed_duplicated_reads = 0
@@ -327,7 +325,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         print "Sam for %s %s %s " % (chrNameBit, start, end)
     i = 0
 
-    tbit = twobit.TwoBitFile(global_vars['2bit'])
+    tbit = twobit.TwoBitFile(open(global_vars['2bit']))
 
     bam = pysam.Samfile(global_vars['bam'])
     tempFileName = utilities.getTempFileName(suffix='.bam')
@@ -400,9 +398,9 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
                                     decimals=2))
             readTag.append(
                 ('YC', float(round(float(1) / R_gc[gc], 2)), "f"))
+            readTag.append(('YN', copies, "i"))
         else:
             GC = -1
-        readTag.append(('YN', copies, "i"))
 
         readTag.append(('YG', GC, "i"))
         if replace_tags:
@@ -564,10 +562,10 @@ def main(args=None):
 
     global_vars['max_dup_gc'] = max_dup_gc
 
-    tbit = twobit.TwoBitFile(global_vars['2bit'])
+    bit = twobit.TwoBitFile(open(global_vars['2bit']))
     bam = pysam.Samfile(global_vars['bam'])
 
-    global_vars['genome_size'] = sum(tbit.sequence_sizes().values())
+    global_vars['genome_size'] = sum([bit[x].size for x in bit.index])
     global_vars['total_reads'] = bam.mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
@@ -593,7 +591,7 @@ def main(args=None):
     print "using region {}".format(args.region)
     mp_args = []
     bedGraphStep = args.binSize
-    chrNameBitToBam = tbitToBamChrName(tbit.sequence_sizes().keys(), bam.references)
+    chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
     print chrNameBitToBam, chrNameBamToBit
     c = 1
@@ -671,7 +669,7 @@ def main(args=None):
             shutil.move(_temp_bg_file_name, args.correctedFile.name)
 
         else:
-            chromSizes = [(k, v) for k, v in tbit.sequence_sizes().iteritems()]
+            chromSizes = [(x, bit[x].size) for x in bit.keys()]
             writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file_name,
                                            args.correctedFile.name)
             os.remove(_temp_bg_file)
@@ -686,7 +684,7 @@ class Tester():
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         bam = pysam.Samfile(self.bamFile)
-        tbit = twobit.TwoBitFile(self.tbitFile)
+        bit = twobit.TwoBitFile(open(self.tbitFile))
         global debug
         debug = 0
         global global_vars
@@ -699,7 +697,7 @@ class Tester():
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
                        'total_reads': bam.mapped,
-                       'genome_size': sum(tbit.sequence_sizes().values())}
+                       'genome_size': sum([bit[x].size for x in bit.index])}
 
     def testWriteCorrectedChunk(self):
         """ prepare arguments for test

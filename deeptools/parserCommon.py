@@ -131,7 +131,7 @@ def gtf_options(suppress=False):
         5-prime and 3-prime most transcript bound (i.e., columns \
         2 and 3 of a BED file). If a BED3 or BED6 file is used \
         as input, then columns 2 and 3 are used as an exon.'
-
+    
     group.add_argument('--metagene',
                        help=help,
                        action='store_true',
