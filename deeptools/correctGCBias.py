@@ -139,21 +139,21 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
 
     if read.is_paired and read.is_proper_pair and abs(read.tlen) < 2 * fragmentLength:
         if read.is_reverse and read.tlen < 0:
-            fragEnd = read.aend
-            fragStart = read.aend + read.tlen
+            fragEnd = read.reference_end
+            fragStart = read.reference_end + read.template_length
         elif read.tlen >= read.qlen:
-            fragStart = read.pos
-            fragEnd = read.pos + read.tlen
+            fragStart = read.reference_start
+            fragEnd = read.reference_start + read.template_length
 
     if not fragStart:
         if read.is_reverse:
-            fragEnd = read.aend
-            fragStart = read.aend - fragmentLength
+            fragEnd = read.reference_end
+            fragStart = read.reference_end - fragmentLength
         else:
-            fragStart = read.pos
+            fragStart = read.reference_start
             fragEnd = fragStart + fragmentLength
     try:
-        gc = getGC_content(tbit[chrNameBit][fragStart-1:fragEnd], as_fraction=True)
+        gc = getGC_content(tbit[chrNameBit][fragStart:fragEnd], as_fraction=True)
     except Exception:
         return None
     if gc is None:
@@ -263,9 +263,9 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
 
 def numCopiesOfRead(value):
     """
-    Based int he R_gc value, decides
+    Based on R_gc, decide
     whether to keep, duplicate, triplicate or delete the read.
-    It returns an integer, that tells the number of copies of the read
+    It returns an integer stating the number of copies of the read
     that should be keep.
     >>> np.random.seed(1)
     >>> numCopiesOfRead(0.8)
@@ -305,7 +305,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> sys.stdout = ostdout
     >>> bam = pysam.Samfile(tempFile)
     >>> [dict(r.tags)['YN'] for r in bam.fetch(args[0], 200, 250)]
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
+    [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1]
     >>> res = os.remove(tempFile)
     >>> res = os.remove(tempFile+".bai")
     >>> tempFile = \
