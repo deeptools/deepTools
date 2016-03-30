@@ -75,6 +75,22 @@ class TestHeatmapper(object):
         assert filecmp.cmp(ROOT + '/master_unscaled.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
+    def test_computeMatrix_gtf(self):
+        args = "scale-regions -S {0}../test_data/test1.bw.bw -R {0}../test_data/test.gtf -a 300 -b 500 --unscaled5prime 20 --unscaled3prime 50 " \
+               "--outFileName /tmp/_test_gtf.mat.gz -bs 10 -p 1".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test_gtf.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_gtf.mat', '/tmp/_test_gtf.mat') is True
+        os.remove('/tmp/_test_gtf.mat')
+
+    def test_computeMatrix_metagene(self):
+        args = "scale-regions -S {0}../test_data/test1.bw.bw -R {0}../test_data/test.gtf -a 300 -b 500 --unscaled5prime 20 --unscaled3prime 50 " \
+               "--outFileName /tmp/_test_metagene.mat.gz -bs 10 -p 1 --metagene".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test_metagene.mat.gz')
+        assert filecmp.cmp(ROOT + '/master_metagene.mat', '/tmp/_test_metagene.mat') is True
+        os.remove('/tmp/_test_metagene.mat')
+
     def test_plotHeatmap_simple_plot(self):
         """
         Test a simple plot generated using a matrix from

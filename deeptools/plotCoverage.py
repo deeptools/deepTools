@@ -145,7 +145,6 @@ def main(args=None):
                      "used: {}\n".format(num_reads_per_bin.shape[0]))
 
     if args.outRawCounts:
-        print "test"
         # append to the generated file the
         # labels
         header = "#'chr'\t'start'\t'end'\t"

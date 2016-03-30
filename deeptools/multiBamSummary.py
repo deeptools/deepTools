@@ -60,6 +60,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='bins'),
                  parent_parser, read_options_parser,
+                 parserCommon.gtf_options(suppress=True)
                  ],
         help="The coverage calculation is done for consecutive bins of equal "
              "size (10 kilobases by default). This mode is useful to assess the "
@@ -76,6 +77,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bamcorrelate_args(case='BED-file'),
                  parent_parser, read_options_parser,
+                 parserCommon.gtf_options()
                  ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the coverage analysis. A "
@@ -152,9 +154,9 @@ def bamcorrelate_args(case='bins'):
 
         required.add_argument('--BED',
                               help='Limits the coverage analysis to '
-                              'the regions specified in this file.',
-                              metavar='bedfile',
-                              type=argparse.FileType('U'),
+                              'the regions specified in these files.',
+                              metavar='FILE1.bed FILE2.bed',
+                              nargs='+',
                               required=True)
 
     group = parser.add_argument_group('Output optional options')
@@ -189,15 +191,15 @@ def main(args=None):
     """
     args = process_args(args)
 
-    if len(args.bamfiles) == 1 and not args.outRawCounts:
-        sys.stderr.write("You've input a single BAM file and not specified "
-                         "--outRawCounts. The resulting output will NOT be "
-                         "useful with any deepTools program!\n")
-
     if 'BED' in args:
         bed_regions = args.BED
     else:
         bed_regions = None
+
+    if len(args.bamfiles) == 1 and not args.outRawCounts:
+        sys.stderr.write("You've input a single BAM file and not specified "
+                         "--outRawCounts. The resulting output will NOT be "
+                         "useful with any deepTools program!\n")
 
     stepsize = args.binSize + args.distanceBetweenBins
     c = countR.CountReadsPerBin(
@@ -219,7 +221,7 @@ def main(args=None):
         zerosToNans=False,
         out_file_for_raw_data=args.outRawCounts)
 
-    num_reads_per_bin = c.run()
+    num_reads_per_bin = c.run(allArgs=args)
 
     sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))

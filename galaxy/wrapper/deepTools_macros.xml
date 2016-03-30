@@ -32,6 +32,19 @@
         #end if
     </token>
 
+    <token name="@ADVANCED_OPTS_GTF@">
+        $advancedOpt.metagene
+        #if $advancedOpt.transcriptID:
+            --transcriptID $advancedOpt.transcriptID
+        #end if
+        #if $advancedOpt.exonID:
+            --exonID $advancedOpt.exonID
+        #end if
+        #if $advancedOpt.transcript_id_designator:
+            --transcript_id_designator $advancedOpt.transcript_id_designator
+        #end if
+    </token>
+
     <xml name="heatmap_options">
         <expand macro="zMin_zMax" />
         <expand macro="colorMap" />
@@ -160,6 +173,25 @@
         <expand macro="minMappingQuality" />
         <expand macro="samFlags" />
     </xml>
+
+    <xml name="gtf_options">
+        <param argument="--metagene" type="boolean" truevalue="--boolean" falsevalue=""
+            label="Use a metagene model"
+            help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
+        <param argument="--transcriptID" optional="True" value="transcript" type="text"
+            label="trascript designator"
+            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as transcripts. Default: transcript" />
+        <param argument="--exonID" optional="True" value="exon" type="text"
+            label="exon designator"
+            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as exons. CDS would be another common value for this. Default: exon" />
+        <param argument="--transcript_id_designator" optional="True" value="transcript_id" type="text"
+            label="transcriptID key designator"
+            help="Each region has an ID (e.g., ACTB) assigned to it, which for BED files is either column 4 (if it exists)
+                  or the interval bounds. For GTF files this is instead stored in the last column as a key:value pair (e.g.,
+                  as 'transcript_id ACTB', for a key of transcript_id and a value of ACTB). In some cases it can be
+                  convenient to use a different identifier. To do so, set this to the desired key. Default: transcript_id" />
+    </xml>
+
 
     <xml name="plotNumbers">
         <param argument="--plotNumbers" type="boolean" truevalue="--plotNumbers" falsevalue=""

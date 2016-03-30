@@ -9,6 +9,7 @@ from os import unlink
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BIGWIG_A = ROOT + "testA_skipNAs.bw"
 BIGWIG_B = ROOT + "testB_skipNAs.bw"
+BIGWIG_C = ROOT + "test1.bw.bw"
 
 
 """
@@ -89,3 +90,29 @@ def test_multiBigwigSummary_outrawcounts():
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
     unlink("/tmp/null")
+
+
+def test_multiBigwigSummary_gtf():
+    outfile = '/tmp/_test.npz'
+    args = "BED-file -b {0} {0} --BED {1}/test.gtf -o {2}".format(BIGWIG_C, ROOT, outfile).split()
+    bwCorr.main(args)
+    resp = np.load(outfile)
+    matrix = resp['matrix']
+    labels = resp['labels']
+    nt.assert_equal(labels, ['test1.bw.bw', 'test1.bw.bw'])
+    nt.assert_allclose(matrix, np.array([[27.475, 27.475],
+                                         [27.31248719, 27.31248719]]))
+    unlink(outfile)
+
+
+def test_multiBigwigSummary_metagene():
+    outfile = '/tmp/_test.npz'
+    args = "BED-file --metagene -b {0} {0} --BED {1}/test.gtf -o {2}".format(BIGWIG_C, ROOT, outfile).split()
+    bwCorr.main(args)
+    resp = np.load(outfile)
+    matrix = resp['matrix']
+    labels = resp['labels']
+    nt.assert_equal(labels, ['test1.bw.bw', 'test1.bw.bw'])
+    nt.assert_allclose(matrix, np.array([[20.28956028, 20.28956028],
+                                         [22.1923501, 22.1923501]]))
+    unlink(outfile)

@@ -3,7 +3,7 @@ import deeptools.config as cfg
 import os
 import pysam
 from deeptools._version import __version__
-import deeptools.mapReduce as mapReduce
+from deeptoolsintervals import GTF
 
 
 def check_float_0_1(value):
@@ -107,6 +107,68 @@ def read_options():
                        default=None,
                        type=int,
                        required=False)
+
+    return parser
+
+
+def gtf_options(suppress=False):
+    """
+    Arguments present whenever a BED/GTF file can be used
+    """
+    if suppress:
+        parser = argparse.ArgumentParser(add_help=False)
+        group = parser
+    else:
+        parser = argparse.ArgumentParser(add_help=False)
+        group = parser.add_argument_group('GTF/BED12 options')
+
+    if suppress:
+        help = argparse.SUPPRESS
+    else:
+        help = 'When either a BED12 or GTF file are used to provide \
+        regions, perform the computation on the merged exons, \
+        rather than using the genomic interval defined by the \
+        5-prime and 3-prime most transcript bound (i.e., columns \
+        2 and 3 of a BED file). If a BED3 or BED6 file is used \
+        as input, then columns 2 and 3 are used as an exon.'
+
+    group.add_argument('--metagene',
+                       help=help,
+                       action='store_true',
+                       dest='keepExons')
+
+    if suppress is False:
+        help = 'When a GTF file is used to provide regions, only \
+        entries with this value as their feature (column 2) \
+        will be processed as transcripts.'
+
+    group.add_argument('--transcriptID',
+                       help=help,
+                       default='transcript')
+
+    if suppress is False:
+        help = 'When a GTF file is used to provide regions, only \
+        entries with this value as their feature (column 2) \
+        will be processed as exons. CDS would be another common \
+        value for this.'
+
+    group.add_argument('--exonID',
+                       help=help,
+                       default='exon')
+
+    if suppress is False:
+        help = 'Each region has an ID (e.g., ACTB) assigned to it, \
+        which for BED files is either column 4 (if it exists) \
+        or the interval bounds. For GTF files this is instead \
+        stored in the last column as a key:value pair (e.g., as \
+        \'transcript_id "ACTB"\', for a key of transcript_id \
+        and a value of ACTB). In some cases it can be \
+        convenient to use a different identifier. To do so, set \
+        this to the desired key.'
+
+    group.add_argument('--transcript_id_designator',
+                       help=help,
+                       default='transcript_id')
 
     return parser
 
@@ -217,7 +279,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
 
     if blackList:
         optional.add_argument('--blackListFileName', '-bl',
-                              help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered. Please note that you should adjust the effective genome size, if relevant.",
+                              help="A BED or GTF file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered. Please note that you should adjust the effective genome size, if relevant.",
                               metavar="BED file",
                               required=False)
 
@@ -683,12 +745,12 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
         chrom, _len, nmapped, _nunmapped = line.split('\t')
         chromLens[chrom] = int(_len)
 
-    bl = mapReduce.BED_to_interval_tree(open(blackListFileName, "r"))
-    for chrom in bl.keys():
+    bl = GTF(blackListFileName)
+    for chrom in bl.chroms:
         if not chroms_to_ignore or chrom not in chroms_to_ignore:
-            for reg in bl[chrom].find(0, chromLens[chrom]):
-                for r in bam_handle.fetch(reference=chrom, start=reg.start, end=reg.end):
-                    if r.reference_start >= reg.start and r.reference_start + r.infer_query_length() - 1 <= reg.end:
+            for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
+                for r in bam_handle.fetch(reference=chrom, start=reg[0], end=reg[1]):
+                    if r.reference_start >= reg[0] and r.reference_start + r.infer_query_length() - 1 <= reg[1]:
                         blacklisted += 1
 
     return blacklisted

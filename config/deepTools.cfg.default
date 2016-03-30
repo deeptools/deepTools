@@ -6,4 +6,3 @@ sort: sort
 # half the available processors will
 # be used
 default_proc_number: max/2
-test_root: ./test/
