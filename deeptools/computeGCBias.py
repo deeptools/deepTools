@@ -363,7 +363,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
 
         try:
             gc = getGC_content(
-                tbit[chromNameBit][i:i + fragmentLength['median']]),
+                tbit[chromNameBit][i:i + fragmentLength['median']],
                 as_fraction=False)
         except Exception as detail:
             if verbose:
@@ -709,6 +709,7 @@ class Tester():
                        'reads_per_bp': 0.3,
                        'total_reads': bam.mapped,
                        'genome_size': sum(tbit.sequence_sizes().values())
+                       }
 
     def testTabulateGCcontentWorker(self):
         stepSize = 2

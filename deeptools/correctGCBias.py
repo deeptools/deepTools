@@ -699,7 +699,7 @@ class Tester():
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
                        'total_reads': bam.mapped,
-                       'genome_size': sum(tbit.sequence_sizes().values())
+                       'genome_size': sum(tbit.sequence_sizes().values())}
 
     def testWriteCorrectedChunk(self):
         """ prepare arguments for test
