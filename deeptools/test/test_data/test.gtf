@@ -1,0 +1,9 @@
+3R	deepTools	gene	1	1000	.	.	0	gene_id "example";
+3R	deepTools	transcript	1	1000	.	+	0	gene_id example; transcript_id "first";
+3R	deepTools	exon	1	50	.	+	0	gene_id example; transcript_id "first";
+3R	deepTools	exon	400	510	.	+	0	gene_id example; transcript_id "first";
+3R	deepTools	exon	980	1000	.	+	0	gene_id example; transcript_id "first";
+3R	deepTools	transcript	100	1100	.	-	0	gene_id example; transcript_id "second";
+3R	deepTools	exon	100	150	.	-	0	gene_id example; transcript_id "second";
+3R	deepTools	exon	500	610	.	-	0	gene_id example; transcript_id "second";
+3R	deepTools	exon	1080	1100	.	-	0	gene_id example; transcript_id "second";

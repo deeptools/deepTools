@@ -5,7 +5,7 @@
 import argparse
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
-from deeptools import bamHandler
+from deeptools.getScaleFactor import get_scale_factor
 
 debug = 0
 
@@ -109,68 +109,6 @@ def process_args(args=None):
         args.smoothLength = None
 
     return args
-
-
-def get_scale_factor(args):
-
-    scale_factor = args.scaleFactor
-    bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
-    bam_mapped -= blacklisted
-
-    if args.normalizeTo1x:
-        # try to guess fragment length if the bam file contains paired end reads
-        from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
-                                                                    return_lengths=False,
-                                                                    blackListFileName=args.blackListFileName,
-                                                                    numberOfProcessors=args.numberOfProcessors,
-                                                                    verbose=args.verbose)
-        if args.extendReads:
-            if args.extendReads is True:
-                # try to guess fragment length if the bam file contains paired end reads
-                if frag_len_dict:
-                    fragment_length = frag_len_dict['median']
-                else:
-                    exit("*ERROR*: library is not paired-end. Please provide an extension length.")
-                if args.verbose:
-                    print("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median']))
-
-            elif args.extendReads < 1:
-                exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(args.extendReads))
-            elif args.extendReads > 2000:
-                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(args.extendReads))
-            else:
-                fragment_length = args.extendReads
-
-        else:
-            # set as fragment length the read length
-            fragment_length = int(read_len_dict['median'])
-            if args.verbose:
-                print "Estimated read length is {}".format(int(read_len_dict['median']))
-
-        current_coverage = \
-            float(bam_mapped * fragment_length) / args.normalizeTo1x
-        # the scaling sets the coverage to match 1x
-        scale_factor *= 1.0 / current_coverage
-        if debug:
-            print "Estimated current coverage {}".format(current_coverage)
-            print "Scaling factor {}".format(args.scaleFactor)
-
-    elif args.normalizeUsingRPKM:
-        # the RPKM is the # reads per tile / \
-        #    ( total reads (in millions) * tile length in Kb)
-        million_reads_mapped = float(bam_mapped) / 1e6
-        tile_len_in_kb = float(args.binSize) / 1000
-
-        scale_factor *= 1.0 / (million_reads_mapped * tile_len_in_kb)
-
-        if debug:
-            print "scale factor using RPKM is {0}".format(args.scaleFactor)
-
-    return scale_factor
 
 
 def main(args=None):

@@ -51,17 +51,19 @@ def parse_arguments(args=None):
                         required=False)
 
     parser.add_argument('--ratio',
-                        help='The default is to compute the log2(ratio) '
-                        'between the two samples. The reciprocal '
-                        'ratio returns the '
+                        help='The default is to output the log2ratio of the '
+                        'two samples. The reciprocal ratio returns the '
                         'the negative of the inverse of the ratio '
                         'if the ratio is less than 0. The resulting '
                         'values are interpreted as negative fold changes. '
-                        'Other possible operations are : simple ratio, '
-                        'subtraction, sum',
+                        '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
+                        '--normalizeUsingRPKM be used. Instead of performing a '
+                        'computation using both files, the scaled signal can '
+                        'alternatively be output for the first or second file using '
+                        'the \'--ratio first\' or \'--ratio second\'',
                         default='log2',
                         choices=['log2', 'ratio', 'subtract', 'add',
-                                 'reciprocal_ratio'],
+                                 'reciprocal_ratio', 'first', 'second'],
                         required=False)
 
     parser.add_argument('--skipNonCoveredRegions', '--skipNAs',

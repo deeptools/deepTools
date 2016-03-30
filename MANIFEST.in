@@ -7,3 +7,7 @@ include deeptools/test/test_data/*
 include deeptools/test/test_heatmapper/*
 include deeptools/test/test_plotCoverage/*
 include deeptools/test/test_corrGC/*
+include deeptoolsintervals/tree.*
+exclude deeptoolsintervals/tree/*.c
+exclude deeptoolsintervals/tree/*.h
+include deeptoolsintervals/test/*

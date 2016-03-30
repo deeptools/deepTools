@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import time
 
 import multiprocessing
@@ -10,9 +9,9 @@ import argparse
 from scipy.stats import poisson
 
 
-from bx.intervals.intersection import IntervalTree, Interval
 from bx.seq import twobit
 
+from deeptoolsintervals import GTF
 from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import parserCommon, mapReduce
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -160,27 +159,26 @@ def getPositionsToSample(chrom, start, end, stepSize):
     positions_to_sample = np.arange(start, end, stepSize)
 
     if global_vars['filter_out']:
-        filter_out_tree = get_intervals(global_vars['filter_out'])
+        filter_out_tree = GTF(global_vars['filter_out'])
     else:
         filter_out_tree = None
 
     if global_vars['extra_sampling_file']:
-        extra_tree = get_intervals(global_vars['extra_sampling_file'])
+        extra_tree = GTF(global_vars['extra_sampling_file'])
     else:
         extra_tree = None
 
     if extra_tree:
         orig_len = len(positions_to_sample)
         try:
-            extra_match = extra_tree[chrom].find(start, end)
+            extra_match = extra_tree.findOverlaps(chrom, start, end)
         except KeyError:
             extra_match = []
 
         if len(extra_match) > 0:
             for intval in extra_match:
                 positions_to_sample = np.append(positions_to_sample,
-                                                range(intval.start,
-                                                      intval.end, stepSize))
+                                                range(intval[0], intval[1], stepSize))
         # remove duplicates
         positions_to_sample = np.unique(np.sort(positions_to_sample))
         if debug:
@@ -191,7 +189,7 @@ def getPositionsToSample(chrom, start, end, stepSize):
     # skip regions that are filtered out
     if filter_out_tree:
         try:
-            out_match = filter_out_tree[chrom].find(start, end)
+            out_match = filter_out_tree.findOverlaps(chrom, start, end)
         except KeyError:
             out_match = []
 
@@ -199,8 +197,8 @@ def getPositionsToSample(chrom, start, end, stepSize):
             for intval in out_match:
                 positions_to_sample = \
                     positions_to_sample[
-                        (positions_to_sample < intval.start) |
-                        (positions_to_sample >= intval.end)]
+                        (positions_to_sample < intval[0]) |
+                        (positions_to_sample >= intval[1])]
     return positions_to_sample
 
 
@@ -523,30 +521,6 @@ def smooth(x, window_len=3):
             y[i] = np.mean(x[i - half_width:i + half_width + 1])
     # clip low values, this avoid problems with zeros
     return y
-
-
-def get_intervals(intervalsFile):
-    """
-    Creates an index of intervals for each restriction site
-
-    :param intervalsFile: file handler of a BED file
-    """
-    intervals_tree = {}
-    ff = open(intervalsFile, 'r')
-    for line in ff:
-        fields = line.strip().split()
-        chrom, start_int, end_int, = fields[0], int(fields[1]), int(fields[2])
-
-        if chrom not in intervals_tree:
-            intervals_tree[chrom] = IntervalTree()
-
-        try:
-            intervals_tree[chrom].add_interval(Interval(start_int, end_int))
-        except:
-            sys.stderr.write("Problem with line:{}\n".format(line))
-            sys.stderr.write(fields)
-    ff.close()
-    return intervals_tree
 
 
 def bin_by(x, y, nbins=10):

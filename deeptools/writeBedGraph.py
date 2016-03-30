@@ -216,35 +216,26 @@ class WriteBedGraph(cr.CountReadsPerBin):
             raise NameError("start position ({0}) bigger "
                             "than end position ({1})".format(start, end))
 
-        coverage = []
-        bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
-        for bam in bam_handlers:
-            coverage.append(
-                self.get_coverage_of_region(bam, chrom, start, end, self.binLength))
-            bam.close()
+        coverage, _ = self.count_reads_in_region(chrom, start, end)
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
         previous_value = None
 
-        length_coverage = len(coverage[0])
-        for tileIndex in xrange(length_coverage):
+        for tileIndex in xrange(coverage.shape[0]):
 
-            tileCoverage = []
-            for index in range(len(self.bamFilesList)):
-                if self.smoothLength > 0:
-                    vector_start, vector_end = self.getSmoothRange(tileIndex,
-                                                                   self.binLength,
-                                                                   self.smoothLength,
-                                                                   length_coverage)
-                    tileCoverage.append(
-                        np.mean(coverage[index][vector_start:vector_end]))
-                else:
-                    tileCoverage.append(coverage[index][tileIndex])
+            if self.smoothLength > 0:
+                vector_start, vector_end = self.getSmoothRange(tileIndex,
+                                                               self.binLength,
+                                                               self.smoothLength,
+                                                               coverage.shape[0])
+                tileCoverage = np.mean(coverage[vector_start:vector_end, :], axis=0)
+            else:
+                tileCoverage = coverage[tileIndex, :]
 
             value = func_to_call(tileCoverage, func_args)
             """
-            # uncomment this lines if fixed step bedgraph is wanted
-            if not  np.isnan(value):
+            # uncomment these lines if fixed step bedgraph is required
+            if not np.isnan(value):
                 writeStart = start + tileIndex*self.binLength
                 writeEnd  =  min(writeStart+self.binLength, end)
                 _file.write( "%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,

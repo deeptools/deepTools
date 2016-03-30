@@ -168,7 +168,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
 
 def plotMatrix(hm, outFileName,
-               colorMapDict={'colorMap': 'binary', 'missingDataColor': 'black'},
+               colorMapDict={'colorMap': 'binary', 'missingDataColor': 'black', 'alpha': 1.0},
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -201,7 +201,6 @@ def plotMatrix(hm, outFileName,
 
     plt.rcParams['font.size'] = 8.0
     fontP = FontProperties()
-#    fontP.set_size('small')
 
     showSummaryPlot = False
     showColorbar = False
@@ -255,6 +254,7 @@ def plotMatrix(hm, outFileName,
     else:
         color_list = cmap_plot(np.arange(numgroups) / numgroups)
     cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+    alpha = colorMapDict['alpha']
 
     # check if matrix is reference-point based using the upstream >0 value
     # and is sorted by region length. If this is
@@ -270,7 +270,6 @@ def plotMatrix(hm, outFileName,
                 for ind_reg in _group:
                     _len = ind_reg['end'] - ind_reg['start']
                     _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
-#                    print hm.parameters['upstream'] + (_len / hm.parameters['bin size'])
                 regions_length_in_bins.append(_reg_len)
     else:
         regions_length_in_bins = None
@@ -307,6 +306,7 @@ def plotMatrix(hm, outFileName,
                             vmin=zMin,
                             vmax=zMax,
                             cmap=cmap,
+                            alpha=alpha,
                             extent=[0, cols, rows, 0])
             # plot border at the end of the regions
             # if ordered by length
@@ -425,7 +425,7 @@ def plotMatrix(hm, outFileName,
             grid_start = 0
 
         ax = fig.add_subplot(grids[grid_start:, -1])
-        fig.colorbar(img, cax=ax)
+        fig.colorbar(img, cax=ax, alpha=alpha)
 
     plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
 
@@ -510,7 +510,8 @@ def main(args=None):
     colormap_dict = {'colorMap': args.colorMap,
                      'colorList': args.colorList,
                      'colorNumber': args.colorNumber,
-                     'missingDataColor': args.missingDataColor}
+                     'missingDataColor': args.missingDataColor,
+                     'alpha': args.alpha}
 
     plotMatrix(hm,
                args.outFileName,
