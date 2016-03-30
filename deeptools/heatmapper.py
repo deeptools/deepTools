@@ -596,7 +596,7 @@ class heatmapper(object):
     def coverage_from_big_wig(bigwig, chrom, zones, binSize, avgType, nansAsZeros=False, verbose=True):
 
         """
-        uses bigwig file reader from bx-python
+        uses pyBigWig
         to query a region define by chrom and zones.
         The output is an array that contains the bigwig
         value per base pair. The summary over bins is

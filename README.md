@@ -45,7 +45,7 @@ Details on the installation routines can be found here.
 
 The easiest way to install deepTools is by using python `pip` or `easy_install tools`:
 
-Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html), bx-python, pysam, and pyBigWig
+Requirements: Python 2.7, numpy, scipy (http://www.scipy.org/install.html), twobitreader, pysam, and pyBigWig
 
 Commands:
 

@@ -1,18 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import time
 
 import multiprocessing
 import numpy as np
 import argparse
 from scipy.stats import poisson
+import twobitreader as twobit
+import sys
 
 
-from bx.intervals.intersection import IntervalTree, Interval
-from bx.seq import twobit
-
+from deeptoolsintervals import GTF
 from deeptools.utilities import getGC_content, tbitToBamChrName
 from deeptools import parserCommon, mapReduce
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -160,27 +159,27 @@ def getPositionsToSample(chrom, start, end, stepSize):
     positions_to_sample = np.arange(start, end, stepSize)
 
     if global_vars['filter_out']:
-        filter_out_tree = get_intervals(global_vars['filter_out'])
+        filter_out_tree = GTF(global_vars['filter_out'])
     else:
         filter_out_tree = None
 
     if global_vars['extra_sampling_file']:
-        extra_tree = get_intervals(global_vars['extra_sampling_file'])
+        extra_tree = GTF(global_vars['extra_sampling_file'])
     else:
         extra_tree = None
 
     if extra_tree:
         orig_len = len(positions_to_sample)
         try:
-            extra_match = extra_tree[chrom].find(start, end)
+            extra_match = extra_tree.findOverlaps(chrom, start, end)
         except KeyError:
             extra_match = []
 
         if len(extra_match) > 0:
             for intval in extra_match:
                 positions_to_sample = np.append(positions_to_sample,
-                                                range(intval.start,
-                                                      intval.end, stepSize))
+                                                range(intval[0], intval[1],
+                                                      stepSize))
         # remove duplicates
         positions_to_sample = np.unique(np.sort(positions_to_sample))
         if debug:
@@ -191,7 +190,7 @@ def getPositionsToSample(chrom, start, end, stepSize):
     # skip regions that are filtered out
     if filter_out_tree:
         try:
-            out_match = filter_out_tree[chrom].find(start, end)
+            out_match = filter_out_tree.findOverlaps(chrom, start, end)
         except KeyError:
             out_match = []
 
@@ -199,8 +198,8 @@ def getPositionsToSample(chrom, start, end, stepSize):
             for intval in out_match:
                 positions_to_sample = \
                     positions_to_sample[
-                        (positions_to_sample < intval.start) |
-                        (positions_to_sample >= intval.end)]
+                        (positions_to_sample < intval[0]) |
+                        (positions_to_sample >= intval[1])]
     return positions_to_sample
 
 
@@ -217,7 +216,7 @@ def countReadsPerGC_worker(chromNameBam,
     """
 
     chromNameBit = chrNameBamToBit[chromNameBam]
-    tbit = twobit.TwoBitFile(open(global_vars['2bit']))
+    tbit = twobit.TwoBitFile(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
     c = 1
     sub_reads_per_gc = []
@@ -227,11 +226,11 @@ def countReadsPerGC_worker(chromNameBam,
     for index in xrange(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if region extends over the chromosome end
-        if tbit[chromNameBit].size < i + regionSize:
+        if tbit.sequence_sizes()[chromNameBit] < i + regionSize:
             break
 
         try:
-            gc = getGC_content(tbit[chromNameBit].get(i, i + regionSize))
+            gc = getGC_content(tbit[chromNameBit][i:i + regionSize])
         except Exception as detail:
             if verbose:
                 print "{}:{}-{}".format(chromNameBit, i, i + regionSize)
@@ -316,7 +315,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     subN_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
     subF_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
 
-    tbit = twobit.TwoBitFile(open(global_vars['2bit']))
+    tbit = twobit.TwoBitFile(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
     peak = 0
     startTime = time.time()
@@ -362,13 +361,11 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     for index in xrange(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if the end of the chromosome is reached
-        if i + fragmentLength['median'] > tbit[chromNameBit].size:
+        if i + fragmentLength['median'] > tbit.sequence_sizes()[chromNameBit]:
             break
 
         try:
-            gc = getGC_content(
-                tbit[chromNameBit].get(i, i + fragmentLength['median']),
-                as_fraction=False)
+            gc = getGC_content(tbit[chromNameBit][i:i + fragmentLength['median']], as_fraction=False)
         except Exception as detail:
             if verbose:
                 print detail
@@ -525,30 +522,6 @@ def smooth(x, window_len=3):
     return y
 
 
-def get_intervals(intervalsFile):
-    """
-    Creates an index of intervals for each restriction site
-
-    :param intervalsFile: file handler of a BED file
-    """
-    intervals_tree = {}
-    ff = open(intervalsFile, 'r')
-    for line in ff:
-        fields = line.strip().split()
-        chrom, start_int, end_int, = fields[0], int(fields[1]), int(fields[2])
-
-        if chrom not in intervals_tree:
-            intervals_tree[chrom] = IntervalTree()
-
-        try:
-            intervals_tree[chrom].add_interval(Interval(start_int, end_int))
-        except:
-            sys.stderr.write("Problem with line:{}\n".format(line))
-            sys.stderr.write(fields)
-    ff.close()
-    return intervals_tree
-
-
 def bin_by(x, y, nbins=10):
     """
     Bin x by y.
@@ -638,7 +611,7 @@ def main(args=None):
     global_vars['filter_out'] = filter_out_file
     global_vars['extra_sampling_file'] = extra_sampling_file
 
-    bit = twobit.TwoBitFile(open(global_vars['2bit']))
+    tbit = twobit.TwoBitFile(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
 
     if args.fragmentLength:
@@ -657,9 +630,9 @@ def main(args=None):
 
         fragment_len_dict = {'median': int(fragment_len_dict['median'])}
 
-    chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
+    chrNameBitToBam = tbitToBamChrName(tbit.sequence_sizes().keys(), bam.references)
 
-    global_vars['genome_size'] = sum([bit[x].size for x in bit.index])
+    global_vars['genome_size'] = sum(tbit.sequence_sizes().values())
     global_vars['total_reads'] = bam.mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
@@ -722,7 +695,7 @@ class Tester():
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         bam = bamHandler.openBam(self.bamFile)
-        bit = twobit.TwoBitFile(open(self.tbitFile))
+        tbit = twobit.TwoBitFile(self.tbitFile)
         global debug
         debug = 0
         global global_vars
@@ -736,7 +709,7 @@ class Tester():
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
                        'total_reads': bam.mapped,
-                       'genome_size': sum([bit[x].size for x in bit.index])}
+                       'genome_size': sum(tbit.sequence_sizes().values())}
 
     def testTabulateGCcontentWorker(self):
         stepSize = 2
