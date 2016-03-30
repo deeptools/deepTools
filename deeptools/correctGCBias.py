@@ -152,6 +152,7 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
         else:
             fragStart = read.pos
             fragEnd = fragStart + fragmentLength
+    fragStart = max(0, fragStart)
     try:
         gc = getGC_content(tbit[chrNameBit][fragStart:fragEnd], as_fraction=True)
     except Exception:
@@ -686,7 +687,7 @@ class Tester():
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         bam = pysam.Samfile(self.bamFile)
-        tbit = twobit.TwoBitFile(open(self.tbitFile))
+        tbit = twobit.TwoBitFile(self.tbitFile)
         global debug
         debug = 0
         global global_vars
