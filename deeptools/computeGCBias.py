@@ -7,9 +7,7 @@ import multiprocessing
 import numpy as np
 import argparse
 from scipy.stats import poisson
-
-
-from bx.seq import twobit
+import twobitreader as twobit
 
 from deeptoolsintervals import GTF
 from deeptools.utilities import getGC_content, tbitToBamChrName
@@ -215,7 +213,7 @@ def countReadsPerGC_worker(chromNameBam,
     """
 
     chromNameBit = chrNameBamToBit[chromNameBam]
-    tbit = twobit.TwoBitFile(open(global_vars['2bit']))
+    tbit = twobit.TwoBitFile(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
     c = 1
     sub_reads_per_gc = []
@@ -225,11 +223,11 @@ def countReadsPerGC_worker(chromNameBam,
     for index in xrange(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if region extends over the chromosome end
-        if tbit[chromNameBit].size < i + regionSize:
+        if tbit.sequence_sizes()[chromNameBit] < i + regionSize:
             break
 
         try:
-            gc = getGC_content(tbit[chromNameBit].get(i, i + regionSize))
+            gc = getGC_content(tbit[chromNameBit][i:i + regionSize])
         except Exception as detail:
             if verbose:
                 print "{}:{}-{}".format(chromNameBit, i, i + regionSize)
@@ -314,7 +312,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     subN_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
     subF_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
 
-    tbit = twobit.TwoBitFile(open(global_vars['2bit']))
+    tbit = twobit.TwoBitFile(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
     peak = 0
     startTime = time.time()
@@ -360,12 +358,12 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     for index in xrange(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if the end of the chromosome is reached
-        if i + fragmentLength['median'] > tbit[chromNameBit].size:
+        if i + fragmentLength['median'] > tbit.sequence_sizes()[chromNameBit]:
             break
 
         try:
             gc = getGC_content(
-                tbit[chromNameBit].get(i, i + fragmentLength['median']),
+                tbit[chromNameBit][i:i + fragmentLength['median']]),
                 as_fraction=False)
         except Exception as detail:
             if verbose:
@@ -612,7 +610,7 @@ def main(args=None):
     global_vars['filter_out'] = filter_out_file
     global_vars['extra_sampling_file'] = extra_sampling_file
 
-    bit = twobit.TwoBitFile(open(global_vars['2bit']))
+    tbit = twobit.TwoBitFile(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
 
     if args.fragmentLength:
@@ -631,9 +629,9 @@ def main(args=None):
 
         fragment_len_dict = {'median': int(fragment_len_dict['median'])}
 
-    chrNameBitToBam = tbitToBamChrName(bit.index.keys(), bam.references)
+    chrNameBitToBam = tbitToBamChrName(tbit.sequence_sizes().keys(), bam.references)
 
-    global_vars['genome_size'] = sum([bit[x].size for x in bit.index])
+    global_vars['genome_size'] = sum(tbit.sequence_sizes().values())
     global_vars['total_reads'] = bam.mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
@@ -696,7 +694,7 @@ class Tester():
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         bam = bamHandler.openBam(self.bamFile)
-        bit = twobit.TwoBitFile(open(self.tbitFile))
+        tbit = twobit.TwoBitFile(self.tbitFile)
         global debug
         debug = 0
         global global_vars
@@ -710,7 +708,7 @@ class Tester():
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
                        'total_reads': bam.mapped,
-                       'genome_size': sum([bit[x].size for x in bit.index])}
+                       'genome_size': sum(tbit.sequence_sizes().values())
 
     def testTabulateGCcontentWorker(self):
         stepSize = 2

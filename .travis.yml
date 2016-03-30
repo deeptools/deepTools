@@ -22,8 +22,8 @@ before_install:
 # Install packages
 install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib=1.5.0 nose
-  - conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
-  - pip install flake8
+  - conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig
+  - pip install flake8 git+https://github.com/dpryan79/twobitreader.git
   - python setup.py install
 
 # command to run tests

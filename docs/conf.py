@@ -19,7 +19,7 @@ import os
 import mock
 
 # MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
-MOCK_MODULES = ['pyBigWig', 'bx', 'bx.intervals', 'bx.intervals.intersection', 'bx.seq']
+MOCK_MODULES = ['pyBigWig']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
