@@ -8,7 +8,7 @@ from copy import deepcopy
 import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
-from deeptools.utilities import toString
+from deeptools.utilities import toString, toBytes
 
 old_settings = np.seterr(all='ignore')
 
@@ -704,7 +704,7 @@ class heatmapper(object):
 
         fh = gzip.open(matrix_file)
         for line in fh:
-            line = line.strip()
+            line = toString(line).strip()
             # read the header file containing the parameters
             # used
             if line.startswith("@"):
@@ -757,7 +757,7 @@ class heatmapper(object):
 
         fh = gzip.open(file_name, 'wb')
         params_str = json.dumps(self.parameters, separators=(',', ':'))
-        fh.write(toString("@" + params_str + "\n"))
+        fh.write(toBytes("@" + params_str + "\n"))
         score_list = np.ma.masked_invalid(np.mean(self.matrix.matrix, axis=1))
         for idx, region in enumerate(self.matrix.regions):
             # join np_array values
@@ -772,13 +772,13 @@ class heatmapper(object):
             ends = ",".join(ends)
             # BEDish format (we don't currently store the score)
             fh.write(
-                toString('{0}\t{1}\t{2}\t{3}\t.\t{4}\t{5}\n'.format(
-                         region[0],
-                         starts,
-                         ends,
-                         region[2],
-                         region[4],
-                         matrix_values)))
+                toBytes('{0}\t{1}\t{2}\t{3}\t.\t{4}\t{5}\n'.format(
+                        region[0],
+                        starts,
+                        ends,
+                        region[2],
+                        region[4],
+                        matrix_values)))
         fh.close()
 
     def save_tabulated_values(self, file_handle, reference_point_label='TSS', start_label='TSS', end_label='TES', averagetype='mean'):

@@ -11,7 +11,7 @@ import pyBigWig
 
 # own module
 from deeptools import mapReduce
-from deeptools.utilities import getCommonChrNames, toString
+from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
 from deeptools import bamHandler
 
@@ -111,11 +111,11 @@ def writeBedGraph_worker(
             writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
-                _file.write("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
-                                                    writeEnd, value))
+                _file.write(toBytes("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
+                                                            writeEnd, value)))
             except TypeError:
-                _file.write("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
-                                                      writeEnd, value))
+                _file.write(toBytes("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
+                                                              writeEnd, value)))
         else:
             if previousValue is None:
                 writeStart = start + tileIndex * tileSize
@@ -128,8 +128,8 @@ def writeBedGraph_worker(
             elif previousValue != value:
                 if not np.isnan(previousValue):
                     _file.write(
-                        toString("{0}\t{1}\t{2}\t{3:.2f}\n".format(chrom, writeStart,
-                                                                   writeEnd, previousValue)))
+                        toBytes("{0}\t{1}\t{2}\t{3:.2f}\n".format(chrom, writeStart,
+                                                                  writeEnd, previousValue)))
                 previousValue = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
@@ -138,8 +138,8 @@ def writeBedGraph_worker(
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
-            _file.write(toString("{0}\t{1}\t{2}\t{3:.1f}\n".format(chrom, writeStart,
-                                                                   end, previousValue)))
+            _file.write(toBytes("{0}\t{1}\t{2}\t{3:.1f}\n".format(chrom, writeStart,
+                                                                  end, previousValue)))
 
     tempFileName = _file.name
     _file.close()
