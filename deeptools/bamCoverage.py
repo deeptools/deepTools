@@ -104,8 +104,8 @@ def process_args(args=None):
     if args.scaleFactor != 1:
         args.normalizeTo1x = None
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize)
+        print("Warning: the smooth length given ({}) is smaller than the bin "
+              "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
         args.smoothLength = None
 
     return args

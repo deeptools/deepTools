@@ -1,8 +1,8 @@
 import numpy as np
 
 # own tools
-import bamHandler
-import mapReduce
+from . import bamHandler
+from . import mapReduce
 
 old_settings = np.seterr(all='ignore')
 
@@ -80,7 +80,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
     """
 
     bam_handle = bamHandler.openBam(bamFile)
-    chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
+    chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
     distanceBetweenBins *= 2
     fl = []

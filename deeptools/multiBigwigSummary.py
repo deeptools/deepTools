@@ -90,7 +90,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bwfiles) != len(args.labels):
-        print "The number of labels does not match the number of bigWig files."
+        print("The number of labels does not match the number of bigWig files.")
         exit(0)
     if not args.labels:
         args.labels = []
@@ -117,7 +117,6 @@ def multiBigwigSummaryArgs(case='bins'):
     required.add_argument('--outFileName', '-out',
                           help='File name to save the compressed matrix file (npz format)'
                           'needed by the "plotHeatmap" and "plotProfile" tools.',
-                          type=argparse.FileType('w'),
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -229,9 +228,11 @@ def main(args=None):
              "If using --region please check that this "
              "region is covered by reads.\n")
 
-    np.savez_compressed(args.outFileName,
+    f = open(args.outFileName, "wb")
+    np.savez_compressed(f,
                         matrix=num_reads_per_bin,
                         labels=args.labels)
+    f.close()
 
     if args.outRawCounts:
         # append to the generated file the
@@ -261,3 +262,4 @@ def main(args=None):
             for row in num_reads_per_bin:
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
+        args.outRawCounts.close()

@@ -53,8 +53,8 @@ def tbitToBamChrName(tbitNames, bamNames):
         elif set([x for x in tbitNames if x.count('random') == 0 and
                  x.count('chrM') == 0]) == set(bamNames):
             if debug:
-                print "Removing random and mitochondrial chromosomes"\
-                    "fixes the problem"
+                print("Removing random and mitochondrial chromosomes"
+                      "fixes the problem")
             chrNameBitToBam = dict([(x, x) for x in tbitNames
                                     if x.count('random') == 0 and
                                     x.count('chrM') == 0])
@@ -66,7 +66,7 @@ def tbitToBamChrName(tbitNames, bamNames):
                 sys.stderr.write(item + "\n")
 
             chrNameBitToBam = {"chrM": "MT"}
-            for i in xrange(len(bamNames)):
+            for i in range(len(bamNames)):
                 if bamNames2[i] in tbitNames:
                     chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
         elif len(set([x[3:] for x in bamNames if x.startswith("chr")]).intersection(set(tbitNames))) > 0:
@@ -79,12 +79,12 @@ def tbitToBamChrName(tbitNames, bamNames):
                     sys.stderr.write(item + "\n")
 
             chrNameBitToBam = {"MT": "chrM"}
-            for i in xrange(len(bamNames)):
+            for i in range(len(bamNames)):
                 if bamNames2[i] in tbitNames:
                     chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
         else:
             if debug:
-                print "Index and reference do not have matching "
+                print("Index and reference do not have matching ")
                 "chromosome names"
             exit(0)
 
@@ -186,7 +186,7 @@ def getTempFileName(suffix=''):
     which has much faster accession.
     """
     import tempfile
-    import config as cfg
+    from . import config as cfg
     # get temp dir from configuration file
     tmp_dir = cfg.config.get('general', 'tmp_dir')
     if tmp_dir == 'default':
@@ -250,3 +250,18 @@ def gtfOptions(allArgs=None):
         transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
         keepExons = allArgs.get("keepExons", keepExons)
     return transcriptID, exonID, transcript_id_designator, keepExons
+
+
+def toString(s):
+    """
+    This takes care of python2/3 differences
+    """
+    if isinstance(s, str):
+        return s
+    if isinstance(s, bytes):
+        if sys.major_version == 2:
+            return bytes(s)
+        return bytes(s, 'ascii')
+    if isinstance(s, list):
+        return [toString(x) for x in s]
+    return s

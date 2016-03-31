@@ -42,7 +42,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of labels does not match the number of BAM files."
+        print("The number of labels does not match the number of BAM files.")
         exit(0)
 
     if not args.labels:

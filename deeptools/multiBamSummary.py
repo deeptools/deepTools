@@ -104,7 +104,6 @@ def bamcorrelate_args(case='bins'):
                           help='File name to save the coverage matrix. This matrix '
                                'can be subsequently plotted using plotCorrelation or '
                                'or plotPCA.',
-                          type=argparse.FileType('w'),
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -173,10 +172,10 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of does not match the number of bam files."
+        print("The number of does not match the number of bam files.")
         exit(0)
     if not args.labels:
-        args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
+        args.labels = [os.path.basename(x) for x in args.bamfiles]
 
     return args
 

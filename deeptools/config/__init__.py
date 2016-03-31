@@ -1,6 +1,9 @@
 import os
 import sys
-import ConfigParser
+try:
+    import configparser
+except:
+    import ConfigParser as configparser
 import subprocess
 import tempfile
 
@@ -47,7 +50,7 @@ from the PATH will be taken. That is used in the Galaxy Tool Shed integration
 """
 
 if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.add_section('general')
     config.set('general', 'default_proc_number', 'max/2')
     # N.B., the TMPDIR variable can be used!
@@ -63,5 +66,5 @@ else:
     # of the deepTools instalation
     config_file = pkg_resources.resource_filename(__name__,
                                                   'deeptools.cfg')
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.readfp(open(config_file, 'r'))

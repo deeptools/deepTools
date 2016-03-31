@@ -7,8 +7,8 @@ import numpy as np
 
 # deepTools packages
 import deeptools.utilities
-import bamHandler
-import mapReduce
+from . import bamHandler
+from . import mapReduce
 from deeptoolsintervals import GTF
 
 debug = 0
@@ -175,8 +175,8 @@ class CountReadsPerBin(object):
                 else:
                     exit("*ERROR*: library is not paired-end. Please provide an extension length.")
                 if verbose:
-                    print("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median']))
+                    print(("Fragment length based on paired en data "
+                          "estimated to be {}".format(frag_len_dict['median'])))
 
             elif extendReads < read_len_dict['median']:
                 sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
@@ -238,7 +238,7 @@ class CountReadsPerBin(object):
         if len(self.chrsToSkip):
             chromSizes = [x for x in chromSizes if x[0] not in self.chrsToSkip]
 
-        chrNames, chrLengths = zip(*chromSizes)
+        chrNames, chrLengths = list(zip(*chromSizes))
 
         genomeSize = sum(chrLengths)
         if self.stepSize is None:
@@ -264,7 +264,7 @@ class CountReadsPerBin(object):
         [bam_h.close() for bam_h in bamFilesHandlers]
 
         if self.verbose:
-            print "step size is {}".format(self.stepSize)
+            print("step size is {}".format(self.stepSize))
 
         if self.region:
             # in case a region is used, append the tilesize
@@ -385,7 +385,7 @@ class CountReadsPerBin(object):
         if bed_regions_list is not None:
             transcriptsToConsider = [x[1] for x in bed_regions_list]
         else:
-            for i in xrange(start, end, self.stepSize):
+            for i in range(start, end, self.stepSize):
                 if i + self.binLength > end:
                     break
                 if self.blackList is not None and self.blackList.findOverlaps(chrom, i, i + self.binLength):
@@ -416,10 +416,10 @@ class CountReadsPerBin(object):
 
         if self.verbose:
             endTime = time.time()
-            print "%s countReadsInRegions_worker: processing %d " \
-                  "(%.1f per sec) @ %s:%s-%s" % \
+            print("%s countReadsInRegions_worker: processing %d "
+                  "(%.1f per sec) @ %s:%s-%s" %
                   (multiprocessing.current_process().name,
-                   rows, rows / (endTime - start_time), chrom, start, end)
+                   rows, rows / (endTime - start_time), chrom, start, end))
 
         return subnum_reads_per_bin, _file_name
 
@@ -542,8 +542,8 @@ class CountReadsPerBin(object):
 
             if self.verbose:
                 endTime = time.time()
-                print "%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
-                    multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1])
+                print("%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
+                    multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1]))
 
             # change zeros to NAN
             if self.zerosToNans and coverage == 0.0:
@@ -631,11 +631,9 @@ class CountReadsPerBin(object):
 
         >>> c = CountReadsPerBin([], 1, 1, 200, extendReads=True, center_read=True)
         >>> c.defaultFragmentLength = 100
-        >>> c.get_fragment_from_read(test.getRead("paired-forward"))
-        [(5000032, 5000068)]
+        >>> assert(c.get_fragment_from_read(test.getRead("paired-forward")) == [(5000032, 5000068)])
         >>> c.defaultFragmentLength = 200
-        >>> c.get_fragment_from_read(test.getRead("single-reverse"))
-        [(5001618, 5001654)]
+        >>> assert(c.get_fragment_from_read(test.getRead("single-reverse")) == [(5001618, 5001654)])
         """
         def is_proper_pair():
             """

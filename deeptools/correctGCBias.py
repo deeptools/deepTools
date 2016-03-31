@@ -208,7 +208,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
             gc = getReadGCcontent(tbit, read, fragmentLength,
                                   chrNameBit)
         except Exception as detail:
-            print detail
+            print(detail)
             """ this exception happens when the end of a
             chromosome is reached """
             continue
@@ -239,7 +239,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
         i += 1
     if debug:
         endTime = time.time()
-        print "{}, processing {} ({:.1f} per sec) "
+        print("{}, processing {} ({:.1f} per sec) ")
         "reads @ {}:{}-{}".format(multiprocessing.current_process().name,
                                   i, i / (endTime - startTime),
                                   chrNameBit, start, end)
@@ -249,7 +249,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
 
     _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
     # save in bedgraph format
-    for bin in xrange(0, len(cvg_corr), step):
+    for bin in range(0, len(cvg_corr), step):
         value = np.mean(cvg_corr[bin:min(bin + step, end)])
         if value > 0:
             writeStart = start + bin
@@ -298,7 +298,10 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     >>> args = test.testWriteCorrectedSam()
     >>> tempFile = writeCorrectedSam_worker(*args, \
     ... tag_but_not_change_number=True, verbose=False)
-    >>> from StringIO import StringIO
+    >>> try:
+    ...     import StringIO
+    ... except ImportError:
+    ...     from io import StringIO
     >>> ostdout = sys.stdout
     >>> import tempfile
     >>> sys.stdout = tempfile.TemporaryFile()
@@ -325,7 +328,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     fragmentLength = len(R_gc) - 1
 
     if verbose:
-        print "Sam for %s %s %s " % (chrNameBit, start, end)
+        print("Sam for %s %s %s " % (chrNameBit, start, end))
     i = 0
 
     tbit = twobit.TwoBitFile(global_vars['2bit'])
@@ -432,23 +435,23 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         if verbose:
             if i % 500000 == 0 and i > 0:
                 endTime = time.time()
-                print "{},  processing {} ({:.1f} per sec) reads " \
-                    "@ {}:{}-{}".format(multiprocessing.current_process().name,
-                                        i, i / (endTime - startTime),
-                                        chrNameBit, start, end)
+                print("{},  processing {} ({:.1f} per sec) reads "
+                      "@ {}:{}-{}".format(multiprocessing.current_process().name,
+                                          i, i / (endTime - startTime),
+                                          chrNameBit, start, end))
         i += 1
 
     outfile.close()
     if verbose:
         endTime = time.time()
-        print "{},  processing {} ({:.1f} per sec) reads " \
-            "@ {}:{}-{}".format(multiprocessing.current_process().name,
-                                i, i / (endTime - startTime),
-                                chrNameBit, start, end)
+        print("{},  processing {} ({:.1f} per sec) reads "
+              "@ {}:{}-{}".format(multiprocessing.current_process().name,
+                                  i, i / (endTime - startTime),
+                                  chrNameBit, start, end))
         percentage = float(removed_duplicated_reads) * 100 / len(reads) \
             if len(reads) > 0 else 0
-        print "duplicated reads removed %d of %d (%.2f) " % \
-            (removed_duplicated_reads, len(reads), percentage)
+        print("duplicated reads removed %d of %d (%.2f) " %
+              (removed_duplicated_reads, len(reads), percentage))
 
     return tempFileName
 
@@ -574,7 +577,7 @@ def main(args=None):
         float(global_vars['total_reads']) / args.effectiveGenomeSize
 
     # apply correction
-    print "applying correction"
+    print("applying correction")
     # divide the genome in fragments containing about 4e5 reads.
     # This amount of reads takes about 20 seconds
     # to process per core (48 cores, 256 Gb memory)
@@ -590,23 +593,23 @@ def main(args=None):
             mapReduce.getUserRegion(chromSizes, args.region,
                                     max_chunk_size=chunkSize)
 
-    print "genome partition size for multiprocessing: {}".format(chunkSize)
-    print "using region {}".format(args.region)
+    print("genome partition size for multiprocessing: {}".format(chunkSize))
+    print("using region {}".format(args.region))
     mp_args = []
     bedGraphStep = args.binSize
-    chrNameBitToBam = tbitToBamChrName(tbit.sequence_sizes().keys(), bam.references)
-    chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
-    print chrNameBitToBam, chrNameBamToBit
+    chrNameBitToBam = tbitToBamChrName(list(tbit.sequence_sizes().keys()), bam.references)
+    chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.items()])
+    print(chrNameBitToBam, chrNameBamToBit)
     c = 1
     for chrom, size in chromSizes:
         start = 0 if regionStart == 0 else regionStart
-        for i in xrange(start, size, chunkSize):
+        for i in range(start, size, chunkSize):
             try:
                 chrNameBamToBit[chrom]
             except KeyError:
-                print "no sequence information for "
+                print("no sequence information for ")
                 "chromosome {} in 2bit file".format(chrom)
-                print "Reads in this chromosome will be skipped"
+                print("Reads in this chromosome will be skipped")
                 continue
             length = min(size, i + chunkSize)
             mp_args.append((chrom, chrNameBamToBit[chrom], i, length,
@@ -617,20 +620,20 @@ def main(args=None):
 
     if args.correctedFile.name.endswith('bam'):
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
-            print ("using {} processors for {} "
+            print(("using {} processors for {} "
                    "number of tasks".format(args.numberOfProcessors,
-                                            len(mp_args)))
+                                            len(mp_args))))
 
             res = pool.map_async(
                 writeCorrectedSam_wrapper, mp_args).get(9999999)
         else:
-            res = map(writeCorrectedSam_wrapper, mp_args)
+            res = list(map(writeCorrectedSam_wrapper, mp_args))
 
         if len(res) == 1:
             command = "cp {} {}".format(res[0], args.correctedFile.name)
             run_shell_command(command)
         else:
-            print "concatenating (sorted) intermediate BAMs"
+            print("concatenating (sorted) intermediate BAMs")
             header = pysam.Samfile(res[0])
             of = pysam.Samfile(args.correctedFile.name, "wb", template=header)
             header.close()
@@ -641,7 +644,7 @@ def main(args=None):
                 f.close()
             of.close()
 
-        print "indexing BAM"
+        print("indexing BAM")
         pysam.index(args.correctedFile.name)
 
         for tempFileName in res:
@@ -655,7 +658,7 @@ def main(args=None):
 
             res = pool.map_async(writeCorrected_wrapper, mp_args).get(9999999)
         else:
-            res = map(writeCorrected_wrapper, mp_args)
+            res = list(map(writeCorrected_wrapper, mp_args))
 
         # concatenate intermediary bedgraph files
         _temp_bg_file = open(_temp_bg_file_name, 'w')
@@ -672,7 +675,7 @@ def main(args=None):
             shutil.move(_temp_bg_file_name, args.correctedFile.name)
 
         else:
-            chromSizes = [(k, v) for k, v in tbit.sequence_sizes().iteritems()]
+            chromSizes = [(k, v) for k, v in tbit.sequence_sizes().items()]
             writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file_name,
                                            args.correctedFile.name)
             os.remove(_temp_bg_file)

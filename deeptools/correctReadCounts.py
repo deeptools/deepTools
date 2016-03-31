@@ -136,10 +136,10 @@ def correctReadCounts(bamFilesList, binLength, numberOfSamples, defaultFragmentL
     treatmentTotal = treatmentMapped
     controlTotal = controlMapped
 
-    print "Treatment mean: {:.2f}, Treatment total:{:.2f}".format(treatmentMean, treatmentTotal)
-    print "Control mean: {:.2f}, Control total:{}".format(controlMean, controlTotal)
-    print "the ratio of treatment vs. control for enriched regions is: {:.2f}".format(treatmentSignalRatio)
-    print "the ratio of treatment vs. control ratio: {:.2f} (if based on mapped reads: {:.2f})".format(treatmentControlRatio, treatmentControlRatioMapped)
+    print("Treatment mean: {:.2f}, Treatment total:{:.2f}".format(treatmentMean, treatmentTotal))
+    print("Control mean: {:.2f}, Control total:{}".format(controlMean, controlTotal))
+    print("the ratio of treatment vs. control for enriched regions is: {:.2f}".format(treatmentSignalRatio))
+    print("the ratio of treatment vs. control ratio: {:.2f} (if based on mapped reads: {:.2f})".format(treatmentControlRatio, treatmentControlRatioMapped))
 
     funcArgs = {'controlMean': controlMean,
                 'treatmentMean': treatmentMean,

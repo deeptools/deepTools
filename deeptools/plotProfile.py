@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+
 import sys
 
 import argparse
@@ -483,8 +483,8 @@ def main(args=None):
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     else:
         if args.hclust is not None:
-            print "Performing hierarchical clustering." \
-                  "Please note that it might be very slow for large datasets.\n"
+            print("Performing hierarchical clustering."
+                  "Please note that it might be very slow for large datasets.\n")
             hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)

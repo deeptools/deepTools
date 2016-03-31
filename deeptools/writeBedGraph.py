@@ -10,7 +10,7 @@ from deeptools.utilities import getCommonChrNames
 import deeptools.countReadsPerBin as cr
 from deeptools import bamHandler
 from deeptools import utilities
-import config as cfg
+from . import config as cfg
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -126,7 +126,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
             # in case a region is used, append the tilesize
             self.region += ":{}".format(self.binLength)
 
-        for x in self.__dict__.keys():
+        for x in list(self.__dict__.keys()):
             sys.stderr.write("{}: {}\n".format(x, self.__getattribute__(x)))
 
         res = mapReduce.mapReduce([func_to_call, func_args],
@@ -152,12 +152,12 @@ class WriteBedGraph(cr.CountReadsPerBin):
         if format == 'bedgraph':
             os.rename(bedgraph_file, out_file_name)
             if self.verbose:
-                print "output file: {}".format(out_file_name)
+                print("output file: {}".format(out_file_name))
         else:
             bedGraphToBigWig(
                 chrom_names_and_size, bedgraph_file, out_file_name, True)
             if self.verbose:
-                print "output file: {}".format(out_file_name)
+                print("output file: {}".format(out_file_name))
             os.remove(bedgraph_file)
 
     def writeBedGraph_worker(self, chrom, start, end,
@@ -221,9 +221,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
         previous_value = None
 
-        for tileIndex in xrange(coverage.shape[0]):
+        for tileIndex in range(coverage.shape[0]):
 
-            if self.smoothLength > 0:
+            if self.smoothLength is not None and self.smoothLength > 0:
                 vector_start, vector_end = self.getSmoothRange(tileIndex,
                                                                self.binLength,
                                                                self.smoothLength,

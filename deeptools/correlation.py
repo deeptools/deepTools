@@ -208,7 +208,7 @@ class Correlation:
             # indices of the upper triangle
             rows, cols = np.triu_indices(num_samples)
 
-            for index in xrange(len(rows)):
+            for index in range(len(rows)):
                 row = rows[index]
                 col = cols[index]
                 corr_matrix[row, col] = scipy.stats.spearmanr(self.matrix[:, row], self.matrix[:, col])[0]
@@ -331,11 +331,11 @@ class Correlation:
             max_value += 1
 
         if log1p:
-            major_locator = matplotlib.ticker.FixedLocator(range(min_value, max_value, 2))
-            minor_locator = matplotlib.ticker.FixedLocator(range(min_value, max_value, 1))
+            major_locator = matplotlib.ticker.FixedLocator(list(range(min_value, max_value, 2)))
+            minor_locator = matplotlib.ticker.FixedLocator(list(range(min_value, max_value, 1)))
 
         rows, cols = np.triu_indices(num_samples)
-        for index in xrange(len(rows)):
+        for index in range(len(rows)):
             row = rows[index]
             col = cols[index]
             if row == col:

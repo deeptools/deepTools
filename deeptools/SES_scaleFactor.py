@@ -150,7 +150,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
         if maxNumReads == 0:
             maxNumReads = (np.percentile(values, 99))
             if maxNumReads == 0:
-                print "all genomic regions sampled from one "
+                print("all genomic regions sampled from one ")
                 "of the bam files have no reads.\n"
                 values = values[values <= maxNumReads]
 

@@ -62,8 +62,8 @@ def mapReduce(staticArgs, func, chromSize,
     genomeChunkLength = int(genomeChunkLength)
 
     if verbose:
-        print "genome partition size for multiprocessing: {0}".format(
-            genomeChunkLength)
+        print("genome partition size for multiprocessing: {0}".format(
+            genomeChunkLength))
 
     region_start = 0
     region_end = None
@@ -74,8 +74,8 @@ def mapReduce(staticArgs, func, chromSize,
     if region:
         chromSize, region_start, region_end, genomeChunkLength = getUserRegion(chromSize, region)
         if verbose:
-            print "chrom size: {0}, region start: {1}, region end: {2}, " \
-                  "genome chunk length sent to each procesor: {3}".format(chromSize, region_start, region_end, genomeChunkLength)
+            print("chrom size: {0}, region start: {1}, region end: {2}, "
+                  "genome chunk length sent to each procesor: {3}".format(chromSize, region_start, region_end, genomeChunkLength))
 
     if bedFile:
         defaultGroup = None
@@ -91,7 +91,7 @@ def mapReduce(staticArgs, func, chromSize,
     for chrom, size in chromSize:
         # the start is zero unless a specific region is defined
         start = 0 if region_start == 0 else region_start
-        for startPos in xrange(start, size, genomeChunkLength):
+        for startPos in range(start, size, genomeChunkLength):
             endPos = min(size, startPos + genomeChunkLength)
 
             # Reject a chunk if it overlaps
@@ -133,14 +133,14 @@ def mapReduce(staticArgs, func, chromSize,
 
     if len(TASKS) > 1 and numberOfProcessors > 1:
         if verbose:
-            print ("using {} processors for {} "
+            print(("using {} processors for {} "
                    "number of tasks".format(numberOfProcessors,
-                                            len(TASKS)))
+                                            len(TASKS))))
 
         pool = multiprocessing.Pool(numberOfProcessors)
         res = pool.map_async(func, TASKS).get(9999999)
     else:
-        res = map(func, TASKS)
+        res = list(map(func, TASKS))
 
     if includeLabels:
         if bedFile:
@@ -186,7 +186,7 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
     chrom = region[0]
     chrom_sizes = dict(chrom_sizes)
 
-    if chrom not in chrom_sizes.keys():
+    if chrom not in list(chrom_sizes.keys()):
         if chrom == "MT":
             chromUse = "chrM"
         elif chrom == "chrM":
@@ -195,9 +195,9 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
             chromUse = chrom[3:]
         else:
             chromUse = "chr" + chrom
-        if chromUse not in chrom_sizes.keys():
+        if chromUse not in list(chrom_sizes.keys()):
             raise NameError("Unknown chromosome: %s\nKnown "
-                            "chromosomes are: %s " % (chrom, chrom_sizes.keys()))
+                            "chromosomes are: %s " % (chrom, list(chrom_sizes.keys())))
         chrom = chromUse
     try:
         region_start = int(region[1])

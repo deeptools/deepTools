@@ -176,13 +176,13 @@ def getPositionsToSample(chrom, start, end, stepSize):
         if len(extra_match) > 0:
             for intval in extra_match:
                 positions_to_sample = np.append(positions_to_sample,
-                                                range(intval[0], intval[1], stepSize))
+                                                list(range(intval[0], intval[1], stepSize)))
         # remove duplicates
         positions_to_sample = np.unique(np.sort(positions_to_sample))
         if debug:
-            print "sampling increased to {} from {}".format(
+            print("sampling increased to {} from {}".format(
                 len(positions_to_sample),
-                orig_len)
+                orig_len))
 
     # skip regions that are filtered out
     if filter_out_tree:
@@ -220,7 +220,7 @@ def countReadsPerGC_worker(chromNameBam,
     positions_to_sample = getPositionsToSample(chromNameBit,
                                                start, end, stepSize)
 
-    for index in xrange(len(positions_to_sample)):
+    for index in range(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if region extends over the chromosome end
         if tbit.sequence_sizes()[chromNameBit] < i + regionSize:
@@ -230,8 +230,8 @@ def countReadsPerGC_worker(chromNameBam,
             gc = getGC_content(tbit[chromNameBit][i:i + regionSize])
         except Exception as detail:
             if verbose:
-                print "{}:{}-{}".format(chromNameBit, i, i + regionSize)
-                print detail
+                print("{}:{}-{}".format(chromNameBit, i, i + regionSize))
+                print(detail)
             continue
         numberReads = bam.count(chromNameBam, i, i + regionSize)
         sub_reads_per_gc.append((numberReads, gc))
@@ -264,9 +264,9 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     the corresponding GC is
     [2,  1,  1,  2,  2,  1,  2,  3,  2,  1]
 
-    >>> print N_gc
+    >>> print(N_gc)
     [0 4 5 1]
-    >>> print F_gc
+    >>> print(F_gc)
     [0 4 1 0]
     >>> test.set_filter_out_file()
     >>> chrNameBam2bit =  {'2L': 'chr2L'}
@@ -278,9 +278,9 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
 
     The evaluated positions are
     [ 0  2  8 10 12 14 16 18]
-    >>> print N_gc
+    >>> print(N_gc)
     [0 3 4 1]
-    >>> print F_gc
+    >>> print(F_gc)
     [0 3 1 0]
 
     Test for extra_sampling option
@@ -293,9 +293,9 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     [0, 1, 2, 3, 4, 6, 8, 10, 12, 14, 16, 18]
     and the GC is
     [2, 1, 1, 0, 1, 2, 2, 1,  2,  3,  2,  1]
-    >>> print res[0]
+    >>> print(res[0])
     [1 5 5 1]
-    >>> print res[1]
+    >>> print(res[1])
     [0 5 1 0]
 
     """
@@ -318,8 +318,8 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     startTime = time.time()
 
     if verbose:
-        print "[{:.3f}] computing positions to " \
-            "sample".format(time.time() - startTime)
+        print("[{:.3f}] computing positions to "
+              "sample".format(time.time() - startTime))
 
     positions_to_sample = getPositionsToSample(chromNameBit,
                                                start, end, stepSize)
@@ -339,7 +339,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         start_pos = min(positions_to_sample)
         end_pos = max(positions_to_sample)
         if verbose:
-            print "[{:.3f}] caching reads".format(time.time() - startTime)
+            print("[{:.3f}] caching reads".format(time.time() - startTime))
 
         counts = np.bincount([r.pos - start_pos
                               for r in bam.fetch(chromNameBam, start_pos,
@@ -349,13 +349,13 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
 
         read_counts = counts[positions_to_sample - min(positions_to_sample)]
         if verbose:
-            print "[{:.3f}] finish caching reads.".format(
-                time.time() - startTime)
+            print("[{:.3f}] finish caching reads.".format(
+                time.time() - startTime))
 
     countTime = time.time()
 
     c = 1
-    for index in xrange(len(positions_to_sample)):
+    for index in range(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if the end of the chromosome is reached
         if i + fragmentLength['median'] > tbit.sequence_sizes()[chromNameBit]:
@@ -367,7 +367,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
                 as_fraction=False)
         except Exception as detail:
             if verbose:
-                print detail
+                print(detail)
             continue
 
         subN_gc[gc] += 1
@@ -387,20 +387,20 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         if verbose:
             if index % 50000 == 0:
                 endTime = time.time()
-                print "%s processing %d (%.1f per sec) @ %s:%s-%s %s" % \
-                    (multiprocessing.current_process().name,
-                     index, index / (endTime - countTime),
-                     chromNameBit, start, end, stepSize)
+                print("%s processing %d (%.1f per sec) @ %s:%s-%s %s" %
+                      (multiprocessing.current_process().name,
+                       index, index / (endTime - countTime),
+                       chromNameBit, start, end, stepSize))
         c += 1
 
     if verbose:
         endTime = time.time()
-        print "%s processing %d (%.1f per sec) @ %s:%s-%s %s" % \
-            (multiprocessing.current_process().name,
-             index, index / (endTime - countTime),
-             chromNameBit, start, end, stepSize)
-        print "%s total time %.1f @ %s:%s-%s %s" % (multiprocessing.current_process().name,
-                                                    (endTime - startTime), chromNameBit, start, end, stepSize)
+        print("%s processing %d (%.1f per sec) @ %s:%s-%s %s" %
+              (multiprocessing.current_process().name,
+               index, index / (endTime - countTime),
+               chromNameBit, start, end, stepSize))
+        print("%s total time %.1f @ %s:%s-%s %s" % (multiprocessing.current_process().name,
+                                                    (endTime - startTime), chromNameBit, start, end, stepSize))
 
     return(subN_gc, subF_gc)
 
@@ -431,9 +431,9 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
     """
     global global_vars
 
-    chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
+    chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.items()])
     chunkSize = int(min(2e6, 4e5 / global_vars['reads_per_bp']))
-    chromSizes = [(k, v) for k, v in chromSizes if k in chrNameBamToBit.keys()]
+    chromSizes = [(k, v) for k, v in chromSizes if k in list(chrNameBamToBit.keys())]
 
     imap_res = mapReduce.mapReduce((stepSize,
                                     fragmentLength, chrNameBamToBit,
@@ -452,11 +452,11 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
             F_gc = subF_gc
             N_gc = subN_gc
 
-    scaling = sum(N_gc) / sum(F_gc)
+    scaling = sum(N_gc) // sum(F_gc)
 
     R_gc = np.array([float(F_gc[x]) / N_gc[x] * scaling
                      if N_gc[x] and F_gc[x] > 0 else 1
-                     for x in xrange(len(F_gc))])
+                     for x in range(len(F_gc))])
 
     data = np.transpose(np.vstack((F_gc, N_gc, R_gc)))
     return data
@@ -480,7 +480,7 @@ def countReadsPerGC(regionSize, chrNameBitToBam, stepSize,
     """
     global global_vars
 
-    chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.iteritems()])
+    chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.items()])
     chunkSize = int(min(2e6, 4e5 / global_vars['reads_per_bp']))
 
     imap_res = mapReduce.mapReduce((stepSize,
@@ -512,7 +512,7 @@ def smooth(x, window_len=3):
     i = 0
     y = x[:]
     half_width = (window_len - 1) / 2
-    for i in xrange(0, len(x)):
+    for i in range(0, len(x)):
         if i < half_width or i + half_width + 1 > len(x):
             continue
         else:
@@ -533,7 +533,7 @@ def bin_by(x, y, nbins=10):
     indices = np.digitize(y, bins)
 
     output = []
-    for i in xrange(1, len(bins)):
+    for i in range(1, len(bins)):
         output.append(x[indices == i])
 
     # Just return the left edges of the bins
@@ -623,13 +623,13 @@ def main(args=None):
                                          numberOfProcessors=args.numberOfProcessors,
                                          verbose=args.verbose)
         if not fragment_len_dict:
-            print "\nPlease provide the fragment length used for the " \
-                "sample preparation.\n"
+            print("\nPlease provide the fragment length used for the "
+                  "sample preparation.\n")
             exit(1)
 
         fragment_len_dict = {'median': int(fragment_len_dict['median'])}
 
-    chrNameBitToBam = tbitToBamChrName(tbit.sequence_sizes().keys(), bam.references)
+    chrNameBitToBam = tbitToBamChrName(list(tbit.sequence_sizes().keys()), bam.references)
 
     global_vars['genome_size'] = sum(tbit.sequence_sizes().values())
     global_vars['total_reads'] = bam.mapped
@@ -659,12 +659,12 @@ def main(args=None):
                 fragment_len_dict['median']).ppf(confidence_p_value)
 
     for key in global_vars:
-        print "{}: {}".format(key, global_vars[key])
+        print("{}: {}".format(key, global_vars[key]))
 
-    print "computing frequencies"
+    print("computing frequencies")
     # the GC of the genome is sampled each stepSize bp.
     stepSize = max(int(global_vars['genome_size'] / args.sampleSize), 1)
-    print "stepSize: {}".format(stepSize)
+    print("stepSize: {}".format(stepSize))
     data = tabulateGCcontent(fragment_len_dict,
                              chrNameBitToBam, stepSize,
                              chromSizes,

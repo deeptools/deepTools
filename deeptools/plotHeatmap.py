@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import division
+
 import argparse
 from collections import OrderedDict
 import numpy as np
@@ -53,7 +53,7 @@ def process_args(args=None):
     args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and args.heatmapHeight <= 100 else 10
 
     if not matplotlib.colors.is_color_like(args.missingDataColor):
-        print "The value {0}  for --missingDataColor is "
+        print("The value {0}  for --missingDataColor is ")
         "not valid".format(args.missingDataColor)
         exit(1)
 
@@ -435,14 +435,14 @@ def plotMatrix(hm, outFileName,
 
 
 def mergeSmallGroups(matrixDict):
-    group_lengths = [len(x) for x in matrixDict.values()]
+    group_lengths = [len(x) for x in list(matrixDict.values())]
     min_group_length = sum(group_lengths) * 0.01
 
     to_merge = []
     i = 0
     _mergedHeatMapDict = OrderedDict()
 
-    for label, ma in matrixDict.iteritems():
+    for label, ma in matrixDict.items():
         # merge small groups together
         # otherwise visualization is impaired
         if group_lengths[i] > min_group_length:
@@ -481,8 +481,8 @@ def main(args=None):
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     else:
         if args.hclust is not None:
-            print "Performing hierarchical clustering." \
-                  "Please note that it might be very slow for large datasets.\n"
+            print("Performing hierarchical clustering."
+                  "Please note that it might be very slow for large datasets.\n")
             hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)

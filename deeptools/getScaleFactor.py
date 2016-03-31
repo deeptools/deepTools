@@ -74,7 +74,7 @@ def fraction_kept(args):
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
-    chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
+    chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
     while total < num_needed_to_sample and distanceBetweenBins > 50000:
         # If we've iterated, then halve distanceBetweenBins
@@ -106,12 +106,12 @@ def get_scale_factor(args):
     bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
     blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
     if args.verbose:
-        print("There are {} alignments, of which {} are completely within a blacklist region.".format(bam_mapped, blacklisted))
+        print(("There are {} alignments, of which {} are completely within a blacklist region.".format(bam_mapped, blacklisted)))
     bam_mapped -= blacklisted
     ftk = fraction_kept(args)
     bam_mapped *= ftk
     if args.verbose:
-        print("Due to filtering, {}%% of the aforementioned alignments will be used {}".format(100 * ftk, bam_mapped))
+        print(("Due to filtering, {}%% of the aforementioned alignments will be used {}".format(100 * ftk, bam_mapped)))
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
@@ -129,8 +129,8 @@ def get_scale_factor(args):
                 else:
                     exit("*ERROR*: library is not paired-end. Please provide an extension length.")
                 if args.verbose:
-                    print("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median']))
+                    print(("Fragment length based on paired en data "
+                          "estimated to be {}".format(frag_len_dict['median'])))
 
             elif args.extendReads < 1:
                 exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(args.extendReads))
@@ -143,15 +143,15 @@ def get_scale_factor(args):
             # set as fragment length the read length
             fragment_length = int(read_len_dict['median'])
             if args.verbose:
-                print "Estimated read length is {}".format(int(read_len_dict['median']))
+                print("Estimated read length is {}".format(int(read_len_dict['median'])))
 
         current_coverage = \
             float(bam_mapped * fragment_length) / args.normalizeTo1x
         # the scaling sets the coverage to match 1x
         scale_factor *= 1.0 / current_coverage
         if debug:
-            print "Estimated current coverage {}".format(current_coverage)
-            print "Scaling factor {}".format(args.scaleFactor)
+            print("Estimated current coverage {}".format(current_coverage))
+            print("Scaling factor {}".format(args.scaleFactor))
 
     elif args.normalizeUsingRPKM:
         # the RPKM is the # reads per tile / \
@@ -162,9 +162,9 @@ def get_scale_factor(args):
         scale_factor *= 1.0 / (million_reads_mapped * tile_len_in_kb)
 
         if debug:
-            print "scale factor using RPKM is {0}".format(args.scaleFactor)
+            print("scale factor using RPKM is {0}".format(args.scaleFactor))
 
     if args.verbose:
-        print("Final scaling factor: {}".format(scale_factor))
+        print(("Final scaling factor: {}".format(scale_factor)))
 
     return scale_factor

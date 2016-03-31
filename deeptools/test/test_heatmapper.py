@@ -6,10 +6,43 @@ import deeptools.computeMatrix
 import deeptools.plotHeatmap
 import deeptools.plotProfile
 import deeptools.utilities
+import json
 
 __author__ = 'Fidel'
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
+
+
+def cmpMatrices(f1, f2):
+    """
+    The header produced by computeMatrix will be different every time a command is run in python3!
+    """
+    rv = True
+    file1 = open(f1)
+    file2 = open(f2)
+    for l1, l2 in zip(file1, file2):
+        if isinstance(l1, bytes):
+            l1 = l1.decode()
+            l2 = l2.decode()
+        l1 = l1.strip()
+        l2 = l2.strip()
+        if l1.startswith("@"):
+            p1 = json.loads(l1[1:])
+            p2 = json.loads(l2[1:])
+            for k, v in p1.items():
+                if k not in p2.keys():
+                    rv = False
+                if p1[k] != p2[k]:
+                    rv = False
+            for k in p2.keys():
+                if k not in p1.keys():
+                    rv = False
+        else:
+            if l1 != l2:
+                rv = False
+    file1.close()
+    file2.close()
+    return rv
 
 
 class TestHeatmapper(object):
@@ -29,16 +62,15 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
-        assert filecmp.cmp(ROOT + '/master.mat', '/tmp/_test.mat') is True
+        assert cmpMatrices(ROOT + '/master.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
     def test_computeMatrix_reference_point_missing_data_as_zero(self):
         args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
                "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1 --missingDataAsZero".format(ROOT).split()
-        print " ".join(args)
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_nan_to_zero.mat', '/tmp/_test.mat') is True
+        assert cmpMatrices(ROOT + '/master_nan_to_zero.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
     def test_computeMatrix_scale_regions(self):
@@ -48,7 +80,7 @@ class TestHeatmapper(object):
         deeptools.computeMatrix.main(args)
 
         os.system('gunzip -f /tmp/_test2.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_scale_reg.mat', '/tmp/_test2.mat') is True
+        assert cmpMatrices(ROOT + '/master_scale_reg.mat', '/tmp/_test2.mat') is True
         os.remove('/tmp/_test2.mat')
 
     def test_computeMatrix_multiple_bed(self):
@@ -56,7 +88,7 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
+        assert cmpMatrices(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
     def test_computeMatrix_region_extend_over_chr_end(self):
@@ -64,7 +96,7 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_extend_beyond_chr_size.mat', '/tmp/_test.mat') is True
+        assert cmpMatrices(ROOT + '/master_extend_beyond_chr_size.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
     def test_computeMatrix_unscaled(self):
@@ -72,7 +104,7 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test.mat.gz -bs 10 -p 1".format(ROOT).split()
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_unscaled.mat', '/tmp/_test.mat') is True
+        assert cmpMatrices(ROOT + '/master_unscaled.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
     def test_computeMatrix_gtf(self):
@@ -80,7 +112,7 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test_gtf.mat.gz -bs 10 -p 1".format(ROOT).split()
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test_gtf.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_gtf.mat', '/tmp/_test_gtf.mat') is True
+        assert cmpMatrices(ROOT + '/master_gtf.mat', '/tmp/_test_gtf.mat') is True
         os.remove('/tmp/_test_gtf.mat')
 
     def test_computeMatrix_metagene(self):
@@ -88,7 +120,7 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test_metagene.mat.gz -bs 10 -p 1 --metagene".format(ROOT).split()
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test_metagene.mat.gz')
-        assert filecmp.cmp(ROOT + '/master_metagene.mat', '/tmp/_test_metagene.mat') is True
+        assert cmpMatrices(ROOT + '/master_metagene.mat', '/tmp/_test_metagene.mat') is True
         os.remove('/tmp/_test_metagene.mat')
 
     def test_plotHeatmap_simple_plot(self):
