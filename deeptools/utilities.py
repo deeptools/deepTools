@@ -259,7 +259,7 @@ def toString(s):
     if isinstance(s, str):
         return s
     if isinstance(s, bytes):
-        if sys.major_version == 2:
+        if sys.version_info[0] == 2:
             return bytes(s)
         return bytes(s, 'ascii')
     if isinstance(s, list):
