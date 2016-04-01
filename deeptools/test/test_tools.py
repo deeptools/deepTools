@@ -12,6 +12,6 @@ def test_tools():
     """
     if os.path.isdir(ROOT):
         for _file in os.listdir(ROOT):
-            print _file
+            print(_file)
             if os.path.isfile(os.path.join(ROOT, _file)):
                 subprocess.check_call("{}/{} --version".format(ROOT, _file).split())

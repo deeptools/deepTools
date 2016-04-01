@@ -69,7 +69,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 regs.append((exon[0], exon[1]))
             regions_to_consider.append(regs)
     else:
-        for i in xrange(start, end, stepSize):
+        for i in range(start, end, stepSize):
             if (i + binLength) > end:
                 regions_to_consider.append([(i, end)])  # last bin (may be smaller)
             else:
@@ -87,7 +87,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         i += 1
 
         for idx, bwh in enumerate(bigwig_handlers):
-            if chrom not in bwh.chroms().keys():
+            if chrom not in list(bwh.chroms().keys()):
                 unmod_name = chrom
                 if chrom.startswith('chr'):
                     # remove the chr part from chromosome name
@@ -95,7 +95,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 else:
                     # prefix with 'chr' the chromosome name
                     chrom = 'chr' + chrom
-                if chrom not in bwh.chroms().keys():
+                if chrom not in list(bwh.chroms().keys()):
                     exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
             weights = []
@@ -142,8 +142,7 @@ def getChromSizes(bigwigFilesList):
     >>> test = Tester()
 
     Chromosome name(s) and size(s).
-    >>> getChromSizes([test.bwFile1, test.bwFile2])
-    ([('3R', 200L)], set([]))
+    >>> assert(getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([])))
     """
     # check that the path to USCS bedGraphToBigWig as set in the config
     # is installed and is executable.
@@ -229,7 +228,7 @@ def getScorePerBin(bigWigFiles, binLength,
     if chrsToSkip and len(chrsToSkip):
         chrom_sizes = [x for x in chrom_sizes if x[0] not in chrsToSkip]
 
-    chrnames, chrlengths = zip(*chrom_sizes)
+    chrnames, chrlengths = list(zip(*chrom_sizes))
     if stepSize is None:
         stepSize = binLength  # for adjacent bins
 
@@ -238,7 +237,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # make chunkSize multiple of binLength
     chunkSize -= chunkSize % binLength
     if verbose:
-        print "step size is {}".format(stepSize)
+        print("step size is {}".format(stepSize))
 
     if region:
         # in case a region is used, append the tilesize
@@ -274,7 +273,9 @@ def getScorePerBin(bigWigFiles, binLength,
         for _values, tempFileName in imap_res:
             if tempFileName:
                 # concatenate all intermediate tempfiles into one
-                shutil.copyfileobj(open(tempFileName, 'r'), out_file_for_raw_data)
+                f = open(tempFileName, 'r')
+                shutil.copyfileobj(f, out_file_for_raw_data)
+                f.close()
                 os.remove(tempFileName)
 
         out_file_for_raw_data.close()

@@ -4,6 +4,7 @@ import os
 import pysam
 from deeptools._version import __version__
 from deeptoolsintervals import GTF
+from deeptools.utilities import toString
 
 
 def check_float_0_1(value):
@@ -739,6 +740,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
     # Get the chromosome lengths
     chromLens = {}
     lines = pysam.idxstats(bam_handle.filename)
+    lines = toString(lines)
     if type(lines) is str:
         lines = lines.strip().split('\n')
     for line in lines:

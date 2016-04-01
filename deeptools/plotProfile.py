@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+
 import sys
 
 import argparse
@@ -132,7 +132,7 @@ class Profile(object):
             self.numlines = self.hm.matrix.get_num_groups()
 
         if self.numplots > self.plots_per_row:
-            rows = np.ceil(self.numplots / self.plots_per_row).astype(int)
+            rows = np.ceil(self.numplots / float(self.plots_per_row)).astype(int)
             cols = self.plots_per_row
         else:
             rows = 1
@@ -165,7 +165,7 @@ class Profile(object):
 
         for plot in range(self.numplots):
             col = plot % self.plots_per_row
-            row = int(plot / self.plots_per_row)
+            row = int(plot / float(self.plots_per_row))
 
             # split the ax to make room for the colorbar and for each of the
             # groups
@@ -286,7 +286,7 @@ class Profile(object):
         for plot in range(self.numplots):
             labels = []
             col = plot % self.plots_per_row
-            row = int(plot / self.plots_per_row)
+            row = int(plot / float(self.plots_per_row))
 
             # split the ax to make room for the colorbar
             sub_grid = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=self.grids[row, col],
@@ -362,9 +362,9 @@ class Profile(object):
             cmap_plot = plt.get_cmap('jet')
             if self.numlines > 1:
                 # kmeans, so we need to color by cluster
-                self.color_list = cmap_plot(np.arange(self.numlines, dtype=float) / self.numlines)
+                self.color_list = cmap_plot(np.arange(self.numlines, dtype=float) / float(self.numlines))
             else:
-                self.color_list = cmap_plot(np.arange(self.numplots, dtype=float) / self.numplots)
+                self.color_list = cmap_plot(np.arange(self.numplots, dtype=float) / float(self.numplots))
         if (self.numlines > 1 and len(self.color_list) < self.numlines) or\
            (self.numlines == 1 and len(self.color_list) < self.numplots):
             sys.exit("\nThe given list of colors is too small, "
@@ -379,7 +379,7 @@ class Profile(object):
         ax_list = []
         for plot in range(self.numplots):
             col = plot % self.plots_per_row
-            row = int(plot / self.plots_per_row)
+            row = int(plot / float(self.plots_per_row))
             if row == 0 and col == 0:
                 ax = self.fig.add_subplot(self.grids[row, col])
             else:
@@ -483,11 +483,11 @@ def main(args=None):
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     else:
         if args.hclust is not None:
-            print "Performing hierarchical clustering." \
-                  "Please note that it might be very slow for large datasets.\n"
+            print("Performing hierarchical clustering."
+                  "Please note that it might be very slow for large datasets.\n")
             hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
-    group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
+    group_len_ratio = np.diff(hm.matrix.group_boundaries) / float(len(hm.matrix.regions))
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
         sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. \n".format(hm.matrix.group_labels[problem[0]]))

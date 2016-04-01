@@ -24,7 +24,7 @@ class TestHeatmapper(object):
             self.run_image_tests = False
 
     def test_plotCoverage_default(self):
-        if self.run_image_tests:
+        if self.run_image_tests and sys.version_info[0] == 2:
             args = "--bamfiles {0}test1.bam {0}test2.bam --plotFile /tmp/_test.svg" \
                    " --plotFileFormat svg --outRawCounts /tmp/_test.tab".format(TEST_DATA).split()
             deeptools.plotCoverage.main(args)

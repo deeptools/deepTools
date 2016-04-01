@@ -8,6 +8,7 @@ from copy import deepcopy
 import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
+from deeptools.utilities import toString, toBytes
 
 old_settings = np.seterr(all='ignore')
 
@@ -241,7 +242,7 @@ class heatmapper(object):
                 regions.extend(res[idx][1])
                 regions_no_score += res[idx][2]
         groups = [x[3] for x in regions]
-        foo = sorted(zip(groups, range(len(regions)), regions))
+        foo = sorted(zip(groups, list(range(len(regions))), regions))
         sortIdx = [x[1] for x in foo]
         regions = [x[2] for x in foo]
         matrix = matrix[sortIdx]
@@ -279,7 +280,7 @@ class heatmapper(object):
 
         numcols = matrix.shape[1]
         num_ind_cols = self.get_num_individual_matrix_cols()
-        sample_boundaries = range(0, numcols + num_ind_cols, num_ind_cols)
+        sample_boundaries = list(range(0, numcols + num_ind_cols, num_ind_cols))
         sample_labels = [splitext(basename(x))[0] for x in score_file_list]
 
         # Determine the group boundaries
@@ -629,10 +630,10 @@ class heatmapper(object):
         values_array = np.zeros(nVals)
         if not nansAsZeros:
             values_array[:] = np.nan
-        if chrom not in bigwig.chroms().keys():
+        if chrom not in list(bigwig.chroms().keys()):
             unmod_name = chrom
             chrom = heatmapper.change_chrom_names(chrom)
-            if chrom not in bigwig.chroms().keys():
+            if chrom not in list(bigwig.chroms().keys()):
                 if verbose:
                     sys.stderr.write("Warning: Your chromosome names do not match.\nPlease check that the "
                                      "chromosome names in your BED file\ncorrespond to the names in your "
@@ -703,7 +704,7 @@ class heatmapper(object):
 
         fh = gzip.open(matrix_file)
         for line in fh:
-            line = line.strip()
+            line = toString(line).strip()
             # read the header file containing the parameters
             # used
             if line.startswith("@"):
@@ -756,7 +757,7 @@ class heatmapper(object):
 
         fh = gzip.open(file_name, 'wb')
         params_str = json.dumps(self.parameters, separators=(',', ':'))
-        fh.write("@" + params_str + "\n")
+        fh.write(toBytes("@" + params_str + "\n"))
         score_list = np.ma.masked_invalid(np.mean(self.matrix.matrix, axis=1))
         for idx, region in enumerate(self.matrix.regions):
             # join np_array values
@@ -771,13 +772,13 @@ class heatmapper(object):
             ends = ",".join(ends)
             # BEDish format (we don't currently store the score)
             fh.write(
-                '{0}\t{1}\t{2}\t{3}\t.\t{4}\t{5}\n'.format(
-                    region[0],
-                    starts,
-                    ends,
-                    region[2],
-                    region[4],
-                    matrix_values))
+                toBytes('{0}\t{1}\t{2}\t{3}\t.\t{4}\t{5}\n'.format(
+                        region[0],
+                        starts,
+                        ends,
+                        region[2],
+                        region[4],
+                        matrix_values)))
         fh.close()
 
     def save_tabulated_values(self, file_handle, reference_point_label='TSS', start_label='TSS', end_label='TES', averagetype='mean'):
@@ -934,7 +935,7 @@ class heatmapper(object):
         of smaller matrices that are merged one after
         the other.
         """
-        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body'] + self.parameters['unscaled 5 prime'] + self.parameters['unscaled 3 prime']) /
+        matrixCols = ((self.parameters['downstream'] + self.parameters['upstream'] + self.parameters['body'] + self.parameters['unscaled 5 prime'] + self.parameters['unscaled 3 prime']) //
                       self.parameters['bin size'])
 
         return matrixCols

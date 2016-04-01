@@ -32,24 +32,24 @@ module1 = Extension('deeptoolsintervals.tree',
 
 def update_version_py():
     if not os.path.isdir(".git"):
-        print "This does not appear to be a Git repository."
+        print("This does not appear to be a Git repository.")
         return
     try:
         p = subprocess.Popen(["git", "describe",
                               "--tags", "--always"],
                              stdout=subprocess.PIPE)
     except EnvironmentError:
-        print "unable to run git, leaving deeptools/_version.py alone"
+        print("unable to run git, leaving deeptools/_version.py alone")
         return
     stdout = p.communicate()[0]
     if p.returncode != 0:
-        print "unable to run git, leaving deeptools/_version.py alone"
+        print("unable to run git, leaving deeptools/_version.py alone")
         return
-    ver = stdout.strip().replace("-g", "-")
+    ver = stdout.decode().strip().replace("-g", "-")
     f = open("deeptools/_version.py", "w")
     f.write(VERSION_PY % ver)
     f.close()
-    print "set deeptools/_version.py to '%s'" % ver
+    print("set deeptools/_version.py to '%s'" % ver)
 
 
 def get_version():
@@ -130,7 +130,7 @@ setup(
         "scipy >= 0.15.0",
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
-        "bx-python >= 0.5.0",
+        "twobitreader",
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1"
     ],

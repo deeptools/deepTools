@@ -79,31 +79,31 @@ def main(args=None):
 
     if fragment_len_dict:
         if fragment_len_dict['mean'] == 0:
-            print "No pairs were found. Is the data from a paired-end sequencing experiment?"
+            print("No pairs were found. Is the data from a paired-end sequencing experiment?")
 
-        print "Sample size: {}\n".format(fragment_len_dict['sample_size'])
+        print("Sample size: {}\n".format(fragment_len_dict['sample_size']))
 
-        print "\nFragment lengths:"
-        print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n" \
+        print("\nFragment lengths:")
+        print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
               "3rd Qu.: {}\nMax.: {}\nStd: {}".format(fragment_len_dict['min'],
                                                       fragment_len_dict['qtile25'],
                                                       fragment_len_dict['mean'],
                                                       fragment_len_dict['median'],
                                                       fragment_len_dict['qtile75'],
                                                       fragment_len_dict['max'],
-                                                      fragment_len_dict['std'])
+                                                      fragment_len_dict['std']))
     else:
-        print "No pairs were found. Is the data from a paired-end sequencing experiment?"
+        print("No pairs were found. Is the data from a paired-end sequencing experiment?")
 
-    print "\nRead lengths:"
-    print "Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n" \
+    print("\nRead lengths:")
+    print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
           "3rd Qu.: {}\nMax.: {}\nStd: {}".format(read_len_dict['min'],
                                                   read_len_dict['qtile25'],
                                                   read_len_dict['mean'],
                                                   read_len_dict['median'],
                                                   read_len_dict['qtile75'],
                                                   read_len_dict['max'],
-                                                  read_len_dict['std'])
+                                                  read_len_dict['std']))
 
     if args.histogram:
         import matplotlib

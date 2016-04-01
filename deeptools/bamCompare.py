@@ -145,10 +145,10 @@ def process_args(args=None):
     args = parseArguments().parse_args(args)
 
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will be "\
-            "done".format(args.smoothLength,
-                          args.binSize)
+        print("Warning: the smooth length given ({}) is smaller than the bin "
+              "size ({}).\n\n No smoothing will be "
+              "done".format(args.smoothLength,
+                            args.binSize))
         args.smoothLength = None
 
     if not args.ignoreForNormalization:
@@ -170,7 +170,7 @@ def get_scale_factors(args):
     bam2_mapped -= blacklisted
 
     if args.scaleFactors:
-        scale_factors = map(float, args.scaleFactors.split(":"))
+        scale_factors = list(map(float, args.scaleFactors.split(":")))
     else:
         if args.scaleFactorsMethod == 'SES':
             scalefactors_dict = estimateScaleFactor(
@@ -185,15 +185,15 @@ def get_scale_factors(args):
             scale_factors = scalefactors_dict['size_factors']
 
             if args.verbose:
-                print "Size factors using SES: {}".format(scale_factors)
-                print "%s regions of size %s where used " % \
-                    (scalefactors_dict['sites_sampled'],
-                     args.sampleLength)
+                print("Size factors using SES: {}".format(scale_factors))
+                print("%s regions of size %s where used " %
+                      (scalefactors_dict['sites_sampled'],
+                       args.sampleLength))
 
-                print "ignoring filtering, size factors if the number of mapped " \
-                    "reads would have been used:"
-                print tuple(
-                    float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped]))
+                print("ignoring filtering, size factors if the number of mapped "
+                      "reads would have been used:")
+                print(tuple(
+                    float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped])))
 
         elif args.scaleFactorsMethod == 'readCount':
             args.bam = args.bamfile1
@@ -203,8 +203,8 @@ def get_scale_factors(args):
             s2 = get_scale_factor(args)
             scale_factors = np.array([s1, s2]) / float(max(s1, s2))
             if args.verbose:
-                print "Size factors using total number " \
-                    "of mapped reads: {}".format(scale_factors)
+                print("Size factors using total number "
+                      "of mapped reads: {}".format(scale_factors))
 
     # in case the subtract method is used, the final difference
     # would be normalized according to the given method
@@ -241,8 +241,8 @@ def get_scale_factors(args):
                         else:
                             exit("*ERROR*: library is not paired-end. Please provide an extension length.")
                         if args.verbose:
-                            print("Fragment length based on paired en data "
-                                  "estimated to be {}".format(frag_len_dict['median']))
+                            print(("Fragment length based on paired en data "
+                                  "estimated to be {}".format(frag_len_dict['median'])))
 
                     elif args.extendReads < 1:
                         exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(args.extendReads))
@@ -255,16 +255,16 @@ def get_scale_factors(args):
                     # set as fragment length the read length
                     fragment_length = int(read_len_dict['median'])
                     if args.verbose:
-                        print "Estimated read length is {}".format(int(read_len_dict['median']))
+                        print("Estimated read length is {}".format(int(read_len_dict['median'])))
 
                 current_coverage = float(mappedReads * fragment_length) / args.normalizeTo1x
                 # the coverage scale factor is 1 / coverage,
                 coverage_scale_factor = 1.0 / current_coverage
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
                 if args.verbose:
-                    print "Estimated current coverage {}".format(current_coverage)
-                    print "Scale factor to convert " \
-                          "current coverage to 1: {}".format(coverage_scale_factor)
+                    print("Estimated current coverage {}".format(current_coverage))
+                    print("Scale factor to convert "
+                          "current coverage to 1: {}".format(coverage_scale_factor))
             else:
                 # by default normalize using RPKM
                 # the RPKM is:
@@ -275,7 +275,7 @@ def get_scale_factors(args):
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
 
                 if args.verbose:
-                    print "scale factor for   "
+                    print("scale factor for   ")
                     "RPKM is {0}".format(coverage_scale_factor)
 
     return scale_factors
@@ -297,7 +297,7 @@ def main(args=None):
 
     scale_factors = get_scale_factors(args)
     if args.verbose:
-        print "Individual scale factors are {0}".format(scale_factors)
+        print("Individual scale factors are {0}".format(scale_factors))
 
     # the getRatio function is called and receives
     # the func_args per each tile that is considered

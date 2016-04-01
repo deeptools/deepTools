@@ -37,6 +37,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     --------
 
     >>> import matplotlib.pyplot as plt
+    >>> import os
     >>> fig = plt.figure()
     >>> ax = fig.add_subplot(111)
     >>> matrix = np.array([[1,2,3],
@@ -45,13 +46,14 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     >>> ax = plot_single(ax, matrix -2, 'mean', color=[0.6, 0.8, 0.9], label='fill light blue', plot_type='fill')
     >>> ax = plot_single(ax, matrix, 'mean', color='blue', label='red')
     >>> ax = plot_single(ax, matrix + 5, 'mean', color='red', label='red', plot_type='std')
-    >>> ax =plot_single(ax, matrix + 10, 'mean', color='#cccccc', label='gray se', plot_type='se')
+    >>> ax = plot_single(ax, matrix + 10, 'mean', color='#cccccc', label='gray se', plot_type='se')
     >>> ax = plot_single(ax, matrix + 20, 'mean', color=(0.9, 0.5, 0.9), label='violet', plot_type='std')
     >>> ax = plot_single(ax, matrix + 30, 'mean', color=(0.9, 0.5, 0.9, 0.5), label='violet with alpha', plot_type='std')
     >>> leg = ax.legend()
     >>> plt.savefig("/tmp/test.pdf")
     >>> plt.close()
     >>> fig = plt.figure()
+    >>> os.remove("/tmp/test.pdf")
 
 
     """
