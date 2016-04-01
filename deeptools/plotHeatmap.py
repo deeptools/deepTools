@@ -250,9 +250,9 @@ def plotMatrix(hm, outFileName,
     cmap_plot = plt.get_cmap('jet')
     numgroups = hm.matrix.get_num_groups()
     if perGroup:
-        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
+        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / float(hm.matrix.get_num_samples()))
     else:
-        color_list = cmap_plot(np.arange(numgroups) / numgroups)
+        color_list = cmap_plot(np.arange(numgroups) / float(numgroups))
     cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
     alpha = colorMapDict['alpha']
 
