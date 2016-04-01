@@ -56,6 +56,8 @@ class TestHeatmapper(object):
             sys.stderr.write("\nTests based on images are skipped because of "
                              "different matplotlib version ({}) != 1.5.0\n".format(mpl.__version__))
             self.run_image_tests = False
+        if sys.version_info[0] != 2:
+            self.run_image_tests = False
 
     def test_computeMatrix_reference_point(self):
         args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
