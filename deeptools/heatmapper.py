@@ -886,6 +886,8 @@ class heatmapper(object):
 
     def save_BED(self, file_handle):
         boundaries = np.array(self.matrix.group_boundaries)
+        # Add a header
+        file_handle.write("#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStart\tdeepTools_group\n")
         for idx, region in enumerate(self.matrix.regions):
             # the label id corresponds to the last boundary
             # that is smaller than the region index.
@@ -894,17 +896,21 @@ class heatmapper(object):
             # for index 5, the label is 'a', for
             # index 10, the label is 'b' etc
             label_idx = np.flatnonzero(boundaries <= idx)[-1]
+            starts = region['start'].split(",")
+            ends = region['end'].split(",")
             file_handle.write(
-                '{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(
+                '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{1}\t0'.format(
                     region['chrom'],
-                    region['start'],
-                    region['end'],
+                    starts[0],
+                    ends[-1],
                     region['name'],
                     region['score'],
-                    region['strand'],
-                    self.matrix.group_labels[label_idx]))
-            if idx + 1 in boundaries:
-                file_handle.write('#{}\n'.format(
+                    region['strand']))
+            file_handle.write(
+                '\t{0}\t{1}\t{2}\t{3}\n'.format(
+                    len(starts),
+                    ",".join([int(x) - int(starts[0]) for x in starts]),
+                    ",".join([int(y) - int(x) for x, y in zip(starts, ends)]),
                     self.matrix.group_labels[label_idx]))
         file_handle.close()
 
