@@ -98,6 +98,16 @@ def openPossiblyCompressed(fname):
         return open(fname)
 
 
+def getLabel(line):
+    """
+    Split by tabs and return the index of "deepTools_group" (or None)
+    """
+    cols = line.strip().split("\t")
+    if "deepTools_group" in cols:
+        return cols.index("deepTools_group")
+    return None
+
+
 class GTF(object):
     """
     A class to hold an interval tree and its associated functions
@@ -119,35 +129,42 @@ class GTF(object):
     def firstNonComment(self, fp):
         """
         Skip lines at the beginning of a file starting with #, browser, or track.
+        Returns a tuple of the first non-comment line and the column holding the group label (if it exists)
         """
         line = getNext(fp)
+        labelColumn = None
         try:
             while line.startswith("#") or line.startswith('track') or line.startswith('browser'):
+                if labelColumn is None:
+                    labelColumn = getLabel(line)
                 line = getNext(fp)
         except:
             sys.stderr.write("Warning, {0} was empty\n".format(self.filename))
             return None
-        return line
+        return line, labelColumn
 
-    def inferType(self, fp, line):
+    def inferType(self, fp, line, labelColumn=None):
         """
         Attempt to infer a file type from a single line. This is largely based on the number of columns plus a regex looking for "gene_id".
         """
+        subtract = 0
+        if labelColumn is not None:
+            subtract = 1
         cols = line.split("\t")
-        if len(cols) < 3:
+        if len(cols) - subtract < 3:
             raise RuntimeError('{0} does not seem to be a recognized file type!'.format(self.filename))
-        elif len(cols) == 3:
+        elif len(cols) - subtract == 3:
             return 'BED3'
-        elif len(cols) < 6:
+        elif len(cols) - subtract < 6:
             sys.stderr.write("Warning, {0} has an abnormal number of fields. Assuming BED3 format.\n".format(self.filename))
             return 'BED3'
-        elif len(cols) == 6:
+        elif len(cols) - subtract == 6:
             return 'BED6'
-        elif len(cols) == 9 and seemsLikeGTF(cols, self.gene_id_regex):
+        elif len(cols) and seemsLikeGTF(cols, self.gene_id_regex):
             return 'GTF'
-        elif len(cols) == 12:
+        elif len(cols) - subtract == 12:
             return 'BED12'
-        elif len(cols) < 12:
+        elif len(cols) - subtract < 12:
             sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED6 format.\n".format(self.filename))
             return 'BED6'
         else:
@@ -218,7 +235,7 @@ class GTF(object):
                 self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
         return True
 
-    def parseBED(self, fp, line, ncols=3):
+    def parseBED(self, fp, line, ncols=3, labelColumn=None):
         """
         parse a BED file. The default group label is the file name.
 
@@ -228,18 +245,58 @@ class GTF(object):
 
 
         >>> from deeptoolsintervals import parse
-        >>> from os.path import dirname
+        >>> from os.path import dirname, basename
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed6".format(dirname(parse.__file__)), keepExons=True)
         >>> gtf.findOverlaps("1", 1, 20000)
         [(11868, 14409, 'ENST00000456328.2', 'group 1', [(11868, 14409)]), (12009, 13670, 'ENST00000450305.2', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147.1', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216.1', 'group 1', [(17368, 17436)])]
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed".format(dirname(parse.__file__)), keepExons=True, labels=["foo", "bar", "quux", "sniggly"])
         >>> gtf.findOverlaps("1", 1, 20000)
         [(11868, 14409, '1:11868-14409', 'foo', [(11868, 14409)]), (12009, 13670, '1:12009-13670', 'foo', [(12009, 13670)]), (14403, 29570, '1:14403-29570', 'foo', [(14403, 29570)]), (17368, 17436, '1:17368-17436', 'foo', [(17368, 17436)])]
+
+        Test having a header in one file, but not another:
+
+        >>> gtf = parse.GTF(["{0}/test/GRCh38.84.labels.bed".format(dirname(parse.__file__)), "{0}/test/GRCh38.84.bed2".format(dirname(parse.__file__))])
+        >>> overlaps = gtf.findOverlaps("1", 1, 30000000)
+        >>> labels = dict()
+        >>> for o in overlaps:
+        ...     if basename(o[3]) not in labels.keys():
+        ...         labels[basename(o[3])] = 0
+        ...     labels[basename(o[3])] += 1
+        >>> assert(labels['group 1'] == 4)
+        >>> assert(labels['group 2'] == 9)
+        >>> assert(labels['group 3'] == 7)
+        >>> assert(labels['group 4'] == 1)
+        >>> assert(labels['group 1_r1'] == 4)
+        >>> assert(labels['group2'] == 9)
+        >>> assert(labels['group 3'] == 7)
+        >>> assert(labels['GRCh38.84.bed2'] == 1)
+        >>> gtf = parse.GTF(["{0}/test/GRCh38.84.bed2".format(dirname(parse.__file__)), "{0}/test/GRCh38.84.labels.bed".format(dirname(parse.__file__))])
+        >>> overlaps = gtf.findOverlaps("1", 1, 30000000)
+        >>> labels = dict()
+        >>> for o in overlaps:
+        ...     if basename(o[3]) not in labels.keys():
+        ...         labels[basename(o[3])] = 0
+        ...     labels[basename(o[3])] += 1
+        >>> assert(labels['group 1'] == 8)
+        >>> assert(labels['group 2'] == 9)
+        >>> assert(labels['group 3'] == 14)
+        >>> assert(labels['group 4'] == 1)
+        >>> assert(labels['group2'] == 9)
+        >>> assert(labels['GRCh38.84.bed2'] == 1)
         """
         groupLabelsFound = 0
         groupEntries = 0
 
         # Handle the first line
+        if labelColumn is not None:
+            cols = line.split("\t")
+            label = cols.pop(labelColumn)
+            line = "\t".join(cols)
+            if label in self.labels:
+                self.labelIdx = self.labels.index(label)
+            else:
+                self.labels.append(label)
+                self.labelIdx = len(self.labels) - 1
         if self.parseBEDcore(line, ncols):
             groupEntries = 1
 
@@ -252,7 +309,7 @@ class GTF(object):
                 # Apparently this happens, some people seem to like trying to break things
                 continue
 
-            if line.startswith("#"):
+            if line.startswith("#") and labelColumn is None:
                 # If there was a previous group AND it had no entries then remove it
                 if groupLabelsFound > 0:
                     if groupEntries == 0:
@@ -263,7 +320,7 @@ class GTF(object):
 
                 label = line[1:].strip()
                 if len(label):
-                    # Gaard against duplicate group labels
+                    # Guard against duplicate group labels
                     self.labels.append(findRandomLabel(self.labels, label))
                 else:
                     # I'm sure someone will try an empty label...
@@ -271,16 +328,29 @@ class GTF(object):
                 self.labelIdx += 1
                 groupLabelsFound += 1
                 groupEntries = 0
+            elif line.startswith("#") and labelColumn is not None:
+                continue
             else:
-                if self.parseBEDcore(line, ncols):
+                if labelColumn is not None:
+                    cols = line.split("\t")
+                    label = cols.pop(labelColumn)
+                    line = "\t".join(cols)
+                    if label in self.labels:
+                        self.labelIdx = self.labels.index(label)
+                    else:
+                        self.labels.append(label)
+                        self.labelIdx = len(self.labels) - 1
+                if self.parseBEDcore(line, ncols) and labelColumn is None:
                     groupEntries += 1
 
-        if groupEntries > 0:
+        if groupEntries > 0 and labelColumn is None:
             if self.defaultGroup is not None:
                 self.labels.append(findRandomLabel(self.labels, self.defaultGroup))
             else:
                 self.labels.append(findRandomLabel(self.labels, os.path.basename(self.filename)))
-            self.labelIdx += 1
+
+        # Reset self.labelIdx
+        self.labelIdx = len(self.labels)
 
     def parseGTFtranscript(self, cols, label):
         """
@@ -375,6 +445,35 @@ class GTF(object):
         >>> assert(labels['GRCh38.84.2.gtf.gz'] == 6)
         >>> assert(labels['group 1'] == 5)
         >>> assert(labels['group 2'] == 3)
+
+        Test GTF and a BED file
+        >>> gtf = parse.GTF(["{0}/test/GRCh38.84.gtf.gz".format(dirname(parse.__file__)), "{0}/test/GRCh38.84.bed".format(dirname(parse.__file__))])
+        >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
+        >>> labels = dict()
+        >>> for o in overlaps:
+        ...     if basename(o[3]) not in labels.keys():
+        ...         labels[basename(o[3])] = 0
+        ...     labels[basename(o[3])] += 1
+        >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
+        >>> assert(labels['group 1'] == 3)
+        >>> assert(labels['group 2'] == 1)
+        >>> assert(labels['group 1_r1'] == 4)
+        >>> assert(labels['group2'] == 9)
+        >>> assert(labels['group 3'] == 7)
+        >>> assert(labels['GRCh38.84.bed'] == 1)
+        >>> gtf = parse.GTF(["{0}/test/GRCh38.84.bed".format(dirname(parse.__file__)), "{0}/test/GRCh38.84.gtf.gz".format(dirname(parse.__file__))])
+        >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
+        >>> labels = dict()
+        >>> for o in overlaps:
+        ...     if basename(o[3]) not in labels.keys():
+        ...         labels[basename(o[3])] = 0
+        ...     labels[basename(o[3])] += 1
+        >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
+        >>> assert(labels['group 1'] == 7)
+        >>> assert(labels['group 2'] == 1)
+        >>> assert(labels['group2'] == 9)
+        >>> assert(labels['group 3'] == 7)
+        >>> assert(labels['GRCh38.84.bed'] == 1)
         """
         file_label = findRandomLabel(self.labels, os.path.basename(self.filename))
 
@@ -400,7 +499,7 @@ class GTF(object):
                     self.parseGTFexon(cols)
 
         # Reset self.labelIdx
-        self.labelIdx = len(self.labels) - 1
+        self.labelIdx = len(self.labels)
 
     def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id", defaultGroup=None):
         """
@@ -460,20 +559,21 @@ class GTF(object):
         for fname in fnames:
             self.filename = fname
             fp = openPossiblyCompressed(fname)
-            line = self.firstNonComment(fp).strip()
+            line, labelColumn = self.firstNonComment(fp)
             if line is None:
                 # This will only ever happen if a file is empty or just has a header/comment
                 continue
+            line = line.strip()
 
-            ftype = self.inferType(fp, line)
+            ftype = self.inferType(fp, line, labelColumn)
             if ftype == 'GTF':
                 self.parseGTF(fp, line)
             elif ftype == 'BED3':
-                self.parseBED(fp, line, 3)
+                self.parseBED(fp, line, 3, labelColumn)
             elif ftype == 'BED6':
-                self.parseBED(fp, line, 6)
+                self.parseBED(fp, line, 6, labelColumn)
             else:
-                self.parseBED(fp, line, 12)
+                self.parseBED(fp, line, 12, labelColumn)
             fp.close()
 
         # Sanity check
