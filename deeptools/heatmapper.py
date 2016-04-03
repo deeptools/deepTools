@@ -718,8 +718,8 @@ class heatmapper(object):
             chrom, start, end, name, score, strand = region[0:6]
             matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
             matrix_rows.append(matrix_row)
-            regions.append({'chrom': chrom, 'start': int(start),
-                            'end': int(end), 'name': name, 'score': score,
+            regions.append({'chrom': chrom, 'start': start,
+                            'end': end, 'name': name, 'score': score,
                             'strand': strand})
 
         matrix = np.vstack(matrix_rows)
@@ -909,8 +909,8 @@ class heatmapper(object):
             file_handle.write(
                 '\t{0}\t{1}\t{2}\t{3}\n'.format(
                     len(starts),
-                    ",".join([int(x) - int(starts[0]) for x in starts]),
-                    ",".join([int(y) - int(x) for x, y in zip(starts, ends)]),
+                    ",".join([str(int(x) - int(starts[0])) for x in starts]),
+                    ",".join([str(int(y) - int(x)) for x, y in zip(starts, ends)]),
                     self.matrix.group_labels[label_idx]))
         file_handle.close()
 
