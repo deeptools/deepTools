@@ -116,14 +116,14 @@ class GTF(object):
     >>> from os.path import dirname
     >>> gtf = parse.GTF("{0}/test/GRCh38.84.gtf.gz".format(dirname(parse.__file__)), keepExons=True)
     >>> gtf.findOverlaps("1", 1, 20000)
-    [(11868, 14409, 'ENST00000456328', 'group 1', [(11868, 12227), (12612, 12721), (13220, 14409)]), (12009, 13670, 'ENST00000450305', 'group 1', [(12009, 12057), (12178, 12227), (12612, 12697), (12974, 13052), (13220, 13374), (13452, 13670)]), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 14501), (15004, 15038), (15795, 15947), (16606, 16765), (16857, 17055), (17232, 17368), (17605, 17742), (17914, 18061), (18267, 18366), (24737, 24891), (29533, 29570)]), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)])]
+    [(11868, 14409, 'ENST00000456328', 'group 1', [(11868, 12227), (12612, 12721), (13220, 14409)], '.'), (12009, 13670, 'ENST00000450305', 'group 1', [(12009, 12057), (12178, 12227), (12612, 12697), (12974, 13052), (13220, 13374), (13452, 13670)], '.'), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 14501), (15004, 15038), (15795, 15947), (16606, 16765), (16857, 17055), (17232, 17368), (17605, 17742), (17914, 18061), (18267, 18366), (24737, 24891), (29533, 29570)], '.'), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)], '.')]
     >>> gtf = parse.GTF("{0}/test/GRCh38.84.gtf.gz".format(dirname(parse.__file__)))
     >>> gtf.findOverlaps("1", 1, 20000)
-    [(11868, 14409, 'ENST00000456328', 'group 1', [(11868, 14409)]), (12009, 13670, 'ENST00000450305', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)])]
+    [(11868, 14409, 'ENST00000456328', 'group 1', [(11868, 14409)], '.'), (12009, 13670, 'ENST00000450305', 'group 1', [(12009, 13670)], '.'), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 29570)], '.'), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)], '.')]
     >>> gtf.findOverlaps("1", 12000, 20000, trimOverlap=True)
-    [(12009, 13670, 'ENST00000450305', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)])]
+    [(12009, 13670, 'ENST00000450305', 'group 1', [(12009, 13670)], '.'), (14403, 29570, 'ENST00000488147', 'group 1', [(14403, 29570)], '.'), (17368, 17436, 'ENST00000619216', 'group 2', [(17368, 17436)], '.')]
     >>> gtf.findOverlaps("1", 1, 20000, numericGroups=True, includeStrand=True)
-    [(11868, 14409, 'ENST00000456328', 0, [(11868, 14409)], '+'), (12009, 13670, 'ENST00000450305', 0, [(12009, 13670)], '+'), (14403, 29570, 'ENST00000488147', 0, [(14403, 29570)], '-'), (17368, 17436, 'ENST00000619216', 1, [(17368, 17436)], '-')]
+    [(11868, 14409, 'ENST00000456328', 0, [(11868, 14409)], '+', '.'), (12009, 13670, 'ENST00000450305', 0, [(12009, 13670)], '+', '.'), (14403, 29570, 'ENST00000488147', 0, [(14403, 29570)], '-', '.'), (17368, 17436, 'ENST00000619216', 1, [(17368, 17436)], '-', '.')]
     """
 
     def firstNonComment(self, fp):
@@ -203,7 +203,7 @@ class GTF(object):
         >>> from os.path import dirname
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed12.bz2".format(dirname(parse.__file__)), keepExons=True, labels=["foo"])
         >>> gtf.findOverlaps("1", 1, 20000)
-        [(11868, 14409, 'ENST00000456328.2', 'foo', [(11868, 12227), (12612, 12721), (13220, 14409)]), (12009, 13670, 'ENST00000450305.2', 'foo', [(12009, 12057), (12178, 12227), (12612, 12697), (12974, 13052), (13220, 13374), (13452, 13670)]), (14403, 29570, 'ENST00000488147.1', 'foo', [(14403, 14501), (15004, 15038), (15795, 15947), (16606, 16765), (16857, 17055), (17232, 17368), (17605, 17742), (17914, 18061), (18267, 18366), (24737, 24891), (29533, 29570)]), (17368, 17436, 'ENST00000619216.1', 'foo', [(17368, 17436)])]
+        [(11868, 14409, 'ENST00000456328.2', 'foo', [(11868, 12227), (12612, 12721), (13220, 14409)], 0.0), (12009, 13670, 'ENST00000450305.2', 'foo', [(12009, 12057), (12178, 12227), (12612, 12697), (12974, 13052), (13220, 13374), (13452, 13670)], 0.0), (14403, 29570, 'ENST00000488147.1', 'foo', [(14403, 14501), (15004, 15038), (15795, 15947), (16606, 16765), (16857, 17055), (17232, 17368), (17605, 17742), (17914, 18061), (18267, 18366), (24737, 24891), (29533, 29570)], 0.0), (17368, 17436, 'ENST00000619216.1', 'foo', [(17368, 17436)], 0.0)]
         """
 
         strand = 3
@@ -215,19 +215,21 @@ class GTF(object):
             return
 
         # BED6/BED12: set name and strand
+        score = '.'
         if ncols > 3:
             name = cols[3]
             if cols[5] == '+':
                 strand = 0
             elif cols[5] == '-':
                 strand = 1
+            score = cols[4]
 
         # Ensure that the name is unique
         if name in self.exons.keys():
             sys.stderr.write("Skipping {0}, an entry by this name already exists!\n".format(name))
             return False
         else:
-            self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx)
+            self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
             if ncols != 12 or self.keepExons is False:
                 self.exons[name] = [(int(cols[1]), int(cols[2]))]
             else:
@@ -248,10 +250,10 @@ class GTF(object):
         >>> from os.path import dirname, basename
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed6".format(dirname(parse.__file__)), keepExons=True)
         >>> gtf.findOverlaps("1", 1, 20000)
-        [(11868, 14409, 'ENST00000456328.2', 'group 1', [(11868, 14409)]), (12009, 13670, 'ENST00000450305.2', 'group 1', [(12009, 13670)]), (14403, 29570, 'ENST00000488147.1', 'group 1', [(14403, 29570)]), (17368, 17436, 'ENST00000619216.1', 'group 1', [(17368, 17436)])]
+        [(11868, 14409, 'ENST00000456328.2', 'group 1', [(11868, 14409)], 0.0), (12009, 13670, 'ENST00000450305.2', 'group 1', [(12009, 13670)], 0.0), (14403, 29570, 'ENST00000488147.1', 'group 1', [(14403, 29570)], 0.0), (17368, 17436, 'ENST00000619216.1', 'group 1', [(17368, 17436)], 0.0)]
         >>> gtf = parse.GTF("{0}/test/GRCh38.84.bed".format(dirname(parse.__file__)), keepExons=True, labels=["foo", "bar", "quux", "sniggly"])
         >>> gtf.findOverlaps("1", 1, 20000)
-        [(11868, 14409, '1:11868-14409', 'foo', [(11868, 14409)]), (12009, 13670, '1:12009-13670', 'foo', [(12009, 13670)]), (14403, 29570, '1:14403-29570', 'foo', [(14403, 29570)]), (17368, 17436, '1:17368-17436', 'foo', [(17368, 17436)])]
+        [(11868, 14409, '1:11868-14409', 'foo', [(11868, 14409)], '.'), (12009, 13670, '1:12009-13670', 'foo', [(12009, 13670)], '.'), (14403, 29570, '1:14403-29570', 'foo', [(14403, 29570)], '.'), (17368, 17436, '1:17368-17436', 'foo', [(17368, 17436)], '.')]
 
         Test having a header in one file, but not another:
 
@@ -391,13 +393,15 @@ class GTF(object):
         elif cols[6] == '-':
             strand = 1
 
+        score = cols[5]
+
         # Get the label index
         if label not in self.labels:
             self.labels.append(label)
         self.labelIdx = self.labels.index(label)
 
         chrom = self.mungeChromosome(cols[0])
-        self.tree.addEntry(chrom, int(cols[3]) - 1, int(cols[4]), name, strand, self.labelIdx)
+        self.tree.addEntry(chrom, int(cols[3]) - 1, int(cols[4]), name, strand, self.labelIdx, score)
 
         # Exon bounds placeholder
         self.exons[name] = []
@@ -683,7 +687,10 @@ class GTF(object):
                 overlaps[i] = (o[0], o[1], o[2], self.labels[o[3]], exons)
 
             if includeStrand:
-                overlaps[i] = overlaps[i] + (str(o[-1].decode("ascii")),)
+                overlaps[i] = overlaps[i] + (str(o[-2].decode("ascii")),)
+
+            # Add the score
+            overlaps[i] = overlaps[i] + (o[-1],)
 
         # Ensure that the intervals are sorted by their 5'-most bound. This enables trimming
         overlaps = sorted(overlaps)

@@ -120,9 +120,9 @@ def mapReduce(staticArgs, func, chromSize,
 
                     # TODO, there's no point in including the chromosome
                     if includeLabels:
-                        bed_regions_list = [[chrom, x[4], x[2], x[3], x[-1]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlap=True, numericGroups=True, includeStrand=True)]
+                        bed_regions_list = [[chrom, x[4], x[2], x[3], x[5], x[6]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlap=True, numericGroups=True, includeStrand=True)]
                     else:
-                        bed_regions_list = [[chrom, x[4], x[-1]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlap=True, includeStrand=True)]
+                        bed_regions_list = [[chrom, x[4], x[5], x[6]] for x in bed_interval_tree.findOverlaps(chrom, reg[0], reg[1], trimOverlap=True, includeStrand=True)]
 
                     if len(bed_regions_list) == 0:
                         continue
