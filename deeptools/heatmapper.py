@@ -777,7 +777,7 @@ class heatmapper(object):
                         starts,
                         ends,
                         region[2],
-                        region[5], 
+                        region[5],
                         region[4],
                         matrix_values)))
         fh.close()
