@@ -137,7 +137,7 @@ void sortGTF(GTFtree *o);
 void printGTFtree(GTFtree *t);
 void printGTFvineStart(GTFentry *e, const char *chrom, const char *str);
 void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str);
-int addGTFentry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, char *transcriptID, uint32_t labelIDX);
+int addGTFentry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, char *transcriptID, uint32_t labelIDX, double score);
 
 //hashTable.c
 hashTable *initHT(uint64_t size);

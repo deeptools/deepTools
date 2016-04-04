@@ -772,11 +772,12 @@ class heatmapper(object):
             ends = ",".join(ends)
             # BEDish format (we don't currently store the score)
             fh.write(
-                toBytes('{0}\t{1}\t{2}\t{3}\t.\t{4}\t{5}\n'.format(
+                toBytes('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(
                         region[0],
                         starts,
                         ends,
                         region[2],
+                        region[5],
                         region[4],
                         matrix_values)))
         fh.close()

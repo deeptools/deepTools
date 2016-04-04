@@ -113,16 +113,14 @@ static Attribute *makeAttribute(GTFtree *t, char *value) {
     feature
     source
     frame
-    score
     all attributes (most are skipped)
 
     returns 1 on error
 */
-int addGTFentry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, char *transcriptID, uint32_t labelIDX) {
+int addGTFentry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, char *transcriptID, uint32_t labelIDX, double score) {
     int32_t IDchrom, IDfeature, IDsource;
     char feature[] = "transcript", source[] = "deepTools";
     uint8_t frame = 3;
-    double score = DBL_MAX;
     GTFentry *e = NULL;
     Attribute *a = NULL;
     Attribute **attribs = calloc(1, sizeof(Attribute *));

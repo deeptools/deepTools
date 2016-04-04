@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include "tree.h"
 #include <assert.h>
+#include <float.h>
 
 static void pyGTFDealloc(pyGTFtree_t *self) {
     if(self->t) destroyGTFtree(self->t);
@@ -70,12 +71,13 @@ error:
 
 static PyObject *pyAddEntry(pyGTFtree_t *self, PyObject *args) {
     GTFtree *t = self->t;
-    char *chrom = NULL, *name = NULL;
+    char *chrom = NULL, *name = NULL, *sscore = NULL;
     uint32_t start, end, labelIdx;
+    double score;
     uint8_t strand;
     unsigned long lstrand, lstart, lend, llabelIdx;
 
-    if(!(PyArg_ParseTuple(args, "skkskk", &chrom, &lstart, &lend, &name, &lstrand, &llabelIdx))) {
+    if(!(PyArg_ParseTuple(args, "skkskks", &chrom, &lstart, &lend, &name, &lstrand, &llabelIdx, &sscore))) {
         PyErr_SetString(PyExc_RuntimeError, "pyAddEntry received an invalid or missing argument!");
         return NULL;
     }
@@ -98,8 +100,15 @@ static PyObject *pyAddEntry(pyGTFtree_t *self, PyObject *args) {
     }
     labelIdx = (uint32_t) llabelIdx;
 
+    //Handle the score
+    if(strcmp(sscore, ".") == 0) {
+        score = DBL_MAX;
+    } else {
+        score = strtod(sscore, NULL);
+    }
+
     //Actually add the entry
-    if(addGTFentry(t, chrom, start, end, strand, name, labelIdx)) {
+    if(addGTFentry(t, chrom, start, end, strand, name, labelIdx, score)) {
         PyErr_SetString(PyExc_RuntimeError, "pyAddEntry received an error while inserting an entry!");
         return NULL;
     }
@@ -154,7 +163,7 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
     int strand = 3, strandType = 0, matchType = 0;
     unsigned long lstrand, lstart, lend, lmatchType, lstrandType, llabelIdx;
     overlapSet *os = NULL;
-    PyObject *olist = NULL, *otuple = NULL, *includeStrand = Py_False;
+    PyObject *olist = NULL, *otuple = NULL, *includeStrand = Py_False, *oscore = NULL;
 
     if(!(PyArg_ParseTuple(args, "skkkkksO", &chrom, &lstart, &lend, &lstrand, &lmatchType, &lstrandType, &transcript_id, &includeStrand))) {
         PyErr_SetString(PyExc_RuntimeError, "pyFindOverlaps received an invalid or missing argument!");
@@ -188,9 +197,9 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
     for(i=0; i<os->l; i++) {
         // Make the tuple
         if(includeStrand == Py_True) {
-            otuple = PyTuple_New(5);
+            otuple = PyTuple_New(6);
         } else {
-            otuple = PyTuple_New(4);
+            otuple = PyTuple_New(5);
         }
         if(!otuple) goto error;
         lstart = (unsigned long) os->overlaps[i]->start;
@@ -203,10 +212,16 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
         } else if(os->overlaps[i]->strand == 1) {
             strandChar = '-';
         }
-        if(includeStrand == Py_True) {
-            otuple = Py_BuildValue("(kkskc)", lstart, lend, name, llabelIdx, strandChar);
+        if (os->overlaps[i]->score == DBL_MAX) {
+            oscore = Py_BuildValue("s", ".");
         } else {
-            otuple = Py_BuildValue("(kksk)", lstart, lend, name, llabelIdx);
+            oscore = Py_BuildValue("d", os->overlaps[i]->score);
+        }
+        if(!oscore) goto error;
+        if(includeStrand == Py_True) {
+            otuple = Py_BuildValue("(kkskcO)", lstart, lend, name, llabelIdx, strandChar, oscore);
+        } else {
+            otuple = Py_BuildValue("(kkskO)", lstart, lend, name, llabelIdx, oscore);
         }
         if(!otuple) goto error;
 
