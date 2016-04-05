@@ -111,6 +111,15 @@ def get_optional_args():
                           'counts than that specified in --numberOfSamples',
                           action='store_true')
 
+    optional.add_argument('--outQualityMetrics',
+                          help='Quality metrics can optionally be output to '
+                          'this file. The file will have one row per input BAM '
+                          'file and columns containing the following (in '
+                          'order): area under the curve, X-intersect, and elbow '
+                          'position (maximum of the second derivative)',
+                          metavar='FILE.txt',
+                          type=argparse.FileType('w'))
+
     return parser
 
 
@@ -193,6 +202,18 @@ def main(args=None):
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
+        args.outRawCounts.close()
+
+    if args.outQualityMetrics:
+        line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
+        for idx, reads in enumerate(num_reads_per_bin.T):
+            counts = np.cumsum(np.sort(reads))
+            counts = counts / float(counts[-1])
+            AUC = np.sum(counts)
+            XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
+            elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
+            args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
+        args.outQualityMetrics.close()
 
 if __name__ == "__main__":
     main()
