@@ -11,8 +11,12 @@ Requirements
 -------------
 
 * Python 2.7
-* numpy, scipy, bx-python, and pyBigWig
+* numpy >= 1.8.0
+* scipy >= 0.15.0
+* bx-python >= 0.5.0
+* pyBigWig >= 0.2.1
 * pysam >= 0.8
+* matplotlib >= 1.4.0
 
 The fastet way to obtain **Python 2.7 together with numpy and scipy** is
 via the `Anaconda Scientific Python
@@ -32,7 +36,7 @@ Install deepTools using the following command:
 
 	$ pip install deeptools
 
-All python requirements are automatically installed.
+All python requirements should be automatically installed.
 
 If you need to specify a specific path for the installation of the tools, make use of `pip install`'s numerous options:
 
@@ -44,7 +48,11 @@ If you need to specify a specific path for the installation of the tools, make u
 Command line installation without ``pip``
 -------------------------------------------
 
-1. Download source code
+You are highly recommended to use `pip` rather than these more complicated steps.
+
+1. Install the requirements listed above in the "requirements" section. This is done automatically by `pip`.
+
+2. Download source code
 ::
 
 	$ git clone https://github.com/fidelram/deepTools.git
@@ -55,7 +63,7 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	$ wget https://github.com/fidelram/deepTools/archive/1.5.12.tar.gz
 	$ tar -xzvf
 
-2. The config file will tell you what deepTools expects to be installed properly:
+3. The config file will tell you what deepTools expects to be installed properly:
 ::
 
 	$ cat deepTools/deeptools/config/deeptools.cfg
@@ -85,7 +93,7 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	#tmp_dir: /dev/shm
 	tmp_dir: default
 
-3. install the source code (if you don't have root permission, you can set
+4. install the source code (if you don't have root permission, you can set
 a specific folder using the ``--prefix`` option)
 ::
 
