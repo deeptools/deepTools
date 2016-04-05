@@ -130,7 +130,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamInput" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
             <param name="binSize" value="10" />
@@ -138,14 +138,14 @@
             <output name="outFileName" file="bamCoverage_result1.bw" ftype="bigwig" />
         </test>
         <test>
-            <param name="bamInput" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result2.bw" ftype="bigwig" />
         </test>
         <test>
-            <param name="bamInput" value="bowtie2-test1.bam" ftype="bam" />
+            <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="no" />
             <param name="binSize" value="10" />
