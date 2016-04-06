@@ -8,11 +8,6 @@ typedef struct {
 } pyGTFtree_t;
 
 /* 
-  findOverlaps
-  addEntry
-
-  The python interface to findOverlaps should probably return a tuple.
-
   Remove all asserts and ensure that the new return values are honoured.
 
   Profile the code with a test to eliminate unneeded cruft.
@@ -20,10 +15,12 @@ typedef struct {
 
 static PyObject *pyGTFinit(PyObject *self, PyObject *args);
 static PyObject *pyAddEntry(pyGTFtree_t *self, PyObject *args);
+static PyObject *pyAddEnrichmentEntry(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyVine2Tree(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyPrintGTFtree(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyCountEntries(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args);
+static PyObject *pyFindOverlappingFeatures(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyIsTree(pyGTFtree_t *self, PyObject *args);
 static void pyGTFDealloc(pyGTFtree_t *self);
 
@@ -32,6 +29,8 @@ static PyMethodDef treeMethods[] = {
 "Initialize the tree\n"},
     {"addEntry", (PyCFunction) pyAddEntry, METH_VARARGS,
 "Some documentation for pyAddEntry\n"},
+    {"addEnrichmentEntry", (PyCFunction) pyAddEnrichmentEntry, METH_VARARGS,
+"Some documentation for pyAddEnrichmentEntry\n"},
     {"finish", (PyCFunction) pyVine2Tree, METH_VARARGS,
 "This must be called after ALL entries from ALL files have been added.\n"},
     {"printGTFtree", (PyCFunction) pyPrintGTFtree, METH_VARARGS,
@@ -42,6 +41,8 @@ static PyMethodDef treeMethods[] = {
 "Return True if the object is a tree\n"},
     {"findOverlaps", (PyCFunction) pyFindOverlaps, METH_VARARGS,
 "Find overlapping intervals\n"},
+    {"findOverlappingFeatures", (PyCFunction) pyFindOverlappingFeatures, METH_VARARGS,
+"Find overlapping intervals, returning a list of features\n"},
     {NULL, NULL, 0, NULL}
 };
 

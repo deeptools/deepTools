@@ -280,3 +280,26 @@ def toBytes(s):
     if isinstance(s, list):
         return [toBytes(x) for x in s]
     return s
+
+
+def mungeChromosome(chrom, chromList):
+    """
+    A generic chromosome munging function. "chrom" is munged by adding/removing "chr" such that it appears in chromList
+
+    On error, None is returned, but a common chromosome list should be used beforehand to avoid this possibility
+    """
+    if chrom in chromList:
+        return chrom
+
+    if chrom == "MT" and "chrM" in chromList:
+        return "chrM"
+    if chrom == "chrM" and "MT" in chromList:
+        return "MT"
+
+    if chrom.startswith("chr") and chrom[3:] in chromList:
+        return chrom[3:]
+    if "chr" + chrom in chromList:
+        return "chr" + chrom
+
+    # This shouldn't actually happen
+    return None

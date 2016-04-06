@@ -190,8 +190,6 @@ class GTF(object):
 
         if append:
             self.chroms.append(chrom)
-        else:
-            return None
 
         return chrom
 
