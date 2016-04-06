@@ -421,9 +421,7 @@ class heatmapper(object):
                 index_start = int(pos - start)
                 index_end = int(index_start + step_size)
                 try:
-                    counts_list.append(
-                        heatmapper.my_average(valuesArray[index_start:index_end],
-                                              avgType))
+                    counts_list.append(heatmapper.my_average(valuesArray[index_start:index_end], avgType))
                 except Exception as detail:
                     sys.stderr.write("Exception found. "
                                      "Message: {}\n".format(detail))
@@ -488,12 +486,12 @@ class heatmapper(object):
     def coverage_from_big_wig(bigwig, chrom, zones, binSize, avgType, nansAsZeros=False, verbose=True):
 
         """
-        uses bigwig file reader from bx-python
-        to query a region define by chrom and zones.
+        uses bigwig file reader from pyBigWib
+        to query a region defined by chrom and zones.
         The output is an array that contains the bigwig
         value per base pair. The summary over bins is
         done in a later step when coverage_from_array is called.
-        This method is more reliable than quering the bins
+        This method is more reliable than querying the bins
         directly from the bigwig, which should be more efficient.
 
         By default, any region, even if no chromosome match is found
