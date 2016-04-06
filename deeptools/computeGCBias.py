@@ -618,12 +618,6 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
-    # check if directory is writable
-    if args.blackListFileName:
-        filter_out_file = args.BlackListFileName
-        args.filterOut.close()
-    else:
-        filter_out_file = None
 
     if args.extraSampling:
         extra_sampling_file = args.extraSampling.name
@@ -635,7 +629,7 @@ def main(args=None):
     global_vars = {}
     global_vars['2bit'] = args.genome
     global_vars['bam'] = args.bamfile
-    global_vars['filter_out'] = filter_out_file
+    global_vars['filter_out'] = args.blackListFileName
     global_vars['extra_sampling_file'] = extra_sampling_file
 
     bit = twobit.TwoBitFile(open(global_vars['2bit']))
