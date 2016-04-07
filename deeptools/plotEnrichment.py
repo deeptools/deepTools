@@ -13,7 +13,6 @@ from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from matplotlib.font_manager import FontProperties
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools import parserCommon
@@ -291,8 +290,6 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
 
     grids = gridspec.GridSpec(rows, cols)
     plt.rcParams['font.size'] = 10.0
-    font_p = FontProperties()
-    font_p.set_size('small')
 
     # convert cm values to inches
     fig = plt.figure(figsize=(args.plotWidth / 2.54, args.plotHeight / 2.54))
