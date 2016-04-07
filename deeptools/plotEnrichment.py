@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# TODO: the genome chunk length is terrible for this sort of operation
+# TODO:
 #       Is it faster to query all intervals in a chunk and then fetch the reads (probably not)?
-#       Should the percents or the counts be output? The former are more generally useful
-#       Test all of the parameters and make some doc/nose tests
 #       Galaxy wrapper
 #       What should the default dimensions be? I get the feeling that the font isn't scaling nicely
 
@@ -17,13 +15,13 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from matplotlib.font_manager import FontProperties
 
-from deeptools.mapReduce import mapReduce
+from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools import parserCommon
 from deeptools.getScaleFactor import fraction_kept
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.utilities import getCommonChrNames, mungeChromosome
 from deeptools.bamHandler import openBam
-from deeptoolsintervals import Enrichment
+from deeptoolsintervals import Enrichment, GTF
 
 
 old_settings = np.seterr(all='ignore')
@@ -94,6 +92,15 @@ def plot_enrichment_args():
                           'file names. '
                           'Multiple labels have to be separated by spaces, e.g. '
                           '--labels sample1 sample2 sample3',
+                          nargs='+')
+
+    optional.add_argument('--regionsLabel', '-z',
+                          metavar="region1 region2",
+                          help="For BED files, the label given to its region is "
+                          "the file name, but this can be overridden by providing "
+                          "a custom label. For GTF files this is ignored. Note "
+                          "that if you provide labels, you MUST provide one for each "
+                          "BED/GTF file, even though it will be ignored for GTF files.",
                           nargs='+')
 
     optional.add_argument('--plotTitle', '-T',
@@ -225,7 +232,7 @@ def getEnrichment_worker(arglist):
     """
     chrom, start, end, args, defaultFragmentLength = arglist
 
-    gtf = Enrichment(args.BED, keepExons=args.keepExons)
+    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionsLabel)
     olist = []
     for f in args.bamfiles:
         odict = dict()
@@ -318,6 +325,36 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
     plt.close()
 
 
+def getChunkLength(args, chromSize):
+    """
+    There's no point in parsing the GTF time over and over again needlessly.
+    Emprically, it seems that adding ~4x the number of workers is ideal, since
+    coverage is non-uniform. This is a heuristic way of approximating that.
+    """
+
+    if args.region:
+        chromSize, region_start, region_end, genomeChunkLength = getUserRegion(chromSize, args.region)
+        rv = np.ceil((region_start - region_end) / float(4 * args.numberOfProcessors)).astype(int)
+        return max(1, rv)
+
+    bl = None
+    if args.blackListFileName:
+        bl = GTF(args.blackListFileName)
+
+    lengths = []
+    for k, v in chromSize:
+        regs = blSubtract(bl, k, (0, v))
+        for reg in regs:
+            lengths.append(reg[1] - reg[0])
+
+    if len(lengths) >= 4 * args.numberOfProcessors:
+        rv = np.median(lengths).astype(int)
+    else:
+        rv = np.ceil(np.sum(lengths) / (4.0 * args.numberOfProcessors)).astype(int)
+
+    return max(1, rv)
+
+
 def main(args=None):
 
     args = parse_arguments().parse_args(args)
@@ -373,10 +410,14 @@ def main(args=None):
     else:
         defaultFragmentLength = 'read length'
 
+    # Get the chunkLength
+    chunkLength = getChunkLength(args, chromSize)
+
     # Map reduce to get the counts/file/feature
     res = mapReduce([args, defaultFragmentLength],
                     getEnrichment_worker,
                     chromSize,
+                    genomeChunkLength=chunkLength,
                     region=args.region,
                     blackListFileName=args.blackListFileName,
                     numberOfProcessors=args.numberOfProcessors,
@@ -401,8 +442,8 @@ def main(args=None):
 
     # Raw counts
     if args.outRawCounts:
-        args.outRawCounts.write("file\tfeatureType\tnumberInFeature\ttotalAlignments\n")
+        args.outRawCounts.write("file\tfeatureType\tpercent\n")
         for i, x in enumerate(args.labels):
             for k, v in featureCounts[i].items():
-                args.outRawCounts.write("{0}\t{1}\t{2}\t{3}\n".format(x, k, v, int(totalCounts[i])))
+                args.outRawCounts.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
         args.outRawCounts.close()

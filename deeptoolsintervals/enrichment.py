@@ -4,6 +4,7 @@ from deeptoolsintervals import tree
 from deeptoolsintervals.parse import GTF, openPossiblyCompressed
 import re
 import sys
+from os.path import basename
 
 
 class Enrichment(GTF):
@@ -51,9 +52,9 @@ class Enrichment(GTF):
         >>> from os.path import dirname
         >>> gtf = enrichment.Enrichment("{0}/test/GRCh38.84.bed".format(dirname(enrichment.__file__)), keepExons=True)
         >>> o = gtf.findOverlaps("1", [(1, 3000000)])
-        >>> assert(o == frozenset(['peaks']))
+        >>> assert(o == frozenset(['GRCh38.84.bed']))
         >>> o = gtf.findOverlaps("chr1", [(1, 3000000)])
-        >>> assert(o == frozenset(['peaks']))
+        >>> assert(o == frozenset(['GRCh38.84.bed']))
         """
 
         # Handle the first line
@@ -117,7 +118,7 @@ class Enrichment(GTF):
                 if cols[2] not in self.features:
                     self.features.append(cols[2])
 
-    def __init__(self, fnames, keepExons=False, defaultLabel='peaks'):
+    def __init__(self, fnames, keepExons=False, labels=None):
         """
         Driver function to actually parse files. The steps are as follows:
 
@@ -134,14 +135,12 @@ class Enrichment(GTF):
         Optional input is:
 
         keepExons:    For BED12 files, exons are ignored by default.
-        defaultFeature: The feature label used in BED files
         """
         self.fname = []
         self.filename = ""
         self.chroms = []
         self.features = []
         self.tree = tree.initTree()
-        self.defaultLabel = defaultLabel
         self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
         self.keepExons = keepExons
 
@@ -149,7 +148,7 @@ class Enrichment(GTF):
             fnames = [fnames]
 
         # Load the files
-        for fname in fnames:
+        for labelIdx, fname in enumerate(fnames):
             self.filename = fname
             fp = openPossiblyCompressed(fname)
             line, labelColumn = self.firstNonComment(fp)
@@ -159,14 +158,20 @@ class Enrichment(GTF):
             line = line.strip()
 
             ftype = self.inferType(fp, line, None)
+
+            if ftype != 'GTF' and labels is not None:
+                assert(len(labels) > labelIdx)
+                bname = labels[labelIdx]
+            else:
+                bname = basename(fname)
             if ftype == 'GTF':
                 self.parseGTF(fp, line)
             elif ftype == 'BED3':
-                self.parseBED(fp, line, 3)
+                self.parseBED(fp, line, 3, feature=bname)
             elif ftype == 'BED6':
-                self.parseBED(fp, line, 6)
+                self.parseBED(fp, line, 6, feature=bname)
             else:
-                self.parseBED(fp, line, 12)
+                self.parseBED(fp, line, 12, feature=bname)
             fp.close()
 
         # Sanity check
