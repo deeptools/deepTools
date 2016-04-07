@@ -602,7 +602,7 @@ class heatmapper(object):
         The output is an array that contains the bigwig
         value per base pair. The summary over bins is
         done in a later step when coverage_from_array is called.
-        This method is more reliable than quering the bins
+        This method is more reliable than querying the bins
         directly from the bigwig, which should be more efficient.
 
         By default, any region, even if no chromosome match is found

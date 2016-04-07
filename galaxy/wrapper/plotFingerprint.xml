@@ -94,13 +94,13 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
+            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="no" />
             <param name="showOutputSettings" value="no" />
             <output name="outFileName" file="plotFingerprint_result1.png" ftype="png" compare="sim_size" />
         </test>
         <test>
-            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
+            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="showOutputSettings" value="yes" />
             <param name="saveRawCounts" value="True" />
