@@ -94,7 +94,7 @@ def plot_enrichment_args():
                           '--labels sample1 sample2 sample3',
                           nargs='+')
 
-    optional.add_argument('--regionsLabel', '-z',
+    optional.add_argument('--regionLabels',
                           metavar="region1 region2",
                           help="For BED files, the label given to its region is "
                           "the file name, but this can be overridden by providing "
@@ -232,7 +232,7 @@ def getEnrichment_worker(arglist):
     """
     chrom, start, end, args, defaultFragmentLength = arglist
 
-    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionsLabel)
+    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
     for f in args.bamfiles:
         odict = dict()
