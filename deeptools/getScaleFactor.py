@@ -103,11 +103,11 @@ def fraction_kept(args):
 def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    bam_mapped_total = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
     blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
     if args.verbose:
-        print(("There are {} alignments, of which {} are completely within a blacklist region.".format(bam_mapped, blacklisted)))
-    bam_mapped -= blacklisted
+        print(("There are {} alignments, of which {} are completely within a blacklist region.".format(bam_mapped_total, blacklisted)))
+    bam_mapped = bam_mapped_total - blacklisted
     ftk = fraction_kept(args)
     bam_mapped *= ftk
     if args.verbose:
@@ -163,6 +163,8 @@ def get_scale_factor(args):
 
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
+    else:
+        scale_factor *= bam_mapped / float(bam_mapped_total)
 
     if args.verbose:
         print(("Final scaling factor: {}".format(scale_factor)))
