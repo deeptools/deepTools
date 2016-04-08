@@ -244,7 +244,7 @@ def blSubtract(t, chrom, chunk):
         return [chunk]
 
     overlaps = t.findOverlaps(chrom, chunk[0], chunk[1])
-    if len(overlaps) > 0:
+    if overlaps is not None and len(overlaps) > 0:
         output = []
         for o in overlaps:
             if chunk[1] <= chunk[0]:
