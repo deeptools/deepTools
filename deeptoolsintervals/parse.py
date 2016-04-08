@@ -222,17 +222,17 @@ class GTF(object):
                 strand = 1
             score = cols[4]
 
-        # Ensure that the name is unique, this happens to already be stored in the C-level hashTable, which is good because python is painfully slow
-        if self.tree.hasTranscript(name):
+        # Ensure that the name is unique
+        if name in self.exons:
             sys.stderr.write("Skipping {0}, an entry by this name already exists!\n".format(name))
             return False
         else:
             self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
             if ncols != 12 or self.keepExons is False:
-                self.exons.append([(int(cols[1]), int(cols[2]))])
+                self.exons[name] = [(int(cols[1]), int(cols[2]))]
             else:
                 assert(len(cols) == 12)
-                self.exons.append(parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11]))
+                self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
         return True
 
     def parseBED(self, fp, line, ncols=3, labelColumn=None):
@@ -259,7 +259,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 30000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['group 1'] == 4)
@@ -274,7 +274,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 30000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['group 1'] == 8)
@@ -376,9 +376,9 @@ class GTF(object):
             return
 
         name = m.groups()[0]
-        if self.tree.hasTranscript(name):
+        if name in self.exons:
             sys.stderr.write("Warning: {0} occurs more than once! Only using the first instance.\n".format(name))
-            self.transcriptIDduplicated = self.transcriptIDduplicated.union(set([name]))
+            self.transcriptIDduplicated.append(name)
             return
 
         if int(cols[3]) > int(cols[4]) or int(cols[3]) < 1:
@@ -402,8 +402,7 @@ class GTF(object):
         self.tree.addEntry(chrom, int(cols[3]) - 1, int(cols[4]), name, strand, self.labelIdx, score)
 
         # Exon bounds placeholder
-        if self.keepExons:
-            self.exons.append([])
+        self.exons[name] = []
 
     def parseGTFexon(self, cols):
         """
@@ -421,13 +420,10 @@ class GTF(object):
         name = m.groups()[0]
         if name in self.transcriptIDduplicated:
             return
-        if not self.tree.hasTranscript(name):
-            self.exons.append([])
-            exonIdx = self.tree.storeTranscriptIdx(name)
-        else:
-            exonIdx = self.tree.getTranscriptIdx(name)
+        if name not in self.exons:
+            self.exons[name] = []
 
-        self.exons[exonIdx].append((int(cols[3]) - 1, int(cols[4])))
+        self.exons[name].append((int(cols[3]) - 1, int(cols[4])))
 
     def parseGTF(self, fp, line):
         """
@@ -444,7 +440,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
@@ -457,7 +453,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
@@ -471,7 +467,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
@@ -542,9 +538,9 @@ class GTF(object):
         self.fname = []
         self.filename = ""
         self.chroms = []
-        self.exons = []
+        self.exons = {}
         self.labels = []
-        self.transcriptIDduplicated = set()
+        self.transcriptIDduplicated = []
         self.tree = tree.initTree()
         self.labelIdx = 0
         self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])')
@@ -644,7 +640,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 0, 3000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.bed2'] == 1)
@@ -678,11 +674,10 @@ class GTF(object):
             return None
 
         for i, o in enumerate(overlaps):
-            if self.keepExons:
-                exonIdx = self.tree.getTranscriptIdx(o[2])
-                exons = sorted(self.exons[exonIdx])
-            else:
+            if o[2] not in self.exons or len(self.exons[o[2]]) == 0:
                 exons = [(o[0], o[1])]
+            else:
+                exons = sorted(self.exons[o[2]])
 
             if numericGroups:
                 overlaps[i] = (o[0], o[1], o[2], o[3], exons)

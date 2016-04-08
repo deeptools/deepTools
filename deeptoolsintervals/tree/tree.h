@@ -22,10 +22,6 @@ static PyObject *pyCountEntries(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyFindOverlappingFeatures(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyIsTree(pyGTFtree_t *self, PyObject *args);
-
-static PyObject *pyHasTranscript(pyGTFtree_t *self, PyObject *args);
-static PyObject *pyStoreTranscriptIdx(pyGTFtree_t *self, PyObject *args);
-static PyObject *pyGetTranscriptIdx(pyGTFtree_t *self, PyObject *args);
 static void pyGTFDealloc(pyGTFtree_t *self);
 
 static PyMethodDef treeMethods[] = {
@@ -47,12 +43,6 @@ static PyMethodDef treeMethods[] = {
 "Find overlapping intervals\n"},
     {"findOverlappingFeatures", (PyCFunction) pyFindOverlappingFeatures, METH_VARARGS,
 "Find overlapping intervals, returning a list of features\n"},
-    {"hasTranscript", (PyCFunction) pyHasTranscript, METH_VARARGS,
-"Return whether a transcript is in the hash table\n"},
-    {"storeTranscriptIdx", (PyCFunction) pyStoreTranscriptIdx, METH_VARARGS,
-"Store the transcript name (or any other string) in the hash table\n"},
-    {"getTranscriptIdx", (PyCFunction) pyGetTranscriptIdx, METH_VARARGS,
-"Return the transcript index in the hash table\n"},
     {NULL, NULL, 0, NULL}
 };
 
