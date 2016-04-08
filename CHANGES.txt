@@ -7,6 +7,10 @@
  * deepTools now uses a custom interval-tree implementation that allows including metadata, such as gene/transcript IDs, along with intervals. For those interested, the code for this available separately (https://github.com/dpryan79/deeptools_intervals) with the original C-only implementation here: https://github.com/dpryan79/libGTF.
  * The API for the countReadsPerBin, getScorePerBigWigBin, and mapReduce modules has changed slightly (this was needed to support the --metagene option). Anyone using these in their own programs is encouraged to look at the modified API before upgrading.
 
+2.2.3
+
+ * Fixed issue #334, where computeGCBias wasn't properly handling the black list option.
+
 2.2.2
 
  * Fixed labels when hierarchical clustering is used (they were off by one previously).
