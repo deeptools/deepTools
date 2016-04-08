@@ -343,6 +343,70 @@ error:
     return NULL;
 }
 
+PyObject *pyHasTranscript(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    char *name = NULL;
+    PyObject *rv = Py_False;
+
+    if(!(PyArg_ParseTuple(args, "s", &name))) {
+        PyErr_SetString(PyExc_RuntimeError, "pyHasTranscript received an invalid or missing argument!");
+        return NULL;
+    }
+
+    if(strExistsHT(t->htAttributes, name)) rv = Py_True;
+
+    Py_INCREF(rv);
+    return rv;
+}
+
+PyObject *pyStoreTranscriptIdx(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    char *name = NULL;
+    int32_t idx;
+    PyObject *out_idx = NULL;
+
+    if(!(PyArg_ParseTuple(args, "s", &name))) {
+        PyErr_SetString(PyExc_RuntimeError, "pyStoreTranscriptIdx received an invalid or missing argument!");
+        return NULL;
+    }
+
+    idx = addHTelement(t->htAttributes, name);
+    if(idx <= 0) {
+        PyErr_SetString(PyExc_RuntimeError, "pyStoreTranscriptIdx received an error while adding the transcript name to the hash table!");
+        return NULL;
+    }
+
+    //'transcript_id' will be the first entry
+    idx -= 1;
+
+    out_idx = PyLong_FromLong((long) idx);
+    return out_idx;
+}
+
+PyObject *pyGetTranscriptIdx(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    char *name = NULL;
+    int32_t idx;
+    PyObject *out_idx = NULL;
+
+    if(!(PyArg_ParseTuple(args, "s", &name))) {
+        PyErr_SetString(PyExc_RuntimeError, "pyGetTranscriptIdx received an invalid or missing argument!");
+        return NULL;
+    }
+
+    idx = str2valHT(t->htAttributes, name);
+    if(idx <= 0) {
+        PyErr_SetString(PyExc_RuntimeError, "pyGetTranscriptIdx received an error while adding the transcript name to the hash table!");
+        return NULL;
+    }
+
+    //'transcript_id' will be the first entry
+    idx -= 1;
+
+    out_idx = PyLong_FromLong((long) idx);
+    return out_idx;
+}
+
 #if PY_MAJOR_VERSION >= 3
 PyMODINIT_FUNC PyInit_tree(void) {
     PyObject *res;

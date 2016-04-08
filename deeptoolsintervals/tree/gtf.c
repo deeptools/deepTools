@@ -25,6 +25,9 @@ GTFtree * initGTFtree() {
     t->htFeatures = initHT(128);
     t->htAttributes = initHT(128);
 
+    //This makes life slightly easier by pre-adding 'transcript_id' to t->htAttributes
+    if(addHTelement(t->htAttributes, "transcript_id") != 0) return NULL;
+
     return t;
 }
 

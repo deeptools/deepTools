@@ -222,17 +222,17 @@ class GTF(object):
                 strand = 1
             score = cols[4]
 
-        # Ensure that the name is unique
-        if name in self.exons.keys():
+        # Ensure that the name is unique, this happens to already be stored in the C-level hashTable, which is good because python is painfully slow
+        if self.tree.hasTranscript(name):
             sys.stderr.write("Skipping {0}, an entry by this name already exists!\n".format(name))
             return False
         else:
             self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
             if ncols != 12 or self.keepExons is False:
-                self.exons[name] = [(int(cols[1]), int(cols[2]))]
+                self.exons.append([(int(cols[1]), int(cols[2]))])
             else:
                 assert(len(cols) == 12)
-                self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
+                self.exons.append(parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11]))
         return True
 
     def parseBED(self, fp, line, ncols=3, labelColumn=None):
@@ -376,9 +376,9 @@ class GTF(object):
             return
 
         name = m.groups()[0]
-        if name in self.exons.keys():
+        if self.tree.hasTranscript(name):
             sys.stderr.write("Warning: {0} occurs more than once! Only using the first instance.\n".format(name))
-            self.transcriptIDduplicated.append(name)
+            self.transcriptIDduplicated = self.transcriptIDduplicated.union(set([name]))
             return
 
         if int(cols[3]) > int(cols[4]) or int(cols[3]) < 1:
@@ -402,7 +402,8 @@ class GTF(object):
         self.tree.addEntry(chrom, int(cols[3]) - 1, int(cols[4]), name, strand, self.labelIdx, score)
 
         # Exon bounds placeholder
-        self.exons[name] = []
+        if self.keepExons:
+            self.exons.append([])
 
     def parseGTFexon(self, cols):
         """
@@ -420,10 +421,13 @@ class GTF(object):
         name = m.groups()[0]
         if name in self.transcriptIDduplicated:
             return
-        if name not in self.exons.keys():
-            self.exons[name] = []
+        if not self.tree.hasTranscript(name):
+            self.exons.append([])
+            exonIdx = self.tree.storeTranscriptIdx(name)
+        else:
+            exonIdx = self.tree.getTranscriptIdx(name)
 
-        self.exons[name].append((int(cols[3]) - 1, int(cols[4])))
+        self.exons[exonIdx].append((int(cols[3]) - 1, int(cols[4])))
 
     def parseGTF(self, fp, line):
         """
@@ -538,14 +542,14 @@ class GTF(object):
         self.fname = []
         self.filename = ""
         self.chroms = []
-        self.exons = {}
+        self.exons = []
         self.labels = []
-        self.transcriptIDduplicated = []
+        self.transcriptIDduplicated = set()
         self.tree = tree.initTree()
         self.labelIdx = 0
-        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
-        self.transcript_id_regex = re.compile('(?:{0} (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])'.format(transcript_id_designator))
-        self.deepTools_group_regex = re.compile('(?:deepTools_group (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
+        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])')
+        self.transcript_id_regex = re.compile('(?:{0} (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])'.format(transcript_id_designator))
+        self.deepTools_group_regex = re.compile('(?:deepTools_group (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])')
         self.exonID = exonID
         self.transcriptID = transcriptID
         self.keepExons = keepExons
@@ -674,10 +678,11 @@ class GTF(object):
             return None
 
         for i, o in enumerate(overlaps):
-            if o[2] not in self.exons.keys() or len(self.exons[o[2]]) == 0:
-                exons = [(o[0], o[1])]
+            if self.keepExons:
+                exonIdx = self.tree.getTranscriptIdx(o[2])
+                exons = sorted(self.exons[exonIdx])
             else:
-                exons = sorted(self.exons[o[2]])
+                exons = [(o[0], o[1])]
 
             if numericGroups:
                 overlaps[i] = (o[0], o[1], o[2], o[3], exons)
