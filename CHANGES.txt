@@ -1,3 +1,7 @@
+2.2.3
+
+ * Fixed issue #334, where computeGCBias wasn't properly handling the black list option.
+
 2.2.2
 
  * Fixed labels when hierarchical clustering is used (they were off by one previously).
