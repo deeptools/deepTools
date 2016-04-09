@@ -58,7 +58,7 @@ class TestWriteBedGraph(TestCase):
         # turn on zeroToNan
         self.c.zerosToNans = True
         tempFile2 = self.c.writeBedGraph_worker('3R', 0, 200, scaleCoverage, self.func_args)
-        _foo = open(tempFile, 'r')
+        _foo = open(tempFile2, 'r')
         res = _foo.readlines()
         _foo.close()
         assert_equal(res, ['3R\t100\t200\t1.0\n'])
