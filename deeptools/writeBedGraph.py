@@ -144,7 +144,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
             if tempfilename:
                 # concatenate all intermediate tempfiles into one
                 # bedgraph file
-                shutil.copyfileobj(open(tempfilename, 'rb'), out_file)
+                _foo = open(tempfilename, 'rb')
+                shutil.copyfileobj(_foo, out_file)
+                _foo.close()
                 os.remove(tempfilename)
 
         bedgraph_file = out_file.name

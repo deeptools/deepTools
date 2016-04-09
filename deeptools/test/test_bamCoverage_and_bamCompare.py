@@ -34,7 +34,9 @@ def test_bam_coverage_arguments():
     args = "--bam {} -o {} --outFileFormat bedgraph".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t0\t50\t0.00\n', '3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
@@ -44,7 +46,9 @@ def test_bam_coverage_extend():
     outfile = '/tmp/test_file.bg'
     args = "-b {} -o {} --extendReads 100 --outFileFormat bedgraph".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
 
     assert resp == ['3R\t0\t150\t1.00\n', '3R\t150\t200\t3.0\n']
     unlink(outfile)
@@ -56,7 +60,9 @@ def test_bam_coverage_extend_and_normalizeto1x():
     args = "-b {} -o {} --normalizeTo1x 200 --extendReads 100 " \
            "--outFileFormat bedgraph".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     # the scale factor should be 0.5, thus the result is similar to
     # that of the previous test divided by 0.5
     expected = ['3R\t0\t150\t0.50\n', '3R\t150\t200\t1.5\n']
@@ -69,7 +75,9 @@ def test_bam_coverage_skipnas():
     args = "--bam {} -o {} --outFileFormat bedgraph --skipNAs".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t50\t150\t1.00\n', '3R\t150\t200\t2.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
@@ -87,7 +95,9 @@ def test_bam_compare_arguments():
 
     bam_comp.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t0\t200\t1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
@@ -103,7 +113,9 @@ def test_bam_compare_diff_files():
 
     bam_comp.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t0\t50\t0.00\n', '3R\t50\t100\t-1.00\n', '3R\t100\t150\t0.00\n', '3R\t150\t200\t-1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
@@ -121,7 +133,9 @@ def test_bam_compare_diff_files_skipnas():
 
     bam_comp.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t100\t150\t0.00\n', '3R\t150\t200\t-1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
@@ -137,7 +151,9 @@ def test_bam_compare_extend():
 
     bam_comp.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t0\t100\t-1.00\n', '3R\t100\t150\t1.00\n', '3R\t150\t200\t-1.0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
@@ -154,7 +170,9 @@ def test_bam_coverage_filter_blacklist():
     args = args.split()
     bam_cov.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t0\t100\t0.00\n', '3R\t100\t150\t1.42\n', '3R\t150\t250\t4.88\n',
                 '3R\t250\t300\t3.05\n', '3R\t300\t400\t2.24\n', '3R\t400\t450\t3.86\n',
                 '3R\t450\t500\t4.07\n', '3R\t500\t550\t2.03\n', '3R\t550\t600\t2.44\n',
@@ -176,7 +194,9 @@ def test_bam_compare_filter_blacklist():
     args = args.split()
     bam_comp.main(args)
 
-    resp = open(outfile, 'r').readlines()
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
     expected = ['3R\t0\t100\t0.00\n', '3R\t100\t150\t-0.22\n',
                 '3R\t150\t200\t-0.16\n', '3R\t200\t250\t-0.07\n',
                 '3R\t250\t300\t0.14\n', '3R\t300\t350\t0.10\n',
