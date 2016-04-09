@@ -156,10 +156,7 @@ class CountReadsPerBin(object):
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
-        self.blackList = None
         self.blackListFileName = blackListFileName
-        if blackListFileName:
-            self.blackList = GTF(blackListFileName)
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -380,6 +377,10 @@ class CountReadsPerBin(object):
 
         bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
 
+        blackList = None
+        if self.blackListFileName is not None:
+            blackList = GTF(self.blackListFileName)
+
         # A list of lists of tuples
         transcriptsToConsider = []
         if bed_regions_list is not None:
@@ -388,7 +389,7 @@ class CountReadsPerBin(object):
             for i in range(start, end, self.stepSize):
                 if i + self.binLength > end:
                     break
-                if self.blackList is not None and self.blackList.findOverlaps(chrom, i, i + self.binLength):
+                if blackList is not None and blackList.findOverlaps(chrom, i, i + self.binLength):
                     continue
                 transcriptsToConsider.append([(i, i + self.binLength)])
 
@@ -468,22 +469,26 @@ class CountReadsPerBin(object):
         else:
             extension = self.maxPairedFragmentLength
 
+        blackList = None
+        if self.blackListFileName is not None:
+            blackList = GTF(self.blackListFileName)
+
         for idx, reg in enumerate(regions):
             coverage = 0.0
 
             # Blacklisted regions have a coverage of 0
-            if self.blackList and self.blackList.findOverlaps(chrom, reg[0], reg[1]):
+            if blackList and blackList.findOverlaps(chrom, reg[0], reg[1]):
                 continue
             regStart = max(0, reg[0] - extension)
             regEnd = reg[1] + extension
 
             # If alignments are extended and there's a blacklist, ensure that no
             # reads originating in a blacklist are fetched
-            if self.blackList and reg[0] > 0 and extension > 0:
-                o = self.blackList.findOverlaps(chrom, regStart, reg[0])
+            if blackList and reg[0] > 0 and extension > 0:
+                o = blackList.findOverlaps(chrom, regStart, reg[0])
                 if o is not None:
                     regStart = o[-1][1]
-                o = self.blackList.findOverlaps(chrom, reg[1], regEnd)
+                o = blackList.findOverlaps(chrom, reg[1], regEnd)
                 if o is not None:
                     regEnd = o[0][0]
 
