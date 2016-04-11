@@ -4,7 +4,11 @@ from deeptoolsintervals import tree
 import re
 import sys
 import gzip
-import bz2
+try:
+    import bz2
+    supportsBZ2 = True
+else:
+    supportsBZ2 = False
 import os.path
 
 
@@ -92,7 +96,7 @@ def openPossiblyCompressed(fname):
         first3 = bytes(f.read(3))
     if first3 == b"\x1f\x8b\x08":
         return gzip.open(fname, "rb")
-    elif first3 == b"\x42\x5a\x68":
+    elif first3 == b"\x42\x5a\x68" and supportsBZ2:
         return bz2.BZ2File(fname, "rb")
     else:
         return open(fname)
