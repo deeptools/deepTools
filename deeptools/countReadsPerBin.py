@@ -168,7 +168,7 @@ class CountReadsPerBin(object):
             if extendReads is True:
                 # try to guess fragment length if the bam file contains paired end reads
                 if frag_len_dict:
-                    self.defaultFragmentLength = frag_len_dict['median']
+                    self.defaultFragmentLength = int(frag_len_dict['median'])
                 else:
                     exit("*ERROR*: library is not paired-end. Please provide an extension length.")
                 if verbose:
