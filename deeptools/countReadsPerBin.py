@@ -183,7 +183,7 @@ class CountReadsPerBin(object):
             elif extendReads > 2000:
                 exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(extendReads))
             else:
-                self.defaultFragmentLength = extendReads
+                self.defaultFragmentLength = int(extendReads)
 
         else:
             self.defaultFragmentLength = 'read length'
@@ -479,17 +479,17 @@ class CountReadsPerBin(object):
             # Blacklisted regions have a coverage of 0
             if blackList and blackList.findOverlaps(chrom, reg[0], reg[1]):
                 continue
-            regStart = max(0, reg[0] - extension)
-            regEnd = reg[1] + extension
+            regStart = int(max(0, reg[0] - extension))
+            regEnd = reg[1] + int(extension)
 
             # If alignments are extended and there's a blacklist, ensure that no
             # reads originating in a blacklist are fetched
             if blackList and reg[0] > 0 and extension > 0:
                 o = blackList.findOverlaps(chrom, regStart, reg[0])
-                if o is not None:
+                if o is not None and len(o) > 0:
                     regStart = o[-1][1]
                 o = blackList.findOverlaps(chrom, reg[1], regEnd)
-                if o is not None:
+                if o is not None and len(o) > 0:
                     regEnd = o[0][0]
 
             start_time = time.time()

@@ -752,7 +752,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
         if not chroms_to_ignore or chrom not in chroms_to_ignore:
             for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
                 for r in bam_handle.fetch(reference=chrom, start=reg[0], end=reg[1]):
-                    if r.reference_start >= reg[0] and r.reference_start + r.infer_query_length() - 1 <= reg[1]:
+                    if r.reference_start >= reg[0] and r.reference_start + r.infer_query_length(always=False) - 1 <= reg[1]:
                         blacklisted += 1
 
     return blacklisted
