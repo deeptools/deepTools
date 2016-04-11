@@ -7,7 +7,7 @@ import gzip
 try:
     import bz2
     supportsBZ2 = True
-else:
+except:
     supportsBZ2 = False
 import os.path
 
