@@ -231,12 +231,6 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
         return NULL;
     }
 
-    if(!os->l) {
-        os_destroy(os);
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
-
     // Convert the overlapSet to a list of tuples
     olist = PyList_New(os->l);
     if(!olist) goto error;
@@ -275,6 +269,7 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
         if(PyList_SetItem(olist, i, otuple)) goto error;
         otuple = NULL;
     }
+    os_destroy(os);
 
     return olist;
 
@@ -333,6 +328,7 @@ static PyObject *pyFindOverlappingFeatures(pyGTFtree_t *self, PyObject *args) {
         if(PyList_SetItem(olist, i, ostring)) goto error;
         ostring = NULL;
     }
+    os_destroy(os);
 
     return olist;
 

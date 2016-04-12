@@ -674,7 +674,7 @@ class GTF(object):
             strand = 0
 
         overlaps = self.tree.findOverlaps(chrom, start, end, strand, matchType, strandType, "transcript_id", includeStrand)
-        if not overlaps:
+        if overlaps is None:
             return None
 
         for i, o in enumerate(overlaps):
@@ -705,7 +705,7 @@ class GTF(object):
                     else:
                         break
                 else:
-                    overlaps = None
+                    overlaps = []
                     break
 
         return overlaps
