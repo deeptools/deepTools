@@ -372,7 +372,6 @@ class CountReadsPerBin(object):
         # array to keep the read counts for the regions
         subnum_reads_per_bin = []
 
-        rows = 0
         start_time = time.time()
 
         bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
@@ -385,13 +384,19 @@ class CountReadsPerBin(object):
         transcriptsToConsider = []
         if bed_regions_list is not None:
             transcriptsToConsider = [x[1] for x in bed_regions_list]
+            rows = len(transcriptsToConsider)
         else:
-            for i in range(start, end, self.stepSize):
-                if i + self.binLength > end:
-                    break
-                if blackList is not None and blackList.findOverlaps(chrom, i, i + self.binLength):
-                    continue
-                transcriptsToConsider.append([(i, i + self.binLength)])
+            if self.stepSize == self.binLength:
+                transcriptsToConsider.append([(start, end, self.binLength)])
+                rows = (end - start) // self.binLength
+            else:
+                rows = (end - start) // self.stepSize
+                for i in range(start, end, self.stepSize):
+                    if i + self.binLength > end:
+                        break
+                    if blackList is not None and blackList.findOverlaps(chrom, i, i + self.binLength):
+                        continue
+                    transcriptsToConsider.append([(i, i + self.binLength)])
 
         if self.save_data:
             _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
@@ -399,13 +404,15 @@ class CountReadsPerBin(object):
         else:
             _file_name = ''
 
-        rows = len(transcriptsToConsider)
-        for trans in transcriptsToConsider:
-            for bam in bam_handlers:
+        for bam in bam_handlers:
+            for trans in transcriptsToConsider:
                 tcov = self.get_coverage_of_region(bam, chrom, trans)
-                subnum_reads_per_bin.append(np.sum(tcov))
+                if bed_regions_list is not None:
+                    subnum_reads_per_bin.append(np.sum(tcov))
+                else:
+                    subnum_reads_per_bin.extend(tcov)
 
-        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(rows, len(self.bamFilesList))
+        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(rows, len(self.bamFilesList), order='F')
 
         if self.save_data:
             for i, trans in enumerate(transcriptsToConsider):
@@ -462,7 +469,12 @@ class CountReadsPerBin(object):
         """
         if not fragmentFromRead_func:
             fragmentFromRead_func = self.get_fragment_from_read
-        coverages = np.zeros(len(regions), dtype='float64')
+        nbins = len(regions)
+        if len(regions[0]) == 3:
+            nbins = 0
+            for reg in regions:
+                nbins += (reg[1] - reg[0]) // reg[2]
+        coverages = np.zeros(nbins, dtype='float64')
 
         if self.defaultFragmentLength == 'read length':
             extension = 0
@@ -473,8 +485,14 @@ class CountReadsPerBin(object):
         if self.blackListFileName is not None:
             blackList = GTF(self.blackListFileName)
 
+        vector_start = 0
         for idx, reg in enumerate(regions):
-            coverage = 0.0
+            if len(reg) == 3:
+                tileSize = int(reg[2])
+                nRegBins = (reg[1] - reg[0]) // tileSize
+            else:
+                nRegBins = 1
+                tileSize = int(reg[1] - reg[0])
 
             # Blacklisted regions have a coverage of 0
             if blackList and blackList.findOverlaps(chrom, reg[0], reg[1]):
@@ -539,8 +557,11 @@ class CountReadsPerBin(object):
                     if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
                         continue
 
-                    coverage += 1
-                    break
+                    sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
+                    eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
+                    coverages[sIdx:eIdx] += 1
+                    #coverage += 1
+                    #break
 
                 prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
@@ -550,11 +571,11 @@ class CountReadsPerBin(object):
                 print("%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
                     multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1]))
 
-            # change zeros to NAN
-            if self.zerosToNans and coverage == 0.0:
-                coverage = np.nan
+            vector_start += nRegBins
 
-            coverages[idx] = coverage
+        # change zeros to NAN
+        if self.zerosToNans:
+            coverages[coverages == 0] = np.nan
 
         return coverages
 
