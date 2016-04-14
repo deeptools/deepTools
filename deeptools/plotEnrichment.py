@@ -124,6 +124,10 @@ def plot_enrichment_args():
                           help='Group the plots by sample, rather than by feature type (the default).',
                           action='store_true')
 
+    optional.add_argument('--variableScales',
+                          help='By default, the y-axes are always 0-100. This allows the axis range to be restricted.',
+                          action='store_true')
+
     optional.add_argument('--plotHeight',
                           help='Plot height in cm.',
                           type=float,
@@ -314,7 +318,8 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
         ax.set_ylabel(ylabel)
         ax.set_xticks(np.arange(vals.shape[0]))
         ax.set_xticklabels(xlabels, rotation='vertical')
-        ax.set_ylim(0.0, 100.0)
+        if args.variableScales is False:
+            ax.set_ylim(0.0, 100.0)
 
     plt.subplots_adjust(wspace=0.05, hspace=0.3, bottom=0.15, top=0.80)
     plt.tight_layout()

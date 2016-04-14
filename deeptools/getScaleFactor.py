@@ -105,13 +105,11 @@ def get_scale_factor(args):
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped_total = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
     blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
-    if args.verbose:
-        print(("There are {0} alignments, of which {1} are completely within a blacklist region.".format(bam_mapped_total, blacklisted)))
+    print(("There are {0} alignments, of which {1} are completely within a blacklist region.".format(bam_mapped_total, blacklisted)))
     bam_mapped = bam_mapped_total - blacklisted
     ftk = fraction_kept(args)
     bam_mapped *= ftk
-    if args.verbose:
-        print(("Due to filtering, {0}% of the aforementioned alignments will be used {1}".format(100 * ftk, bam_mapped)))
+    print(("Due to filtering, {0}% of the aforementioned alignments will be used {1}".format(100 * ftk, bam_mapped)))
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
