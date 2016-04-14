@@ -294,7 +294,9 @@ class CountReadsPerBin(object):
             for _values, tempFileName in imap_res:
                 if tempFileName:
                     # concatenate all intermediate tempfiles into one
-                    shutil.copyfileobj(open(tempFileName, 'r'), self.out_file_for_raw_data)
+                    _foo = open(tempFileName, 'r')
+                    shutil.copyfileobj(_foo, self.out_file_for_raw_data)
+                    _foo.close()
                     os.remove(tempFileName)
 
             self.out_file_for_raw_data.close()
@@ -384,13 +386,10 @@ class CountReadsPerBin(object):
         transcriptsToConsider = []
         if bed_regions_list is not None:
             transcriptsToConsider = [x[1] for x in bed_regions_list]
-            rows = len(transcriptsToConsider)
         else:
             if self.stepSize == self.binLength:
                 transcriptsToConsider.append([(start, end, self.binLength)])
-                rows = (end - start) // self.binLength
             else:
-                rows = (end - start) // self.stepSize
                 for i in range(start, end, self.stepSize):
                     if i + self.binLength > end:
                         break
@@ -412,7 +411,7 @@ class CountReadsPerBin(object):
                 else:
                     subnum_reads_per_bin.extend(tcov)
 
-        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(rows, len(self.bamFilesList), order='F')
+        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(-1, len(self.bamFilesList), order='F')
 
         if self.save_data:
             idx = 0
@@ -432,6 +431,7 @@ class CountReadsPerBin(object):
 
         if self.verbose:
             endTime = time.time()
+            rows = subnum_reads_per_bin.shape[0]
             print("%s countReadsInRegions_worker: processing %d "
                   "(%.1f per sec) @ %s:%s-%s" %
                   (multiprocessing.current_process().name,
