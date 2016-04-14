@@ -415,11 +415,19 @@ class CountReadsPerBin(object):
         subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(rows, len(self.bamFilesList), order='F')
 
         if self.save_data:
+            idx = 0
             for i, trans in enumerate(transcriptsToConsider):
-                starts = ",".join([str(x[0]) for x in trans])
-                ends = ",".join([str(x[1]) for x in trans])
-                _file.write("\t".join([chrom, starts, ends]) + "\t")
-                _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
+                if len(trans[0]) != 3:
+                    starts = ",".join([str(x[0]) for x in trans])
+                    ends = ",".join([str(x[1]) for x in trans])
+                    _file.write("\t".join([chrom, starts, ends]) + "\t")
+                    _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
+                else:
+                    for exon in trans:
+                        for startPos in range(exon[0], exon[1], exon[2]):
+                            _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, startPos + exon[2]))
+                            _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[idx, :]]) + "\n")
+                            idx += 1
             _file.close()
 
         if self.verbose:
