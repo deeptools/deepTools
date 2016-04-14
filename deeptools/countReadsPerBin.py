@@ -554,6 +554,7 @@ class CountReadsPerBin(object):
                     # Those cases are to be skipped, hence the continue line.
                     continue
 
+                last_eIdx = None
                 for fragmentStart, fragmentEnd in position_blocks:
                     if fragmentEnd is None or fragmentStart is None:
                         continue
@@ -567,7 +568,12 @@ class CountReadsPerBin(object):
 
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
+                    if last_eIdx is not None:
+                        sIdx = max(last_eIdx, sIdx)
+                        if sIdx >= eIdx:
+                            continue
                     coverages[sIdx:eIdx] += 1
+                    last_eIdx = eIdx
 
                 prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
