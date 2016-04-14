@@ -560,8 +560,6 @@ class CountReadsPerBin(object):
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
                     coverages[sIdx:eIdx] += 1
-                    #coverage += 1
-                    #break
 
                 prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
