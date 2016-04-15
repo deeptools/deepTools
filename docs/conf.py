@@ -19,7 +19,7 @@ import os
 import mock
 
 # MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
-MOCK_MODULES = ['pyBigWig']
+MOCK_MODULES = ['pyBigWig', 'twobitreader']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
@@ -46,7 +46,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'sphinxarg.ext',
-    'numpydoc'
+    'numpydoc',
 ]
 
 # This is needed to suppress autosummary reordering
