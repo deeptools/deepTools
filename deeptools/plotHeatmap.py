@@ -157,7 +157,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # make height of summary plot
         # proportional to the width of heatmap
         sumplot_height = heatmapwidth
-        spacer_height = heatmapwidth / 10
+        spacer_height = heatmapwidth / 6
         # scale height_ratios to convert from row
         # numbers to heatmapheigt fractions
 #        height_ratio = heatmapheight * (height_ratio/sum(height_ratio))
