@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 import argparse
 from collections import OrderedDict
@@ -41,21 +42,12 @@ def parse_arguments(args=None):
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
-    # Because of galaxy, the value of this variables is normally
-    # set to ''. Therefore this check is needed
-    for attr in ['zMin', 'zMax', 'yMax', 'yMin']:
-        try:
-            args.__setattr__(attr, float(args.__getattribute__(attr)))
-        # except ValueError, TypeError:
-        except:
-            args.__setattr__(attr, None)
-
     args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and args.heatmapHeight <= 100 else 10
 
     if not matplotlib.colors.is_color_like(args.missingDataColor):
-        print("The value {0}  for --missingDataColor is ")
-        "not valid".format(args.missingDataColor)
-        exit(1)
+        exit("The value {0}  for --missingDataColor is not valid".format(args.missingDataColor))
+
+    args.boxAroundHeatmaps = True if args.boxAroundHeatmaps == 'yes' else False
 
     return args
 
@@ -118,7 +110,7 @@ def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
     return xticks, xticks_label
 
 
-def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGroup):
+def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGroup, colorbar_position):
     """
     prepare the plot layout
     as a grid having as many rows
@@ -144,18 +136,28 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         height_ratio = np.diff(hm_matrix.group_boundaries)
         # scale ratio to sum = heatmapheight
         height_ratio = heatmapheight * (height_ratio.astype(float) / height_ratio.sum())
+
+    # convert the height_ratio from numpy array back to list
+    height_ratio = height_ratio.tolist()
     # the width ratio is equal for all heatmaps
     width_ratio = [heatmapwidth] * numcols
 
     if showColorbar:
-        numcols += 1
-        width_ratio += [1 / 2.54]
+        if colorbar_position == 'below':
+            numrows += 2  # a spacer needs to be added
+                          # to avoid overlaps
+            height_ratio += [4 / 2.54] # spacer
+            height_ratio += [1 / 2.54]
+        else:
+            numcols += 1
+            width_ratio += [1 / 2.54]
+
     if showSummaryPlot:
-        numrows += 2  # plus 2 because an spacer is added
+        numrows += 2  # plus 2 because a spacer is added
         # make height of summary plot
         # proportional to the width of heatmap
         sumplot_height = heatmapwidth
-        spacer_height = heatmapwidth / 10.
+        spacer_height = heatmapwidth / 10
         # scale height_ratios to convert from row
         # numbers to heatmapheigt fractions
 #        height_ratio = heatmapheight * (height_ratio/sum(height_ratio))
@@ -168,7 +170,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
 
 def plotMatrix(hm, outFileName,
-               colorMapDict={'colorMap': 'binary', 'missingDataColor': 'black', 'alpha': 1.0},
+               colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0},
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -179,9 +181,9 @@ def plotMatrix(hm, outFileName,
                heatmapHeight=25,
                heatmapWidth=7.5,
                perGroup=False, whatToShow='plot, heatmap and colorbar',
-               plotType='simple',
                image_format=None,
-               legend_location='upper-left'):
+               legend_location='upper-left',
+               box_around_heatmaps=True):
 
     matrix_flatten = None
     if zMin is None:
@@ -189,7 +191,9 @@ def plotMatrix(hm, outFileName,
         # try to avoid outliers by using np.percentile
         zMin = np.percentile(matrix_flatten, 1.0)
         if np.isnan(zMin):
-            zMin = None
+            zMin = [None]
+        else:
+            zMin = [zMin]  # convert to list to support multiple entries
 
     if zMax is None:
         if matrix_flatten is None:
@@ -197,7 +201,9 @@ def plotMatrix(hm, outFileName,
         # try to avoid outliers by using np.percentile
         zMax = np.percentile(matrix_flatten, 98.0)
         if np.isnan(zMax):
-            zMax = None
+            zMax = [None]
+        else:
+            zMax = [zMax]
 
     plt.rcParams['font.size'] = 8.0
     fontP = FontProperties()
@@ -213,8 +219,30 @@ def plotMatrix(hm, outFileName,
         showSummaryPlot = True
         showColorbar = True
 
+    # colormap for the heatmap
+    if colorMapDict['colorMap']:
+        cmap = []
+        for color_map in colorMapDict['colorMap']:
+            cmap.append(plt.get_cmap(color_map))
+            cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+
+    if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
+        # make a cmap for each color list given
+        cmap= []
+        for color_list in colorMapDict['colorList']:
+            cmap.append(matplotlib.colors.LinearSegmentedColormap.from_list(
+                'my_cmap', color_list.replace(' ' , '').split(","), N=colorMapDict['colorNumber']))
+            cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+
+    if len(cmap) > 1:
+        # position color bar below heatmap when more than one
+        # heatmap color is given
+        colorbar_position = 'below'
+    else:
+        colorbar_position = 'side'
+
     grids = prepare_layout(hm.matrix, (heatmapWidth, heatmapHeight),
-                           showSummaryPlot, showColorbar, perGroup)
+                           showSummaryPlot, showColorbar, perGroup, colorbar_position)
 
     # figsize: w,h tuple in inches
     figwidth = heatmapWidth / 2.54
@@ -231,7 +259,11 @@ def plotMatrix(hm, outFileName,
         num_cols = numsamples
     total_figwidth = figwidth * num_cols
     if showColorbar:
-        total_figwidth += 1 / 2.54
+        if colorbar_position == 'below':
+            figheight += 1 / 2.54
+        else:
+            total_figwidth += 1 / 2.54
+
     fig = plt.figure(figsize=(total_figwidth, figheight))
 
     xticks, xtickslabel = getProfileTicks(hm, reference_point_label, startLabel, endLabel)
@@ -239,21 +271,13 @@ def plotMatrix(hm, outFileName,
     xticks_heat, xtickslabel_heat = get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel)
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
 
-    # colormap for the heatmap
-    if colorMapDict['colorMap']:
-        cmap = plt.get_cmap(colorMapDict['colorMap'])
-    if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
-        cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
-            'my_cmap', colorMapDict['colorList'], N=colorMapDict['colorNumber'])
-
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
     numgroups = hm.matrix.get_num_groups()
     if perGroup:
-        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / float(hm.matrix.get_num_samples()))
+        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
     else:
-        color_list = cmap_plot(np.arange(numgroups) / float(numgroups))
-    cmap.set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+        color_list = cmap_plot(np.arange(numgroups) / numgroups)
     alpha = colorMapDict['alpha']
 
     # check if matrix is reference-point based using the upstream >0 value
@@ -291,23 +315,46 @@ def plotMatrix(hm, outFileName,
 
             if perGroup:
                 ax = fig.add_subplot(grids[sample_idx, group])
+                # the remainder (%) is used to iterate
+                # over the available color maps (cmap).
+                # if the user only provided, lets say two
+                # and there are 10 groups, colormaps they are reused every
+                # two groups.
+                cmap_idx = group_idx % len(cmap)
+                zmin_idx = group_idx % len(zMin)
+                zmax_idx = group_idx % len(zMax)
             else:
-                ax = fig.add_subplot(grids[group, sample])
+                try:
+                    ax = fig.add_subplot(grids[group, sample])
+                except:
+                    import ipdb;ipdb.set_trace()
+                # see above for the use of '%'
+                cmap_idx = sample % len(cmap)
+                zmin_idx = sample % len(zMin)
+                zmax_idx = sample % len(zMax)
+
             if group == first_group and not showSummaryPlot and not perGroup:
                 title = hm.matrix.sample_labels[sample]
                 ax.set_title(title)
 
+            if box_around_heatmaps is False:
+                # Turn off the boxes around the individual heatmaps
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                ax.spines['bottom'].set_visible(False)
+                ax.spines['left'].set_visible(False)
             rows, cols = sub_matrix['matrix'].shape
             interpolation_type = None if rows >= 1000 and cols >= 200 else 'nearest'
             img = ax.imshow(sub_matrix['matrix'],
                             aspect='auto',
                             interpolation=interpolation_type,
                             origin='upper',
-                            vmin=zMin,
-                            vmax=zMax,
-                            cmap=cmap,
+                            vmin=zMin[zmin_idx],
+                            vmax=zMax[zmax_idx],
+                            cmap=cmap[cmap_idx],
                             alpha=alpha,
                             extent=[0, cols, rows, 0])
+            img.set_rasterized(True)
             # plot border at the end of the regions
             # if ordered by length
             if regions_length_in_bins is not None:
@@ -334,7 +381,7 @@ def plotMatrix(hm, outFileName,
                 ax.axes.set_ylabel(sub_matrix['group'])
 
             # add labels to last block in a column
-            if (perGroup and sample == hm.matrix.get_num_samples() - 1) or \
+            if (perGroup and sample == numsamples - 1) or \
                (not perGroup and group_idx == numgroups - 1):
 
                 # add xticks to the bottom heatmap (last group)
@@ -353,6 +400,20 @@ def plotMatrix(hm, outFileName,
                     which='both',
                     top='off',
                     direction='out')
+
+                if showColorbar and colorbar_position == 'below':
+                    # draw a colormap per each heatmap below the last block
+                    if perGroup:
+                        col = group_idx
+                    else:
+                        col = sample
+                    ax = fig.add_subplot(grids[-1, col])
+                    from matplotlib import ticker
+                    tick_locator = ticker.MaxNLocator(nbins=4)
+                    try:
+                        fig.colorbar(img, cax=ax, alpha=alpha, orientation='horizontal', ticks=tick_locator)
+                    except:
+                        import ipdb;ipdb.set_trace()
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
@@ -416,10 +477,10 @@ def plotMatrix(hm, outFileName,
             ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
                                frameon=False, markerscale=0.5)
 
-    if showColorbar:
+    if showColorbar and colorbar_position != 'below':
         if showSummaryPlot:
-            # we dont want to colorbar to extend
-            # over the profiles row
+            # we don't want to colorbar to extend
+            # over the profiles and spacer top rows
             grid_start = 2
         else:
             grid_start = 0
@@ -427,7 +488,11 @@ def plotMatrix(hm, outFileName,
         ax = fig.add_subplot(grids[grid_start:, -1])
         fig.colorbar(img, cax=ax, alpha=alpha)
 
-    plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
+    if box_around_heatmaps:
+        plt.subplots_adjust(wspace=0.05, hspace=0.01, top=0.85, bottom=0, left=0.04, right=0.96)
+    else:
+        #  When not box is plotted the space between heatmaps is reduced
+        plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
 
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
@@ -435,7 +500,7 @@ def plotMatrix(hm, outFileName,
 
 
 def mergeSmallGroups(matrixDict):
-    group_lengths = [len(x) for x in list(matrixDict.values())]
+    group_lengths = [len(x) for x in matrixDict.values()]
     min_group_length = sum(group_lengths) * 0.01
 
     to_merge = []
@@ -489,7 +554,8 @@ def main(args=None):
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
         sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. "
-                         "There will likely be an error message from matplotlib regarding this below.\n".format(hm.matrix.group_labels[problem[0]]))
+                         "There will likely be an error message from matplotlib regarding this "
+                         "below.\n".format(hm.matrix.group_labels[problem[0]]))
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
@@ -528,4 +594,5 @@ def main(args=None):
                args.perGroup,
                args.whatToShow,
                image_format=args.plotFileFormat,
-               legend_location=args.legendLocation)
+               legend_location=args.legendLocation,
+               box_around_heatmaps=args.boxAroundHeatmaps)
