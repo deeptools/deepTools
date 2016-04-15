@@ -5,7 +5,7 @@ gunzip -c master.mat.gz > master.mat.gz
 computeMatrix reference-point -R test2.bed -S test.bw  -b 100 -a 100 --outFileName master_nan_to_zero.mat.gz -bs 1 -p 1 --missingDataAsZero
 gunzip -c  master_nan_to_zero.mat.gz > master_nan_to_zero.mat
 
-computeMatrix scale-regions -a 100 -b 100 -m 100 -S test.bw -R test2.bed -o master_scale_reg.mat.gz -bs 1
+computeMatrix scale-regions -a 100 -b 100 -m 100 -S test.bw -R test2.bed -o master_scale_reg.mat.gz -bs 1 -p 1
 gunzip -c master_scale_reg.mat.gz > master_scale_reg.mat
 
 plotHeatmap -m master.mat.gz --outFileName master.svg
