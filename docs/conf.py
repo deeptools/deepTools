@@ -46,7 +46,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
     'sphinxarg.ext',
-    'numpydoc',
+    'numpydoc'
 ]
 
 # This is needed to suppress autosummary reordering
