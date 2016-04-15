@@ -294,7 +294,9 @@ class CountReadsPerBin(object):
             for _values, tempFileName in imap_res:
                 if tempFileName:
                     # concatenate all intermediate tempfiles into one
-                    shutil.copyfileobj(open(tempFileName, 'r'), self.out_file_for_raw_data)
+                    _foo = open(tempFileName, 'r')
+                    shutil.copyfileobj(_foo, self.out_file_for_raw_data)
+                    _foo.close()
                     os.remove(tempFileName)
 
             self.out_file_for_raw_data.close()
@@ -384,13 +386,10 @@ class CountReadsPerBin(object):
         transcriptsToConsider = []
         if bed_regions_list is not None:
             transcriptsToConsider = [x[1] for x in bed_regions_list]
-            rows = len(transcriptsToConsider)
         else:
             if self.stepSize == self.binLength:
                 transcriptsToConsider.append([(start, end, self.binLength)])
-                rows = (end - start) // self.binLength
             else:
-                rows = (end - start) // self.stepSize
                 for i in range(start, end, self.stepSize):
                     if i + self.binLength > end:
                         break
@@ -412,18 +411,27 @@ class CountReadsPerBin(object):
                 else:
                     subnum_reads_per_bin.extend(tcov)
 
-        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(rows, len(self.bamFilesList), order='F')
+        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(-1, len(self.bamFilesList), order='F')
 
         if self.save_data:
+            idx = 0
             for i, trans in enumerate(transcriptsToConsider):
-                starts = ",".join([str(x[0]) for x in trans])
-                ends = ",".join([str(x[1]) for x in trans])
-                _file.write("\t".join([chrom, starts, ends]) + "\t")
-                _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
+                if len(trans[0]) != 3:
+                    starts = ",".join([str(x[0]) for x in trans])
+                    ends = ",".join([str(x[1]) for x in trans])
+                    _file.write("\t".join([chrom, starts, ends]) + "\t")
+                    _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
+                else:
+                    for exon in trans:
+                        for startPos in range(exon[0], exon[1], exon[2]):
+                            _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, startPos + exon[2]))
+                            _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[idx, :]]) + "\n")
+                            idx += 1
             _file.close()
 
         if self.verbose:
             endTime = time.time()
+            rows = subnum_reads_per_bin.shape[0]
             print("%s countReadsInRegions_worker: processing %d "
                   "(%.1f per sec) @ %s:%s-%s" %
                   (multiprocessing.current_process().name,
@@ -546,6 +554,7 @@ class CountReadsPerBin(object):
                     # Those cases are to be skipped, hence the continue line.
                     continue
 
+                last_eIdx = None
                 for fragmentStart, fragmentEnd in position_blocks:
                     if fragmentEnd is None or fragmentStart is None:
                         continue
@@ -559,7 +568,12 @@ class CountReadsPerBin(object):
 
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
+                    if last_eIdx is not None:
+                        sIdx = max(last_eIdx, sIdx)
+                        if sIdx >= eIdx:
+                            continue
                     coverages[sIdx:eIdx] += 1
+                    last_eIdx = eIdx
 
                 prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
