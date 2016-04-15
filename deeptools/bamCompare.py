@@ -158,53 +158,46 @@ def process_args(args=None):
 
 def get_scale_factors(args):
 
-    bam1 = bamHandler.openBam(args.bamfile1)
-    bam2 = bamHandler.openBam(args.bamfile2)
-
-    bam1_mapped = parserCommon.bam_total_reads(bam1, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam1, args.ignoreForNormalization, args.blackListFileName)
-    bam1_mapped -= blacklisted
-
-    bam2_mapped = parserCommon.bam_total_reads(bam2, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam2, args.ignoreForNormalization, args.blackListFileName)
-    bam2_mapped -= blacklisted
-
     if args.scaleFactors:
         scale_factors = list(map(float, args.scaleFactors.split(":")))
-    else:
-        if args.scaleFactorsMethod == 'SES':
-            scalefactors_dict = estimateScaleFactor(
-                [bam1.filename, bam2.filename],
-                args.sampleLength, args.numberOfSamples,
-                1,
-                blackListFileName=args.blackListFileName,
-                numberOfProcessors=args.numberOfProcessors,
-                verbose=args.verbose,
-                chrsToSkip=args.ignoreForNormalization)
+    elif args.scaleFactorsMethod == 'SES':
+        scalefactors_dict = estimateScaleFactor(
+            [args.bamfile1, args.bamfile2],
+            args.sampleLength, args.numberOfSamples,
+            1,
+            blackListFileName=args.blackListFileName,
+            numberOfProcessors=args.numberOfProcessors,
+            verbose=args.verbose,
+            chrsToSkip=args.ignoreForNormalization)
 
-            scale_factors = scalefactors_dict['size_factors']
+        scale_factors = scalefactors_dict['size_factors']
 
-            if args.verbose:
-                print("Size factors using SES: {}".format(scale_factors))
-                print("%s regions of size %s where used " %
-                      (scalefactors_dict['sites_sampled'],
-                       args.sampleLength))
+        if args.verbose:
+            bam1 = bamHandler.openBam(args.bamfile1)
+            bam2 = bamHandler.openBam(args.bamfile2)
 
-                print("ignoring filtering, size factors if the number of mapped "
-                      "reads would have been used:")
-                print(tuple(
-                    float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped])))
+            print("Size factors using SES: {}".format(scale_factors))
+            print("%s regions of size %s where used " %
+                  (scalefactors_dict['sites_sampled'],
+                   args.sampleLength))
 
-        elif args.scaleFactorsMethod == 'readCount':
-            args.bam = args.bamfile1
-            args.scaleFactor = 1.0
-            s1 = get_scale_factor(args)
-            args.bam = args.bamfile2
-            s2 = get_scale_factor(args)
-            scale_factors = np.array([s1, s2]) / float(max(s1, s2))
-            if args.verbose:
-                print("Size factors using total number "
-                      "of mapped reads: {}".format(scale_factors))
+            print("ignoring filtering/blacklists, size factors if the number of mapped "
+                  "reads would have been used:")
+            print(tuple(
+                float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped])))
+            bam1.close()
+            bam2.close()
+
+    elif args.scaleFactorsMethod == 'readCount':
+        args.bam = args.bamfile1
+        args.scaleFactor = 1.0
+        s1 = get_scale_factor(args)
+        args.bam = args.bamfile2
+        s2 = get_scale_factor(args)
+        scale_factors = np.array([s1, s2]) / float(max(s1, s2))
+        if args.verbose:
+            print("Size factors using total number "
+                  "of mapped reads: {}".format(scale_factors))
 
     # in case the subtract method is used, the final difference
     # would be normalized according to the given method
@@ -217,14 +210,19 @@ def get_scale_factors(args):
         # For example, if sample A is unscaled and sample B is scaled by 0.5,
         # then normalizing factor for A to report RPKM read counts
         # is also applied to B.
-        if scale_factors[0] == 1:
-            mappedReads = bam1_mapped
-            bamfile = args.bamfile1
-        else:
-            mappedReads = bam2_mapped
-            bamfile = args.bamfile2
-
         if args.scaleFactors is None:
+            if scale_factors[0] == 1:
+                args.bam = args.bamfile1
+            else:
+                args.bam = args.bamfile2
+            bam = bamHandler.openBam(args.bamfile)
+
+            normalizeTo1x = args.normalizeTo1x
+            normalizeUsingRPKM = args.normalizeUsingRPKM
+            args.normalizeTo1x = False
+            args.normalizeUsingRPKM = False
+            mappedReads = int(get_scale_factor(args))
+
             if args.normalizeTo1x:
                 # try to guess fragment length if the bam file contains paired end reads
                 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -277,6 +275,8 @@ def get_scale_factors(args):
                 if args.verbose:
                     print("scale factor for   ")
                     "RPKM is {0}".format(coverage_scale_factor)
+            args.normalizeTo1x = normalizeTo1x
+            args.normalizeUsingRPKM = normalizeUsingRPKM
 
     return scale_factors
 
