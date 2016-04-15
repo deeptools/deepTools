@@ -215,7 +215,6 @@ def get_scale_factors(args):
                 args.bam = args.bamfile1
             else:
                 args.bam = args.bamfile2
-            bam = bamHandler.openBam(args.bamfile)
 
             normalizeTo1x = args.normalizeTo1x
             normalizeUsingRPKM = args.normalizeUsingRPKM
@@ -226,7 +225,7 @@ def get_scale_factors(args):
             if args.normalizeTo1x:
                 # try to guess fragment length if the bam file contains paired end reads
                 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-                frag_len_dict, read_len_dict = get_read_and_fragment_length(bamfile,
+                frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
                                                                             return_lengths=False,
                                                                             blackListFileName=args.blackListFileName,
                                                                             numberOfProcessors=args.numberOfProcessors,
