@@ -1,5 +1,9 @@
 import sys
 import os
+import pysam
+from deeptoolsintervals import GTF
+from deeptools.bamHandler import openBam
+
 
 debug = 0
 
@@ -303,3 +307,71 @@ def mungeChromosome(chrom, chromList):
 
     # This shouldn't actually happen
     return None
+
+
+def bam_total_reads(bam_handle, chroms_to_ignore):
+    """Count the total number of mapped reads in a BAM file, filtering
+    the chromosome given in chroms_to_ignore list
+    """
+    if chroms_to_ignore:
+        import pysam
+
+        lines = pysam.idxstats(bam_handle.filename)
+        if type(lines) is str:
+            lines = lines.strip().split('\n')
+        tot_mapped_reads = 0
+        for line in lines:
+            chrom, _len, nmapped, _nunmapped = line.split('\t')
+            if chrom not in chroms_to_ignore:
+                tot_mapped_reads += int(nmapped)
+
+    else:
+        tot_mapped_reads = bam_handle.mapped
+
+    return tot_mapped_reads
+
+
+def bam_blacklisted_worker(args):
+    bam, chrom, start, end = args
+    fh = openBam(bam)
+    blacklisted = 0
+    for r in fh.fetch(reference=chrom, start=start, end=end):
+        if r.reference_start >= start and r.reference_start + r.infer_query_length(always=False) - 1 <= end:
+            blacklisted += 1
+    fh.close()
+    return blacklisted
+
+
+def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, numberOfProcessors=1):
+    blacklisted = 0
+    if blackListFileName is None:
+        return blacklisted
+
+    # Get the chromosome lengths
+    chromLens = {}
+    lines = pysam.idxstats(bam_handle.filename)
+    lines = toString(lines)
+    if type(lines) is str:
+        lines = lines.strip().split('\n')
+    for line in lines:
+        chrom, _len, nmapped, _nunmapped = line.split('\t')
+        chromLens[chrom] = int(_len)
+
+    bl = GTF(blackListFileName)
+    regions = []
+    for chrom in bl.chroms:
+        if not chroms_to_ignore or chrom not in chroms_to_ignore:
+            for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
+                regions.append([bam_handle.filename, chrom, reg[0], reg[1]])
+
+    if len(regions) > 0:
+        import multiprocessing
+        if len(regions) > 1 and numberOfProcessors > 1:
+            pool = multiprocessing.Pool(numberOfProcessors)
+            res = pool.map_async(bam_blacklisted_worker, regions).get(9999999)
+        else:
+            res = [bam_blacklisted_worker(x) for x in regions]
+        for val in res:
+            blacklisted += val
+
+    return blacklisted

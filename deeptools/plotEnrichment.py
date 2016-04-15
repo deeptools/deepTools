@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# TODO:
-#       Is it faster to query all intervals in a chunk and then fetch the reads (probably not)?
-#       Galaxy wrapper
-#       What should the default dimensions be? I get the feeling that the font isn't scaling nicely
-
 import sys
 import argparse
 import numpy as np
@@ -15,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
-from deeptools import parserCommon
+from deeptools import parserCommon, utilities
 from deeptools.getScaleFactor import fraction_kept
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.utilities import getCommonChrNames, mungeChromosome
@@ -79,7 +74,6 @@ def plot_enrichment_args():
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
-                          type=argparse.FileType('w'),
                           metavar='FILE',
                           required=True)
 
@@ -369,13 +363,13 @@ def main(args=None):
     # Get the total counts, excluding blacklisted regions and filtered reads
     totalCounts = []
     fhs = [openBam(x) for x in args.bamfiles]
-    for bam_handle in fhs:
-        bam_mapped = parserCommon.bam_total_reads(bam_handle, None)
-        blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, None, args.blackListFileName)
+    for i, bam_handle in enumerate(fhs):
+        bam_mapped = utilities.bam_total_reads(bam_handle, None)
+        blacklisted = utilities.bam_blacklisted_reads(bam_handle, None, args.blackListFileName, args.numberOfProcessors)
         if args.verbose:
             print(("There are {0} alignments in {1}, of which {2} are completely within a blacklist region.".format(bam_mapped, bam_handle.name, blacklisted)))
         bam_mapped -= blacklisted
-        args.bam = bam_handle.filename
+        args.bam = args.bamfiles[i]
         args.ignoreForNormalization = None
         ftk = fraction_kept(args)
         bam_mapped *= ftk

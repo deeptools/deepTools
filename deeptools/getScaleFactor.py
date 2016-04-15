@@ -4,7 +4,7 @@
 import numpy as np
 import deeptools.mapReduce as mapReduce
 from deeptools import bamHandler
-from deeptools import parserCommon
+from deeptools import utilities
 
 debug = 0
 
@@ -72,7 +72,7 @@ def fraction_kept(args):
     total = 0
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
     chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
@@ -103,8 +103,8 @@ def fraction_kept(args):
 def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped_total = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
+    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName, args.numberOfProcessors)
     print(("There are {0} alignments, of which {1} are completely within a blacklist region.".format(bam_mapped_total, blacklisted)))
     bam_mapped = bam_mapped_total - blacklisted
     ftk = fraction_kept(args)

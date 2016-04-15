@@ -11,6 +11,7 @@ from deeptools import parserCommon
 from deeptools import bamHandler
 from deeptools.getRatio import getRatio
 from deeptools.getScaleFactor import get_scale_factor
+from deeptools import utilities
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -157,6 +158,15 @@ def process_args(args=None):
 
 
 def get_scale_factors(args):
+    if args.ratio == 'subtract':
+        # We need raw counts in this case
+        normalizeTo1x = args.normalizeTo1x
+        normalizeUsingRPKM = args.normalizeUsingRPKM
+        args.normalizeTo1x = False
+        args.normalizeUsingRPKM = False
+
+    # This is only used if we subtract
+    mappedReads = [None, None]
 
     if args.scaleFactors:
         scale_factors = list(map(float, args.scaleFactors.split(":")))
@@ -194,6 +204,7 @@ def get_scale_factors(args):
         s1 = get_scale_factor(args)
         args.bam = args.bamfile2
         s2 = get_scale_factor(args)
+        mappedReads = [s1, s2]
         scale_factors = np.array([s1, s2]) / float(max(s1, s2))
         if args.verbose:
             print("Size factors using total number "
@@ -210,18 +221,25 @@ def get_scale_factors(args):
         # For example, if sample A is unscaled and sample B is scaled by 0.5,
         # then normalizing factor for A to report RPKM read counts
         # is also applied to B.
+
         if args.scaleFactors is None:
             if scale_factors[0] == 1:
                 args.bam = args.bamfile1
+                mappedReads = mappedReads[0]
             else:
                 args.bam = args.bamfile2
+                mappedReads = mappedReads[1]
+            if mappedReads is None:
+                mappedReads = get_scale_factor(args.bam)
+            bam_handle = bamHandler.openBam(args.bam)
+            mappedReads *= utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+            bam_handle.close()
 
-            normalizeTo1x = args.normalizeTo1x
-            normalizeUsingRPKM = args.normalizeUsingRPKM
-            args.normalizeTo1x = False
-            args.normalizeUsingRPKM = False
-            mappedReads = int(get_scale_factor(args))
+        # Replace the arguments
+        args.normalizeTo1x = normalizeTo1x
+        args.normalizeUsingRPKM = normalizeUsingRPKM
 
+        if args.scaleFactors is None:
             if args.normalizeTo1x:
                 # try to guess fragment length if the bam file contains paired end reads
                 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -274,8 +292,6 @@ def get_scale_factors(args):
                 if args.verbose:
                     print("scale factor for   ")
                     "RPKM is {0}".format(coverage_scale_factor)
-            args.normalizeTo1x = normalizeTo1x
-            args.normalizeUsingRPKM = normalizeUsingRPKM
 
     return scale_factors
 
