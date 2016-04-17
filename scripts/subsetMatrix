@@ -133,7 +133,6 @@ def getSampleBounds(args, matrix):
 
 def subsetRegions(matrix, bounds):
     out = []
-    print(bounds)
     for x in bounds:
         reg = matrix.matrix.regions[x]
         # we need to add a list of [chrom, [(start, end), (start, end)], name, 0, strand, score)] 
