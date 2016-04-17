@@ -6,6 +6,7 @@
  * Read extension is handled more accurately, such that if a read originates outside of a bin or BED/GTF region that it will typically be included if the --extendReads option is used and the extension would put it in a given bin/region.
  * deepTools now uses a custom interval-tree implementation that allows including metadata, such as gene/transcript IDs, along with intervals. For those interested, the code for this available separately (https://github.com/dpryan79/deeptools_intervals) with the original C-only implementation here: https://github.com/dpryan79/libGTF.
  * The API for the countReadsPerBin, getScorePerBigWigBin, and mapReduce modules has changed slightly (this was needed to support the --metagene option). Anyone using these in their own programs is encouraged to look at the modified API before upgrading.
+ * Added the `plotEnrichment` function (this was issue #329).
 
 2.2.3
 

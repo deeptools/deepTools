@@ -38,7 +38,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
     bam = bamHandler.openBam(bamFile)
     end = max(start + 1, end - distanceBetweenBins)
     if chrom in bam.references:
-        reads = np.array([(abs(r.template_length), r.infer_query_length())
+        reads = np.array([(abs(r.template_length), r.infer_query_length(always=False))
                           for r in bam.fetch(chrom, start, end)
                           if r.is_proper_pair and r.is_read1])
         if not len(reads):

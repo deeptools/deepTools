@@ -187,6 +187,78 @@ error:
     return 1;
 }
 
+/* This currently hard-codes the following:
+    name
+    source
+    frame
+    all attributes
+
+    returns 1 on error
+*/
+int addEnrichmententry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, double score, char *feature) {
+    int32_t IDchrom, IDfeature, IDsource;
+    char source[] = "deepTools";
+    uint8_t frame = 3;
+    GTFentry *e = NULL;
+    //Attribute **attribs = calloc(1, sizeof(Attribute *));
+    //if(!attribs) return 1;
+
+    //Get the chromosome ID
+    if(!strExistsHT(t->htChroms, chrom)) {
+        addChrom(t);
+        IDchrom = addHTelement(t->htChroms, chrom);
+    } else {
+        IDchrom = str2valHT(t->htChroms, chrom);
+    }
+
+    //Handle the hard-coded stuff, in case they're ever requested
+    if(!strExistsHT(t->htSources, source)) {
+        IDsource = addHTelement(t->htSources, source);
+    } else {
+        IDsource = str2valHT(t->htSources, source);
+    }
+
+    if(!strExistsHT(t->htFeatures, feature)) {
+        IDfeature = addHTelement(t->htFeatures, feature);
+    } else {
+        IDfeature = str2valHT(t->htFeatures, feature);
+    }
+
+    //Initialize the entry
+    e = malloc(sizeof(GTFentry));
+    if(!e) goto error;
+    e->right = NULL;
+
+    e->chrom = IDchrom;
+    e->feature = IDfeature;
+    e->source = IDsource;
+    e->start = start;
+    e->end = end;
+    e->strand = strand;
+    e->frame = frame;
+    e->score = score;
+    e->nAttributes = 0;
+    e->attrib = NULL;
+
+    if(t->chroms[IDchrom]->tree) {
+        e->left = ((GTFentry*) t->chroms[IDchrom]->tree)->left;
+        e->left->right = e;
+        ((GTFentry*) t->chroms[IDchrom]->tree)->left = e;
+    } else {
+        t->chroms[IDchrom]->tree = (void *) e;
+        e->left = e;
+    }
+    t->chroms[IDchrom]->n_entries++;
+
+    return 0;
+
+error:
+    //if(attribs) free(attribs);
+    //if(a) free(a);
+    if(e) free(e);
+    return 1;
+}
+
 /*******************************************************************************
 *
 * Sorting functions
