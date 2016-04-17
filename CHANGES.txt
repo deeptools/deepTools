@@ -7,6 +7,7 @@
  * deepTools now uses a custom interval-tree implementation that allows including metadata, such as gene/transcript IDs, along with intervals. For those interested, the code for this available separately (https://github.com/dpryan79/deeptools_intervals) with the original C-only implementation here: https://github.com/dpryan79/libGTF.
  * The API for the countReadsPerBin, getScorePerBigWigBin, and mapReduce modules has changed slightly (this was needed to support the --metagene option). Anyone using these in their own programs is encouraged to look at the modified API before upgrading.
  * Added the `plotEnrichment` function (this was issue #329).
+ * There is now a `subsetMatrix` script available that can be used to subset the output of computeMatrix. This is useful for preparing plots that only contain a subset of samples/region groups. Note that this isn't installed by default.
 
 2.2.3
 
