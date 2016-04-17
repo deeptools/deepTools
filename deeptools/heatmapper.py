@@ -1073,16 +1073,7 @@ class _matrix(object):
         if sort_using == 'region_length':
             matrix_avgs = np.array([x['end'] - x['start']
                                    for x in self.regions])
-        elif sort_using == 'min':
-            matrix_avgs = np.nanmin(self.matrix, axis=1)
-        elif sort_using == 'max':
-            matrix_avgs = np.nanmax(self.matrix, axis=1)
-        elif sort_using == 'mean':
-            matrix_avgs = np.nanmean(self.matrix, axis=1)
-        elif sort_using == 'median':
-            matrix_avgs = np.nanmedian(self.matrix, axis=1)
         else:
-            # 'sum' can handle NaN properly
             matrix_avgs = np.__getattribute__(sort_using)(
                 self.matrix, axis=1)
 
