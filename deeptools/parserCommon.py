@@ -1,10 +1,7 @@
 import argparse
 import deeptools.config as cfg
 import os
-import pysam
 from deeptools._version import __version__
-from deeptoolsintervals import GTF
-from deeptools.utilities import toString
 
 
 def check_float_0_1(value):
@@ -338,8 +335,13 @@ def genomicRegion(string):
         return None
     # remove undesired characters that may be present and
     # replace - by :
-    region = region.translate(None, ",;|!{}()").replace("-", ":")
+    # N.B., the syntax for translate() differs between python 2 and 3
+    try:
+        region = region.translate(None, ",;|!{}()").replace("-", ":")
+    except:
+        region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
+        print("oh no!")
         raise argparse.ArgumentTypeError(
             "{} is not a valid region".format(string))
     return region
@@ -732,51 +734,3 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'additional information are given.',
                           action='store_true')
     return parser
-
-
-def bam_total_reads(bam_handle, chroms_to_ignore):
-    """Count the total number of mapped reads in a BAM file, filtering
-    the chromosome given in chroms_to_ignore list
-    """
-    if chroms_to_ignore:
-        import pysam
-
-        lines = pysam.idxstats(bam_handle.filename)
-        if type(lines) is str:
-            lines = lines.strip().split('\n')
-        tot_mapped_reads = 0
-        for line in lines:
-            chrom, _len, nmapped, _nunmapped = line.split('\t')
-            if chrom not in chroms_to_ignore:
-                tot_mapped_reads += int(nmapped)
-
-    else:
-        tot_mapped_reads = bam_handle.mapped
-
-    return tot_mapped_reads
-
-
-def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
-    blacklisted = 0
-    if blackListFileName is None:
-        return blacklisted
-
-    # Get the chromosome lengths
-    chromLens = {}
-    lines = pysam.idxstats(bam_handle.filename)
-    lines = toString(lines)
-    if type(lines) is str:
-        lines = lines.strip().split('\n')
-    for line in lines:
-        chrom, _len, nmapped, _nunmapped = line.split('\t')
-        chromLens[chrom] = int(_len)
-
-    bl = GTF(blackListFileName)
-    for chrom in bl.chroms:
-        if not chroms_to_ignore or chrom not in chroms_to_ignore:
-            for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
-                for r in bam_handle.fetch(reference=chrom, start=reg[0], end=reg[1]):
-                    if r.reference_start >= reg[0] and r.reference_start + r.infer_query_length() - 1 <= reg[1]:
-                        blacklisted += 1
-
-    return blacklisted

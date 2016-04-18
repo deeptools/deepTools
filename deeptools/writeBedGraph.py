@@ -6,7 +6,7 @@ import pyBigWig
 
 # own modules
 from deeptools import mapReduce
-from deeptools.utilities import getCommonChrNames
+from deeptools.utilities import getCommonChrNames, toBytes
 import deeptools.countReadsPerBin as cr
 from deeptools import bamHandler
 from deeptools import utilities
@@ -144,7 +144,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
             if tempfilename:
                 # concatenate all intermediate tempfiles into one
                 # bedgraph file
-                shutil.copyfileobj(open(tempfilename, 'rb'), out_file)
+                _foo = open(tempfilename, 'rb')
+                shutil.copyfileobj(_foo, out_file)
+                _foo.close()
                 os.remove(tempfilename)
 
         bedgraph_file = out_file.name
@@ -282,7 +284,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     sort_cmd = cfg.config.get('external_tools', 'sort')
     _file = NamedTemporaryFile(delete=False)
     for chrom, size in chromSizes:
-        _file.write("{}\t{}\n".format(chrom, size))
+        _file.write(toBytes("{}\t{}\n".format(chrom, size)))
     _file.close()
     system("LC_ALL=C {} -k1,1 -k2,2n {} > {}.sorted".format(sort_cmd, _file.name, _file.name))
     cl = []

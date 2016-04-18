@@ -19,9 +19,12 @@ int PyString_Check(PyObject *obj) {
     return 0;
 }
 
-//I don't know what happens if PyBytes_AsString(NULL) is used...
 char *PyString_AsString(PyObject *obj) {
     return PyBytes_AsString(PyUnicode_AsASCIIString(obj));
+}
+
+PyObject *PyString_FromString(char *s) {
+    return PyUnicode_FromString(s);
 }
 #endif
 
@@ -117,6 +120,49 @@ static PyObject *pyAddEntry(pyGTFtree_t *self, PyObject *args) {
     return Py_None;
 }
 
+static PyObject *pyAddEnrichmentEntry(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    char *chrom = NULL, *sscore = NULL, *feature = NULL;
+    uint32_t start, end;
+    double score;
+    uint8_t strand;
+    unsigned long lstrand, lstart, lend;
+
+    if(!(PyArg_ParseTuple(args, "skkkss", &chrom, &lstart, &lend, &lstrand, &sscore, &feature))) {
+        PyErr_SetString(PyExc_RuntimeError, "pyAddEnrichmentEntry received an invalid or missing argument!");
+        return NULL;
+    }
+
+    //Convert all of the longs
+    if(lstart >= (uint32_t) -1 || lend >= (uint32_t) -1 || lend <= lstart) {
+        PyErr_SetString(PyExc_RuntimeError, "pyAddEnrichmentEntry received invalid bounds!");
+        return NULL;
+    }
+    start = (uint32_t) lstart;
+    end = (uint32_t) lend;
+    if(lstrand != 0 && lstrand != 1 && lstrand != 3) {
+        PyErr_SetString(PyExc_RuntimeError, "pyAddEnrichmentEntry received an invalid strand!");
+        return NULL;
+    }
+    strand = (uint8_t) lstrand;
+
+    //Handle the score
+    if(strcmp(sscore, ".") == 0) {
+        score = DBL_MAX;
+    } else {
+        score = strtod(sscore, NULL);
+    }
+
+    //Actually add the entry
+    if(addEnrichmententry(t, chrom, start, end, strand, score, feature)) {
+        PyErr_SetString(PyExc_RuntimeError, "pyAddEnrichmentEntry received an error while inserting an entry!");
+        return NULL;
+    }
+
+    Py_INCREF(Py_None);
+    return Py_None;
+}
+
 static PyObject *pyVine2Tree(pyGTFtree_t *self, PyObject *args) {
     GTFtree *t = self->t;
     sortGTF(t);
@@ -185,12 +231,6 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
         return NULL;
     }
 
-    if(!os->l) {
-        os_destroy(os);
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
-
     // Convert the overlapSet to a list of tuples
     olist = PyList_New(os->l);
     if(!olist) goto error;
@@ -229,6 +269,7 @@ static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
         if(PyList_SetItem(olist, i, otuple)) goto error;
         otuple = NULL;
     }
+    os_destroy(os);
 
     return olist;
 
@@ -236,6 +277,65 @@ error:
     if(otuple) Py_DECREF(otuple);
     if(olist) Py_DECREF(olist);
     PyErr_SetString(PyExc_RuntimeError, "findOverlaps received an error!");
+    return NULL;
+}
+
+static PyObject *pyFindOverlappingFeatures(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    char *chrom = NULL;
+    int32_t i;
+    uint32_t start, end;
+    int strand = 3, strandType = 0, matchType = 0;
+    unsigned long lstrand, lstart, lend, lmatchType, lstrandType;
+    overlapSet *os = NULL;
+    PyObject *olist = NULL, *ostring = NULL;
+
+    if(!(PyArg_ParseTuple(args, "skkkkk", &chrom, &lstart, &lend, &lstrand, &lmatchType, &lstrandType))) {
+        PyErr_SetString(PyExc_RuntimeError, "pyFindOverlaps received an invalid or missing argument!");
+        return NULL;
+    }
+
+    //I'm assuming that this is never called outside of the module
+    strandType = (int) lstrandType;
+    strand = (int) lstrand;
+    matchType = (int) matchType;
+    start = (uint32_t) lstart;
+    end = (uint32_t) lend;
+
+    os = findOverlaps(NULL, t, chrom, start, end, strand, matchType, strandType, 0, NULL);
+
+    // Did we receive an error?
+    if(!os) {
+        PyErr_SetString(PyExc_RuntimeError, "findOverlaps returned NULL!");
+        return NULL;
+    }
+
+    if(!os->l) {
+        os_destroy(os);
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+
+    // Convert the overlapSet to a list of tuples
+    olist = PyList_New(os->l);
+    if(!olist) goto error;
+    for(i=0; i<os->l; i++) {
+        //Make the python string
+        ostring = PyString_FromString(val2strHT(t->htFeatures, os->overlaps[i]->feature));
+        if(!ostring) goto error;
+
+        // Add the item
+        if(PyList_SetItem(olist, i, ostring)) goto error;
+        ostring = NULL;
+    }
+    os_destroy(os);
+
+    return olist;
+
+error:
+    if(ostring) Py_DECREF(ostring);
+    if(olist) Py_DECREF(olist);
+    PyErr_SetString(PyExc_RuntimeError, "findOverlappingFeatures received an error!");
     return NULL;
 }
 

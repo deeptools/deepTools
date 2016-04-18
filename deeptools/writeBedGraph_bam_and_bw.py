@@ -217,7 +217,9 @@ def writeBedGraph(
         if tempFileName:
             # concatenate all intermediate tempfiles into one
             # bedgraph file
-            shutil.copyfileobj(open(tempFileName, 'rb'), outFile)
+            _foo = open(tempFileName, 'rb')
+            shutil.copyfileobj(_foo, outFile)
+            _foo.close()
             os.remove(tempFileName)
 
     bedGraphFile = outFile.name

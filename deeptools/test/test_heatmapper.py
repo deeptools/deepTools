@@ -77,7 +77,7 @@ class TestHeatmapper(object):
 
     def test_computeMatrix_scale_regions(self):
         args = "scale-regions -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 -m 100 " \
-               "--outFileName /tmp/_test2.mat.gz -bs 10 -p 1".format(ROOT).split()
+               "--outFileName /tmp/_test2.mat.gz -bs 1 -p 1".format(ROOT).split()
 
         deeptools.computeMatrix.main(args)
 
