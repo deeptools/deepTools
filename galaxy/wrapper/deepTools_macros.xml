@@ -389,6 +389,45 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 ]]>
     </token>
 
+    <xml name="blacklist">
+        <param argument="--blackListFileName" type="data" format="bed,gtf" min="1" multiple="true"
+            label="Blacklisted regions in BED/GTF format"
+            help="One or more files containing regions to exclude from the analysis" />
+    </xml>
+
+    <token name="@blacklist@">
+<![CDATA[
+        #set files=[]
+        #for $f in enumerate($blackListFileName):
+            #silent $files.append('%s' % $f)
+        #end for
+        #if len($files) > 0:
+            --blackListFileName #echo ' '.join($files)#
+        #end if
+]]> 
+    </token>
+
+    <xml name="multiple_bed">
+        <param argument="--BED" type="data" format="bed,gtf" min="1" multiple="true"
+            label="Regions in BED/GTF format"
+            help="One or more files containing regions to include in the analysis" />
+    </xml>
+
+    <token name="@multiple_bed@">
+<![CDATA[
+        #set files=[]
+        #set labels=[]
+        #for $f in enumerate($BED):
+            #silent $files.append("'%s'" % $f)
+            #silent $labels.append("'%s'" % $f.display_name)
+        #end for
+        #if len($files) > 0:
+            --BED #echo ' '.join($files)#
+            --regionLabels #echo ' '.join($labels)#
+        #end if
+]]> 
+    </token>
+
     <xml name="reference_genome_source">
         <conditional name="source">
             <param name="ref_source" type="select" label="Reference genome">
