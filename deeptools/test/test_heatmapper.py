@@ -162,11 +162,11 @@ class TestHeatmapper(object):
                    "--outFileName /tmp/_test.svg".format(ROOT).split()
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/heatmap_master_multi_pergroup.svg', '/tmp/_test.svg') is True
-            os.remove('/tmp/_test.svg')
+            #os.remove('/tmp/_test.svg')
 
     def test_plotHeatmap_multiple_colors_muti_scales(self):
         if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --colorList 'white,blue' 'white, red' --zMin 1 0 --zMax 4 5 " \
+            args = "-m {}/master_multi.mat.gz --colorList white,blue white,red --zMin 1 0 --zMax 4 5 " \
                    "--outFileName /tmp/_test.svg".format(ROOT).split()
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/heatmap_master_multi_color.svg', '/tmp/_test.svg') is True
@@ -179,6 +179,7 @@ class TestHeatmapper(object):
             deeptools.plotHeatmap.main(args)
             assert self.compare_svg(ROOT + '/heatmap_master_multi_colormap_no_box.svg', '/tmp/_test.svg') is True
             os.remove('/tmp/_test.svg')
+
     def test_plotProfiler(self):
         if self.run_image_tests:
             args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno dos " \

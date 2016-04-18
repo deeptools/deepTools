@@ -157,12 +157,10 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # make height of summary plot
         # proportional to the width of heatmap
         sumplot_height = heatmapwidth
-        spacer_height = heatmapwidth / 6
+        spacer_height = heatmapwidth / 8
         # scale height_ratios to convert from row
         # numbers to heatmapheigt fractions
-#        height_ratio = heatmapheight * (height_ratio/sum(height_ratio))
-        height_ratio = np.concatenate([[sumplot_height, spacer_height],
-                                       height_ratio])
+        height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio])
 
     grids = gridspec.GridSpec(numrows, numcols, height_ratios=height_ratio, width_ratios=width_ratio)
 
@@ -231,7 +229,7 @@ def plotMatrix(hm, outFileName,
         cmap= []
         for color_list in colorMapDict['colorList']:
             cmap.append(matplotlib.colors.LinearSegmentedColormap.from_list(
-                'my_cmap', color_list.replace(' ' , '').split(","), N=colorMapDict['colorNumber']))
+                'my_cmap', color_list.replace(' ', '').split(","), N=colorMapDict['colorNumber']))
             cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
 
     if len(cmap) > 1:
@@ -489,10 +487,10 @@ def plotMatrix(hm, outFileName,
         fig.colorbar(img, cax=ax, alpha=alpha)
 
     if box_around_heatmaps:
-        plt.subplots_adjust(wspace=0.05, hspace=0.01, top=0.85, bottom=0, left=0.04, right=0.96)
-    else:
-        #  When not box is plotted the space between heatmaps is reduced
         plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
+    else:
+        #  When no box is plotted the space between heatmaps is reduced
+        plt.subplots_adjust(wspace=0.05, hspace=0.01, top=0.85, bottom=0, left=0.04, right=0.96)
 
     plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
                 format=image_format)
@@ -550,7 +548,7 @@ def main(args=None):
                   "Please note that it might be very slow for large datasets.\n")
             hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
-    group_len_ratio = np.diff(hm.matrix.group_boundaries) / float(len(hm.matrix.regions))
+    group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
         sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. "
