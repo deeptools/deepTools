@@ -558,13 +558,13 @@ class heatmapper(object):
                 if nBins == 1:
                     pos_array = np.array([zoneStart])
                 else:
-                    pos_array = np.linspace(valStart, valEnd, nBins, endpoint=False)
+                    pos_array = np.linspace(valStart, valEnd, nBins, endpoint=False, dtype=int)
                 pos_array = np.append(pos_array, valEnd)
 
                 idx = 0
                 while idx < nBins:
                     idxStart = int(pos_array[idx])
-                    idxEnd = int(pos_array[idx + 1])
+                    idxEnd = max(int(pos_array[idx + 1]), idxStart + 1)
                     try:
                         counts_list.append(heatmapper.my_average(valuesArray[idxStart:idxEnd], avgType))
                     except Exception as detail:

@@ -4,7 +4,7 @@
 import numpy as np
 import deeptools.mapReduce as mapReduce
 from deeptools import bamHandler
-from deeptools import parserCommon
+from deeptools import utilities
 
 debug = 0
 
@@ -72,7 +72,7 @@ def fraction_kept(args):
     total = 0
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
     chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
@@ -103,15 +103,13 @@ def fraction_kept(args):
 def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
-    if args.verbose:
-        print(("There are {} alignments, of which {} are completely within a blacklist region.".format(bam_mapped, blacklisted)))
-    bam_mapped -= blacklisted
+    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName, args.numberOfProcessors)
+    print(("There are {0} alignments, of which {1} are completely within a blacklist region.".format(bam_mapped_total, blacklisted)))
+    bam_mapped = bam_mapped_total - blacklisted
     ftk = fraction_kept(args)
     bam_mapped *= ftk
-    if args.verbose:
-        print(("Due to filtering, {}%% of the aforementioned alignments will be used {}".format(100 * ftk, bam_mapped)))
+    print(("Due to filtering, {0}% of the aforementioned alignments will be used {1}".format(100 * ftk, bam_mapped)))
 
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
@@ -163,6 +161,8 @@ def get_scale_factor(args):
 
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
+    else:
+        scale_factor *= bam_mapped / float(bam_mapped_total)
 
     if args.verbose:
         print(("Final scaling factor: {}".format(scale_factor)))
