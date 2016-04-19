@@ -144,9 +144,8 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
     if showColorbar:
         if colorbar_position == 'below':
-            numrows += 2  # a spacer needs to be added
-                          # to avoid overlaps
-            height_ratio += [4 / 2.54] # spacer
+            numrows += 2  # a spacer needs to be added to avoid overlaps
+            height_ratio += [4 / 2.54]  # spacer
             height_ratio += [1 / 2.54]
         else:
             numcols += 1
@@ -226,7 +225,7 @@ def plotMatrix(hm, outFileName,
 
     if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
         # make a cmap for each color list given
-        cmap= []
+        cmap = []
         for color_list in colorMapDict['colorList']:
             cmap.append(matplotlib.colors.LinearSegmentedColormap.from_list(
                 'my_cmap', color_list.replace(' ', '').split(","), N=colorMapDict['colorNumber']))
@@ -322,10 +321,7 @@ def plotMatrix(hm, outFileName,
                 zmin_idx = group_idx % len(zMin)
                 zmax_idx = group_idx % len(zMax)
             else:
-                try:
-                    ax = fig.add_subplot(grids[group, sample])
-                except:
-                    import ipdb;ipdb.set_trace()
+                ax = fig.add_subplot(grids[group, sample])
                 # see above for the use of '%'
                 cmap_idx = sample % len(cmap)
                 zmin_idx = sample % len(zMin)
@@ -408,10 +404,7 @@ def plotMatrix(hm, outFileName,
                     ax = fig.add_subplot(grids[-1, col])
                     from matplotlib import ticker
                     tick_locator = ticker.MaxNLocator(nbins=4)
-                    try:
-                        fig.colorbar(img, cax=ax, alpha=alpha, orientation='horizontal', ticks=tick_locator)
-                    except:
-                        import ipdb;ipdb.set_trace()
+                    fig.colorbar(img, cax=ax, alpha=alpha, orientation='horizontal', ticks=tick_locator)
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
