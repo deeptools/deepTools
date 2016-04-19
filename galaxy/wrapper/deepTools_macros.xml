@@ -30,6 +30,12 @@
         #if $advancedOpt.samFlagExclude:
             --samFlagExclude $advancedOpt.samFlagExclude
         #end if
+        #if $advancedOpt.minFragmentLength:
+            --minFragmentLength $advancedOpt.minFragmentLength
+        #end if
+        #if $advancedOpt.maxFragmentLength:
+            --maxFragmentLength $advancedOpt.maxFragmentLength
+        #end if
     </token>
 
     <token name="@ADVANCED_OPTS_GTF@">
@@ -61,7 +67,6 @@
         #end if
         --colorMap '$plotting_type.colorMap'
         $plotting_type.plotNumbers
-        #end if
         --plotTitle '$plotting_type.plotTitle'
     </token>
 
@@ -167,12 +172,22 @@
             help= "For example, to get only reads that map to the forward strand, use --samFlagExclude 16, where 16 is the SAM flag for reads that map to the reverse strand."/>
     </xml>
 
+    <xml name="fragLength">
+        <param argument="--minFragmentLength" type="integer" optional="True" value="0" min="0"
+            label="Minimum fragment length for inclusion."
+            help="A value greater than 0 will filter out ALL single-end reads. This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
+        <param argument="--maxFragmentLength" type="integer" optional="True" value="0" min="0"
+            label="Maximum fragment length for inclusion."
+            help="As above, but the maximum length. A value of 0 (the default) is equivalent to no maximum." />
+    </xml>
+
     <xml name="read_processing_options">
         <expand macro="extendReads" />
         <expand macro="ignoreDuplicates" />
         <expand macro="centerReads" />
         <expand macro="minMappingQuality" />
         <expand macro="samFlags" />
+        <expand macro="fragLength" />
     </xml>
 
     <xml name="gtf_options">
