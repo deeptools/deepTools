@@ -2,11 +2,12 @@ About
 ======
 
 Please cite deepTools as follows:
-	  Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke.
-	  `deepTools: a flexible platform for exploring deep-sequencing data. <http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract>`_
-	  Nucl. Acids Res., 2014
-	  doi:10.1093/nar/gku365
-	  
+
+    Ramírez, Fidel, Devon P. Ryan, Björn Grüning, Vivek Bhardwaj, Fabian Kilpert,
+    Andreas S. Richter, Steffen Heyne, Friederike Dündar,
+    and Thomas Manke. 2016. `deepTools2: A next Generation Web Server for Deep-Sequencing Data Analysis <http://nar.oxfordjournals.org/content/early/2016/04/12/nar.gkw257.abstract>`_.
+    Nucleic Acids Research, April. `doi:10.1093/nar/gkw257 <http://doi.org/10.1093/nar/gkw257>`_.
+
 .. image:: ../images/logo_mpi-ie.jpg
 	  
 This tool suite is developed by the `Bioinformatics Facility <http://www1.ie-freiburg.mpg.de/bioinformaticsfac>`_ at the
