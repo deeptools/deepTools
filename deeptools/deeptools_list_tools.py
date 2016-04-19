@@ -47,6 +47,7 @@ Data Analysis.” Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
 [Heatmaps and summary plots]
     plotHeatmap             plots one or multiple heatmaps of user selected regions over different genomic scores
     plotProfile             plots the average profile of user selected regions over different genomic scores
+    plotEnrichment          plots the read/fragment coverage of one or more sets of regions
 
 
 For more information visit: http://deeptools.readthedocs.org
