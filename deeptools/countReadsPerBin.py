@@ -111,6 +111,12 @@ class CountReadsPerBin(object):
     zerosToNans : bool
         If true, zero values encountered are transformed to Nans. Default false.
 
+    minFragmentLength : int
+        If greater than 0, fragments below this size are excluded.
+
+    maxFragmentLength : int
+        If greater than 0, fragments above this size are excluded.
+
     out_file_for_raw_data : str
         File name to save the raw counts computed
 
@@ -151,6 +157,8 @@ class CountReadsPerBin(object):
                  samFlag_exclude=None,
                  zerosToNans=False,
                  smoothLength=0,
+                 minFragmentLength=0,
+                 maxFragmentLength=0,
                  out_file_for_raw_data=None):
 
         self.bamFilesList = bamFilesList
@@ -199,6 +207,8 @@ class CountReadsPerBin(object):
         self.center_read = center_read
         self.samFlag_include = samFlag_include
         self.samFlag_exclude = samFlag_exclude
+        self.minFragmentLength = minFragmentLength
+        self.maxFragmentLength = maxFragmentLength
         self.zerosToNans = zerosToNans
         self.smoothLength = smoothLength
 
@@ -537,6 +547,12 @@ class CountReadsPerBin(object):
                 if self.samFlag_include and read.flag & self.samFlag_include == 0:
                     continue
                 if self.samFlag_exclude and read.flag & self.samFlag_exclude != 0:
+                    continue
+
+                # Fragment lengths
+                if self.minFragmentLength > 0 and abs(read.template_length) < self.minFragmentLength:
+                    continue
+                if self.maxFragmentLength > 0 and abs(read.template_length) > self.maxFragmentLength:
                     continue
 
                 # get rid of duplicate reads that have same position on each of the

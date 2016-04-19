@@ -9,6 +9,7 @@
  * Added the `plotEnrichment` function (this was issue #329).
  * There is now a `subsetMatrix` script available that can be used to subset the output of computeMatrix. This is useful for preparing plots that only contain a subset of samples/region groups. Note that this isn't installed by default.
  * The Galaxy wrappers were updated to include the ability to exclude blacklisted regions.
+ * Most functions (both at the command line and within Galaxy) that process BAM files can now filter by fragment length (--minFragmentLength and --maxFragmentLength). By default there's no filtering performed. The primary purpose of this is to facilitate ATACseq analysis, where fragment length determines whether one is processing mono-/di-/poly-nucleosome fragments. This was issue #336.
 
 2.2.3
 

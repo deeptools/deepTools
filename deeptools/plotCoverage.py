@@ -137,6 +137,8 @@ def main(args=None):
                                  center_read=args.centerReads,
                                  samFlag_include=args.samFlagInclude,
                                  samFlag_exclude=args.samFlagExclude,
+                                 minFragmentLength=args.minFragmentLength,
+                                 maxFragmentLength=args.maxFragmentLength,
                                  out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
