@@ -432,6 +432,12 @@ def heatmapperOutputArgs(args=None,
                             'underlying data for the average profile, e.g. '
                             'myProfile.tab.',
                             type=writableFile)
+    output.add_argument(
+        '--dpi',
+        help='Set the DPI to save the figure.',
+        type=int,
+        default=200)
+
     return parser
 
 
@@ -567,27 +573,36 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                      if not m.endswith('_r')])
 
         optional.add_argument(
-            '--colorMap', default='RdYlBu',
-            help='Color map to use for the heatmap. Available values can be '
-            'seen here: '
-            'http://matplotlib.org/users/colormaps.html '
-            'The available options are: \'' +
-            color_options + '\'')
+            '--colorMap',
+            help='Color map to use for the heatmap. If more than one heatmap is being plotted the color '
+                 'of each heatmap can be enter individually (e.g. `--colorMap Reds Blues`). Color maps '
+                 'are recycled if the number of color maps is smaller than the number of heatmaps being '
+                 'plotted. Available values can be seen here: http://matplotlib.org/users/colormaps.html '
+                 'The available options are: \'' + color_options + '\'',
+            default=['RdYlBu'],
+            nargs='+')
 
         optional.add_argument(
             '--alpha',
             default=1.0,
             type=check_float_0_1,
-            help='The alpha channel (transparency) to use for the heatmaps. '
-            'The default is 1.0 and values must be between 0 and 1.')
+            help='The alpha channel (transparency) to use for the heatmaps. The default is 1.0 and values '
+                 'must be between 0 and 1.')
 
         optional.add_argument(
             '--colorList',
-            help='List of colors to use to create a colormap. For example, if  '
-            '--colorList black yellow blue is set (colors separated by '
-            'spaces) then a color map that starts with black, continues '
-            'to yellow and finishes in blue is created. If this option is'
-            'selected, it overrides the --colorMap selected.',
+            help='List of colors to use to create a colormap. For example, if `--colorList black,yellow,blue` '
+                 'is set (colors separated by comas) then a color map that starts with black, continues to '
+                 'yellow and finishes in blue is created. If this option is selected, it overrides the --colorMap '
+                 'chosen. The list of valid color names can be seen here: '
+                 'http://matplotlib.org/examples/color/named_colors.html  '
+                 'Hex colors are valid (e.g #34a2b1). If individual colors for different heatmaps '
+                 'need to be specified they need to be separated by space as for example: '
+                 '`--colorList "white,#cccccc" "white,darkred"` '
+                 'As for --colorMap, the color lists are recycled if their number is smaller thatn the number of'
+                 'plotted heatmaps.  '
+                 'The number of transitions is defined by the --colorNumber option.',
+
             nargs='+')
 
         optional.add_argument(
@@ -601,10 +616,18 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--zMin', '-min',
                               default=None,
-                              help='Minimum value for the heatmap intensities.')
+                              help='Minimum value for the heatmap intensities. Multiple values, separated by '
+                                   'spaces can be set for each heatmap. If the number of zMin values is smaller than'
+                                   'the number of heatmaps the values are recycled.',
+                              type=float,
+                              nargs='+')
         optional.add_argument('--zMax', '-max',
                               default=None,
-                              help='Maximum value for the heatmap intensities.')
+                              help='Maximum value for the heatmap intensities. Multiple values, separated by '
+                                   'spaces can be set for each heatmap. If the number of zMax values is smaller than'
+                                   'the number of heatmaps the values are recycled.',
+                              type=float,
+                              nargs='+')
         optional.add_argument('--heatmapHeight',
                               help='Plot height in cm. The default for the heatmap '
                               'height is 28. The minimum value is '
@@ -629,6 +652,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "plot and heatmap", "heatmap only",
                      "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
+
+        optional.add_argument(
+            '--boxAroundHeatmaps',
+            help='By default black boxes are plot around heatmaps. This can be turned off '
+                 'by setting --boxAroundHeatmaps no',
+            default='yes')
+
         optional.add_argument('--xAxisLabel', '-x',
                               default='gene distance (bp)',
                               help='Description for the x-axis label.')
