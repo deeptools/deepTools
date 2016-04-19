@@ -38,6 +38,7 @@
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 @ADVANCED_OPTS_GTF@
+                @blacklist@
             #end if
 ]]>
     </command>
@@ -73,6 +74,7 @@
 
         <expand macro="advancedOpt_scaffold">
             <expand macro="gtf_options" />
+            <expand macro="blacklist" />
         </expand>
 
     </inputs>

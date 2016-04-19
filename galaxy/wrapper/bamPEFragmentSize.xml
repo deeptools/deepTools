@@ -19,6 +19,7 @@
             #if $advancedOpt.showAdvancedOpt == 'yes'
                 --binSize '$advancedOpt.binSize'
                 --distanceBetweenBins '$advancedOpt.distanceBetweenBins'
+                @blacklist@
             #end if
             one.bam
             > $outfile
@@ -43,6 +44,7 @@
                 <param argument="--distanceBetweenBins" type="integer" value="1000000" min="0" optional="true"
                     label="bin spacing, in bases"
                     help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased. (--distanceBetweenBins)"/>
+                <expand macro="blacklist" />
             </when>
         </conditional>
 

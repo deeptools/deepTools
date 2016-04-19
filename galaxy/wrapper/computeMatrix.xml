@@ -79,6 +79,8 @@
 
                 @ADVANCED_OPTS_GTF@
 
+                @blacklist@
+
             #end if
 ]]>
     </command>
@@ -212,6 +214,7 @@
 
                 <expand macro="gtf_options" />
 
+                <expand macro="blacklist" />
             </when>
         </conditional>
     </inputs>

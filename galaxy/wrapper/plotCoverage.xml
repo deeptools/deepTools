@@ -38,6 +38,7 @@
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
                 @ADVANCED_OPTS_READ_PROCESSING@
+                @blacklist@
             #end if
 
 ]]>
@@ -60,6 +61,7 @@
                 <expand macro="read_processing_options" />
                 <expand macro="skipZeros" />
                 <expand macro="plotTitle" />
+                <expand macro="blacklist" />
             </when>
         </conditional>
 

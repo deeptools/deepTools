@@ -65,6 +65,8 @@
                 #if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
                 #end if
+
+                @blacklist@
             #end if
 ]]>
     </command>
@@ -166,6 +168,7 @@
                         For example, if you know of copy number variations between samples then you may want to exclude these.
                         Another typical example is the difference in chromosome X copies between males and females in many species.
                         Example inputs are chrX,chrY,chr3 or chr10:12220-128932" />
+                <expand macro="blacklist" />
             </when>
         </conditional>
     </inputs>
