@@ -50,6 +50,8 @@
                 #if str($advancedOpt.filterRNAstrand) != 'no':
                     --filterRNAstrand '$advancedOpt.filterRNAstrand'
                 #end if
+
+                @blacklist@
             #end if
 ]]>
     </command>
@@ -116,6 +118,7 @@
                     <option value="forward">forward</option>
                     <option value="reverse">reverse</option>
                 </param>
+                <expand macro="blacklist" />
 
             </when>
         </conditional>

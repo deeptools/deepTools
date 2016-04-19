@@ -34,6 +34,7 @@
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
+                @blacklist@
 
             #end if
 ]]>
@@ -94,6 +95,7 @@
                 <expand macro="skipNAs" />
                 <expand macro="scaleFactors" />
                 <expand macro="plotTitle" />
+                <expand macro="blacklist" />
             </when>
         </conditional>
     </inputs>
