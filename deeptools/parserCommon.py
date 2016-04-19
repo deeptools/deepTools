@@ -412,6 +412,12 @@ def heatmapperOutputArgs(args=None,
                             'underlying data for the average profile, e.g. '
                             'myProfile.tab.',
                             type=writableFile)
+    output.add_argument(
+        '--dpi',
+        help='Set the DPI to save the figure.',
+        type=int,
+        default=200)
+
     return parser
 
 

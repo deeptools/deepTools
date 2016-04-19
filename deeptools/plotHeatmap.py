@@ -182,7 +182,8 @@ def plotMatrix(hm, outFileName,
                perGroup=False, whatToShow='plot, heatmap and colorbar',
                image_format=None,
                legend_location='upper-left',
-               box_around_heatmaps=True):
+               box_around_heatmaps=True,
+               dpi=200):
 
     matrix_flatten = None
     if zMin is None:
@@ -499,8 +500,7 @@ def plotMatrix(hm, outFileName,
         #  When no box is plotted the space between heatmaps is reduced
         plt.subplots_adjust(wspace=0.05, hspace=0.01, top=0.85, bottom=0, left=0.04, right=0.96)
 
-    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=200,
-                format=image_format)
+    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=dpi, format=image_format)
     plt.close()
 
 
@@ -600,4 +600,5 @@ def main(args=None):
                args.whatToShow,
                image_format=args.plotFileFormat,
                legend_location=args.legendLocation,
-               box_around_heatmaps=args.boxAroundHeatmaps)
+               box_around_heatmaps=args.boxAroundHeatmaps,
+               dpi=args.dpi)
