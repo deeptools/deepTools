@@ -19,6 +19,8 @@
             #if $advancedOpt.showAdvancedOpt == 'yes'
                 --binSize '$advancedOpt.binSize'
                 --distanceBetweenBins '$advancedOpt.distanceBetweenBins'
+                $advancedOpt.logScale
+                --maxFragmentLength '$advancedOpt.maxFragmentLength'
                 @blacklist@
             #end if
             one.bam
@@ -44,6 +46,13 @@
                 <param argument="--distanceBetweenBins" type="integer" value="1000000" min="0" optional="true"
                     label="bin spacing, in bases"
                     help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased. (--distanceBetweenBins)"/>
+                <param argument="--logScale" type="boolean" truevalue="--logScale" falsevalue=""
+                    label="Plot log frequencies"
+                    help="Plot the frequencies on the log10 scale" />
+
+                <param argument="--maxFragmentLength" type="integer" min="0" value="0"
+                    label="Maximum fragment length"
+                    help="Maximum fragment length included in the histogram. A value of 0 (the default) denotes twice the mean fragment length" />
                 <expand macro="blacklist" />
             </when>
         </conditional>

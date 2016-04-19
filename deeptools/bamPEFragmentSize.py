@@ -38,6 +38,13 @@ def parse_arguments():
                         help='Title of the plot, to be printed on top of '
                         'the generated image. Leave blank for no title.',
                         default='')
+    parser.add_argument('--maxFragmentLength',
+                        help='The maximum fragment length in the histogram. A value of 0 (the default) indicates to use twice the mean fragment length',
+                        default=0,
+                        type=int)
+    parser.add_argument('--logScale',
+                        help='Plot on the log scale',
+                        action='store_true')
     parser.add_argument('--binSize', '-bs',
                         metavar='INT',
                         help='Length in bases of the window used to sample the genome. (default 1000)',
@@ -109,8 +116,13 @@ def main(args=None):
         import matplotlib
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt
+        minVal = fragment_len_dict['mean'] * 2
+        if args.maxFragmentLength > 0:
+            minVal = args.maxFragmentLength
+
         plt.hist(fragment_len_dict['lengths'], 50,
-                 range=(fragment_len_dict['min'], fragment_len_dict['mean'] * 2),
+                 range=(fragment_len_dict['min'], minVal),
+                 log=args.logScale,
                  normed=True)
         plt.xlabel('Fragment Length')
         plt.ylabel('Frequency')
