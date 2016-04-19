@@ -1,0 +1,186 @@
+<tool id="deeptools_plot_enrichment" name="plotEnrichment" version="@WRAPPER_VERSION@.0">
+    <description>plots read/fragment coverage over sets of regions</description>
+    <macros>
+        <token name="@BINARY@">plotEnrichment</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <command>
+<![CDATA[
+
+        @multiple_input_bams@
+        @BINARY@
+            @THREADS@
+
+            --plotFile '$outFileName'
+
+            --bamfiles #echo " ".join($files)#
+            --labels #echo " ".join($labels)#
+
+            @multiple_bed@
+
+            #if $outRawCounts:
+                --outRawCounts "$outFileRawCounts"
+            #end if
+
+            --plotFileFormat "$outFileFormat"
+
+            #if str($region).strip() != "":
+                --region '$region'
+            #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes"
+                #if $advancedOpt.labels and str($advancedOpt.labels).strip() != "":
+                    --labels $advancedOpt.labels
+                #end if
+
+                #if $advancedOpt.regionLabels and str($advancedOpt.regionLabels).strip() != "":
+                    --regionLabels $advancedOpt.regionLabels
+                #end if
+
+                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
+                    --plotTitle '$advancedOpt.plotTitle'
+                #end if
+
+                $advancedOpt.perSample
+
+                $advancedOpt.variableScales
+                
+                $advancedOpt.perSample
+
+                $advancedOpt.variableScales
+
+                --plotWidth '$advancedOpt.plotWidth'
+
+                --plotHeight '$advancedOpt.plotHeight'
+
+                #if str($advancedOpt.colors).strip() != "":
+                    --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
+                #end if
+
+                --numPlotsPerRow '$advancedOpt.numPlotsPerRow'
+
+                --alpha '$advancedOpt.alpha'
+
+                @ADVANCED_OPTS_READ_PROCESSING@
+
+                @blacklist@
+
+                $advancedOpt.keepExons
+
+            #end if
+]]>
+    </command>
+
+    <inputs>
+        <expand macro="multiple_input_bams" />
+        <expand macro="multiple_bed" />
+
+        <expand macro="region_limit_operation" />
+        <expand macro="input_image_file_format" />
+
+        <expand macro="advancedOpt_scaffold">
+            <param argument="--plotHeight" type="integer" value="20" min="3"
+                label="Plot height"
+                help="Height in cm. The default for the plot height is 20 centimeters. The minimum value is 3 cm." />
+
+            <param argument="--plotWidth" type="integer" value="20" min="1"
+                label="Plot width"
+                help="Width in cm. The default value is 20 centimeters. The minimum value is 1 cm." />
+
+            <param argument="--labels" type="text" size="30"
+                label="Labels for the samples (each BAM file) plotted"
+                help="The default is to use the file name of the sample. The sample labels should be separated by
+                spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;">
+                <sanitizer>
+                    <valid initial="string.printable" />
+                </sanitizer>
+            </param>
+
+            <param argument="--regionLabels" type="text" size="30"
+                label="Labels for the features"
+                help="For BED files, this sets the label for all entries in each file.
+                      For GTF files this is ignored." />
+
+            <expand macro="plotTitle" />
+
+            <param argument="--alpha" type="float" value="0.9" min="0.0" max="1.0"
+                label="Alpha channel"
+                help="The alpha channel value (between 0 and 1). A value of 0 is transparent. Default: 0.9" />
+
+            <param argument="--colors" type="text" value="" size="40"
+                label="List of colors to use for the plotted bars"
+                help="Color names and html hex strings (e.g. #eeff22) are accepted.
+                The color names should be separated by spaces. (--colors red blue green)">
+                <validator type="expression"
+                    message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
+            </param>
+
+            <param argument="--perSample" type="boolean" truevalue="--perSample" falsevalue=""
+                label="Create one plot per-sample"
+                help="Plot per-sample, rather than per-feature." />
+
+            <param argument="--variableScales" type="boolean" truevalue="--variableScales" falsevalue=""
+                label="Allow variable scales"
+                help="By default, the y-axis always goes from 0 to 100. If this option is selected, then the maximum value will vary with the dataset." />
+
+            <param argument="--numPlotsPerRow" type="integer" value="4" min="1"
+                label="Number of plots/row"
+                help="" />
+
+            <expand macro="read_processing_options" />
+
+            <param argument="--keepExons" type="boolean" truevalue="--keepExons" falsevalue=""
+                label="Include BED12 exons"
+                help="Only for BED12 files, include columns 10-12 rather than just 2 and 3." />
+
+            <expand macro="blacklist" />
+
+        </expand>
+
+        <param argument="--outRawCounts" type="boolean" label="Save percentages to a file" help=""/>
+
+    </inputs>
+    <outputs>
+        <expand macro="output_image_file_format_not_nested" />
+        <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: percentages">
+            <filter>outRawCounts is True</filter>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="BED" value="multiBamSummary_regions.bed,multiBamSummary_regions.bed" ftype="bed" />
+            <param name="outRawCounts" value="true" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="minMappingQuality" value="0" />
+            <param name="regionLabels" value="up down" />
+            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="sim_size" delta="1000" />
+            <output name="outFileRawCounts" file="plotEnrichment_output.txt" ftype="tabular" />
+        </test>
+    </tests>
+
+    <help>
+<![CDATA[
+
+What it does
+-------------
+
+This tool determines read/fragment coverage of regions. The regions (e.g., exons, genes or peaks) can be specified in one or more BED or GTF files. For GTF files, the feature type is taken from column 3. For BED files, the file name is used. For BED files, the feature labels can be changed.
+
+Output
+--------
+
+The output file is a plot in the format specified. A table of the percentages can also be created.
+
+.. image:: $PATH_TO_IMAGES/plotEnrichment_output.png
+   :width: 600
+   :height: 600
+
+-----
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>
