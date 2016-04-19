@@ -16,6 +16,10 @@
             #if $output.showOutputSettings == "yes"
                 --plotFileFormat $output.outFileFormat
 
+                #if $dpi:
+                    --dpi "$dpi"
+                #end if
+
                 #if $output.saveSortedRegions:
                     --outFileSortedRegions '$outFileSortedRegions'
                 #end if
@@ -91,6 +95,7 @@
 
         <expand macro="input_graphic_output_settings">
             <expand macro="input_image_file_format" />
+            <expand macro="output_dpi" />
         </expand>
 
         <conditional name="advancedOpt">
