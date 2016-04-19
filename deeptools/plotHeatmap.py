@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
+from matplotlib import ticker
+
 import sys
 
 # own modules
@@ -402,9 +404,21 @@ def plotMatrix(hm, outFileName,
                     else:
                         col = sample
                     ax = fig.add_subplot(grids[-1, col])
-                    from matplotlib import ticker
-                    tick_locator = ticker.MaxNLocator(nbins=4)
-                    fig.colorbar(img, cax=ax, alpha=alpha, orientation='horizontal', ticks=tick_locator)
+                    tick_locator = ticker.MaxNLocator(nbins=3)
+                    cbar = fig.colorbar(img, cax=ax, alpha=alpha, orientation='horizontal', ticks=tick_locator)
+                    labels = cbar.ax.get_xticklabels()
+                    ticks = cbar.ax.get_xticks()
+                    if ticks[0] == 0:
+                        # if the label is at the start of the colobar
+                        # move it a bit inside to avoid overlapping
+                        # with other labels
+                        labels[0].set_horizontalalignment('left')
+                    if ticks[-1] == 1:
+                        # if the label is at the end of the colobar
+                        # move it a bit inside to avoid overlapping
+                        # with other labels
+                        labels[-1].set_horizontalalignment('right')
+                    # cbar.ax.set_xticklabels(labels, rotation=90)
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
