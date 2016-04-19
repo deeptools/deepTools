@@ -100,7 +100,9 @@ We offer several ways to filter those BAM files on the fly so that you don't nee
 
 These parameters are optional and available throughout deepTools.
 
-.. warning::  If you know that your files will be strongly affected by the filtering  of duplicates or reads of low quality then consider removing
+.. note::  In version 2.3 we introduced a sampling method to correct the effect of filtering when normalizing using
+``bamCoverage`` or ``bamCompare``. For previous versions, if you know that your files will be strongly affected by
+ the filtering  of duplicates or reads of low quality then consider removing
  those reads *before* using ``bamCoverage`` or ``bamCompare``, as the filtering
  by deepTools is done *after* the scaling factors are calculated!
 
