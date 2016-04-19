@@ -390,19 +390,21 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </token>
 
     <xml name="blacklist">
-        <param argument="--blackListFileName" type="data" format="bed,gtf" min="1" multiple="true"
+        <param argument="--blackListFileName" type="data" format="bed,gtf" multiple="true" optional="true" min="0"
             label="Blacklisted regions in BED/GTF format"
             help="One or more files containing regions to exclude from the analysis" />
     </xml>
 
     <token name="@blacklist@">
 <![CDATA[
-        #set files=[]
-        #for $f in enumerate($blackListFileName):
-            #silent $files.append('%s' % $f)
-        #end for
-        #if len($files) > 0:
-            --blackListFileName #echo ' '.join($files)#
+        #if ' '.join( map(str, $advancedOpt.blackListFileName) ) != 'None':
+            #set blfiles=[]
+            #for $f in $advancedOpt.blackListFileName:
+                #silent $blfiles.append("'%s'" % $f)
+            #end for
+            #if $blfiles != ["'None'"]:
+                --blackListFileName #echo ' '.join($blfiles)#
+            #end if
         #end if
 ]]> 
     </token>
@@ -417,7 +419,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 <![CDATA[
         #set files=[]
         #set labels=[]
-        #for $f in enumerate($BED):
+        #for $f in $BED:
             #silent $files.append("'%s'" % $f)
             #silent $labels.append("'%s'" % $f.display_name)
         #end for
