@@ -147,6 +147,8 @@ def main(args=None):
                             zerosToNans=args.skipNonCoveredRegions,
                             samFlag_include=args.samFlagInclude,
                             samFlag_exclude=args.samFlagExclude,
+                            minFragmentLength=args.minFragmentLength,
+                            maxFragmentLength=args.maxFragmentLength,
                             verbose=args.verbose,
                             )
 
@@ -163,6 +165,8 @@ def main(args=None):
                              zerosToNans=args.skipNonCoveredRegions,
                              samFlag_include=args.samFlagInclude,
                              samFlag_exclude=args.samFlagExclude,
+                             minFragmentLength=args.minFragmentLength,
+                             maxFragmentLength=args.maxFragmentLength,
                              verbose=args.verbose,
                              )
 
@@ -181,6 +185,8 @@ def main(args=None):
                                          zerosToNans=args.skipNonCoveredRegions,
                                          samFlag_include=args.samFlagInclude,
                                          samFlag_exclude=args.samFlagExclude,
+                                         minFragmentLength=args.minFragmentLength,
+                                         maxFragmentLength=args.maxFragmentLength,
                                          verbose=args.verbose,
                                          )
 

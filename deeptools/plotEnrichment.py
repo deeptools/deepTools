@@ -253,6 +253,10 @@ def getEnrichment_worker(arglist):
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
                 continue
+            if args.minFragmentLength > 0 and abs(read.template_length) < args.minFragmentLength:
+                continue
+            if args.maxFragmentLength > 0 and abs(read.template_length) > args.maxFragmentLength:
+                continue
             if args.ignoreDuplicates and prev_start_pos \
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 continue

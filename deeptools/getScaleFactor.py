@@ -38,6 +38,14 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 filtered += 1
                 continue
 
+            # fragment length filtering
+            if args.minFragmentLength > 0 and abs(read.template_length) < args.minFragmentLength:
+                filtered += 1
+                continue
+            if args.maxFragmentLength > 0 and abs(read.template_length) > args.maxFragmentLength:
+                filtered += 1
+                continue
+
             # get rid of duplicate reads that have same position on each of the
             # pairs
             if args.ignoreDuplicates and prev_start_pos \
@@ -58,6 +66,8 @@ def fraction_kept(args):
         --samFlagExclude
         --minMappingQuality
         --ignoreDuplicates
+        --minFragmentLength
+        --maxFragmentLength
 
     Black list regions are already accounted for. This works by sampling the
     genome (by default, we'll iterate until we sample 1% or 100,000 alignments,

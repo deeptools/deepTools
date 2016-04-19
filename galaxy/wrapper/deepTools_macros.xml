@@ -30,6 +30,12 @@
         #if $advancedOpt.samFlagExclude:
             --samFlagExclude $advancedOpt.samFlagExclude
         #end if
+        #if $advancedOpt.minFragmentLength:
+            --minFragmentLength $advancedOpt.minFragmentLength
+        #end if
+        #if $advancedOpt.maxFragmentLength:
+            --maxFragmentLength $advancedOpt.maxFragmentLength
+        #end if
     </token>
 
     <token name="@ADVANCED_OPTS_GTF@">
