@@ -75,7 +75,8 @@ class Profile(object):
                  image_format=None,
                  color_list=None,
                  legend_location='auto',
-                 plots_per_row=8):
+                 plots_per_row=8,
+                 dpi=200):
         """
         Using the hm matrix, makes a line plot
         either per group or per sample
@@ -122,6 +123,7 @@ class Profile(object):
         self.color_list = color_list
         self.legend_location = legend_location
         self.plots_per_row = plots_per_row
+        self.dpi = dpi
 
         # decide how many plots are needed
         if self.per_group:
@@ -260,7 +262,7 @@ class Profile(object):
 
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
-        plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format)
         plt.close()
 
     def plot_heatmap(self):
@@ -353,7 +355,7 @@ class Profile(object):
 
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
-        plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format)
         plt.close()
 
     def plot_profile(self):
@@ -468,7 +470,7 @@ class Profile(object):
 
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
-        plt.savefig(self.out_file_name, dpi=200, format=self.image_format)
+        plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format)
         plt.close()
 
 
@@ -522,7 +524,8 @@ def main(args=None):
                    image_format=args.plotFileFormat,
                    color_list=args.colors,
                    legend_location=args.legendLocation,
-                   plots_per_row=args.numPlotsPerRow)
+                   plots_per_row=args.numPlotsPerRow,
+                   dpi=args.dpi)
 
     if args.plotType == 'heatmap':
         prof.plot_heatmap()
