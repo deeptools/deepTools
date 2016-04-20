@@ -22,8 +22,8 @@
                     --outFileSortedRegions "$outFileSortedRegions"
                 #end if
 
-                #if $dpi:
-                    --dpi "$dpi"
+                #if $output.dpi:
+                    --dpi "$output.dpi"
                 #end if
             #else
                 --plotFileFormat 'png'
@@ -46,7 +46,9 @@
                     --missingDataColor '$advancedOpt.missingDataColor'
                 #end if
 
-                --colorMap '$advancedOpt.colorMap'
+                #if str($advancedOpt.colorMap).strip() != "":
+                    --colorMap #echo " ".join(str($advancedOpt.colorMap).strip().split(","))#
+                #end if
                 --alpha '$advancedOpt.alpha'
                 #if str($advancedOpt.colorList).strip() != "":
                     --colorList $advancedOpt.colorList
@@ -55,7 +57,7 @@
                 #if str($advancedOpt.zMin).strip() != "":
                     --zMin $advancedOpt.zMin
                 #end if
-                #if $advancedOpt.zMax:
+                #if str($advancedOpt.zMax).strip() != "":
                     --zMax $advancedOpt.zMax
                 #end if
 
@@ -146,10 +148,7 @@
                     help="The color of the heatmaps can be specified as a list of colors separated by comas with
                     not space in between. For example: white,blue white,green will set a color map from white
                     to blue for the first heatmap and for white to green for the next heatmap."/>
-                <param argument="--zMin" type="float" value="" size="3" optional="True"
-                    label="Minimum value for the heatmap intensities. Leave empty for automatic values" help=""/>
-                <param argument="--zMax" type="float" value="" size="3" optional="True"
-                    label="Maximum value for the heatmap intensities. Leave empty for automatic values" help=""/>
+                <expand macro="zMin_zMax" />
                 <param argument="--yMin" type="float" value="" size="3" optional="True"
                     label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help=""/>
                 <param argument="--yMax" type="float" value="" size="3" optional="True"
