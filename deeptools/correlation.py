@@ -246,7 +246,7 @@ class Correlation:
         axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
         axdendro.set_axis_off()
         y_var = sch.linkage(corr_matrix, method='complete')
-        z_var = sch.dendrogram(y_var, orientation='right',
+        z_var = sch.dendrogram(y_var, orientation='left',
                                link_color_func=lambda k: 'darkred')
         axdendro.set_xticks([])
         axdendro.set_yticks([])
