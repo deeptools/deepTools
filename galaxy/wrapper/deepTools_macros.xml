@@ -78,9 +78,9 @@
     </xml>
 
     <xml name="zMin_zMax">
-        <param argument="--zMin" type="float" value="" optional="true" label="Minimum value for the heatmap intensities"
+        <param argument="--zMin" type="text" value="" optional="true" label="Minimum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
-        <param argument="--zMax" type="float" value="" optional="true" label="Maximum value for the heatmap intensities"
+        <param argument="--zMax" type="text" value="" optional="true" label="Maximum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
     </xml>
 
@@ -487,7 +487,8 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
-                <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size" help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
+                <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size"
+                       help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
             </when>
             <when value="2150570000" />
             <when value="2451960000" />
@@ -522,7 +523,10 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <when value="no" />
             <when value="yes">
                 <yield />
-                <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+                <param name="saveSortedRegions" type="boolean"
+                       label="Save the regions after skipping zeros or min/max threshold values"
+                       help="The order of the regions in the file follows the sorting order selected. This is useful,
+                       for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
             </when>
         </conditional>
     </xml>
@@ -535,6 +539,11 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="svg">svg</option>
             <option value="eps">eps</option>
         </param>
+    </xml>
+
+    <xml name="output_dpi">
+        <param argument="--dpi" name="dpi" type="integer" value="200" size="3" optional="True"
+            label="Image dpi" help=""/>
     </xml>
 
     <xml name="output_image_file_format">
@@ -580,7 +589,9 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="colorMap">
-        <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
+        <param name="colorMap" type="select" label="Color map to use for the heatmap"
+               help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/"
+               multiple="true">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>
             <option value="Spectral">Spectral</option>
