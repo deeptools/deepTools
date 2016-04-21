@@ -77,47 +77,49 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     middleIdx = 0
     padLeft = 0
     padRight = 0
-    exons = [x for x in exonsInput]
+    exons = deepcopy(exonsInput)
 
-    # Fill in rightBins, truncating exons as appropriate on its right side
-    for i, exon in enumerate(exons):
+    # Split exons in half
+    for exon in exons:
         size = exon[1] - exon[0]
         if cumulativeSum >= middle:
-            if right > 0:
-                if size > right:
-                    rightBins.append(exon)
-                    right -= size
-                else:
-                    rightBins.append((exon[0], exon[0] + right))
-                    right = 0
-                    break
-            else:
-                break
-        elif cumulativeSum + size >= middle:
-            # Mark middleIdx, truncate the bin, append to rightBins
-            middleIdx = i
-            rightBins.append((exons[0] + cumulativeSum + size - middle, exons[1]))
-            exons[i] = (exons[0], exons[0] + cumulativeSum + size - middle)
+            rightBins.append(exon)
+        elif cumulativeSum + size < middle:
+            leftBins.append(exon)
+        else:
+            leftBins.append((exon[0], exon[1] - cumulativeSum - size + middle))
+            rightBins.append((exon[1] - cumulativeSum - size + middle, exon[1]))
         cumulativeSum += size
 
-    # Truncate the exons tuple
-    exons = exons[0:middleIdx + 1]
+    # Trim leftBins/adjust padLeft
+    lSum = np.sum([x[1] - x[0] for x in leftBins])
+    if lSum > left:
+        lSum = 0
+        for i, exon in enumerate(leftBins[::-1]):
+            size = exon[1] - exon[0]
+            if lSum + size > left:
+                leftBins[-i - 1] = (exon[1] + lSum - left, exon[1])
+                break
+            lSum += size
+        i += 1
+        if i < len(leftBins):
+            leftBins = leftBins[-i:]
+    elif lSum < left:
+        padLeft = left - lSum
 
-    # Fill in leftBins, from the right
-    while left > 0 and len(exons) > 0:
-        exon = exons[-1]
-        size = exon[1] - exon[0]
-        if left > size:
-            exon = (exon[1] - left, exon[1])
-            size = left
-        leftBins.insert(0, exon)
-        left -= size
-        del exons[-1]
-
-    if left > 0:
-        padLeft = left
-    if right > 0:
-        padRight = right
+    # Trim rightBins/adjust padRight
+    rSum = np.sum([x[1] - x[0] for x in rightBins])
+    if rSum > right:
+        rSum = 0
+        for i, exon in enumerate(rightBins):
+            size = exon[1] - exon[0]
+            if rSum + size > right:
+                rightBins[i] = (exon[0], exon[1] - rSum - size + right)
+                break
+            rSum += size
+        rightBins = rightBins[:i + 1]
+    elif rSum < right:
+        padRight = right - rSum
 
     return leftBins, rightBins[::-1], padLeft, padRight
 
