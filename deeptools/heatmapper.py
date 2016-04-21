@@ -74,7 +74,6 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     size = np.sum([x[1] - x[0] for x in exonsInput])
     middle = size // 2
     cumulativeSum = 0
-    middleIdx = 0
     padLeft = 0
     padRight = 0
     exons = deepcopy(exonsInput)
