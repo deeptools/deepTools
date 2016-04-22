@@ -31,7 +31,7 @@ install:
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402
+  - flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402,F999
   - export owd=`pwd`
   - cd ~/ && nosetests --with-doctest -sv deeptools deeptoolsintervals
   - cd ${owd}
