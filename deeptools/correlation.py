@@ -33,6 +33,7 @@ class Correlation:
         self.skip_zeros = skip_zeros
         self.corr_method = corr_method
         self.corr_matrix = None  # correlation matrix
+        self.column_order = None
         if labels is not None:
             # test that the length of labels
             # corresponds to the length of
@@ -157,6 +158,10 @@ class Correlation:
         """
         saves the correlation matrix
         """
+        if self.column_order:
+            self.corr_matrix[self.column_order, self.column_order]
+            self.labels = self.labels[self.column_order]
+
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
         i = 0
@@ -268,8 +273,14 @@ class Correlation:
         index = z_var['leaves']
         corr_matrix = corr_matrix[index, :]
         corr_matrix = corr_matrix[:, index]
+        if corr_matrix.shape[0] > 30:
+            # when there are too many rows it is better to remove
+            # the black lines surrounding the boxes in the heatmap
+            edge_color = 'none'
+        else:
+            edge_color = 'black'
         img_mat = axmatrix.pcolormesh(corr_matrix,
-                                      edgecolors='black',
+                                      edgecolors=edge_color,
                                       cmap=cmap,
                                       vmax=vmax,
                                       vmin=vmin)
@@ -308,7 +319,9 @@ class Correlation:
                                   "{:.2f}".format(corr_matrix[row, col]),
                                   ha='center', va='center')
 
+        self.column_order = index
         fig.savefig(plot_fiilename, format=image_format)
+        plt.close()
 
     def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
         """

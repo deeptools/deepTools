@@ -192,9 +192,6 @@ def main(args=None):
                 "A problem was found. Message: {}\n".format(error))
             exit()
 
-    if args.outFileCorMatrix:
-        corr.save_corr_matrix(args.outFileCorMatrix)
-
     args.plotFile.close()
     if args.whatToPlot == 'scatterplot':
         corr.plot_scatter(args.plotFile.name,
@@ -208,3 +205,6 @@ def main(args=None):
                               plot_title=args.plotTitle,
                               image_format=args.plotFileFormat,
                               plot_numbers=args.plotNumbers)
+
+    if args.outFileCorMatrix:
+        corr.save_corr_matrix(args.outFileCorMatrix)
