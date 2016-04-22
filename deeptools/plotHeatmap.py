@@ -234,7 +234,7 @@ def plotMatrix(hm, outFileName,
                 'my_cmap', color_list.replace(' ', '').split(","), N=colorMapDict['colorNumber']))
             cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
 
-    if len(cmap) > 1:
+    if len(cmap) > 1 or len(zMin) > 1 or len(zMax) > 1:
         # position color bar below heatmap when more than one
         # heatmap color is given
         colorbar_position = 'below'
