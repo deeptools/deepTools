@@ -58,9 +58,9 @@ def findRandomLabel(labels, name):
     i = 0
     while True:
         i += 1
-        name = name + "_r" + str(i)
-        if name not in labels:
-            return name
+        nameTry = name + "_r" + str(i)
+        if nameTry not in labels:
+            return nameTry
 
 
 def parseExonBounds(start, end, n, sizes, offsets):
