@@ -227,17 +227,13 @@ class GTF(object):
             score = cols[4]
 
         # Ensure that the name is unique
-        if name in self.exons:
-            sys.stderr.write("Skipping {0}, an entry by this name already exists!\n".format(name))
-            return False
+        name = findRandomLabel(self.exons, name)
+        self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
+        if ncols != 12 or self.keepExons is False:
+            self.exons[name] = [(int(cols[1]), int(cols[2]))]
         else:
-            self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
-            if ncols != 12 or self.keepExons is False:
-                self.exons[name] = [(int(cols[1]), int(cols[2]))]
-            else:
-                assert(len(cols) == 12)
-                self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
-        return True
+            assert(len(cols) == 12)
+            self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
 
     def parseBED(self, fp, line, ncols=3, labelColumn=None):
         """
@@ -301,8 +297,8 @@ class GTF(object):
             else:
                 self.labels.append(label)
                 self.labelIdx = len(self.labels) - 1
-        if self.parseBEDcore(line, ncols):
-            groupEntries = 1
+        self.parseBEDcore(line, ncols)
+        groupEntries = 1
 
         # iterate over the remaining lines
         for line in fp:
@@ -344,7 +340,8 @@ class GTF(object):
                     else:
                         self.labels.append(label)
                         self.labelIdx = len(self.labels) - 1
-                if self.parseBEDcore(line, ncols) and labelColumn is None:
+                self.parseBEDcore(line, ncols)
+                if labelColumn is None:
                     groupEntries += 1
 
         if groupEntries > 0 and labelColumn is None:

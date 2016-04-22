@@ -131,7 +131,7 @@ setup(
         "scipy >= 0.15.0",
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
-        "twobitreader",
+        "twobitreader >= 3.1.4",
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1"
     ],
