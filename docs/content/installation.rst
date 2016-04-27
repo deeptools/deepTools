@@ -12,7 +12,7 @@ Requirements
 
 * Python 2.7
 * numpy >= 1.8.0
-* scipy >= 0.15.0
+* scipy >= 0.17.0
 * twobitreader
 * pyBigWig >= 0.2.1
 * pysam >= 0.8

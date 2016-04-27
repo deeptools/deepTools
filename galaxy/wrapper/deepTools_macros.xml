@@ -87,7 +87,13 @@
     <xml name="region_limit_operation">
         <param argument="--region" type="text" value=""
             label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the time required. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;." />
+            help="This is useful when testing parameters to reduce the time required. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;.">
+            <sanitizer>
+                <valid initial="string.letters,string.digits">
+                    <add value="|"/>
+                 </valid>
+            </sanitizer>
+        </param>
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
@@ -350,7 +356,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </token>
     <xml name="citations">
         <citations>
-            <citation type="doi">10.1093/nar/gku365</citation>
+            <citation type="doi">10.1093/nar/gkw257</citation>
             <yield />
         </citations>
     </xml>
