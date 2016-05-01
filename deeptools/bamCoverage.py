@@ -77,6 +77,18 @@ def get_optional_args():
                           '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
 
+    optional.add_argument('--RiboSeq',
+                          help='Determines the ribosomal position given the '
+                          'specified offset from the start of each read. 12 is '
+                          'a typical offset in eukaryotes, though if this can '
+                          'be fine-tuned by using plotProfile, where the frame '
+                          '0 peak should be at the translation start site. '
+                          'This MUST be combined with the --filterRNAstrand '
+                          'option. Due to how RiboSeq works, only single-end '
+                          'alignments are accepted.',
+                          type=int,
+                          required=False)
+
     optional.add_argument('--filterRNAstrand',
                           help='Selects RNA-seq reads (single-end or paired-end) in '
                                'the given strand.',
@@ -152,6 +164,27 @@ def main(args=None):
                             verbose=args.verbose,
                             )
 
+    elif args.RiboSeq:
+        if not args.filterRNAstrand:
+            exit('*ERROR*: You MUST specify a strand!')
+        wr = RiboSeqFragment([args.bam],
+                             binLength=args.binSize,
+                             stepSize=args.binSize,
+                             region=args.region,
+                             numberOfProcessors=args.numberOfProcessors,
+                             extendReads=args.extendReads,
+                             minMappingQuality=args.minMappingQuality,
+                             ignoreDuplicates=args.ignoreDuplicates,
+                             center_read=args.centerReads,
+                             zerosToNans=args.skipNonCoveredRegions,
+                             samFlag_include=args.samFlagInclude,
+                             samFlag_exclude=args.samFlagExclude,
+                             minFragmentLength=args.minFragmentLength,
+                             maxFragmentLength=args.maxFragmentLength,
+                             verbose=args.verbose)
+        wr.filter_strand = args.filterRNAstrand
+        wr.RiboSeq = args.Riboseq
+
     elif args.filterRNAstrand:
         wr = filterRnaStrand([args.bam],
                              binLength=args.binSize,
@@ -195,12 +228,48 @@ def main(args=None):
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 
+class RiboSeqFragment(writeBedGraph.WriteBedGraph):
+    """
+    Class to redefine the get_fragment_from_read for the --RiboSeq case
+
+    Only SE alignments are used. The strand MUST be specified.
+    """
+    def get_fragment_from_read(self, read):
+        rv = [(None, None)]
+        if self.RiboSeq < read.query_length:
+            return rv
+        if self.is_paired:
+            return rv
+        blocks = read.get_blocks()
+        foo = self.RiboSeq
+        if read.is_reverse:
+            for idx in range(len(blocks)):
+                block = blocks[-idx - 1]
+                if block[1] - block[0] < foo:
+                    rv = [(block[1] - foo, block[1] - foo + 1)]
+                    break
+                foo -= block[1] - block[0]
+        else:
+            for block in blocks:
+                if block[1] - block[0] < foo:
+                    rv = [(block[0] + foo - 1, block[0] + foo)]
+                    break
+                foo -= block[1] - block[0]
+
+        # Filter the strand. We only care about SE reads
+        if self.filter_strand == 'forward' and read.flag & 16 == 16:
+            return rv
+        elif self.filter_strand == 'reverse' and read.flag & 16 == 0:
+            return rv
+        return [(None, None)]
+
+
 class CenterFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --MNase case
 
     The coverage of the fragment is defined as the 2 or 3 basepairs at the
-    center of the fragment length. d
+    center of the fragment length.
     """
     def get_fragment_from_read(self, read):
         """
