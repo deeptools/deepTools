@@ -3,23 +3,22 @@ deepTools
 ======================================================================
 [![Build Status](https://travis-ci.org/fidelram/deepTools.svg?branch=master)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) [![PyPI version](https://badge.fury.io/py/deeptools.svg)](https://badge.fury.io/py/deeptools) [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io)
 
-### user-friendly tools for the normalization and visualization of deep-sequencing data
+### user-friendly tools for exploring deep-sequencing data
 
-deepTools addresses the challenge of handling the large amounts of data 
-that are now routinely generated from DNA sequencing centers. To do so, deepTools contains useful modules to process the mapped reads data to create coverage files in standard bedGraph and bigWig file formats. By doing so, deepTools allows the creation of **normalized coverage files** or the comparison between two files (for example, treatment and control). Finally, using such normalized and standardized files, multiple
-**visualizations** can be created to identify enrichments with
-functional annotations of the genome.
+deepTools addresses the challenge of handling the large amounts of data that are now routinely generated from DNA sequencing centers. deepTools contains useful modules to process the mapped reads data for multiple quality checks, creating **normalized coverage files** in standard bedGraph and bigWig file formats, that allow comparison between different files (for example, treatment and control). Finally, using such normalized and standardized files, deepTools can create many publication-ready  **visualizations** to identify enrichments and for functional annotations of the genome.
 
 For support, questions, or feature requests contact: deeptools@googlegroups.com
 
-Citation: Fidel Ramírez, Friederike Dündar, Sarah Diehl, Björn A. Grüning, and Thomas Manke. [_deepTools: a flexible platform for exploring deep-sequencing data._](http://nar.oxfordjournals.org/content/early/2014/05/05/nar.gku365.abstract) Nucl. Acids Res. first published online May 5, 2014 doi:10.1093/nar/gku365
+**Citation:**
+Ramírez F, Ryan DP, Grüning B, Bhardwaj V, Kilpert F, Richter AS, Heyne S, Dündar F, Manke T. [deepTools2: a next generation web server for deep-sequencing data analysis.](https://nar.oxfordjournals.org/content/early/2016/04/12/nar.gkw257.abstract) Nucleic Acids Research. 2016 Apr 13:gkw257.
 
->Our **[documentation](http://deeptools.readthedocs.org/)** contains more details on the [individual tool scopes and usages](http://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](http://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](http://deeptools.readthedocs.org/en/latest/content/example_usage.html).
+**Documentation**
+Our [documentation](http://deeptools.readthedocs.org/) contains more details on the [individual tool scopes and usages](http://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](http://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](http://deeptools.readthedocs.org/en/latest/content/example_usage.html).
 
-Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly.
+>Please see also the [FAQ](http://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly.
 Our [Gallery](http://deeptools.readthedocs.org/en/latest/content/example_gallery.html) may give you some more ideas about the scope of deepTools.
 
-For more specific **troubleshooting, feedback, and tool suggestions**, contact us via deeptools@googlegroups.com.
+>For more specific **troubleshooting, feedback, and tool suggestions**, contact us via deeptools@googlegroups.com.
 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -62,11 +61,11 @@ __Using anaconda:__
 Note that deepTools does not (yet) work with python3. Also, it is generally unadvisable to mix `conda install ...` and `pip install ...`.
 
 __Another option is to clone the repository:__
-	
+
 	$ git clone https://github.com/fidelram/deepTools
 	$ cd deepTools
 	$ python setup.py install
-	
+
 By default, the script will install the python library and executable
 codes globally, which means you need to be root or administrator of
 the machine to complete the installation. If you need to
@@ -87,13 +86,13 @@ To install into your home directory, use:
 <a name="galaxy"/></a>
 ### Galaxy Installation
 
-deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
+deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are
 available in the [Galaxy Tool Shed](http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools).
 
 
 #### Installation via Galaxy API (recommended)
 
-At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin 
+At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin
 user and run the the installation script:
 
 	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost --url http://toolshed.g2.bx.psu.edu/ -o bgruening -r <revision> --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
