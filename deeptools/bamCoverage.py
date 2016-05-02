@@ -246,13 +246,13 @@ class RiboSeqFragment(writeBedGraph.WriteBedGraph):
         if read.is_reverse:
             for idx in range(len(blocks)):
                 block = blocks[-idx - 1]
-                if block[1] - block[0] < foo:
+                if block[1] - block[0] >= foo:
                     rv = [(block[1] - foo, block[1] - foo + 1)]
                     break
                 foo -= block[1] - block[0]
         else:
             for block in blocks:
-                if block[1] - block[0] < foo:
+                if block[1] - block[0] >= foo:
                     rv = [(block[0] + foo - 1, block[0] + foo)]
                     break
                 foo -= block[1] - block[0]
