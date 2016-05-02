@@ -86,6 +86,7 @@ def get_optional_args():
                           'This MUST be combined with the --filterRNAstrand '
                           'option. Due to how RiboSeq works, only single-end '
                           'alignments are accepted.',
+                          metavar='INT',
                           type=int,
                           required=False)
 
@@ -183,7 +184,7 @@ def main(args=None):
                              maxFragmentLength=args.maxFragmentLength,
                              verbose=args.verbose)
         wr.filter_strand = args.filterRNAstrand
-        wr.RiboSeq = args.Riboseq
+        wr.RiboSeq = args.RiboSeq
 
     elif args.filterRNAstrand:
         wr = filterRnaStrand([args.bam],
@@ -236,9 +237,9 @@ class RiboSeqFragment(writeBedGraph.WriteBedGraph):
     """
     def get_fragment_from_read(self, read):
         rv = [(None, None)]
-        if self.RiboSeq < read.query_length:
+        if self.RiboSeq > read.query_length:
             return rv
-        if self.is_paired:
+        if read.is_paired:
             return rv
         blocks = read.get_blocks()
         foo = self.RiboSeq
