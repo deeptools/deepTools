@@ -33,7 +33,9 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
-Tool for calculating and plotting the signal enrichment in either regions in BED format or feature types (column 3) in GTF format. The underlying datapoints can also be output. Metrics are plotted as a fraction of total reads. Regions in a BED file are assigned to the 'peak' feature.
+Tool for calculating and plotting the signal enrichment in either regions in BED
+format or feature types (column 3) in GTF format. The underlying datapoints can also be output.
+Metrics are plotted as a fraction of total reads. Regions in a BED file are assigned to the 'peak' feature.
 
 detailed help:
 
