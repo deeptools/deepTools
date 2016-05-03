@@ -18,7 +18,7 @@ def parse_arguments():
         'it will only use discordant pairs if no concordant alignments '
         'overlap with a given region. '
         'The default setting simply prints the summary statistics to the screen.')
-    parser.add_argument('--bamfiles','-b',
+    parser.add_argument('--bamfiles', '-b',
                         help='List of BAM files to process',
                         nargs='+',
                         metavar='bam files')
@@ -83,6 +83,7 @@ def parse_arguments():
     return parser
 
 def getFragSize(bam, args):
+
 
         fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
                                                                         blackListFileName=args.blackListFileName,
@@ -151,10 +152,10 @@ def main(args=None):
                 maxVal = fraglengths[bam]['mean'] * 2
 
             plt.hist(fraglengths[bam]['lengths'], 50,
-                     range=(fraglengths[bam]['min'], maxVal),
-                     alpha=0.5, label = labels[i],
-                     log=args.logScale,
-                     normed=True)
+                    range=(fraglengths[bam]['min'], maxVal),
+                    alpha=0.5, label =labels[i],
+                    log=args.logScale,
+                    normed=True)
             i += 1
 
         plt.xlabel('Fragment Length')
