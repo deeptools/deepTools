@@ -18,24 +18,49 @@ Example usage
     testFiles/RNAseq_sample3.bam testFiles/RNAseq_sample4.bam \
     -samplesLabel sample1 sample2 sample3 sample4
 
-     Sample size: 12850
+
+## Output
+
+.. code:: bash
+
+    BAM file : testFiles/RNAseq_sample1.bam
+
+    Sample size: 10815
+
 
     Fragment lengths:
-        Min.: 0.0
-        1st Qu.: 313.0
-        Mean: 2597.03237354
-        Median: 357.0
-        3rd Qu.: 2726.0
-        Max.: 384622.0
-        Std: 7066.11863701
+    Min.: 0.0
+    1st Qu.: 311.0
+    Mean: 8960.68987517
+    Median: 331.0
+    3rd Qu.: 362.0
+    Max.: 53574842.0
+    Std: 572421.46625
 
     Read lengths:
-        Min.: 20.0
-        1st Qu.: 101.0
-        Mean: 99.4182101167
-        Median: 101.0
-        3rd Qu.: 101.0
-        Max.: 101.0
-        Std: 7.64455778462
+    Min.: 20.0
+    1st Qu.: 101.0
+    Mean: 99.1621821544
+    Median: 101.0
+    3rd Qu.: 101.0
+    Max.: 101.0
+    Std: 9.16567362755
+
+    BAM file : testFiles/RNAseq_sample2.bam
+
+    Sample size: 6771
+
+
+    Fragment lengths:
+    Min.: 43.0
+    1st Qu.: 148.0
+    Mean: 176.465071629
+    Median: 164.0
+    3rd Qu.: 185.0
+    Max.: 500.0
+    Std: 53.733877263
+
+    ......(output truncated)
+
 
 .. image:: ../../images/test_plots/ExampleFragmentSize.png
