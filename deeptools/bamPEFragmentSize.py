@@ -152,7 +152,7 @@ def main(args=None):
 
             plt.hist(fraglengths[bam]['lengths'], 50,
                      range=(fraglengths[bam]['min'], maxVal),
-                     alpha=0.5, label =labels[i],
+                     alpha=0.5, label=labels[i],
                      log=args.logScale,
                      normed=True)
             i += 1
