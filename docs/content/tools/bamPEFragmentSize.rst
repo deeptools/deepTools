@@ -4,8 +4,6 @@ bamPEFragmentSize
 .. argparse::
    :ref: deeptools.bamPEFragmentSize.parse_arguments
    :prog: bamPEFragmentSize
-   
-.. note:: This tool accepts only one BAM file at a time.
 
 Example usage
 ^^^^^^^^^^^^^^
@@ -15,8 +13,11 @@ Example usage
     $ deepTools2.0/bin/bamPEFragmentSize \
     -hist fragmentSize.png \
     -T "Fragment size of PE RNA-seq data" \
-    testFiles/RNAseq.bam 
- 
+    --maxFragmentLength 1000 \
+    -b testFiles/RNAseq_sample1.bam testFiles/RNAseq_sample2.bam \
+    testFiles/RNAseq_sample3.bam testFiles/RNAseq_sample4.bam \
+    -samplesLabel sample1 sample2 sample3 sample4
+
      Sample size: 12850
 
     Fragment lengths:
