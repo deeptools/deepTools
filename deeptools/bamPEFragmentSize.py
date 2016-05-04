@@ -90,14 +90,14 @@ def getFragSize(bam, args):
                                                                         verbose=args.verbose,
                                                                         binSize=args.binSize,
                                                                         distanceBetweenBins=args.distanceBetweenBins)
-        print("\nBAM file : {}\n".format(bam))
+        print("\n\nBAM file : {}".format(bam))
         if fragment_len_dict:
             if fragment_len_dict['mean'] == 0:
                 print("No pairs were found. Is the data from a paired-end sequencing experiment?")
 
             print("Sample size: {}\n".format(fragment_len_dict['sample_size']))
 
-            print("\nFragment lengths:")
+            print("Fragment lengths:")
             print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
                   "3rd Qu.: {}\nMax.: {}\nStd: {}".format(fragment_len_dict['min'],
                                                           fragment_len_dict['qtile25'],
@@ -150,11 +150,10 @@ def main(args=None):
             else:
                 maxVal = fraglengths[bam]['mean'] * 2
 
-            plt.hist(fraglengths[bam]['lengths'], 50,
+            plt.hist(fraglengths[bam]['lengths'], 100,
                      range=(fraglengths[bam]['min'], maxVal),
                      alpha=0.5, label=labels[i],
-                     log=args.logScale,
-                     normed=True)
+                     log=args.logScale, normed=True)
             i += 1
 
         plt.xlabel('Fragment Length')
