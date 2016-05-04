@@ -544,9 +544,9 @@ class GTF(object):
         self.transcriptIDduplicated = []
         self.tree = tree.initTree()
         self.labelIdx = 0
-        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])')
-        self.transcript_id_regex = re.compile('(?:{0} (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])'.format(transcript_id_designator))
-        self.deepTools_group_regex = re.compile('(?:deepTools_group (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])')
+        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-\.\(\)]+)\"|([ \w\d"\-\.\(\)]+))[;|\r|\n])')
+        self.transcript_id_regex = re.compile('(?:{0} (?:\"([ \w\d"\-\.\(\)]+)\"|([ \w\d"\-\.\(\)]+))[;|\r|\n])'.format(transcript_id_designator))
+        self.deepTools_group_regex = re.compile('(?:deepTools_group (?:\"([ \w\d"\-\.\(\)]+)\"|([ \w\d"\-\.\(\)]+))[;|\r|\n])')
         self.exonID = exonID
         self.transcriptID = transcriptID
         self.keepExons = keepExons

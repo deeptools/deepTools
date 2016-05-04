@@ -410,14 +410,14 @@ class heatmapper(object):
                     zones = [(upstream, a), (unscaled5prime, b), (body, c), (unscaled3prime, d), (downstream, e)]
                 elif parameters['ref point'] == 'TES':  # around TES
                     if feature_strand == '-':
-                        downstream, body, unscaled3prime, _, padRight = chopRegions(exons, left=parameters['upstream'])
+                        downstream, body, unscaled3prime, padRight, _ = chopRegions(exons, left=parameters['upstream'])
                         if padRight > 0 and parameters['nan after end'] is True:
                             padRightNaN += padRight
                         elif padRight > 0:
                             downstream.append((downstream[-1][1], downstream[-1][1] + padRight))
                         padRight = 0
                     else:
-                        unscale5prime, body, upstream, padLeft, _ = chopRegions(exons, right=parameters['upstream'])
+                        unscale5prime, body, upstream, _, padLeft = chopRegions(exons, right=parameters['upstream'])
                         if padLeft > 0 and parameters['nan after end'] is True:
                             padLeftNaN += padLeft
                         elif padLeft > 0:
