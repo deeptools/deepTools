@@ -68,6 +68,14 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     """
     Like chopRegions(), above, but returns two lists of tuples on each side of
     the center point of the exons.
+
+    The steps are as follow:
+     1) Find the center point of the set of exons (e.g., [(0, 200), (300, 400), (800, 900)] would be centered at 200)
+       * If a given exon spans the center point then the exon is split
+     2) The given number of bases at the end of the left-of-center list are extracted
+       * If the set of exons don't contain enough bases, then padLeft is incremented accordingly
+     3) As above but for the right-of-center list
+     4) A tuple of (#2, #3, pading on the left, and padding on the right) is returned
     """
     leftBins = []
     rightBins = []
@@ -86,8 +94,11 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         elif cumulativeSum + size < middle:
             leftBins.append(exon)
         else:
-            leftBins.append((exon[0], exon[1] - cumulativeSum - size + middle))
-            rightBins.append((exon[1] - cumulativeSum - size + middle, exon[1]))
+            # Don't add 0-width exonic bins!
+            if middle - cumulativeSum - size < exon[1] - exon[0]:
+                leftBins.append((exon[0], exon[1] - cumulativeSum - size + middle))
+            if middle - cumulativeSum - size > 0:
+                rightBins.append((exon[1] - cumulativeSum - size + middle, exon[1]))
         cumulativeSum += size
 
     # Trim leftBins/adjust padLeft
@@ -100,6 +111,8 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
                 leftBins[-i - 1] = (exon[1] + lSum - left, exon[1])
                 break
             lSum += size
+            if lSum == left:
+                break
         i += 1
         if i < len(leftBins):
             leftBins = leftBins[-i:]
@@ -116,11 +129,13 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
                 rightBins[i] = (exon[0], exon[1] - rSum - size + right)
                 break
             rSum += size
+            if rSum == right:
+                break
         rightBins = rightBins[:i + 1]
     elif rSum < right:
         padRight = right - rSum
 
-    return leftBins, rightBins[::-1], padLeft, padRight
+    return leftBins, rightBins, padLeft, padRight
 
 
 def trimZones(zones, maxLength, binSize, padRight):
@@ -410,14 +425,14 @@ class heatmapper(object):
                     zones = [(upstream, a), (unscaled5prime, b), (body, c), (unscaled3prime, d), (downstream, e)]
                 elif parameters['ref point'] == 'TES':  # around TES
                     if feature_strand == '-':
-                        downstream, body, unscaled3prime, _, padRight = chopRegions(exons, left=parameters['upstream'])
+                        downstream, body, unscaled3prime, padRight, _ = chopRegions(exons, left=parameters['upstream'])
                         if padRight > 0 and parameters['nan after end'] is True:
                             padRightNaN += padRight
                         elif padRight > 0:
                             downstream.append((downstream[-1][1], downstream[-1][1] + padRight))
                         padRight = 0
                     else:
-                        unscale5prime, body, upstream, padLeft, _ = chopRegions(exons, right=parameters['upstream'])
+                        unscale5prime, body, upstream, _, padLeft = chopRegions(exons, right=parameters['upstream'])
                         if padLeft > 0 and parameters['nan after end'] is True:
                             padLeftNaN += padLeft
                         elif padLeft > 0:
