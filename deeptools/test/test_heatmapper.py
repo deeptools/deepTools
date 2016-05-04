@@ -254,7 +254,7 @@ class TestHeatmapper(object):
         # - strand, 250 downstream (labeled "upstream" due to being on the - strand)
         unscaled5prime, body, upstream, _, padLeft = deeptools.heatmapper.chopRegions(region, right=250)
         assert(upstream == [(150, 200), (300, 400), (800, 900)])
-        assert(body == [(0,150)])
+        assert(body == [(0, 150)])
         assert(unscaled5prime == [])
         assert(padLeft == 0)
         assert(_ == 0)
@@ -271,7 +271,7 @@ class TestHeatmapper(object):
         # + strand, 250 upstream
         unscaled5prime, body, upstream, _, padLeft = deeptools.heatmapper.chopRegions(region, right=250)
         assert(unscaled5prime == [])
-        assert(body == [(0,150)])
+        assert(body == [(0, 150)])
         assert(upstream == [(150, 200), (300, 400), (800, 900)])
         assert(_ == 0)
         assert(padLeft == 0)
