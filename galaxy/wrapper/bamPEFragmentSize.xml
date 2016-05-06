@@ -75,7 +75,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam" />
             <param name="histogram" value="True" />
             <param name="plotTitle" value="Test Plot" />
             <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt" />
