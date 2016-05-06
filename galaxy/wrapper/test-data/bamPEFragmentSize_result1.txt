@@ -1,6 +1,6 @@
 
 
-BAM file : /home/bhardwaj/programs/deepTools/galaxy/wrapper/test-data/bowtie2 test1.bam
+BAM file : 0.bam
 Sample size: 3
 
 Fragment lengths:
