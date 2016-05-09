@@ -360,7 +360,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
     bl = GTF(blackListFileName)
     regions = []
     for chrom in bl.chroms:
-        if not chroms_to_ignore or chrom not in chroms_to_ignore:
+        if (not chroms_to_ignore or chrom not in chroms_to_ignore) and chrom in chromLens:
             for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
                 regions.append([bam_handle.filename, chrom, reg[0], reg[1]])
 
