@@ -299,6 +299,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
         optional.add_argument('--blackListFileName', '-bl',
                               help="A BED or GTF file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered. Please note that you should adjust the effective genome size, if relevant.",
                               metavar="BED file",
+                              nargs="+",
                               required=False)
 
     optional.add_argument('--numberOfProcessors', '-p',
