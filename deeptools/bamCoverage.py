@@ -226,7 +226,7 @@ def main(args=None):
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 
-class OffsetSeqFragment(writeBedGraph.WriteBedGraph):
+class OffsetFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --Offset case
 
