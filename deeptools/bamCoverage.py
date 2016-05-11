@@ -77,15 +77,12 @@ def get_optional_args():
                           '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
 
-    optional.add_argument('--RiboSeq',
-                          help='Determines the ribosomal position given the '
-                          'specified offset from the start of each read. 12 is '
-                          'a typical offset in eukaryotes, though if this can '
-                          'be fine-tuned by using plotProfile, where the frame '
-                          '0 peak should be at the translation start site. '
-                          'This MUST be combined with the --filterRNAstrand '
-                          'option. Due to how RiboSeq works, only single-end '
-                          'alignments are accepted.',
+    optional.add_argument('--Offset',
+                          help='Uses this offset inside of each read as the signal. This is useful in '
+                          'cases like RiboSeq or GROseq, where the signal is 12, 15 or 0 bases past the '
+                          'start of the read. This MUST be paired with the --filterRNAstrand option. '
+                          'Only single-end reads are accepted. Note that negative values indicate '
+                          'offsets from the end of each read.',
                           metavar='INT',
                           type=int,
                           required=False)
@@ -165,26 +162,26 @@ def main(args=None):
                             verbose=args.verbose,
                             )
 
-    elif args.RiboSeq:
+    elif args.Offset:
         if not args.filterRNAstrand:
             exit('*ERROR*: You MUST specify a strand!')
-        wr = RiboSeqFragment([args.bam],
-                             binLength=args.binSize,
-                             stepSize=args.binSize,
-                             region=args.region,
-                             numberOfProcessors=args.numberOfProcessors,
-                             extendReads=args.extendReads,
-                             minMappingQuality=args.minMappingQuality,
-                             ignoreDuplicates=args.ignoreDuplicates,
-                             center_read=args.centerReads,
-                             zerosToNans=args.skipNonCoveredRegions,
-                             samFlag_include=args.samFlagInclude,
-                             samFlag_exclude=args.samFlagExclude,
-                             minFragmentLength=args.minFragmentLength,
-                             maxFragmentLength=args.maxFragmentLength,
-                             verbose=args.verbose)
+        wr = OffsetFragment([args.bam],
+                            binLength=args.binSize,
+                            stepSize=args.binSize,
+                            region=args.region,
+                            numberOfProcessors=args.numberOfProcessors,
+                            extendReads=args.extendReads,
+                            minMappingQuality=args.minMappingQuality,
+                            ignoreDuplicates=args.ignoreDuplicates,
+                            center_read=args.centerReads,
+                            zerosToNans=args.skipNonCoveredRegions,
+                            samFlag_include=args.samFlagInclude,
+                            samFlag_exclude=args.samFlagExclude,
+                            minFragmentLength=args.minFragmentLength,
+                            maxFragmentLength=args.maxFragmentLength,
+                            verbose=args.verbose)
         wr.filter_strand = args.filterRNAstrand
-        wr.RiboSeq = args.RiboSeq
+        wr.Offset = args.Offset
 
     elif args.filterRNAstrand:
         wr = filterRnaStrand([args.bam],
@@ -229,20 +226,22 @@ def main(args=None):
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 
-class RiboSeqFragment(writeBedGraph.WriteBedGraph):
+class OffsetSeqFragment(writeBedGraph.WriteBedGraph):
     """
-    Class to redefine the get_fragment_from_read for the --RiboSeq case
+    Class to redefine the get_fragment_from_read for the --Offset case
 
     Only SE alignments are used. The strand MUST be specified.
     """
     def get_fragment_from_read(self, read):
         rv = [(None, None)]
-        if self.RiboSeq > read.query_length:
+        if self.Offset > read.query_length:
             return rv
         if read.is_paired:
             return rv
         blocks = read.get_blocks()
-        foo = self.RiboSeq
+        foo = self.Offset
+        if foo < 0:
+            foo = read.infer_query_length() - foo
         if read.is_reverse:
             for idx in range(len(blocks)):
                 block = blocks[-idx - 1]
