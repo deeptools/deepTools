@@ -190,7 +190,7 @@ def getTempFileName(suffix=''):
     which has much faster accession.
     """
     import tempfile
-    from . import config as cfg
+    from deeptools import config as cfg
     # get temp dir from configuration file
     tmp_dir = cfg.config.get('general', 'tmp_dir')
     if tmp_dir == 'default':

@@ -10,7 +10,7 @@ from deeptools.utilities import getCommonChrNames, toBytes
 import deeptools.countReadsPerBin as cr
 from deeptools import bamHandler
 from deeptools import utilities
-from . import config as cfg
+from deeptools import config as cfg
 
 debug = 0
 old_settings = np.seterr(all='ignore')
