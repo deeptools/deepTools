@@ -1,8 +1,8 @@
 import numpy as np
 
 # own tools
-from . import bamHandler
-from . import mapReduce
+from deeptools import bamHandler
+from deeptools import mapReduce
 
 old_settings = np.seterr(all='ignore')
 

@@ -7,8 +7,8 @@ import numpy as np
 
 # deepTools packages
 import deeptools.utilities
-from . import bamHandler
-from . import mapReduce
+from deeptools import bamHandler
+from deeptools import mapReduce
 from deeptoolsintervals import GTF
 
 debug = 0
