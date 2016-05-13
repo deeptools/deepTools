@@ -114,7 +114,7 @@ setup(
     long_description=open('README.txt').read(),
     install_requires=[
         "numpy >= 1.8.0",
-        "scipy >= 0.15.0",
+        "scipy >= 0.17.0",
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
         "bx-python >= 0.5.0",

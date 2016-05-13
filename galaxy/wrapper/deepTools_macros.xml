@@ -497,7 +497,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="colorMap">
-        <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
+        <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://matplotlib.org/examples/color/colormaps_reference.html">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>
             <option value="Spectral">Spectral</option>
