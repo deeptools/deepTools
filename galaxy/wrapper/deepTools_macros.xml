@@ -78,12 +78,12 @@
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.2.2</token>
+    <token name="@WRAPPER_VERSION@">2.2.3</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
             <requirement type="binary">@BINARY@</requirement>
-            <requirement type="package" version="2.2.2">deepTools</requirement>
+            <requirement type="package" version="2.2.3">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
