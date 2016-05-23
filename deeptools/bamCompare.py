@@ -208,7 +208,6 @@ def get_scale_factors(args):
         bam2_mapped, _ = get_num_kept_reads(args)
         scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
         mapped_reads = [bam1_mapped, bam2_mapped]
-        print(mapped_reads)
         if args.verbose:
             print("Size factors using total number "
                   "of mapped reads: {}".format(scale_factors))
