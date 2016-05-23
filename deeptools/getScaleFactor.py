@@ -84,7 +84,11 @@ def fraction_kept(args):
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
-    chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
+    if args.ignoreForNormalization:
+        chrom_sizes = [(chrom_name, bam_handle.lengths[idx]) for idx, chrom_name in enumerate(bam_handle.references)
+                        if chrom_name not in args.ignoreForNormalization]
+    else:
+        chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
     while total < num_needed_to_sample and distanceBetweenBins > 50000:
         # If we've iterated, then halve distanceBetweenBins
@@ -110,17 +114,36 @@ def fraction_kept(args):
     return 1.0 - float(filtered) / float(total)
 
 
-def get_scale_factor(args):
-    scale_factor = args.scaleFactor
+def get_num_kept_reads(args):
+    """
+    Substracts from the total number of mapped reads in a bamfile
+    the proportion of reads that fall into blacklisted regions
+    or that are filtered
+
+    :return: integer
+    """
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName, args.numberOfProcessors)
-    print(("There are {0} alignments, of which {1} are completely within a blacklist region.".format(bam_mapped_total, blacklisted)))
-    bam_mapped = bam_mapped_total - blacklisted
+    if args.blackListFileName:
+        blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization,
+                                                      args.blackListFileName, args.numberOfProcessors)
+        print("There are {0} alignments, of which {1} are completely "
+              "within a blacklist region.".format(bam_mapped_total, blacklisted))
+        num_kept_reads = bam_mapped_total - blacklisted
+    else:
+        num_kept_reads = bam_mapped_total
     ftk = fraction_kept(args)
-    bam_mapped *= ftk
-    print(("Due to filtering, {0}% of the aforementioned alignments will be used {1}".format(100 * ftk, bam_mapped)))
+    if ftk < 1:
+        num_kept_reads *= ftk
+        print("Due to filtering, {0}% of the aforementioned alignments "
+              "will be used {1}".format(100 * ftk, num_kept_reads))
 
+    return num_kept_reads, bam_mapped_total
+
+
+def get_scale_factor(args):
+    scale_factor = args.scaleFactor
+    bam_mapped, bam_mapped_total = get_num_kept_reads(args)
     if args.normalizeTo1x:
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -175,6 +198,6 @@ def get_scale_factor(args):
         scale_factor *= bam_mapped / float(bam_mapped_total)
 
     if args.verbose:
-        print(("Final scaling factor: {}".format(scale_factor)))
+        print("Final scaling factor: {}".format(scale_factor))
 
     return scale_factor
