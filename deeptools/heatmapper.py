@@ -1102,12 +1102,6 @@ class _matrix(object):
             order = matrix_avgs[start:end].argsort()
             if sort_method == 'descend':
                 order = order[::-1]
-            if sort_method == 'shuffle':
-                # shuffle regions (contrary of sort actually, but useful
-                # to homogenize the values, eg. avoid patches
-                # within a group
-                order = np.random.permutation(order)
-
             _sorted_matrix.append(self.matrix[start:end, :][order, :])
             # sort the regions
             _reg = self.regions[start:end]
@@ -1125,10 +1119,6 @@ class _matrix(object):
             # replace nans for 0 otherwise kmeans produces a weird behaviour
             sys.stderr.write("*Warning* For clustering nan values have to be replaced by zeros \n")
             matrix[np.isnan(matrix)] = 0
-        # set data range for all data from zero to one
-        from sklearn import preprocessing
-        min_max_scaler = preprocessing.MinMaxScaler()
-        matrix = min_max_scaler.fit_transform(matrix)
 
         if method == 'kmeans':
             from scipy.cluster.vq import vq, kmeans
@@ -1155,7 +1145,7 @@ class _matrix(object):
         _clustered_regions = []
         _clustered_matrix = []
         for cluster in range(k):
-            self.group_labels.append("c{}".format(cluster + 1))
+            self.group_labels.append("cluster {}".format(cluster + 1))
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))

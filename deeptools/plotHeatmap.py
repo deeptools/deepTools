@@ -147,11 +147,10 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     if showColorbar:
         if colorbar_position == 'below':
             numrows += 2  # a spacer needs to be added to avoid overlaps
-            height_ratio += [0.2 / 2.54]  # spacer
+            height_ratio += [4 / 2.54]  # spacer
             height_ratio += [1 / 2.54]
         else:
-            numcols += 2
-            width_ratio += [0.2 / 2.54]  # spacer
+            numcols += 1
             width_ratio += [1 / 2.54]
 
     if showSummaryPlot:
@@ -337,14 +336,12 @@ def plotMatrix(hm, outFileName,
 
             if box_around_heatmaps is False:
                 # Turn off the boxes around the individual heatmaps
-                ax.axis("off")
                 ax.spines['top'].set_visible(False)
                 ax.spines['right'].set_visible(False)
                 ax.spines['bottom'].set_visible(False)
                 ax.spines['left'].set_visible(False)
             rows, cols = sub_matrix['matrix'].shape
             interpolation_type = None if rows >= 1000 and cols >= 200 else 'nearest'
-            interpolation_type = 'bicubic'
             img = ax.imshow(sub_matrix['matrix'],
                             aspect='auto',
                             interpolation=interpolation_type,
@@ -422,7 +419,7 @@ def plotMatrix(hm, outFileName,
                         # move it a bit inside to avoid overlapping
                         # with other labels
                         labels[-1].set_horizontalalignment('right')
-                    cbar.ax.set_xticklabels(labels, rotation=90)
+                    # cbar.ax.set_xticklabels(labels, rotation=90)
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
