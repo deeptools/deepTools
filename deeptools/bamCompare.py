@@ -10,7 +10,7 @@ from deeptools.SES_scaleFactor import estimateScaleFactor
 from deeptools import parserCommon
 from deeptools import bamHandler
 from deeptools.getRatio import getRatio
-from deeptools.getScaleFactor import get_scale_factor
+from deeptools.getScaleFactor import get_num_kept_reads
 from deeptools import utilities
 
 debug = 0
@@ -166,7 +166,7 @@ def get_scale_factors(args):
         args.normalizeUsingRPKM = False
 
     # This is only used if we subtract
-    mappedReads = [None, None]
+    mapped_reads = [None, None]
 
     if args.scaleFactors:
         scale_factors = list(map(float, args.scaleFactors.split(":")))
@@ -197,15 +197,18 @@ def get_scale_factors(args):
                 float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped])))
             bam1.close()
             bam2.close()
+        mapped_reads = [bam1.mapped, bam2.mapped]
+
 
     elif args.scaleFactorsMethod == 'readCount':
         args.bam = args.bamfile1
         args.scaleFactor = 1.0
-        s1 = get_scale_factor(args)
+        bam1_mapped, _ = get_num_kept_reads(args)
         args.bam = args.bamfile2
-        s2 = get_scale_factor(args)
-        mappedReads = [s1, s2]
-        scale_factors = np.array([s1, s2]) / float(max(s1, s2))
+        bam2_mapped, _ = get_num_kept_reads(args)
+        scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
+        mapped_reads = [bam1_mapped, bam2_mapped]
+        print(mapped_reads)
         if args.verbose:
             print("Size factors using total number "
                   "of mapped reads: {}".format(scale_factors))
@@ -216,24 +219,22 @@ def get_scale_factors(args):
         # The next lines identify which of the samples is not scaled down.
         # The normalization using RPKM or normalize to 1x would use
         # as reference such sample. Since the other sample would be
-        # scaled to match the un-scaled one, the normalization factor
+        # scaled to match the un-scaled one, the normalization factor due to RPKM or normalize1x
         # for both samples should be based on the unscaled one.
         # For example, if sample A is unscaled and sample B is scaled by 0.5,
         # then normalizing factor for A to report RPKM read counts
         # is also applied to B.
 
         if args.scaleFactors is None:
+            # check which of the two samples is not scaled down
             if scale_factors[0] == 1:
                 args.bam = args.bamfile1
-                mappedReads = mappedReads[0]
+                mapped_reads = mapped_reads[0]
             else:
                 args.bam = args.bamfile2
-                mappedReads = mappedReads[1]
-            if mappedReads is None:
-                mappedReads = get_scale_factor(args.bam)
-            bam_handle = bamHandler.openBam(args.bam)
-            mappedReads *= utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
-            bam_handle.close()
+                mapped_reads = mapped_reads[1]
+            if mapped_reads is None:
+                mapped_reads = get_num_kept_reads(args.bam)
 
         # Replace the arguments
         args.normalizeTo1x = normalizeTo1x
@@ -272,7 +273,7 @@ def get_scale_factors(args):
                     if args.verbose:
                         print("Estimated read length is {}".format(int(read_len_dict['median'])))
 
-                current_coverage = float(mappedReads * fragment_length) / args.normalizeTo1x
+                current_coverage = float(mapped_reads * fragment_length) / args.normalizeTo1x
                 # the coverage scale factor is 1 / coverage,
                 coverage_scale_factor = 1.0 / current_coverage
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
@@ -284,14 +285,12 @@ def get_scale_factors(args):
                 # by default normalize using RPKM
                 # the RPKM is:
                 # Num reads per tile/(total reads (in millions)*tile length in Kb)
-                millionReadsMapped = float(mappedReads) / 1e6
+                millionReadsMapped = float(mapped_reads) / 1e6
                 tileLengthInKb = float(args.binSize) / 1000
                 coverage_scale_factor = 1.0 / (millionReadsMapped * tileLengthInKb)
                 scale_factors = np.array(scale_factors) * coverage_scale_factor
-
                 if args.verbose:
-                    print("scale factor for   ")
-                    "RPKM is {0}".format(coverage_scale_factor)
+                    print("Scale factor for RPKM is {0}".format(coverage_scale_factor))
 
     return scale_factors
 

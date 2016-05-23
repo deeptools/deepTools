@@ -1,5 +1,6 @@
 import deeptools.bamCoverage as bam_cov
 import deeptools.bamCompare as bam_comp
+import deeptools.getScaleFactor as gs
 import os.path
 from os import unlink
 
@@ -121,6 +122,37 @@ def test_bam_compare_diff_files():
     unlink(outfile)
 
 
+def test_get_num_kept_reads():
+    """
+    Test the scale factor functinos
+    """
+    args = "--bam {}  -o /tmp/test".format(BAMFILE_A, BAMFILE_B).split()
+
+    args = bam_cov.process_args(args)
+    num_kept_reads, total_reads = gs.get_num_kept_reads(args)
+
+    # bam file 1 has 2 reads in 3R and 2 read in chr_cigar
+    assert num_kept_reads == 3, "num_kept_reads is wrong"
+    assert total_reads == 3, "num total reads is wrong"
+
+    # ignore chr_cigar to count the total number of reads
+    args = "--bam {} --ignoreForNormalization chr_cigar  -o /tmp/test".format(BAMFILE_A, BAMFILE_B).split()
+    args = bam_cov.process_args(args)
+    num_kept_reads, total_reads = gs.get_num_kept_reads(args)
+
+    # the  number of kept reads should be 2 as the read on chr_cigar is skipped
+    assert num_kept_reads == 2, "num_kept_reads is wrong ({})".format(num_kept_reads)
+
+    # test filtering by read direction. Only forward reads are kept
+    args = "--bam {}  -o /tmp/test --samFlagExclude 16 --ignoreForNormalization chr_cigar ".format(BAMFILE_A, BAMFILE_B).split()
+
+    args = bam_cov.process_args(args)
+    num_kept_reads, total_reads = gs.get_num_kept_reads(args)
+
+    # only one forward read is expected in
+    assert num_kept_reads == 1, "num_kept_reads is wrong"
+
+
 def test_bam_compare_diff_files_skipnas():
     """
     Test skipnas
@@ -155,6 +187,89 @@ def test_bam_compare_extend():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t0\t100\t-1.00\n', '3R\t100\t150\t1.00\n', '3R\t150\t200\t-1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
+    unlink(outfile)
+
+
+def test_bam_compare_scale_factors_ratio():
+    """
+    Test scale factor
+    """
+    outfile = '/tmp/test_file.bg'
+    args = "--bamfile1 {} --bamfile2 {} --ratio ratio --ignoreForNormalization chr_cigar " \
+           "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
+
+    bam_comp.main(args)
+
+    # The scale factors are [ 1.   0.5] because BAMFILE_B has dowble the amount of reads (4) compared to BAMFILE_A
+
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+
+    """
+    The distribution of reads for the bam file is:
+
+                  0                              100                           200
+                  |------------------------------------------------------------|
+    testA.bam  3R                                ==============>
+                                                                <==============
+
+
+    testB.bam  3R                 <==============               ==============>
+                                                 ==============>
+                                                                ==============>
+
+    ------------------------------------------------------------------------------
+
+    ratio:             0      (0+1)/(1*0.5+1)=0.67             (1+1)/(1+2*0.5)=1
+    (scale factors [1,0.5])                   (1+1)/(1+1*0.5)=1.33
+    """
+
+    expected = ['3R\t0\t50\t1.00\n', '3R\t50\t100\t0.67\n', '3R\t100\t150\t1.33\n', '3R\t150\t200\t1.0\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
+    unlink(outfile)
+
+
+def test_bam_compare_scale_factors_subtract():
+    """
+    Test scale factor
+    """
+    outfile = '/tmp/test_file.bg'
+    args = "--bamfile1 {} --bamfile2 {} --ratio subtract --ignoreForNormalization chr_cigar " \
+           "-o {} -p 1 --outFileFormat bedgraph --normalizeTo1x 200".format(BAMFILE_A, BAMFILE_B, outfile).split()
+
+    bam_comp.main(args)
+
+    # The scale factors are [ 1.   0.5] because BAMFILE_B has dowble the amount of reads (4) compared to BAMFILE_A
+
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+
+    """
+    The distribution of reads for the bam file is:
+
+                  0                              100                           200
+                  |------------------------------------------------------------|
+    testA.bam  3R                                ==============>
+                                                                <==============
+
+
+    testB.bam  3R                 <==============               ==============>
+                                                 ==============>
+                                                                ==============>
+
+    ------------------------------------------------------------------------------
+
+    subtract: scale factors [1,0.5], after applying normalize to 1x, coverage of test_A is 0.5, thus
+    the factor to reach a coverate of 1 is x2. Thus, the final scale factors are [2,1]
+
+    after applying factors:    0         -1              1              0
+
+    """
+
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-1\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
