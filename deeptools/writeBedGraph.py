@@ -262,8 +262,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 writeEnd = min(writeStart + self.binLength, end)
 
         # write remaining value if not a nan
-        if previous_value and writeStart != end and not np.isnan(previous_value):
-            _file.write("%s\t%d\t%d\t%.1f\n" % (chrom, writeStart,
+        if previous_value is not None and writeStart != end and not np.isnan(previous_value):
+            _file.write("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
                                                 end, previous_value))
 
         tempfilename = _file.name
