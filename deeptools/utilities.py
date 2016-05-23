@@ -319,6 +319,14 @@ def bam_total_reads(bam_handle, chroms_to_ignore):
         lines = pysam.idxstats(bam_handle.filename)
         if type(lines) is str:
             lines = lines.strip().split('\n')
+        if len(lines) == 0:
+            # check if this is a test running under nose
+            # in which case it will fail.
+            if len([val for val in sys.modules.keys() if val.find("nose") >= 0]):
+                sys.stderr.write("To run this code inside a test use disable "
+                                 "output buffering `nosetest -s`\n".format(bam_handle.filename))
+            else:
+                sys.stderr.write("Error running idxstats on {}\n".format(bam_handle.filename))
         tot_mapped_reads = 0
         for line in lines:
             chrom, _len, nmapped, _nunmapped = line.split('\t')
