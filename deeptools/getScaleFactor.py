@@ -86,7 +86,7 @@ def fraction_kept(args):
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
     if args.ignoreForNormalization:
         chrom_sizes = [(chrom_name, bam_handle.lengths[idx]) for idx, chrom_name in enumerate(bam_handle.references)
-                        if chrom_name not in args.ignoreForNormalization]
+                       if chrom_name not in args.ignoreForNormalization]
     else:
         chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 

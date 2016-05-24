@@ -11,7 +11,6 @@ from deeptools import parserCommon
 from deeptools import bamHandler
 from deeptools.getRatio import getRatio
 from deeptools.getScaleFactor import get_num_kept_reads
-from deeptools import utilities
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -198,7 +197,6 @@ def get_scale_factors(args):
             bam1.close()
             bam2.close()
         mapped_reads = [bam1.mapped, bam2.mapped]
-
 
     elif args.scaleFactorsMethod == 'readCount':
         args.bam = args.bamfile1
