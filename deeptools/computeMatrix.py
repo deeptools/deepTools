@@ -247,6 +247,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           choices=["mean", "median", "max", "min", "sum",
                                    "region_length"],
                           default='mean')
+    
+    optional.add_argument('--sortUsingSamples',
+                          help='List of sample numbers (order as in matrix), ' 
+                          'that are used for sorting by --sortUsing, '
+                          'no value uses all samples, '
+                          'example: --sortUsingSamples 1 3',
+                          type=int, nargs='+')
 
     optional.add_argument('--averageTypeBins',
                           default='mean',
@@ -370,7 +377,18 @@ def main(args=None):
     scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions != 'no':
-        hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
+        
+        sortUsingSamples = []
+        if args.sortUsingSamples is not None:
+            for i in args.sortUsingSamples:
+                if (i > 0 and i <= hm.matrix.get_num_samples()):
+                    sortUsingSamples.append(i-1)
+                else: 
+                    exit("The value {0} for --sortSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples,hm.matrix.get_num_samples()))
+        
+        print('Samples used for ordering within each group: ',sortUsingSamples)
+        
+        hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions, sample_list = sortUsingSamples)
 
     hm.save_matrix(args.outFileName)
 

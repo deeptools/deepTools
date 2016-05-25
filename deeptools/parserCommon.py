@@ -537,7 +537,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'the mean value per region.',
                               choices=["descend", "ascend", "no"],
                               default='descend')
-
+        
         optional.add_argument('--sortUsing',
                               help='Indicate which method should be used for '
                               'sorting. For each row the '
@@ -545,6 +545,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               choices=["mean", "median", "max", "min", "sum",
                                        "region_length"],
                               default='mean')
+        
+        optional.add_argument('--sortUsingSamples',
+                              help='List of sample numbers (order as in matrix), ' 
+                              'that are used for sorting by --sortUsing, '
+                              'no value uses all samples, '
+                              'example: --sortUsingSamples 1 3',
+                              type=int, nargs='+')
 
         optional.add_argument(
             '--averageTypeSummaryPlot',
