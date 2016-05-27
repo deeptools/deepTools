@@ -80,7 +80,7 @@ def get_optional_args():
     optional.add_argument('--Offset',
                           help='Uses this offset inside of each read as the signal. This is useful in '
                           'cases like RiboSeq or GROseq, where the signal is 12, 15 or 0 bases past the '
-                          'start of the read. This MUST be paired with the --filterRNAstrand option. '
+                          'start of the read. This can be paired with the --filterRNAstrand option. '
                           'Only single-end reads are accepted. Note that negative values indicate '
                           'offsets from the end of each read.',
                           metavar='INT',
@@ -257,7 +257,9 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 foo -= block[1] - block[0]
 
         # Filter the strand. We only care about SE reads
-        if self.filter_strand == 'forward' and read.flag & 16 == 16:
+        if self.filter_strand is None:
+            return rv
+        elif self.filter_strand == 'forward' and read.flag & 16 == 16:
             return rv
         elif self.filter_strand == 'reverse' and read.flag & 16 == 0:
             return rv

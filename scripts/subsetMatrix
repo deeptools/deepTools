@@ -24,7 +24,7 @@ or
 
 or
 
-  subsetMatrix merge -h
+  subsetMatrix rbind -h
 
 """,
         epilog='example usages:\n'
@@ -63,19 +63,19 @@ or
         usage='Example usage:\n  subsetMatrix filterStrand -m '
         'input.mat.gz -o output.mat.gz --strand +\n\n')
 
-    # merge
+    # rbind
     subparsers.add_parser(
-        'merge',
+        'rbind',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[mergeArgs()],
-        help="merge multiple matrices",
-        usage='Example usage:\n  subsetMatrix merge -m '
+        parents=[rbindArgs()],
+        help="merge multiple matrices by concatenating them head to tail. This assumes that the same samples are present in each in the same order.",
+        usage='Example usage:\n  subsetMatrix rbind -m '
         'input1.mat.gz input2.mat.gz -o output.mat.gz\n\n')
 
     return parser
 
 
-def mergeArgs():
+def rbindArgs():
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
 
@@ -233,7 +233,7 @@ def filterHeatmap(hm, args):
     hm.matrix.regions = regions
 
 
-def mergeMatrices(hm, args):
+def rbindMatrices(hm, args):
     """
     This only supports a single group at this point
 
@@ -287,8 +287,8 @@ def main():
     elif args.command == 'filterStrand':
         filterHeatmap(hm, args)
         hm.save_matrix(args.outFileName)
-    elif args.command == 'merge':
-        mergeMatrices(hm, args)
+    elif args.command == 'rbind':
+        rbindMatrices(hm, args)
         hm.save_matrix(args.outFileName)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))
