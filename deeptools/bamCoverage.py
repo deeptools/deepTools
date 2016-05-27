@@ -163,8 +163,6 @@ def main(args=None):
                             )
 
     elif args.Offset:
-        if not args.filterRNAstrand:
-            exit('*ERROR*: You MUST specify a strand!')
         wr = OffsetFragment([args.bam],
                             binLength=args.binSize,
                             stepSize=args.binSize,
