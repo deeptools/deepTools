@@ -87,30 +87,7 @@ To install into your home directory, use:
 <a name="galaxy"/></a>
 ### Galaxy Installation
 
-deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). All wrappers and dependencies are 
-available in the [Galaxy Tool Shed](http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools).
-
-
-#### Installation via Galaxy API (recommended)
-
-At first generate an [API Key](http://wiki.galaxyproject.org/Admin/API#Generate_the_Admin_Account_API_Key) for your admin 
-user and run the the installation script:
-
-	python ./scripts/api/install_tool_shed_repositories.py --api YOUR_API_KEY -l http://localhost --url http://toolshed.g2.bx.psu.edu/ -o bgruening -r <revision> --name deeptools --tool-deps --repository-deps --panel-section-name deepTools
-
-The -r argument specifies the version of deepTools. You can get the latest revsion number from the test tool shed or with the following command:
-
-	hg identify http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools
-
-You can watch the installation status under: Top Panel → Admin → Manage installed tool shed repositories
-
-
-#### Installation via web browser
-
-- go to the [admin page](http://localhost:8080/admin)
-- select *Search and browse tool sheds*
-- Galaxy tool shed → Sequence Analysis → deeptools
-- install deeptools
+deepTools can be easily integrated into [Galaxy](http://galaxyproject.org). Please see the [installation instructions in our documentation](http://deeptools.readthedocs.io/en/latest/content/installation.html#galaxy-installation) for further details.
 
 remember: for support, questions, or feature requests contact: deeptools@googlegroups.com
 
