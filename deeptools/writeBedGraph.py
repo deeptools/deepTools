@@ -255,8 +255,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
             elif previous_value != value:
                 if not np.isnan(previous_value):
                     _file.write(
-                        line_string.format(chrom, writeStart,
-                                                      writeEnd, previous_value))
+                        line_string.format(chrom, writeStart, writeEnd, previous_value))
                 previous_value = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + self.binLength, end)
