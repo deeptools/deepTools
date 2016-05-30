@@ -482,9 +482,9 @@ class GTF(object):
 
         # Handle the first line
         cols = line.split("\t")
-        if cols[2].lower() == self.transcriptID:
+        if cols[2].lower() == self.transcriptID.lower():
             self.parseGTFtranscript(cols, file_label)
-        elif cols[2].lower() == self.exonID:
+        elif cols[2].lower() == self.exonID.lower():
             self.parseGTFexon(cols)
 
         # Handle the remaining lines
@@ -496,9 +496,9 @@ class GTF(object):
                 if len(cols) == 0:
                     continue
 
-                if cols[2].lower() == self.transcriptID:
+                if cols[2].lower() == self.transcriptID.lower():
                     self.parseGTFtranscript(cols, file_label)
-                elif cols[2].lower() == self.exonID and self.keepExons is True:
+                elif cols[2].lower() == self.exonID.lower() and self.keepExons is True:
                     self.parseGTFexon(cols)
 
         # Reset self.labelIdx
