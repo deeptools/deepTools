@@ -364,7 +364,7 @@ class heatmapper(object):
 
             # print some information
             if parameters['body'] > 0 and \
-                    body_length - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime'] < parameters['bin size']:
+                    body_length < parameters['bin size']:
                 if parameters['verbose']:
                     sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
                                      "({0}) {1} {2}:{3}:{4}. Skipping...\n".format((body_length - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
