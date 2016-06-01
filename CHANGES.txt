@@ -12,6 +12,7 @@
  * Most functions (both at the command line and within Galaxy) that process BAM files can now filter by fragment length (--minFragmentLength and --maxFragmentLength). By default there's no filtering performed. The primary purpose of this is to facilitate ATACseq analysis, where fragment length determines whether one is processing mono-/di-/poly-nucleosome fragments. This was issue #336.
  * bamPEFragmentSize now has --logScale and --maxFragmentLength options, which allow you to plot frequencies on the log scale and set the max plotted fragment length, respectively. This was issue #337.
  * bamPEFragmentSize now supports multiple input files.
+ * If the sequence has been removed from BAM files, SE reads no longer cause an error in bamCoverage if --normalizeTo1x is specified. In general, the code that looks at read length now checks the CIGAR string if there's no sequence available in a BAM file (for both PE and SE datasets). This was issue #369.
 
 2.2.4
 
