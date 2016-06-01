@@ -371,7 +371,8 @@ class heatmapper(object):
                                                                                    feature_name, feature_chrom,
                                                                                    feature_start, feature_end))
                 coverage = np.zeros(matrix_cols)
-                coverage[:] = np.nan
+                if not parameters['missing data as zero']:
+                    coverage[:] = np.nan
             else:
                 if feature_strand == '-':
                     if parameters['downstream'] > 0:
