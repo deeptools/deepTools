@@ -317,6 +317,7 @@ def bam_total_reads(bam_handle, chroms_to_ignore):
         import pysam
 
         lines = pysam.idxstats(bam_handle.filename)
+        lines = toString(lines)
         if type(lines) is str:
             lines = lines.strip().split('\n')
         if len(lines) == 0:
