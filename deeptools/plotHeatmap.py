@@ -6,7 +6,7 @@ import argparse
 from collections import OrderedDict
 import numpy as np
 from matplotlib import use
-from numpy import int
+# from numpy import int
 use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib
@@ -574,12 +574,12 @@ def main(args=None):
         if args.sortUsingSamples is not None:
             for i in args.sortUsingSamples:
                 if (i > 0 and i <= hm.matrix.get_num_samples()):
-                    sortUsingSamples.append(i-1)
-                else: 
-                    exit("The value {0} for --sortSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples,hm.matrix.get_num_samples()))
-        
-        print('Samples used for ordering within each group: ',sortUsingSamples)
-        
+                    sortUsingSamples.append(i - 1)
+                else:
+                    exit("The value {0} for --sortSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples, hm.matrix.get_num_samples()))
+
+        print('Samples used for ordering within each group: ', sortUsingSamples)
+
         hm.matrix.sort_groups(sort_using=args.sortUsing,
                               sort_method=args.sortRegions,
                               sample_list=sortUsingSamples)

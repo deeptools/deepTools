@@ -1076,8 +1076,7 @@ class _matrix(object):
             regions.append(self.regions[start:end])
 
         return regions
-    
-    
+
     def sort_groups(self, sort_using='mean', sort_method='no', sample_list=None):
         """
         Sorts and rearranges the submatrices according to the
@@ -1085,18 +1084,18 @@ class _matrix(object):
         """
         if sort_method == 'no':
             return
-      
-        if (sample_list is not None) and (len(sample_list)>0):
+
+        if (sample_list is not None) and (len(sample_list) > 0):
             # get the ids that correspond to the selected sample list
-            idx_to_keep =[]
+            idx_to_keep = []
             for sample_idx in sample_list:
                 idx_to_keep += range(self.sample_boundaries[sample_idx], self.sample_boundaries[sample_idx + 1])
-                
+
             matrix = self.matrix[:, idx_to_keep]
 
         else:
             matrix = self.matrix
-    
+
         # compute the row average:
         if sort_using == 'region_length':
             matrix_avgs = np.array([x['end'] - x['start']
