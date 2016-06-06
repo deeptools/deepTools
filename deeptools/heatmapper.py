@@ -558,7 +558,7 @@ class heatmapper(object):
 
                 # Partition the space into bins
                 if nBins == 1:
-                    pos_array = np.array([zoneStart])
+                    pos_array = np.array([valStart])
                 else:
                     pos_array = np.linspace(valStart, valEnd, nBins, endpoint=False, dtype=int)
                 pos_array = np.append(pos_array, valEnd)
