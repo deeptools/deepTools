@@ -543,14 +543,12 @@ class heatmapper(object):
             sys.stderr.write("{0}\nvalues array value: {1}, zones {2}\n".format(detail, valuesArray, zones))
 
         cvglist = []
-        zoneStart = 0
         zoneEnd = 0
         valStart = 0
         valEnd = 0
         for zone, nBins in zones:
             if nBins:
                 # linspace is used to more or less evenly partition the data points into the given number of bins
-                zoneStart = zoneEnd
                 zoneEnd += nBins
                 valStart = valEnd
                 valEnd += np.sum([x[1] - x[0] for x in zone])
