@@ -95,9 +95,9 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
             leftBins.append(exon)
         else:
             # Don't add 0-width exonic bins!
-            if middle - cumulativeSum - size < exon[1] - exon[0]:
+            if exon[0] < exon[1] - cumulativeSum - size + middle:
                 leftBins.append((exon[0], exon[1] - cumulativeSum - size + middle))
-            if middle - cumulativeSum - size > 0:
+            if exon[1] - cumulativeSum - size + middle < exon[1]:
                 rightBins.append((exon[1] - cumulativeSum - size + middle, exon[1]))
         cumulativeSum += size
 
