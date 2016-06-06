@@ -79,7 +79,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     """
     leftBins = []
     rightBins = []
-    size = np.sum([x[1] - x[0] for x in exonsInput])
+    size = sum([x[1] - x[0] for x in exonsInput])
     middle = size // 2
     cumulativeSum = 0
     padLeft = 0
@@ -102,7 +102,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         cumulativeSum += size
 
     # Trim leftBins/adjust padLeft
-    lSum = np.sum([x[1] - x[0] for x in leftBins])
+    lSum = sum([x[1] - x[0] for x in leftBins])
     if lSum > left:
         lSum = 0
         for i, exon in enumerate(leftBins[::-1]):
@@ -120,7 +120,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         padLeft = left - lSum
 
     # Trim rightBins/adjust padRight
-    rSum = np.sum([x[1] - x[0] for x in rightBins])
+    rSum = sum([x[1] - x[0] for x in rightBins])
     if rSum > right:
         rSum = 0
         for i, exon in enumerate(rightBins):
@@ -161,7 +161,7 @@ def trimZones(zones, maxLength, binSize, padRight):
             if reg[1] > reg[0]:
                 outZone.append(reg)
         if changed:
-            nBins = np.sum(x[1] - x[0] for x in outZone) // binSize
+            nBins = sum(x[1] - x[0] for x in outZone) // binSize
         else:
             nBins = nbins
         output.append((outZone, nBins))
