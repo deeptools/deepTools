@@ -230,6 +230,8 @@ def getEnrichment_worker(arglist):
     findOverlaps. For each overlap, increment the counter for that feature.
     """
     chrom, start, end, args, defaultFragmentLength = arglist
+    if args.verbose:
+        sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
 
     gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
@@ -332,6 +334,10 @@ def getChunkLength(args, chromSize):
     There's no point in parsing the GTF time over and over again needlessly.
     Emprically, it seems that adding ~4x the number of workers is ideal, since
     coverage is non-uniform. This is a heuristic way of approximating that.
+
+    Note that if there are MANY small contigs and a few large ones (e.g., the
+    max and median lengths are >10x different, then it's best to take a
+    different tack.
     """
 
     if args.region:
@@ -351,6 +357,9 @@ def getChunkLength(args, chromSize):
 
     if len(lengths) >= 4 * args.numberOfProcessors:
         rv = np.median(lengths).astype(int)
+        # In cases like dm6 or GRCh38, there are a LOT of really small contigs, which will cause the median to be small and performance to tank
+        if np.max(lengths) >= 10 * rv:
+            rv = np.ceil(np.sum(lengths) / (4.0 * args.numberOfProcessors)).astype(int)
     else:
         rv = np.ceil(np.sum(lengths) / (4.0 * args.numberOfProcessors)).astype(int)
 
@@ -373,7 +382,7 @@ def main(args=None):
         bam_mapped = utilities.bam_total_reads(bam_handle, None)
         blacklisted = utilities.bam_blacklisted_reads(bam_handle, None, args.blackListFileName, args.numberOfProcessors)
         if args.verbose:
-            print(("There are {0} alignments in {1}, of which {2} are completely within a blacklist region.".format(bam_mapped, bam_handle.name, blacklisted)))
+            print(("There are {0} alignments in {1}, of which {2} are completely within a blacklist region.".format(bam_mapped, args.bamfiles[i], blacklisted)))
         bam_mapped -= blacklisted
         args.bam = args.bamfiles[i]
         args.ignoreForNormalization = None
