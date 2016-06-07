@@ -2,6 +2,16 @@ computeMatrix reference-point -a 100 -b 100 -S test.bw -R test2.bed -o master.ma
 # unzip but keep original gz file.
 gunzip -c master.mat.gz > master.mat
 
+# test referencePoint center
+computeMatrix reference-point -a 100 -b 100 --referencePoint center -S test.bw -R test2.bed -o master_center.mat.gz -bs 1
+# unzip but keep original gz file.
+gunzip master_center.mat.gz
+
+# test referencePoint TES
+computeMatrix reference-point -a 100 -b 100 --referencePoint center -S test.bw -R test2.bed -o master_TES.mat.gz -bs 1
+# unzip but keep original gz file.
+gunzip  master_center_TES.mat.gz
+
 computeMatrix reference-point -R test2.bed -S test.bw  -b 100 -a 100 --outFileName master_nan_to_zero.mat.gz -bs 1 -p 1 --missingDataAsZero
 gunzip -c  master_nan_to_zero.mat.gz > master_nan_to_zero.mat
 

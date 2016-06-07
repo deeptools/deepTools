@@ -31,14 +31,18 @@ def cmpMatrices(f1, f2):
             p2 = json.loads(l2[1:])
             for k, v in p1.items():
                 if k not in p2.keys():
+                    sys.stderr.write("key in {} missing: {} not in {}\n".format(f1, k, p2.keys()))
                     rv = False
                 if p1[k] != p2[k]:
+                    sys.stderr.write("values of '{}' is different: {} not in {}\n".format(k, p1[k], p2[k]))
                     rv = False
             for k in p2.keys():
                 if k not in p1.keys():
+                    sys.stderr.write("key in {} missing: {} not in {}\n".format(f2, k, p1.keys()))
                     rv = False
         else:
             if l1 != l2:
+                sys.stderr.write("lines differ:\n{}\n    vs\n{}\n".format(l1, l2))
                 rv = False
     file1.close()
     file2.close()
@@ -65,6 +69,22 @@ class TestHeatmapper(object):
         deeptools.computeMatrix.main(args)
         os.system('gunzip -f /tmp/_test.mat.gz')
         assert cmpMatrices(ROOT + '/master.mat', '/tmp/_test.mat') is True
+        os.remove('/tmp/_test.mat')
+
+    def test_computeMatrix_reference_point_center(self):
+        args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 --referencePoint center " \
+               "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert cmpMatrices(ROOT + '/master_center.mat', '/tmp/_test.mat') is True
+        os.remove('/tmp/_test.mat')
+
+    def test_computeMatrix_reference_point_tes(self):
+        args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 --referencePoint TES " \
+               "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
+        deeptools.computeMatrix.main(args)
+        os.system('gunzip -f /tmp/_test.mat.gz')
+        assert cmpMatrices(ROOT + '/master_TES.mat', '/tmp/_test.mat') is True
         os.remove('/tmp/_test.mat')
 
     def test_computeMatrix_reference_point_missing_data_as_zero(self):
