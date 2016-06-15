@@ -6,6 +6,7 @@ import argparse
 from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
+from math import sqrt
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -168,10 +169,10 @@ def getKLD(args, idx, mat):
 
     # Get the index of the reference sample
     if args.KLDsample not in args.bamfiles:
-        return "NA"
+        return ("NA", "NA")
     refIdx = args.bamfiles.index(args.KLDsample)
     if refIdx == idx:
-        return "NA"
+        return ("NA", "NA")
 
     # Generate PMFs
     refVals = np.log10(mat[:, refIdx] + 0.1)
@@ -186,13 +187,29 @@ def getKLD(args, idx, mat):
     integral = np.sum(refPMF) * binSize
     refPMF /= integral
 
+    # For the JSD, ensure p is never 0
+    binSize = 1.0 / np.sum(samplePMF)
+    samplePMF2 = samplePMF + 0.001
+    integral = np.sum(samplePMF2) * binSize
+    samplePMF2 /= integral
+
     # Compute the KL divergence
     divergence = 0.0
-    for i, (q, p) in enumerate(zip(refPMF, samplePMF)):
-        if p > 0.0 and q > 0.0:
+    for q, p in zip(refPMF, samplePMF):
+        if p > 0.0:
             divergence += p * np.log(p / q)
 
-    return divergence
+    # JSD
+    M = 0.5 * (refPMF + samplePMF2)
+    JSD = 0
+    for p, m in zip(refPMF, M):
+        if p > 0.0:
+            JSD += p * np.log(p / m)
+    for q, m in zip(samplePMF2, M):
+        if q > 0.0:
+            JSD += q * np.log(q / m)
+
+    return (divergence, sqrt(JSD))
 
 
 def main(args=None):
@@ -259,7 +276,7 @@ def main(args=None):
     if args.outQualityMetrics:
         args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
         if args.KLDsample:
-            args.outQualityMetrics.write("\tKL Divergence")
+            args.outQualityMetrics.write("\tKL Divergence\tJS Distance")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
@@ -269,8 +286,8 @@ def main(args=None):
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
             if args.KLDsample:
-                KLD = getKLD(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(args.labels[idx], AUC, XInt, elbow, KLD))
+                KLD, JSD = getKLD(args, idx, num_reads_per_bin)
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(args.labels[idx], AUC, XInt, elbow, KLD, JSD))
             else:
                 args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
         args.outQualityMetrics.close()
