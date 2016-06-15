@@ -1154,7 +1154,7 @@ class _matrix(object):
         _clustered_regions = []
         _clustered_matrix = []
         for cluster in range(k):
-            self.group_labels.append("cluster {}".format(cluster + 1))
+            self.group_labels.append("cluster_{}".format(cluster + 1))
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))
