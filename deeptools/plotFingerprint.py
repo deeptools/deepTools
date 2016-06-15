@@ -120,6 +120,18 @@ def get_optional_args():
                           metavar='FILE.txt',
                           type=argparse.FileType('w'))
 
+    optional.add_argument('--KLDsample',
+                          help='Reference sample against which to compute the '
+                          'Kullback-Leibler divergence. If this is not specified, '
+                          'the divergence will not be calculated. If '
+                          '--outQualityMetrics is not specified then this will '
+                          'be ignored. Note that the KL divergence is calculated '
+                          'on the log10 distribution of coverage counts, grouped '
+                          'into 100 equally spaced bins. The input distribution '
+                          'is modified slightly such that the resulting PMF '
+                          'never goes to zero.',
+                          metavar='sample.bam')
+
     return parser
 
 
@@ -141,6 +153,46 @@ def get_output_args():
                        type=argparse.FileType('w'))
 
     return parser
+
+
+def getKLD(args, idx, mat):
+    """
+    Computes the Kullback-Leibler divergence between two samples. The divergence
+    between a sample and itself is "NA". If the reference sample doesn't exist
+    then "NA" is returned.
+
+    args: The input arguments
+    idx:  The column index of the current sample
+    mat:  The matrix of counts
+    """
+
+    # Get the index of the reference sample
+    if args.KLDsample not in args.bamfiles:
+        return "NA"
+    refIdx = args.bamfiles.index(args.KLDsample)
+    if refIdx == idx:
+        return "NA"
+
+    # Generate PMFs
+    refVals = np.log10(mat[:, refIdx] + 0.1)
+    sampleVals = np.log10(mat[:, idx] + 0.1)
+    samplePMF, _ = np.histogram(sampleVals, bins=100, density=True)
+    refPMF, _ = np.histogram(refVals, bins=100, density=True)
+
+    # The reference PMF needs to be offset so q is never 0
+    # The integral should still equal 1
+    binSize = 1.0 / np.sum(refPMF)
+    refPMF += 0.001
+    integral = np.sum(refPMF) * binSize
+    refPMF /= integral
+
+    # Compute the KL divergence
+    divergence = 0.0
+    for i, (q, p) in enumerate(zip(refPMF, samplePMF)):
+        if p > 0.0 and q > 0.0:
+            divergence += p * np.log(p / q)
+
+    return divergence
 
 
 def main(args=None):
@@ -205,6 +257,10 @@ def main(args=None):
         args.outRawCounts.close()
 
     if args.outQualityMetrics:
+        args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
+        if args.KLDsample:
+            args.outQualityMetrics.write("\tKL Divergence")
+        args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
             counts = np.cumsum(np.sort(reads))
@@ -212,7 +268,11 @@ def main(args=None):
             AUC = np.sum(counts)
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
-            args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
+            if args.KLDsample:
+                KLD = getKLD(args, idx, num_reads_per_bin)
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(args.labels[idx], AUC, XInt, elbow, KLD))
+            else:
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
         args.outQualityMetrics.close()
 
 if __name__ == "__main__":
