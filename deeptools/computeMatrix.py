@@ -385,8 +385,7 @@ def main(args=None):
                     sortUsingSamples.append(i - 1)
                 else:
                     exit("The value {0} for --sortUsingSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples, hm.matrix.get_num_samples()))
-
-        print('Samples used for ordering within each group: ', sortUsingSamples)
+            print('Samples used for ordering within each group: ', sortUsingSamples)
 
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions, sample_list=sortUsingSamples)
 

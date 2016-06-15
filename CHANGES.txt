@@ -13,6 +13,7 @@
  * bamPEFragmentSize now has --logScale and --maxFragmentLength options, which allow you to plot frequencies on the log scale and set the max plotted fragment length, respectively. This was issue #337.
  * bamPEFragmentSize now supports multiple input files.
  * If the sequence has been removed from BAM files, SE reads no longer cause an error in bamCoverage if --normalizeTo1x is specified. In general, the code that looks at read length now checks the CIGAR string if there's no sequence available in a BAM file (for both PE and SE datasets). This was issue #369.
+ * computeMatrix and plotHeatmap can now sort using only a subset of samples
 
 2.2.4
 

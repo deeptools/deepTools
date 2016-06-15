@@ -715,6 +715,8 @@ class heatmapper(object):
         import json
         regions = []
         matrix_rows = []
+        current_group_index = 0
+        max_group_bound = None
 
         fh = gzip.open(matrix_file)
         for line in fh:
@@ -725,6 +727,7 @@ class heatmapper(object):
                 # the parameters used are saved using
                 # json
                 self.parameters = json.loads(line[1:].strip())
+                max_group_bound = self.parameters['group_boundaries'][1]
                 continue
 
             # split the line into bed interval and matrix values
@@ -732,9 +735,14 @@ class heatmapper(object):
             chrom, start, end, name, score, strand = region[0:6]
             matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
             matrix_rows.append(matrix_row)
-            regions.append({'chrom': chrom, 'start': start,
-                            'end': end, 'name': name, 'score': score,
-                            'strand': strand})
+            starts = start.split(",")
+            ends = end.split(",")
+            regs = [(int(x), int(y)) for x, y in zip(starts, ends)]
+            # get the group index
+            if len(regions) >= max_group_bound:
+                current_group_index += 1
+                max_group_bound = self.parameters['group_boundaries'][current_group_index + 1]
+            regions.append([chrom, regs, name, max_group_bound, strand, score])
 
         matrix = np.vstack(matrix_rows)
         self.matrix = _matrix(regions, matrix, self.parameters['group_boundaries'],
@@ -911,21 +919,23 @@ class heatmapper(object):
             # for index 5, the label is 'a', for
             # index 10, the label is 'b' etc
             label_idx = np.flatnonzero(boundaries <= idx)[-1]
-            starts = region['start'].split(",")
-            ends = region['end'].split(",")
+            starts = ["{0}".format(x[0]) for x in region[1]]
+            ends = ["{0}".format(x[1]) for x in region[1]]
+            starts = ",".join(starts)
+            ends = ",".join(ends)
             file_handle.write(
-                '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{1}\t0'.format(
-                    region['chrom'],
-                    starts[0],
-                    ends[-1],
-                    region['name'],
-                    region['score'],
-                    region['strand']))
+                '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{2}\t0'.format(
+                    region[0],
+                    region[1][0][0],
+                    region[1][-1][1],
+                    region[2],
+                    region[5],
+                    region[4]))
             file_handle.write(
                 '\t{0}\t{1}\t{2}\t{3}\n'.format(
-                    len(starts),
-                    ",".join([str(int(x) - int(starts[0])) for x in starts]),
-                    ",".join([str(int(y) - int(x)) for x, y in zip(starts, ends)]),
+                    len(region[1]),
+                    ",".join([str(int(y) - int(x)) for x, y in region[1]]),
+                    ",".join([str(int(x) - int(starts[0])) for x, y in region[1]]),
                     self.matrix.group_labels[label_idx]))
         file_handle.close()
 
