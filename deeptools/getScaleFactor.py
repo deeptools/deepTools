@@ -5,6 +5,7 @@ import numpy as np
 import deeptools.mapReduce as mapReduce
 from deeptools import bamHandler
 from deeptools import utilities
+import sys
 
 debug = 0
 
@@ -145,6 +146,9 @@ def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_mapped, bam_mapped_total = get_num_kept_reads(args)
     if args.normalizeTo1x:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: 1x\n")
+
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
         frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
@@ -185,6 +189,9 @@ def get_scale_factor(args):
             print("Scaling factor {}".format(args.scaleFactor))
 
     elif args.normalizeUsingRPKM:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: RPKM\n")
+
         # the RPKM is the # reads per tile / \
         #    ( total reads (in millions) * tile length in Kb)
         million_reads_mapped = float(bam_mapped) / 1e6
@@ -195,6 +202,9 @@ def get_scale_factor(args):
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
     else:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: depth\n")
+
         scale_factor *= bam_mapped / float(bam_mapped_total)
 
     if args.verbose:
