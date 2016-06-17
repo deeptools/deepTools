@@ -19,6 +19,9 @@
                 #if $output.saveRawCounts:
                     --outRawCounts '$outFileRawCounts'
                 #end if
+                #if $output.saveQualityMetrics:
+                    --outQualityMetrics '$outFileQualityMetrics'
+                #end if
             #else
                 --plotFileFormat 'png'
             #end if
@@ -78,6 +81,7 @@
             <when value="yes">
                 <expand macro="input_image_file_format" />
                 <param name="saveRawCounts" type="boolean" label="Save the bin counts" help="(--outRawCounts)"/>
+                <param name="saveQualityMetrics" type="boolean" label="Compute and save per-sample quality metrics" help="(--outQualityMetrics)"/>
             </when>
         </conditional>
     </inputs>
@@ -88,6 +92,14 @@
             ((
                 output['showOutputSettings'] == 'yes' and
                 output['saveRawCounts'] is True
+            ))
+            </filter>
+        </data>
+        <data format="tabular" name="outFileQualityMetrics" label="${tool.name} on ${on_string}: quality metrics">
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and
+                output['saveQualityMetrics'] is True
             ))
             </filter>
         </data>
