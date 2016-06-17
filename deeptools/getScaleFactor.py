@@ -55,6 +55,26 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 continue
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
 
+            # If filterRNAstrand is in args, then filter accordingly
+            # This is very similar to what's used in the get_fragment_from_read function in the filterRnaStrand class
+            if hasattr(args, "filterRNAstrand"):
+                if read.is_paired:
+                    if args.filterRNAstrand == 'forward':
+                        if not ((read.flag & 128 == 128 and read.flag & 16 == 0) or (read.flag & 64 == 64 and read.flag & 32 == 0)):
+                            filtered += 1
+                            continue
+                    elif args.filterRNAstrand == 'reverse':
+                        if not (read.flag & 144 == 144 or read.flag & 96 == 96):
+                            filtered += 1
+                            continue
+                else:
+                    if args.filterRNAstrand == 'forward' and read.flag & 16 == 0:
+                        filtered += 1
+                        continue
+                    elif args.filterRNAstrand == 'reverse' and read.flag & 16 == 16:
+                        filtered += 1
+                        continue
+
     return (filtered, tot)
 
 
