@@ -1,7 +1,7 @@
 bamCoverage
 ===========
 
-.. contents:: 
+.. contents::
     :local:
 
 .. image:: ../../images/norm_IGVsnapshot_indFiles.png
@@ -25,7 +25,7 @@ Usage hints
 
 .. warning:: If you already normalized for GC bias using ``correctGCbias``, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
 
-.. warning:: If you know that your files will be **strongly affected by the kind of filtering** you would like to apply (e.g., removal of duplicates with ``--ignoreDuplicates`` or ignoring reads of low quality) then consider removing those reads *beforehand*. 
+.. warning:: If you know that your files will be **strongly affected by the kind of filtering** you would like to apply (e.g., removal of duplicates with ``--ignoreDuplicates`` or ignoring reads of low quality) then consider removing those reads *beforehand*.
 
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output via ``--outFileFormat``.
 
@@ -46,7 +46,7 @@ If you had run the command with ``--outFileFormat bedgraph``, you could easily p
 
 .. code:: bash
 
-    $ head SeqDepthNorm_chr19.bedgraph 
+    $ head SeqDepthNorm_chr19.bedgraph
     19	60150	60250	9.32
     19	60250	60450	18.65
     19	60450	60650	27.97
@@ -73,10 +73,17 @@ Regular bigWig track
     bamCoverage -b a.bam -o a.bw
 
 
-Separate tracks for each strand 
+Separate tracks for each strand
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sometimes it makes sense to generate two independent :ref:`bigWig` files for all reads on the forward and reverse strand, respectively. As of deepTools version 2.2, one can simply use the ``--filterRNAstrand`` option, such as ``--filterRNAstrand forward`` or ``--filterRNAstrand reverse``. This handles paired-end and single-end datasets. For older versions of deepTools, please see the instructions below.
+Sometimes it makes sense to generate two independent :ref:`bigWig` files for all reads on the forward and reverse strand, respectively.
+As of deepTools version 2.2, one can simply use the ``--filterRNAstrand`` option, such as ``--filterRNAstrand forward`` or ``--filterRNAstrand reverse``.
+This handles paired-end and single-end datasets. For older versions of deepTools, please see the instructions below.
+
+.. note:: The ``--filterRNAstrand`` option assumes the sequencing library generated from ILLUMINA dUTP/NSR/NNSR methods, which are the most commonly used method for
+          library preparation, where Read 2 (R2) is in the direction of RNA strand (**reverse-stranded** library). However other methods exist, which generate read
+          R1 in the direction of RNA strand (`see this review <http://www.nature.com/nmeth/journal/v7/n9/full/nmeth.1491.html>`_). For these libraries,
+          ``--filterRNAstrand`` will have an opposite behavior, i.e. ``--filterRNAstrand forward`` will give you reverse strand signal and vice-versa.
 
 Versions before 2.2
 *******************
@@ -92,8 +99,8 @@ To follow the examples, you need to know that ``-f`` will tell ``samtools view``
 
     # Reverse strand
     bamCoverage -b a.bam -o a.rev.bw --samFlagInclude 16
-    
-    
+
+
 
 **For a stranded `paired-end` library**
 
@@ -110,20 +117,20 @@ To get the file for transcripts that originated from the **forward strand**:
     # include reads that are 2nd in a pair (128);
     # exclude reads that are mapped to the reverse strand (16)
     $ samtools view -b -f 128 -F 16 a.bam > a.fwd1.bam
-    
+
     # exclude reads that are mapped to the reverse strand (16) and
     # first in a pair (64): 64 + 16 = 80
     $ samtools view -b -f 80 a.bam > a.fwd2.bam
-    
+
     # combine the temporary files
     $ samtools merge -f fwd.bam fwd1.bam fwd2.bam
-    
+
     # index the filtered BAM file
     $ samtools index fwd.bam
-    
+
     # run bamCoverage
     $ bamCoverage -b fwd.bam -o a.fwd.bigWig
-    
+
     # remove the temporary files
     $ rm a.fwd*.bam
 
@@ -134,21 +141,19 @@ To get the file for transcripts that originated from the **reverse strand**:
     # include reads that map to the reverse strand (128)
     # and are second in a pair (16): 128 + 16 = 144
     $ samtools view -b -f 144 a.bam > a.rev1.bam
-    
+
     # include reads that are first in a pair (64), but
     # exclude those ones that map to the reverse strand (16)
     $ samtools view -b -f 64 -F 16 a.bam > a.rev2.bam
-    
+
     # merge the temporary files
     $ samtools merge -f rev.bam rev1.bam rev2.bam
-    
+
     # index the merged, filtered BAM file
     $ samtools index rev.bam
-    
+
     # run bamCoverage
     $ bamCoverage -b rev.bam -o a.rev.bw
-    
+
     # remove temporary files
     $ rm a.rev*.bam
-
-
