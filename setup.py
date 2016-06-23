@@ -107,6 +107,24 @@ class install(_install):
         except Exception as e:
             sys.stderr.write("Error: {}".format(e))
 
+
+def openREADME():
+    """
+    This is only needed because README.rst is UTF-8 encoded and that won't work
+    under python3 iff sys.getfilesystemencoding() returns 'ascii'
+
+    Since open() doesn't accept an encoding in python2...
+    """
+    try:
+        f = open("README.rst", encoding="utf-8")
+    except:
+        f = open("README.rst")
+
+    foo = f.read()
+    f.close()
+    return foo
+
+
 setup(
     name='deepTools',
     version=get_version(),
@@ -125,7 +143,7 @@ setup(
     url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
     description='Useful tools for exploring deep sequencing data ',
-    long_description=open('README.rst').read(),
+    long_description=openREADME(),
     install_requires=[
         "numpy >= 1.8.0",
         "scipy >= 0.17.0",
