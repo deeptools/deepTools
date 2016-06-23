@@ -113,8 +113,7 @@ def plot_enrichment_args():
 
     optional.add_argument('--outRawCounts',
                           help='Save the counts per region to a tab-delimited file.',
-                          metavar='FILE',
-                          type=argparse.FileType('w'))
+                          metavar='FILE')
 
     optional.add_argument('--perSample',
                           help='Group the plots by sample, rather than by feature type (the default).',
@@ -453,8 +452,9 @@ def main(args=None):
 
     # Raw counts
     if args.outRawCounts:
-        args.outRawCounts.write("file\tfeatureType\tpercent\n")
+        of = open(args.outRawCounts, "w")
+        of.write("file\tfeatureType\tpercent\n")
         for i, x in enumerate(args.labels):
             for k, v in featureCounts[i].items():
-                args.outRawCounts.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
-        args.outRawCounts.close()
+                of.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
+        of.close()
