@@ -253,7 +253,7 @@ def getEnrichment_worker(arglist):
                 continue
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
                 continue
-            if args.samFlagInclude and read.flag & args.samFlagInclude == 0:
+            if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
                 continue

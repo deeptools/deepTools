@@ -32,7 +32,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 continue
 
             # filter reads based on SAM flag
-            if args.samFlagInclude and read.flag & args.samFlagInclude == 0:
+            if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:
                 filtered += 1
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
