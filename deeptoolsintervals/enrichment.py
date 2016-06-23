@@ -141,7 +141,7 @@ class Enrichment(GTF):
         self.chroms = []
         self.features = []
         self.tree = tree.initTree()
-        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
+        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-\.]+)\"|([ \w\d"\-\.]+))[;|\r|\n])')
         self.keepExons = keepExons
 
         if not isinstance(fnames, list):
