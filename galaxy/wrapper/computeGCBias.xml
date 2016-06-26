@@ -32,10 +32,6 @@
                 --sampleSize '$advancedOpt.sampleSize'
                 --regionSize '$advancedOpt.regionSize'
 
-                #if $advancedOpt.filterOut:
-                    --filterOut $advancedOpt.filterOut
-                #end if
-
                 #if $advancedOpt.extraSampling:
                     --extraSampling $advancedOpt.extraSampling
                 #end if
@@ -72,12 +68,6 @@
                     is set to 300 bases, which is close to the standard fragment size of many sequencing
                     applications. However, if the depth of sequencing is low, a larger bin size will
                     be required, otherwise many bins will not overlap with any read. (--regionSize)"/>
-                <param name="filterOut" type="data" format="bed" optional="true"
-                    label="BED file containing genomic regions to be excluded from the estimation of the correction"
-                    help="Such regions usually contain repetitive regions and peaks that, if included, would
-                    bias the correction. It is recommended to filter out known repetitive regions if multi-reads
-                    (reads that map to more than one genomic position) were excluded. In the case of ChIP-seq data,
-                    it is recommended to first use a peak caller to identify and filter out the identified peaks. (--filterOut)" />
                 <param name="extraSampling" type="data" format="bed" optional="true"
                     label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
                     help="(--extraSampling)" />
