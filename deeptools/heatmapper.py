@@ -885,25 +885,25 @@ class heatmapper(object):
 
     def save_matrix_values(self, file_name):
         # print a header telling the group names and their length
-        fh = open(file_name, 'w')
+        fh = open(file_name, 'wb')
         info = []
         groups_len = np.diff(self.matrix.group_boundaries)
         for i in range(len(self.matrix.group_labels)):
             info.append("{}:{}".format(self.matrix.group_labels[i],
                                        groups_len[i]))
-        fh.write("#{}\n".format("\t".join(info)))
+        fh.write(toBytes("#{}\n".format("\t".join(info))))
         # add to header the x axis values
-        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
+        fh.write(toBytes("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
                  self.parameters['downstream'],
                  self.parameters['upstream'],
                  self.parameters['body'],
                  self.parameters['bin size'],
                  self.parameters.get('unscaled 5 prime', 0),
-                 self.parameters.get('unscaled 3 prime', 0)))
+                 self.parameters.get('unscaled 3 prime', 0))))
 
         fh.close()
         # reopen again using append mode
-        fh = open(file_name, 'a')
+        fh = open(file_name, 'ab')
         np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
         fh.close()
 
