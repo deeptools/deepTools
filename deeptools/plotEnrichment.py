@@ -350,7 +350,7 @@ def getChunkLength(args, chromSize):
 
     lengths = []
     for k, v in chromSize:
-        regs = blSubtract(bl, k, (0, v))
+        regs = blSubtract(bl, k, [0, v])
         for reg in regs:
             lengths.append(reg[1] - reg[0])
 
