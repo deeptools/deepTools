@@ -217,7 +217,7 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead):
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
                                             "end for read {}".format(read.query_name)
-        return [(fragmentStart, fragmentEnd)]
+        return [(int(fragmentStart), int(fragmentEnd))]
 
 
 def getEnrichment_worker(arglist):
