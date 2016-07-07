@@ -544,7 +544,7 @@ class CountReadsPerBin(object):
                     continue
 
                 # filter reads based on SAM flag
-                if self.samFlag_include and read.flag & self.samFlag_include == 0:
+                if self.samFlag_include and read.flag & self.samFlag_include != self.samFlag_include:
                     continue
                 if self.samFlag_exclude and read.flag & self.samFlag_exclude != 0:
                     continue
