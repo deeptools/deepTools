@@ -81,8 +81,10 @@ def get_optional_args():
                           help='Uses this offset inside of each read as the signal. This is useful in '
                           'cases like RiboSeq or GROseq, where the signal is 12, 15 or 0 bases past the '
                           'start of the read. This can be paired with the --filterRNAstrand option. '
-                          'Only single-end reads are accepted. Note that negative values indicate '
-                          'offsets from the end of each read.',
+                          'Note that negative values indicate offsets from the end of each read. A value '
+                          'of 1 indicates the first base of the alignment (taking alignment orientation '
+                          'into account). Likewise, a value of -1 is the last base of the alignment. An '
+                          'offset of 0 is not permitted.',
                           metavar='INT',
                           type=int,
                           required=False)
@@ -163,6 +165,8 @@ def main(args=None):
                             )
 
     elif args.Offset:
+        if args.Offset == 0:
+            sys.exit("An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
         wr = OffsetFragment([args.bam],
                             binLength=args.binSize,
                             stepSize=args.binSize,
@@ -227,8 +231,6 @@ def main(args=None):
 class OffsetFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --Offset case
-
-    Only SE alignments are used. The strand MUST be specified.
     """
     def get_fragment_from_read(self, read):
         rv = [(None, None)]
@@ -239,7 +241,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         blocks = read.get_blocks()
         foo = self.Offset
         if foo < 0:
-            foo = read.infer_query_length() - foo
+            foo = read.infer_query_length() + foo + 1
         if read.is_reverse:
             for idx in range(len(blocks)):
                 block = blocks[-idx - 1]
