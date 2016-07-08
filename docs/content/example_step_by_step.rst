@@ -25,7 +25,7 @@ I have downloaded/received a BAM file - how do I generate a file I can look at i
 * input: your :ref:`BAM` file with aligned reads
 
 Of course, you could also look at your BAM file in the genome browser.
-However, generating a bigWig file of read coverages will not drastically reduce the size of the file, it also allows you to normalize the coverage to 1x sequencing depth, which makes a visual comparison of multiple files more feasible.
+However, generating a bigWig file of read coverages will drastically reduce the size of the file, it also allows you to normalize the coverage to 1x sequencing depth, which makes a visual comparison of multiple files more feasible.
 
 .. image:: ../images/GalHow_bamCoverage.png
 

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from deeptoolsintervals import tree
-import re
 import sys
 import gzip
 try:
@@ -10,6 +9,7 @@ try:
 except:
     supportsBZ2 = False
 import os.path
+import shlex
 
 
 def getNext(fp):
@@ -22,7 +22,7 @@ def getNext(fp):
     return line.decode('ascii')
 
 
-def seemsLikeGTF(cols, regex):
+def seemsLikeGTF(cols):
     """
     Does a line look like it could be from a GTF file? Column contents must be:
 
@@ -41,7 +41,9 @@ def seemsLikeGTF(cols, regex):
         cols[6] in ['+', '-', '.']
         if cols[7] != '.':
             int(cols[7]) in [0, 1, 2]
-        assert(regex.match(cols[8]) is not None)
+        s = shlex.split(cols[8])
+        assert("gene_id" in s)
+        assert(s[-1] != "gene_id")
         return True
     except:
         return False
@@ -149,7 +151,7 @@ class GTF(object):
 
     def inferType(self, fp, line, labelColumn=None):
         """
-        Attempt to infer a file type from a single line. This is largely based on the number of columns plus a regex looking for "gene_id".
+        Attempt to infer a file type from a single line. This is largely based on the number of columns plus looking for "gene_id".
         """
         subtract = 0
         if labelColumn is not None:
@@ -160,19 +162,22 @@ class GTF(object):
         elif len(cols) - subtract == 3:
             return 'BED3'
         elif len(cols) - subtract < 6:
-            sys.stderr.write("Warning, {0} has an abnormal number of fields. Assuming BED3 format.\n".format(self.filename))
+            if self.verbose:
+                sys.stderr.write("Warning, {0} has an abnormal number of fields. Assuming BED3 format.\n".format(self.filename))
             return 'BED3'
         elif len(cols) - subtract == 6:
             return 'BED6'
-        elif len(cols) and seemsLikeGTF(cols, self.gene_id_regex):
+        elif len(cols) and seemsLikeGTF(cols):
             return 'GTF'
         elif len(cols) - subtract == 12:
             return 'BED12'
         elif len(cols) - subtract < 12:
-            sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED6 format.\n".format(self.filename))
+            if self.verbose:
+                sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED6 format.\n".format(self.filename))
             return 'BED6'
         else:
-            sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED12 format.\n".format(self.filename))
+            if self.verbose:
+                sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED12 format.\n".format(self.filename))
             return 'BED12'
 
     def mungeChromosome(self, chrom, append=True):
@@ -212,7 +217,10 @@ class GTF(object):
         cols = line.split("\t")
         name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
 
-        if int(cols[1]) >= int(cols[2]) or int(cols[1]) < 0:
+        if int(cols[1]) < 0:
+            cols[1] = 0
+
+        if int(cols[1]) >= int(cols[2]):
             sys.stderr.write("Warning: {0}:{1}-{2} is an invalid BED interval! Ignoring it.\n".format(cols[0], cols[1], cols[2]))
             return
 
@@ -365,18 +373,17 @@ class GTF(object):
             sys.stderr.write("Warning: non-GTF line encountered! {0}\n".format("\t".join(cols)))
             return
 
-        m = self.deepTools_group_regex.search(cols[8])
-        if m:
-            label = m.groups()[0]
+        s = shlex.split(cols[8])
+        if "deepTools_group" in s and s[-1] != "deepTools_group":
+            label = s[s.index("deepTools_group") + 1].rstrip(";")
         elif self.defaultGroup is not None:
             label = self.defaultGroup
 
-        m = self.transcript_id_regex.search(cols[8])
-        if not m:
+        if self.transcript_id_designator not in s or s[-1] == self.transcript_id_designator:
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
             return
 
-        name = m.groups()[0]
+        name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
         if name in self.exons:
             sys.stderr.write("Warning: {0} occurs more than once! Only using the first instance.\n".format(name))
             self.transcriptIDduplicated.append(name)
@@ -413,12 +420,12 @@ class GTF(object):
             sys.stderr.write("Warning: Invalid start in '{0}', skipping\n".format("\t".join(cols)))
             return
 
-        m = self.transcript_id_regex.search(cols[8])
-        if not m:
+        s = shlex.split(cols[8])
+        if self.transcript_id_designator not in s or s[-1] == self.transcript_id_designator:
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
             return
 
-        name = m.groups()[0]
+        name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
         if name in self.transcriptIDduplicated:
             return
         if name not in self.exons:
@@ -504,7 +511,7 @@ class GTF(object):
         # Reset self.labelIdx
         self.labelIdx = len(self.labels)
 
-    def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id", defaultGroup=None):
+    def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id", defaultGroup=None, verbose=False):
         """
         Driver function to actually parse files. The steps are as follows:
 
@@ -529,12 +536,13 @@ class GTF(object):
                       'transcript_id'.
         keepExons:    For BED12 and GTF files, exons are ignored by default.
         labels:       A list of group labels.
-        transcript_id_designator: For gtf files, this the key used in a regex.
-                      If one set transcriptID to 'gene', then
+        transcript_id_designator: For gtf files, this is the key used in a searching for the transcript ID.
+                      If one sets transcriptID to 'gene', then
                       transcript_id_designator would need to be changed to
                       'gene_id' or 'gene_name' to extract the gene ID/name from
                       the attributes.
         defaultGroup: The default group name. If None, the file name is used.
+        verbose:      Whether to produce warning messages (default: False)
         """
         self.fname = []
         self.filename = ""
@@ -544,13 +552,12 @@ class GTF(object):
         self.transcriptIDduplicated = []
         self.tree = tree.initTree()
         self.labelIdx = 0
-        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-\.\(\)]+)\"|([ \w\d"\-\.\(\)]+))[;|\r|\n])')
-        self.transcript_id_regex = re.compile('(?:{0} (?:\"([ \w\d"\-\.\(\)]+)\"|([ \w\d"\-\.\(\)]+))[;|\r|\n])'.format(transcript_id_designator))
-        self.deepTools_group_regex = re.compile('(?:deepTools_group (?:\"([ \w\d"\-\.\(\)]+)\"|([ \w\d"\-\.\(\)]+))[;|\r|\n])')
+        self.transcript_id_designator = transcript_id_designator
         self.exonID = exonID
         self.transcriptID = transcriptID
         self.keepExons = keepExons
         self.defaultGroup = defaultGroup
+        self.verbose = verbose
 
         if labels != []:
             self.already_input_labels = True

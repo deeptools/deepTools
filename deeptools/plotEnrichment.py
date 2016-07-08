@@ -33,7 +33,9 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
-Tool for calculating and plotting the signal enrichment in either regions in BED format or feature types (column 3) in GTF format. The underlying datapoints can also be output. Metrics are plotted as a fraction of total reads. Regions in a BED file are assigned to the 'peak' feature.
+Tool for calculating and plotting the signal enrichment in either regions in BED
+format or feature types (column 3) in GTF format. The underlying datapoints can also be output.
+Metrics are plotted as a fraction of total reads. Regions in a BED file are assigned to the 'peak' feature.
 
 detailed help:
 
@@ -111,8 +113,7 @@ def plot_enrichment_args():
 
     optional.add_argument('--outRawCounts',
                           help='Save the counts per region to a tab-delimited file.',
-                          metavar='FILE',
-                          type=argparse.FileType('w'))
+                          metavar='FILE')
 
     optional.add_argument('--perSample',
                           help='Group the plots by sample, rather than by feature type (the default).',
@@ -211,12 +212,12 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead):
                 fragmentEnd = read.reference_start + defaultFragmentLength
         if centerRead:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
-            fragmentStart = fragmentCenter - read.query_length / 2
-            fragmentEnd = fragmentStart + read.query_length
+            fragmentStart = fragmentCenter - read.infer_query_length(always=False) / 2
+            fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
                                             "end for read {}".format(read.query_name)
-        return [(fragmentStart, fragmentEnd)]
+        return [(int(fragmentStart), int(fragmentEnd))]
 
 
 def getEnrichment_worker(arglist):
@@ -251,7 +252,7 @@ def getEnrichment_worker(arglist):
                 continue
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
                 continue
-            if args.samFlagInclude and read.flag & args.samFlagInclude == 0:
+            if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
                 continue
@@ -349,7 +350,7 @@ def getChunkLength(args, chromSize):
 
     lengths = []
     for k, v in chromSize:
-        regs = blSubtract(bl, k, (0, v))
+        regs = blSubtract(bl, k, [0, v])
         for reg in regs:
             lengths.append(reg[1] - reg[0])
 
@@ -451,8 +452,9 @@ def main(args=None):
 
     # Raw counts
     if args.outRawCounts:
-        args.outRawCounts.write("file\tfeatureType\tpercent\n")
+        of = open(args.outRawCounts, "w")
+        of.write("file\tfeatureType\tpercent\n")
         for i, x in enumerate(args.labels):
             for k, v in featureCounts[i].items():
-                args.outRawCounts.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
-        args.outRawCounts.close()
+                of.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
+        of.close()

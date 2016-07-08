@@ -107,10 +107,29 @@ class install(_install):
         except Exception as e:
             sys.stderr.write("Error: {}".format(e))
 
+
+def openREADME():
+    """
+    This is only needed because README.rst is UTF-8 encoded and that won't work
+    under python3 iff sys.getfilesystemencoding() returns 'ascii'
+
+    Since open() doesn't accept an encoding in python2...
+    """
+    try:
+        f = open("README.rst", encoding="utf-8")
+    except:
+        f = open("README.rst")
+
+    foo = f.read()
+    f.close()
+    return foo
+
+
 setup(
     name='deepTools',
     version=get_version(),
-    author='Fidel Ramirez, Friederike Dündar, Björn Grüning, Sarah Diehl',
+    author='Fidel Ramirez,  Devon P Ryan, Björn Grüning, Friederike Dündar, Sarah Diehl,'
+    ' Vivek Bhardwaj, Fabian Kilpert, Andreas S Richter, Steffen Heyne, Thomas Manke',
     author_email='deeptools@googlegroups.com',
     packages=find_packages(),
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/multiBamSummary',
@@ -123,9 +142,8 @@ setup(
     package_data={'': ['config/deeptools.cfg']},
     url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
-    description='Useful library to deal with mapped reads in sorted '
-    'BAM format.',
-    long_description=open('README.txt').read(),
+    description='Useful tools for exploring deep sequencing data ',
+    long_description=openREADME(),
     install_requires=[
         "numpy >= 1.8.0",
         "scipy >= 0.17.0",

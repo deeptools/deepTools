@@ -547,6 +547,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                        "region_length"],
                               default='mean')
 
+        optional.add_argument('--sortUsingSamples',
+                              help='List of sample numbers (order as in matrix), '
+                              'that are used for sorting by --sortUsing, '
+                              'no value uses all samples, '
+                              'example: --sortUsingSamples 1 3',
+                              type=int, nargs='+')
+
         optional.add_argument(
             '--averageTypeSummaryPlot',
             default='mean',

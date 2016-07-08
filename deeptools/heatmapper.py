@@ -68,10 +68,18 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     """
     Like chopRegions(), above, but returns two lists of tuples on each side of
     the center point of the exons.
+
+    The steps are as follow:
+     1) Find the center point of the set of exons (e.g., [(0, 200), (300, 400), (800, 900)] would be centered at 200)
+       * If a given exon spans the center point then the exon is split
+     2) The given number of bases at the end of the left-of-center list are extracted
+       * If the set of exons don't contain enough bases, then padLeft is incremented accordingly
+     3) As above but for the right-of-center list
+     4) A tuple of (#2, #3, pading on the left, and padding on the right) is returned
     """
     leftBins = []
     rightBins = []
-    size = np.sum([x[1] - x[0] for x in exonsInput])
+    size = sum([x[1] - x[0] for x in exonsInput])
     middle = size // 2
     cumulativeSum = 0
     padLeft = 0
@@ -86,12 +94,15 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         elif cumulativeSum + size < middle:
             leftBins.append(exon)
         else:
-            leftBins.append((exon[0], exon[1] - cumulativeSum - size + middle))
-            rightBins.append((exon[1] - cumulativeSum - size + middle, exon[1]))
+            # Don't add 0-width exonic bins!
+            if exon[0] < exon[1] - cumulativeSum - size + middle:
+                leftBins.append((exon[0], exon[1] - cumulativeSum - size + middle))
+            if exon[1] - cumulativeSum - size + middle < exon[1]:
+                rightBins.append((exon[1] - cumulativeSum - size + middle, exon[1]))
         cumulativeSum += size
 
     # Trim leftBins/adjust padLeft
-    lSum = np.sum([x[1] - x[0] for x in leftBins])
+    lSum = sum([x[1] - x[0] for x in leftBins])
     if lSum > left:
         lSum = 0
         for i, exon in enumerate(leftBins[::-1]):
@@ -100,6 +111,8 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
                 leftBins[-i - 1] = (exon[1] + lSum - left, exon[1])
                 break
             lSum += size
+            if lSum == left:
+                break
         i += 1
         if i < len(leftBins):
             leftBins = leftBins[-i:]
@@ -107,7 +120,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         padLeft = left - lSum
 
     # Trim rightBins/adjust padRight
-    rSum = np.sum([x[1] - x[0] for x in rightBins])
+    rSum = sum([x[1] - x[0] for x in rightBins])
     if rSum > right:
         rSum = 0
         for i, exon in enumerate(rightBins):
@@ -116,11 +129,13 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
                 rightBins[i] = (exon[0], exon[1] - rSum - size + right)
                 break
             rSum += size
+            if rSum == right:
+                break
         rightBins = rightBins[:i + 1]
     elif rSum < right:
         padRight = right - rSum
 
-    return leftBins, rightBins[::-1], padLeft, padRight
+    return leftBins, rightBins, padLeft, padRight
 
 
 def trimZones(zones, maxLength, binSize, padRight):
@@ -146,7 +161,7 @@ def trimZones(zones, maxLength, binSize, padRight):
             if reg[1] > reg[0]:
                 outZone.append(reg)
         if changed:
-            nBins = np.sum(x[1] - x[0] for x in outZone) // binSize
+            nBins = sum(x[1] - x[0] for x in outZone) // binSize
         else:
             nBins = nbins
         output.append((outZone, nBins))
@@ -701,6 +716,8 @@ class heatmapper(object):
         import json
         regions = []
         matrix_rows = []
+        current_group_index = 0
+        max_group_bound = None
 
         fh = gzip.open(matrix_file)
         for line in fh:
@@ -711,6 +728,7 @@ class heatmapper(object):
                 # the parameters used are saved using
                 # json
                 self.parameters = json.loads(line[1:].strip())
+                max_group_bound = self.parameters['group_boundaries'][1]
                 continue
 
             # split the line into bed interval and matrix values
@@ -718,9 +736,14 @@ class heatmapper(object):
             chrom, start, end, name, score, strand = region[0:6]
             matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
             matrix_rows.append(matrix_row)
-            regions.append({'chrom': chrom, 'start': start,
-                            'end': end, 'name': name, 'score': score,
-                            'strand': strand})
+            starts = start.split(",")
+            ends = end.split(",")
+            regs = [(int(x), int(y)) for x, y in zip(starts, ends)]
+            # get the group index
+            if len(regions) >= max_group_bound:
+                current_group_index += 1
+                max_group_bound = self.parameters['group_boundaries'][current_group_index + 1]
+            regions.append([chrom, regs, name, max_group_bound, strand, score])
 
         matrix = np.vstack(matrix_rows)
         self.matrix = _matrix(regions, matrix, self.parameters['group_boundaries'],
@@ -863,25 +886,25 @@ class heatmapper(object):
 
     def save_matrix_values(self, file_name):
         # print a header telling the group names and their length
-        fh = open(file_name, 'w')
+        fh = open(file_name, 'wb')
         info = []
         groups_len = np.diff(self.matrix.group_boundaries)
         for i in range(len(self.matrix.group_labels)):
             info.append("{}:{}".format(self.matrix.group_labels[i],
                                        groups_len[i]))
-        fh.write("#{}\n".format("\t".join(info)))
+        fh.write(toBytes("#{}\n".format("\t".join(info))))
         # add to header the x axis values
-        fh.write("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
+        fh.write(toBytes("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
                  self.parameters['downstream'],
                  self.parameters['upstream'],
                  self.parameters['body'],
                  self.parameters['bin size'],
                  self.parameters.get('unscaled 5 prime', 0),
-                 self.parameters.get('unscaled 3 prime', 0)))
+                 self.parameters.get('unscaled 3 prime', 0))))
 
         fh.close()
         # reopen again using append mode
-        fh = open(file_name, 'a')
+        fh = open(file_name, 'ab')
         np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
         fh.close()
 
@@ -897,21 +920,23 @@ class heatmapper(object):
             # for index 5, the label is 'a', for
             # index 10, the label is 'b' etc
             label_idx = np.flatnonzero(boundaries <= idx)[-1]
-            starts = region['start'].split(",")
-            ends = region['end'].split(",")
+            starts = ["{0}".format(x[0]) for x in region[1]]
+            ends = ["{0}".format(x[1]) for x in region[1]]
+            starts = ",".join(starts)
+            ends = ",".join(ends)
             file_handle.write(
-                '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{1}\t0'.format(
-                    region['chrom'],
-                    starts[0],
-                    ends[-1],
-                    region['name'],
-                    region['score'],
-                    region['strand']))
+                '{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{1}\t{2}\t0'.format(
+                    region[0],
+                    region[1][0][0],
+                    region[1][-1][1],
+                    region[2],
+                    region[5],
+                    region[4]))
             file_handle.write(
                 '\t{0}\t{1}\t{2}\t{3}\n'.format(
-                    len(starts),
-                    ",".join([str(int(x) - int(starts[0])) for x in starts]),
-                    ",".join([str(int(y) - int(x)) for x, y in zip(starts, ends)]),
+                    len(region[1]),
+                    ",".join([str(int(y) - int(x)) for x, y in region[1]]),
+                    ",".join([str(int(x) - int(starts[0])) for x, y in region[1]]),
                     self.matrix.group_labels[label_idx]))
         file_handle.close()
 
@@ -1061,7 +1086,7 @@ class _matrix(object):
 
         return regions
 
-    def sort_groups(self, sort_using='mean', sort_method='no'):
+    def sort_groups(self, sort_using='mean', sort_method='no', sample_list=None):
         """
         Sorts and rearranges the submatrices according to the
         sorting method given.
@@ -1069,13 +1094,24 @@ class _matrix(object):
         if sort_method == 'no':
             return
 
+        if (sample_list is not None) and (len(sample_list) > 0):
+            # get the ids that correspond to the selected sample list
+            idx_to_keep = []
+            for sample_idx in sample_list:
+                idx_to_keep += range(self.sample_boundaries[sample_idx], self.sample_boundaries[sample_idx + 1])
+
+            matrix = self.matrix[:, idx_to_keep]
+
+        else:
+            matrix = self.matrix
+
         # compute the row average:
         if sort_using == 'region_length':
             matrix_avgs = np.array([x['end'] - x['start']
                                    for x in self.regions])
         else:
             matrix_avgs = np.__getattribute__(sort_using)(
-                self.matrix, axis=1)
+                matrix, axis=1)
 
         # order per group
         _sorted_regions = []
@@ -1129,7 +1165,7 @@ class _matrix(object):
         _clustered_regions = []
         _clustered_matrix = []
         for cluster in range(k):
-            self.group_labels.append("cluster {}".format(cluster + 1))
+            self.group_labels.append("cluster_{}".format(cluster + 1))
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))

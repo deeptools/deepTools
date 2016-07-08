@@ -544,7 +544,7 @@ class CountReadsPerBin(object):
                     continue
 
                 # filter reads based on SAM flag
-                if self.samFlag_include and read.flag & self.samFlag_include == 0:
+                if self.samFlag_include and read.flag & self.samFlag_include != self.samFlag_include:
                     continue
                 if self.samFlag_exclude and read.flag & self.samFlag_exclude != 0:
                     continue
@@ -741,8 +741,8 @@ class CountReadsPerBin(object):
 
         if self.center_read:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
-            fragmentStart = fragmentCenter - read.query_length / 2
-            fragmentEnd = fragmentStart + read.query_length
+            fragmentStart = fragmentCenter - read.infer_query_length(always=False) / 2
+            fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
                                             "end for read {}".format(read.query_name)

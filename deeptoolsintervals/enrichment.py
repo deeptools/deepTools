@@ -2,9 +2,9 @@
 
 from deeptoolsintervals import tree
 from deeptoolsintervals.parse import GTF, openPossiblyCompressed
-import re
 import sys
 from os.path import basename
+import shlex
 
 
 class Enrichment(GTF):
@@ -16,7 +16,10 @@ class Enrichment(GTF):
         strand = 3
         cols = line.split("\t")
 
-        if int(cols[1]) >= int(cols[2]) or int(cols[1]) < 0:
+        if int(cols[1]) < 0:
+            cols[1] = 0
+
+        if int(cols[1]) >= int(cols[2]):
             sys.stderr.write("Warning: {0}:{1}-{2} is an invalid BED interval! Ignoring it.\n".format(cols[0], cols[1], cols[2]))
             return
 
@@ -39,7 +42,7 @@ class Enrichment(GTF):
             for x, y in zip(starts, ends):
                 self.tree.addEnrichmentEntry(self.mungeChromosome(cols[0]), x, y, strand, score, feature)
 
-    def parseBED(self, fp, line, ncols=3, feature='peaks'):
+    def parseBED(self, fp, line, ncols=3, feature='peaks', labelColumn=None):
         """
         parse a BED file. The default feature label is 'peaks'
 
@@ -47,6 +50,7 @@ class Enrichment(GTF):
         line:  The first line
         ncols: The number of columns to care about
         feature: The feature label
+        labelColumn: If this isn't None, it overrides the 'feature' option
 
         >>> from deeptoolsintervals import enrichment
         >>> from os.path import dirname
@@ -58,7 +62,13 @@ class Enrichment(GTF):
         """
 
         # Handle the first line
+        if labelColumn is not None:
+            cols = line.split("\t")
+            feature = cols.pop(labelColumn)
+            line = "\t".join(cols)
         self.parseBEDcore(line, ncols, feature)
+        if feature not in self.features:
+            self.features.append(feature)
 
         # iterate over the remaining lines
         for line in fp:
@@ -72,10 +82,14 @@ class Enrichment(GTF):
             if line.startswith("#"):
                 continue
             else:
+                if labelColumn is not None:
+                    cols = line.split("\t")
+                    feature = cols.pop(labelColumn)
+                    line = "\t".join(cols)
                 self.parseBEDcore(line, ncols, feature)
 
-        if feature not in self.features:
-            self.features.append(feature)
+            if feature not in self.features:
+                self.features.append(feature)
 
     def parseGTF(self, fp, line):
         """
@@ -83,7 +97,7 @@ class Enrichment(GTF):
         >>> from os.path import dirname
         >>> gtf = enrichment.Enrichment("{0}/test/GRCh38.84.gtf.gz".format(dirname(enrichment.__file__)), keepExons=True)
         >>> o = gtf.findOverlaps("1", [(0, 2000000)])
-        >>> assert(o == frozenset(['start_codon', 'exon', 'stop_codon', 'CDS', 'gene', 'transcript']))
+        >>> assert(o == frozenset(['start_codon', 'exon', 'stop_codon', 'CDS', 'gene', 'transcript', 'group 1', 'group 2']))
         """
 
         # Handle the first line
@@ -95,9 +109,14 @@ class Enrichment(GTF):
         elif cols[6] == '-':
             strand = 1
 
-        self.tree.addEnrichmentEntry(self.mungeChromosome(cols[0]), int(cols[3]) - 1, int(cols[4]), strand, cols[5], cols[2])
-        if cols[2] not in self.features:
-            self.features.append(cols[2])
+        feature = cols[2]
+        s = shlex.split(cols[8])
+        if "deepTools_group" in s and s[-1] != "deepTools_group":
+            feature = s[s.index("deepTools_group") + 1].rstrip(";")
+
+        self.tree.addEnrichmentEntry(self.mungeChromosome(cols[0]), int(cols[3]) - 1, int(cols[4]), strand, cols[5], feature)
+        if feature not in self.features:
+            self.features.append(feature)
 
         # Handle the remaining lines
         for line in fp:
@@ -114,11 +133,16 @@ class Enrichment(GTF):
                 elif cols[6] == '-':
                     strand = 1
 
-                self.tree.addEnrichmentEntry(self.mungeChromosome(cols[0]), int(cols[3]) - 1, int(cols[4]), strand, cols[5], cols[2])
-                if cols[2] not in self.features:
-                    self.features.append(cols[2])
+                feature = cols[2]
+                s = shlex.split(cols[8])
+                if "deepTools_group" in s and s[-1] != "deepTools_group":
+                    feature = s[s.index("deepTools_group") + 1].rstrip(";")
 
-    def __init__(self, fnames, keepExons=False, labels=None):
+                self.tree.addEnrichmentEntry(self.mungeChromosome(cols[0]), int(cols[3]) - 1, int(cols[4]), strand, cols[5], feature)
+                if feature not in self.features:
+                    self.features.append(feature)
+
+    def __init__(self, fnames, keepExons=False, labels=None, verbose=False):
         """
         Driver function to actually parse files. The steps are as follows:
 
@@ -135,14 +159,17 @@ class Enrichment(GTF):
         Optional input is:
 
         keepExons:    For BED12 files, exons are ignored by default.
+        labels:       Override the feature labels supplied in the file(s).
+                      Note that this might instead be replaced later in the .features attribute.
+        verbose:      Whether to print warnings (default: False)
         """
         self.fname = []
         self.filename = ""
         self.chroms = []
         self.features = []
         self.tree = tree.initTree()
-        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
         self.keepExons = keepExons
+        self.verbose = verbose
 
         if not isinstance(fnames, list):
             fnames = [fnames]
@@ -157,7 +184,7 @@ class Enrichment(GTF):
                 continue
             line = line.strip()
 
-            ftype = self.inferType(fp, line, None)
+            ftype = self.inferType(fp, line, labelColumn)
 
             if ftype != 'GTF' and labels is not None:
                 assert(len(labels) > labelIdx)
@@ -167,11 +194,11 @@ class Enrichment(GTF):
             if ftype == 'GTF':
                 self.parseGTF(fp, line)
             elif ftype == 'BED3':
-                self.parseBED(fp, line, 3, feature=bname)
+                self.parseBED(fp, line, 3, feature=bname, labelColumn=labelColumn)
             elif ftype == 'BED6':
-                self.parseBED(fp, line, 6, feature=bname)
+                self.parseBED(fp, line, 6, feature=bname, labelColumn=labelColumn)
             else:
-                self.parseBED(fp, line, 12, feature=bname)
+                self.parseBED(fp, line, 12, feature=bname, labelColumn=labelColumn)
             fp.close()
 
         # Sanity check
