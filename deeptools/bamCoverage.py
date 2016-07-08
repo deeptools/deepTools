@@ -166,7 +166,7 @@ def main(args=None):
 
     elif args.Offset:
         if args.Offset == 0:
-            sys.exit("An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+            exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
         wr = OffsetFragment([args.bam],
                             binLength=args.binSize,
                             stepSize=args.binSize,
