@@ -254,13 +254,26 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                     break
                 foo -= block[1] - block[0]
 
-        # Filter the strand. We only care about SE reads
-        if self.filter_strand is None:
-            return rv
-        elif self.filter_strand == 'forward' and read.flag & 16 == 16:
-            return rv
-        elif self.filter_strand == 'reverse' and read.flag & 16 == 0:
-            return rv
+        # Filter by RNA strand, if desired
+        if read.is_paired:
+            if self.filter_strand == 'forward':
+                if read.flag & 144 == 128 or read.flag & 96 == 64:
+                    return rv
+            elif self.filter_strand == 'reverse':
+                if read.flag & 144 == 144 or read.flag & 96 == 96:
+                    return rv
+            else:
+                return rv
+        else:
+            if self.filter_strand == 'forward':
+                if read.flag & 16 == 16:
+                    return rv
+            elif self.filter_strand == 'reverse':
+                if read.flag & 16 == 0:
+                    return rv
+            else:
+                return rv
+
         return [(None, None)]
 
 
