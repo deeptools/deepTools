@@ -376,6 +376,8 @@ class GTF(object):
         s = shlex.split(cols[8])
         if "deepTools_group" in s and s[-1] != "deepTools_group":
             label = s[s.index("deepTools_group") + 1].rstrip(";")
+        elif self.defaultGroup is not None:
+            label = self.defaultGroup
 
         if self.transcript_id_designator not in s or s[-1] == self.transcript_id_designator:
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
