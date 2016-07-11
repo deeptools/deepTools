@@ -189,7 +189,7 @@ def getJSD(args, idx, mat):
 
         # Input
         val = row[refIdx]
-         if val >= 20000:
+        if val >= 20000:
             val = 19999
         if val > 0:
             input[int(val)] += 1
@@ -200,7 +200,7 @@ def getJSD(args, idx, mat):
         signalValues = np.array(list(range(n)))
         totalSignal = x * signalValues
         normalizedTotalSignal = np.cumsum(totalSignal) / np.sum(totalSignal)
-        binDist = np.cumsum(x)/sum(x)
+        binDist = np.cumsum(x) / sum(x)
         interpolater = interpolate.interp1d(binDist, normalizedTotalSignal, fill_value="extrapolate")
         return (binDist, normalizedTotalSignal, interpolater)
 
@@ -221,7 +221,7 @@ def getJSD(args, idx, mat):
 
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
-    JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput/M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip/M)))
+    JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip / M)))
     np.sqrt(JSD)
 
     return JSD
