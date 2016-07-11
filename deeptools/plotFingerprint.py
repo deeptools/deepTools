@@ -6,7 +6,7 @@ import argparse
 from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
-from math import sqrt
+from scipy import interpolate
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -121,16 +121,13 @@ def get_optional_args():
                           metavar='FILE.txt',
                           type=argparse.FileType('w'))
 
-    optional.add_argument('--KLDsample',
+    optional.add_argument('--JSDsample',
                           help='Reference sample against which to compute the '
-                          'Kullback-Leibler divergence. If this is not specified, '
-                          'the divergence will not be calculated. If '
+                          'Jensen-Shannon distance. If this is not specified, '
+                          'the distance will not be calculated. If '
                           '--outQualityMetrics is not specified then this will '
-                          'be ignored. Note that the KL divergence is calculated '
-                          'on the log10 distribution of coverage counts, grouped '
-                          'into 100 equally spaced bins. The input distribution '
-                          'is modified slightly such that the resulting PMF '
-                          'never goes to zero.',
+                          'be ignored. The implementation of this is based on '
+                          'code from Sitanshu Gakkhar at BCGSC.',
                           metavar='sample.bam')
 
     return parser
@@ -156,11 +153,14 @@ def get_output_args():
     return parser
 
 
-def getKLD(args, idx, mat):
+def getJSD(args, idx, mat):
     """
-    Computes the Kullback-Leibler divergence between two samples. The divergence
-    between a sample and itself is "NA". If the reference sample doesn't exist
-    then "NA" is returned.
+    Computes the Jensen-Shannon distance between two samples. This is essentially
+    a symmetric version of Kullback-Leibler divergence. The implementation
+    presented here is based on code from Sitanshu Gakkhar at BCGSC.
+
+    Note that the interpolation has the effect of removing zero count coverage
+    bins, which ends up being needed for the JSD calculation.
 
     args: The input arguments
     idx:  The column index of the current sample
@@ -174,42 +174,57 @@ def getKLD(args, idx, mat):
     if refIdx == idx:
         return ("NA", "NA")
 
-    # Generate PMFs
-    refVals = np.log10(mat[:, refIdx] + 0.1)
-    sampleVals = np.log10(mat[:, idx] + 0.1)
-    samplePMF, _ = np.histogram(sampleVals, bins=100, density=True)
-    refPMF, _ = np.histogram(refVals, bins=100, density=True)
+    # These will hold the coverage histograms
+    chip = np.zeros(20000, dtype=np.int)
+    input = np.zeros(20000, dtype=np.int)
+    for row in mat:
+        # ChIP
+        val = row[idx]
+        # N.B., we need to clip past the end of the array
+        if val >= 20000:
+            val = 19999
+        # This effectively removes differences due to coverage percentages
+        if val > 0:
+            chip[int(val)] += 1
 
-    # The reference PMF needs to be offset so q is never 0
-    # The integral should still equal 1
-    binSize = 1.0 / np.sum(refPMF)
-    refPMF += 0.001
-    integral = np.sum(refPMF) * binSize
-    refPMF /= integral
+        # Input
+        val = row[refIdx]
+         if val >= 20000:
+            val = 19999
+        if val > 0:
+            input[int(val)] += 1
 
-    # For the JSD, ensure p is never 0
-    binSize = 1.0 / np.sum(samplePMF)
-    samplePMF2 = samplePMF + 0.001
-    integral = np.sum(samplePMF2) * binSize
-    samplePMF2 /= integral
+    def signalAndBinDist(x):
+        x = np.array(x)
+        (n,) = x.shape
+        signalValues = np.array(list(range(n)))
+        totalSignal = x * signalValues
+        normalizedTotalSignal = np.cumsum(totalSignal) / np.sum(totalSignal)
+        binDist = np.cumsum(x)/sum(x)
+        interpolater = interpolate.interp1d(binDist, normalizedTotalSignal, fill_value="extrapolate")
+        return (binDist, normalizedTotalSignal, interpolater)
 
-    # Compute the KL divergence
-    divergence = 0.0
-    for q, p in zip(refPMF, samplePMF):
-        if p > 0.0:
-            divergence += p * np.log(p / q)
+    # Interpolate the signals to evenly spaced bins, which also removes 0-coverage bins
+    chipSignal = signalAndBinDist(chip)
+    inputSignal = signalAndBinDist(input)
 
-    # JSD
-    M = 0.5 * (refPMF + samplePMF2)
-    JSD = 0
-    for p, m in zip(refPMF, M):
-        if p > 0.0:
-            JSD += p * np.log(p / m)
-    for q, m in zip(samplePMF2, M):
-        if q > 0.0:
-            JSD += q * np.log(q / m)
+    # These are basically CDFs
+    inputSignalInterp = inputSignal[2](np.arange(0, 1.00001, 0.00001))
+    chipSignalInterp = chipSignal[2](np.arange(0, 1.00001, 0.00001))
 
-    return (divergence, sqrt(JSD))
+    # Differentiate to PMFs, do some sanity checking
+    PMFinput = np.ediff1d(inputSignalInterp)
+    PMFchip = np.ediff1d(chipSignalInterp)
+    if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip)) > 0.01:
+        sys.stderr.write("Warning: At least one PMF integral is significantly different from 1! The JSD will not be returned")
+        return None
+
+    # Compute the JSD from the PMFs
+    M = (PMFinput + PMFchip) / 2.0
+    JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput/M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip/M)))
+    np.sqrt(JSD)
+
+    return JSD
 
 
 def main(args=None):
@@ -278,7 +293,7 @@ def main(args=None):
     if args.outQualityMetrics:
         args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
         if args.KLDsample:
-            args.outQualityMetrics.write("\tKL Divergence\tJS Distance")
+            args.outQualityMetrics.write("\tJS Distance")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
@@ -287,9 +302,9 @@ def main(args=None):
             AUC = np.sum(counts)
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
-            if args.KLDsample:
-                KLD, JSD = getKLD(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\n".format(args.labels[idx], AUC, XInt, elbow, KLD, JSD))
+            if args.JSDsample:
+                JSD = getJSD(args, idx, num_reads_per_bin)
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(args.labels[idx], AUC, XInt, elbow, JSD))
             else:
                 args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
         args.outQualityMetrics.close()
