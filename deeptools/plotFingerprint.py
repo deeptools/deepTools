@@ -3,6 +3,7 @@
 
 import numpy as np
 import argparse
+import sys
 from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
