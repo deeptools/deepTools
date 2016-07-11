@@ -30,6 +30,12 @@
         #if $advancedOpt.samFlagExclude:
             --samFlagExclude $advancedOpt.samFlagExclude
         #end if
+        #if $advancedOpt.minFragmentLength:
+            --minFragmentLength $advancedOpt.minFragmentLength
+        #end if
+        #if $advancedOpt.maxFragmentLength:
+            --maxFragmentLength $advancedOpt.maxFragmentLength
+        #end if
     </token>
 
     <token name="@ADVANCED_OPTS_GTF@">
@@ -72,16 +78,22 @@
     </xml>
 
     <xml name="zMin_zMax">
-        <param argument="--zMin" type="float" value="" optional="true" label="Minimum value for the heatmap intensities"
+        <param argument="--zMin" type="text" value="" optional="true" label="Minimum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
-        <param argument="--zMax" type="float" value="" optional="true" label="Maximum value for the heatmap intensities"
+        <param argument="--zMax" type="text" value="" optional="true" label="Maximum value for the heatmap intensities"
             help="If not specified the value is set automatically."/>
     </xml>
 
     <xml name="region_limit_operation">
         <param argument="--region" type="text" value=""
             label="Region of the genome to limit the operation to"
-            help="This is useful when testing parameters to reduce the time required. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;." />
+            help="This is useful when testing parameters to reduce the time required. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;.">
+            <sanitizer>
+                <valid initial="string.letters,string.digits">
+                    <add value="|"/>
+                 </valid>
+            </sanitizer>
+        </param>
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
@@ -166,12 +178,22 @@
             help= "For example, to get only reads that map to the forward strand, use --samFlagExclude 16, where 16 is the SAM flag for reads that map to the reverse strand."/>
     </xml>
 
+    <xml name="fragLength">
+        <param argument="--minFragmentLength" type="integer" optional="True" value="0" min="0"
+            label="Minimum fragment length for inclusion."
+            help="A value greater than 0 will filter out ALL single-end reads. This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
+        <param argument="--maxFragmentLength" type="integer" optional="True" value="0" min="0"
+            label="Maximum fragment length for inclusion."
+            help="As above, but the maximum length. A value of 0 (the default) is equivalent to no maximum." />
+    </xml>
+
     <xml name="read_processing_options">
         <expand macro="extendReads" />
         <expand macro="ignoreDuplicates" />
         <expand macro="centerReads" />
         <expand macro="minMappingQuality" />
         <expand macro="samFlags" />
+        <expand macro="fragLength" />
     </xml>
 
     <xml name="gtf_options">
@@ -334,7 +356,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </token>
     <xml name="citations">
         <citations>
-            <citation type="doi">10.1093/nar/gku365</citation>
+            <citation type="doi">10.1093/nar/gkw257</citation>
             <yield />
         </citations>
     </xml>
@@ -389,6 +411,47 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 ]]>
     </token>
 
+    <xml name="blacklist">
+        <param argument="--blackListFileName" type="data" format="bed,gtf" multiple="true" optional="true" min="0"
+            label="Blacklisted regions in BED/GTF format"
+            help="One or more files containing regions to exclude from the analysis" />
+    </xml>
+
+    <token name="@blacklist@">
+<![CDATA[
+        #if ' '.join( map(str, $advancedOpt.blackListFileName) ) != 'None':
+            #set blfiles=[]
+            #for $f in $advancedOpt.blackListFileName:
+                #silent $blfiles.append("'%s'" % $f)
+            #end for
+            #if $blfiles != ["'None'"]:
+                --blackListFileName #echo ' '.join($blfiles)#
+            #end if
+        #end if
+]]> 
+    </token>
+
+    <xml name="multiple_bed">
+        <param argument="--BED" type="data" format="bed,gtf" min="1" multiple="true"
+            label="Regions in BED/GTF format"
+            help="One or more files containing regions to include in the analysis" />
+    </xml>
+
+    <token name="@multiple_bed@">
+<![CDATA[
+        #set files=[]
+        #set labels=[]
+        #for $f in $BED:
+            #silent $files.append("'%s'" % $f)
+            #silent $labels.append("'%s'" % $f.display_name)
+        #end for
+        #if len($files) > 0:
+            --BED #echo ' '.join($files)#
+            --regionLabels #echo ' '.join($labels)#
+        #end if
+]]> 
+    </token>
+
     <xml name="reference_genome_source">
         <conditional name="source">
             <param name="ref_source" type="select" label="Reference genome">
@@ -430,7 +493,8 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
-                <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size" help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
+                <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size"
+                       help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
             </when>
             <when value="2150570000" />
             <when value="2451960000" />
@@ -465,7 +529,10 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <when value="no" />
             <when value="yes">
                 <yield />
-                <param name="saveSortedRegions" type="boolean" label="Save the regions after skipping zeros or min/max threshold values" help="The order of the regions in the file follows the sorting order selected. This is useful, for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
+                <param name="saveSortedRegions" type="boolean"
+                       label="Save the regions after skipping zeros or min/max threshold values"
+                       help="The order of the regions in the file follows the sorting order selected. This is useful,
+                       for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
             </when>
         </conditional>
     </xml>
@@ -478,6 +545,11 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="svg">svg</option>
             <option value="eps">eps</option>
         </param>
+    </xml>
+
+    <xml name="output_dpi">
+        <param argument="--dpi" name="dpi" type="integer" value="200" size="3" optional="True"
+            label="Image dpi" help=""/>
     </xml>
 
     <xml name="output_image_file_format">
@@ -523,7 +595,9 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="colorMap">
-        <param name="colorMap" type="select" label="Color map to use for the heatmap" help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/">
+        <param name="colorMap" type="select" label="Color map to use for the heatmap"
+               help=" Available color map names can be found here: http://www.astro.lsa.umich.edu/~msshin/science/code/matplotlib_cm/"
+               multiple="true">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>
             <option value="Spectral">Spectral</option>

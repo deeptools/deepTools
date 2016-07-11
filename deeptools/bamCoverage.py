@@ -77,6 +77,18 @@ def get_optional_args():
                           '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
 
+    optional.add_argument('--Offset',
+                          help='Uses this offset inside of each read as the signal. This is useful in '
+                          'cases like RiboSeq or GROseq, where the signal is 12, 15 or 0 bases past the '
+                          'start of the read. This can be paired with the --filterRNAstrand option. '
+                          'Note that negative values indicate offsets from the end of each read. A value '
+                          'of 1 indicates the first base of the alignment (taking alignment orientation '
+                          'into account). Likewise, a value of -1 is the last base of the alignment. An '
+                          'offset of 0 is not permitted.',
+                          metavar='INT',
+                          type=int,
+                          required=False)
+
     optional.add_argument('--filterRNAstrand',
                           help='Selects RNA-seq reads (single-end or paired-end) in '
                                'the given strand.',
@@ -147,8 +159,31 @@ def main(args=None):
                             zerosToNans=args.skipNonCoveredRegions,
                             samFlag_include=args.samFlagInclude,
                             samFlag_exclude=args.samFlagExclude,
+                            minFragmentLength=args.minFragmentLength,
+                            maxFragmentLength=args.maxFragmentLength,
                             verbose=args.verbose,
                             )
+
+    elif args.Offset:
+        if args.Offset == 0:
+            exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+        wr = OffsetFragment([args.bam],
+                            binLength=args.binSize,
+                            stepSize=args.binSize,
+                            region=args.region,
+                            numberOfProcessors=args.numberOfProcessors,
+                            extendReads=args.extendReads,
+                            minMappingQuality=args.minMappingQuality,
+                            ignoreDuplicates=args.ignoreDuplicates,
+                            center_read=args.centerReads,
+                            zerosToNans=args.skipNonCoveredRegions,
+                            samFlag_include=args.samFlagInclude,
+                            samFlag_exclude=args.samFlagExclude,
+                            minFragmentLength=args.minFragmentLength,
+                            maxFragmentLength=args.maxFragmentLength,
+                            verbose=args.verbose)
+        wr.filter_strand = args.filterRNAstrand
+        wr.Offset = args.Offset
 
     elif args.filterRNAstrand:
         wr = filterRnaStrand([args.bam],
@@ -163,6 +198,8 @@ def main(args=None):
                              zerosToNans=args.skipNonCoveredRegions,
                              samFlag_include=args.samFlagInclude,
                              samFlag_exclude=args.samFlagExclude,
+                             minFragmentLength=args.minFragmentLength,
+                             maxFragmentLength=args.maxFragmentLength,
                              verbose=args.verbose,
                              )
 
@@ -181,6 +218,8 @@ def main(args=None):
                                          zerosToNans=args.skipNonCoveredRegions,
                                          samFlag_include=args.samFlagInclude,
                                          samFlag_exclude=args.samFlagExclude,
+                                         minFragmentLength=args.minFragmentLength,
+                                         maxFragmentLength=args.maxFragmentLength,
                                          verbose=args.verbose,
                                          )
 
@@ -189,12 +228,63 @@ def main(args=None):
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 
+class OffsetFragment(writeBedGraph.WriteBedGraph):
+    """
+    Class to redefine the get_fragment_from_read for the --Offset case
+    """
+    def get_fragment_from_read(self, read):
+        rv = [(None, None)]
+        if self.Offset > read.query_length:
+            return rv
+        if read.is_paired:
+            return rv
+        blocks = read.get_blocks()
+        foo = self.Offset
+        if foo < 0:
+            foo = read.infer_query_length() + foo + 1
+        if read.is_reverse:
+            for idx in range(len(blocks)):
+                block = blocks[-idx - 1]
+                if block[1] - block[0] >= foo:
+                    rv = [(block[1] - foo, block[1] - foo + 1)]
+                    break
+                foo -= block[1] - block[0]
+        else:
+            for block in blocks:
+                if block[1] - block[0] >= foo:
+                    rv = [(block[0] + foo - 1, block[0] + foo)]
+                    break
+                foo -= block[1] - block[0]
+
+        # Filter by RNA strand, if desired
+        if read.is_paired:
+            if self.filter_strand == 'forward':
+                if read.flag & 144 == 128 or read.flag & 96 == 64:
+                    return rv
+            elif self.filter_strand == 'reverse':
+                if read.flag & 144 == 144 or read.flag & 96 == 96:
+                    return rv
+            else:
+                return rv
+        else:
+            if self.filter_strand == 'forward':
+                if read.flag & 16 == 16:
+                    return rv
+            elif self.filter_strand == 'reverse':
+                if read.flag & 16 == 0:
+                    return rv
+            else:
+                return rv
+
+        return [(None, None)]
+
+
 class CenterFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --MNase case
 
     The coverage of the fragment is defined as the 2 or 3 basepairs at the
-    center of the fragment length. d
+    center of the fragment length.
     """
     def get_fragment_from_read(self, read):
         """

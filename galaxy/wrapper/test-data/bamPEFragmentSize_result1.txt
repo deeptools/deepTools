@@ -1,5 +1,7 @@
-Sample size: 3
 
+
+BAM file : 0.bam
+Sample size: 3
 
 Fragment lengths:
 Min.: 241.0

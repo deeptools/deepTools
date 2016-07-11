@@ -1,10 +1,7 @@
 import argparse
 import deeptools.config as cfg
 import os
-import pysam
 from deeptools._version import __version__
-from deeptoolsintervals import GTF
-from deeptools.utilities import toString
 
 
 def check_float_0_1(value):
@@ -106,6 +103,26 @@ def read_options():
                        'that map to the reverse strand.',
                        metavar='INT',
                        default=None,
+                       type=int,
+                       required=False)
+
+    group.add_argument('--minFragmentLength',
+                       help='The minimum fragment length needed for read/pair '
+                       'inclusion. Note that a value other than 0 will exclude '
+                       'all single-end reads. This option is primarily useful '
+                       'in ATACseq experiments, for filtering mono- or '
+                       'di-nucleosome fragments.',
+                       metavar='INT',
+                       default=0,
+                       type=int,
+                       required=False)
+
+    group.add_argument('--maxFragmentLength',
+                       help='The maximum fragment length needed for read/pair '
+                       'inclusion. A value of 0 disables filtering and is '
+                       'needed for including single-end and orphan reads.',
+                       metavar='INT',
+                       default=0,
                        type=int,
                        required=False)
 
@@ -282,6 +299,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
         optional.add_argument('--blackListFileName', '-bl',
                               help="A BED or GTF file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered. Please note that you should adjust the effective genome size, if relevant.",
                               metavar="BED file",
+                              nargs="+",
                               required=False)
 
     optional.add_argument('--numberOfProcessors', '-p',
@@ -338,8 +356,13 @@ def genomicRegion(string):
         return None
     # remove undesired characters that may be present and
     # replace - by :
-    region = region.translate(None, ",;|!{}()").replace("-", ":")
+    # N.B., the syntax for translate() differs between python 2 and 3
+    try:
+        region = region.translate(None, ",;|!{}()").replace("-", ":")
+    except:
+        region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
+        print("oh no!")
         raise argparse.ArgumentTypeError(
             "{} is not a valid region".format(string))
     return region
@@ -410,6 +433,12 @@ def heatmapperOutputArgs(args=None,
                             'underlying data for the average profile, e.g. '
                             'myProfile.tab.',
                             type=writableFile)
+    output.add_argument(
+        '--dpi',
+        help='Set the DPI to save the figure.',
+        type=int,
+        default=200)
+
     return parser
 
 
@@ -518,6 +547,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                        "region_length"],
                               default='mean')
 
+        optional.add_argument('--sortUsingSamples',
+                              help='List of sample numbers (order as in matrix), '
+                              'that are used for sorting by --sortUsing, '
+                              'no value uses all samples, '
+                              'example: --sortUsingSamples 1 3',
+                              type=int, nargs='+')
+
         optional.add_argument(
             '--averageTypeSummaryPlot',
             default='mean',
@@ -545,27 +581,36 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                                      if not m.endswith('_r')])
 
         optional.add_argument(
-            '--colorMap', default='RdYlBu',
-            help='Color map to use for the heatmap. Available values can be '
-            'seen here: '
-            'http://matplotlib.org/users/colormaps.html '
-            'The available options are: \'' +
-            color_options + '\'')
+            '--colorMap',
+            help='Color map to use for the heatmap. If more than one heatmap is being plotted the color '
+                 'of each heatmap can be enter individually (e.g. `--colorMap Reds Blues`). Color maps '
+                 'are recycled if the number of color maps is smaller than the number of heatmaps being '
+                 'plotted. Available values can be seen here: http://matplotlib.org/users/colormaps.html '
+                 'The available options are: \'' + color_options + '\'',
+            default=['RdYlBu'],
+            nargs='+')
 
         optional.add_argument(
             '--alpha',
             default=1.0,
             type=check_float_0_1,
-            help='The alpha channel (transparency) to use for the heatmaps. '
-            'The default is 1.0 and values must be between 0 and 1.')
+            help='The alpha channel (transparency) to use for the heatmaps. The default is 1.0 and values '
+                 'must be between 0 and 1.')
 
         optional.add_argument(
             '--colorList',
-            help='List of colors to use to create a colormap. For example, if  '
-            '--colorList black yellow blue is set (colors separated by '
-            'spaces) then a color map that starts with black, continues '
-            'to yellow and finishes in blue is created. If this option is'
-            'selected, it overrides the --colorMap selected.',
+            help='List of colors to use to create a colormap. For example, if `--colorList black,yellow,blue` '
+                 'is set (colors separated by comas) then a color map that starts with black, continues to '
+                 'yellow and finishes in blue is created. If this option is selected, it overrides the --colorMap '
+                 'chosen. The list of valid color names can be seen here: '
+                 'http://matplotlib.org/examples/color/named_colors.html  '
+                 'Hex colors are valid (e.g #34a2b1). If individual colors for different heatmaps '
+                 'need to be specified they need to be separated by space as for example: '
+                 '`--colorList "white,#cccccc" "white,darkred"` '
+                 'As for --colorMap, the color lists are recycled if their number is smaller thatn the number of'
+                 'plotted heatmaps.  '
+                 'The number of transitions is defined by the --colorNumber option.',
+
             nargs='+')
 
         optional.add_argument(
@@ -579,10 +624,18 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--zMin', '-min',
                               default=None,
-                              help='Minimum value for the heatmap intensities.')
+                              help='Minimum value for the heatmap intensities. Multiple values, separated by '
+                                   'spaces can be set for each heatmap. If the number of zMin values is smaller than'
+                                   'the number of heatmaps the values are recycled.',
+                              type=float,
+                              nargs='+')
         optional.add_argument('--zMax', '-max',
                               default=None,
-                              help='Maximum value for the heatmap intensities.')
+                              help='Maximum value for the heatmap intensities. Multiple values, separated by '
+                                   'spaces can be set for each heatmap. If the number of zMax values is smaller than'
+                                   'the number of heatmaps the values are recycled.',
+                              type=float,
+                              nargs='+')
         optional.add_argument('--heatmapHeight',
                               help='Plot height in cm. The default for the heatmap '
                               'height is 28. The minimum value is '
@@ -607,6 +660,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                      "plot and heatmap", "heatmap only",
                      "heatmap and colorbar"],
             default='plot, heatmap and colorbar')
+
+        optional.add_argument(
+            '--boxAroundHeatmaps',
+            help='By default black boxes are plot around heatmaps. This can be turned off '
+                 'by setting --boxAroundHeatmaps no',
+            default='yes')
+
         optional.add_argument('--xAxisLabel', '-x',
                               default='gene distance (bp)',
                               help='Description for the x-axis label.')
@@ -708,51 +768,3 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'additional information are given.',
                           action='store_true')
     return parser
-
-
-def bam_total_reads(bam_handle, chroms_to_ignore):
-    """Count the total number of mapped reads in a BAM file, filtering
-    the chromosome given in chroms_to_ignore list
-    """
-    if chroms_to_ignore:
-        import pysam
-
-        lines = pysam.idxstats(bam_handle.filename)
-        if type(lines) is str:
-            lines = lines.strip().split('\n')
-        tot_mapped_reads = 0
-        for line in lines:
-            chrom, _len, nmapped, _nunmapped = line.split('\t')
-            if chrom not in chroms_to_ignore:
-                tot_mapped_reads += int(nmapped)
-
-    else:
-        tot_mapped_reads = bam_handle.mapped
-
-    return tot_mapped_reads
-
-
-def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None):
-    blacklisted = 0
-    if blackListFileName is None:
-        return blacklisted
-
-    # Get the chromosome lengths
-    chromLens = {}
-    lines = pysam.idxstats(bam_handle.filename)
-    lines = toString(lines)
-    if type(lines) is str:
-        lines = lines.strip().split('\n')
-    for line in lines:
-        chrom, _len, nmapped, _nunmapped = line.split('\t')
-        chromLens[chrom] = int(_len)
-
-    bl = GTF(blackListFileName)
-    for chrom in bl.chroms:
-        if not chroms_to_ignore or chrom not in chroms_to_ignore:
-            for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
-                for r in bam_handle.fetch(reference=chrom, start=reg[0], end=reg[1]):
-                    if r.reference_start >= reg[0] and r.reference_start + r.infer_query_length() - 1 <= reg[1]:
-                        blacklisted += 1
-
-    return blacklisted

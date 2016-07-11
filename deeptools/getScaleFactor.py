@@ -4,7 +4,8 @@
 import numpy as np
 import deeptools.mapReduce as mapReduce
 from deeptools import bamHandler
-from deeptools import parserCommon
+from deeptools import utilities
+import sys
 
 debug = 0
 
@@ -31,10 +32,18 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 continue
 
             # filter reads based on SAM flag
-            if args.samFlagInclude and read.flag & args.samFlagInclude == 0:
+            if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:
                 filtered += 1
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
+                filtered += 1
+                continue
+
+            # fragment length filtering
+            if args.minFragmentLength > 0 and abs(read.template_length) < args.minFragmentLength:
+                filtered += 1
+                continue
+            if args.maxFragmentLength > 0 and abs(read.template_length) > args.maxFragmentLength:
                 filtered += 1
                 continue
 
@@ -45,6 +54,26 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 filtered += 1
                 continue
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+
+            # If filterRNAstrand is in args, then filter accordingly
+            # This is very similar to what's used in the get_fragment_from_read function in the filterRnaStrand class
+            if hasattr(args, "filterRNAstrand"):
+                if read.is_paired:
+                    if args.filterRNAstrand == 'forward':
+                        if not ((read.flag & 128 == 128 and read.flag & 16 == 0) or (read.flag & 64 == 64 and read.flag & 32 == 0)):
+                            filtered += 1
+                            continue
+                    elif args.filterRNAstrand == 'reverse':
+                        if not (read.flag & 144 == 144 or read.flag & 96 == 96):
+                            filtered += 1
+                            continue
+                else:
+                    if args.filterRNAstrand == 'forward' and read.flag & 16 == 0:
+                        filtered += 1
+                        continue
+                    elif args.filterRNAstrand == 'reverse' and read.flag & 16 == 16:
+                        filtered += 1
+                        continue
 
     return (filtered, tot)
 
@@ -58,6 +87,8 @@ def fraction_kept(args):
         --samFlagExclude
         --minMappingQuality
         --ignoreDuplicates
+        --minFragmentLength
+        --maxFragmentLength
 
     Black list regions are already accounted for. This works by sampling the
     genome (by default, we'll iterate until we sample 1% or 100,000 alignments,
@@ -72,9 +103,13 @@ def fraction_kept(args):
     total = 0
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
-    chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
+    if args.ignoreForNormalization:
+        chrom_sizes = [(chrom_name, bam_handle.lengths[idx]) for idx, chrom_name in enumerate(bam_handle.references)
+                       if chrom_name not in args.ignoreForNormalization]
+    else:
+        chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
     while total < num_needed_to_sample and distanceBetweenBins > 50000:
         # If we've iterated, then halve distanceBetweenBins
@@ -100,20 +135,40 @@ def fraction_kept(args):
     return 1.0 - float(filtered) / float(total)
 
 
+def get_num_kept_reads(args):
+    """
+    Substracts from the total number of mapped reads in a bamfile
+    the proportion of reads that fall into blacklisted regions
+    or that are filtered
+
+    :return: integer
+    """
+    bam_handle = bamHandler.openBam(args.bam)
+    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    if args.blackListFileName:
+        blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization,
+                                                      args.blackListFileName, args.numberOfProcessors)
+        print("There are {0} alignments, of which {1} are completely "
+              "within a blacklist region.".format(bam_mapped_total, blacklisted))
+        num_kept_reads = bam_mapped_total - blacklisted
+    else:
+        num_kept_reads = bam_mapped_total
+    ftk = fraction_kept(args)
+    if ftk < 1:
+        num_kept_reads *= ftk
+        print("Due to filtering, {0}% of the aforementioned alignments "
+              "will be used {1}".format(100 * ftk, num_kept_reads))
+
+    return num_kept_reads, bam_mapped_total
+
+
 def get_scale_factor(args):
     scale_factor = args.scaleFactor
-    bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
-    if args.verbose:
-        print(("There are {} alignments, of which {} are completely within a blacklist region.".format(bam_mapped, blacklisted)))
-    bam_mapped -= blacklisted
-    ftk = fraction_kept(args)
-    bam_mapped *= ftk
-    if args.verbose:
-        print(("Due to filtering, {}%% of the aforementioned alignments will be used {}".format(100 * ftk, bam_mapped)))
-
+    bam_mapped, bam_mapped_total = get_num_kept_reads(args)
     if args.normalizeTo1x:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: 1x\n")
+
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
         frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
@@ -154,6 +209,9 @@ def get_scale_factor(args):
             print("Scaling factor {}".format(args.scaleFactor))
 
     elif args.normalizeUsingRPKM:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: RPKM\n")
+
         # the RPKM is the # reads per tile / \
         #    ( total reads (in millions) * tile length in Kb)
         million_reads_mapped = float(bam_mapped) / 1e6
@@ -163,8 +221,13 @@ def get_scale_factor(args):
 
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
+    else:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: depth\n")
+
+        scale_factor *= bam_mapped / float(bam_mapped_total)
 
     if args.verbose:
-        print(("Final scaling factor: {}".format(scale_factor)))
+        print("Final scaling factor: {}".format(scale_factor))
 
     return scale_factor

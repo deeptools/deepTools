@@ -1,0 +1,5 @@
+file	featureType	percent
+bowtie2 test1.bam	down	100.00
+bowtie2 test1.bam	up	100.00
+bowtie2 test1.bam	down	100.00
+bowtie2 test1.bam	up	100.00

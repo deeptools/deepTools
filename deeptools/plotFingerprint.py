@@ -228,7 +228,9 @@ def main(args=None):
         ignoreDuplicates=args.ignoreDuplicates,
         center_read=args.centerReads,
         samFlag_include=args.samFlagInclude,
-        samFlag_exclude=args.samFlagExclude)
+        samFlag_exclude=args.samFlagExclude,
+        minFragmentLength=args.minFragmentLength,
+        maxFragmentLength=args.maxFragmentLength)
 
     num_reads_per_bin = cr.run()
     if num_reads_per_bin.sum() == 0:

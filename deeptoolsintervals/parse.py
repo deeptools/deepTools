@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
 from deeptoolsintervals import tree
-import re
 import sys
 import gzip
-import bz2
+try:
+    import bz2
+    supportsBZ2 = True
+except:
+    supportsBZ2 = False
 import os.path
+import shlex
 
 
 def getNext(fp):
@@ -18,7 +22,7 @@ def getNext(fp):
     return line.decode('ascii')
 
 
-def seemsLikeGTF(cols, regex):
+def seemsLikeGTF(cols):
     """
     Does a line look like it could be from a GTF file? Column contents must be:
 
@@ -37,7 +41,9 @@ def seemsLikeGTF(cols, regex):
         cols[6] in ['+', '-', '.']
         if cols[7] != '.':
             int(cols[7]) in [0, 1, 2]
-        assert(regex.match(cols[8]) is not None)
+        s = shlex.split(cols[8])
+        assert("gene_id" in s)
+        assert(s[-1] != "gene_id")
         return True
     except:
         return False
@@ -54,9 +60,9 @@ def findRandomLabel(labels, name):
     i = 0
     while True:
         i += 1
-        name = name + "_r" + str(i)
-        if name not in labels:
-            return name
+        nameTry = name + "_r" + str(i)
+        if nameTry not in labels:
+            return nameTry
 
 
 def parseExonBounds(start, end, n, sizes, offsets):
@@ -92,7 +98,7 @@ def openPossiblyCompressed(fname):
         first3 = bytes(f.read(3))
     if first3 == b"\x1f\x8b\x08":
         return gzip.open(fname, "rb")
-    elif first3 == b"\x42\x5a\x68":
+    elif first3 == b"\x42\x5a\x68" and supportsBZ2:
         return bz2.BZ2File(fname, "rb")
     else:
         return open(fname)
@@ -145,7 +151,7 @@ class GTF(object):
 
     def inferType(self, fp, line, labelColumn=None):
         """
-        Attempt to infer a file type from a single line. This is largely based on the number of columns plus a regex looking for "gene_id".
+        Attempt to infer a file type from a single line. This is largely based on the number of columns plus looking for "gene_id".
         """
         subtract = 0
         if labelColumn is not None:
@@ -156,19 +162,22 @@ class GTF(object):
         elif len(cols) - subtract == 3:
             return 'BED3'
         elif len(cols) - subtract < 6:
-            sys.stderr.write("Warning, {0} has an abnormal number of fields. Assuming BED3 format.\n".format(self.filename))
+            if self.verbose:
+                sys.stderr.write("Warning, {0} has an abnormal number of fields. Assuming BED3 format.\n".format(self.filename))
             return 'BED3'
         elif len(cols) - subtract == 6:
             return 'BED6'
-        elif len(cols) and seemsLikeGTF(cols, self.gene_id_regex):
+        elif len(cols) and seemsLikeGTF(cols):
             return 'GTF'
         elif len(cols) - subtract == 12:
             return 'BED12'
         elif len(cols) - subtract < 12:
-            sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED6 format.\n".format(self.filename))
+            if self.verbose:
+                sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED6 format.\n".format(self.filename))
             return 'BED6'
         else:
-            sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED12 format.\n".format(self.filename))
+            if self.verbose:
+                sys.stderr.write("Warning, {0} has an abnormal format. Assuming BED12 format.\n".format(self.filename))
             return 'BED12'
 
     def mungeChromosome(self, chrom, append=True):
@@ -190,8 +199,6 @@ class GTF(object):
 
         if append:
             self.chroms.append(chrom)
-        else:
-            return None
 
         return chrom
 
@@ -210,7 +217,10 @@ class GTF(object):
         cols = line.split("\t")
         name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
 
-        if int(cols[1]) >= int(cols[2]) or int(cols[1]) < 0:
+        if int(cols[1]) < 0:
+            cols[1] = 0
+
+        if int(cols[1]) >= int(cols[2]):
             sys.stderr.write("Warning: {0}:{1}-{2} is an invalid BED interval! Ignoring it.\n".format(cols[0], cols[1], cols[2]))
             return
 
@@ -225,17 +235,13 @@ class GTF(object):
             score = cols[4]
 
         # Ensure that the name is unique
-        if name in self.exons.keys():
-            sys.stderr.write("Skipping {0}, an entry by this name already exists!\n".format(name))
-            return False
+        name = findRandomLabel(self.exons, name)
+        self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
+        if ncols != 12 or self.keepExons is False:
+            self.exons[name] = [(int(cols[1]), int(cols[2]))]
         else:
-            self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
-            if ncols != 12 or self.keepExons is False:
-                self.exons[name] = [(int(cols[1]), int(cols[2]))]
-            else:
-                assert(len(cols) == 12)
-                self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
-        return True
+            assert(len(cols) == 12)
+            self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
 
     def parseBED(self, fp, line, ncols=3, labelColumn=None):
         """
@@ -261,7 +267,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 30000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['group 1'] == 4)
@@ -276,7 +282,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 30000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['group 1'] == 8)
@@ -299,8 +305,8 @@ class GTF(object):
             else:
                 self.labels.append(label)
                 self.labelIdx = len(self.labels) - 1
-        if self.parseBEDcore(line, ncols):
-            groupEntries = 1
+        self.parseBEDcore(line, ncols)
+        groupEntries = 1
 
         # iterate over the remaining lines
         for line in fp:
@@ -342,7 +348,8 @@ class GTF(object):
                     else:
                         self.labels.append(label)
                         self.labelIdx = len(self.labels) - 1
-                if self.parseBEDcore(line, ncols) and labelColumn is None:
+                self.parseBEDcore(line, ncols)
+                if labelColumn is None:
                     groupEntries += 1
 
         if groupEntries > 0 and labelColumn is None:
@@ -366,19 +373,18 @@ class GTF(object):
             sys.stderr.write("Warning: non-GTF line encountered! {0}\n".format("\t".join(cols)))
             return
 
-        m = self.deepTools_group_regex.search(cols[8])
-        if m:
-            label = m.groups()[0]
+        s = shlex.split(cols[8])
+        if "deepTools_group" in s and s[-1] != "deepTools_group":
+            label = s[s.index("deepTools_group") + 1].rstrip(";")
         elif self.defaultGroup is not None:
             label = self.defaultGroup
 
-        m = self.transcript_id_regex.search(cols[8])
-        if not m:
+        if self.transcript_id_designator not in s or s[-1] == self.transcript_id_designator:
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
             return
 
-        name = m.groups()[0]
-        if name in self.exons.keys():
+        name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
+        if name in self.exons:
             sys.stderr.write("Warning: {0} occurs more than once! Only using the first instance.\n".format(name))
             self.transcriptIDduplicated.append(name)
             return
@@ -414,15 +420,15 @@ class GTF(object):
             sys.stderr.write("Warning: Invalid start in '{0}', skipping\n".format("\t".join(cols)))
             return
 
-        m = self.transcript_id_regex.search(cols[8])
-        if not m:
+        s = shlex.split(cols[8])
+        if self.transcript_id_designator not in s or s[-1] == self.transcript_id_designator:
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
             return
 
-        name = m.groups()[0]
+        name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
         if name in self.transcriptIDduplicated:
             return
-        if name not in self.exons.keys():
+        if name not in self.exons:
             self.exons[name] = []
 
         self.exons[name].append((int(cols[3]) - 1, int(cols[4])))
@@ -442,7 +448,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
@@ -455,7 +461,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
@@ -469,7 +475,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 1, 20000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.gtf.gz'] == 17)
@@ -483,9 +489,9 @@ class GTF(object):
 
         # Handle the first line
         cols = line.split("\t")
-        if cols[2].lower() == self.transcriptID:
+        if cols[2].lower() == self.transcriptID.lower():
             self.parseGTFtranscript(cols, file_label)
-        elif cols[2].lower() == self.exonID:
+        elif cols[2].lower() == self.exonID.lower():
             self.parseGTFexon(cols)
 
         # Handle the remaining lines
@@ -497,15 +503,15 @@ class GTF(object):
                 if len(cols) == 0:
                     continue
 
-                if cols[2].lower() == self.transcriptID:
+                if cols[2].lower() == self.transcriptID.lower():
                     self.parseGTFtranscript(cols, file_label)
-                elif cols[2].lower() == self.exonID and self.keepExons is True:
+                elif cols[2].lower() == self.exonID.lower() and self.keepExons is True:
                     self.parseGTFexon(cols)
 
         # Reset self.labelIdx
         self.labelIdx = len(self.labels)
 
-    def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id", defaultGroup=None):
+    def __init__(self, fnames, exonID="exon", transcriptID="transcript", keepExons=False, labels=[], transcript_id_designator="transcript_id", defaultGroup=None, verbose=False):
         """
         Driver function to actually parse files. The steps are as follows:
 
@@ -530,12 +536,13 @@ class GTF(object):
                       'transcript_id'.
         keepExons:    For BED12 and GTF files, exons are ignored by default.
         labels:       A list of group labels.
-        transcript_id_designator: For gtf files, this the key used in a regex.
-                      If one set transcriptID to 'gene', then
+        transcript_id_designator: For gtf files, this is the key used in a searching for the transcript ID.
+                      If one sets transcriptID to 'gene', then
                       transcript_id_designator would need to be changed to
                       'gene_id' or 'gene_name' to extract the gene ID/name from
                       the attributes.
         defaultGroup: The default group name. If None, the file name is used.
+        verbose:      Whether to produce warning messages (default: False)
         """
         self.fname = []
         self.filename = ""
@@ -545,13 +552,12 @@ class GTF(object):
         self.transcriptIDduplicated = []
         self.tree = tree.initTree()
         self.labelIdx = 0
-        self.gene_id_regex = re.compile('(?:gene_id (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
-        self.transcript_id_regex = re.compile('(?:{0} (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])'.format(transcript_id_designator))
-        self.deepTools_group_regex = re.compile('(?:deepTools_group (?:\"([ \w\d"\-]+)\"|([ \w\d"\-]+))[;|\r|\n])')
+        self.transcript_id_designator = transcript_id_designator
         self.exonID = exonID
         self.transcriptID = transcriptID
         self.keepExons = keepExons
         self.defaultGroup = defaultGroup
+        self.verbose = verbose
 
         if labels != []:
             self.already_input_labels = True
@@ -642,7 +648,7 @@ class GTF(object):
         >>> overlaps = gtf.findOverlaps("1", 0, 3000000)
         >>> labels = dict()
         >>> for o in overlaps:
-        ...     if basename(o[3]) not in labels.keys():
+        ...     if basename(o[3]) not in labels:
         ...         labels[basename(o[3])] = 0
         ...     labels[basename(o[3])] += 1
         >>> assert(labels['GRCh38.84.bed2'] == 1)
@@ -672,11 +678,11 @@ class GTF(object):
             strand = 0
 
         overlaps = self.tree.findOverlaps(chrom, start, end, strand, matchType, strandType, "transcript_id", includeStrand)
-        if not overlaps:
+        if overlaps is None:
             return None
 
         for i, o in enumerate(overlaps):
-            if o[2] not in self.exons.keys() or len(self.exons[o[2]]) == 0:
+            if o[2] not in self.exons or len(self.exons[o[2]]) == 0:
                 exons = [(o[0], o[1])]
             else:
                 exons = sorted(self.exons[o[2]])
@@ -703,7 +709,7 @@ class GTF(object):
                     else:
                         break
                 else:
-                    overlaps = None
+                    overlaps = []
                     break
 
         return overlaps

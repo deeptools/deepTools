@@ -17,8 +17,8 @@
             @THREADS@
 
             --plotFile '$outFileName'
-            --bamfiles '#echo "' '".join($files)#'
-            --labels '#echo "' '".join($labels)#'
+            --bamfiles #echo " ".join($files)#
+            --labels #echo " ".join($labels)#
             --plotFileFormat "$outFileFormat"
 
             #if $outRawCounts:
@@ -38,6 +38,7 @@
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
                 @ADVANCED_OPTS_READ_PROCESSING@
+                @blacklist@
             #end if
 
 ]]>
@@ -60,6 +61,7 @@
                 <expand macro="read_processing_options" />
                 <expand macro="skipZeros" />
                 <expand macro="plotTitle" />
+                <expand macro="blacklist" />
             </when>
         </conditional>
 
@@ -76,13 +78,13 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamfiles" value="bowtie2-test1.bam,bowtie2-test1.bam" ftype="bam" />
+            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <!--param name="outFileFormat" value="png" /-->
             <param name="showAdvancedOpt" value="yes" />
             <param name="plotTitle" value="Test Title from Galaxy" />
             <param name="outRawCounts" value="True" />
             <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
-            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="2200" />
+            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="2400" />
         </test>
     </tests>
     <help>

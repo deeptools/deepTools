@@ -6,11 +6,11 @@ import pyBigWig
 
 # own modules
 from deeptools import mapReduce
-from deeptools.utilities import getCommonChrNames
+from deeptools.utilities import getCommonChrNames, toBytes
 import deeptools.countReadsPerBin as cr
 from deeptools import bamHandler
 from deeptools import utilities
-from . import config as cfg
+from deeptools import config as cfg
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -83,7 +83,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
     >>> c = WriteBedGraph([bam_file], binLength=bin_length, region=region, stepSize=step_size)
     >>> c.run(function_to_call, funcArgs, outFile.name)
     >>> open(outFile.name, 'r').readlines()
-    ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.5\n']
+    ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.50\n']
     >>> outFile.close()
 
 
@@ -144,7 +144,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
             if tempfilename:
                 # concatenate all intermediate tempfiles into one
                 # bedgraph file
-                shutil.copyfileobj(open(tempfilename, 'rb'), out_file)
+                _foo = open(tempfilename, 'rb')
+                shutil.copyfileobj(_foo, out_file)
+                _foo.close()
                 os.remove(tempfilename)
 
         bedgraph_file = out_file.name
@@ -207,7 +209,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples, stepSize=50)
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
         >>> open(tempFile, 'r').readlines()
-        ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.0\n']
+        ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.00\n']
         >>> os.remove(tempFile)
 
 
@@ -220,7 +222,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
         previous_value = None
-
+        line_string = "{}\t{}\t{}\t{:.2f}\n"
         for tileIndex in range(coverage.shape[0]):
 
             if self.smoothLength is not None and self.smoothLength > 0:
@@ -238,8 +240,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
             if not np.isnan(value):
                 writeStart = start + tileIndex*self.binLength
                 writeEnd  =  min(writeStart+self.binLength, end)
-                _file.write( "%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
-                                                     writeEnd, value) )
+                _file.write(line_string.format(chrom, writeStart,
+                                           end, previous_value))
             """
 
             if previous_value is None:
@@ -253,16 +255,15 @@ class WriteBedGraph(cr.CountReadsPerBin):
             elif previous_value != value:
                 if not np.isnan(previous_value):
                     _file.write(
-                        "{}\t{}\t{}\t{:.2f}\n".format(chrom, writeStart,
-                                                      writeEnd, previous_value))
+                        line_string.format(chrom, writeStart, writeEnd, previous_value))
                 previous_value = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + self.binLength, end)
 
         # write remaining value if not a nan
-        if previous_value and writeStart != end and not np.isnan(previous_value):
-            _file.write("%s\t%d\t%d\t%.1f\n" % (chrom, writeStart,
-                                                end, previous_value))
+        if previous_value is not None and writeStart != end and not np.isnan(previous_value):
+            _file.write(line_string.format(chrom, writeStart,
+                                           end, previous_value))
 
         tempfilename = _file.name
         _file.close()
@@ -282,7 +283,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     sort_cmd = cfg.config.get('external_tools', 'sort')
     _file = NamedTemporaryFile(delete=False)
     for chrom, size in chromSizes:
-        _file.write("{}\t{}\n".format(chrom, size))
+        _file.write(toBytes("{}\t{}\n".format(chrom, size)))
     _file.close()
     system("LC_ALL=C {} -k1,1 -k2,2n {} > {}.sorted".format(sort_cmd, _file.name, _file.name))
     cl = []

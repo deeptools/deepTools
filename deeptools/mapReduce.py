@@ -1,5 +1,6 @@
 import multiprocessing
 from deeptoolsintervals import GTF
+import random
 
 debug = 0
 
@@ -136,7 +137,7 @@ def mapReduce(staticArgs, func, chromSize,
             print(("using {} processors for {} "
                    "number of tasks".format(numberOfProcessors,
                                             len(TASKS))))
-
+        random.shuffle(TASKS)
         pool = multiprocessing.Pool(numberOfProcessors)
         res = pool.map_async(func, TASKS).get(9999999)
     else:
@@ -244,7 +245,7 @@ def blSubtract(t, chrom, chunk):
         return [chunk]
 
     overlaps = t.findOverlaps(chrom, chunk[0], chunk[1])
-    if len(overlaps) > 0:
+    if overlaps is not None and len(overlaps) > 0:
         output = []
         for o in overlaps:
             if chunk[1] <= chunk[0]:

@@ -121,6 +121,7 @@ class TestCountReadsPerBin(object):
     def test_get_coverage_of_region_large_bin(self):
         self.c.bamFilesList = [self.bamFile2]
         self.c.binLength = 200
+        self.c.stepSize = 200
         resp, _ = self.c.count_reads_in_region('3R', 0, 200)
         nt.assert_array_equal(resp, np.array([[4]]))
 

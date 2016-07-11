@@ -6,6 +6,25 @@
  * Read extension is handled more accurately, such that if a read originates outside of a bin or BED/GTF region that it will typically be included if the --extendReads option is used and the extension would put it in a given bin/region.
  * deepTools now uses a custom interval-tree implementation that allows including metadata, such as gene/transcript IDs, along with intervals. For those interested, the code for this available separately (https://github.com/dpryan79/deeptools_intervals) with the original C-only implementation here: https://github.com/dpryan79/libGTF.
  * The API for the countReadsPerBin, getScorePerBigWigBin, and mapReduce modules has changed slightly (this was needed to support the --metagene option). Anyone using these in their own programs is encouraged to look at the modified API before upgrading.
+ * Added the `plotEnrichment` function (this was issue #329).
+ * There is now a `subsetMatrix` script available that can be used to subset the output of computeMatrix. This is useful for preparing plots that only contain a subset of samples/region groups. Note that this isn't installed by default.
+ * The Galaxy wrappers were updated to include the ability to exclude blacklisted regions.
+ * Most functions (both at the command line and within Galaxy) that process BAM files can now filter by fragment length (--minFragmentLength and --maxFragmentLength). By default there's no filtering performed. The primary purpose of this is to facilitate ATACseq analysis, where fragment length determines whether one is processing mono-/di-/poly-nucleosome fragments. This was issue #336.
+ * bamPEFragmentSize now has --logScale and --maxFragmentLength options, which allow you to plot frequencies on the log scale and set the max plotted fragment length, respectively. This was issue #337.
+ * --blackListFileName now accepts multiple files.
+ * bamPEFragmentSize now supports multiple input files.
+ * If the sequence has been removed from BAM files, SE reads no longer cause an error in bamCoverage if --normalizeTo1x is specified. In general, the code that looks at read length now checks the CIGAR string if there's no sequence available in a BAM file (for both PE and SE datasets). This was issue #369.
+ * bamCoverage now respects the --filterRNAstrand option when computing scaling factors. This was issue #353.
+ * computeMatrix and plotHeatmap can now sort using only a subset of samples
+ * There is now an --Offset option to bamCoverage, which allows having the signal at a single base. This is useful for things like RiboSeq or GROseq, where the goal is to get focal peaks at single bases/codons/etc.
+
+2.2.4
+
+ * Fix the incorrectly oriented dendrogram in plotCorrelation (issue #350). Relatedly, we're bumping the minimum version of scipy required to one where this is correct.
+
+2.2.3
+
+ * Fixed issue #334, where computeGCBias wasn't properly handling the black list option.
 
 2.2.2
 

@@ -25,6 +25,7 @@ galaxy/wrapper/multiBamSummary.xml \
 galaxy/wrapper/multiBigwigSummary.xml \
 galaxy/wrapper/plotCorrelation.xml \
 galaxy/wrapper/plotCoverage.xml \
+galaxy/wrapper/plotEnrichment.xml \
 galaxy/wrapper/plotFingerprint.xml \
 galaxy/wrapper/plotHeatmap.xml \
 galaxy/wrapper/plotPCA.xml \

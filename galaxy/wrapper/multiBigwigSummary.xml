@@ -18,8 +18,8 @@
             @THREADS@
 
             --outFileName $outFile
-            --bwfiles '#echo "' '".join($files)#'
-            --labels '#echo "' '".join($labels)#'
+            --bwfiles #echo " ".join($files)#
+            --labels #echo " ".join($labels)#
 
             #if $outRawCounts:
                 --outRawCounts '$outFileRawCounts'
@@ -38,6 +38,7 @@
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 @ADVANCED_OPTS_GTF@
+                @blacklist@
             #end if
 ]]>
     </command>
@@ -73,6 +74,7 @@
 
         <expand macro="advancedOpt_scaffold">
             <expand macro="gtf_options" />
+            <expand macro="blacklist" />
         </expand>
 
     </inputs>

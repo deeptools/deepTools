@@ -48,23 +48,29 @@ class TestWriteBedGraph(TestCase):
         self.c.skipZeros = False
 
         tempFile = self.c.writeBedGraph_worker('3R', 0, 200, scaleCoverage, self.func_args)
-        res = open(tempFile, 'r').readlines()
-        assert_equal(res, ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.0\n'])
+        _foo = open(tempFile, 'r')
+        res = _foo.readlines()
+        _foo.close()
+        assert_equal(res, ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.00\n'])
         os.remove(tempFile)
 
     def test_writeBedGraph_worker_zerotonan(self):
         # turn on zeroToNan
         self.c.zerosToNans = True
         tempFile2 = self.c.writeBedGraph_worker('3R', 0, 200, scaleCoverage, self.func_args)
-        res = open(tempFile2, 'r').readlines()
-        assert_equal(res, ['3R\t100\t200\t1.0\n'])
+        _foo = open(tempFile2, 'r')
+        res = _foo.readlines()
+        _foo.close()
+        assert_equal(res, ['3R\t100\t200\t1.00\n'])
         os.remove(tempFile2)
 
     def test_writeBedGraph_worker_scaling(self):
         func_args = {'scaleFactor': 3.0}
         tempFile = self.c.writeBedGraph_worker('3R', 0, 200, scaleCoverage, func_args)
-        res = open(tempFile, 'r').readlines()
-        assert_equal(res, ['3R\t0\t100\t0.00\n', '3R\t100\t200\t3.0\n'])
+        _foo = open(tempFile, 'r')
+        res = _foo.readlines()
+        _foo.close()
+        assert_equal(res, ['3R\t0\t100\t0.00\n', '3R\t100\t200\t3.00\n'])
         os.remove(tempFile)
 
     def test_writeBedGraph_worker_ignore_duplicates(self):
@@ -74,8 +80,10 @@ class TestWriteBedGraph(TestCase):
         self.c.zerosToNans = True
 
         tempFile = self.c.writeBedGraph_worker('3R', 0, 200, scaleCoverage, self.func_args)
-        res = open(tempFile, 'r').readlines()
-        assert_equal(res, ['3R\t50\t200\t1.0\n'])
+        _foo = open(tempFile, 'r')
+        res = _foo.readlines()
+        _foo.close()
+        assert_equal(res, ['3R\t50\t200\t1.00\n'])
         os.remove(tempFile)
 
     def test_writeBedGraph_worker_smoothing(self):
@@ -83,8 +91,10 @@ class TestWriteBedGraph(TestCase):
         self.c.stepSize = 20
         self.c.smoothLength = 60
         tempFile = self.c.writeBedGraph_worker('3R', 100, 200, scaleCoverage, self.func_args)
-        res = open(tempFile, 'r').readlines()
-        assert_equal(res, ['3R\t100\t120\t1.00\n', '3R\t120\t180\t1.33\n', '3R\t180\t200\t1.0\n'])
+        _foo = open(tempFile, 'r')
+        res = _foo.readlines()
+        _foo.close()
+        assert_equal(res, ['3R\t100\t120\t1.00\n', '3R\t120\t180\t1.33\n', '3R\t180\t200\t1.00\n'])
         os.remove(tempFile)
 
     def test_writeBedGraph_cigar(self):
@@ -99,11 +109,14 @@ class TestWriteBedGraph(TestCase):
         self.c.binLength = 10
         self.c.stepSize = 10
         tempFile = self.c.writeBedGraph_worker('chr_cigar', 0, 100, scaleCoverage, self.func_args)
-        res = open(tempFile, 'r').readlines()
+        _foo = open(tempFile, 'r')
+        res = _foo.readlines()
+        _foo.close()
 
         # the sigle read is split into bin 10-30, and then 40-50
         assert_equal(res, ['chr_cigar\t0\t10\t0.00\n',
                            'chr_cigar\t10\t30\t1.00\n',
                            'chr_cigar\t30\t40\t0.00\n',
-                           'chr_cigar\t40\t50\t1.00\n'])
+                           'chr_cigar\t40\t50\t1.00\n',
+                           'chr_cigar\t50\t100\t0.00\n'])
         os.remove(tempFile)
