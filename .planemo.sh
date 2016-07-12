@@ -14,7 +14,7 @@ sed -i '5i\    <datatype extension="deeptools_coverage_matrix" type="galaxy.data
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 pip install . 
-/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv \
+/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
