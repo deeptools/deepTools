@@ -39,3 +39,6 @@ script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then ./.planemo.sh ; fi
 sudo: false
+
+services:
+  - postgresql
