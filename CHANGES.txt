@@ -17,6 +17,7 @@
  * bamCoverage now respects the --filterRNAstrand option when computing scaling factors. This was issue #353.
  * computeMatrix and plotHeatmap can now sort using only a subset of samples
  * There is now an --Offset option to bamCoverage, which allows having the signal at a single base. This is useful for things like RiboSeq or GROseq, where the goal is to get focal peaks at single bases/codons/etc.
+ * The --MNase option to `bamCoverage` now respects --minFragmentLength and --maxFragmentLength, with defaults set to 130 and 200.
 
 2.2.4
 

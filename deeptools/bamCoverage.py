@@ -73,8 +73,11 @@ def get_optional_args():
                           help='Determine nucleosome positions from MNase-seq data. '
                           'Only 3 nucleotides at the center of each fragment are counted. '
                           'The fragment ends are defined by the two mate reads. Only fragment lengths'
-                          'between 130 - 200 bp are considered to avoid dinucleosomes or other artifacts.'
-                          '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
+                          'between 130 - 200 bp are considered to avoid dinucleosomes or other artifacts. '
+                          'By default, any fragments smaller or larger than this are ignored. To '
+                          'over-ride this, use the --minFragmentLength and --maxFragmentLength options, '
+                          'which will default to 130 and 200 if not otherwise specified in the presence '
+                          'of --MNase. *NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
 
     optional.add_argument('--Offset',
@@ -145,6 +148,12 @@ def main(args=None):
                                                                     verbose=args.verbose)
         if frag_len_dict is None:
             exit("*Error*: For the --MNAse function a paired end library is required. ")
+
+        # Set some default fragment length bounds
+        if args.minFragmentLength == 0:
+            args.minFragmentLength = 130
+        if args.maxFragmentLength == 0:
+            args.maxFragmentLength = 200
 
         wr = CenterFragment([args.bam],
                             binLength=args.binSize,
@@ -294,9 +303,8 @@ class CenterFragment(writeBedGraph.WriteBedGraph):
         fragment_start = fragment_end = None
 
         # only paired forward reads are considered
-        # that are about one nuclesome turn long (130 - 200 bp)
-        # TODO: this size range could be an input parameter.
-        if read.is_proper_pair and not read.is_reverse and 130 < abs(read.tlen) < 200:
+        # Fragments have already been filtered according to length
+        if read.is_proper_pair and not read.is_reverse and 1 < abs(read.tlen):
             # distance between pairs is even return two bases at the center
             if read.tlen % 2 == 0:
                 fragment_start = read.pos + read.tlen / 2 - 1
