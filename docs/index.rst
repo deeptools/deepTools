@@ -29,6 +29,7 @@ Contents:
 
    content/installation
    content/list_of_tools
+   content/advanced_features
    content/example_usage
    content/changelog
    content/help_galaxy_intro

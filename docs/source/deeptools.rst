@@ -100,15 +100,6 @@ deeptools.mapReduce module
     :undoc-members:
     :show-inheritance:
 
-
-deeptools.readBed module
-------------------------
-
-.. automodule:: deeptools.readBed
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 deeptools.utilities module
 --------------------------
 

@@ -70,6 +70,7 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
     the center point of the exons.
 
     The steps are as follow:
+
      1) Find the center point of the set of exons (e.g., [(0, 200), (300, 400), (800, 900)] would be centered at 200)
        * If a given exon spans the center point then the exon is split
      2) The given number of bases at the end of the left-of-center list are extracted
