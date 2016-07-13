@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_pe_fragmentsize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
-    <description>Estimate the predominant cDNA fragment length from a paired-end sequenced BAM file</description>
+    <description>Estimate the predominant cDNA fragment length from paired-end sequenced BAM files</description>
     <macros>
         <token name="@BINARY@">bamPEFragmentSize</token>
         <import>deepTools_macros.xml</import>
@@ -7,11 +7,13 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        ln -s $bamInput one.bam &&
-        ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
-
+        @multiple_input_bams@
         @BINARY@
             @THREADS@
+            --bamfiles #echo " ".join($files)
+            #if $samplesLabel:
+                --samplesLabel #echo " ".join($samplesLabel)
+            #end if
             #if $histogram:
                 --histogram ./hist.png
             #end if
@@ -19,17 +21,27 @@
             #if $advancedOpt.showAdvancedOpt == 'yes'
                 --binSize '$advancedOpt.binSize'
                 --distanceBetweenBins '$advancedOpt.distanceBetweenBins'
+                $advancedOpt.logScale
+                --maxFragmentLength '$advancedOpt.maxFragmentLength'
+                @blacklist@
             #end if
-            one.bam
             > $outfile
 ]]>
     </command>
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="BAM file"
-            help=""/>
+        <expand macro="multiple_input_bams" />
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribution of fragment lengths as a histogram"
             help=""/>
+        <param argument="--samplesLabel" type="text" size="30"
+            label="Labels for the samples (each BAM file) plotted"
+            help="The default is to use the file name of the sample. The sample labels should be separated by
+            spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;">
+            <sanitizer>
+               <valid initial="string.printable">
+               </valid>
+            </sanitizer>
+        </param>
         <expand macro="plotTitle" />
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -43,6 +55,14 @@
                 <param argument="--distanceBetweenBins" type="integer" value="1000000" min="0" optional="true"
                     label="bin spacing, in bases"
                     help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased. (--distanceBetweenBins)"/>
+                <param argument="--logScale" type="boolean" truevalue="--logScale" falsevalue=""
+                    label="Plot log frequencies"
+                    help="Plot the frequencies on the log10 scale" />
+
+                <param argument="--maxFragmentLength" type="integer" min="0" value="0"
+                    label="Maximum fragment length"
+                    help="Maximum fragment length included in the histogram. A value of 0 (the default) denotes twice the mean fragment length" />
+                <expand macro="blacklist" />
             </when>
         </conditional>
 
@@ -55,7 +75,7 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
+            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam" />
             <param name="histogram" value="True" />
             <param name="plotTitle" value="Test Plot" />
             <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt" />
@@ -68,7 +88,7 @@
 What it does
 ------------
 
-This tool samples a BAM file with paired-end data to estimate the fragment length distribution.
+This tool samples the given BAM files with paired-end data to estimate the fragment length distribution.
 Properly paired reads are preferred for computation, i.e., unless a region does not contain any concordant pairs, discordant pairs are ignored.
 
 Output

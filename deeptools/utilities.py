@@ -1,5 +1,9 @@
 import sys
 import os
+import pysam
+from deeptoolsintervals import GTF
+from deeptools.bamHandler import openBam
+
 
 debug = 0
 
@@ -53,8 +57,8 @@ def tbitToBamChrName(tbitNames, bamNames):
         elif set([x for x in tbitNames if x.count('random') == 0 and
                  x.count('chrM') == 0]) == set(bamNames):
             if debug:
-                print "Removing random and mitochondrial chromosomes"\
-                    "fixes the problem"
+                print("Removing random and mitochondrial chromosomes"
+                      "fixes the problem")
             chrNameBitToBam = dict([(x, x) for x in tbitNames
                                     if x.count('random') == 0 and
                                     x.count('chrM') == 0])
@@ -66,7 +70,7 @@ def tbitToBamChrName(tbitNames, bamNames):
                 sys.stderr.write(item + "\n")
 
             chrNameBitToBam = {"chrM": "MT"}
-            for i in xrange(len(bamNames)):
+            for i in range(len(bamNames)):
                 if bamNames2[i] in tbitNames:
                     chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
         elif len(set([x[3:] for x in bamNames if x.startswith("chr")]).intersection(set(tbitNames))) > 0:
@@ -79,12 +83,12 @@ def tbitToBamChrName(tbitNames, bamNames):
                     sys.stderr.write(item + "\n")
 
             chrNameBitToBam = {"MT": "chrM"}
-            for i in xrange(len(bamNames)):
+            for i in range(len(bamNames)):
                 if bamNames2[i] in tbitNames:
                     chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
         else:
             if debug:
-                print "Index and reference do not have matching "
+                print("Index and reference do not have matching ")
                 "chromosome names"
             exit(0)
 
@@ -186,7 +190,7 @@ def getTempFileName(suffix=''):
     which has much faster accession.
     """
     import tempfile
-    import config as cfg
+    from deeptools import config as cfg
     # get temp dir from configuration file
     tmp_dir = cfg.config.get('general', 'tmp_dir')
     if tmp_dir == 'default':
@@ -233,3 +237,150 @@ def which(program):
                 return exe_file
 
     return None
+
+
+def gtfOptions(allArgs=None):
+    """
+    This is used a couple places to setup arguments to mapReduce
+    """
+    transcriptID = "transcript"
+    exonID = "exon"
+    transcript_id_designator = "transcript_id"
+    keepExons = False
+    if allArgs is not None:
+        allArgs = vars(allArgs)
+        transcriptID = allArgs.get("transcriptID", transcriptID)
+        exonID = allArgs.get("exonID", exonID)
+        transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
+        keepExons = allArgs.get("keepExons", keepExons)
+    return transcriptID, exonID, transcript_id_designator, keepExons
+
+
+def toString(s):
+    """
+    This takes care of python2/3 differences
+    """
+    if isinstance(s, str):
+        return s
+    if isinstance(s, bytes):
+        if sys.version_info[0] == 2:
+            return str(s)
+        return s.decode('ascii')
+    if isinstance(s, list):
+        return [toString(x) for x in s]
+    return s
+
+
+def toBytes(s):
+    """
+    Like toString, but for functions requiring bytes in python3
+    """
+    if sys.version_info[0] == 2:
+        return s
+    if isinstance(s, bytes):
+        return s
+    if isinstance(s, str):
+        return bytes(s, 'ascii')
+    if isinstance(s, list):
+        return [toBytes(x) for x in s]
+    return s
+
+
+def mungeChromosome(chrom, chromList):
+    """
+    A generic chromosome munging function. "chrom" is munged by adding/removing "chr" such that it appears in chromList
+
+    On error, None is returned, but a common chromosome list should be used beforehand to avoid this possibility
+    """
+    if chrom in chromList:
+        return chrom
+
+    if chrom == "MT" and "chrM" in chromList:
+        return "chrM"
+    if chrom == "chrM" and "MT" in chromList:
+        return "MT"
+
+    if chrom.startswith("chr") and chrom[3:] in chromList:
+        return chrom[3:]
+    if "chr" + chrom in chromList:
+        return "chr" + chrom
+
+    # This shouldn't actually happen
+    return None
+
+
+def bam_total_reads(bam_handle, chroms_to_ignore):
+    """Count the total number of mapped reads in a BAM file, filtering
+    the chromosome given in chroms_to_ignore list
+    """
+    if chroms_to_ignore:
+        import pysam
+
+        lines = pysam.idxstats(bam_handle.filename)
+        lines = toString(lines)
+        if type(lines) is str:
+            lines = lines.strip().split('\n')
+        if len(lines) == 0:
+            # check if this is a test running under nose
+            # in which case it will fail.
+            if len([val for val in sys.modules.keys() if val.find("nose") >= 0]):
+                sys.stderr.write("To run this code inside a test use disable "
+                                 "output buffering `nosetest -s`\n".format(bam_handle.filename))
+            else:
+                sys.stderr.write("Error running idxstats on {}\n".format(bam_handle.filename))
+        tot_mapped_reads = 0
+        for line in lines:
+            chrom, _len, nmapped, _nunmapped = line.split('\t')
+            if chrom not in chroms_to_ignore:
+                tot_mapped_reads += int(nmapped)
+
+    else:
+        tot_mapped_reads = bam_handle.mapped
+
+    return tot_mapped_reads
+
+
+def bam_blacklisted_worker(args):
+    bam, chrom, start, end = args
+    fh = openBam(bam)
+    blacklisted = 0
+    for r in fh.fetch(reference=chrom, start=start, end=end):
+        if r.reference_start >= start and r.reference_start + r.infer_query_length(always=False) - 1 <= end:
+            blacklisted += 1
+    fh.close()
+    return blacklisted
+
+
+def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, numberOfProcessors=1):
+    blacklisted = 0
+    if blackListFileName is None:
+        return blacklisted
+
+    # Get the chromosome lengths
+    chromLens = {}
+    lines = pysam.idxstats(bam_handle.filename)
+    lines = toString(lines)
+    if type(lines) is str:
+        lines = lines.strip().split('\n')
+    for line in lines:
+        chrom, _len, nmapped, _nunmapped = line.split('\t')
+        chromLens[chrom] = int(_len)
+
+    bl = GTF(blackListFileName)
+    regions = []
+    for chrom in bl.chroms:
+        if (not chroms_to_ignore or chrom not in chroms_to_ignore) and chrom in chromLens:
+            for reg in bl.findOverlaps(chrom, 0, chromLens[chrom]):
+                regions.append([bam_handle.filename, chrom, reg[0], reg[1]])
+
+    if len(regions) > 0:
+        import multiprocessing
+        if len(regions) > 1 and numberOfProcessors > 1:
+            pool = multiprocessing.Pool(numberOfProcessors)
+            res = pool.map_async(bam_blacklisted_worker, regions).get(9999999)
+        else:
+            res = [bam_blacklisted_worker(x) for x in regions]
+        for val in res:
+            blacklisted += val
+
+    return blacklisted

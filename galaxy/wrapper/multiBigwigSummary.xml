@@ -35,6 +35,11 @@
             #if str($region.value) != '':
                 --region '$region'
             #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes":
+                @ADVANCED_OPTS_GTF@
+                @blacklist@
+            #end if
 ]]>
     </command>
 
@@ -66,6 +71,11 @@
 
         <expand macro="region_limit_operation" />
         <param argument="--outRawCounts" type="boolean" label="Save raw counts (scores) to file" help=""/>
+
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="gtf_options" />
+            <expand macro="blacklist" />
+        </expand>
 
     </inputs>
     <outputs>

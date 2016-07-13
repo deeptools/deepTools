@@ -42,7 +42,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of labels does not match the number of BAM files."
+        print("The number of labels does not match the number of BAM files.")
         exit(0)
 
     if not args.labels:
@@ -150,7 +150,9 @@ def main(args=None):
         ignoreDuplicates=args.ignoreDuplicates,
         center_read=args.centerReads,
         samFlag_include=args.samFlagInclude,
-        samFlag_exclude=args.samFlagExclude)
+        samFlag_exclude=args.samFlagExclude,
+        minFragmentLength=args.minFragmentLength,
+        maxFragmentLength=args.maxFragmentLength)
 
     num_reads_per_bin = cr.run()
     if num_reads_per_bin.sum() == 0:

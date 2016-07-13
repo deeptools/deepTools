@@ -102,7 +102,7 @@ def main(args=None):
         n = len(corr.labels)
         of = args.outFileNameData
         of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
-        for i in xrange(n):
+        for i in range(n):
             of.write("{}".format(i + 1))
             for v in mlab_pca.Wt[i, :]:
                 of.write("\t{}".format(v))

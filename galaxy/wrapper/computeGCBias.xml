@@ -35,6 +35,8 @@
                 #if $advancedOpt.extraSampling:
                     --extraSampling $advancedOpt.extraSampling
                 #end if
+
+                @blacklist@
             #end if
 
             #if str($image_format) != 'none':
@@ -71,6 +73,7 @@
                 <param name="extraSampling" type="data" format="bed" optional="true"
                     label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
                     help="(--extraSampling)" />
+                <expand macro="blacklist" />
             </when>
         </conditional>
         <param name="image_format" type="select"

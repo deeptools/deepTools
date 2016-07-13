@@ -46,7 +46,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
            [ 1.5]])
 
     BED regions:
-    >>> bedRegions = [(test.chrom, 45, 55), (test.chrom, 95, 105), (test.chrom, 145, 155)]
+    >>> bedRegions = [[test.chrom, [(45, 55)]], [test.chrom, [(95, 105)]], [test.chrom, [(145, 155)]]]
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,[test.bwFile1, test.bwFile2], 200, 200, False,
     ... bedRegions=bedRegions)[0])
     array([[ 1. ,  1.5,  2. ],
@@ -63,14 +63,17 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     regions_to_consider = []
     if bedRegions:
-        for chrom, start, end in bedRegions:
-            regions_to_consider.append((chrom, start, end, end - start))
+        for reg in bedRegions:
+            regs = []
+            for exon in reg[1]:
+                regs.append((exon[0], exon[1]))
+            regions_to_consider.append(regs)
     else:
-        for i in xrange(start, end, stepSize):
+        for i in range(start, end, stepSize):
             if (i + binLength) > end:
-                regions_to_consider.append((chrom, i, end, end - i))  # last bin (may be smaller)
+                regions_to_consider.append([(i, end)])  # last bin (may be smaller)
             else:
-                regions_to_consider.append((chrom, i, i + binLength, binLength))
+                regions_to_consider.append([(i, i + binLength)])
 
     if save_data:
         _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
@@ -79,12 +82,12 @@ def countFragmentsInRegions_worker(chrom, start, end,
         _file_name = ''
     warnings.simplefilter("default")
     i = 0
-    for chrom, start, end, binLength in regions_to_consider:
+    for reg in regions_to_consider:
         avgReadsArray = []
         i += 1
 
         for idx, bwh in enumerate(bigwig_handlers):
-            if chrom not in bwh.chroms().keys():
+            if chrom not in list(bwh.chroms().keys()):
                 unmod_name = chrom
                 if chrom.startswith('chr'):
                     # remove the chr part from chromosome name
@@ -92,20 +95,31 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 else:
                     # prefix with 'chr' the chromosome name
                     chrom = 'chr' + chrom
-                if chrom not in bwh.chroms().keys():
+                if chrom not in list(bwh.chroms().keys()):
                     exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
-            score = bwh.stats(chrom, start, end)
+            weights = []
+            scores = []
+            for exon in reg:
+                weights.append(exon[1] - exon[0])
+                score = bwh.stats(chrom, exon[0], exon[1])
 
-            if score is None or score == [None] or np.isnan(score[0]):
-                score = [np.nan]
-            avgReadsArray.append(score[0])  # mean of fragment coverage for region
-        # print "{} Region: {}:{:,}-{:,} {}  {} {}".format(i, chrom, start, end, binLength, avgReadsArray[0], avgReadsArray[1])
+                if score is None or score == [None] or np.isnan(score[0]):
+                    score = [np.nan]
+                scores.extend(score)
+            avgReadsArray.append(np.average(scores, weights=weights))  # mean of fragment coverage for region
 
         sub_score_per_bin.extend(avgReadsArray)
         rows += 1
         if save_data:
-            _file.write("\t".join(map(str, [chrom, start, end])) + "\t")
+            starts = []
+            ends = []
+            for exon in reg:
+                starts.append(str(exon[0]))
+                ends.append(str(exon[1]))
+            starts = ",".join(starts)
+            ends = ",".join(ends)
+            _file.write("\t".join(map(str, [chrom, starts, ends])) + "\t")
             _file.write("\t".join(["{}".format(x) for x in avgReadsArray]) + "\n")
 
     if save_data:
@@ -128,8 +142,7 @@ def getChromSizes(bigwigFilesList):
     >>> test = Tester()
 
     Chromosome name(s) and size(s).
-    >>> getChromSizes([test.bwFile1, test.bwFile2])
-    ([('3R', 200L)], set([]))
+    >>> assert(getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([])))
     """
     # check that the path to USCS bedGraphToBigWig as set in the config
     # is installed and is executable.
@@ -184,7 +197,8 @@ def getScorePerBin(bigWigFiles, binLength,
                    blackListFileName=None,
                    stepSize=None,
                    chrsToSkip=[],
-                   out_file_for_raw_data=None):
+                   out_file_for_raw_data=None,
+                   allArgs=None):
     """
     This function returns a matrix containing scores (median) for the coverage
     of fragments within a region. Each row corresponds to a sampled region.
@@ -214,7 +228,7 @@ def getScorePerBin(bigWigFiles, binLength,
     if chrsToSkip and len(chrsToSkip):
         chrom_sizes = [x for x in chrom_sizes if x[0] not in chrsToSkip]
 
-    chrnames, chrlengths = zip(*chrom_sizes)
+    chrnames, chrlengths = list(zip(*chrom_sizes))
     if stepSize is None:
         stepSize = binLength  # for adjacent bins
 
@@ -223,7 +237,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # make chunkSize multiple of binLength
     chunkSize -= chunkSize % binLength
     if verbose:
-        print "step size is {}".format(stepSize)
+        print("step size is {}".format(stepSize))
 
     if region:
         # in case a region is used, append the tilesize
@@ -234,6 +248,9 @@ def getScorePerBin(bigWigFiles, binLength,
     else:
         save_file = False
 
+    # Handle GTF options
+    transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
+
     imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
                                    countReadsInRegions_wrapper,
                                    chrom_sizes,
@@ -241,7 +258,11 @@ def getScorePerBin(bigWigFiles, binLength,
                                    bedFile=bedFile,
                                    blackListFileName=blackListFileName,
                                    region=region,
-                                   numberOfProcessors=numberOfProcessors)
+                                   numberOfProcessors=numberOfProcessors,
+                                   transcriptID=transcriptID,
+                                   exonID=exonID,
+                                   keepExons=keepExons,
+                                   transcript_id_designator=transcript_id_designator)
 
     if out_file_for_raw_data:
         if len(non_common):
@@ -252,7 +273,9 @@ def getScorePerBin(bigWigFiles, binLength,
         for _values, tempFileName in imap_res:
             if tempFileName:
                 # concatenate all intermediate tempfiles into one
-                shutil.copyfileobj(open(tempFileName, 'r'), out_file_for_raw_data)
+                f = open(tempFileName, 'r')
+                shutil.copyfileobj(f, out_file_for_raw_data)
+                f.close()
                 os.remove(tempFileName)
 
         out_file_for_raw_data.close()

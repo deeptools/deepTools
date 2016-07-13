@@ -1,15 +1,19 @@
 language: c
-env: TRAVIS_PYTHON_VERSION="2.7"
+env:
+  - TRAVIS_PYTHON_VERSION=2.7
+  - TRAVIS_PYTHON_VERSION=3.5
 os:
   - linux
   - osx
 
 # Setup anaconda
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pip install virtualenv --user ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then virtualenv foo; source foo/bin/activate; pip install planemo ; deactivate ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then curl http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -o miniconda.sh ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then curl https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -o miniconda.sh ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then pip install virtualenv --user ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then virtualenv foo; source foo/bin/activate; pip install planemo ; deactivate ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then curl http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -o miniconda.sh ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then curl http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then curl https://repo.continuum.io/miniconda/Miniconda-latest-MacOSX-x86_64.sh -o miniconda.sh ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$TRAVIS_PYTHON_VERSION" == "3.5" ]]; then curl https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o miniconda.sh ; fi
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH="$HOME/miniconda/bin:$PATH"
   - hash -r
@@ -21,17 +25,20 @@ before_install:
 
 # Install packages
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib=1.5.0 nose
-  - conda install -c https://conda.anaconda.org/bioconda pysam pyBigWig bx-python
-  - pip install flake8
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib=1.5.0 nose flake8
+  - conda install --yes -c https://conda.anaconda.org/bioconda pysam pyBigWig twobitreader
   - python setup.py install
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build,foo --ignore=E501,F403,E402
-  - nosetests --with-doctest --ignore-files=plotCoverage deeptools
-  - nosetests deeptools/test/test_plotCoverage.py
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export PATH=`echo $PATH | sed -e 's/\/home\/travis\/miniconda\/bin://'` ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then ./.planemo.sh ; fi
+  - flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402,F999
+  - export owd=`pwd`
+  - cd ~/ && nosetests --with-doctest -sv deeptools deeptoolsintervals
+  - cd ${owd}
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then export PATH=`echo $PATH | sed -e 's/\/home\/travis\/miniconda\/bin://'` ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then ./.planemo.sh ; fi
 sudo: false
+
+services:
+  - postgresql

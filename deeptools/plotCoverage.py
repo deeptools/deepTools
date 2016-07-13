@@ -52,10 +52,10 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print "The number of labels does not match the number of BAM files."
+        print("The number of labels does not match the number of BAM files.")
         exit(0)
     if not args.labels:
-        args.labels = map(lambda x: os.path.basename(x), args.bamfiles)
+        args.labels = [os.path.basename(x) for x in args.bamfiles]
 
     return args
 
@@ -137,6 +137,8 @@ def main(args=None):
                                  center_read=args.centerReads,
                                  samFlag_include=args.samFlagInclude,
                                  samFlag_exclude=args.samFlagExclude,
+                                 minFragmentLength=args.minFragmentLength,
+                                 maxFragmentLength=args.maxFragmentLength,
                                  out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
@@ -145,7 +147,6 @@ def main(args=None):
                      "used: {}\n".format(num_reads_per_bin.shape[0]))
 
     if args.outRawCounts:
-        print "test"
         # append to the generated file the
         # labels
         header = "#'chr'\t'start'\t'end'\t"

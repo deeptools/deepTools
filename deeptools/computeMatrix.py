@@ -3,14 +3,11 @@
 
 import argparse
 import sys
-import os
-import os.path
-import shutil
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
 import deeptools.config as cfg
-import deeptools.utilities
+from deeptools import parserCommon
 from deeptools import heatmapper
 
 
@@ -50,7 +47,8 @@ $ computeMatrix scale-regions --help
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
-                 computeMatrixOptArgs(case='scale-regions')],
+                 computeMatrixOptArgs(case='scale-regions'),
+                 parserCommon.gtf_options()],
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix -S '
@@ -62,7 +60,8 @@ $ computeMatrix scale-regions --help
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
-                 computeMatrixOptArgs(case='reference-point')],
+                 computeMatrixOptArgs(case='reference-point'),
+                 parserCommon.gtf_options()],
         help="Reference-point refers to a position within a BED region "
         "(e.g., the starting point). In this mode, only those genomic"
         "positions before (upstream) and/or after (downstream) of the "
@@ -82,7 +81,6 @@ def computeMatrixRequiredArgs(args=None):
                                'the regions to plot. If multiple bed files are given, each one is considered a '
                                'group that can be plotted separately. Also, adding a "#" symbol in the bed file '
                                'causes all the regions until the previous "#" to be considered one group.',
-                          type=argparse.FileType('U'),
                           nargs='+',
                           required=True)
     required.add_argument('--scoreFileName', '-S',
@@ -250,6 +248,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                                    "region_length"],
                           default='mean')
 
+    optional.add_argument('--sortUsingSamples',
+                          help='List of sample numbers (order as in matrix), '
+                          'that are used for sorting by --sortUsing, '
+                          'no value uses all samples, '
+                          'example: --sortUsingSamples 1 3',
+                          type=int, nargs='+')
+
     optional.add_argument('--averageTypeBins',
                           default='mean',
                           choices=["mean", "median", "min",
@@ -347,22 +352,6 @@ def main(args=None):
 
     args = process_args(args)
 
-    # if more than one bed file is given, they are concatenated into one file.
-    if len(args.regionsFileName) > 1:
-        bed_file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-        for bed in args.regionsFileName:
-            bed.close()
-            # concatenate all intermediate tempfiles into one
-            shutil.copyfileobj(open(bed.name, 'U'), bed_file)
-            # append hash and label based on the file name
-            label = os.path.basename(bed.name)
-            if label.endswith(".bed"):
-                label = label[:-4]
-            bed_file.write("# {}\n".format(label))
-        bed_file.seek(0)
-    else:
-        bed_file = args.regionsFileName[0]
-
     parameters = {'upstream': args.beforeRegionStartLength,
                   'downstream': args.afterRegionStartLength,
                   'body': args.regionBodyLength,
@@ -386,22 +375,24 @@ def main(args=None):
     hm = heatmapper.heatmapper()
 
     scores_file_list = args.scoreFileName
-    hm.computeMatrix(scores_file_list, bed_file, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose)
+    hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions != 'no':
-        hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions)
+
+        sortUsingSamples = []
+        if args.sortUsingSamples is not None:
+            for i in args.sortUsingSamples:
+                if (i > 0 and i <= hm.matrix.get_num_samples()):
+                    sortUsingSamples.append(i - 1)
+                else:
+                    exit("The value {0} for --sortUsingSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples, hm.matrix.get_num_samples()))
+            print('Samples used for ordering within each group: ', sortUsingSamples)
+
+        hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions, sample_list=sortUsingSamples)
 
     hm.save_matrix(args.outFileName)
-    bed_file.close()
-
-    if len(args.regionsFileName) > 1:
-        os.remove(bed_file.name)
 
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
-
-    # TODO This isn't implemented
-    # if args.outFileNameData:
-    #    hm.saveTabulatedValues(args.outFileNameData)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

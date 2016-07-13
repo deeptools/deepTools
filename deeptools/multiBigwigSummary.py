@@ -54,6 +54,7 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='bins'),
                  parent_parser,
+                 parserCommon.gtf_options(suppress=True)
                  ],
         help="The average score is based on equally sized bins "
              "(10 kilobases by default), which consecutively cover the "
@@ -70,7 +71,9 @@ A detailed sub-commands help is available by typing:
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='BED-file'),
-                 parent_parser],
+                 parent_parser,
+                 parserCommon.gtf_options()
+                 ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
@@ -87,7 +90,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bwfiles) != len(args.labels):
-        print "The number of labels does not match the number of bigWig files."
+        print("The number of labels does not match the number of bigWig files.")
         exit(0)
     if not args.labels:
         args.labels = []
@@ -114,7 +117,6 @@ def multiBigwigSummaryArgs(case='bins'):
     required.add_argument('--outFileName', '-out',
                           help='File name to save the compressed matrix file (npz format)'
                           'needed by the "plotHeatmap" and "plotProfile" tools.',
-                          type=argparse.FileType('w'),
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -171,8 +173,8 @@ def multiBigwigSummaryArgs(case='bins'):
         required.add_argument('--BED',
                               help='Limits the analysis to '
                               'the regions specified in this file.',
-                              metavar='BED file',
-                              type=argparse.FileType('r'),
+                              metavar='file1.bed file2.bed',
+                              nargs='+',
                               required=True)
 
     group = parser.add_argument_group('Output optional options')
@@ -215,7 +217,8 @@ def main(args=None):
         region=args.region,
         bedFile=bed_regions,
         chrsToSkip=args.chromosomesToSkip,
-        out_file_for_raw_data=args.outRawCounts)
+        out_file_for_raw_data=args.outRawCounts,
+        allArgs=args)
 
     sys.stderr.write("Number of bins "
                      "found: {}\n".format(num_reads_per_bin.shape[0]))
@@ -225,9 +228,11 @@ def main(args=None):
              "If using --region please check that this "
              "region is covered by reads.\n")
 
-    np.savez_compressed(args.outFileName,
+    f = open(args.outFileName, "wb")
+    np.savez_compressed(f,
                         matrix=num_reads_per_bin,
                         labels=args.labels)
+    f.close()
 
     if args.outRawCounts:
         # append to the generated file the
@@ -257,3 +262,4 @@ def main(args=None):
             for row in num_reads_per_bin:
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
+        args.outRawCounts.close()

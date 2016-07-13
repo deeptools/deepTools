@@ -10,9 +10,9 @@ import numpy as np
 import pyBigWig
 
 # own module
-import mapReduce
-from utilities import getCommonChrNames
-from writeBedGraph import *
+from deeptools import mapReduce
+from deeptools.utilities import getCommonChrNames, toBytes
+from deeptools.writeBedGraph import *
 from deeptools import bamHandler
 
 old_settings = np.seterr(all='ignore')
@@ -84,7 +84,7 @@ def writeBedGraph_worker(
 
     previousValue = None
     lengthCoverage = len(coverage[0])
-    for tileIndex in xrange(lengthCoverage):
+    for tileIndex in range(lengthCoverage):
 
         tileCoverage = []
         for index in range(len(bamOrBwFileList)):
@@ -97,9 +97,9 @@ def writeBedGraph_worker(
                 try:
                     tileCoverage.append(coverage[index][tileIndex])
                 except IndexError:
-                    print "Chromosome {} probably not in one of the bigwig " \
-                        "files. Remove this chromosome from the bigwig file " \
-                        "to continue".format(chrom)
+                    print("Chromosome {} probably not in one of the bigwig "
+                          "files. Remove this chromosome from the bigwig file "
+                          "to continue".format(chrom))
                     exit(0)
 
 #        if  zerosToNans == True and sum(tileCoverage) == 0.0:
@@ -111,11 +111,11 @@ def writeBedGraph_worker(
             writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
-                _file.write("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
-                                                    writeEnd, value))
+                _file.write(toBytes("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
+                                                            writeEnd, value)))
             except TypeError:
-                _file.write("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
-                                                      writeEnd, value))
+                _file.write(toBytes("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
+                                                              writeEnd, value)))
         else:
             if previousValue is None:
                 writeStart = start + tileIndex * tileSize
@@ -128,8 +128,8 @@ def writeBedGraph_worker(
             elif previousValue != value:
                 if not np.isnan(previousValue):
                     _file.write(
-                        "%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
-                                                writeEnd, previousValue))
+                        toBytes("{0}\t{1}\t{2}\t{3:.2f}\n".format(chrom, writeStart,
+                                                                  writeEnd, previousValue)))
                 previousValue = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
@@ -138,10 +138,9 @@ def writeBedGraph_worker(
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
-            _file.write("%s\t%d\t%d\t%.1f\n" % (chrom, writeStart,
-                                                end, previousValue))
+            _file.write(toBytes("{0}\t{1}\t{2}\t{3:.1f}\n".format(chrom, writeStart,
+                                                                  end, previousValue)))
 
-#        """
     tempFileName = _file.name
     _file.close()
     return(tempFileName)
@@ -177,17 +176,17 @@ def writeBedGraph(
         chromNamesAndSize = {}
         for bw in bigwigs:
             bwh = pyBigWig.open(bw)
-            for chromName, size in bwh.chroms().items():
+            for chromName, size in list(bwh.chroms().items()):
                 if chromName in chromNamesAndSize:
                     cCommon.append(chromName)
                     if chromNamesAndSize[chromName] != size:
-                        print "\nWARNING\n" \
-                            "Chromosome {} length reported in the " \
-                            "bigwig files differ.\n{} for {}\n" \
-                            "{} for {}.\n\nThe smallest " \
-                            "length will be used".format(
-                                chromName, chromNamesAndSize[chromName],
-                                bigwigs[0], size, bw)
+                        print("\nWARNING\n"
+                              "Chromosome {} length reported in the "
+                              "bigwig files differ.\n{} for {}\n"
+                              "{} for {}.\n\nThe smallest "
+                              "length will be used".format(
+                                  chromName, chromNamesAndSize[chromName],
+                                  bigwigs[0], size, bw))
                         chromNamesAndSize[chromName] = min(
                             chromNamesAndSize[chromName], size)
                 else:
@@ -195,7 +194,7 @@ def writeBedGraph(
             bwh.close()
 
         # get the list of common chromosome names and sizes
-        chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.iteritems()
+        chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
                              if k in cCommon]
 
     if region:
@@ -218,7 +217,9 @@ def writeBedGraph(
         if tempFileName:
             # concatenate all intermediate tempfiles into one
             # bedgraph file
-            shutil.copyfileobj(open(tempFileName, 'rb'), outFile)
+            _foo = open(tempFileName, 'rb')
+            shutil.copyfileobj(_foo, outFile)
+            _foo.close()
             os.remove(tempFileName)
 
     bedGraphFile = outFile.name
@@ -226,10 +227,10 @@ def writeBedGraph(
     if format == 'bedgraph':
         os.rename(bedGraphFile, outputFileName)
         if debug:
-            print "output file: %s" % (outputFileName)
+            print("output file: %s" % (outputFileName))
     else:
         bedGraphToBigWig(
             chromNamesAndSize, bedGraphFile, outputFileName, True)
         if debug:
-            print "output file: %s" % (outputFileName)
+            print("output file: %s" % (outputFileName))
         os.remove(bedGraphFile)

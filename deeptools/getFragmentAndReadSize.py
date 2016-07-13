@@ -1,8 +1,8 @@
 import numpy as np
 
 # own tools
-import bamHandler
-import mapReduce
+from deeptools import bamHandler
+from deeptools import mapReduce
 
 old_settings = np.seterr(all='ignore')
 
@@ -38,14 +38,14 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
     bam = bamHandler.openBam(bamFile)
     end = max(start + 1, end - distanceBetweenBins)
     if chrom in bam.references:
-        reads = np.array([(abs(r.template_length), r.infer_query_length())
+        reads = np.array([(abs(r.template_length), r.infer_query_length(always=False))
                           for r in bam.fetch(chrom, start, end)
                           if r.is_proper_pair and r.is_read1])
         if not len(reads):
             # if the previous operation produces an empty list
             # it could be that the data is not paired, then
             # we try with out filtering
-            reads = np.array([(abs(r.template_length), r.query_length)
+            reads = np.array([(abs(r.template_length), r.infer_query_length(always=False))
                               for r in bam.fetch(chrom, start, end)])
     else:
         raise NameError("chromosome {} not found in bam file".format(chrom))
@@ -80,7 +80,7 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
     """
 
     bam_handle = bamHandler.openBam(bamFile)
-    chrom_sizes = zip(bam_handle.references, bam_handle.lengths)
+    chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
     distanceBetweenBins *= 2
     fl = []

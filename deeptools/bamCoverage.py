@@ -5,7 +5,7 @@
 import argparse
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
-from deeptools import bamHandler
+from deeptools.getScaleFactor import get_scale_factor
 
 debug = 0
 
@@ -73,9 +73,24 @@ def get_optional_args():
                           help='Determine nucleosome positions from MNase-seq data. '
                           'Only 3 nucleotides at the center of each fragment are counted. '
                           'The fragment ends are defined by the two mate reads. Only fragment lengths'
-                          'between 130 - 200 bp are considered to avoid dinucleosomes or other artifacts.'
-                          '*NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
+                          'between 130 - 200 bp are considered to avoid dinucleosomes or other artifacts. '
+                          'By default, any fragments smaller or larger than this are ignored. To '
+                          'over-ride this, use the --minFragmentLength and --maxFragmentLength options, '
+                          'which will default to 130 and 200 if not otherwise specified in the presence '
+                          'of --MNase. *NOTE*: Requires paired-end data. A bin size of 1 is recommended.',
                           action='store_true')
+
+    optional.add_argument('--Offset',
+                          help='Uses this offset inside of each read as the signal. This is useful in '
+                          'cases like RiboSeq or GROseq, where the signal is 12, 15 or 0 bases past the '
+                          'start of the read. This can be paired with the --filterRNAstrand option. '
+                          'Note that negative values indicate offsets from the end of each read. A value '
+                          'of 1 indicates the first base of the alignment (taking alignment orientation '
+                          'into account). Likewise, a value of -1 is the last base of the alignment. An '
+                          'offset of 0 is not permitted.',
+                          metavar='INT',
+                          type=int,
+                          required=False)
 
     optional.add_argument('--filterRNAstrand',
                           help='Selects RNA-seq reads (single-end or paired-end) in '
@@ -104,73 +119,11 @@ def process_args(args=None):
     if args.scaleFactor != 1:
         args.normalizeTo1x = None
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print "Warning: the smooth length given ({}) is smaller than the bin "\
-            "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize)
+        print("Warning: the smooth length given ({}) is smaller than the bin "
+              "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
         args.smoothLength = None
 
     return args
-
-
-def get_scale_factor(args):
-
-    scale_factor = args.scaleFactor
-    bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = parserCommon.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    blacklisted = parserCommon.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization, args.blackListFileName)
-    bam_mapped -= blacklisted
-
-    if args.normalizeTo1x:
-        # try to guess fragment length if the bam file contains paired end reads
-        from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-        frag_len_dict, read_len_dict = get_read_and_fragment_length(args.bam,
-                                                                    return_lengths=False,
-                                                                    blackListFileName=args.blackListFileName,
-                                                                    numberOfProcessors=args.numberOfProcessors,
-                                                                    verbose=args.verbose)
-        if args.extendReads:
-            if args.extendReads is True:
-                # try to guess fragment length if the bam file contains paired end reads
-                if frag_len_dict:
-                    fragment_length = frag_len_dict['median']
-                else:
-                    exit("*ERROR*: library is not paired-end. Please provide an extension length.")
-                if args.verbose:
-                    print("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median']))
-
-            elif args.extendReads < 1:
-                exit("*ERROR*: read extension must be bigger than one. Value give: {} ".format(args.extendReads))
-            elif args.extendReads > 2000:
-                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(args.extendReads))
-            else:
-                fragment_length = args.extendReads
-
-        else:
-            # set as fragment length the read length
-            fragment_length = int(read_len_dict['median'])
-            if args.verbose:
-                print "Estimated read length is {}".format(int(read_len_dict['median']))
-
-        current_coverage = \
-            float(bam_mapped * fragment_length) / args.normalizeTo1x
-        # the scaling sets the coverage to match 1x
-        scale_factor *= 1.0 / current_coverage
-        if debug:
-            print "Estimated current coverage {}".format(current_coverage)
-            print "Scaling factor {}".format(args.scaleFactor)
-
-    elif args.normalizeUsingRPKM:
-        # the RPKM is the # reads per tile / \
-        #    ( total reads (in millions) * tile length in Kb)
-        million_reads_mapped = float(bam_mapped) / 1e6
-        tile_len_in_kb = float(args.binSize) / 1000
-
-        scale_factor *= 1.0 / (million_reads_mapped * tile_len_in_kb)
-
-        if debug:
-            print "scale factor using RPKM is {0}".format(args.scaleFactor)
-
-    return scale_factor
 
 
 def main(args=None):
@@ -196,6 +149,12 @@ def main(args=None):
         if frag_len_dict is None:
             exit("*Error*: For the --MNAse function a paired end library is required. ")
 
+        # Set some default fragment length bounds
+        if args.minFragmentLength == 0:
+            args.minFragmentLength = 130
+        if args.maxFragmentLength == 0:
+            args.maxFragmentLength = 200
+
         wr = CenterFragment([args.bam],
                             binLength=args.binSize,
                             stepSize=args.binSize,
@@ -209,8 +168,31 @@ def main(args=None):
                             zerosToNans=args.skipNonCoveredRegions,
                             samFlag_include=args.samFlagInclude,
                             samFlag_exclude=args.samFlagExclude,
+                            minFragmentLength=args.minFragmentLength,
+                            maxFragmentLength=args.maxFragmentLength,
                             verbose=args.verbose,
                             )
+
+    elif args.Offset:
+        if args.Offset == 0:
+            exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+        wr = OffsetFragment([args.bam],
+                            binLength=args.binSize,
+                            stepSize=args.binSize,
+                            region=args.region,
+                            numberOfProcessors=args.numberOfProcessors,
+                            extendReads=args.extendReads,
+                            minMappingQuality=args.minMappingQuality,
+                            ignoreDuplicates=args.ignoreDuplicates,
+                            center_read=args.centerReads,
+                            zerosToNans=args.skipNonCoveredRegions,
+                            samFlag_include=args.samFlagInclude,
+                            samFlag_exclude=args.samFlagExclude,
+                            minFragmentLength=args.minFragmentLength,
+                            maxFragmentLength=args.maxFragmentLength,
+                            verbose=args.verbose)
+        wr.filter_strand = args.filterRNAstrand
+        wr.Offset = args.Offset
 
     elif args.filterRNAstrand:
         wr = filterRnaStrand([args.bam],
@@ -225,6 +207,8 @@ def main(args=None):
                              zerosToNans=args.skipNonCoveredRegions,
                              samFlag_include=args.samFlagInclude,
                              samFlag_exclude=args.samFlagExclude,
+                             minFragmentLength=args.minFragmentLength,
+                             maxFragmentLength=args.maxFragmentLength,
                              verbose=args.verbose,
                              )
 
@@ -243,6 +227,8 @@ def main(args=None):
                                          zerosToNans=args.skipNonCoveredRegions,
                                          samFlag_include=args.samFlagInclude,
                                          samFlag_exclude=args.samFlagExclude,
+                                         minFragmentLength=args.minFragmentLength,
+                                         maxFragmentLength=args.maxFragmentLength,
                                          verbose=args.verbose,
                                          )
 
@@ -251,12 +237,63 @@ def main(args=None):
            format=args.outFileFormat, smoothLength=args.smoothLength)
 
 
+class OffsetFragment(writeBedGraph.WriteBedGraph):
+    """
+    Class to redefine the get_fragment_from_read for the --Offset case
+    """
+    def get_fragment_from_read(self, read):
+        rv = [(None, None)]
+        if self.Offset > read.query_length:
+            return rv
+        if read.is_paired:
+            return rv
+        blocks = read.get_blocks()
+        foo = self.Offset
+        if foo < 0:
+            foo = read.infer_query_length() + foo + 1
+        if read.is_reverse:
+            for idx in range(len(blocks)):
+                block = blocks[-idx - 1]
+                if block[1] - block[0] >= foo:
+                    rv = [(block[1] - foo, block[1] - foo + 1)]
+                    break
+                foo -= block[1] - block[0]
+        else:
+            for block in blocks:
+                if block[1] - block[0] >= foo:
+                    rv = [(block[0] + foo - 1, block[0] + foo)]
+                    break
+                foo -= block[1] - block[0]
+
+        # Filter by RNA strand, if desired
+        if read.is_paired:
+            if self.filter_strand == 'forward':
+                if read.flag & 144 == 128 or read.flag & 96 == 64:
+                    return rv
+            elif self.filter_strand == 'reverse':
+                if read.flag & 144 == 144 or read.flag & 96 == 96:
+                    return rv
+            else:
+                return rv
+        else:
+            if self.filter_strand == 'forward':
+                if read.flag & 16 == 16:
+                    return rv
+            elif self.filter_strand == 'reverse':
+                if read.flag & 16 == 0:
+                    return rv
+            else:
+                return rv
+
+        return [(None, None)]
+
+
 class CenterFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --MNase case
 
     The coverage of the fragment is defined as the 2 or 3 basepairs at the
-    center of the fragment length. d
+    center of the fragment length.
     """
     def get_fragment_from_read(self, read):
         """
@@ -266,9 +303,8 @@ class CenterFragment(writeBedGraph.WriteBedGraph):
         fragment_start = fragment_end = None
 
         # only paired forward reads are considered
-        # that are about one nuclesome turn long (130 - 200 bp)
-        # TODO: this size range could be an input parameter.
-        if read.is_proper_pair and not read.is_reverse and 130 < abs(read.tlen) < 200:
+        # Fragments have already been filtered according to length
+        if read.is_proper_pair and not read.is_reverse and 1 < abs(read.tlen):
             # distance between pairs is even return two bases at the center
             if read.tlen % 2 == 0:
                 fragment_start = read.pos + read.tlen / 2 - 1
