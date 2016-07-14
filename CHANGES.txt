@@ -1,3 +1,7 @@
+2.3.1
+
+ * This release has no real code changes, the 2.3.0 release on pypi was missing files.
+
 2.3.0
 
  * Modified how normalization is done when filtering is used. Previously, the filtering wasn't taken into account when computing the total number of alignments. That is now being done. Note that this uses sampling and will try to sample at least 100000 alignments and see what fraction of them are filtered. The total number of aligned reads is then scaled accordingly (#309).
