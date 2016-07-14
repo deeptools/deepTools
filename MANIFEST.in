@@ -11,3 +11,4 @@ include deeptools/test/test_corrGC/*
 include deeptoolsintervals/tree.*
 include deeptoolsintervals/tree/*.c
 include deeptoolsintervals/tree/*.h
+include deeptoolsintervals/test/*
