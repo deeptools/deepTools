@@ -292,7 +292,11 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             stretch.extend(range(block[0], block[1]))
         if read.is_reverse:
             stretch = stretch[::-1]
-        foo = stretch[self.Offset[0]:self.Offset[1]]
+        try:
+            foo = stretch[self.Offset[0]:self.Offset[1]]
+        except:
+            return rv
+
         if len(foo) == 0:
             return rv
         if read.is_reverse:
@@ -313,30 +317,14 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         return self.filter_strand(read, rv)
 
     def get_fragment_from_read(self, read):
-        rv = [(None, None)]
         if isinstance(self.Offset, list):
-            return self.get_fragment_from_read_list(read)
-        if self.Offset > read.query_length:
-            return rv
-        if read.is_paired:
-            return rv
-        blocks = read.get_blocks()
-        foo = self.Offset
-        if foo < 0:
-            foo = read.infer_query_length() + foo + 1
-        if read.is_reverse:
-            for idx in range(len(blocks)):
-                block = blocks[-idx - 1]
-                if block[1] - block[0] >= foo:
-                    rv = [(block[1] - foo, block[1] - foo + 1)]
-                    break
-                foo -= block[1] - block[0]
+            if self.Offset[0] > 0:
+                self.Offset[0] -= 1
         else:
-            for block in blocks:
-                if block[1] - block[0] >= foo:
-                    rv = [(block[0] + foo - 1, block[0] + foo)]
-                    break
-                foo -= block[1] - block[0]
+            if self.Offset > 0:
+                self.Offset -= 1
+            self.Offset = [self.Offset, self.Offset + 1]
+        rv = self.get_fragment_from_read_list(read)
 
         # Handle strand filtering, if needed
         return self.filter_strand(read, rv)
