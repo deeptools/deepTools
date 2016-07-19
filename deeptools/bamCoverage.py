@@ -3,6 +3,7 @@
 
 # own tools
 import argparse
+import sys
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools.getScaleFactor import get_scale_factor
@@ -87,9 +88,11 @@ def get_optional_args():
                           'Note that negative values indicate offsets from the end of each read. A value '
                           'of 1 indicates the first base of the alignment (taking alignment orientation '
                           'into account). Likewise, a value of -1 is the last base of the alignment. An '
-                          'offset of 0 is not permitted.',
+                          'offset of 0 is not permitted. If two values are specified, then they will be '
+                          'used to specify a range of positions.',
                           metavar='INT',
                           type=int,
+                          nargs=?,
                           required=False)
 
     optional.add_argument('--filterRNAstrand',
@@ -147,7 +150,7 @@ def main(args=None):
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
         if frag_len_dict is None:
-            exit("*Error*: For the --MNAse function a paired end library is required. ")
+            sys.exit("*Error*: For the --MNAse function a paired end library is required. ")
 
         # Set some default fragment length bounds
         if args.minFragmentLength == 0:
@@ -174,8 +177,14 @@ def main(args=None):
                             )
 
     elif args.Offset:
-        if args.Offset == 0:
-            exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+        if isinstance(args.Offset, list):
+            if args.Offset[0] == 0:
+                sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+            if args.Offset[1] > 0 and args.Offset[1] < args.Offset[0]:
+                sys.exir("'Error*: The right side bound is less than the left-side bound. This is inappropriate.")
+        else:
+            if args.Offset == 0:
+                sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
         wr = OffsetFragment([args.bam],
                             binLength=args.binSize,
                             stepSize=args.binSize,
@@ -241,8 +250,73 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --Offset case
     """
+    def filter_strand(read, filter_strand, rv):
+        """
+        A generic read filtering function that gets used by everything in this class.
+
+        rv is returned if the strand is correct, otherwise [(None, None)]
+        """
+        # Filter by RNA strand, if desired
+        if read.is_paired:
+            if filter_strand == 'forward':
+                if read.flag & 144 == 128 or read.flag & 96 == 64:
+                    return rv
+            elif filter_strand == 'reverse':
+                if read.flag & 144 == 144 or read.flag & 96 == 96:
+                    return rv
+            else:
+                return rv
+        else:
+            if filter_strand == 'forward':
+                if read.flag & 16 == 16:
+                    return rv
+            elif filter_strand == 'reverse':
+                if read.flag & 16 == 0:
+                    return rv
+            else:
+                return rv
+
+        return [(None, None)]
+
+
+    def get_fragment_from_read_list(read, filter_strand, offset):
+        """
+        Return the range of exons from the 0th through 1st bases, inclusive. Positions are 1-based
+        """
+        rv = [(None, None)]
+        blocks = read.get_blocks()
+        stretch = []
+        # For the sake of simplicity, convert [(10, 20), (30, 40)] to [10, 11, 12, 13, ..., 40]
+        # Then subset accordingly
+        for block in blocks:
+            stretch.extend(range(block[0], block[1]))
+        if read.is_reverse:
+            stretch = stretch[::-1]
+        foo = stretch[args.Offset[0]:args.Offset[1]]
+        if len(foo) == 0:
+            return rv
+        if read.is_reverse:
+            foo = foo[::-1]
+
+        # Convert the stretch back to a list of tuples
+        foo = np.array(foo)
+        d = foo[1:] - foo[:-1]
+        idx = np.argwhere(d > 1).flatten().tolist() # This now holds the interval bounds as a list
+        idx.append(-1)
+        last = 0
+        rv = []
+        for i in idx:
+            rv.append((foo[last].astype("int"), foo[i].astype("int")))
+            last = i + 1
+
+        # Handle strand filtering, if needed
+        return self.filter_strand(read, filter_strand, rv)
+
+
     def get_fragment_from_read(self, read):
         rv = [(None, None)]
+        if isinstance(self.Offset, list):
+            return self.get_fragment_from_read_list(read, args.filter_strand, args.Offset)
         if self.Offset > read.query_length:
             return rv
         if read.is_paired:
@@ -265,27 +339,8 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                     break
                 foo -= block[1] - block[0]
 
-        # Filter by RNA strand, if desired
-        if read.is_paired:
-            if self.filter_strand == 'forward':
-                if read.flag & 144 == 128 or read.flag & 96 == 64:
-                    return rv
-            elif self.filter_strand == 'reverse':
-                if read.flag & 144 == 144 or read.flag & 96 == 96:
-                    return rv
-            else:
-                return rv
-        else:
-            if self.filter_strand == 'forward':
-                if read.flag & 16 == 16:
-                    return rv
-            elif self.filter_strand == 'reverse':
-                if read.flag & 16 == 0:
-                    return rv
-            else:
-                return rv
-
-        return [(None, None)]
+        # Handle strand filtering, if needed
+        return self.filter_strand(read, self.filter_strand, rv)
 
 
 class CenterFragment(writeBedGraph.WriteBedGraph):
