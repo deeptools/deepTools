@@ -4,6 +4,7 @@
 # own tools
 import argparse
 import sys
+import numpy as np
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools.getScaleFactor import get_scale_factor
@@ -250,7 +251,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --Offset case
     """
-    def filter_strand(read, filter_strand, rv):
+    def filter_strand(self, read, rv):
         """
         A generic read filtering function that gets used by everything in this class.
 
@@ -258,19 +259,19 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         """
         # Filter by RNA strand, if desired
         if read.is_paired:
-            if filter_strand == 'forward':
+            if self.filter_strand == 'forward':
                 if read.flag & 144 == 128 or read.flag & 96 == 64:
                     return rv
-            elif filter_strand == 'reverse':
+            elif self.filter_strand == 'reverse':
                 if read.flag & 144 == 144 or read.flag & 96 == 96:
                     return rv
             else:
                 return rv
         else:
-            if filter_strand == 'forward':
+            if self.filter_strand == 'forward':
                 if read.flag & 16 == 16:
                     return rv
-            elif filter_strand == 'reverse':
+            elif self.filter_strand == 'reverse':
                 if read.flag & 16 == 0:
                     return rv
             else:
@@ -278,7 +279,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
 
         return [(None, None)]
 
-    def get_fragment_from_read_list(read, filter_strand, offset):
+    def get_fragment_from_read_list(self, read):
         """
         Return the range of exons from the 0th through 1st bases, inclusive. Positions are 1-based
         """
@@ -291,7 +292,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             stretch.extend(range(block[0], block[1]))
         if read.is_reverse:
             stretch = stretch[::-1]
-        foo = stretch[args.Offset[0]:args.Offset[1]]
+        foo = stretch[self.Offset[0]:self.Offset[1]]
         if len(foo) == 0:
             return rv
         if read.is_reverse:
@@ -309,12 +310,12 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             last = i + 1
 
         # Handle strand filtering, if needed
-        return self.filter_strand(read, filter_strand, rv)
+        return self.filter_strand(read, rv)
 
     def get_fragment_from_read(self, read):
         rv = [(None, None)]
         if isinstance(self.Offset, list):
-            return self.get_fragment_from_read_list(read, args.filter_strand, args.Offset)
+            return self.get_fragment_from_read_list(read)
         if self.Offset > read.query_length:
             return rv
         if read.is_paired:
@@ -338,7 +339,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 foo -= block[1] - block[0]
 
         # Handle strand filtering, if needed
-        return self.filter_strand(read, self.filter_strand, rv)
+        return self.filter_strand(read, rv)
 
 
 class CenterFragment(writeBedGraph.WriteBedGraph):
