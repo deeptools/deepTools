@@ -93,7 +93,7 @@ def get_optional_args():
                           'used to specify a range of positions.',
                           metavar='INT',
                           type=int,
-                          nargs='?',
+                          nargs='+',
                           required=False)
 
     optional.add_argument('--filterRNAstrand',
@@ -178,13 +178,13 @@ def main(args=None):
                             )
 
     elif args.Offset:
-        if isinstance(args.Offset, list):
+        if len(args.Offset) > 1:
             if args.Offset[0] == 0:
                 sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
             if args.Offset[1] > 0 and args.Offset[1] < args.Offset[0]:
                 sys.exir("'Error*: The right side bound is less than the left-side bound. This is inappropriate.")
         else:
-            if args.Offset == 0:
+            if args.Offset[0] == 0:
                 sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
         wr = OffsetFragment([args.bam],
                             binLength=args.binSize,
@@ -251,13 +251,14 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --Offset case
     """
-    def filter_strand(self, read, rv):
+    def filterStrand(self, read, rv):
         """
         A generic read filtering function that gets used by everything in this class.
 
         rv is returned if the strand is correct, otherwise [(None, None)]
         """
         # Filter by RNA strand, if desired
+        print("DEBUG: self.filter_strand {} read.is_paired {} rv {}".format(self.filter_strand, read.is_paired, rv))
         if read.is_paired:
             if self.filter_strand == 'forward':
                 if read.flag & 144 == 128 or read.flag & 96 == 64:
@@ -275,6 +276,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 if read.flag & 16 == 0:
                     return rv
             else:
+                print("DEBUG: returning {}".format(rv))
                 return rv
 
         return [(None, None)]
@@ -292,6 +294,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             stretch.extend(range(block[0], block[1]))
         if read.is_reverse:
             stretch = stretch[::-1]
+        print("DEBUG: stretch {}".format(stretch))
         try:
             foo = stretch[self.Offset[0]:self.Offset[1]]
         except:
@@ -301,33 +304,36 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             return rv
         if read.is_reverse:
             foo = foo[::-1]
+        print("DEBUG: foo {}".format(foo))
 
         # Convert the stretch back to a list of tuples
         foo = np.array(foo)
         d = foo[1:] - foo[:-1]
         idx = np.argwhere(d > 1).flatten().tolist()  # This now holds the interval bounds as a list
         idx.append(-1)
+        print("DEBUG: d {} idx {}".format(d, idx))
         last = 0
         rv = []
         for i in idx:
-            rv.append((foo[last].astype("int"), foo[i].astype("int")))
+            rv.append((foo[last].astype("int"), foo[i].astype("int") + 1))
             last = i + 1
 
+        print("DEBUG: rv {}".format(rv))
         # Handle strand filtering, if needed
-        return self.filter_strand(read, rv)
+        return self.filterStrand(read, rv)
 
     def get_fragment_from_read(self, read):
-        if isinstance(self.Offset, list):
+        if len(self.Offset) > 1:
             if self.Offset[0] > 0:
                 self.Offset[0] -= 1
         else:
-            if self.Offset > 0:
-                self.Offset -= 1
-            self.Offset = [self.Offset, self.Offset + 1]
-        rv = self.get_fragment_from_read_list(read)
-
-        # Handle strand filtering, if needed
-        return self.filter_strand(read, rv)
+            if self.Offset[0] > 0:
+                self.Offset[0] -= 1
+                self.Offset = [self.Offset[0], self.Offset[0] + 1]
+            else:
+                self.Offset = [self.Offset[0] - 1, self.Offset[0]]
+        print("DEBUG self.Offset is {}".format(self.Offset))
+        return self.get_fragment_from_read_list(read)
 
 
 class CenterFragment(writeBedGraph.WriteBedGraph):
