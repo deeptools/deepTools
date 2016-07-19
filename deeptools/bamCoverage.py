@@ -92,7 +92,7 @@ def get_optional_args():
                           'used to specify a range of positions.',
                           metavar='INT',
                           type=int,
-                          nargs=?,
+                          nargs='?',
                           required=False)
 
     optional.add_argument('--filterRNAstrand',
@@ -278,7 +278,6 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
 
         return [(None, None)]
 
-
     def get_fragment_from_read_list(read, filter_strand, offset):
         """
         Return the range of exons from the 0th through 1st bases, inclusive. Positions are 1-based
@@ -301,7 +300,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         # Convert the stretch back to a list of tuples
         foo = np.array(foo)
         d = foo[1:] - foo[:-1]
-        idx = np.argwhere(d > 1).flatten().tolist() # This now holds the interval bounds as a list
+        idx = np.argwhere(d > 1).flatten().tolist()  # This now holds the interval bounds as a list
         idx.append(-1)
         last = 0
         rv = []
@@ -311,7 +310,6 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
 
         # Handle strand filtering, if needed
         return self.filter_strand(read, filter_strand, rv)
-
 
     def get_fragment_from_read(self, read):
         rv = [(None, None)]
