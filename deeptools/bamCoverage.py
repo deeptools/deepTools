@@ -90,7 +90,9 @@ def get_optional_args():
                           'of 1 indicates the first base of the alignment (taking alignment orientation '
                           'into account). Likewise, a value of -1 is the last base of the alignment. An '
                           'offset of 0 is not permitted. If two values are specified, then they will be '
-                          'used to specify a range of positions.',
+                          'used to specify a range of positions. Note that specifying something like '
+                          '--Offset 5 -1 will result in the 5th through last position being used, which '
+                          'is equivalent to trimming 4 bases from the 5-prime end of alignments.',
                           metavar='INT',
                           type=int,
                           nargs='+',
