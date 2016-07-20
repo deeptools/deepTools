@@ -3,6 +3,7 @@ import deeptools.bamCoverage as bam_cov
 import deeptools.bamCompare as bam_comp
 import deeptools.getScaleFactor as gs
 import os.path
+import filecmp
 from os import unlink
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
@@ -297,6 +298,74 @@ def test_bam_coverage_filter_blacklist():
                 '3R\t1000\t1050\t0.81\n', '3R\t1050\t1500\t0.00\n']
 
     assert_equal(resp, expected)
+    unlink(outfile)
+
+
+def test_bam_coverage_offset1():
+    """
+    Test -bs 1 --Offset 1
+    """
+    outfile = '/tmp/test_offset.bw'
+    args = "--Offset 1 --bam {} -p 1 -bs 1 -o {}".format(BAMFILE_A, outfile)
+    args = args.split()
+    bam_cov.main(args)
+    try:
+        # python 3 only
+        filecmp.clear_cache()
+    except:
+        pass
+    assert(filecmp.cmp(outfile, "{}testA_offset1.bw".format(ROOT)) is True)
+    unlink(outfile)
+
+
+def test_bam_coverage_offset1_10():
+    """
+    Test -bs 1 --Offset 1 10
+    """
+    outfile = '/tmp/test_offset.bw'
+    args = "--Offset 1 10 -b {} -p 1 -bs 1 -o {}".format(BAMFILE_A, outfile)
+    args = args.split()
+    bam_cov.main(args)
+    try:
+        # python 3 only
+        filecmp.clear_cache()
+    except:
+        pass
+    assert(filecmp.cmp(outfile, "{}testA_offset1_10.bw".format(ROOT)) is True)
+    unlink(outfile)
+
+
+def test_bam_coverage_offset_minus1():
+    """
+    Test -bs 1 --Offset -1
+    """
+    outfile = '/tmp/test_offset.bw'
+    args = "--Offset -1 -b {} -p 1 -bs 1 -o {}".format(BAMFILE_A, outfile)
+    args = args.split()
+    bam_cov.main(args)
+    try:
+        # python 3 only
+        filecmp.clear_cache()
+    except:
+        pass
+    assert(filecmp.cmp(outfile, "{}testA_offset-1.bw".format(ROOT)) is True)
+    unlink(outfile)
+
+
+def test_bam_coverage_offset20_minus4():
+    """
+    Test -bs 1 --Offset 20 -4
+    """
+    outfile = '/tmp/test_offset.bw'
+    args = "--Offset 20 -4 -b {} -p 1 -bs 1 -o {}".format(BAMFILE_A, outfile)
+    args = args.split()
+    bam_cov.main(args)
+    try:
+        # python 3 only
+        filecmp.clear_cache()
+    except:
+        pass
+    assert(filecmp.cmp(outfile, "{}testA_offset20_-4.bw".format(ROOT)) is True)
     unlink(outfile)
 
 
