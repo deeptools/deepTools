@@ -3,6 +3,8 @@
 
 # own tools
 import argparse
+import sys
+import numpy as np
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools.getScaleFactor import get_scale_factor
@@ -87,9 +89,13 @@ def get_optional_args():
                           'Note that negative values indicate offsets from the end of each read. A value '
                           'of 1 indicates the first base of the alignment (taking alignment orientation '
                           'into account). Likewise, a value of -1 is the last base of the alignment. An '
-                          'offset of 0 is not permitted.',
+                          'offset of 0 is not permitted. If two values are specified, then they will be '
+                          'used to specify a range of positions. Note that specifying something like '
+                          '--Offset 5 -1 will result in the 5th through last position being used, which '
+                          'is equivalent to trimming 4 bases from the 5-prime end of alignments.',
                           metavar='INT',
                           type=int,
+                          nargs='+',
                           required=False)
 
     optional.add_argument('--filterRNAstrand',
@@ -147,7 +153,7 @@ def main(args=None):
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose)
         if frag_len_dict is None:
-            exit("*Error*: For the --MNAse function a paired end library is required. ")
+            sys.exit("*Error*: For the --MNAse function a paired end library is required. ")
 
         # Set some default fragment length bounds
         if args.minFragmentLength == 0:
@@ -174,8 +180,14 @@ def main(args=None):
                             )
 
     elif args.Offset:
-        if args.Offset == 0:
-            exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+        if len(args.Offset) > 1:
+            if args.Offset[0] == 0:
+                sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
+            if args.Offset[1] > 0 and args.Offset[1] < args.Offset[0]:
+                sys.exir("'Error*: The right side bound is less than the left-side bound. This is inappropriate.")
+        else:
+            if args.Offset[0] == 0:
+                sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
         wr = OffsetFragment([args.bam],
                             binLength=args.binSize,
                             stepSize=args.binSize,
@@ -241,30 +253,12 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
     """
     Class to redefine the get_fragment_from_read for the --Offset case
     """
-    def get_fragment_from_read(self, read):
-        rv = [(None, None)]
-        if self.Offset > read.query_length:
-            return rv
-        if read.is_paired:
-            return rv
-        blocks = read.get_blocks()
-        foo = self.Offset
-        if foo < 0:
-            foo = read.infer_query_length() + foo + 1
-        if read.is_reverse:
-            for idx in range(len(blocks)):
-                block = blocks[-idx - 1]
-                if block[1] - block[0] >= foo:
-                    rv = [(block[1] - foo, block[1] - foo + 1)]
-                    break
-                foo -= block[1] - block[0]
-        else:
-            for block in blocks:
-                if block[1] - block[0] >= foo:
-                    rv = [(block[0] + foo - 1, block[0] + foo)]
-                    break
-                foo -= block[1] - block[0]
+    def filterStrand(self, read, rv):
+        """
+        A generic read filtering function that gets used by everything in this class.
 
+        rv is returned if the strand is correct, otherwise [(None, None)]
+        """
         # Filter by RNA strand, if desired
         if read.is_paired:
             if self.filter_strand == 'forward':
@@ -286,6 +280,58 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 return rv
 
         return [(None, None)]
+
+    def get_fragment_from_read_list(self, read, offset):
+        """
+        Return the range of exons from the 0th through 1st bases, inclusive. Positions are 1-based
+        """
+        rv = [(None, None)]
+        blocks = read.get_blocks()
+        stretch = []
+        # For the sake of simplicity, convert [(10, 20), (30, 40)] to [10, 11, 12, 13, ..., 40]
+        # Then subset accordingly
+        for block in blocks:
+            stretch.extend(range(block[0], block[1]))
+        if read.is_reverse:
+            stretch = stretch[::-1]
+        try:
+            foo = stretch[offset[0]:offset[1]]
+        except:
+            return rv
+
+        if len(foo) == 0:
+            return rv
+        if read.is_reverse:
+            foo = foo[::-1]
+
+        # Convert the stretch back to a list of tuples
+        foo = np.array(foo)
+        d = foo[1:] - foo[:-1]
+        idx = np.argwhere(d > 1).flatten().tolist()  # This now holds the interval bounds as a list
+        idx.append(-1)
+        last = 0
+        rv = []
+        for i in idx:
+            rv.append((foo[last].astype("int"), foo[i].astype("int") + 1))
+            last = i + 1
+
+        # Handle strand filtering, if needed
+        return self.filterStrand(read, rv)
+
+    def get_fragment_from_read(self, read):
+        offset = [x for x in self.Offset]
+        if len(offset) > 1:
+            if offset[0] > 0:
+                offset[0] -= 1
+            if offset[1] < 0:
+                offset[1] += 1
+        else:
+            if offset[0] > 0:
+                offset[0] -= 1
+                offset = [offset[0], offset[0] + 1]
+            else:
+                offset = [offset[0], None]
+        return self.get_fragment_from_read_list(read, offset)
 
 
 class CenterFragment(writeBedGraph.WriteBedGraph):
