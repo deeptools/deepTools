@@ -209,16 +209,16 @@ def getJSD(args, idx, mat):
     chipSignal = signalAndBinDist(chip)
     inputSignal = signalAndBinDist(input)
 
+    # These are basically CDFs
+    inputSignalInterp = inputSignal[2](np.arange(0, 1.00001, 0.00001))
+    chipSignalInterp = chipSignal[2](np.arange(0, 1.00001, 0.00001))
+
     # If there are no low coverage bins then you can get nan as the first interpolated value.
     # That should instead be some small value
     if np.isnan(inputSignalInterp[0]):
         inputSignalInterp[0] = 1e-12
     if np.isnan(chipSignalInterp[0]):
         chipSignalInterp[0] = 1e-12
-
-    # These are basically CDFs
-    inputSignalInterp = inputSignal[2](np.arange(0, 1.00001, 0.00001))
-    chipSignalInterp = chipSignal[2](np.arange(0, 1.00001, 0.00001))
 
     # Differentiate to PMFs, do some sanity checking
     PMFinput = np.ediff1d(inputSignalInterp)
