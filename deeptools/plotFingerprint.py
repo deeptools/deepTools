@@ -170,10 +170,10 @@ def getJSD(args, idx, mat):
 
     # Get the index of the reference sample
     if args.JSDsample not in args.bamfiles:
-        return ("NA", "NA")
+        return "NA"
     refIdx = args.bamfiles.index(args.JSDsample)
     if refIdx == idx:
-        return ("NA", "NA")
+        return "NA"
 
     # These will hold the coverage histograms
     chip = np.zeros(20000, dtype=np.int)
@@ -200,14 +200,21 @@ def getJSD(args, idx, mat):
         (n,) = x.shape
         signalValues = np.array(list(range(n)))
         totalSignal = x * signalValues
-        normalizedTotalSignal = np.cumsum(totalSignal) / np.sum(totalSignal)
-        binDist = np.cumsum(x) / sum(x)
+        normalizedTotalSignal = np.cumsum(totalSignal) / np.sum(totalSignal).astype("float")
+        binDist = np.cumsum(x).astype("float") / sum(x)
         interpolater = interpolate.interp1d(binDist, normalizedTotalSignal, fill_value="extrapolate")
         return (binDist, normalizedTotalSignal, interpolater)
 
     # Interpolate the signals to evenly spaced bins, which also removes 0-coverage bins
     chipSignal = signalAndBinDist(chip)
     inputSignal = signalAndBinDist(input)
+
+    # If there are no low coverage bins then you can get nan as the first interpolated value.
+    # That should instead be some small value
+    if np.isnan(inputSignalInterp[0]):
+        inputSignalInterp[0] = 1e-12
+    if np.isnan(chipSignalInterp[0]):
+        chipSignalInterp[0] = 1e-12
 
     # These are basically CDFs
     inputSignalInterp = inputSignal[2](np.arange(0, 1.00001, 0.00001))
@@ -216,9 +223,9 @@ def getJSD(args, idx, mat):
     # Differentiate to PMFs, do some sanity checking
     PMFinput = np.ediff1d(inputSignalInterp)
     PMFchip = np.ediff1d(chipSignalInterp)
-    if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip)) > 0.01:
+    if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip) - 1) > 0.01:
         sys.stderr.write("Warning: At least one PMF integral is significantly different from 1! The JSD will not be returned")
-        return None
+        return "NA"
 
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
