@@ -169,9 +169,9 @@ def getJSD(args, idx, mat):
     """
 
     # Get the index of the reference sample
-    if args.KLDsample not in args.bamfiles:
+    if args.JSDsample not in args.bamfiles:
         return ("NA", "NA")
-    refIdx = args.bamfiles.index(args.KLDsample)
+    refIdx = args.bamfiles.index(args.JSDsample)
     if refIdx == idx:
         return ("NA", "NA")
 
