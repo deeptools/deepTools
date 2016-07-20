@@ -51,6 +51,10 @@
                     --filterRNAstrand '$advancedOpt.filterRNAstrand'
                 #end if
 
+                #if $advancedOpt.Offset:
+                    --Offset '$advancedOpt.Offset'
+                #end if
+
                 @blacklist@
             #end if
 ]]>
@@ -110,6 +114,18 @@
                 <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
                     label="Determine nucleosome positions from MNase-seq data"
                     help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data. By default, only fragments between 130 and 200 bases will be used, though this can be changed with the --minFragmentLength and --maxFragmentLength options." />
+
+                <param argument="--Offset" type="integer"  value="" optional="True"
+                    label="Offset inside each alignment to use for the signal location."
+                    help="Uses this offset inside of each read as the signal. This is useful in
+                        cases like RiboSeq or GROseq, where only the 12th, 15th or 1st base aligned
+                        should be used to denote where the signal is (rather than the span of the
+                        whole alignment). This can be paired with the --filterRNAstrand option. Note
+                        that negative values indicate offsets from the end of each read. A value of
+                        1 indicates the first base of the alignment (taking alignment orientation
+                        into account). Likewise, a value of -1 is the last base of the alignment. An
+                        offset of 0 is not permitted. By default, the entire alignment is used to
+                        denote where the signal is located." />
 
                 <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
                     help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
