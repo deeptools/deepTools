@@ -293,7 +293,7 @@ def main(args=None):
 
     if args.outQualityMetrics:
         args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
-        if args.KLDsample:
+        if args.JSDsample:
             args.outQualityMetrics.write("\tJS Distance")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
