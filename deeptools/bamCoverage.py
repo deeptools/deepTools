@@ -295,7 +295,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                     if foo[0] < foo[1]:
                         blocks.insert(0, foo)
                 else:
-                    foo = (read.reference_end, read.reference_end + abs(read.template_length) - 1 - read.infer_query_length())
+                    foo = (read.reference_end, read.reference_end + abs(read.template_length) - read.infer_query_length())
                     if foo[0] < foo[1]:
                         blocks.append(foo)
 
@@ -308,7 +308,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                     if foo[0] < foo[1]:
                         blocks.insert(0, foo)
                 else:
-                    foo = (read.reference_end, read.reference_end + self.defaultFragmentLength - 1 - read.infer_query_length())
+                    foo = (read.reference_end, read.reference_end + self.defaultFragmentLength - read.infer_query_length())
                     if foo[0] < foo[1]:
                         blocks.append(foo)
 
@@ -360,6 +360,9 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 offset = [offset[0], offset[0] + 1]
             else:
                 offset = [offset[0], None]
+        if offset[1] == 0:
+            # -1 gets switched to 0, which screws things up
+            offset = (offset[0], None)
         return self.get_fragment_from_read_list(read, offset)
 
 
