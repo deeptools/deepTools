@@ -610,6 +610,28 @@ class CountReadsPerBin(object):
     def getReadLength(self, read):
         return len(read)
 
+    @staticmethod
+    def is_proper_pair(read, maxPairedFragmentLength):
+        """
+        Checks if a read is proper pair meaning that both mates are facing each other and are in
+        the same chromosome and are not to far away. The sam flag for proper pair can not
+        always be trusted. Note that if the fragment size is > maxPairedFragmentLength (~2kb
+        usually) that False will be returned.
+        :return: bool
+        """
+        if not read.is_proper_pair:
+            return False
+        if read.reference_id != read.next_reference_id:
+            return False
+        if maxPairedFragmentLength > abs(read.template_length) > 0:
+            return False
+        # check that the mates face each other (inward)
+        if read.reference_start < read.next_reference_start and not read.is_reverse and read.mate_is_reverse:
+            return True
+        if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
+            return True
+        return False
+
     def get_fragment_from_read(self, read):
         """Get read start and end position of a read.
         If given, the reads are extended as follows:
@@ -689,25 +711,6 @@ class CountReadsPerBin(object):
         >>> c.defaultFragmentLength = 200
         >>> assert(c.get_fragment_from_read(test.getRead("single-reverse")) == [(5001618, 5001654)])
         """
-        def is_proper_pair():
-            """
-            Checks if a read is proper pair meaning that both mates are facing each other and are in
-            the same chromosome and are not to far away. The sam flag for proper pair can not
-            always be trusted.
-            :return: bool
-            """
-            if not read.is_proper_pair:
-                return False
-            if read.reference_id != read.next_reference_id:
-                return False
-            if self.maxPairedFragmentLength > abs(read.template_length) > 0:
-                return False
-            # check that the mates face each other (inward)
-            if read.reference_start < read.next_reference_start and not read.is_reverse and read.mate_is_reverse:
-                return True
-            if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
-                return True
-            return False
         # if no extension is needed, use pysam get_blocks
         # to identify start and end reference positions.
         # get_blocks return a list of start and end positions
@@ -719,8 +722,7 @@ class CountReadsPerBin(object):
             return read.get_blocks()
 
         else:
-            if is_proper_pair():
-
+            if self.is_proper_pair(read, self.maxPairedFragmentLength):
                 if read.is_reverse:
                     fragmentStart = read.next_reference_start
                     fragmentEnd = read.reference_end
