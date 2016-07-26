@@ -52,7 +52,7 @@
                 #end if
 
                 #if $advancedOpt.Offset:
-                    --Offset '$advancedOpt.Offset'
+                    --Offset $advancedOpt.Offset
                 #end if
 
                 @blacklist@
@@ -201,6 +201,8 @@
             <param name="binSize" value="10" />
             <param name="Offset" value="-4 -1" />
             <param name="doExtend" value="yes" />
+            <param name="minMappingQuality" value="0" />
+            <param name="type" value="no" />
             <output name="outFileName" file="bamCoverage_result6.bw" ftype="bigwig" />
         </test>
     </tests>
