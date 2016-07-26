@@ -287,6 +287,31 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         """
         rv = [(None, None)]
         blocks = read.get_blocks()
+
+        if self.defaultFragmentLength != 'read length':
+            if self.is_proper_pair(read, self.maxPairedFragmentLength):
+                if read.is_reverse:
+                    foo = (read.next_reference_start, read.reference_start)
+                    if foo[0] < foo[1]:
+                        blocks.insert(0, foo)
+                else:
+                    foo = (read.reference_end, read.reference_end + abs(read.template_length) - read.infer_query_length())
+                    if foo[0] < foo[1]:
+                        blocks.append(foo)
+
+            # Extend using the default fragment length
+            else:
+                if read.is_reverse:
+                    foo = (read.reference_start - self.defaultFragmentLength + read.infer_query_length(), read.reference_start)
+                    if foo[0] < 0:
+                        foo = (0, foo[1])
+                    if foo[0] < foo[1]:
+                        blocks.insert(0, foo)
+                else:
+                    foo = (read.reference_end, read.reference_end + self.defaultFragmentLength - read.infer_query_length())
+                    if foo[0] < foo[1]:
+                        blocks.append(foo)
+
         stretch = []
         # For the sake of simplicity, convert [(10, 20), (30, 40)] to [10, 11, 12, 13, ..., 40]
         # Then subset accordingly
@@ -319,6 +344,10 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         return self.filterStrand(read, rv)
 
     def get_fragment_from_read(self, read):
+        """
+        This is mostly a wrapper for self.get_fragment_from_read_list(),
+        which needs a list and for the offsets to be tweaked by 1.
+        """
         offset = [x for x in self.Offset]
         if len(offset) > 1:
             if offset[0] > 0:
@@ -331,6 +360,9 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 offset = [offset[0], offset[0] + 1]
             else:
                 offset = [offset[0], None]
+        if offset[1] == 0:
+            # -1 gets switched to 0, which screws things up
+            offset = (offset[0], None)
         return self.get_fragment_from_read_list(read, offset)
 
 
