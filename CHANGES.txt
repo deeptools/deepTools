@@ -3,6 +3,10 @@
  * The --Offset option to bamCoverage can now take two values, which can be used to specify a range within each alignment of bases to use. As an example, `--Offset 5 -1` will use ignore the first 4 bases of an alignment (accounting for orientation) and use only the 5th through last base. This can be useful for things like ATACseq (see #370).
  * Read extension can now be used in conjunction with --Offset in bamCoverage.
 
+2.3.2
+
+ * The deeptoolsinterval module was modified to speed up plotEnrichment, which was taking forever to finish.
+
 2.3.1
 
  * This release has no real code changes, the 2.3.0 release on pypi was missing files.
