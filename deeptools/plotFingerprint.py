@@ -3,9 +3,11 @@
 
 import numpy as np
 import argparse
+import sys
 from matplotlib import use as mplt_use
 mplt_use('Agg')
 import matplotlib.pyplot as plt
+from scipy import interpolate
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -111,6 +113,24 @@ def get_optional_args():
                           'counts than that specified in --numberOfSamples',
                           action='store_true')
 
+    optional.add_argument('--outQualityMetrics',
+                          help='Quality metrics can optionally be output to '
+                          'this file. The file will have one row per input BAM '
+                          'file and columns containing the following (in '
+                          'order): area under the curve, X-intersect, and elbow '
+                          'position (maximum of the second derivative)',
+                          metavar='FILE.txt',
+                          type=argparse.FileType('w'))
+
+    optional.add_argument('--JSDsample',
+                          help='Reference sample against which to compute the '
+                          'Jensen-Shannon distance. If this is not specified, '
+                          'the distance will not be calculated. If '
+                          '--outQualityMetrics is not specified then this will '
+                          'be ignored. The implementation of this is based on '
+                          'code from Sitanshu Gakkhar at BCGSC.',
+                          metavar='sample.bam')
+
     return parser
 
 
@@ -132,6 +152,87 @@ def get_output_args():
                        type=argparse.FileType('w'))
 
     return parser
+
+
+def getJSD(args, idx, mat):
+    """
+    Computes the Jensen-Shannon distance between two samples. This is essentially
+    a symmetric version of Kullback-Leibler divergence. The implementation
+    presented here is based on code from Sitanshu Gakkhar at BCGSC.
+
+    Note that the interpolation has the effect of removing zero count coverage
+    bins, which ends up being needed for the JSD calculation.
+
+    args: The input arguments
+    idx:  The column index of the current sample
+    mat:  The matrix of counts
+    """
+
+    # Get the index of the reference sample
+    if args.JSDsample not in args.bamfiles:
+        return "NA"
+    refIdx = args.bamfiles.index(args.JSDsample)
+    if refIdx == idx:
+        return "NA"
+
+    # These will hold the coverage histograms
+    chip = np.zeros(20000, dtype=np.int)
+    input = np.zeros(20000, dtype=np.int)
+    for row in mat:
+        # ChIP
+        val = row[idx]
+        # N.B., we need to clip past the end of the array
+        if val >= 20000:
+            val = 19999
+        # This effectively removes differences due to coverage percentages
+        if val > 0:
+            chip[int(val)] += 1
+
+        # Input
+        val = row[refIdx]
+        if val >= 20000:
+            val = 19999
+        if val > 0:
+            input[int(val)] += 1
+
+    def signalAndBinDist(x):
+        x = np.array(x)
+        (n,) = x.shape
+        signalValues = np.array(list(range(n)))
+        totalSignal = x * signalValues
+        normalizedTotalSignal = np.cumsum(totalSignal) / np.sum(totalSignal).astype("float")
+        binDist = np.cumsum(x).astype("float") / sum(x)
+        interpolater = interpolate.interp1d(binDist, normalizedTotalSignal, fill_value="extrapolate")
+        return (binDist, normalizedTotalSignal, interpolater)
+
+    # Interpolate the signals to evenly spaced bins, which also removes 0-coverage bins
+    chipSignal = signalAndBinDist(chip)
+    inputSignal = signalAndBinDist(input)
+
+    # These are basically CDFs
+    inputSignalInterp = inputSignal[2](np.arange(0, 1.00001, 0.00001))
+    chipSignalInterp = chipSignal[2](np.arange(0, 1.00001, 0.00001))
+
+    # If there are no low coverage bins then you can get nan as the first interpolated value.
+    # That should instead be some small value
+    if np.isnan(inputSignalInterp[0]):
+        inputSignalInterp[0] = 1e-12
+    if np.isnan(chipSignalInterp[0]):
+        chipSignalInterp[0] = 1e-12
+
+    # Differentiate to PMFs, do some sanity checking
+    PMFinput = np.ediff1d(inputSignalInterp)
+    PMFchip = np.ediff1d(chipSignalInterp)
+    if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip) - 1) > 0.01:
+        sys.stderr.write("Warning: At least one PMF integral is significantly different from 1! The JSD will not be returned")
+        return "NA"
+
+    # Compute the JSD from the PMFs
+    M = (PMFinput + PMFchip) / 2.0
+    JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip / M)))
+    np.sqrt(JSD)
+
+    return JSD
 
 
 def main(args=None):
@@ -195,6 +296,26 @@ def main(args=None):
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
             args.outRawCounts.write(fmt % tuple(row))
+        args.outRawCounts.close()
+
+    if args.outQualityMetrics:
+        args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
+        if args.JSDsample:
+            args.outQualityMetrics.write("\tJS Distance")
+        args.outQualityMetrics.write("\n")
+        line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
+        for idx, reads in enumerate(num_reads_per_bin.T):
+            counts = np.cumsum(np.sort(reads))
+            counts = counts / float(counts[-1])
+            AUC = np.sum(counts)
+            XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
+            elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
+            if args.JSDsample:
+                JSD = getJSD(args, idx, num_reads_per_bin)
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(args.labels[idx], AUC, XInt, elbow, JSD))
+            else:
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
+        args.outQualityMetrics.close()
 
 if __name__ == "__main__":
     main()
