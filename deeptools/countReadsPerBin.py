@@ -700,13 +700,17 @@ class CountReadsPerBin(object):
                 return False
             if read.reference_id != read.next_reference_id:
                 return False
-            if self.maxPairedFragmentLength > abs(read.template_length) > 0:
+            if not self.maxPairedFragmentLength > abs(read.template_length) > 0:
                 return False
             # check that the mates face each other (inward)
-            if read.reference_start < read.next_reference_start and not read.is_reverse and read.mate_is_reverse:
-                return True
-            if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
-                return True
+            if read.is_reverse is read.mate_is_reverse:
+                return False
+            if read.is_reverse:
+                if read.reference_start >= read.next_reference_start:
+                    return True
+            else:
+                if read.reference_start <= read.next_reference_start:
+                    return True
             return False
         # if no extension is needed, use pysam get_blocks
         # to identify start and end reference positions.
