@@ -1,3 +1,7 @@
+2.3.2
+
+ * The deeptoolsinterval module was modified to speed up plotEnrichment, which was taking forever to finish.
+
 2.3.1
 
  * This release has no real code changes, the 2.3.0 release on pypi was missing files.

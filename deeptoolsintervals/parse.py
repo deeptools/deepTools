@@ -9,7 +9,7 @@ try:
 except:
     supportsBZ2 = False
 import os.path
-import shlex
+import csv
 
 
 def getNext(fp):
@@ -41,7 +41,7 @@ def seemsLikeGTF(cols):
         cols[6] in ['+', '-', '.']
         if cols[7] != '.':
             int(cols[7]) in [0, 1, 2]
-        s = shlex.split(cols[8])
+        s = next(csv.reader([cols[8]], delimiter=' '))
         assert("gene_id" in s)
         assert(s[-1] != "gene_id")
         return True
@@ -373,7 +373,7 @@ class GTF(object):
             sys.stderr.write("Warning: non-GTF line encountered! {0}\n".format("\t".join(cols)))
             return
 
-        s = shlex.split(cols[8])
+        s = next(csv.reader([cols[8]], delimiter=' '))
         if "deepTools_group" in s and s[-1] != "deepTools_group":
             label = s[s.index("deepTools_group") + 1].rstrip(";")
         elif self.defaultGroup is not None:
@@ -420,7 +420,7 @@ class GTF(object):
             sys.stderr.write("Warning: Invalid start in '{0}', skipping\n".format("\t".join(cols)))
             return
 
-        s = shlex.split(cols[8])
+        s = next(csv.reader([cols[8]], delimiter=' '))
         if self.transcript_id_designator not in s or s[-1] == self.transcript_id_designator:
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
             return
