@@ -1,4 +1,4 @@
-2.3.3
+2.3.2
 
  * The deeptoolsinterval module was modified to speed up plotEnrichment, which was taking forever to finish.
 
