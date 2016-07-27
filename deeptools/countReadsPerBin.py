@@ -658,7 +658,7 @@ class CountReadsPerBin(object):
             return False
         if read.reference_id != read.next_reference_id:
             return False
-        if not maxPairedFragmentLength > abs(read.template_length) > 0:
+        if abs(read.template_length) > maxPairedFragmentLength:
             return False
         # check that the mates face each other (inward)
         if read.is_reverse is read.mate_is_reverse:
