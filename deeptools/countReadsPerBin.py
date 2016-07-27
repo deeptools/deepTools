@@ -618,18 +618,58 @@ class CountReadsPerBin(object):
         always be trusted. Note that if the fragment size is > maxPairedFragmentLength (~2kb
         usually) that False will be returned.
         :return: bool
+
+        >>> import pysam
+        >>> import os
+        >>> from deeptools.countReadsPerBin import CountReadsPerBin as cr
+        >>> root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+        >>> bam = pysam.AlignmentFile("{}/test_proper_pair_filtering.bam".format(root))
+        >>> iter = bam.fetch()
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "keep" read
+        True
+        >>> cr.is_proper_pair(read, 200) # "keep" read, but maxPairedFragmentLength is too short
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "improper pair"
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "mismatch chr"
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "same orientation1"
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "same orientation2"
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "rev first"
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "rev first OK"
+        True
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "for first"
+        False
+        >>> read = next(iter)
+        >>> cr.is_proper_pair(read, 1000) # "for first"
+        True
         """
         if not read.is_proper_pair:
             return False
         if read.reference_id != read.next_reference_id:
             return False
-        if maxPairedFragmentLength > abs(read.template_length) > 0:
+        if abs(read.template_length) > maxPairedFragmentLength:
             return False
         # check that the mates face each other (inward)
-        if read.reference_start < read.next_reference_start and not read.is_reverse and read.mate_is_reverse:
-            return True
-        if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
-            return True
+        if read.is_reverse is read.mate_is_reverse:
+            return False
+        if read.is_reverse:
+            if read.reference_start >= read.next_reference_start:
+                return True
+        else:
+            if read.reference_start <= read.next_reference_start:
+                return True
         return False
 
     def get_fragment_from_read(self, read):
