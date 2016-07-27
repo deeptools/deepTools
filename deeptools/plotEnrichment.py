@@ -16,6 +16,7 @@ from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.utilities import getCommonChrNames, mungeChromosome
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
+from deeptools.countReadsPerBin import CountReadsPerBin as cr
 
 
 old_settings = np.seterr(all='ignore')
@@ -166,26 +167,6 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead):
     """
     This is basically get_fragment_from_read from countReadsPerBin
     """
-    def is_proper_pair():
-        """
-        Checks if a read is proper pair meaning that both mates are facing each other and are in
-        the same chromosome and are not to far away. The sam flag for proper pair can not
-        always be trusted.
-        :return: bool
-        """
-        if not read.is_proper_pair:
-            return False
-        if read.reference_id != read.next_reference_id:
-            return False
-        if maxPairedFragmentLength > abs(read.template_length) > 0:
-            return False
-        # check that the mates face each other (inward)
-        if read.reference_start < read.next_reference_start and not read.is_reverse and read.mate_is_reverse:
-            return True
-        if read.reference_start >= read.next_reference_start and read.is_reverse and not read.mate_is_reverse:
-            return True
-        return False
-
     maxPairedFragmentLength = 0
     if defaultFragmentLength != "read length":
         maxPairedFragmentLength = 4 * defaultFragmentLength
@@ -193,7 +174,7 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead):
     if defaultFragmentLength == 'read length':
         return read.get_blocks()
     else:
-        if is_proper_pair():
+        if cr.is_proper_pair(read, maxPairedFragmentLength):
             if read.is_reverse:
                 fragmentStart = read.next_reference_start
                 fragmentEnd = read.reference_end
