@@ -1,3 +1,7 @@
+2.3.3
+
+ * Fixed a bug wherein proper pairs where being incorrectly called improper pairs, thereby causing slightly incorrect read extension.
+
 2.3.2
 
  * The deeptoolsinterval module was modified to speed up plotEnrichment, which was taking forever to finish.
