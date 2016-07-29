@@ -139,16 +139,16 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
 
     if read.is_paired and read.is_proper_pair and abs(read.tlen) < 2 * fragmentLength:
         if read.is_reverse and read.tlen < 0:
-            fragEnd = read.aend
-            fragStart = read.aend + read.tlen
-        elif read.tlen >= read.qlen:
+            fragEnd = read.reference_end
+            fragStart = read.reference_end + read.template_length
+        elif read.template_length >= read.query_alignment_length:
             fragStart = read.pos
-            fragEnd = read.pos + read.tlen
+            fragEnd = read.pos + read.template_length
 
     if not fragStart:
         if read.is_reverse:
-            fragEnd = read.aend
-            fragStart = read.aend - fragmentLength
+            fragEnd = read.reference_end
+            fragStart = read.reference_end - fragmentLength
         else:
             fragStart = read.pos
             fragEnd = fragStart + fragmentLength
