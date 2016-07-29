@@ -8,24 +8,6 @@ from deeptools.bamHandler import openBam
 debug = 0
 
 
-def getGC_content(dnaString, as_fraction=True):
-    if len(dnaString) == 0:
-        return None
-    if dnaString.count('N') > len(dnaString) * 0.05:
-        raise Exception("WARNING: too many NNNs present in sequence of length {}".format(len(dnaString)))
-        return None
-
-    gc = 0
-    gc += dnaString.count('G')
-    gc += dnaString.count('g')
-    gc += dnaString.count('C')
-    gc += dnaString.count('c')
-    if as_fraction:
-        return(float(gc) / len(dnaString))
-    else:
-        return gc
-
-
 def tbitToBamChrName(tbitNames, bamNames):
     """ checks if the chromosome names from the two-bit and bam file coincide.
         In case they do not coincide, a fix is tried. If successful, then
