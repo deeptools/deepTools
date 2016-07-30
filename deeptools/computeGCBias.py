@@ -10,7 +10,7 @@ from scipy.stats import poisson
 import py2bit
 
 from deeptoolsintervals import GTF
-from deeptools.utilities import tbitToBamChrName
+from deeptools.utilities import tbitToBamChrName, getGC_content
 from deeptools import parserCommon, mapReduce
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools import bamHandler
@@ -227,8 +227,7 @@ def countReadsPerGC_worker(chromNameBam,
             break
 
         try:
-            gc = tbit.bases(chromNameBit, int(i), int(i + regionSize))
-            gc = gc['G'] + gc['C']
+            gc = getGC_content(chromNameBit, int(i), int(i + regionSize))
         except Exception as detail:
             if verbose:
                 print("{}:{}-{}".format(chromNameBit, i, i + regionSize))
@@ -363,8 +362,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
             break
 
         try:
-            gc = tbit.bases(chromNameBit, int(i), int(i + fragmentLength['median']), fraction=False)
-            gc = gc['G'] + gc['C']
+            gc = getGC_content(chromNameBit, int(i), int(i + fragmentLength['median']), fraction=False)
         except Exception as detail:
             if verbose:
                 print(detail)
