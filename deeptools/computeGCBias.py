@@ -7,10 +7,10 @@ import multiprocessing
 import numpy as np
 import argparse
 from scipy.stats import poisson
-import twobitreader as twobit
+import py2bit
 
 from deeptoolsintervals import GTF
-from deeptools.utilities import getGC_content, tbitToBamChrName
+from deeptools.utilities import tbitToBamChrName, getGC_content
 from deeptools import parserCommon, mapReduce
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools import bamHandler
@@ -213,7 +213,7 @@ def countReadsPerGC_worker(chromNameBam,
     """
 
     chromNameBit = chrNameBamToBit[chromNameBam]
-    tbit = twobit.TwoBitFile(global_vars['2bit'])
+    tbit = py2bit.open(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
     c = 1
     sub_reads_per_gc = []
@@ -223,11 +223,11 @@ def countReadsPerGC_worker(chromNameBam,
     for index in range(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if region extends over the chromosome end
-        if tbit.sequence_sizes()[chromNameBit] < i + regionSize:
+        if tbit.chroms(chromNameBit) < i + regionSize:
             break
 
         try:
-            gc = getGC_content(tbit[chromNameBit][i:i + regionSize])
+            gc = getGC_content(tbit, chromNameBit, int(i), int(i + regionSize))
         except Exception as detail:
             if verbose:
                 print("{}:{}-{}".format(chromNameBit, i, i + regionSize))
@@ -312,7 +312,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     subN_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
     subF_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
 
-    tbit = twobit.TwoBitFile(global_vars['2bit'])
+    tbit = py2bit.open(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
     peak = 0
     startTime = time.time()
@@ -358,13 +358,11 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     for index in range(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if the end of the chromosome is reached
-        if i + fragmentLength['median'] > tbit.sequence_sizes()[chromNameBit]:
+        if i + fragmentLength['median'] > tbit.chroms(chromNameBit):
             break
 
         try:
-            gc = getGC_content(
-                tbit[chromNameBit][i:i + fragmentLength['median']],
-                as_fraction=False)
+            gc = getGC_content(tbit, chromNameBit, int(i), int(i + fragmentLength['median']), fraction=False)
         except Exception as detail:
             if verbose:
                 print(detail)
@@ -604,7 +602,7 @@ def main(args=None):
     global_vars['filter_out'] = args.blackListFileName
     global_vars['extra_sampling_file'] = extra_sampling_file
 
-    tbit = twobit.TwoBitFile(global_vars['2bit'])
+    tbit = py2bit.open(global_vars['2bit'])
     bam = bamHandler.openBam(global_vars['bam'])
 
     if args.fragmentLength:
@@ -623,9 +621,9 @@ def main(args=None):
 
         fragment_len_dict = {'median': int(fragment_len_dict['median'])}
 
-    chrNameBitToBam = tbitToBamChrName(list(tbit.sequence_sizes().keys()), bam.references)
+    chrNameBitToBam = tbitToBamChrName(list(tbit.chroms().keys()), bam.references)
 
-    global_vars['genome_size'] = sum(tbit.sequence_sizes().values())
+    global_vars['genome_size'] = sum(tbit.chroms().values())
     global_vars['total_reads'] = bam.mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
@@ -688,7 +686,7 @@ class Tester():
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
         bam = bamHandler.openBam(self.bamFile)
-        tbit = twobit.TwoBitFile(self.tbitFile)
+        tbit = py2bit.open(self.tbitFile)
         global debug
         debug = 0
         global global_vars
@@ -702,7 +700,7 @@ class Tester():
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
                        'total_reads': bam.mapped,
-                       'genome_size': sum(tbit.sequence_sizes().values())
+                       'genome_size': sum(tbit.chroms().values())
                        }
 
     def testTabulateGCcontentWorker(self):

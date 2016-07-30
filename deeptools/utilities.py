@@ -8,22 +8,17 @@ from deeptools.bamHandler import openBam
 debug = 0
 
 
-def getGC_content(dnaString, as_fraction=True):
-    if len(dnaString) == 0:
-        return None
-    if dnaString.count('N') > len(dnaString) * 0.05:
-        raise Exception("WARNING: too many NNNs present in sequence of length {}".format(len(dnaString)))
+def getGC_content(tb, chrom, fragStart, fragEnd, fraction=True):
+    bases = tb.bases(chrom, fragStart, fragEnd, fraction=False)
+    if fragEnd > tb.chroms(chrom):
+        fragEnd = tb.chroms(chrom)
+    if sum(bases.values()) < 0.95 * (fragEnd - fragStart):
+        raise Exception("WARNING: too many NNNs present in {}:{}-{}".format(chrom, fragStart, fragEnd))
         return None
 
-    gc = 0
-    gc += dnaString.count('G')
-    gc += dnaString.count('g')
-    gc += dnaString.count('C')
-    gc += dnaString.count('c')
-    if as_fraction:
-        return(float(gc) / len(dnaString))
-    else:
-        return gc
+    if fraction:
+        return (bases['G'] + bases['C']) / float(fragEnd - fragStart)
+    return bases['G'] + bases['C']
 
 
 def tbitToBamChrName(tbitNames, bamNames):
