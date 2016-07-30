@@ -15,7 +15,7 @@ import argparse
 
 from scipy.stats import binom
 
-from deeptools.utilities import tbitToBamChrName
+from deeptools.utilities import tbitToBamChrName, getGC_content
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
 
@@ -154,8 +154,7 @@ def getReadGCcontent(tbit, read, fragmentLength, chrNameBit):
             fragEnd = fragStart + fragmentLength
     fragStart = max(0, fragStart)
     try:
-        gc = tbit.bases(chrNameBit, fragStart, fragEnd)
-        gc = gc['G'] + gc['C']
+        gc = getGC_content(tbit, chrNameBit, fragStart, fragEnd)
     except Exception:
         return None
     if gc is None:

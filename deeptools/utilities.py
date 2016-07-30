@@ -8,6 +8,19 @@ from deeptools.bamHandler import openBam
 debug = 0
 
 
+def getGC_content(tb, chrom, fragStart, fragEnd, fraction=True):
+    bases = tb.bases(chrom, fragStart, fragEnd, fraction=False)
+    if fragEnd > tb.chroms(chrom):
+        fragEnd = tb.chroms(chrom)
+    if sum(bases.values()) < 0.95 * (fragEnd - fragStart):
+        raise Exception("WARNING: too many NNNs present in {}:{}-{}".format(chrom, fragStart, fragEnd))
+        return None
+
+    if fraction:
+        return (bases['G'] + bases['C']) / float(fragEnd - fragStart)
+    return bases['G'] + bases['C']
+
+
 def tbitToBamChrName(tbitNames, bamNames):
     """ checks if the chromosome names from the two-bit and bam file coincide.
         In case they do not coincide, a fix is tried. If successful, then
