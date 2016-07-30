@@ -227,7 +227,7 @@ def countReadsPerGC_worker(chromNameBam,
             break
 
         try:
-            gc = getGC_content(chromNameBit, int(i), int(i + regionSize))
+            gc = getGC_content(tbit, chromNameBit, int(i), int(i + regionSize))
         except Exception as detail:
             if verbose:
                 print("{}:{}-{}".format(chromNameBit, i, i + regionSize))
@@ -362,7 +362,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
             break
 
         try:
-            gc = getGC_content(chromNameBit, int(i), int(i + fragmentLength['median']), fraction=False)
+            gc = getGC_content(tbit, chromNameBit, int(i), int(i + fragmentLength['median']), fraction=False)
         except Exception as detail:
             if verbose:
                 print(detail)
