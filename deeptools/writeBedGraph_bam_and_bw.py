@@ -14,6 +14,7 @@ from deeptools import mapReduce
 from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
 from deeptools import bamHandler
+from deeptools.deepBlue import deepBlue
 
 old_settings = np.seterr(all='ignore')
 
@@ -37,6 +38,22 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
     return cov
 
 
+def getCoverageFromDeepBlue(db, chrom, start, end, tileSize, missingDataAsZero=False):
+    try:
+        coverage = db.getValuesInRegion(chrom, start, end)
+    except:
+        return []
+    if not coverage:
+        return []
+    is missingDataAsZero:
+        coverage[np.isnan(coverage)] = 0
+    # average the values per bin
+    cov = np.array(
+        [np.mean(coverage[x:x + tileSize])
+         for x in range(0, len(coverage), tileSize)])
+    return cov
+
+
 def writeBedGraph_wrapper(args):
     return writeBedGraph_worker(*args)
 
@@ -44,7 +61,8 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        missingDataAsZero=False, fixed_step=False):
+        missingDataAsZero=False, fixed_step=False,
+        url="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -74,6 +92,10 @@ def writeBedGraph_worker(
                     bigwigHandle, chrom, start, end,
                     tileSize, missingDataAsZero))
             bigwigHandle.close()
+        elif fileFormat == 'wiggle':
+            db = deepBlue(indexFile, url, userKey)
+            coverage.append(
+                getCoverageFromDeepBlue(db, chrom, start, end, tileSize, missingDataAsZero))
 
     # is /dev/shm available?
     # working in this directory speeds the process

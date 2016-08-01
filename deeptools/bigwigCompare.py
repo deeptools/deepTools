@@ -80,6 +80,16 @@ def parse_arguments(args=None):
     return parser
 
 
+def getType(fname):
+    """
+    Tries to determine if a file is a wiggle file from deepBlue or a bigWig file.
+    Returns 'wiggle' if the file name ends with .wig, otherwise 'bigwig'
+    """
+    if fname.endswith("\.wig"):
+        return "wiggle"
+    return "bigwig"
+
+
 def main(args=None):
     args = parse_arguments().parse_args(args)
 
@@ -96,8 +106,8 @@ def main(args=None):
                      'pseudocount': args.pseudocount}
 
     writeBedGraph_bam_and_bw.writeBedGraph(
-        [(args.bigwig1, 'bigwig'),
-         (args.bigwig2, 'bigwig')],
+        [(args.bigwig1, getType(args.bigwig1)),
+         (args.bigwig2, getType(args.bigwig2)],
         args.outFileName, 0, FUNC,
         function_args, tileSize=args.binSize, region=args.region,
         blackListFileName=args.blackListFileName,
