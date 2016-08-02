@@ -768,3 +768,26 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'additional information are given.',
                           action='store_true')
     return parser
+
+
+def deepBlueOptionalArgs():
+
+    parser = argparse.ArgumentParser(add_help=False)
+    dbo = parser.add_argument_group('deepBlue arguments', 'Options used only for remote bedgraph/wig files hosted on deepBlue')
+    dbo.add_argument(
+        '--deepBlueURL',
+        help='For remote files bedgraph/wiggle files hosted on deepBlue, this '
+             'specifies the server URL. The default is '
+             '"http://deepblue.mpi-inf.mpg.de/xmlrpc", which should not be '
+             'changed without good reason.',
+        default='http://deepblue.mpi-inf.mpg.de/xmlrpc')
+    dbo.add_argument(
+        '--userKey',
+        help='For remote files bedgraph/wiggle files hosted on deepBlue, this '
+             'specifies the user key to use for access. The default is '
+             '"anonymous_key", which suffices for public datasets. If you need '
+             'access to a restricted access/private dataset, then request a '
+             'key from deepBlue and specify it here.',
+        default='anonymous_key')
+
+    return parser

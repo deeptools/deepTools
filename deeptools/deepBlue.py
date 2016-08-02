@@ -3,27 +3,31 @@ import xmlrpclib
 import time
 import numpy as np
 
-class deepBlue(object):
+class deepBlue(object):248956422
     def __init__(self, sample, url="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
         """
         Connect to the requested deepblue server with the given user key and request the specifed sample from it.
+
+        >>> sample = "S002R5H1.ERX300721.H3K4me3.bwa.GRCh38.20150528.bedgraph"
+        >>> db = deepBlue(sample)
+        >>> assert(db.chroms["chr1"] == 248956422)
         """
         self.sample = sample
         self.url = url
         self.userKey = userKey
         self.server = xmlrpclib.Server(url, allow_none=True)
         self.info = None
-        self.sampleID = None
+        self.experimentID = None
         self.genome = None
         self.chroms = None
 
-        # Set self.sampleID
-        id = self.sample2id()
-        if not id:
-            raise RuntimeError("The requested sample ({}) is not available".format(sample))
+        # Set self.experimentID
+        experimentID = self.getEID()
+        if not experimentID:
+            raise RuntimeError("The requested sample({}) has no associated experiment!".format(sample))
 
         # Set self.info
-        (status, resp) = server.info(id, userKey)
+        (status, resp) = self.server.info(self.experimentID, userKey)
         if status != "okay":
             raise RuntimeError("Received the following error while fetching information about '{}': {}".format(resp, sample))
         self.info = resp[0]
@@ -38,39 +42,31 @@ class deepBlue(object):
         if not chroms:
             raise RuntimeError("Unable to determine chromosome names/sizes for '{}'".format(sample))
 
-    def sample2id(self):
+    def getEID(self):
         """
-        Given a sample name, return its ID (or None on error). On error, this raises a runtime exception.
+        Given a sample name, return its associated experiment ID (or None on error).
         
-        self.sampleID is then the internal sample ID (e.g., s9971)
+        self.experimentID is then the internal ID (e.g., e52525)
         """
-        (status, resp) = self.server.search(self.sample, "samples", self.userKey)
+        (status, resps) = self.server.search(self.sample, "experiments", self.userKey)
         if status != "okay":
-            raise RuntimeError("Received an error ({}) while searching for '{}'".format(status, sample))
-        if len(resp) == 0:
-            raise RuntimeError("'{}' does not exist".format(self.sample))
-        if len(resp) > 1:
-            raise RuntimeError("'{}' is an ambiguous name".format(self.sample))
-        self.sampleID = resp[0][0]
-        return self.sampleID
-    
+            raise RuntimeError("Received an error ({}) while searching for the experiment associated with '{}'".format(resps, sample))
+        for resp in resps:
+            if resp[1] == self.sample:
+                self.experimentID = resp[0]
+                return resp[0]
+        return None
+
     def getGenome(self):
         """
         Determines and sets the genome assigned to a given sample. On error, this raises a runtime exception.
         
         self.genome is then the internal genome ID.
         """
-        (status, resp) = self.server.search(self.sample, "genomes", self.userKey)
-        if status != "okay":
-            raise RuntimeError("Searching for the genome for '{}' caused an error: {}".format(sample, status))
-        if len(resp) == 0:
-            raise RuntimeError("No annotated genome for '{}'".format(sample))
-        if len(resp) > 1:
-            raise RuntimeError("Multiple possible genomes for '{}'!".format(sample))
-
-        self.genome = resp[0][0]
+        if "genome" in self.info.keys():
+            self.genome = self.info["genome"]
         return self.genome
-    
+
     def getChroms(self):
         """
         Determines and sets the chromosome names/sizes for a given sample. On error, this raises a runtime exception.
@@ -127,6 +123,8 @@ class deepBlue(object):
         o[:] = np.nan
         for intervals in resp.split("\n"):
             interval = intervals.split("\t")
+            if interval[0] == '':
+                continue
             s = int(interval[0]) - start
             e = s + int(interval[1]) - int(interval[0])
             o[s:e] = float(interval[2])

@@ -11,8 +11,9 @@ debug = 0
 def parse_arguments(args=None):
     parentParser = parserCommon.getParentArgParse()
     outputParser = parserCommon.output()
+    dbParser = parserCommon.deepBlueOptionalArgs()
     parser = argparse.ArgumentParser(
-        parents=[parentParser, outputParser],
+        parents=[parentParser, outputParser, dbParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool compares two bigWig files based on the number '
         'of mapped reads. To compare the bigWig files, the genome is '
@@ -85,8 +86,10 @@ def getType(fname):
     Tries to determine if a file is a wiggle file from deepBlue or a bigWig file.
     Returns 'wiggle' if the file name ends with .wig, otherwise 'bigwig'
     """
-    if fname.endswith("\.wig"):
+    if fname.endswith(".wig") or fname.endswith(".wiggle"):
         return "wiggle"
+    elif fname.endswith(".bedgraph"):
+        return "bedgraph"
     return "bigwig"
 
 
@@ -107,12 +110,15 @@ def main(args=None):
 
     writeBedGraph_bam_and_bw.writeBedGraph(
         [(args.bigwig1, getType(args.bigwig1)),
-         (args.bigwig2, getType(args.bigwig2)],
+         (args.bigwig2, getType(args.bigwig2))],
         args.outFileName, 0, FUNC,
         function_args, tileSize=args.binSize, region=args.region,
         blackListFileName=args.blackListFileName,
+        verbose=args.verbose,
         numberOfProcessors=args.numberOfProcessors,
         format=args.outFileFormat,
         smoothLength=False,
         missingDataAsZero=not args.skipNonCoveredRegions,
-        extendPairedEnds=False)
+        extendPairedEnds=False, 
+        deepBlueURL=args.deepBlueURL,
+        userKey=args.userKey)
