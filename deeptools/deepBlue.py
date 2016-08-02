@@ -122,46 +122,20 @@ class deepBlue(object):
         if start >= end:
             raise RuntimeError("The start position MUST be less then the end position ({} and {})".format(start, end))
 
-        # Get the experiment information
-        (status, queryID) = self.server.select_experiments(self.sample, chrom, start, end, self.userKey)
-        if status != "okay":
-            raise RuntimeError("Received the following error while fetching values in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, queryID))
-        if not queryID:
-            raise RuntimeError("Somehow, we received None as a query ID (range {}:{}-{} in file '{}')".format(chrom, start, end, self.sample))
-
-        # Query the regions
-        (status, reqID) = self.server.get_regions(queryID, "START,END,VALUE", self.userKey)
-        if status != "okay":
-            raise RuntimeError("Received the following error while fetching regions in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, reqID))
-
-        # Wait for the server to process the data
-        (status, info) = self.server.info(reqID, self.userKey)
-        request_status = info[0]["state"]
-        while request_status != "done" and request_status != "failed":
-            time.sleep(1)
-            (status, info) = self.server.info(reqID, self.userKey)
-            request_status = info[0]["state"]
-
-        # Get the actual data
-        (status, resp) = self.server.get_request_data(reqID, self.userKey)
-        if status != "okay":
-            raise RuntimeError("Received the following error while fetching data in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, resp))
+        intervals = self.intervals(chrom, start, end)
 
         # Generate the output
         o = np.empty(end - start)
         o[:] = np.nan
-        for intervals in resp.split("\n"):
-            interval = intervals.split("\t")
-            if interval[0] == '':
-                continue
-            s = int(interval[0]) - start
-            e = s + int(interval[1]) - int(interval[0])
+        for interval in intervals:
+            s = interval[0] - start
+            e = s + interval[1] - interval[0]
             if s < 0:
                 s = 0
             if e >= end - start:
-                e = end - start - 1
+                e = end - start
             if e > s:
-                o[s:e] = float(interval[2])
+                o[s:e] = interval[2]
 
         return o
 
@@ -179,14 +153,22 @@ class deepBlue(object):
             raise RuntimeError("The start position MUST be less then the end position ({} and {})".format(start, end))
 
         # Get the experiment information
-        (status, queryID) = self.server.select_experiments(self.sample, chrom, start, end, self.userKey)
+        (status, queryID) = self.server.select_experiments(self.sample, chrom, None, None, self.userKey)
         if status != "okay":
             raise RuntimeError("Received the following error while fetching values in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, queryID))
         if not queryID:
             raise RuntimeError("Somehow, we received None as a query ID (range {}:{}-{} in file '{}')".format(chrom, start, end, self.sample))
 
+        # Filter by overlap
+        (status, filterID) = self.server.input_regions(self.genome, "{}\t{}\t{}".format(chrom, start, end), self.userKey)
+        if status != "okay":
+            raise RuntimeError("Received the following error while setting the region filter {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, filterID))
+        (status, intersectID) = self.server.intersection(queryID, filterID, self.userKey)
+        if status != "okay":
+            raise RuntimeError("Received the following error while setting performing the intersect on file '{}': {}".format(self.sample, intersectID))
+
         # Query the regions
-        (status, reqID) = self.server.get_regions(queryID, "START,END,VALUE", self.userKey)
+        (status, reqID) = self.server.get_regions(intersectID, "START,END,VALUE", self.userKey)
         if status != "okay":
             raise RuntimeError("Received the following error while fetching regions in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, reqID))
 
