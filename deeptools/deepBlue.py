@@ -17,6 +17,9 @@ def isDeepBlue(fname):
         return True
     if fname.endswith(".wiggle"):
         return True
+    if fname.endswith(".bedgraph"):
+        return True
+    return False
 
 
 class deepBlue(object):
@@ -207,6 +210,16 @@ class deepBlue(object):
                 continue
             o.append((int(interval[0]), int(interval[1]), float(interval[2])))
         return o
+
+    def stats(self, chrom, start=0, end=0):
+        """
+        Like stats() from pyBigWig, but only ever returns the mean
+        """
+        vals = self.values(chrom, start, end)
+        rv = np.nanmean(vals)
+        if np.isnan(rv):
+            return None
+        return [rv]
 
     def close(self):
         pass

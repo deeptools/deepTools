@@ -223,11 +223,6 @@ class heatmapper(object):
             exit("Length of the unscaled 5 prime region has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
 
-        if "deepBlueURL" in allArgs:
-            self.deepBlueURL = allArgs["deepBlueURL"]
-        if "userKey" in allArgs:
-            self.userKey = allArgs["userKey"]
-
         # Take care of GTF options
         transcriptID = "transcript"
         exonID = "exon"
@@ -239,6 +234,10 @@ class heatmapper(object):
             exonID = allArgs.get("exonID", exonID)
             transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
             keepExons = allArgs.get("keepExons", keepExons)
+            if "deepBlueURL" in allArgs:
+                self.deepBlueURL = allArgs["deepBlueURL"]
+            if "userKey" in allArgs:
+                self.userKey = allArgs["userKey"]
 
         chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list)
         res, labels = mapReduce.mapReduce([score_file_list, parameters],
