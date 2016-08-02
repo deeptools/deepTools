@@ -3,7 +3,7 @@ import xmlrpclib
 import time
 import numpy as np
 
-class deepBlue(object):248956422
+class deepBlue(object):
     def __init__(self, sample, url="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
         """
         Connect to the requested deepblue server with the given user key and request the specifed sample from it.
