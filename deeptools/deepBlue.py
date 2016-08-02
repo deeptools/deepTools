@@ -3,6 +3,7 @@ import xmlrpclib
 import time
 import numpy as np
 
+
 class deepBlue(object):
     def __init__(self, sample, url="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
         """
@@ -45,12 +46,12 @@ class deepBlue(object):
     def getEID(self):
         """
         Given a sample name, return its associated experiment ID (or None on error).
-        
+
         self.experimentID is then the internal ID (e.g., e52525)
         """
         (status, resps) = self.server.search(self.sample, "experiments", self.userKey)
         if status != "okay":
-            raise RuntimeError("Received an error ({}) while searching for the experiment associated with '{}'".format(resps, sample))
+            raise RuntimeError("Received an error ({}) while searching for the experiment associated with '{}'".format(resps, self.sample))
         for resp in resps:
             if resp[1] == self.sample:
                 self.experimentID = resp[0]
@@ -60,7 +61,7 @@ class deepBlue(object):
     def getGenome(self):
         """
         Determines and sets the genome assigned to a given sample. On error, this raises a runtime exception.
-        
+
         self.genome is then the internal genome ID.
         """
         if "genome" in self.info.keys():
@@ -70,12 +71,12 @@ class deepBlue(object):
     def getChroms(self):
         """
         Determines and sets the chromosome names/sizes for a given sample. On error, this raises a runtime exception.
-        
+
         self.chroms is then a dictionary of chromosome:length pairs
         """
         (status, resp) = self.server.chromosomes(self.genome, self.userKey)
         if status != "okay":
-            raise RuntimeError("Received an error while fetching chromosome information for '{}': {}".format(sample, resp))
+            raise RuntimeError("Received an error while fetching chromosome information for '{}': {}".format(self.sample, resp))
         self.chroms = {k: v for k, v in resp}
         return resp
 
@@ -86,7 +87,7 @@ class deepBlue(object):
         """
         if chrom not in self.chroms.keys():
             raise RuntimeError("'{}' is not a valid chromosome.".format(chrom))
-    
+
         if end == 0:
             end = self.chroms[chrom]
 
@@ -119,7 +120,7 @@ class deepBlue(object):
             raise RuntimeError("Received the following error while fetching data in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, resp))
 
         # Generate the output
-        o = np.empty(end-start)
+        o = np.empty(end - start)
         o[:] = np.nan
         for intervals in resp.split("\n"):
             interval = intervals.split("\t")

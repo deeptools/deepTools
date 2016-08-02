@@ -119,6 +119,6 @@ def main(args=None):
         format=args.outFileFormat,
         smoothLength=False,
         missingDataAsZero=not args.skipNonCoveredRegions,
-        extendPairedEnds=False, 
+        extendPairedEnds=False,
         deepBlueURL=args.deepBlueURL,
         userKey=args.userKey)

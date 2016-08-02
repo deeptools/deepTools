@@ -217,7 +217,7 @@ def writeBedGraph(
             bwh.close()
 
         dbSamples = [fileName for fileName,
-               fileFormat in bamOrBwFileList if fileFormat in ['wiggle', 'bedgraph']]
+                     fileFormat in bamOrBwFileList if fileFormat in ['wiggle', 'bedgraph']]
         for dbSample in dbSamples:
             db = deepBlue(dbSample, deepBlueURL, userKey)
             for chromName, size in list(db.chroms.items()):
