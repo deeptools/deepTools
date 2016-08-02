@@ -9,6 +9,16 @@ import time
 import numpy as np
 
 
+def isDeepBlue(fname):
+    """
+    Returns true if the file ends in .wig, .wiggle, or .bedgraph, since these indicate a file on the deepBlue server
+    """
+    if fname.endswith(".wig"):
+        return True
+    if fname.endswith(".wiggle"):
+        return True
+
+
 class deepBlue(object):
     def __init__(self, sample, url="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
         """
@@ -16,7 +26,7 @@ class deepBlue(object):
 
         >>> sample = "S002R5H1.ERX300721.H3K4me3.bwa.GRCh38.20150528.bedgraph"
         >>> db = deepBlue(sample)
-        >>> assert(db.chroms["chr1"] == 248956422)
+        >>> assert(db.chroms("chr1") == 248956422)
         """
         self.sample = sample
         self.url = url
@@ -197,7 +207,6 @@ class deepBlue(object):
                 continue
             o.append((int(interval[0]), int(interval[1]), float(interval[2])))
         return o
-
 
     def close(self):
         pass

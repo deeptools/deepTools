@@ -9,7 +9,7 @@ import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes
-from deeptools.deepBlue import deepBlue
+from deeptools.deepBlue import deepBlue, isDeepBlue
 
 old_settings = np.seterr(all='ignore')
 
@@ -186,6 +186,8 @@ class heatmapper(object):
         self.matrix = None
         self.regions = None
         self.blackList = None
+        self.deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
+        self.userKey = "anonymous_key"
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """
@@ -220,6 +222,11 @@ class heatmapper(object):
         if parameters['unscaled 3 prime'] % parameters['bin size'] > 0:
             exit("Length of the unscaled 5 prime region has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
+
+        if "deepBlueURL" in allArgs:
+            self.deepBlueURL = allArgs["deepBlueURL"]
+        if "userKey" in allArgs:
+            self.userKey = allArgs["userKey"]
 
         # Take care of GTF options
         transcriptID = "transcript"
