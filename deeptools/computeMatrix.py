@@ -12,8 +12,10 @@ from deeptools import heatmapper
 
 
 def parse_arguments(args=None):
+    dbParser = parserCommon.deepBlueOptionalArgs()
     parser = \
         argparse.ArgumentParser(
+            parents=[dbParser],
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 

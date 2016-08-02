@@ -39,22 +39,6 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
     return cov
 
 
-def getCoverageFromDeepBlue(db, chrom, start, end, tileSize, missingDataAsZero=False):
-    try:
-        coverage = db.getValuesInRegion(chrom, start, end)
-    except:
-        return []
-    if coverage is None:
-        return []
-    if missingDataAsZero is True:
-        coverage[np.isnan(coverage)] = 0
-    # average the values per bin
-    cov = np.array(
-        [np.mean(coverage[x:x + tileSize])
-         for x in range(0, len(coverage), tileSize)])
-    return cov
-
-
 def writeBedGraph_wrapper(args):
     return writeBedGraph_worker(*args)
 
@@ -96,7 +80,9 @@ def writeBedGraph_worker(
         elif fileFormat == 'wiggle' or fileFormat == 'bedgraph':
             db = deepBlue(indexFile, deepBlueURL, userKey)
             coverage.append(
-                getCoverageFromDeepBlue(db, chrom, start, end, tileSize, missingDataAsZero))
+                getCoverageFromBigwig(
+                    db, chrom, start, end,
+                    tileSize, missingDataAsZero))
 
     # is /dev/shm available?
     # working in this directory speeds the process
@@ -193,48 +179,32 @@ def writeBedGraph(
         chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
-        bigwigs = [fileName for fileName,
-                   fileFormat in bamOrBwFileList if fileFormat == 'bigwig']
         cCommon = []
         chromNamesAndSize = {}
-        for bw in bigwigs:
-            bwh = pyBigWig.open(bw)
-            for chromName, size in list(bwh.chroms().items()):
-                if chromName in chromNamesAndSize:
-                    cCommon.append(chromName)
-                    if chromNamesAndSize[chromName] != size:
-                        print("\nWARNING\n"
-                              "Chromosome {} length reported in the "
-                              "bigwig files differ.\n{} for {}\n"
-                              "{} for {}.\n\nThe smallest "
-                              "length will be used".format(
-                                  chromName, chromNamesAndSize[chromName],
-                                  bigwigs[0], size, bw))
-                        chromNamesAndSize[chromName] = min(
-                            chromNamesAndSize[chromName], size)
-                else:
-                    chromNamesAndSize[chromName] = size
-            bwh.close()
+        for fileName, fileFormat in bamOrBwFileList:
+            if fileFormat == 'bigwig':
+                fh = pyBigWig.open(fileName)
+            elif fileFormat in ['wiggle', 'bedgraph']:
+                fh = deepBlue(fileName, deepBlueURL, userKey)
+            else:
+                continue
 
-        dbSamples = [fileName for fileName,
-                     fileFormat in bamOrBwFileList if fileFormat in ['wiggle', 'bedgraph']]
-        for dbSample in dbSamples:
-            db = deepBlue(dbSample, deepBlueURL, userKey)
-            for chromName, size in list(db.chroms.items()):
+            for chromName, size in list(fh.chroms().items()):
                 if chromName in chromNamesAndSize:
                     cCommon.append(chromName)
                     if chromNamesAndSize[chromName] != size:
                         print("\nWARNING\n"
                               "Chromosome {} length reported in the "
-                              "bigwig files differ.\n{} for {}\n"
+                              "input files differ.\n{} for {}\n"
                               "{} for {}.\n\nThe smallest "
                               "length will be used".format(
                                   chromName, chromNamesAndSize[chromName],
-                                  bigwigs[0], size, bw))
+                                  bamOrBwFileList[0][0], size, fileName))
                         chromNamesAndSize[chromName] = min(
                             chromNamesAndSize[chromName], size)
                 else:
                     chromNamesAndSize[chromName] = size
+            fh.close()
 
         # get the list of common chromosome names and sizes
         chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()

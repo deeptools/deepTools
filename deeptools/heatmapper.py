@@ -9,6 +9,7 @@ import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes
+from deeptools.deepBlue import deepBlue
 
 old_settings = np.seterr(all='ignore')
 
@@ -344,7 +345,10 @@ class heatmapper(object):
         # read BAM or scores file
         score_file_handlers = []
         for sc_file in score_file_list:
-            score_file_handlers.append(pyBigWig.open(sc_file))
+            if isDeepBlue(sc_file):
+                score_file_handlers.append(deepBlue(sc_file, self.deepBlueURL, self.userKey))
+            else:
+                score_file_handlers.append(pyBigWig.open(sc_file))
 
         # determine the number of matrix columns based on the lengths
         # given by the user, times the number of score files

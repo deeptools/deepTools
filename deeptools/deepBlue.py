@@ -25,7 +25,7 @@ class deepBlue(object):
         self.info = None
         self.experimentID = None
         self.genome = None
-        self.chroms = None
+        self.chromsDict = None
 
         # Set self.experimentID
         experimentID = self.getEID()
@@ -82,19 +82,29 @@ class deepBlue(object):
         (status, resp) = self.server.chromosomes(self.genome, self.userKey)
         if status != "okay":
             raise RuntimeError("Received an error while fetching chromosome information for '{}': {}".format(self.sample, resp))
-        self.chroms = {k: v for k, v in resp}
+        self.chromsDict = {k: v for k, v in resp}
         return resp
 
-    def getValuesInRegion(self, chrom, start=0, end=0):
+    def chroms(self, chrom=None):
+        """
+        Like the chroms() function in pyBigWig, returns either chromsDict (chrom is None) or the length of a given chromosome
+        """
+        if chrom is None:
+            return self.chromsDict
+        elif chrom in self.chromsDict:
+            return self.chromsDict[chrom]
+        return None
+
+    def values(self, chrom, start=0, end=0):
         """
         Return a numpy array with values for each base in the requested region.
         If end==0 then the region from start to the end of the chromosome is returned.
         """
-        if chrom not in self.chroms.keys():
+        if chrom not in self.chroms():
             raise RuntimeError("'{}' is not a valid chromosome.".format(chrom))
 
         if end == 0:
-            end = self.chroms[chrom]
+            end = self.chromsDict[chrom]
 
         if start >= end:
             raise RuntimeError("The start position MUST be less then the end position ({} and {})".format(start, end))
@@ -133,6 +143,61 @@ class deepBlue(object):
                 continue
             s = int(interval[0]) - start
             e = s + int(interval[1]) - int(interval[0])
-            o[s:e] = float(interval[2])
+            if s < 0:
+                s = 0
+            if e >= end - start:
+                e = end - start - 1
+            if e > s:
+                o[s:e] = float(interval[2])
 
         return o
+
+    def intervals(self, chrom, start=0, end=0):
+        """
+        Return all intervals overlapping a given region
+        """
+        if chrom not in self.chroms():
+            raise RuntimeError("'{}' is not a valid chromosome.".format(chrom))
+
+        if end == 0:
+            end = self.chromsDict[chrom]
+
+        if start >= end:
+            raise RuntimeError("The start position MUST be less then the end position ({} and {})".format(start, end))
+
+        # Get the experiment information
+        (status, queryID) = self.server.select_experiments(self.sample, chrom, start, end, self.userKey)
+        if status != "okay":
+            raise RuntimeError("Received the following error while fetching values in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, queryID))
+        if not queryID:
+            raise RuntimeError("Somehow, we received None as a query ID (range {}:{}-{} in file '{}')".format(chrom, start, end, self.sample))
+
+        # Query the regions
+        (status, reqID) = self.server.get_regions(queryID, "START,END,VALUE", self.userKey)
+        if status != "okay":
+            raise RuntimeError("Received the following error while fetching regions in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, reqID))
+
+        # Wait for the server to process the data
+        (status, info) = self.server.info(reqID, self.userKey)
+        request_status = info[0]["state"]
+        while request_status != "done" and request_status != "failed":
+            time.sleep(1)
+            (status, info) = self.server.info(reqID, self.userKey)
+            request_status = info[0]["state"]
+
+        # Get the actual data
+        (status, resp) = self.server.get_request_data(reqID, self.userKey)
+        if status != "okay":
+            raise RuntimeError("Received the following error while fetching data in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, resp))
+
+        o = []
+        for intervals in resp.split("\n"):
+            interval = intervals.split("\t")
+            if interval[0] == '':
+                continue
+            o.append((int(interval[0]), int(interval[1]), float(interval[2])))
+        return o
+
+
+    def close(self):
+        pass
