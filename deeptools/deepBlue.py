@@ -1,5 +1,10 @@
 #!/usr/bin/env python
-import xmlrpclib
+try:
+    # python 2
+    import xmlrpclib
+except:
+    # python 3
+    import xmlrpc.client as xmlrpclib
 import time
 import numpy as np
 
