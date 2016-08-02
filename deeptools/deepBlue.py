@@ -216,6 +216,8 @@ class deepBlue(object):
         Like stats() from pyBigWig, but only ever returns the mean
         """
         vals = self.values(chrom, start, end)
+        if np.all(np.isnan(vals)):
+            return None
         rv = np.nanmean(vals)
         if np.isnan(rv):
             return None
