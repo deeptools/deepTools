@@ -47,6 +47,7 @@ A detailed sub-commands help is available by typing:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
+    dbParser = parserCommon.deepBlueOptionalArgs()
 
     # bins mode options
     subparsers.add_parser(
@@ -54,7 +55,8 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='bins'),
                  parent_parser,
-                 parserCommon.gtf_options(suppress=True)
+                 parserCommon.gtf_options(suppress=True),
+                 dbParser
                  ],
         help="The average score is based on equally sized bins "
              "(10 kilobases by default), which consecutively cover the "
@@ -72,7 +74,8 @@ A detailed sub-commands help is available by typing:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[multiBigwigSummaryArgs(case='BED-file'),
                  parent_parser,
-                 parserCommon.gtf_options()
+                 parserCommon.gtf_options(),
+                 dbParser
                  ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "

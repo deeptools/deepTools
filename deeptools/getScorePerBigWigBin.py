@@ -8,6 +8,7 @@ import warnings
 # deepTools packages
 import deeptools.mapReduce as mapReduce
 import deeptools.utilities
+from deeptools.deepBlue import deepBlue, isDeepBlue
 # debug = 0
 
 old_settings = np.seterr(all='ignore')
@@ -22,6 +23,8 @@ def countFragmentsInRegions_worker(chrom, start, end,
                                    bigWigFiles,
                                    stepSize, binLength,
                                    save_data,
+                                   deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc",
+                                   userKey="anonymous_key",
                                    bedRegions=None
                                    ):
     """ returns the average score in each bigwig file at each 'stepSize'
@@ -59,7 +62,12 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigwig_handlers = [pyBigWig.open(bw) for bw in bigWigFiles]
+    bigwig_handlers = []
+    for foo in bigWigFiles:
+        if isDeepBlue(foo):
+            bigwig_handlers.append(deepBlue(foo, deepBlueURL, userKey))
+        else:
+            bigwig_handlers.append(pyBigWig.open(foo))
 
     regions_to_consider = []
     if bedRegions:
@@ -87,7 +95,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         i += 1
 
         for idx, bwh in enumerate(bigwig_handlers):
-            if chrom not in list(bwh.chroms().keys()):
+            if chrom not in bwh.chroms():
                 unmod_name = chrom
                 if chrom.startswith('chr'):
                     # remove the chr part from chromosome name
@@ -95,7 +103,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 else:
                     # prefix with 'chr' the chromosome name
                     chrom = 'chr' + chrom
-                if chrom not in list(bwh.chroms().keys()):
+                if chrom not in bwh.chroms():
                     exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
             weights = []
@@ -134,7 +142,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles)), _file_name
 
 
-def getChromSizes(bigwigFilesList):
+def getChromSizes(bigwigFilesList, deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
     """
     Get chromosome sizes from bigWig file with pyBigWig
 
@@ -154,10 +162,21 @@ def getChromSizes(bigwigFilesList):
 
     bigwigFilesList = bigwigFilesList[:]
 
-    common_chr = set(pyBigWig.open(bigwigFilesList.pop()).chroms().items())
+    common_chr = set()
+    for fname in bigwigFilesList:
+        if isDeepBlue(fname):
+            fh = deepBlue(fname, deepBlueURL, userKey)
+        else:
+            fh = pyBigWig.open(fname)
+        common_chr = common_chr.union(set(fh.chroms().items()))
+        fh.close()
+
     non_common_chr = set()
     for bw in bigwigFilesList:
-        _names_and_size = set(pyBigWig.open(bw).chroms().items())
+        if isDeepBlue(bw):
+            _names_and_size = set(deepBlue(bw, deepBlueURL, userKey).chroms().items())
+        else:
+            _names_and_size = set(pyBigWig.open(bw).chroms().items())
         if len(common_chr & _names_and_size) == 0:
             #  try to add remove 'chr' from the chromosme name
             _corr_names_size = set()
@@ -212,6 +231,14 @@ def getScorePerBin(bigWigFiles, binLength,
 
     """
 
+    deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
+    userKey = "anonymous_key"
+    if allArgs is not None:
+        # The copy is made so allArgs can be passed unchanged downstream
+        allArgs2 = vars(allArgs)
+        deepBlueURL = allArgs2.get("deepBlueURL", deepBlueURL)
+        userKey = allArgs2.get("userKey", userKey)
+
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
     # is spent loading the files
@@ -219,7 +246,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # the following is a heuristic
 
     # get list of common chromosome names and sizes
-    chrom_sizes, non_common = getChromSizes(bigWigFiles)
+    chrom_sizes, non_common = getChromSizes(bigWigFiles, deepBlueURL, userKey)
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
@@ -251,7 +278,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # Handle GTF options
     transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
 
-    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
+    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file, deepBlueURL, userKey),
                                    countReadsInRegions_wrapper,
                                    chrom_sizes,
                                    genomeChunkLength=chunkSize,

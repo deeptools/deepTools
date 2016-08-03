@@ -5,6 +5,7 @@ import os
 import shutil
 import tempfile
 import numpy as np
+import sys
 
 # NGS packages
 import pyBigWig
@@ -14,6 +15,7 @@ from deeptools import mapReduce
 from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
 from deeptools import bamHandler
+from deeptools.deepBlue import deepBlue
 
 old_settings = np.seterr(all='ignore')
 
@@ -44,7 +46,8 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        missingDataAsZero=False, fixed_step=False):
+        missingDataAsZero=False, fixed_step=False,
+        deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -74,6 +77,12 @@ def writeBedGraph_worker(
                     bigwigHandle, chrom, start, end,
                     tileSize, missingDataAsZero))
             bigwigHandle.close()
+        elif fileFormat == 'wiggle' or fileFormat == 'bedgraph':
+            db = deepBlue(indexFile, deepBlueURL, userKey)
+            coverage.append(
+                getCoverageFromBigwig(
+                    db, chrom, start, end,
+                    tileSize, missingDataAsZero))
 
     # is /dev/shm available?
     # working in this directory speeds the process
@@ -97,10 +106,9 @@ def writeBedGraph_worker(
                 try:
                     tileCoverage.append(coverage[index][tileIndex])
                 except IndexError:
-                    print("Chromosome {} probably not in one of the bigwig "
-                          "files. Remove this chromosome from the bigwig file "
-                          "to continue".format(chrom))
-                    exit(0)
+                    sys.exit("Chromosome {} probably not in one of the bigwig "
+                             "files. Remove this chromosome from the bigwig file "
+                             "to continue".format(chrom))
 
 #        if  zerosToNans == True and sum(tileCoverage) == 0.0:
 #            continue
@@ -150,7 +158,8 @@ def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=None,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
-        smoothLength=0, fixed_step=False):
+        smoothLength=0, fixed_step=False, verbose=False,
+        deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -167,31 +176,35 @@ def writeBedGraph(
         genomeChunkLength = getGenomeChunkLength(bamHandlers, tileSize)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=False)
+        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
-        bigwigs = [fileName for fileName,
-                   fileFormat in bamOrBwFileList if fileFormat == 'bigwig']
         cCommon = []
         chromNamesAndSize = {}
-        for bw in bigwigs:
-            bwh = pyBigWig.open(bw)
-            for chromName, size in list(bwh.chroms().items()):
+        for fileName, fileFormat in bamOrBwFileList:
+            if fileFormat == 'bigwig':
+                fh = pyBigWig.open(fileName)
+            elif fileFormat in ['wiggle', 'bedgraph']:
+                fh = deepBlue(fileName, deepBlueURL, userKey)
+            else:
+                continue
+
+            for chromName, size in list(fh.chroms().items()):
                 if chromName in chromNamesAndSize:
                     cCommon.append(chromName)
                     if chromNamesAndSize[chromName] != size:
                         print("\nWARNING\n"
                               "Chromosome {} length reported in the "
-                              "bigwig files differ.\n{} for {}\n"
+                              "input files differ.\n{} for {}\n"
                               "{} for {}.\n\nThe smallest "
                               "length will be used".format(
                                   chromName, chromNamesAndSize[chromName],
-                                  bigwigs[0], size, bw))
+                                  bamOrBwFileList[0][0], size, fileName))
                         chromNamesAndSize[chromName] = min(
                             chromNamesAndSize[chromName], size)
                 else:
                     chromNamesAndSize[chromName] = size
-            bwh.close()
+            fh.close()
 
         # get the list of common chromosome names and sizes
         chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
@@ -203,13 +216,14 @@ def writeBedGraph(
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,
-                               missingDataAsZero, fixed_step),
+                               missingDataAsZero, fixed_step, deepBlueURL, userKey),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,
                               region=region,
                               blackListFileName=blackListFileName,
-                              numberOfProcessors=numberOfProcessors)
+                              numberOfProcessors=numberOfProcessors,
+                              verbose=verbose)
 
     # concatenate intermediary bedgraph files
     outFile = open(outputFileName + ".bg", 'wb')
