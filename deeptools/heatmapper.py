@@ -228,18 +228,20 @@ class heatmapper(object):
         exonID = "exon"
         transcript_id_designator = "transcript_id"
         keepExons = False
+        deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
+        userKey = "anonymous_key"
         if allArgs is not None:
             allArgs = vars(allArgs)
             transcriptID = allArgs.get("transcriptID", transcriptID)
             exonID = allArgs.get("exonID", exonID)
             transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
             keepExons = allArgs.get("keepExons", keepExons)
-            if "deepBlueURL" in allArgs:
-                self.deepBlueURL = allArgs["deepBlueURL"]
-            if "userKey" in allArgs:
-                self.userKey = allArgs["userKey"]
+            deepBlueURL = allArgs.get("deepBlueURL", deepBlueURL)
+            userKey = allArgs.get("userKey", userKey)
+        parameters["deepBlueURL"] = deepBlueURL
+        parameters["userKey"] = userKey
 
-        chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list)
+        chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list, deepBlueURL, userKey)
         res, labels = mapReduce.mapReduce([score_file_list, parameters],
                                           compute_sub_matrix_wrapper,
                                           chromSizes,
@@ -348,11 +350,16 @@ class heatmapper(object):
             A numpy matrix that contains per each row the values found per each of the regions given
         """
 
+        deepBlueURL = parameters['deepBlueURL']
+        userKey = parameters['userKey']
+        del parameters['deepBlueURL']
+        del parameters['userKey']
+
         # read BAM or scores file
         score_file_handlers = []
         for sc_file in score_file_list:
             if isDeepBlue(sc_file):
-                score_file_handlers.append(deepBlue(sc_file, self.deepBlueURL, self.userKey))
+                score_file_handlers.append(deepBlue(sc_file, deepBlueURL, userKey))
             else:
                 score_file_handlers.append(pyBigWig.open(sc_file))
 

@@ -217,8 +217,6 @@ def getScorePerBin(bigWigFiles, binLength,
                    stepSize=None,
                    chrsToSkip=[],
                    out_file_for_raw_data=None,
-                   deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc",
-                   userKey="anonymous_key",
                    allArgs=None):
     """
     This function returns a matrix containing scores (median) for the coverage
@@ -232,6 +230,13 @@ def getScorePerBin(bigWigFiles, binLength,
            [ 1.,  1.,  1.,  3.]])
 
     """
+
+    deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
+    userKey = "anonymous_key"
+    if allArgs is not None:
+        allArgs = vars(allArgs)
+        deepBlueURL = allArgs.get("deepBlueURL", deepBlueURL)
+        userKey = allArgs.get("userKey", userKey)
 
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
