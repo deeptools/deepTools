@@ -7,3 +7,5 @@ Accessing datasets hosted on deepBlue
     $ bigwigCompare -b1 S002R5H1.ERX300721.H3K4me3.bwa.GRCh38.20150528.bedgraph -b2 S002R5H1.ERX337057.Input.bwa.GRCh38.20150528.bedgraph -p 10 -o bwCompare.bw
 
 For `multiBigwigSummary`, performance is terrible unless the bin size is increased. Using `-bs 1000000` is suggested in this case. For computeMatrix, it is suggested to remove any unneccessary regions. In general, performance is poor whenever the regions of interest are small (below ~100kb).
+
+Note that some datasets may be restricted access. In such cases, you can request an account and will receive a "user key". You can then provide that to `bigwigCompare`, `multiBigwigSummary`, or `computeMatrix` using the `--userKey` option. In the off-chance that you have access to other deepBlue servers aside from the main one (http://deepblue.mpi-inf.mpg.de/xmlrpc), you can specify that with the `--deepBlueURL` option.
