@@ -208,8 +208,10 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples, stepSize=50)
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
-        >>> open(tempFile, 'r').readlines()
+        >>> f = open(tempFile, 'r')
+        >>> f.readlines()
         ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.00\n']
+        >>> f.close()
         >>> os.remove(tempFile)
 
 
