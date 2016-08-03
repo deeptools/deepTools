@@ -234,9 +234,10 @@ def getScorePerBin(bigWigFiles, binLength,
     deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
     userKey = "anonymous_key"
     if allArgs is not None:
-        allArgs = vars(allArgs)
-        deepBlueURL = allArgs.get("deepBlueURL", deepBlueURL)
-        userKey = allArgs.get("userKey", userKey)
+        # The copy is made so allArgs can be passed unchanged downstream
+        allArgs2 = vars(allArgs)
+        deepBlueURL = allArgs2.get("deepBlueURL", deepBlueURL)
+        userKey = allArgs2.get("userKey", userKey)
 
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
