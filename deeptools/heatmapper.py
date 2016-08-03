@@ -259,6 +259,10 @@ class heatmapper(object):
         # submatrix, and the number of regions lacking scores
         # Since this is largely unsorted, we need to sort by group
 
+        # Shouldn't store these in the output
+        del parameters["deepBlueURL"]
+        del parameters["userKey"]
+
         # merge all the submatrices into matrix
         matrix = np.concatenate([r[0] for r in res], axis=0)
         regions = []
