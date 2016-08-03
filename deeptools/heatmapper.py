@@ -352,8 +352,7 @@ class heatmapper(object):
 
         deepBlueURL = parameters['deepBlueURL']
         userKey = parameters['userKey']
-        del parameters['deepBlueURL']
-        del parameters['userKey']
+        parameters = {k: v for k, v in parameters.items() if k not in ["deepBlueURL", "userKey"]}
 
         # read BAM or scores file
         score_file_handlers = []
