@@ -4,6 +4,7 @@
  * Read extension can now be used in conjunction with --Offset in bamCoverage.
  * plotFingerprint can now output quality metrics, including the Jensen-Shannon distance if a reference sample is specified (see #328).
  * Switched from using the 'twobitreader' python module to our new custom 'py2bit' module for accessing 2bit files. This fixes the performance regression seen in computeGCBias starting in version 2.3.0 (#383).
+ * `bigwigCompare`, `computeMatrix`, and `multiBigwigSummary` can read signal files hosted on [deepBlue](http://deepblue.mpi-inf.mpg.de/).
 
 2.3.3
 

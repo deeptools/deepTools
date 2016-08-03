@@ -69,7 +69,7 @@ def mapReduce(staticArgs, func, chromSize,
     region_start = 0
     region_end = None
 
-    # if a region is set, that means that the task should be only cover
+    # if a region is set, that means that the task should only cover
     # the given genomic position
 
     if region:

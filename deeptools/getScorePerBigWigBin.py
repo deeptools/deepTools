@@ -95,7 +95,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         i += 1
 
         for idx, bwh in enumerate(bigwig_handlers):
-            if chrom not in list(bwh.chroms().keys()):
+            if chrom not in bwh.chroms():
                 unmod_name = chrom
                 if chrom.startswith('chr'):
                     # remove the chr part from chromosome name
@@ -103,7 +103,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 else:
                     # prefix with 'chr' the chromosome name
                     chrom = 'chr' + chrom
-                if chrom not in list(bwh.chroms().keys()):
+                if chrom not in bwh.chroms():
                     exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
             weights = []

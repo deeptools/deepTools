@@ -8,3 +8,4 @@ Some of the features of deepTools are not self-explanatory. Below, we provide li
  * :doc:`feature/read_extension`
  * :doc:`feature/unscaled_regions`
  * :doc:`feature/read_offsets`
+ * :doc:`feature/deepBlue`

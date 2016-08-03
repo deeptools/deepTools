@@ -197,12 +197,20 @@ class deepBlue(object):
         """
         Like stats() from pyBigWig, but only ever returns the mean
         """
-        vals = self.values(chrom, start, end)
-        if np.all(np.isnan(vals)):
+        ints = self.intervals(chrom, start, end)
+        if len(ints) == 0 or np.all(np.isnan(ints)):
             return None
-        rv = np.nanmean(vals)
-        if np.isnan(rv):
-            return None
+        weights = []
+        vals = np.array([x[2] for x in ints])
+        for x in ints:
+            s = x[0]
+            e = x[1]
+            if start > 0 and s < start:
+                s = start
+            if end > 0 and e > end:
+                e = end
+            weights.append(e - s)
+        rv = np.average(vals, weights=np.array(weights))
         return [rv]
 
     def close(self):

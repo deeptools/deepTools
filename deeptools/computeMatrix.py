@@ -12,10 +12,8 @@ from deeptools import heatmapper
 
 
 def parse_arguments(args=None):
-    dbParser = parserCommon.deepBlueOptionalArgs()
     parser = \
         argparse.ArgumentParser(
-            parents=[dbParser],
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
 
@@ -43,6 +41,8 @@ $ computeMatrix scale-regions --help
         dest='command',
         metavar='')
 
+    dbParser = parserCommon.deepBlueOptionalArgs()
+
     # scale-regions mode options
     subparsers.add_parser(
         'scale-regions',
@@ -50,7 +50,8 @@ $ computeMatrix scale-regions --help
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='scale-regions'),
-                 parserCommon.gtf_options()],
+                 parserCommon.gtf_options(),
+                 dbParser],
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix -S '
@@ -63,7 +64,8 @@ $ computeMatrix scale-regions --help
         parents=[computeMatrixRequiredArgs(),
                  computeMatrixOutputArgs(),
                  computeMatrixOptArgs(case='reference-point'),
-                 parserCommon.gtf_options()],
+                 parserCommon.gtf_options(),
+                 dbParser],
         help="Reference-point refers to a position within a BED region "
         "(e.g., the starting point). In this mode, only those genomic"
         "positions before (upstream) and/or after (downstream) of the "
