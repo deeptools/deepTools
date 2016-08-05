@@ -1195,8 +1195,10 @@ class _matrix(object):
         self.group_boundaries = [0]
         _clustered_regions = []
         _clustered_matrix = []
+        cluster_number = 1
         for cluster in cluster_order:
-            self.group_labels.append("c{}".format(cluster + 1))
+            self.group_labels.append("cluster_{}".format(cluster_number))
+            cluster_number += 1
             cluster_ids = _cluster_ids_list[cluster]
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))
