@@ -201,6 +201,15 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'plotHeatmap/plotProfile will default to using "TSS" as the '
                               'label.')
 
+        optional.add_argument('--refPointLabel',
+                              default='TSS',
+                              help='[only for reference-point mode] Label '
+                                   'shown in the plot for the '
+                                   'reference-point. Default '
+                                   'is the same as the reference point selected '
+                                   '(e.g. TSS), but could be anything, e.g. '
+                                   '"peak start".')
+
         # set region body length to zero for reference point mode
         optional.add_argument('--regionBodyLength', help=argparse.SUPPRESS,
                               default=0, type=int)
@@ -375,6 +384,12 @@ def main(args=None):
                   'unscaled 5 prime': args.unscaled5prime,
                   'unscaled 3 prime': args.unscaled3prime
                   }
+
+    if args.command == 'scale-regions':
+        parameters = dict(parameters.items() + {'startLabel': args.startLabel,
+                  'endLabel': args.endLabel}.items())
+    elif args.command == 'reference-point':
+        parameters = dict(parameters.items() + {'refPointLabel': args.refPointLabel}.items())
 
     hm = heatmapper.heatmapper()
 
