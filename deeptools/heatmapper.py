@@ -1189,9 +1189,6 @@ class _matrix(object):
 
         # reorder clusters based on mean
         cluster_order = np.argsort(_clustered_mean)[::-1]
-        print "cluster order: {}".format(cluster_order)
-        for oo in cluster_order:
-            print "cluster len {}, mean {}".format(len(_cluster_ids_list[oo]), _clustered_mean[oo])
 
         # create groups using the clustering
         self.group_labels = []
