@@ -373,7 +373,9 @@ def main(args=None):
                   'sort regions': args.sortRegions,
                   'sort using': args.sortUsing,
                   'unscaled 5 prime': args.unscaled5prime,
-                  'unscaled 3 prime': args.unscaled3prime
+                  'unscaled 3 prime': args.unscaled3prime,
+                  'startLabel': args.startLabel,
+                  'endLabel': args.endLabel
                   }
 
     hm = heatmapper.heatmapper()
