@@ -153,22 +153,14 @@ class deepBlue(object):
             raise RuntimeError("The start position MUST be less then the end position ({} and {})".format(start, end))
 
         # Get the experiment information
-        (status, queryID) = self.server.select_experiments(self.sample, chrom, None, None, self.userKey)
+        (status, queryID) = self.server.select_experiments(self.sample, chrom, start, end, self.userKey)
         if status != "okay":
             raise RuntimeError("Received the following error while fetching values in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, queryID))
         if not queryID:
             raise RuntimeError("Somehow, we received None as a query ID (range {}:{}-{} in file '{}')".format(chrom, start, end, self.sample))
 
-        # Filter by overlap
-        (status, filterID) = self.server.input_regions(self.genome, "{}\t{}\t{}".format(chrom, start, end), self.userKey)
-        if status != "okay":
-            raise RuntimeError("Received the following error while setting the region filter {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, filterID))
-        (status, intersectID) = self.server.intersection(queryID, filterID, self.userKey)
-        if status != "okay":
-            raise RuntimeError("Received the following error while setting performing the intersect on file '{}': {}".format(self.sample, intersectID))
-
         # Query the regions
-        (status, reqID) = self.server.get_regions(intersectID, "START,END,VALUE", self.userKey)
+        (status, reqID) = self.server.get_regions(queryID, "START,END,VALUE", self.userKey)
         if status != "okay":
             raise RuntimeError("Received the following error while fetching regions in the range {}:{}-{} in file '{}': {}".format(chrom, start, end, self.sample, reqID))
 

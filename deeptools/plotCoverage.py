@@ -72,7 +72,6 @@ def required_args():
 
     required.add_argument('--plotFile', '-o',
                           help='File name to save the plot to.',
-                          type=argparse.FileType('w'),
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -224,7 +223,7 @@ def main(args=None):
     axs[1].set_xlabel('coverage (#reads per bp)')
     axs[1].set_ylabel('fraction of bases sampled >= coverage')
     axs[1].legend(fancybox=True, framealpha=0.5)
-    plt.savefig(args.plotFile.name, format=args.plotFileFormat)
+    plt.savefig(args.plotFile, format=args.plotFileFormat)
     plt.close()
 
 if __name__ == "__main__":
