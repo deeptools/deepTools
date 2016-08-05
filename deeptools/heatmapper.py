@@ -1167,8 +1167,7 @@ class _matrix(object):
             centroids, _ = kmeans(matrix, k)
             # order the centroids in an attempt to
             # get the same cluster order
-            order = np.argsort(centroids.mean(axis=1))[::-1]
-            cluster_labels, _ = vq(matrix, centroids[order, :])
+            cluster_labels, _ = vq(matrix, centroids)
 
         if method == 'hierarchical':
             # normally too slow for large data sets
@@ -1180,14 +1179,25 @@ class _matrix(object):
             # Thus, for consistency, we subtract 1
             cluster_labels -= 1
 
+        # sort clusters
+        _clustered_mean = []
+        _cluster_ids_list = []
+        for cluster in range(k):
+            cluster_ids = np.flatnonzero(cluster_labels == cluster)
+            _cluster_ids_list.append(cluster_ids)
+            _clustered_mean.append(self.matrix[cluster_ids, :].mean())
+
+        # reorder clusters based on mean
+        cluster_order = np.argsort(_clustered_mean)[::-1]
+
         # create groups using the clustering
         self.group_labels = []
         self.group_boundaries = [0]
         _clustered_regions = []
         _clustered_matrix = []
-        for cluster in range(k):
-            self.group_labels.append("cluster_{}".format(cluster + 1))
-            cluster_ids = np.flatnonzero(cluster_labels == cluster)
+        for cluster in cluster_order:
+            self.group_labels.append("c{}".format(cluster + 1))
+            cluster_ids = _cluster_ids_list[cluster]
             self.group_boundaries.append(self.group_boundaries[-1] +
                                          len(cluster_ids))
             _clustered_matrix.append(self.matrix[cluster_ids, :])
