@@ -53,7 +53,7 @@ The following example creates a heatmap over hg19 transcripts for our test ENCOD
                                  --afterRegionStartLength 3000
                                  --skipZeros -o matrix.mat.gz
 
-   $ plotHeatap -m matrix.mat.gz \
+   $ plotHeatmap -m matrix.mat.gz \
          -out ExampleHeatmap1.png \
 
 .. image:: ../../images/test_plots/ExampleHeatmap1.png
