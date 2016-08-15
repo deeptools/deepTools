@@ -6,6 +6,7 @@
  * Switched from using the 'twobitreader' python module to our new custom 'py2bit' module for accessing 2bit files. This fixes the performance regression seen in computeGCBias starting in version 2.3.0 (#383).
  * `bigwigCompare`, `computeMatrix`, and `multiBigwigSummary` can read signal files hosted on [deepBlue](http://deepblue.mpi-inf.mpg.de/).
  * Fixed a minor bug in `deeptools`, where the `--version` option was ignored (see #404).
+ * Text in SVG and PDF files is now actual text and not a path (see #403).
 
 2.3.3
 
