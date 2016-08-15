@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import sys
 from deeptools._version import __version__
 
 
@@ -66,6 +67,6 @@ def process_args(args=None):
 
 
 def main(args=None):
-    if args is None:
+    if len(sys.argv) == 1:
         args = ["-h"]
     process_args(args)
