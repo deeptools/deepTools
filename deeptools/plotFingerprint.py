@@ -4,8 +4,10 @@
 import numpy as np
 import argparse
 import sys
-from matplotlib import use as mplt_use
-mplt_use('Agg')
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 from scipy import interpolate
 
