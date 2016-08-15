@@ -6,7 +6,7 @@ import argparse
 import sys
 import matplotlib
 matplotlib.use('Agg')
-matploblib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 from scipy import interpolate

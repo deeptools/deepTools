@@ -4,7 +4,7 @@
 import argparse
 import matplotlib
 matplotlib.use('Agg')
-matploblib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 
 from deeptools.correlation import Correlation

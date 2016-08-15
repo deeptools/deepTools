@@ -131,7 +131,7 @@ def main(args=None):
     if args.histogram:
         import matplotlib
         matplotlib.use('Agg')
-        matploblib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['pdf.fonttype'] = 42
         matplotlib.rcParams['svg.fonttype'] = 'none'
         import matplotlib.pyplot as plt
 
