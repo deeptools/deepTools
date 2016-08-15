@@ -5,6 +5,8 @@ import scipy.cluster.hierarchy as sch
 import scipy.stats
 import matplotlib as mpl
 mpl.use('Agg')
+mpl.rcParams['pdf.fonttype'] = 42
+mpl.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker

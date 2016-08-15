@@ -541,8 +541,10 @@ def bin_by(x, y, nbins=10):
 
 
 def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=None):
-    from matplotlib import use
-    use('Agg')
+    import matplotlib
+    matplotlib.use('Agg')
+    matploblib.rcParams['pdf.fonttype'] = 42
+    matplotlib.rcParams['svg.fonttype'] = 'none'
     import matplotlib.pyplot as plt
 
     # prepare data for boxplot

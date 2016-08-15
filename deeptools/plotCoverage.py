@@ -6,8 +6,10 @@ import sys
 import argparse
 import numpy as np
 
-from matplotlib import use as mplt_use
-mplt_use('Agg')
+import matplotlib
+matplotlib.use('Agg')
+matploblib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 
 import deeptools.countReadsPerBin as countR
