@@ -1,3 +1,8 @@
+2.3.4
+
+ * Fixed bug #405, which dealt with the SES normalization in bamCompare (it was producing an error and terminating the program).
+ * Fixed bug #407, which dealt with multiBamSummary or multiBigwigSummary bins and saving the raw data. This was causing an error and the program to terminate.
+
 2.3.3
 
  * Fixed a bug wherein proper pairs where being incorrectly called improper pairs, thereby causing slightly incorrect read extension.

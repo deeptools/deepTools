@@ -196,7 +196,6 @@ def get_scale_factors(args):
                 float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped])))
             bam1.close()
             bam2.close()
-        mapped_reads = [bam1.mapped, bam2.mapped]
 
     elif args.scaleFactorsMethod == 'readCount':
         args.bam = args.bamfile1
@@ -231,7 +230,7 @@ def get_scale_factors(args):
                 args.bam = args.bamfile2
                 mapped_reads = mapped_reads[1]
             if mapped_reads is None:
-                mapped_reads = get_num_kept_reads(args.bam)
+                mapped_reads, _ = get_num_kept_reads(args)
 
         # Replace the arguments
         args.normalizeTo1x = normalizeTo1x

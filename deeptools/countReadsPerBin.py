@@ -434,6 +434,10 @@ class CountReadsPerBin(object):
                 else:
                     for exon in trans:
                         for startPos in range(exon[0], exon[1], exon[2]):
+                            if idx >= subnum_reads_per_bin.shape[0]:
+                                # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
+                                # Counts there are added to the bin before them, but range() will still try to include them.
+                                break
                             _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, startPos + exon[2]))
                             _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[idx, :]]) + "\n")
                             idx += 1
