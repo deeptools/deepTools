@@ -204,7 +204,7 @@ def getJSD(args, idx, mat):
         totalSignal = x * signalValues
         normalizedTotalSignal = np.cumsum(totalSignal) / np.sum(totalSignal).astype("float")
         binDist = np.cumsum(x).astype("float") / sum(x)
-        interpolater = interpolate.interp1d(binDist, normalizedTotalSignal, fill_value="extrapolate")
+        interpolater = interpolate.interp1d(binDist, normalizedTotalSignal, kind='linear', bounds_error=False, fill_value=(0, 1))
         return (binDist, normalizedTotalSignal, interpolater)
 
     # Interpolate the signals to evenly spaced bins, which also removes 0-coverage bins
