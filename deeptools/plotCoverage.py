@@ -108,8 +108,7 @@ def required_args():
 
     optional.add_argument('--outRawCounts',
                           help='Save raw counts (coverages) to file.',
-                          metavar='FILE',
-                          type=argparse.FileType('w'))
+                          metavar='FILE')
 
     optional.add_argument('--plotFileFormat',
                           metavar='FILETYPE',
@@ -152,10 +151,11 @@ def main(args=None):
         # labels
         header = "#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        with open(args.outRawCounts.name, 'r+') as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(header + content)
+        f = open(args.outRawCounts, 'r+')
+        content = f.read()
+        f.seek(0, 0)
+        f.write(header + content)
+        f.close()
 
     if num_reads_per_bin.shape[0] < 2:
         exit("ERROR: too few non-zero bins found.\n"
