@@ -2,6 +2,7 @@
 
  * Various Galaxy wrapper fixes (e.g., issue #415)
  * Fixed issue #413, wherein the --nanAfterEnd option sometimes causes computeMatrix to throw an error.
+ * Fixed issue #416, wherein --outRawCounts in multiBamSummary and multiBigwigSummary would cause an error if python3 was being used.
 
 2.3.4
 
