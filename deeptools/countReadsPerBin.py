@@ -301,15 +301,16 @@ class CountReadsPerBin(object):
                                  "the chromosomes that were not common between the bigwig files\n")
 
             # concatenate intermediary bedgraph files
+            ofile = open(self.out_file_for_raw_data, "w")
             for _values, tempFileName in imap_res:
                 if tempFileName:
                     # concatenate all intermediate tempfiles into one
                     _foo = open(tempFileName, 'r')
-                    shutil.copyfileobj(_foo, self.out_file_for_raw_data)
+                    shutil.copyfileobj(_foo, ofile)
                     _foo.close()
                     os.remove(tempFileName)
 
-            self.out_file_for_raw_data.close()
+            ofile.close()
 
         try:
             num_reads_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
