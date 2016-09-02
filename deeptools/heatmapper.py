@@ -500,8 +500,20 @@ class heatmapper(object):
                     e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
                     zones = [(upstream, a), (downstream, e)]
 
-                padLeftNaN = int(round(float(padLeftNaN) / parameters['bin size']))
-                padRightNaN = int(round(float(padRightNaN) / parameters['bin size']))
+                foo = parameters['upstream']
+                bar = parameters['downstream']
+                if feature_strand == '-':
+                    foo, bar = bar, foo
+                if padLeftNaN > 0:
+                    expected = foo // parameters['bin size']
+                    padLeftNaN = int(round(float(padLeftNaN) / parameters['bin size']))
+                    if expected - padLeftNaN - a > 0:
+                        padLeftNaN += 1
+                if padRightNaN > 0:
+                    expected = bar // parameters['bin size']
+                    padRightNaN = int(round(float(padRightNaN) / parameters['bin size']))
+                    if expected - padRightNaN - e > 0:
+                        padRightNaN += 1
 
                 coverage = []
                 # compute the values for each of the files being processed.

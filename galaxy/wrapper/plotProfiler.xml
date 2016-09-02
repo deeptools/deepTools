@@ -16,8 +16,8 @@
             #if $output.showOutputSettings == "yes"
                 --plotFileFormat $output.outFileFormat
 
-                #if $dpi:
-                    --dpi "$dpi"
+                #if $output.dpi:
+                    --dpi "$output.dpi"
                 #end if
 
                 #if $output.saveSortedRegions:

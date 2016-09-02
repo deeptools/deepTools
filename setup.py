@@ -145,7 +145,7 @@ setup(
     description='Useful tools for exploring deep sequencing data ',
     long_description=openREADME(),
     install_requires=[
-        "numpy >= 1.8.0",
+        "numpy >= 1.9.0",
         "scipy >= 0.17.0",
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",

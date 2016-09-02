@@ -297,15 +297,16 @@ def getScorePerBin(bigWigFiles, binLength,
                              "the chromosomes that were not common between the bigwig files\n")
 
         # concatenate intermediary bedgraph files
+        ofile = open(out_file_for_raw_data, "w")
         for _values, tempFileName in imap_res:
             if tempFileName:
                 # concatenate all intermediate tempfiles into one
                 f = open(tempFileName, 'r')
-                shutil.copyfileobj(f, out_file_for_raw_data)
+                shutil.copyfileobj(f, ofile)
                 f.close()
                 os.remove(tempFileName)
 
-        out_file_for_raw_data.close()
+        ofile.close()
 
     # the matrix scores are in the first element of each of the entries in imap_res
     score_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
