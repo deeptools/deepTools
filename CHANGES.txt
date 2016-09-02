@@ -1,3 +1,8 @@
+2.3.5
+
+ * Various Galaxy wrapper fixes (e.g., issue #415)
+ * Fixed issue #413, wherein the --nanAfterEnd option sometimes causes computeMatrix to throw an error.
+
 2.3.4
 
  * Fixed bug #405, which dealt with the SES normalization in bamCompare (it was producing an error and terminating the program).
