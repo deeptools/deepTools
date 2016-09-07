@@ -54,7 +54,7 @@ $ computeMatrix scale-regions --help
                  dbParser],
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
-        usage='An example usage is:\n  computeMatrix -S '
+        usage='An example usage is:\n  computeMatrix scale-regions -S '
         '<biwig file> -R <bed file> -b 1000\n\n')
 
     # reference point arguments
@@ -70,7 +70,7 @@ $ computeMatrix scale-regions --help
         "(e.g., the starting point). In this mode, only those genomic"
         "positions before (upstream) and/or after (downstream) of the "
         "reference point will be plotted.",
-        usage='An example usage is:\n  computeMatrix -S '
+        usage='An example usage is:\n  computeMatrix reference-point -S '
         '<biwig file> -R <bed file> -a 3000 -b 3000\n\n')
 
     return parser

@@ -16,30 +16,30 @@ This tool performs a variety of operations on files produced by computeMatrix.
 
 detailed help:
 
-  subsetMatrix info -h
+  computeMatrixOperations info -h
 
 or
 
-  subsetMatrix subset -h
+  computeMatrixOperations subset -h
 
 or
 
-  subsetMatrix filterStrand -h
+  computeMatrixOperations filterStrand -h
 
 or
 
-  subsetMatrix rbind -h
+  computeMatrixOperations rbind -h
 
 or
 
-  subsetMatrix cbind -h
+  computeMatrixOperations cbind -h
 
 or
-  subsetMatrix sort -h
+  computeMatrixOperations sort -h
 
 """,
         epilog='example usages:\n'
-               'subsetMatrix subset -m input.mat.gz -o output.mat.gz --group "group 1" "group 2" --samples "sample 3" "sample 10"\n\n'
+               'computeMatrixOperations subset -m input.mat.gz -o output.mat.gz --group "group 1" "group 2" --samples "sample 3" "sample 10"\n\n'
                ' \n\n')
 
     subparsers = parser.add_subparsers(
@@ -53,7 +53,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[infoArgs()],
         help="Print group and sample information",
-        usage='An example usage is:\n  subsetMatrix info -m input.mat.gz\n\n')
+        usage='An example usage is:\n  computeMatrixOperations info -m input.mat.gz\n\n')
 
     # subset
     subparsers.add_parser(
@@ -61,7 +61,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[infoArgs(), subsetArgs()],
         help="Actually subset the matrix. The group and sample orders are honored, so one can also reorder files.",
-        usage='An example usage is:\n  subsetMatrix subset -m '
+        usage='An example usage is:\n  computeMatrixOperations subset -m '
         'input.mat.gz -o output.mat.gz --groups "group 1" "group 2" '
         '--samples "sample 3" "sample 10"\n\n')
 
@@ -71,7 +71,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[infoArgs(), filterStrandArgs()],
         help="Filter entries by strand.",
-        usage='Example usage:\n  subsetMatrix filterStrand -m '
+        usage='Example usage:\n  computeMatrixOperations filterStrand -m '
         'input.mat.gz -o output.mat.gz --strand +\n\n')
 
     # rbind
@@ -80,7 +80,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bindArgs()],
         help="merge multiple matrices by concatenating them head to tail. This assumes that the same samples are present in each in the same order.",
-        usage='Example usage:\n  subsetMatrix rbind -m '
+        usage='Example usage:\n  computeMatrixOperations rbind -m '
         'input1.mat.gz input2.mat.gz -o output.mat.gz\n\n')
 
     # cbind
@@ -89,7 +89,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bindArgs()],
         help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs.",
-        usage='Example usage:\n  subsetMatrix cbind -m '
+        usage='Example usage:\n  computeMatrixOperations cbind -m '
         'input1.mat.gz input2.mat.gz -o output.mat.gz\n\n')
 
     # sort
@@ -98,7 +98,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[sortArgs()],
         help='Sort a matrix file to correspond to the order if entries in the desired input files. The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first).',
-        usage='Example usage:\n  subsetMatrix sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
+        usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
 
     return parser
 
@@ -617,8 +617,12 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     hm.matrix.group_boundaries = boundaries
 
 
-def main():
-    args = parse_arguments().parse_args()
+def main(args=None):
+    if len(sys.argv) == 1:
+        args = ["-h"]
+    if len(sys.argv) == 2:
+        args = [sys.argv[1], "-h"]
+    args = parse_arguments().parse_args(args)
 
     hm = heatmapper.heatmapper()
     if not isinstance(args.matrixFile, list):
@@ -661,7 +665,3 @@ def main():
         hm.save_matrix(args.outFileName)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))
-
-
-if __name__ == "__main__":
-    main()

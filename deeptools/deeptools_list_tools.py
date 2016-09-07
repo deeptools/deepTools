@@ -50,6 +50,9 @@ Data Analysis.” Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
     plotProfile             plots the average profile of user selected regions over different genomic scores
     plotEnrichment          plots the read/fragment coverage of one or more sets of regions
 
+[Miscellaneous]
+    computeMatrixOperations Modifies the output of computeMatrix in a variety of ways.
+
 
 For more information visit: http://deeptools.readthedocs.org
 """)
