@@ -520,6 +520,7 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
         if label is not None:
             if label not in labels:
                 labels.append(label)
+                regions.append([])
             labelIdx = labels.index(label)
             regions[labelIdx].append(name)
 
@@ -536,8 +537,13 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                     continue
                 if label not in labels:
                     labels.append(label)
+                    regions.append([])
                 labelIdx = labels.index(label)
-                regions[labelIdx].append(name)
+                try:
+                    regions[labelIdx].append(name)
+                except:
+                    print((len(regions), labels, label, labelIdx))
+                    assert(1==0)
 
 
 def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
@@ -549,7 +555,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     regions = []
     defaultGroup = None
     if len(regionsFileName) == 1:
-        defaultGroup = "gene"
+        defaultGroup = "genes"
     for fname in regionsFileName:
         fp = dti.openPossiblyCompressed(fname)
         line = dti.getNext(fp)
@@ -577,35 +583,50 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         fp.close()
 
     # Sanity check and get the boundaries
-    boundaries = [0]
-    for v in regions:
-        sz = len(v)
-        boundaries.append(boundaries[-1] + sz)
-    if len(labels) != len(hm.parameters["group_labels"]):
-        sys.exit("The number of groups of regions in the region file(s) does not match the number in the output of computeMatrix.\n")
-    if boundaries[-1] != hm.matrix.matrix.shape[0]:
-        sys.exit("There is a mismatch between the number of regions specified in the region file(s) and that in the output of computeMatrix.\n")
+    # This doesn't handle regions that are deleted
+    #boundaries = [0]
+    #for v in regions:
+    #    sz = len(v)
+    #    boundaries.append(boundaries[-1] + sz)
+    # if len(labels) != len(hm.parameters["group_labels"]):
+    #     sys.exit("The number of groups of regions in the region file(s) does not match the number in the output of computeMatrix.\n")
+    # if boundaries[-1] != hm.matrix.matrix.shape[0]:
+    #     sys.exit("There is a mismatch between the number of regions specified in the region file(s) and that in the output of computeMatrix.\n")
+
+    # Do some sanity checking on the group labels and region names within them
+    s1 = set(hm.parameters['group_labels'])
+    s2 = set(labels)
+    for e in s2:
+        if e not in s1:
+            sys.exit("The computeMatrix output is missing the '{}' region group. It has [] but the specified regions have {}.\n".format(e, s1, s2))
 
     # Make a dictionary out of current labels and regions
     d = dict()
     pos = 0
+    groupSizes = dict()
     for idx, label in enumerate(hm.parameters['group_labels']):
         s = hm.parameters['group_boundaries'][idx]
         e = hm.parameters['group_boundaries'][idx + 1]
         if label not in labels:
-            sys.exit("{} not in the computeMatrix output ({})!\n".format(label, hm.parameters["group_labels"]))
+            continue
         d[label] = dict()
+        groupSize = 0
         for reg in hm.matrix.regions[s:e]:
             d[label][reg[2]] = pos
             pos += 1
+            groupSize += 1
+        groupSizes[label] = groupSize
 
     # Reorder
     order = []
+    boundaries = [0]
     for idx, label in enumerate(labels):
         for name in regions[idx]:
             if name not in d[label]:
-                sys.exit("There is a mismatch between the names in the input region files and that from computeMatrix, which is missing {} in the {} group".format(name, label))
+                sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
+                continue
             order.append(d[label][name])
+        boundaries.append(groupSizes[label] + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
     hm.matrix.matrix = hm.matrix.matrix[order, :]
