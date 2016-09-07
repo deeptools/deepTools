@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import deeptools.heatmapper as heatmapper
-import deeptoolsintervals as dti
+import deeptoolsintervals.parse as dti
 import numpy as np
 import argparse
 import sys
@@ -170,6 +170,10 @@ def filterStrandArgs():
 def sortArgs():
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--matrixFile', '-m',
+                          help='Matrix file from the computeMatrix tool.',
+                          required=True)
 
     required.add_argument('--outFileName', '-o',
                           help='Output file name',
@@ -513,12 +517,11 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
     cols = line.split("\t")
     if cols[2].lower() == transcriptID.lower():
         label, name = loadGTFtranscript(cols, file_label, defaultGroup, transcript_id_designator)
-        if label is None:
-            continue
-        if label not in labels:
-            labels.append(label)
-        labelIdx = labels.index(label)
-        regions[labelIdx].append(name)
+        if label is not None:
+            if label not in labels:
+                labels.append(label)
+            labelIdx = labels.index(label)
+            regions[labelIdx].append(name)
 
     for line in fp:
         if not isinstance(line, str):
@@ -583,25 +586,23 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     if boundaries[-1] != hm.matrix.matrix.shape[0]:
         sys.exit("There is a mismatch between the number of regions specified in the region file(s) and that in the output of computeMatrix.\n")
 
-    # Make a dictionary out of labels and regions
+    # Make a dictionary out of current labels and regions
     d = dict()
     pos = 0
-    for idx, label in enumerate(labels):
-        subRegions = regions[idx]
-        if label not in hm.parameters["group_labels"]:
+    for idx, label in enumerate(hm.parameters['group_labels']):
+        s = hm.parameters['group_boundaries'][idx]
+        e = hm.parameters['group_boundaries'][idx + 1]
+        if label not in labels:
             sys.exit("{} not in the computeMatrix output ({})!\n".format(label, hm.parameters["group_labels"]))
         d[label] = dict()
-        for name in subRegions:
-            d[label][name] = pos
+        for reg in hm.matrix.regions[s:e]:
+            d[label][reg[2]] = pos
             pos += 1
 
     # Reorder
     order = []
-    for idx, label in enumerate(hm.parameters['group_labels']):
-        s = hm.parameters['group_boundaries'][idx]
-        e = hm.parameters['group_boundaries'][idx + 1]
-        for reg in hm.matrix.regions[s:e]:
-            name = reg[2]
+    for idx, label in enumerate(labels):
+        for name in regions[idx]:
             if name not in d[label]:
                 sys.exit("There is a mismatch between the names in the input region files and that from computeMatrix, which is missing {} in the {} group".format(name, label))
             order.append(d[label][name])
