@@ -539,11 +539,7 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                     labels.append(label)
                     regions.append([])
                 labelIdx = labels.index(label)
-                try:
-                    regions[labelIdx].append(name)
-                except:
-                    print((len(regions), labels, label, labelIdx))
-                    assert(1==0)
+                regions[labelIdx].append(name)
 
 
 def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
@@ -581,17 +577,6 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         else:
             loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup)
         fp.close()
-
-    # Sanity check and get the boundaries
-    # This doesn't handle regions that are deleted
-    #boundaries = [0]
-    #for v in regions:
-    #    sz = len(v)
-    #    boundaries.append(boundaries[-1] + sz)
-    # if len(labels) != len(hm.parameters["group_labels"]):
-    #     sys.exit("The number of groups of regions in the region file(s) does not match the number in the output of computeMatrix.\n")
-    # if boundaries[-1] != hm.matrix.matrix.shape[0]:
-    #     sys.exit("There is a mismatch between the number of regions specified in the region file(s) and that in the output of computeMatrix.\n")
 
     # Do some sanity checking on the group labels and region names within them
     s1 = set(hm.parameters['group_labels'])
