@@ -296,7 +296,7 @@ def filterHeatmap(hm, args):
 
     # Get the new bounds
     for idx in range(1, len(hm.matrix.group_boundaries)):
-        i = np.sum(keep[hm.matrix.group_boundaries[idx - 1]:hm.matrix.group_boundaries[idx]])
+        i = int(np.sum(keep[hm.matrix.group_boundaries[idx - 1]:hm.matrix.group_boundaries[idx]]))
         bounds.append(bounds[idx - 1] + i)
 
     hm.matrix.group_boundaries = bounds
