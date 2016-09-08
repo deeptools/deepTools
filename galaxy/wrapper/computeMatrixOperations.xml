@@ -124,6 +124,12 @@
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <output name="outFileName" file="computeMatrixOperations.txt" ftype="txt" />
         </test>
+        <test>
+            <param name="command" value="rbind" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <output name="outFileName" file="computeMatrixOperations_result2.mat.gz" ftype="txt" />
+        </test>
     </tests>
     <help>
 <![CDATA[
