@@ -102,8 +102,7 @@ or
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
-        version='%(prog)s {}'.format(__version__))
-
+                        version='%(prog)s {}'.format(__version__))
 
     return parser
 
