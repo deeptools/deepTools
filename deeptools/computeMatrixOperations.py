@@ -401,7 +401,7 @@ def cbindMatrices(hm, args):
 
         # Add on additional NA initialized columns
         ncol = hm.matrix.matrix.shape[1]
-        hm.matrix.matrix = np.hstack((hm.matrix.matrix, np.empty(hm.matrix.matrix.shape)))
+        hm.matrix.matrix = np.hstack((hm.matrix.matrix, np.empty(hm2.matrix.matrix.shape)))
         hm.matrix.matrix[:, ncol:] = np.NAN
 
         # Update the values
