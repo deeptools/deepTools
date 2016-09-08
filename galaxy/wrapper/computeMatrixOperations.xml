@@ -11,7 +11,7 @@
             #if $submodule.command == "info":
                 info
                 -m $submodule.matrixFile
-                > $outFileName
+                > $outFileTxt
             #else if $submodule.command == "subset":
                 subset
                 -m $submodule.matrixFile
@@ -73,16 +73,16 @@
             <when value="subset">
                 <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
                        label="Matrix file from the computeMatrix tool" help=""/>
-                <param name="--groups" type="text" optional="true" label="Region groups to include."
+                <param argument="groups" type="text" optional="true" label="Region groups to include."
                     help="If blank, all region groups are output. Alternatively, one or more groups listed in the output of the 'info' command can be used (separate groups by a space and enclose in quotes if needed)" />
-                <param name="--samples" type="text" optional="true" label="Samples to include."
+                <param argument="samples" type="text" optional="true" label="Samples to include."
                     help="If blank, all samples are output. Alternatively, one or more samples listed in the output of the 'info' command can be used (separate sample names by a space and enclose in quotes if needed)" />
             </when>
 
             <when value="filterStrand">
                 <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
                        label="Matrix file from the computeMatrix tool" help=""/>
-                <param argument="--strand" type="select" label="Only include regions on this strand."
+                <param argument="strand" type="select" label="Only include regions on this strand."
                     help="Only regions on the desired strand will be included in the output. If you desire to instead remove regions on only one strand (or the . strand), separately run this on the other strand and then use the rbind operation.">
                     <option value="+">+</option>
                     <option value="-">-</option>
@@ -122,7 +122,7 @@
             ))
             </filter>
         </data>
-        <data format="txt" name="outFileName" label="${tool.name} info on ${on_string}">
+        <data format="txt" name="outFileTxt" label="${tool.name} info on ${on_string}">
             <filter>
             ((
                 submodule['command'] == "info"
@@ -134,7 +134,7 @@
         <test>
             <param name="command" value="info" />
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileName" file="computeMatrixOperations.txt" ftype="txt" />
+            <output name="outFileTxt" file="computeMatrixOperations.txt" ftype="txt" />
         </test>
         <test>
             <param name="command" value="rbind" />
