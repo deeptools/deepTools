@@ -28,17 +28,29 @@
                 --strand $submodule.strand
                 -o $outFileName
             #else if $submodule.command == "rbind":
+                #set $files=[]
+                #for $f in $submodule.matrixFiles:
+                    #silent $files.append($f.matrixFile)
+                #end for
                 rbind
-                -m $submodule.matrixFile
+                -m '#echo "' '".join($files)#'
                 -o $outFileName
             #else if $submodule.command == "cbind":
                 cbind
-                -m $submodule.matrixFile
+                #set $files=[]
+                #for $f in $submodule.matrixFiles:
+                    #silent $files.append($f.matrixFile)
+                #end for
+                -m '#echo "' '".join($files)#'
                 -o $outFileName
             #else if $submodule.command == "sort":
                 sort
+                #set $files=[]
+                #for $f in $submodule.regionsFiles:
+                    #silent $files.append($f.regionsFile)
+                #end for
                 -m $submodule.matrixFile
-                -R $submodule.regions
+                -R '#echo "' '".join($files)#'
                 -o $outFileName
             #end if
 ]]>

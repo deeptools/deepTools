@@ -16,21 +16,21 @@ cd ..
 conda uninstall -y sqlite
 pip install . 
 /home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres \
-galaxy/wrapper/bamCompare.xml \
-galaxy/wrapper/bamCoverage.xml \
-galaxy/wrapper/bamPEFragmentSize.xml \
-galaxy/wrapper/bigwigCompare.xml \
-galaxy/wrapper/computeGCBias.xml \
-galaxy/wrapper/computeMatrix.xml \
+#galaxy/wrapper/bamCompare.xml \
+#galaxy/wrapper/bamCoverage.xml \
+#galaxy/wrapper/bamPEFragmentSize.xml \
+#galaxy/wrapper/bigwigCompare.xml \
+#galaxy/wrapper/computeGCBias.xml \
+#galaxy/wrapper/computeMatrix.xml \
 galaxy/wrapper/computeMatrixOperations.xml \
-galaxy/wrapper/correctGCBias.xml \
-galaxy/wrapper/multiBamSummary.xml \
-galaxy/wrapper/multiBigwigSummary.xml \
-galaxy/wrapper/plotCorrelation.xml \
-galaxy/wrapper/plotCoverage.xml \
-galaxy/wrapper/plotEnrichment.xml \
-galaxy/wrapper/plotFingerprint.xml \
-galaxy/wrapper/plotHeatmap.xml \
-galaxy/wrapper/plotPCA.xml \
+#galaxy/wrapper/correctGCBias.xml \
+#galaxy/wrapper/multiBamSummary.xml \
+#galaxy/wrapper/multiBigwigSummary.xml \
+#galaxy/wrapper/plotCorrelation.xml \
+#galaxy/wrapper/plotCoverage.xml \
+#galaxy/wrapper/plotEnrichment.xml \
+#galaxy/wrapper/plotFingerprint.xml \
+#galaxy/wrapper/plotHeatmap.xml \
+#galaxy/wrapper/plotPCA.xml \
 galaxy/wrapper/plotProfiler.xml 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
 test ${PIPESTATUS[0]} -eq 0
