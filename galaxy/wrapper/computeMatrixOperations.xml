@@ -122,7 +122,7 @@
         <test>
             <param name="command" value="info" />
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileName" file="computeMatrixOperations.txt" ftype="text" />
+            <output name="outFileName" file="computeMatrixOperations.txt" ftype="txt" />
         </test>
     </tests>
     <help>
