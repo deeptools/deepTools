@@ -30,7 +30,7 @@
             #else if $submodule.command == "rbind":
                 #set $files=[]
                 #for $f in $submodule.matrixFiles:
-                    #silent $files.append($f.matrixFile)
+                    #silent $files.append(str($f.matrixFile))
                 #end for
                 rbind
                 -m '#echo "' '".join($files)#'
@@ -39,7 +39,7 @@
                 cbind
                 #set $files=[]
                 #for $f in $submodule.matrixFiles:
-                    #silent $files.append($f.matrixFile)
+                    #silent $files.append(str($f.matrixFile))
                 #end for
                 -m '#echo "' '".join($files)#'
                 -o $outFileName
@@ -47,7 +47,7 @@
                 sort
                 #set $files=[]
                 #for $f in $submodule.regionsFiles:
-                    #silent $files.append($f.regionsFile)
+                    #silent $files.append(str($f.regionsFile))
                 #end for
                 -m $submodule.matrixFile
                 -R '#echo "' '".join($files)#'
