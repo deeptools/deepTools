@@ -6,6 +6,7 @@ import argparse
 import sys
 import os
 import csv
+from deeptools._version import __version__
 
 
 def parse_arguments():
@@ -99,6 +100,10 @@ or
         parents=[sortArgs()],
         help='Sort a matrix file to correspond to the order if entries in the desired input files. The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first).',
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
+
+    parser.add_argument('--version', action='version',
+        version='%(prog)s {}'.format(__version__))
+
 
     return parser
 
