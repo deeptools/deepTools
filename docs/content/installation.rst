@@ -10,7 +10,7 @@ Remember -- deepTools are available for **command line usage** as well as for
 Requirements
 -------------
 
-* Python 2.7
+* Python 2.7 or Python 3.x
 * numpy >= 1.8.0
 * scipy >= 0.17.0
 * twobitreader
@@ -18,7 +18,7 @@ Requirements
 * pysam >= 0.8
 * matplotlib >= 1.4.0
 
-The fastet way to obtain **Python 2.7 together with numpy and scipy** is
+The fastest way to obtain **Python 2.7 or Python 3.x together with numpy and scipy** is
 via the `Anaconda Scientific Python
 Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
