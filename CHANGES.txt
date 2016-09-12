@@ -3,6 +3,7 @@
  * Various Galaxy wrapper fixes (e.g., issue #415 and #417)
  * Fixed issue #413, wherein the --nanAfterEnd option sometimes causes computeMatrix to throw an error.
  * Fixed issue #416, wherein --outRawCounts in multiBamSummary and multiBigwigSummary would cause an error if python3 was being used.
+ * bamCompare with the SES scaling method now uses --region, if specified, for calculating the scaling factors.
 
 2.3.4
 

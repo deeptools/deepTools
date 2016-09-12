@@ -175,6 +175,7 @@ def get_scale_factors(args):
             args.sampleLength, args.numberOfSamples,
             1,
             blackListFileName=args.blackListFileName,
+            region=args.region,
             numberOfProcessors=args.numberOfProcessors,
             verbose=args.verbose,
             chrsToSkip=args.ignoreForNormalization)
