@@ -15,7 +15,6 @@ debug = 0
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                         normalizationLength,
                         avg_method='median', blackListFileName=None, numberOfProcessors=1,
-                        region=None,
                         verbose=False, chrsToSkip=[]):
     r"""
     Subdivides the genome into chunks to be analyzed in parallel
@@ -45,8 +44,6 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
         scale estimation. Usually the chrX is included.
     blackListFileName : str
         BED file containing blacklisted regions
-    region : str
-        If specified, the region to be analyzed
 
     Returns
     -------
@@ -80,18 +77,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     assert len(bamFilesList) == 2, "SES scale factors are only defined for 2 files"
 
     bamFilesHandlers = [bamHandler.openBam(x) for x in bamFilesList]
-    if region is not None:
-        _ = region.split(":")
-        chrom = _[0]
-        start = None
-        end = None
-        if len(_) > 1:
-            start = int(_[1])
-        if len(_) > 2:
-            start = int(_[2])
-        mappedReads = [x.count(chrom, start, end) for x in bamFilesHandlers]
-    else:
-        mappedReads = [x.mapped for x in bamFilesHandlers]
+    mappedReads = [x.mapped for x in bamFilesHandlers]
 
     sizeFactorBasedOnMappedReads = np.array(mappedReads, dtype='float64')
 
@@ -103,7 +89,6 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                                  extendReads=False,
                                  blackListFileName=blackListFileName,
                                  numberOfProcessors=numberOfProcessors,
-                                 region=region,
                                  verbose=verbose,
                                  chrsToSkip=chrsToSkip)
 
@@ -117,6 +102,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     # the transpose is taken to easily iterate by columns which are now
     # converted to rows
     num_reads_per_bin = num_reads_per_bin.transpose()
+#    np.savetxt("/home/ramirez/tmp/test.num_reads", num_reads_per_bin)
     # size factors based on order statistics
     # see Signal extraction scaling (SES) method in: Diaz et al (2012)
     # Normalization, bias correction, and peak calling for ChIP-seq.
