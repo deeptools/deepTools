@@ -2,6 +2,10 @@
 #-*- coding: utf-8 -*-
 
 from deeptools.multiBamSummary import main
+import sys
 
 if __name__ == "__main__":
-    main()
+    args = None
+    if len(sys.argv) == 1:
+        args = ["--help"]
+    main(args)
