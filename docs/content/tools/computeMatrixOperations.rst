@@ -7,6 +7,7 @@ computeMatrixOperations
 .. argparse::
    :ref: deeptools.computeMatrixOperations.parse_arguments
    :prog: computeMatrixOperations
+   :nodefault:
 
 Details
 ^^^^^^^
