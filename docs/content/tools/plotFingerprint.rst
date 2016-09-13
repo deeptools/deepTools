@@ -6,11 +6,12 @@ This quality control will most likely be of interest for you if you are dealing 
 .. note:: We've termed the plots described here "fingerprints" because we feel that they help us judging individual ChIP-seq files, but the original idea came from `Diaz et al. <https://github.com/songlab/chance/wiki/CHANCE-Manual#checking-the-strength-of-enrichment-in-the-ip>`__
 
 .. contents:: 
-    :local:
+   :local:
 
 .. argparse::
    :ref: deeptools.plotFingerprint.parse_arguments
    :prog: plotFingerprint
+   :nodefault:
 
 Background
 ^^^^^^^^^^^

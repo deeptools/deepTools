@@ -7,6 +7,7 @@ plotEnrichment
 .. argparse::
    :ref: deeptools.plotEnrichment.parse_arguments
    :prog: plotEnrichment
+   :nodefault:
 
 
 Background

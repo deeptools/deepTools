@@ -11,6 +11,7 @@ If you are not familiar with BAM, bedGraph and bigWig formats, you can read up o
 .. argparse::
    :ref: deeptools.bamCoverage.parseArguments
    :prog: bamCoverage
+   :nodefault:
 
 
 Usage hints

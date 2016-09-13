@@ -7,6 +7,7 @@ multiBigwigSummary
 .. argparse::
    :ref: deeptools.multiBigwigSummary.parse_arguments
    :prog: multiBigwigSummary
+   :nodefault:
 
 
 Example

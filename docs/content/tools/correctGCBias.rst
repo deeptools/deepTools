@@ -6,6 +6,7 @@ correctGCBias
 .. argparse::
    :ref: deeptools.correctGCBias.parse_arguments
    :prog: correctGCBias
+   :nodefault:
 
    
 Usage example

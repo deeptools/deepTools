@@ -10,6 +10,7 @@ If you are not familiar with BAM, bedGraph and bigWig formats, you can read up o
 .. argparse::
    :ref: deeptools.bamCompare.parseArguments
    :prog: bamCompare
+   :nodefault:
 
 .. warning:: The filtering by deepTools is done *after* the scaling factors are calculated!
 

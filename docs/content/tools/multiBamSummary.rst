@@ -7,6 +7,7 @@ multiBamSummary
 .. argparse::
    :ref: deeptools.multiBamSummary.parse_arguments
    :prog: multiBamSummary
+   :nodefault:
 
 
 Example
