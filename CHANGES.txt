@@ -1,3 +1,9 @@
+2.3.5
+
+ * Various Galaxy wrapper fixes (e.g., issue #415 and #417)
+ * Fixed issue #413, wherein the --nanAfterEnd option sometimes causes computeMatrix to throw an error.
+ * Fixed issue #416, wherein --outRawCounts in multiBamSummary and multiBigwigSummary would cause an error if python3 was being used.
+
 2.3.4
 
  * Fixed bug #405, which dealt with the SES normalization in bamCompare (it was producing an error and terminating the program).

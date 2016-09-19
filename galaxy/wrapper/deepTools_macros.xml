@@ -91,17 +91,18 @@
             <sanitizer>
                 <valid initial="string.letters,string.digits">
                     <add value="|"/>
+                    <add value=":"/>
                  </valid>
             </sanitizer>
         </param>
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.3.3</token>
+    <token name="@WRAPPER_VERSION@">2.3.5</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
-            <requirement type="package" version="2.3.3">deepTools</requirement>
+            <requirement type="package" version="2.3.5">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />

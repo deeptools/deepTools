@@ -181,8 +181,7 @@ def multiBigwigSummaryArgs(case='bins'):
 
     group.add_argument('--outRawCounts',
                        help='Save average scores per region for each bigWig file to a single tab-delimited file.',
-                       metavar='FILE',
-                       type=argparse.FileType('w'))
+                       metavar='FILE')
 
     return parser
 
@@ -239,11 +238,10 @@ def main(args=None):
         # labels
         header = "#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        # import ipdb;ipdb.set_trace()
-        with open(args.outRawCounts.name, 'r+') as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(header + content)
+        f = open(args.outRawCounts, "r+")
+        content = f.read()
+        f.seek(0, 0)
+        f.write(header + content)
 
         """
         if bed_regions:
@@ -262,4 +260,4 @@ def main(args=None):
             for row in num_reads_per_bin:
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
-        args.outRawCounts.close()
+        f.close()

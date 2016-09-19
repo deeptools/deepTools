@@ -162,8 +162,7 @@ def bamcorrelate_args(case='bins'):
 
     group.add_argument('--outRawCounts',
                        help='Save the counts per region to a tab-delimited file.',
-                       metavar='FILE',
-                       type=argparse.FileType('w'))
+                       metavar='FILE')
 
     return parser
 
@@ -241,11 +240,11 @@ def main(args=None):
         # labels
         header = "#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        with open(args.outRawCounts.name, 'r+') as f:
-            content = f.read()
-            f.seek(0, 0)
-            f.write(header + content)
-        args.outRawCounts.close()
+        f = open(args.outRawCounts, 'r+')
+        content = f.read()
+        f.seek(0, 0)
+        f.write(header + content)
+        f.close()
 
 
 if __name__ == "__main__":
