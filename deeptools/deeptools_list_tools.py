@@ -67,7 +67,6 @@ def process_args(args=None):
 
 
 def main(args=None):
-    args = None
-    if len(sys.argv) == 1:
+    if args is None and len(sys.argv) == 1:
         args = ["--help"]
     process_args(args)
