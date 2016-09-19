@@ -7,6 +7,7 @@ plotCoverage
 .. argparse::
    :ref: deeptools.plotCoverage.parse_arguments
    :prog: plotCoverage
+   :nodefault:
 
 What the plots tell you
 ^^^^^^^^^^^^^^^^^^^^^^^^

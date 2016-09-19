@@ -7,6 +7,7 @@ plotHeatmap
 .. argparse::
    :ref: deeptools.plotHeatmap.parse_arguments
    :prog: plotHeatmap
+   :nodefault:
 
 
 Details

@@ -7,6 +7,7 @@ computeGCBias
 .. argparse::
    :ref: deeptools.computeGCBias.parse_arguments
    :prog: computeGCBias
+   :nodefault:
 
 
 Background
