@@ -217,6 +217,7 @@ def getEnrichment_worker(arglist):
 
     gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
+    total = 0
     for f in args.bamfiles:
         odict = dict()
         for x in gtf.features:
@@ -247,6 +248,7 @@ def getEnrichment_worker(arglist):
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 continue
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+            total += 1
 
             # Get blocks, possibly extending
             features = gtf.findOverlaps(chrom, getBAMBlocks(read, defaultFragmentLength, args.centerReads))
@@ -255,7 +257,7 @@ def getEnrichment_worker(arglist):
                 for x in features:
                     odict[x] += 1
         olist.append(odict)
-    return olist, gtf.features
+    return olist, gtf.features, total
 
 
 def plotEnrichment(args, featureCounts, totalCounts, features):
@@ -358,6 +360,7 @@ def main(args=None):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
     # Get the total counts, excluding blacklisted regions and filtered reads
+    """
     totalCounts = []
     fhs = [openBam(x) for x in args.bamfiles]
     for i, bam_handle in enumerate(fhs):
@@ -371,6 +374,7 @@ def main(args=None):
         ftk = fraction_kept(args)
         bam_mapped *= ftk
         totalCounts.append(bam_mapped)
+    """
 
     # Get fragment size and chromosome dict
     chromSize, non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
@@ -425,7 +429,9 @@ def main(args=None):
         featureCounts.append(d)
 
     # res is a list, with each element a list (length len(args.bamfiles)) of dicts
+    totalCounts = 0
     for x in res:
+        totalCounts += x[2]
         for i, y in enumerate(x[0]):
             for k, v in y.items():
                 featureCounts[i][k] += v
