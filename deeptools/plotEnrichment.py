@@ -17,6 +17,7 @@ from deeptools.utilities import getCommonChrNames, mungeChromosome
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
+from deeptools import parserCommon
 
 
 old_settings = np.seterr(all='ignore')
