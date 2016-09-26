@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
-from deeptools import parserCommon, utilities
-from deeptools.getScaleFactor import fraction_kept
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.utilities import getCommonChrNames, mungeChromosome
 from deeptools.bamHandler import openBam
@@ -359,24 +357,8 @@ def main(args=None):
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
-    # Get the total counts, excluding blacklisted regions and filtered reads
-    """
-    totalCounts = []
-    fhs = [openBam(x) for x in args.bamfiles]
-    for i, bam_handle in enumerate(fhs):
-        bam_mapped = utilities.bam_total_reads(bam_handle, None)
-        blacklisted = utilities.bam_blacklisted_reads(bam_handle, None, args.blackListFileName, args.numberOfProcessors)
-        if args.verbose:
-            print(("There are {0} alignments in {1}, of which {2} are completely within a blacklist region.".format(bam_mapped, args.bamfiles[i], blacklisted)))
-        bam_mapped -= blacklisted
-        args.bam = args.bamfiles[i]
-        args.ignoreForNormalization = None
-        ftk = fraction_kept(args)
-        bam_mapped *= ftk
-        totalCounts.append(bam_mapped)
-    """
-
     # Get fragment size and chromosome dict
+    fhs = [openBam(x) for x in args.bamfiles]
     chromSize, non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
     for fh in fhs:
         fh.close()
