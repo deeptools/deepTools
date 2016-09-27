@@ -216,7 +216,7 @@ def getEnrichment_worker(arglist):
 
     gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
-    total = [0] * args.bamfiles
+    total = [0] * len(args.bamfiles)
     for idx, f in enumerate(args.bamfiles):
         odict = dict()
         for x in gtf.features:
@@ -412,7 +412,7 @@ def main(args=None):
         featureCounts.append(d)
 
     # res is a list, with each element a list (length len(args.bamfiles)) of dicts
-    totalCounts = [0] * args.bamfiles
+    totalCounts = [0] * len(args.bamfiles)
     for x in res:
         for i, y in enumerate(x[2]):
             totalCounts[i] += y
