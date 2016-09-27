@@ -216,8 +216,8 @@ def getEnrichment_worker(arglist):
 
     gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
-    total = 0
-    for f in args.bamfiles:
+    total = [0] * args.bamfiles
+    for idx, f in enumerate(args.bamfiles):
         odict = dict()
         for x in gtf.features:
             odict[x] = 0
@@ -247,7 +247,7 @@ def getEnrichment_worker(arglist):
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 continue
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
-            total += 1
+            total[idx] += 1
 
             # Get blocks, possibly extending
             features = gtf.findOverlaps(chrom, getBAMBlocks(read, defaultFragmentLength, args.centerReads))
@@ -412,9 +412,10 @@ def main(args=None):
         featureCounts.append(d)
 
     # res is a list, with each element a list (length len(args.bamfiles)) of dicts
-    totalCounts = 0
+    totalCounts = [0] * args.bamfiles
     for x in res:
-        totalCounts += x[2]
+        for i, y in enumerate(x[2]):
+            totalCounts[i] += y
         for i, y in enumerate(x[0]):
             for k, v in y.items():
                 featureCounts[i][k] += v
