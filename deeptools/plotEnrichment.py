@@ -12,13 +12,12 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
-from deeptools import parserCommon, utilities
-from deeptools.getScaleFactor import fraction_kept
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.utilities import getCommonChrNames, mungeChromosome
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
+from deeptools import parserCommon
 
 
 old_settings = np.seterr(all='ignore')
@@ -217,7 +216,8 @@ def getEnrichment_worker(arglist):
 
     gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
-    for f in args.bamfiles:
+    total = [0] * len(args.bamfiles)
+    for idx, f in enumerate(args.bamfiles):
         odict = dict()
         for x in gtf.features:
             odict[x] = 0
@@ -247,6 +247,7 @@ def getEnrichment_worker(arglist):
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
                 continue
             prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+            total[idx] += 1
 
             # Get blocks, possibly extending
             features = gtf.findOverlaps(chrom, getBAMBlocks(read, defaultFragmentLength, args.centerReads))
@@ -255,7 +256,7 @@ def getEnrichment_worker(arglist):
                 for x in features:
                     odict[x] += 1
         olist.append(odict)
-    return olist, gtf.features
+    return olist, gtf.features, total
 
 
 def plotEnrichment(args, featureCounts, totalCounts, features):
@@ -357,22 +358,8 @@ def main(args=None):
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
-    # Get the total counts, excluding blacklisted regions and filtered reads
-    totalCounts = []
-    fhs = [openBam(x) for x in args.bamfiles]
-    for i, bam_handle in enumerate(fhs):
-        bam_mapped = utilities.bam_total_reads(bam_handle, None)
-        blacklisted = utilities.bam_blacklisted_reads(bam_handle, None, args.blackListFileName, args.numberOfProcessors)
-        if args.verbose:
-            print(("There are {0} alignments in {1}, of which {2} are completely within a blacklist region.".format(bam_mapped, args.bamfiles[i], blacklisted)))
-        bam_mapped -= blacklisted
-        args.bam = args.bamfiles[i]
-        args.ignoreForNormalization = None
-        ftk = fraction_kept(args)
-        bam_mapped *= ftk
-        totalCounts.append(bam_mapped)
-
     # Get fragment size and chromosome dict
+    fhs = [openBam(x) for x in args.bamfiles]
     chromSize, non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
     for fh in fhs:
         fh.close()
@@ -425,7 +412,10 @@ def main(args=None):
         featureCounts.append(d)
 
     # res is a list, with each element a list (length len(args.bamfiles)) of dicts
+    totalCounts = [0] * len(args.bamfiles)
     for x in res:
+        for i, y in enumerate(x[2]):
+            totalCounts[i] += y
         for i, y in enumerate(x[0]):
             for k, v in y.items():
                 featureCounts[i][k] += v
