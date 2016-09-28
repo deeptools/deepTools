@@ -923,8 +923,7 @@ class heatmapper(object):
         info = []
         groups_len = np.diff(self.matrix.group_boundaries)
         for i in range(len(self.matrix.group_labels)):
-            info.append("{}:{}".format(self.matrix.group_labels[i],
-                                       groups_len[i]))
+            info.extend([self.matrix.group_labels[i]] * groups_len[i])
         fh.write(toBytes("#{}\n".format("\t".join(info))))
         # add to header the x axis values
         fh.write(toBytes("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
@@ -938,7 +937,7 @@ class heatmapper(object):
         fh.close()
         # reopen again using append mode
         fh = open(file_name, 'ab')
-        np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
+        np.savetxt(fh, self.matrix.matrix, fmt="%.4g", delimiter="\t")
         fh.close()
 
     def save_BED(self, file_handle):
