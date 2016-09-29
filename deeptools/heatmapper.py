@@ -921,6 +921,7 @@ class heatmapper(object):
         # print a header telling the group names and their length
         fh = open(file_name, 'wb')
         info = []
+        groups_len = np.diff(self.matrix.group_boundaries)
         for i in range(len(self.matrix.group_labels)):
             info.append("{}:{}".format(self.matrix.group_labels[i],
                                        groups_len[i]))
