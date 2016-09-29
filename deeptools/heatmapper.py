@@ -921,9 +921,10 @@ class heatmapper(object):
         # print a header telling the group names and their length
         fh = open(file_name, 'wb')
         info = []
-        groups_len = np.diff(self.matrix.group_boundaries)
         for i in range(len(self.matrix.group_labels)):
-            info.extend([self.matrix.group_labels[i]] * groups_len[i])
+            info.append("{}:{}".format(self.matrix.group_labels[i],
+                                       groups_len[i]))
+        fh.write(toBytes("#{}\n".format("\t".join(info))))
         # add to header the x axis values
         fh.write(toBytes("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
                  self.parameters['downstream'],
@@ -932,6 +933,9 @@ class heatmapper(object):
                  self.parameters['bin size'],
                  self.parameters.get('unscaled 5 prime', 0),
                  self.parameters.get('unscaled 3 prime', 0))))
+        sample_len = np.diff(self.matrix.sample_boundaries)
+        for i in range(len(self.matrix.sample_labels)):
+            info.extend([self.matrix.sample_labels[i]] * sample_len[i])
         fh.write(toBytes("{}\n".format("\t".join(info))))
 
         fh.close()
