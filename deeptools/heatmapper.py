@@ -934,11 +934,15 @@ class heatmapper(object):
                  self.parameters['bin size'],
                  self.parameters.get('unscaled 5 prime', 0),
                  self.parameters.get('unscaled 3 prime', 0))))
+        sample_len = np.diff(self.matrix.sample_boundaries)
+        for i in range(len(self.matrix.sample_labels)):
+            info.extend([self.matrix.sample_labels[i]] * sample_len[i])
+        fh.write(toBytes("{}\n".format("\t".join(info))))
 
         fh.close()
         # reopen again using append mode
         fh = open(file_name, 'ab')
-        np.savetxt(fh, self.matrix.matrix, fmt="%.4g")
+        np.savetxt(fh, self.matrix.matrix, fmt="%.4g", delimiter="\t")
         fh.close()
 
     def save_BED(self, file_handle):
