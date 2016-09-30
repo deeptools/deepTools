@@ -168,7 +168,7 @@ class deepBlue(object):
         (status, info) = self.server.info(reqID, self.userKey)
         request_status = info[0]["state"]
         while request_status != "done" and request_status != "failed":
-            time.sleep(1)
+            time.sleep(0.1)
             (status, info) = self.server.info(reqID, self.userKey)
             request_status = info[0]["state"]
 
