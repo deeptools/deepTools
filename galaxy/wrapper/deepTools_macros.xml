@@ -373,7 +373,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
                 help=""/>
         </when>
         <when value="Yes">
-            <repeat name="multibam_repeats" min="1">
+            <repeat name="multibam_repeats" min="1" title="BAM Files">
                 <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
             </repeat>
         </when>
@@ -393,7 +393,7 @@ is vital to you, select Yes below.">
                 help=""/>
         </when>
         <when value="Yes">
-            <repeat name="multibam_repeats" min="2">
+            <repeat name="multibam_repeats" min="2" title="BAM Files">
                 <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
             </repeat>
         </when>
@@ -413,7 +413,7 @@ is vital to you, select Yes below.">
                 help="A Bigwig file."/>
         </when>
         <when value="Yes">
-            <repeat name="multibigwig_repeats" min="2">
+            <repeat name="multibigwig_repeats" min="2" title="BigWig files">
                 <param argument="--bigwigfiles" type="data" format="bigwig" label="Bigwig file" help="A Bigwig file."/>
             </repeat>
         </when>
