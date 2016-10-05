@@ -235,7 +235,6 @@ class CountReadsPerBin(object):
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
         # the following values are empirical
-self.maxFragmentLength
         bamFilesHandlers = [bamHandler.openBam(x) for x in self.bamFilesList]
         chromSizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
 
