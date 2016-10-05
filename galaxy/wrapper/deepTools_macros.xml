@@ -431,12 +431,21 @@ is vital to you, select Yes below.">
 <![CDATA[
         #set files=[]
         #set labels=[]
-        #for $counter, $bamfile in enumerate($bamfiles):
-            ln -s "${bamfile}" "./${counter}.bam" &&
-            ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
-            #silent $files.append('%s.bam' % $counter)
-            #silent $labels.append("'%s'" % ($bamfile.display_name))
-        #end for
+        #if $multibam_conditional.orderMatters == "No":
+            #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
+                ln -s "${bamfile}" "./${counter}.bam" &&
+                ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #silent $files.append('%s.bam' % $counter)
+                #silent $labels.append("'%s'" % ($bamfile.display_name))
+            #end for
+        #else:
+            #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
+                ln -s "${f.bamfile}" "./${counter}.bam" &&
+                ln -s "${f.bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #silent $files.append('%s.bam' % $counter)
+                #silent $labels.append("'%s'" % ($f.bamfile.display_name))
+            #end for
+        #end if
 ]]>
     </token>
 
@@ -444,11 +453,19 @@ is vital to you, select Yes below.">
 <![CDATA[
         #set files=[]
         #set labels=[]
-        #for $counter, $bigwig in enumerate($bigwigfiles):
-            ln -s "${bigwig}" "${counter}.bw" &&
-            #silent $files.append('%s.bw' % $counter)
-            #silent $labels.append("'%s'" % ($bigwig.display_name))
-        #end for
+        #if $multibigwig_conditional.orderMatters == "No":
+            #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
+                ln -s "${bigwig}" "${counter}.bw" &&
+                #silent $files.append('%s.bw' % $counter)
+                #silent $labels.append("'%s'" % ($bigwig.display_name))
+            #end for
+        #else:
+            #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
+                ln -s "${f.bigwig}" "${counter}.bw" &&
+                #silent $files.append('%s.bw' % $counter)
+                #silent $labels.append("'%s'" % ($f.bigwig.display_name))
+            #end for
+        #end if
 ]]>
     </token>
 
