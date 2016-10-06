@@ -9,6 +9,7 @@ from deeptools._version import __version__
 import deeptools.config as cfg
 from deeptools import parserCommon
 from deeptools import heatmapper
+import deeptools.computeMatrixOperations as cmo
 
 
 def parse_arguments(args=None):
@@ -242,9 +243,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'unsorted output will be in whatever order the regions '
                           'happen to be processed in and not match the order in '
                           'the input files. If you require the output order to '
-                          'match that of the input regions, then use '
-                          'computeMatrixOperations to resort the results file.',
-                          choices=["descend", "ascend", "no"],
+                          'match that of the input regions, then either specify '
+                          '"keep" or use computeMatrixOperations to resort the '
+                          'results file.',
+                          choices=["descend", "ascend", "no", "keep"],
                           default='no')
 
     optional.add_argument('--sortUsing',
@@ -385,7 +387,7 @@ def main(args=None):
 
     scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
-    if args.sortRegions != 'no':
+    if args.sortRegions not in ['no', 'keep']:
 
         sortUsingSamples = []
         if args.sortUsingSamples is not None:
@@ -397,6 +399,10 @@ def main(args=None):
             print('Samples used for ordering within each group: ', sortUsingSamples)
 
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions, sample_list=sortUsingSamples)
+    elif args.sortRegions == 'keep':
+        hm.parameters['group_labels'] = hm.matrix.group_labels
+        hm.parameters["group_boundaries"] = hm.matrix.group_boundaries
+        cmo.sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
 
     hm.save_matrix(args.outFileName)
 
