@@ -400,6 +400,8 @@ def main(args=None):
 
         hm.matrix.sort_groups(sort_using=args.sortUsing, sort_method=args.sortRegions, sample_list=sortUsingSamples)
     elif args.sortRegions == 'keep':
+        hm.parameters['group_labels'] = hm.matrix.group_labels
+        hm.parameters["group_boundaries"] = hm.matrix.group_boundaries
         cmo.sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
 
     hm.save_matrix(args.outFileName)
