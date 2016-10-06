@@ -8,6 +8,7 @@
  * Fixed a minor bug in `deeptools`, where the `--version` option was ignored (see #404).
  * Text in SVG and PDF files is now actual text and not a path (see #403).
  * The `--maxFragmentLength` option in bamCoverage now alters the `maxPairedFragmentLength` that is otherwise hard-coded (see #410).
+ * Added the `computeMatrixOperations` tools, which can be used to sort/reorder/subset/filter/combine the output of `computeMatrix`.
 
 2.3.5
 
