@@ -9,6 +9,7 @@
  * Text in SVG and PDF files is now actual text and not a path (see #403).
  * The `--maxFragmentLength` option in bamCoverage now alters the `maxPairedFragmentLength` that is otherwise hard-coded (see #410).
  * Added the `computeMatrixOperations` tools, which can be used to sort/reorder/subset/filter/combine the output of `computeMatrix`.
+ * `computeMatrix --sortRegions` has a new `keep` option, which is the default. This mimics the behavior in deepTools prior to 2.3.0 where the output order matched the input order. This is, of course, a bit slower, so if the order doesn't matter then use `no`.
 
 2.3.5
 
