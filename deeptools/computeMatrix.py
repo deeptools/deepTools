@@ -247,7 +247,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           '"keep" or use computeMatrixOperations to resort the '
                           'results file.',
                           choices=["descend", "ascend", "no", "keep"],
-                          default='no')
+                          default='keep')
 
     optional.add_argument('--sortUsing',
                           help='Indicate which method should be used for '
