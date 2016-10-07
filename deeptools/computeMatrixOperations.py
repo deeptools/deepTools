@@ -431,14 +431,14 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
 
     # This is largely parseBED from deeptoolsintervals
     labelIdx = None
-    localRegions = []
+    localRegions = {}
 
     cols = line.strip().split("\t")
     if labelColumn is not None:
         label = cols.pop(labelColumn)
         if label not in labels:
-            labels.append(label)
-        labelIdx = labels.index(label)
+            labels[label] = len(labels)
+        labelIdx = labels[label]
         if labelIdx >= len(regions):
             regions.append([])
 
@@ -449,18 +449,18 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
     if labelIdx is not None:
         regions[labelIdx].append(name)
     else:
-        localRegions.append(name)
+        localRegions[name] = len(localRegions)
 
     for line in fp:
         if line.startswith("#") and labelColumn is None:
             if len(localRegions) > 0:
                 label = line[1:].strip()
                 if len(label):
-                    labels.append(dti.findRandomLabel(labels, label))
+                    labels[dti.findRandomLabel(labels, label)] = len(labels)
                 else:
-                    labels.append(dti.findRandomLabel(labels, os.path.basename(fname)))
+                    labels[dti.findRandomLabel(labels, os.path.basename(fname))] = len(labels)
                 regions.append(localRegions)
-                localRegions = []
+                localRegions = dict()
             continue
         elif line.startswith("#") and labelColumn is not None:
             continue
@@ -469,8 +469,8 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
         if labelColumn is not None:
             label = cols.pop(labelColumn)
             if label not in labels:
-                labels.append(label)
-            labelIdx = labels.index(label)
+                labels[label] = len(labels)
+            labelIdx = labels[label]
             if labelIdx >= len(regions):
                 regions.append([])
 
@@ -483,14 +483,14 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
             regions[labelIdx].append(name)
         else:
             name = dti.findRandomLabel(localRegions, name)
-            localRegions.append(name)
+            localRegions[name] = len(localRegions)
 
     # Handle the last group if there is no label
     if labelIdx is None and len(localRegions) > 0:
         if defaultGroup is not None:
-            labels.append(dti.findRandomLabel(labels, defaultGroup))
+            labels[dti.findRandomLabel(labels, defaultGroup)] = len(labels)
         else:
-            labels.append(dti.findRandomLabel(labels, os.path.basename(fname)))
+            labels[dti.findRandomLabel(labels, os.path.basename(fname))] = len(labels)
         regions.append(localRegions)
 
 
@@ -523,10 +523,10 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
         label, name = loadGTFtranscript(cols, file_label, defaultGroup, transcript_id_designator)
         if label is not None:
             if label not in labels:
-                labels.append(label)
-                regions.append([])
-            labelIdx = labels.index(label)
-            regions[labelIdx].append(name)
+                labels[label] = len(labels)
+                regions.append(dict())
+            labelIdx = labels[label]
+            regions[labelIdx][name] = len(regions[labelIdx])
 
     for line in fp:
         if not isinstance(line, str):
@@ -540,10 +540,10 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                 if label is None:
                     continue
                 if label not in labels:
-                    labels.append(label)
-                    regions.append([])
-                labelIdx = labels.index(label)
-                regions[labelIdx].append(name)
+                    labels[label] = len(labels)
+                    regions.append(dict())
+                labelIdx = labels[label]
+                regions[labelIdx][name] = len(regions[labelIdx])
 
 
 def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
@@ -551,7 +551,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     Iterate through the files noted by regionsFileName and sort hm accordingly
     """
 
-    labels = []
+    labels = dict()
     regions = []
     defaultGroup = None
     if len(regionsFileName) == 1:
@@ -584,10 +584,9 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
 
     # Do some sanity checking on the group labels and region names within them
     s1 = set(hm.parameters['group_labels'])
-    s2 = set(labels)
-    for e in s2:
+    for e in labels:
         if e not in s1:
-            sys.exit("The computeMatrix output is missing the '{}' region group. It has [] but the specified regions have {}.\n".format(e, s1, s2))
+            sys.exit("The computeMatrix output is missing the '{}' region group. It has [] but the specified regions have {}.\n".format(e, s1, labels.keys()))
 
     # Make a dictionary out of current labels and regions
     d = dict()
@@ -609,8 +608,12 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     # Reorder
     order = []
     boundaries = [0]
-    for idx, label in enumerate(labels):
-        for name in regions[idx]:
+    for label, idx in labels.items():
+        # Make an ordered list out of the region names in this region group
+        _ = [""] * len(regions[idx])
+        for k, v in regions[idx].items():
+            _[v] = k
+        for name in _:
             if name not in d[label]:
                 sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
@@ -621,8 +624,11 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     hm.matrix.matrix = hm.matrix.matrix[order, :]
 
     # Update the parameters
-    hm.parameters["group_labels"] = labels
-    hm.matrix.group_labels = labels
+    labelsList = [""] * len(labels)
+    for k, v in labels.items():
+        labelsList[v] = k
+    hm.parameters["group_labels"] = labelsList
+    hm.matrix.group_labels = labelsList
     hm.parameters["group_boundaries"] = boundaries
     hm.matrix.group_boundaries = boundaries
 
