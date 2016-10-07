@@ -431,7 +431,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
 
     # This is largely parseBED from deeptoolsintervals
     labelIdx = None
-    localRegions = []
+    localRegions = {}
 
     cols = line.strip().split("\t")
     if labelColumn is not None:
@@ -449,7 +449,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
     if labelIdx is not None:
         regions[labelIdx].append(name)
     else:
-        localRegions.append(name)
+        localRegions[name] = len(localRegions)
 
     for line in fp:
         if line.startswith("#") and labelColumn is None:
@@ -460,7 +460,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
                 else:
                     labels[dti.findRandomLabel(labels, os.path.basename(fname))] = len(labels)
                 regions.append(localRegions)
-                localRegions = []
+                localRegions = dict()
             continue
         elif line.startswith("#") and labelColumn is not None:
             continue
@@ -483,7 +483,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
             regions[labelIdx].append(name)
         else:
             name = dti.findRandomLabel(localRegions, name)
-            localRegions.append(name)
+            localRegions[name] = len(localRegions)
 
     # Handle the last group if there is no label
     if labelIdx is None and len(localRegions) > 0:
@@ -524,9 +524,9 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
         if label is not None:
             if label not in labels:
                 labels[label] = len(labels)
-                regions.append([])
+                regions.append(dict())
             labelIdx = labels[label]
-            regions[labelIdx].append(name)
+            regions[labelIdx][name] = len(regions[labelIdx])
 
     for line in fp:
         if not isinstance(line, str):
@@ -541,9 +541,9 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                     continue
                 if label not in labels:
                     labels[label] = len(labels)
-                    regions.append([])
+                    regions.append(dict())
                 labelIdx = labels[label]
-                regions[labelIdx].append(name)
+                regions[labelIdx][name] = len(regions[labelIdx])
 
 
 def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
@@ -609,7 +609,11 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     order = []
     boundaries = [0]
     for label, idx in labels.items():
-        for name in regions[idx]:
+        # Make an ordered list out of the region names in this region group
+        _ = [""] * len(regions[idx])
+        for k, v in regions[idx].items():
+            _[v] = k
+        for name in _:
             if name not in d[label]:
                 sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
