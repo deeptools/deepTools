@@ -213,7 +213,7 @@ def main(args=None):
     # Preload deepBlue files, which need to then be deleted
     deepBlueFiles = []
     for idx, fname in args.bwfiles:
-        if db.isDeepBlue(fname)
+        if db.isDeepBlue(fname):
             deepBlueFiles.append[(fname, idx)]
     if len(deepBlueFiles) > 0:
         regs = db.makeTiles(args)

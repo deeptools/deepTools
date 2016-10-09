@@ -293,7 +293,7 @@ class deepBlue(object):
         # Send the regions
         (status, regionsID) = self.server.input_regions(self.genome, regionsStr, self.userKey)
         if status != "okay":
-            raise RuntimeError("Received the following error while fetching information about '{}': {}".format(resp, self.sample))
+            raise RuntimeError("Received the following error while fetching information about '{}': {}".format(regionsID, self.sample))
 
         # Make a temporary file
         f = tempfile.NamedTemporaryFile(delete=False)
@@ -314,7 +314,7 @@ class deepBlue(object):
         # Intersect
         (status, intersectID) = self.server.intersection(queryID, regionsID, self.userKey)
         if status != "okay":
-            raise RuntimeError("Received the following error while running intersection on file '{}': {}".format(self.sample, intersectionID))
+            raise RuntimeError("Received the following error while running intersection on file '{}': {}".format(self.sample, intersectID))
         if not intersectID:
             raise RuntimeError("Somehow, we received None as an intersect ID (file '{}')".format(self.sample))
 
@@ -344,4 +344,3 @@ class deepBlue(object):
         bw.close()
 
         return fname
-            o.append((int(interval[0]), int(interval[1]), float(interval[2])))
