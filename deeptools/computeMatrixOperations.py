@@ -466,6 +466,8 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
             continue
 
         cols = line.strip().split("\t")
+        if len(cols) < 3:
+            continue
         if labelColumn is not None:
             label = cols.pop(labelColumn)
             if label not in labels:
@@ -605,10 +607,15 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
             groupSize += 1
         groupSizes[label] = groupSize
 
+    # Convert labels to an ordered list
+    labelsList = [""] * len(labels)
+    for k, v in labels.items():
+        labelsList[v] = k
+
     # Reorder
     order = []
     boundaries = [0]
-    for label, idx in labels.items():
+    for idx, label in enumerate(labelsList):
         # Make an ordered list out of the region names in this region group
         _ = [""] * len(regions[idx])
         for k, v in regions[idx].items():
@@ -624,9 +631,6 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     hm.matrix.matrix = hm.matrix.matrix[order, :]
 
     # Update the parameters
-    labelsList = [""] * len(labels)
-    for k, v in labels.items():
-        labelsList[v] = k
     hm.parameters["group_labels"] = labelsList
     hm.matrix.group_labels = labelsList
     hm.parameters["group_boundaries"] = boundaries
