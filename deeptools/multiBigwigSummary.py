@@ -8,6 +8,7 @@ import numpy as np
 from deeptools import parserCommon
 from deeptools._version import __version__
 import deeptools.getScorePerBigWigBin as score_bw
+import deeptools.deepBlue as db
 
 old_settings = np.seterr(all='ignore')
 
@@ -209,6 +210,18 @@ def main(args=None):
                          "--outRawCounts. The resulting output will NOT be "
                          "useful with any deepTools program!\n")
 
+    # Preload deepBlue files, which need to then be deleted
+    deepBlueFiles = []
+    for idx, fname in args.bwfiles:
+        if db.isDeepBlue(fname)
+            deepBlueFiles.append[(fname, idx)]
+    if len(deepBlueFiles) > 0:
+        regs = db.makeTiles(args)
+        for _, idx in deepBlueFiles:
+            deepBlue = db.deepBlue(args.bwfiles[idx], url=args.deepBlueURL, userKey=args.userKey)
+            args.bwfiles[idx] = deepBlue.preload(regs)
+        del regs
+
     num_reads_per_bin = score_bw.getScorePerBin(
         args.bwfiles,
         args.binSize,
@@ -264,3 +277,7 @@ def main(args=None):
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
         f.close()
+
+    # Clean up temporary bigWig files, if applicable
+    for k, v in deepBlueFiles:
+        os.remove(k)
