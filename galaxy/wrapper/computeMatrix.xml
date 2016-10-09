@@ -172,7 +172,7 @@
                     label="Length, in bases, of non-overlapping bins used for averaging the score over the regions length"
                     help="(--binSize)"/>
 
-                <expand macro="sortRegions" />
+                <expand macro="sortRegionsComputeMatrix" />
                 <expand macro="sortUsing" />
 
                 <param name="averageTypeBins" type="select"
