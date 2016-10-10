@@ -10,6 +10,7 @@
  * The `--maxFragmentLength` option in bamCoverage now alters the `maxPairedFragmentLength` that is otherwise hard-coded (see #410).
  * Added the `computeMatrixOperations` tools, which can be used to sort/reorder/subset/filter/combine the output of `computeMatrix`.
  * `computeMatrix --sortRegions` has a new `keep` option, which is the default. This mimics the behavior in deepTools prior to 2.3.0 where the output order matched the input order. This is, of course, a bit slower, so if the order doesn't matter then use `no`.
+ * Fixed issue #435, where `plotHeatmap --sortRegions region_length` would crash with an error.
 
 2.3.5
 
