@@ -398,7 +398,6 @@ def main(args=None):
         regs = db.makeRegions(args.regionsFileName, args)
         for x in deepBlueFiles:
             x.extend([args, regs])
-        del foo
         if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
             pool = multiprocessing.Pool(args.numberOfProcessors)
             res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
