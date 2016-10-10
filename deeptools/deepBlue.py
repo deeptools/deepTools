@@ -44,7 +44,7 @@ def mergeRegions(regions):
     out = dict()
     last = [None, None, None]
     for reg in bar:
-        if reg[0] == last[0] and reg[1] <= last[1]:
+        if reg[0] == last[0] and reg[1] <= last[2]:
             last[2] = reg[2]
             continue
         else:
@@ -301,8 +301,6 @@ class deepBlue(object):
 
         This sends queries one chromosome at a time, due to memory limits on deepBlue
         """
-        sys.stdout.write("preloading deepBlue sample {}...".format(self.sample))
-        sys.stdout.flush()
         startTime = datetime.datetime.now()
         regions2 = mergeRegions(regions)
 
@@ -371,7 +369,7 @@ class deepBlue(object):
                 bw.addEntries([k], [int(interval[0])], ends=[int(interval[1])], values=[float(interval[2])])
                 tot += 1
         bw.close()
-        sys.stdout.write("done (took {})\n".format(datetime.datetime.now() - startTime))
-        sys.stdout.flush()
+        sys.stderr.write("{} done (took {})\n".format(self.sample, datetime.datetime.now() - startTime))
+        sys.stderr.flush()
 
         return fname

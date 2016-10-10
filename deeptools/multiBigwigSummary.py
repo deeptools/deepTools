@@ -217,6 +217,7 @@ def main(args=None):
         if db.isDeepBlue(fname):
             deepBlueFiles.append([fname, idx])
     if len(deepBlueFiles) > 0:
+        sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
         foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
         if 'BED' in args:
             regs = db.makeRegions(args.BED, args)
