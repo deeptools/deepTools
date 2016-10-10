@@ -3,6 +3,8 @@
 
 import argparse
 import sys
+import os
+import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
@@ -10,6 +12,7 @@ import deeptools.config as cfg
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo
+import deeptools.deepBlue as db
 
 
 def parse_arguments(args=None):
@@ -385,6 +388,28 @@ def main(args=None):
 
     hm = heatmapper.heatmapper()
 
+    # Preload deepBlue files, which need to then be deleted
+    deepBlueFiles = []
+    for idx, fname in enumerate(args.scoreFileName):
+        if db.isDeepBlue(fname):
+            deepBlueFiles.append([fname, idx])
+    if len(deepBlueFiles) > 0:
+        sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
+        regs = db.makeRegions(args.regionsFileName, args)
+        for x in deepBlueFiles:
+            x.extend([args, regs])
+        if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
+            pool = multiprocessing.Pool(args.numberOfProcessors)
+            res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
+        else:
+            res = list(map(db.preloadWrapper, deepBlueFiles))
+
+        # substitute the file names with the temp files
+        for (ftuple, r) in zip(deepBlueFiles, res):
+            args.scoreFileName[ftuple[1]] = r
+        deepBlueFiles = [[x[0], x[1]] for x in deepBlueFiles]
+        del regs
+
     scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions not in ['no', 'keep']:
@@ -411,3 +436,11 @@ def main(args=None):
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)
+
+    # Clean up temporary bigWig files, if applicable
+    if not args.deepBlueKeepTemp:
+        for k, v in deepBlueFiles:
+            os.remove(args.scoreFileName[v])
+    else:
+        for k, v in deepBlueFiles:
+            print("{} is stored in {}".format(k, args.scoreFileName[v]))

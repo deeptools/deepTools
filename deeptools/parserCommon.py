@@ -789,5 +789,19 @@ def deepBlueOptionalArgs():
              'access to a restricted access/private dataset, then request a '
              'key from deepBlue and specify it here.',
         default='anonymous_key')
+    dbo.add_argument(
+        '--deepBlueTempDir',
+        help='If specified, temporary files from preloading datasets from '
+        'deepBlue will be written here (note, this directory must exist). '
+        'If not specified, where ever temporary files would normally be written '
+        'on your system is used.',
+        default=None)
+    dbo.add_argument(
+        '--deepBlueKeepTemp',
+        action='store_true',
+        help='If specified, temporary bigWig files from preloading deepBlue '
+        'datasets are not deleted. A message will be printed noting where these '
+        'files are and what sample they correspond to. These can then be used '
+        'if you wish to analyse the same sample with the same regions again.')
 
     return parser

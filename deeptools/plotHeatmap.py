@@ -293,7 +293,10 @@ def plotMatrix(hm, outFileName,
             for _group in _regions:
                 _reg_len = []
                 for ind_reg in _group:
-                    _len = ind_reg['end'] - ind_reg['start']
+                    if isinstance(ind_reg, dict):
+                        _len = ind_reg['end'] - ind_reg['start']
+                    else:
+                        _len = sum([x[1] - x[0] for x in ind_reg[1]])
                     _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
                 regions_length_in_bins.append(_reg_len)
     else:

@@ -1144,8 +1144,10 @@ class _matrix(object):
 
         # compute the row average:
         if sort_using == 'region_length':
-            matrix_avgs = np.array([x['end'] - x['start']
-                                   for x in self.regions])
+            matrix_avgs = list()
+            for x in self.regions:
+                matrix_avgs.append(np.sum([bar[1] - bar[0] for bar in x[1]]))
+            matrix_avgs = np.array(matrix_avgs)
         else:
             matrix_avgs = np.__getattribute__(sort_using)(
                 matrix, axis=1)
