@@ -5,6 +5,7 @@ import sys
 import argparse
 import os.path
 import numpy as np
+import multiprocessing
 from deeptools import parserCommon
 from deeptools._version import __version__
 import deeptools.getScorePerBigWigBin as score_bw
@@ -214,12 +215,26 @@ def main(args=None):
     deepBlueFiles = []
     for idx, fname in enumerate(args.bwfiles):
         if db.isDeepBlue(fname):
-            deepBlueFiles.append[(fname, idx)]
+            deepBlueFiles.append([fname, idx])
     if len(deepBlueFiles) > 0:
-        regs = db.makeTiles(args)
-        for _, idx in deepBlueFiles:
-            deepBlue = db.deepBlue(args.bwfiles[idx], url=args.deepBlueURL, userKey=args.userKey)
-            args.bwfiles[idx] = deepBlue.preload(regs)
+        foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
+        if 'BED' in args:
+            regs = db.makeRegions(args.BED, args)
+        else:
+            regs = db.makeTiles(foo, args)
+        for x in deepBlueFiles:
+            x.extend([args, regs])
+        del foo
+        if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
+            pool = multiprocessing.Pool(args.numberOfProcessors)
+            res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
+        else:
+            res = list(map(db.preloadWrapper, deepBlueFiles))
+
+        # substitute the file names with the temp files
+        for (ftuple, r) in zip(deepBlueFiles, res):
+            args.bwfiles[ftuple[1]] = r
+        deepBlueFiles = [[x[0], x[1]] for x in deepBlueFiles]
         del regs
 
     num_reads_per_bin = score_bw.getScorePerBin(
@@ -279,5 +294,9 @@ def main(args=None):
         f.close()
 
     # Clean up temporary bigWig files, if applicable
-    for k, v in deepBlueFiles:
-        os.remove(k)
+    if not args.deepBlueKeepTemp:
+        for k, v in deepBlueFiles:
+            os.remove(args.bwfiles[v])
+    else:
+        for k, v in deepBlueFiles:
+            print("{} is stored in {}".format(k, args.bwfiles[v]))
