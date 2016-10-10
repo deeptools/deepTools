@@ -312,7 +312,6 @@ class deepBlue(object):
         # Start with the bigWig file
         bw = pyBigWig.open(fname, "w")
         bw.addHeader(self.chromsTuple, maxZooms=0)  # This won't work in IGV!
-        tot = 0
 
         # Make a string out of everything in a resonable order
         for k, v in self.chromsTuple:
@@ -367,7 +366,6 @@ class deepBlue(object):
                 if interval[0] == '':
                     continue
                 bw.addEntries([k], [int(interval[0])], ends=[int(interval[1])], values=[float(interval[2])])
-                tot += 1
         bw.close()
         sys.stderr.write("{} done (took {})\n".format(self.sample, datetime.datetime.now() - startTime))
         sys.stderr.flush()

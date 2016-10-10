@@ -395,7 +395,6 @@ def main(args=None):
             deepBlueFiles.append([fname, idx])
     if len(deepBlueFiles) > 0:
         sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
-        foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
         regs = db.makeRegions(args.regionsFileName, args)
         for x in deepBlueFiles:
             x.extend([args, regs])

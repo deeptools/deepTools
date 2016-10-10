@@ -218,14 +218,14 @@ def main(args=None):
             deepBlueFiles.append([fname, idx])
     if len(deepBlueFiles) > 0:
         sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
-        foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
         if 'BED' in args:
             regs = db.makeRegions(args.BED, args)
         else:
+            foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
             regs = db.makeTiles(foo, args)
+            del foo
         for x in deepBlueFiles:
             x.extend([args, regs])
-        del foo
         if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
             pool = multiprocessing.Pool(args.numberOfProcessors)
             res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
