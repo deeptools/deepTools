@@ -142,7 +142,7 @@ def main(args=None):
             else:
                 labels = args.samplesLabel
         else:
-            labels = fraglengths.keys()
+            labels = list(fraglengths.keys())
 
         i = 0
         for bam in fraglengths.keys():
