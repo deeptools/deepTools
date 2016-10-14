@@ -10,6 +10,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 from scipy import interpolate
+from scipy.stats import poisson
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -202,6 +203,28 @@ def getCHANCE(args, idx, mat):
     return [pcenrich, diffenrich, CHANCEdivergence]
 
 
+def getSyntheticJSD(vec):
+    """
+    This is largely similar to getJSD, with the 'input' sample being a Poisson distribution with lambda the average coverage in the IP bins
+    """
+    lamb = np.mean(vec)  # Average coverage
+    coverage = np.sum(vec)
+
+    chip = np.zeros(20000, dtype=np.int)
+    input = np.zeros(20000, dtype=np.float)
+    for val in vec:
+        # N.B., we need to clip past the end of the array
+        if val >= 20000:
+            val = 19999
+        # This effectively removes differences due to coverage percentages
+        if val > 0:
+            chip[int(val)] += 1
+    for i in np.arange(1, 20000):
+        #input[i] = int(round(coverage * poisson.pmf(i, lamb), 0))  # We need integers...
+        input[i] = coverage * poisson.pmf(i, lamb)
+    return getJSDcommon(chip, input)
+
+
 def getJSD(args, idx, mat):
     """
     Computes the Jensen-Shannon distance between two samples. This is essentially
@@ -243,6 +266,13 @@ def getJSD(args, idx, mat):
         if val > 0:
             input[int(val)] += 1
 
+    return getJSDcommon(chip, input)
+
+
+def getJSDcommon(chip, input):
+    """
+    This is a continuation of getJSD to allow getSyntheticJSD to reuse code
+    """
     def signalAndBinDist(x):
         x = np.array(x)
         (n,) = x.shape
@@ -349,7 +379,7 @@ def main(args=None):
     if args.outQualityMetrics:
         args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
         if args.JSDsample:
-            args.outQualityMetrics.write("\tJS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
+            args.outQualityMetrics.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
@@ -360,8 +390,9 @@ def main(args=None):
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
             if args.JSDsample:
                 JSD = getJSD(args, idx, num_reads_per_bin)
+                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                 CHANCE = getCHANCE(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n".format(args.labels[idx], AUC, XInt, elbow, JSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n".format(args.labels[idx], AUC, XInt, elbow, JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
             else:
                 args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
         args.outQualityMetrics.close()
