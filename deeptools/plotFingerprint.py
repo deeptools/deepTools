@@ -174,14 +174,14 @@ def getCHANCE(args, idx, mat):
     if refIdx == idx:
         return ["NA", "NA", "NA"]
 
-    subMatrix = np.copy(mat[:,[idx, refIdx]])
+    subMatrix = np.copy(mat[:, [idx, refIdx]])
     subMatrix[np.isnan(subMatrix)] = 0
-    subMatrix = subMatrix[subMatrix[:,0].argsort(), :]
+    subMatrix = subMatrix[subMatrix[:, 0].argsort(), :]
 
     # Find the CHANCE statistic, which is the point of maximus difference
     cs = np.cumsum(subMatrix, axis=0)
     normed = cs / np.max(cs, axis=0).astype(float)
-    csdiff = normed[:,1] - normed[:,0]
+    csdiff = normed[:, 1] - normed[:, 0]
     k = np.argmax(csdiff)
     if csdiff[k] < 1e-6:
         # Don't bother with negative values
@@ -192,7 +192,12 @@ def getCHANCE(args, idx, mat):
     diffenrich = 100.0 * (q - p)
 
     # Divergence a la CHANCE
-    CHANCEdivergence = -(p + q)/2. * np.log2((p + q)/2.) - (1 - (p + q)/2.) * np.log2(1 - (p + q)/2.) + p/2. * np.log2(p) + (1 - p)/2. * np.log2(1 - p) + q/2. * np.log2(q) + (1 - q)/2. * np.log2(1 - q)
+    CHANCEdivergence = -(p + q) / 2. * np.log2((p + q) / 2.) - \
+        (1 - (p + q) / 2.) * np.log2(1 - (p + q) / 2.) + \
+        p / 2. * np.log2(p) + \
+        (1 - p) / 2. * np.log2(1 - p) + \
+        q / 2. * np.log2(q) + \
+        (1 - q) / 2. * np.log2(1 - q)
 
     return [pcenrich, diffenrich, CHANCEdivergence]
 
