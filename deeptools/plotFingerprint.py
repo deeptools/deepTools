@@ -156,6 +156,44 @@ def get_output_args():
     return parser
 
 
+def getCHANCE(args, idx, mat):
+    """
+    Compute the CHANCE p-value
+
+    1) In short, sort IP from lowest to highest, cosorting input at the same time.
+    2) Choose the argmax of the difference of the cumsum() of the above
+    3) Determine a scale factor according to the ratio at the position at step 2.
+    """
+    # Get the index of the reference sample
+    if args.JSDsample not in args.bamfiles:
+        return ["NA", "NA", "NA"]
+    refIdx = args.bamfiles.index(args.JSDsample)
+    if refIdx == idx:
+        return ["NA", "NA", "NA"]
+
+    subMatrix = np.copy(mat[:,[idx, refIdx]])
+    subMatrix[np.isnan(subMatrix)] = 0
+    subMatrix = subMatrix[subMatrix[:,0].argsort(), :]
+
+    # Find the CHANCE statistic, which is the point of maximus difference
+    cs = np.cumsum(subMatrix, axis=0)
+    normed = cs / np.max(cs, axis=0).astype(float)
+    csdiff = normed[:,1] - normed[:,0]
+    k = np.argmax(csdiff)
+    if csdiff[k] < 1e-6:
+        # Don't bother with negative values
+        return [0, 0, 0]
+    p = normed[k, 0]  # Percent enrichment in IP
+    q = normed[k, 1]  # Percent enrichment in input
+    pcenrich = 100 * (len(csdiff) - k) / float(len(csdiff))
+    diffenrich = 100.0 * (q - p)
+
+    # Divergence a la CHANCE
+    CHANCEdivergence = -(p + q)/2. * np.log2((p + q)/2.) - (1 - (p + q)/2.) * np.log2(1 - (p + q)/2.) + p/2. * np.log2(p) + (1 - p)/2. * np.log2(1 - p) + q/2. * np.log2(q) + (1 - q)/2. * np.log2(1 - q)
+
+    return [pcenrich, diffenrich, CHANCEdivergence]
+
+
 def getJSD(args, idx, mat):
     """
     Computes the Jensen-Shannon distance between two samples. This is essentially
@@ -303,18 +341,19 @@ def main(args=None):
     if args.outQualityMetrics:
         args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
         if args.JSDsample:
-            args.outQualityMetrics.write("\tJS Distance")
+            args.outQualityMetrics.write("\tJS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
             counts = np.cumsum(np.sort(reads))
             counts = counts / float(counts[-1])
-            AUC = np.sum(counts)
+            AUC = np.sum(counts) / float(len(counts))
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
             if args.JSDsample:
                 JSD = getJSD(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(args.labels[idx], AUC, XInt, elbow, JSD))
+                CHANCE = getCHANCE(args, idx, num_reads_per_bin)
+                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\n".format(args.labels[idx], AUC, XInt, elbow, JSD, CHANCE[0], CHANCE[1], CHANCE[2]))
             else:
                 args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
         args.outQualityMetrics.close()
