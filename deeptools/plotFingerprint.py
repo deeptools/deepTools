@@ -120,17 +120,20 @@ def get_optional_args():
                           'this file. The file will have one row per input BAM '
                           'file and columns containing the following (in '
                           'order): area under the curve, X-intersect, and elbow '
-                          'position (maximum of the second derivative)',
+                          'position (maximum distance from the diagonal).',
                           metavar='FILE.txt',
                           type=argparse.FileType('w'))
 
     optional.add_argument('--JSDsample',
                           help='Reference sample against which to compute the '
-                          'Jensen-Shannon distance. If this is not specified, '
-                          'the distance will not be calculated. If '
+                          'Jensen-Shannon distance and the CHANCE statistics. '
+                          'If this is not specified, '
+                          'then these will not be calculated. If '
                           '--outQualityMetrics is not specified then this will '
-                          'be ignored. The implementation of this is based on '
-                          'code from Sitanshu Gakkhar at BCGSC.',
+                          'be ignored. The Jensen-Shannon implementation is '
+                          'based on code from Sitanshu Gakkhar at BCGSC. The '
+                          'CHANCE implementation is based on code from Matthias '
+                          'Haimel.',
                           metavar='sample.bam')
 
     return parser
