@@ -160,6 +160,20 @@ def get_output_args():
     return parser
 
 
+def binRelEntropy(p, q):
+    """
+    Return the relative binary entropy of x
+    """
+    x1 = 0
+    x2 = 0
+    if p > 0:
+        x1 = p * np.log2(p / q)
+    if p < 1:
+        x2 = (1 - p) * np.log2((1 - p) / (1 - q))
+    return np.max(0, x1 + x2)
+    
+
+
 def getCHANCE(args, idx, mat):
     """
     Compute the CHANCE p-value
@@ -192,13 +206,11 @@ def getCHANCE(args, idx, mat):
     pcenrich = 100 * (len(csdiff) - k) / float(len(csdiff))
     diffenrich = 100.0 * (q - p)
 
-    # Divergence a la CHANCE
-    CHANCEdivergence = -(p + q) / 2. * np.log2((p + q) / 2.) - \
-        (1 - (p + q) / 2.) * np.log2(1 - (p + q) / 2.) + \
-        p / 2. * np.log2(p) + \
-        (1 - p) / 2. * np.log2(1 - p) + \
-        q / 2. * np.log2(q) + \
-        (1 - q) / 2. * np.log2(1 - q)
+    # CHANCE's JS divergence with binary entropy
+    # Its p value is a ztest of this
+    M = (p + q) / 2.0
+    CHANCEdivergence = 0.5 * (binRelEntropy(p, M) + binRelEntropy(q, M))
+    CHANCEdivergence = np.sqrt(CHANCEdivergence)
 
     return [pcenrich, diffenrich, CHANCEdivergence]
 
