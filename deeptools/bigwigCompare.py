@@ -3,6 +3,7 @@
 import argparse  # to parse command line arguments
 import sys
 import multiprocessing
+import os
 from deeptools import parserCommon
 from deeptools.getRatio import getRatio
 from deeptools import writeBedGraph_bam_and_bw
@@ -148,9 +149,7 @@ def main(args=None):
         format=args.outFileFormat,
         smoothLength=False,
         missingDataAsZero=not args.skipNonCoveredRegions,
-        extendPairedEnds=False,
-        deepBlueURL=args.deepBlueURL,
-        userKey=args.userKey)
+        extendPairedEnds=False)
 
     # Clean up temporary bigWig files, if applicable
     if not args.deepBlueKeepTemp:

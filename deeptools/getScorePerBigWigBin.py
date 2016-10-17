@@ -218,11 +218,6 @@ def getScorePerBin(bigWigFiles, binLength,
            [ 1.,  1.,  1.,  3.]])
 
     """
-
-    if allArgs is not None:
-        # The copy is made so allArgs can be passed unchanged downstream
-        allArgs2 = vars(allArgs)
-
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
     # is spent loading the files
