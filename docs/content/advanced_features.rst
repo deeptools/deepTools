@@ -9,3 +9,4 @@ Some of the features of deepTools are not self-explanatory. Below, we provide li
  * :doc:`feature/unscaled_regions`
  * :doc:`feature/read_offsets`
  * :doc:`feature/deepBlue`
+ * :doc:`feature/plotFingerprint_QC_metrics`
