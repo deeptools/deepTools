@@ -24,15 +24,14 @@ The metrics
 - JS distance: This is the Jensen-Shannon distance between a given sample and that specified by ``--JSDsample`` and is based on work from Sitanshu Gakkhar. The Jensen-Shannon divergence is defined as follows:
 
 .. math::
-    :nowrap:
-
     \begin{align}
-    M = \frac{1}{2} (P + Q) \\
     JSD(P \parallel Q) = \frac{1}{2} D_{KL}(P \parallel M) + \frac{1}{2} D_{KL}(Q \parallel M) \\
-    D_{KL}({X} \parallel {Y}) = \sum_{i} X_i log(\frac{X_i}{Y_i})
+    M = \frac{1}{2} (P + Q) \\
+    D_{KL}({X} \parallel {Y}) = \sum_{i} X_i log\Big(\frac{X_i}{Y_i}\Big)
     \end{align}
 
 Here, ``D`` is the Kullback-Leibler divergence. ``P`` and ``Q`` are the probability mass functions underlying the lines in the plots. The JS distance is the square root of the JS divergence shown above. Higher values indicate greater difference between the two curves, with minimum and maximum values of 0 and 1, respectively.
+
 - Synthetic JS distance: As shown above, the expected distribution of a perfect input sample is dependent on its sequencing depth, meaning that if a sample and its matched control have very different depths then the JS distance between them is misleading. Consequently, rather than displaying the JS distance between two samples, this metric shows the JS distance between a given sample and a perfect input sample with the same coverage depth (i.e., the plot generated from the Poisson probability mass function with lambda equal to the mean coverage in the sample). Ideally, this metric and that above will be very similar, but may not be if sequencing depth is very different (in which case, this metric is likely more reliable). Note also that this metric is printed even for the sample indicated by the ``--JSDsample`` option, which is useful to assess the level of bias present in the input sample, which should ideally have coverage with a Poisson distribution.
 - % genome enriched: This is a metric originating from the `CHANCE <http://dx.doi.org/10.1186/gb-2012-13-10-r98>`__ tool. This is computed by first finding the elbow point (essentially as described above), and then computing 1 minus that. This then represents the approximate percentage of the genome enriched in signal (e.g., bound by a transcription factor or having a certain histone modification).
 - diff. enrichment: The differential enrichment between a given sample and that indicated by ``--JSDsample`` at the elbow point. This is also a metric introduced by the CHANCE tool. Higher percentages are generally better.
@@ -40,9 +39,10 @@ Here, ``D`` is the Kullback-Leibler divergence. ``P`` and ``Q`` are the probabil
 
 .. math::
     \begin{align}
+    CHANCE divergence = \sqrt{\frac{1}{2} (binRelEntropy(P, M) + binRelEntropy(Q, M))} \\
     M = \frac{1}{2} (P + Q) \\
-    CHANCE divergence = sqrt (\frac{1}{2} (binRelEntropy(P, M) + binRelEntropy(Q, M))) \\
-    binRelEntropy(X, Y) = X log_2 \lgroup\frac{X}{Y}\rgroup + (1 - X) log_2 \lgroup \frac{1 - X}{1 - Y} \rgroup
+    binRelEntropy(X, Y) = X log_2 \Big(\frac{X}{Y}\Big) + (1 - X) log_2 \Big(\frac{1 - X}{1 - Y} \Big)
     \end{align}
+
 
 The ``binRelEntropy`` function is similar to a mixture of binary entropy and Kullback-Leibler divergence. Note that if ``X`` is 0, the ``X * log2(X/Y)`` is 0. Similarly, if ``X`` is 1, then ``(1 - X) * log2((1 - X) / (1 - Y))`` is 0.
