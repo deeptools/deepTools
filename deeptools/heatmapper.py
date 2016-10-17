@@ -9,7 +9,6 @@ import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes
-from deeptools.deepBlue import deepBlue, isDeepBlue
 
 old_settings = np.seterr(all='ignore')
 
@@ -186,8 +185,6 @@ class heatmapper(object):
         self.matrix = None
         self.regions = None
         self.blackList = None
-        self.deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
-        self.userKey = "anonymous_key"
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """
@@ -228,20 +225,14 @@ class heatmapper(object):
         exonID = "exon"
         transcript_id_designator = "transcript_id"
         keepExons = False
-        deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
-        userKey = "anonymous_key"
         if allArgs is not None:
             allArgs = vars(allArgs)
             transcriptID = allArgs.get("transcriptID", transcriptID)
             exonID = allArgs.get("exonID", exonID)
             transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
             keepExons = allArgs.get("keepExons", keepExons)
-            deepBlueURL = allArgs.get("deepBlueURL", deepBlueURL)
-            userKey = allArgs.get("userKey", userKey)
-        parameters["deepBlueURL"] = deepBlueURL
-        parameters["userKey"] = userKey
 
-        chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list, deepBlueURL, userKey)
+        chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list)
         res, labels = mapReduce.mapReduce([score_file_list, parameters],
                                           compute_sub_matrix_wrapper,
                                           chromSizes,
@@ -258,10 +249,6 @@ class heatmapper(object):
         # the submatrix data, the regions that correspond to the
         # submatrix, and the number of regions lacking scores
         # Since this is largely unsorted, we need to sort by group
-
-        # Shouldn't store these in the output
-        del parameters["deepBlueURL"]
-        del parameters["userKey"]
 
         # merge all the submatrices into matrix
         matrix = np.concatenate([r[0] for r in res], axis=0)
@@ -354,17 +341,10 @@ class heatmapper(object):
             A numpy matrix that contains per each row the values found per each of the regions given
         """
 
-        deepBlueURL = parameters['deepBlueURL']
-        userKey = parameters['userKey']
-        parameters = {k: v for k, v in parameters.items() if k not in ["deepBlueURL", "userKey"]}
-
         # read BAM or scores file
         score_file_handlers = []
         for sc_file in score_file_list:
-            if isDeepBlue(sc_file):
-                score_file_handlers.append(deepBlue(sc_file, deepBlueURL, userKey))
-            else:
-                score_file_handlers.append(pyBigWig.open(sc_file))
+            score_file_handlers.append(pyBigWig.open(sc_file))
 
         # determine the number of matrix columns based on the lengths
         # given by the user, times the number of score files

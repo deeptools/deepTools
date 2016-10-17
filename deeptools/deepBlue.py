@@ -75,6 +75,16 @@ def makeTiles(db, args):
     return out
 
 
+def makeChromTiles(db):
+    """
+    Make a region for each chromosome
+    """
+    out = []
+    for (k, v) in db.chromsTuple:
+        out.append([k, 0, v])
+    return out
+
+
 def makeRegions(BED, args):
     """
     Given a list of BED/GTF files, make a list of regions.
