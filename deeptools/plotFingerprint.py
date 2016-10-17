@@ -170,8 +170,7 @@ def binRelEntropy(p, q):
         x1 = p * np.log2(p / q)
     if p < 1:
         x2 = (1 - p) * np.log2((1 - p) / (1 - q))
-    return np.max(0, x1 + x2)
-    
+    return np.fmax(0.0, x1 + x2)
 
 
 def getCHANCE(args, idx, mat):
@@ -207,7 +206,7 @@ def getCHANCE(args, idx, mat):
     diffenrich = 100.0 * (q - p)
 
     # CHANCE's JS divergence with binary entropy
-    # Its p value is a ztest of this
+    # Its p value is a ztest of this, which is largely useless IMO
     M = (p + q) / 2.0
     CHANCEdivergence = 0.5 * (binRelEntropy(p, M) + binRelEntropy(q, M))
     CHANCEdivergence = np.sqrt(CHANCEdivergence)
@@ -232,8 +231,8 @@ def getSyntheticJSD(vec):
         if val > 0:
             chip[int(val)] += 1
     for i in np.arange(1, 20000):
-        #input[i] = int(round(coverage * poisson.pmf(i, lamb), 0))  # We need integers...
         input[i] = coverage * poisson.pmf(i, lamb)
+
     return getJSDcommon(chip, input)
 
 
