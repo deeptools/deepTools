@@ -15,7 +15,6 @@ from deeptools import mapReduce
 from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
 from deeptools import bamHandler
-from deeptools.deepBlue import deepBlue
 
 old_settings = np.seterr(all='ignore')
 
@@ -46,8 +45,7 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        missingDataAsZero=False, fixed_step=False,
-        deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
+        missingDataAsZero=False, fixed_step=False):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -77,12 +75,6 @@ def writeBedGraph_worker(
                     bigwigHandle, chrom, start, end,
                     tileSize, missingDataAsZero))
             bigwigHandle.close()
-        elif fileFormat == 'wiggle' or fileFormat == 'bedgraph':
-            db = deepBlue(indexFile, deepBlueURL, userKey)
-            coverage.append(
-                getCoverageFromBigwig(
-                    db, chrom, start, end,
-                    tileSize, missingDataAsZero))
 
     # is /dev/shm available?
     # working in this directory speeds the process
@@ -158,8 +150,7 @@ def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=None,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
-        smoothLength=0, fixed_step=False, verbose=False,
-        deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
+        smoothLength=0, fixed_step=False, verbose=False):
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -184,8 +175,6 @@ def writeBedGraph(
         for fileName, fileFormat in bamOrBwFileList:
             if fileFormat == 'bigwig':
                 fh = pyBigWig.open(fileName)
-            elif fileFormat in ['wiggle', 'bedgraph']:
-                fh = deepBlue(fileName, deepBlueURL, userKey)
             else:
                 continue
 
@@ -216,7 +205,7 @@ def writeBedGraph(
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,
-                               missingDataAsZero, fixed_step, deepBlueURL, userKey),
+                               missingDataAsZero, fixed_step),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,

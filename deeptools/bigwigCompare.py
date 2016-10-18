@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse  # to parse command line arguments
+import sys
+import multiprocessing
+import os
 from deeptools import parserCommon
 from deeptools.getRatio import getRatio
 from deeptools import writeBedGraph_bam_and_bw
+import deeptools.deepBlue as db
 
 debug = 0
 
@@ -108,6 +112,32 @@ def main(args=None):
                      'scaleFactors': scaleFactors,
                      'pseudocount': args.pseudocount}
 
+    # Preload deepBlue files, which need to then be deleted
+    deepBlueFiles = []
+    for idx, fname in enumerate([args.bigwig1, args.bigwig2]):
+        if db.isDeepBlue(fname):
+            deepBlueFiles.append([fname, idx])
+    if len(deepBlueFiles) > 0:
+        sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
+        foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
+        regs = db.makeChromTiles(foo)
+        for x in deepBlueFiles:
+            x.extend([args, regs])
+        if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
+            pool = multiprocessing.Pool(args.numberOfProcessors)
+            res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
+        else:
+            res = list(map(db.preloadWrapper, deepBlueFiles))
+
+        # substitute the file names with the temp files
+        for (ftuple, r) in zip(deepBlueFiles, res):
+            if ftuple[1] == 0:
+                args.bigwig1 = r
+            else:
+                args.bigwig2 = r
+        deepBlueFiles = [[x[0], x[1]] for x in deepBlueFiles]
+        del regs
+
     writeBedGraph_bam_and_bw.writeBedGraph(
         [(args.bigwig1, getType(args.bigwig1)),
          (args.bigwig2, getType(args.bigwig2))],
@@ -119,6 +149,18 @@ def main(args=None):
         format=args.outFileFormat,
         smoothLength=False,
         missingDataAsZero=not args.skipNonCoveredRegions,
-        extendPairedEnds=False,
-        deepBlueURL=args.deepBlueURL,
-        userKey=args.userKey)
+        extendPairedEnds=False)
+
+    # Clean up temporary bigWig files, if applicable
+    if not args.deepBlueKeepTemp:
+        for k, v in deepBlueFiles:
+            if v == 0:
+                os.remove(args.bigwig1)
+            else:
+                os.remove(args.bigwig2)
+    else:
+        for k, v in deepBlueFiles:
+            foo = args.bigwig1
+            if v == 1:
+                foo = args.bigwig2
+            print("{} is stored in {}".format(k, foo))

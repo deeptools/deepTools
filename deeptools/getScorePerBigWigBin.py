@@ -8,7 +8,6 @@ import warnings
 # deepTools packages
 import deeptools.mapReduce as mapReduce
 import deeptools.utilities
-from deeptools.deepBlue import deepBlue, isDeepBlue
 # debug = 0
 
 old_settings = np.seterr(all='ignore')
@@ -23,8 +22,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
                                    bigWigFiles,
                                    stepSize, binLength,
                                    save_data,
-                                   deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc",
-                                   userKey="anonymous_key",
                                    bedRegions=None
                                    ):
     """ returns the average score in each bigwig file at each 'stepSize'
@@ -64,10 +61,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     bigwig_handlers = []
     for foo in bigWigFiles:
-        if isDeepBlue(foo):
-            bigwig_handlers.append(deepBlue(foo, deepBlueURL, userKey))
-        else:
-            bigwig_handlers.append(pyBigWig.open(foo))
+        bigwig_handlers.append(pyBigWig.open(foo))
 
     regions_to_consider = []
     if bedRegions:
@@ -142,7 +136,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
     return np.array(sub_score_per_bin).reshape(rows, len(bigWigFiles)), _file_name
 
 
-def getChromSizes(bigwigFilesList, deepBlueURL="http://deepblue.mpi-inf.mpg.de/xmlrpc", userKey="anonymous_key"):
+def getChromSizes(bigwigFilesList):
     """
     Get chromosome sizes from bigWig file with pyBigWig
 
@@ -164,19 +158,13 @@ def getChromSizes(bigwigFilesList, deepBlueURL="http://deepblue.mpi-inf.mpg.de/x
 
     common_chr = set()
     for fname in bigwigFilesList:
-        if isDeepBlue(fname):
-            fh = deepBlue(fname, deepBlueURL, userKey)
-        else:
-            fh = pyBigWig.open(fname)
+        fh = pyBigWig.open(fname)
         common_chr = common_chr.union(set(fh.chroms().items()))
         fh.close()
 
     non_common_chr = set()
     for bw in bigwigFilesList:
-        if isDeepBlue(bw):
-            _names_and_size = set(deepBlue(bw, deepBlueURL, userKey).chroms().items())
-        else:
-            _names_and_size = set(pyBigWig.open(bw).chroms().items())
+        _names_and_size = set(pyBigWig.open(bw).chroms().items())
         if len(common_chr & _names_and_size) == 0:
             #  try to add remove 'chr' from the chromosme name
             _corr_names_size = set()
@@ -230,15 +218,6 @@ def getScorePerBin(bigWigFiles, binLength,
            [ 1.,  1.,  1.,  3.]])
 
     """
-
-    deepBlueURL = "http://deepblue.mpi-inf.mpg.de/xmlrpc"
-    userKey = "anonymous_key"
-    if allArgs is not None:
-        # The copy is made so allArgs can be passed unchanged downstream
-        allArgs2 = vars(allArgs)
-        deepBlueURL = allArgs2.get("deepBlueURL", deepBlueURL)
-        userKey = allArgs2.get("userKey", userKey)
-
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
     # is spent loading the files
@@ -246,7 +225,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # the following is a heuristic
 
     # get list of common chromosome names and sizes
-    chrom_sizes, non_common = getChromSizes(bigWigFiles, deepBlueURL, userKey)
+    chrom_sizes, non_common = getChromSizes(bigWigFiles)
     # skip chromosome in the list. This is usually for the
     # X chromosome which may have either one copy  in a male sample
     # or a mixture of male/female and is unreliable.
@@ -278,7 +257,7 @@ def getScorePerBin(bigWigFiles, binLength,
     # Handle GTF options
     transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
 
-    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file, deepBlueURL, userKey),
+    imap_res = mapReduce.mapReduce((bigWigFiles, stepSize, binLength, save_file),
                                    countReadsInRegions_wrapper,
                                    chrom_sizes,
                                    genomeChunkLength=chunkSize,
