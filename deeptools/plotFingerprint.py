@@ -119,9 +119,9 @@ def get_optional_args():
     optional.add_argument('--outQualityMetrics',
                           help='Quality metrics can optionally be output to '
                           'this file. The file will have one row per input BAM '
-                          'file and columns containing the following (in '
-                          'order): area under the curve, X-intersect, and elbow '
-                          'position (maximum distance from the diagonal).',
+                          'file and columns containing a number of metrics. '
+                          'Please see the online documentation for a longer '
+                          'explanation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html .',
                           metavar='FILE.txt',
                           type=argparse.FileType('w'))
 
@@ -329,7 +329,7 @@ def getExpected(mu):
     Given a mean coverage mu, determine the AUC, X-intercept, and elbow point 
     of a Poisson-distributed perfectly behaved input sample with the same coverage
     """
-    x = np.arange(20000)  # This is excessive unless the coverage is crazy
+    x = np.arange(round(poisson.interval(0.99999, mu=mu)[1] + 1))  # This will be an appropriate range
     pmf = poisson.pmf(x, mu=mu)
     cdf = poisson.cdf(x, mu=mu)
     cs = np.cumsum(pmf * x)
