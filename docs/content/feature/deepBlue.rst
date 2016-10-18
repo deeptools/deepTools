@@ -1,7 +1,7 @@
 Accessing datasets hosted on deepBlue
 =====================================
 
-`deepBlue <http://dx.doi.org/10.1093/nar/gkw211>` is an epigenome dataset server hosting many ENCODE, ROADMAP, BLUEPRINT, and DEEP samples. These are often hosted as normalized signal tracks that can be used with `bigwigCompare`, `multiBigwigSummary`, and `computeMatrix`. As of version 2.4.0, the aforementioned tools can now access signal files hosted on deepBlue. To do so, simply specify the "experiment name" from deepBlue, such as:
+`deepBlue <http://dx.doi.org/10.1093/nar/gkw211>`__ is an epigenome dataset server hosting many ENCODE, ROADMAP, BLUEPRINT, and DEEP samples. These are often hosted as normalized signal tracks that can be used with `bigwigCompare`, `multiBigwigSummary`, and `computeMatrix`. As of version 2.4.0, the aforementioned tools can now access signal files hosted on deepBlue. To do so, simply specify the "experiment name" from deepBlue, such as:
 
 .. code:: bash
 
