@@ -1,3 +1,7 @@
+2.3.6
+
+ * multiBamSummary will now not automatically append .npz to the output file name if it's not present. This was bug #436
+
 2.3.5
 
  * Various Galaxy wrapper fixes (e.g., issue #415 and #417)

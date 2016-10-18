@@ -231,9 +231,12 @@ def main(args=None):
              "If using --region please check that this "
              "region is covered by reads.\n")
 
-    np.savez_compressed(args.outFileName,
+    # numpy will append .npz to the file name if we don't do this...
+    f = open(args.outFileName, "wb")
+    np.savez_compressed(f,
                         matrix=num_reads_per_bin,
                         labels=args.labels)
+    f.close()
 
     if args.outRawCounts:
         # append to the generated file the
