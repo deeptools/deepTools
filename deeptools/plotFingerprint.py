@@ -326,7 +326,7 @@ def getJSDcommon(chip, input):
 
 def getExpected(mu):
     """
-    Given a mean coverage mu, determine the AUC, X-intercept, and elbow point 
+    Given a mean coverage mu, determine the AUC, X-intercept, and elbow point
     of a Poisson-distributed perfectly behaved input sample with the same coverage
     """
     x = np.arange(round(poisson.interval(0.99999, mu=mu)[1] + 1))  # This will be an appropriate range
@@ -404,7 +404,7 @@ def main(args=None):
         args.outRawCounts.close()
 
     if args.outQualityMetrics:
-        args.outQualityMetrics.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic X-intercept")
+        args.outQualityMetrics.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
         if args.JSDsample:
             args.outQualityMetrics.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
         args.outQualityMetrics.write("\n")
