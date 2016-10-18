@@ -324,6 +324,22 @@ def getJSDcommon(chip, input):
     return JSD
 
 
+def getExpected(mu):
+    """
+    Given a mean coverage mu, determine the AUC, X-intercept, and elbow point 
+    of a Poisson-distributed perfectly behaved input sample with the same coverage
+    """
+    x = np.arange(20000)  # This is excessive unless the coverage is crazy
+    pmf = poisson.pmf(x, mu=mu)
+    cdf = poisson.cdf(x, mu=mu)
+    cs = np.cumsum(pmf * x)
+    cs /= max(cs)
+    XInt = cdf[np.nonzero(cs)[0][0]]
+    AUC = sum(poisson.pmf(x, mu=mu) * cs)
+    elbow = cdf[np.argmax(cdf - cs)]
+    return (AUC, XInt, elbow)
+
+
 def main(args=None):
     args = process_args(args)
 
@@ -388,7 +404,7 @@ def main(args=None):
         args.outRawCounts.close()
 
     if args.outQualityMetrics:
-        args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
+        args.outQualityMetrics.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic X-intercept")
         if args.JSDsample:
             args.outQualityMetrics.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
         args.outQualityMetrics.write("\n")
@@ -399,13 +415,14 @@ def main(args=None):
             AUC = np.sum(counts) / float(len(counts))
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
+            expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
+            args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
             if args.JSDsample:
                 JSD = getJSD(args, idx, num_reads_per_bin)
                 syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                 CHANCE = getCHANCE(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\n".format(args.labels[idx], AUC, XInt, elbow, JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
-            else:
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
+                args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+            args.outQualityMetrics.write("\n")
         args.outQualityMetrics.close()
 
 if __name__ == "__main__":
