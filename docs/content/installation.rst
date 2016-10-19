@@ -18,7 +18,7 @@ Requirements
 * pysam >= 0.8
 * matplotlib >= 1.4.0
 
-The fastet way to obtain **Python 2.7 or 3.x together with numpy and scipy** is
+The fastest way to obtain **Python 2.7 or Python 3.x together with numpy and scipy** is
 via the `Anaconda Scientific Python
 Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
