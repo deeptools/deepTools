@@ -1,6 +1,7 @@
 2.3.6
 
  * multiBamSummary will now not automatically append .npz to the output file name if it's not present. This was bug #436
+ * Fixed a bug with plotHeatmap where --yMin and --yMax didn't work
 
 2.3.5
 
