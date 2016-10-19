@@ -475,8 +475,13 @@ def plotMatrix(hm, outFileName,
             ticks[0].label1.set_horizontalalignment('left')
             ticks[-1].label1.set_horizontalalignment('right')
 
-        # reduce the number of yticks by half
+        # It turns out that set_ylim only takes np.float64s
+        if yMin:
+            yMin = np.float64(yMin)
+        if yMax:
+            yMax = np.float64(yMax)
         ax_list[0].set_ylim(yMin, yMax)
+        # reduce the number of yticks by half
         num_ticks = len(ax_list[0].get_yticks())
         yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
         ax_list[0].set_yticks(yticks)

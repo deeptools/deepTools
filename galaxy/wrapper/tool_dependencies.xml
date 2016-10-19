@@ -3,7 +3,7 @@
     <package name="python" version="2.7.10">
         <repository name="package_python_2_7_10" owner="iuc" prior_installation_required="True" />
     </package>
-    <package name="deepTools" version="2.3.5">
-        <repository name="package_python_2_7_deeptools_2_3_5" owner="iuc"/>
+    <package name="deepTools" version="2.3.6">
+        <repository name="package_python_2_7_deeptools_2_3_6" owner="iuc"/>
     </package>
 </tool_dependency>
