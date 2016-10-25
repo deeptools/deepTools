@@ -86,10 +86,10 @@
                 <expand macro="input_image_file_format" />
                 <param name="saveRawCounts" type="boolean" label="Save the bin counts" help="(--outRawCounts)"/>
                 <param name="saveQualityMetrics" type="boolean" label="Save quality metrics"
-                   help="The file will have one row per input BAM file and columns containing the following (in order): area under the curve, X-intersect, and elbow position. The Jensen-Shannon distance will also be output if a reference sample is given (see below). (--outQualityMetrics)"/>
+                   help="The file will have one row per input BAM file and columns containing a variety of QC metrics. For the full description of all metrics and their interpretation, please see our online documentation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html. (--outQualityMetrics)"/>
                 <param name="JSDsample" type="data" format="bam"
                    label="Jensen-Shannon distance reference sample"
-                   help="If output metrics should be saved, then use this sample as the reference for computing the Jensen-Shannon distance of all other samples. Normally this is an input sample. If you don't specify this, the Jensen-Shannon distance will not be computed. This is only applicable if quality metrics are being saved. (--JSDsample)" />
+                   help="If output metrics should be saved, then use this sample as the reference for computing the Jensen-Shannon distance and CHANCE metrics of all other samples. Normally this is an input sample. If you don't specify this, then these metrics will not be computed. This is only applicable if quality metrics are being saved. (--JSDsample)" />
             </when>
         </conditional>
     </inputs>

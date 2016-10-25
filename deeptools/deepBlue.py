@@ -44,7 +44,8 @@ def mergeRegions(regions):
     last = [None, None, None]
     for reg in bar:
         if reg[0] == last[0] and reg[1] <= last[2]:
-            last[2] = reg[2]
+            if reg[2] > last[2]:
+                last[2] = reg[2]
             continue
         else:
             if last[0]:

@@ -10,6 +10,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 from scipy import interpolate
+from scipy.stats import poisson
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -118,19 +119,22 @@ def get_optional_args():
     optional.add_argument('--outQualityMetrics',
                           help='Quality metrics can optionally be output to '
                           'this file. The file will have one row per input BAM '
-                          'file and columns containing the following (in '
-                          'order): area under the curve, X-intersect, and elbow '
-                          'position (maximum of the second derivative)',
+                          'file and columns containing a number of metrics. '
+                          'Please see the online documentation for a longer '
+                          'explanation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html .',
                           metavar='FILE.txt',
                           type=argparse.FileType('w'))
 
     optional.add_argument('--JSDsample',
                           help='Reference sample against which to compute the '
-                          'Jensen-Shannon distance. If this is not specified, '
-                          'the distance will not be calculated. If '
+                          'Jensen-Shannon distance and the CHANCE statistics. '
+                          'If this is not specified, '
+                          'then these will not be calculated. If '
                           '--outQualityMetrics is not specified then this will '
-                          'be ignored. The implementation of this is based on '
-                          'code from Sitanshu Gakkhar at BCGSC.',
+                          'be ignored. The Jensen-Shannon implementation is '
+                          'based on code from Sitanshu Gakkhar at BCGSC. The '
+                          'CHANCE implementation is based on code from Matthias '
+                          'Haimel.',
                           metavar='sample.bam')
 
     return parser
@@ -154,6 +158,82 @@ def get_output_args():
                        type=argparse.FileType('w'))
 
     return parser
+
+
+def binRelEntropy(p, q):
+    """
+    Return the relative binary entropy of x
+    """
+    x1 = 0
+    x2 = 0
+    if p > 0:
+        x1 = p * np.log2(p / q)
+    if p < 1:
+        x2 = (1 - p) * np.log2((1 - p) / (1 - q))
+    return np.fmax(0.0, x1 + x2)
+
+
+def getCHANCE(args, idx, mat):
+    """
+    Compute the CHANCE p-value
+
+    1) In short, sort IP from lowest to highest, cosorting input at the same time.
+    2) Choose the argmax of the difference of the cumsum() of the above
+    3) Determine a scale factor according to the ratio at the position at step 2.
+    """
+    # Get the index of the reference sample
+    if args.JSDsample not in args.bamfiles:
+        return ["NA", "NA", "NA"]
+    refIdx = args.bamfiles.index(args.JSDsample)
+    if refIdx == idx:
+        return ["NA", "NA", "NA"]
+
+    subMatrix = np.copy(mat[:, [idx, refIdx]])
+    subMatrix[np.isnan(subMatrix)] = 0
+    subMatrix = subMatrix[subMatrix[:, 0].argsort(), :]
+
+    # Find the CHANCE statistic, which is the point of maximus difference
+    cs = np.cumsum(subMatrix, axis=0)
+    normed = cs / np.max(cs, axis=0).astype(float)
+    csdiff = normed[:, 1] - normed[:, 0]
+    k = np.argmax(csdiff)
+    if csdiff[k] < 1e-6:
+        # Don't bother with negative values
+        return [0, 0, 0]
+    p = normed[k, 0]  # Percent enrichment in IP
+    q = normed[k, 1]  # Percent enrichment in input
+    pcenrich = 100 * (len(csdiff) - k) / float(len(csdiff))
+    diffenrich = 100.0 * (q - p)
+
+    # CHANCE's JS divergence with binary entropy
+    # Its p value is a ztest of this, which is largely useless IMO
+    M = (p + q) / 2.0
+    CHANCEdivergence = 0.5 * (binRelEntropy(p, M) + binRelEntropy(q, M))
+    CHANCEdivergence = np.sqrt(CHANCEdivergence)
+
+    return [pcenrich, diffenrich, CHANCEdivergence]
+
+
+def getSyntheticJSD(vec):
+    """
+    This is largely similar to getJSD, with the 'input' sample being a Poisson distribution with lambda the average coverage in the IP bins
+    """
+    lamb = np.mean(vec)  # Average coverage
+    coverage = np.sum(vec)
+
+    chip = np.zeros(20000, dtype=np.int)
+    input = np.zeros(20000, dtype=np.float)
+    for val in vec:
+        # N.B., we need to clip past the end of the array
+        if val >= 20000:
+            val = 19999
+        # This effectively removes differences due to coverage percentages
+        if val > 0:
+            chip[int(val)] += 1
+    for i in np.arange(1, 20000):
+        input[i] = coverage * poisson.pmf(i, lamb)
+
+    return getJSDcommon(chip, input)
 
 
 def getJSD(args, idx, mat):
@@ -197,6 +277,13 @@ def getJSD(args, idx, mat):
         if val > 0:
             input[int(val)] += 1
 
+    return getJSDcommon(chip, input)
+
+
+def getJSDcommon(chip, input):
+    """
+    This is a continuation of getJSD to allow getSyntheticJSD to reuse code
+    """
     def signalAndBinDist(x):
         x = np.array(x)
         (n,) = x.shape
@@ -232,9 +319,24 @@ def getJSD(args, idx, mat):
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
     JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip / M)))
-    np.sqrt(JSD)
 
-    return JSD
+    return np.sqrt(JSD)
+
+
+def getExpected(mu):
+    """
+    Given a mean coverage mu, determine the AUC, X-intercept, and elbow point
+    of a Poisson-distributed perfectly behaved input sample with the same coverage
+    """
+    x = np.arange(round(poisson.interval(0.99999, mu=mu)[1] + 1))  # This will be an appropriate range
+    pmf = poisson.pmf(x, mu=mu)
+    cdf = poisson.cdf(x, mu=mu)
+    cs = np.cumsum(pmf * x)
+    cs /= max(cs)
+    XInt = cdf[np.nonzero(cs)[0][0]]
+    AUC = sum(poisson.pmf(x, mu=mu) * cs)
+    elbow = cdf[np.argmax(cdf - cs)]
+    return (AUC, XInt, elbow)
 
 
 def main(args=None):
@@ -301,22 +403,25 @@ def main(args=None):
         args.outRawCounts.close()
 
     if args.outQualityMetrics:
-        args.outQualityMetrics.write("Sample\tAUC\tX-intercept\tElbow Point")
+        args.outQualityMetrics.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
         if args.JSDsample:
-            args.outQualityMetrics.write("\tJS Distance")
+            args.outQualityMetrics.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
             counts = np.cumsum(np.sort(reads))
             counts = counts / float(counts[-1])
-            AUC = np.sum(counts)
+            AUC = np.sum(counts) / float(len(counts))
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
+            expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
+            args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
             if args.JSDsample:
                 JSD = getJSD(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\n".format(args.labels[idx], AUC, XInt, elbow, JSD))
-            else:
-                args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\n".format(args.labels[idx], AUC, XInt, elbow))
+                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                CHANCE = getCHANCE(args, idx, num_reads_per_bin)
+                args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+            args.outQualityMetrics.write("\n")
         args.outQualityMetrics.close()
 
 if __name__ == "__main__":
