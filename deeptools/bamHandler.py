@@ -13,10 +13,10 @@ def openBam(bamFile):
 
     try:
         if 'check_index' in dir(bam):
-            assert(bam.check_index())
+            assert(bam.check_index() is not False)
         else:
             # The proper check_index() function wasn't implemented until pysam 0.8.4!
-            assert(bam._hasIndex())
+            assert(bam._hasIndex() is not False)
     except:
         sys.exit("{} does not appear to have an index. You MUST index the file first!".format(bamFile))
 
