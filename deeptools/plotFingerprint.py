@@ -319,9 +319,8 @@ def getJSDcommon(chip, input):
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
     JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip / M)))
-    np.sqrt(JSD)
 
-    return JSD
+    return np.sqrt(JSD)
 
 
 def getExpected(mu):
