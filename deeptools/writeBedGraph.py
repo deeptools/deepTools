@@ -154,7 +154,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
         bedgraph_file = out_file.name
         out_file.close()
         if format == 'bedgraph':
-            os.rename(bedgraph_file, out_file_name)
+            sort_cmd = cfg.config.get('external_tools', 'sort')
+            os.system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd, bedgraph_file, out_file_name))
+            os.remove(bedgraph_file)
             if self.verbose:
                 print("output file: {}".format(out_file_name))
         else:
