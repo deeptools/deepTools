@@ -107,8 +107,12 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         :param bam_handler:
         :return: list of (chrom, size) tuples
         """
-        return [(bam_handler.references[i], bam_handler.lengths[i])
-                for i in range(0, len(bam_handler.references))]
+        try:
+            # BAM file
+            return [(bam_handler.references[i], bam_handler.lengths[i])
+                    for i in range(0, len(bam_handler.references))]
+        except:
+            return [(k, v) for k, v in bam_handler.chroms().items()]
 
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")

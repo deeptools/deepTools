@@ -11,9 +11,12 @@ matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
+import multiprocessing
+import os
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
+import deeptools.deepBlue as db
 
 old_settings = np.seterr(all='ignore')
 
@@ -24,9 +27,10 @@ def parse_arguments(args=None):
     output_args = get_output_args()
     optional_args = get_optional_args()
     read_options_parser = parserCommon.read_options()
+    deepBlue_optional_parser = parserCommon.deepBlueOptionalArgs()
     parser = argparse.ArgumentParser(
         parents=[required_args, output_args, read_options_parser,
-                 optional_args, parent_parser],
+                 optional_args, deepBlue_optional_parser, parent_parser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='This tool samples indexed BAM files '
         'and plots a profile of cumulative read coverages for each. '
@@ -318,7 +322,7 @@ def getJSDcommon(chip, input):
 
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
-    JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip / M)))
+    JSD = 0.5 * (np.nansum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.nansum(PMFchip * np.log2(PMFchip / M)))
 
     return np.sqrt(JSD)
 
@@ -341,6 +345,32 @@ def getExpected(mu):
 
 def main(args=None):
     args = process_args(args)
+
+    # Preload deepBlue files, which need to then be deleted
+    deepBlueFiles = []
+    for idx, fname in enumerate(args.bamfiles):
+        if db.isDeepBlue(fname):
+            deepBlueFiles.append([fname, idx])
+    if len(deepBlueFiles) > 0:
+        sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
+        foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
+        regs = db.makeChromTiles(foo)
+        for x in deepBlueFiles:
+            x.extend([args, regs])
+        if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
+            pool = multiprocessing.Pool(args.numberOfProcessors)
+            res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
+        else:
+            res = list(map(db.preloadWrapper, deepBlueFiles))
+
+        # substitute the file names with the temp files
+        for (ftuple, r) in zip(deepBlueFiles, res):
+            if ftuple[1] == 0:
+                args.bigwig1 = r
+            else:
+                args.bigwig2 = r
+        deepBlueFiles = [[x[0], x[1]] for x in deepBlueFiles]
+        del regs
 
     cr = countR.CountReadsPerBin(
         args.bamfiles,
@@ -423,6 +453,15 @@ def main(args=None):
                 args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
             args.outQualityMetrics.write("\n")
         args.outQualityMetrics.close()
+
+    # Clean up temporary bigWig files, if applicable
+    if not args.deepBlueKeepTemp:
+        for k, v in deepBlueFiles:
+            os.remove(args.bamfiles[v])
+    else:
+        for k, v in deepBlueFiles:
+            print("{} is stored in {}".format(k, args.bamfiles[v]))
+
 
 if __name__ == "__main__":
     main()
