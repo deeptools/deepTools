@@ -84,7 +84,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
     >>> c.run(function_to_call, funcArgs, outFile.name)
     >>> f = open(outFile.name, 'r')
     >>> f.readlines()
-    ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.50\n']
+    ['3R\t0\t100\t0\n', '3R\t100\t200\t1.5\n']
     >>> f.close()
     >>> outFile.close()
 
@@ -214,7 +214,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
         >>> f = open(tempFile, 'r')
         >>> f.readlines()
-        ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.00\n']
+        ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
         >>> f.close()
         >>> os.remove(tempFile)
 
@@ -228,7 +228,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
         previous_value = None
-        line_string = "{}\t{}\t{}\t{:.2f}\n"
+        line_string = "{}\t{}\t{}\t{:g}\n"
         for tileIndex in range(coverage.shape[0]):
 
             if self.smoothLength is not None and self.smoothLength > 0:
