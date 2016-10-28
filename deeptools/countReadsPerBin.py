@@ -573,17 +573,9 @@ class CountReadsPerBin(object):
             except:
                 # bigWig input, as used by plotFingerprint
                 if bamHandle.chroms(chrom):
-                    sIdx = 0
-                    _ = np.array(bamHandle.values(chrom, regStart, regEnd))
+                    _ = np.array(bamHandle.stats(chrom, regStart, regEnd, type="mean", nBins=nRegBins), dtype=np.float)
                     _[np.isnan(_)] = 0.0
-                    # Partition the values into appropriately sized chunks
-                    parts = np.linspace(0, reg[1] - reg[0], num=nRegBins, endpoint=False, dtype=int)
-                    if parts[-1] != reg[1] - reg[0]:
-                        parts = np.hstack([parts, reg[1] - reg[0]])
-                    nSteps = len(parts) - 1
-                    while sIdx < nSteps:
-                        coverages[sIdx] += np.sum(_[parts[sIdx]:parts[sIdx + 1]])
-                        sIdx += 1
+                    coverages += _
                     continue
                 else:
                     raise NameError("chromosome {} not found in bigWig file with chroms {}".format(chrom, bamHandle.chroms()))
