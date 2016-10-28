@@ -150,7 +150,8 @@ setup(
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
         "numpydoc >=0.5",
-        "pyBigWig >=0.2.1"
+        "pyBigWig >=0.2.1",
+        "py2bit >= 0.2.0"
     ],
     zip_safe=False,
     ext_modules=[module1],
