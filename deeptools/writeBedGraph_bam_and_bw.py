@@ -128,7 +128,7 @@ def writeBedGraph_worker(
             elif previousValue != value:
                 if not np.isnan(previousValue):
                     _file.write(
-                        toBytes("{0}\t{1}\t{2}\t{3:.2f}\n".format(chrom, writeStart,
+                        toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
                                                                   writeEnd, previousValue)))
                 previousValue = value
                 writeStart = writeEnd
@@ -138,7 +138,7 @@ def writeBedGraph_worker(
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
-            _file.write(toBytes("{0}\t{1}\t{2}\t{3:.1f}\n".format(chrom, writeStart,
+            _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
                                                                   end, previousValue)))
 
     tempFileName = _file.name
