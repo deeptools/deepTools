@@ -44,7 +44,7 @@ def test_bigwigCompare():
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
     _foo.close()
-    expected = ['3R\t0\t50\t0.00\n', '3R\t50\t100\t1.00\n', '3R\t100\t150\t2.00\n', '3R\t150\t200\t3.0\n']
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
@@ -57,7 +57,7 @@ def test_bigwigCompare_skipnas():
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
     _foo.close()
-    expected = ['3R\t100\t150\t2.00\n', '3R\t150\t200\t3.0\n']
+    expected = ['3R\t100\t150\t2\n', '3R\t150\t200\t3\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 

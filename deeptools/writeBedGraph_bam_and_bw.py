@@ -129,7 +129,7 @@ def writeBedGraph_worker(
                 if not np.isnan(previousValue):
                     _file.write(
                         toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
-                                                                  writeEnd, previousValue)))
+                                                                writeEnd, previousValue)))
                 previousValue = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
@@ -139,7 +139,7 @@ def writeBedGraph_worker(
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
             _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
-                                                                  end, previousValue)))
+                                                                end, previousValue)))
 
     tempFileName = _file.name
     _file.close()
