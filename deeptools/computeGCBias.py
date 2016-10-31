@@ -450,7 +450,11 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
             F_gc = subF_gc
             N_gc = subN_gc
 
-    scaling = float(sum(N_gc)) / float(sum(F_gc))
+    try:
+        scaling = float(sum(N_gc)) / float(sum(F_gc))
+    except:
+        # For some reason x // 0 = 0 if sum() is used with integer arithmetic!!!
+        scaling = 0.0
 
     R_gc = np.array([float(F_gc[x]) / N_gc[x] * scaling
                      if N_gc[x] and F_gc[x] > 0 else 1
