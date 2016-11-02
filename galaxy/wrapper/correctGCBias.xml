@@ -47,7 +47,7 @@
             <param name="ref_source" value="history" />
             <param name="input1" value="sequence.2bit" />
             <param name="effectiveGenomeSize_opt" value="specific" />
-            <param name="effectiveGenomeSize" value="1000" />
+            <param name="effectiveGenomeSize" value="10050" />
             <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" />
         </test>
     </tests>
