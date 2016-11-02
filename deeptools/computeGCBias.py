@@ -8,6 +8,7 @@ import numpy as np
 import argparse
 from scipy.stats import poisson
 import py2bit
+import sys
 
 from deeptoolsintervals import GTF
 from deeptools.utilities import tbitToBamChrName, getGC_content
