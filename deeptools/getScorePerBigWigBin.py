@@ -59,7 +59,9 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigwig_handlers = [pyBigWig.open(bw) for bw in bigWigFiles]
+    bigwig_handlers = []
+    for foo in bigWigFiles:
+        bigwig_handlers.append(pyBigWig.open(foo))
 
     regions_to_consider = []
     if bedRegions:
@@ -87,7 +89,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         i += 1
 
         for idx, bwh in enumerate(bigwig_handlers):
-            if chrom not in list(bwh.chroms().keys()):
+            if chrom not in bwh.chroms():
                 unmod_name = chrom
                 if chrom.startswith('chr'):
                     # remove the chr part from chromosome name
@@ -95,7 +97,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 else:
                     # prefix with 'chr' the chromosome name
                     chrom = 'chr' + chrom
-                if chrom not in list(bwh.chroms().keys()):
+                if chrom not in bwh.chroms():
                     exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
 
             weights = []
@@ -154,7 +156,12 @@ def getChromSizes(bigwigFilesList):
 
     bigwigFilesList = bigwigFilesList[:]
 
-    common_chr = set(pyBigWig.open(bigwigFilesList.pop()).chroms().items())
+    common_chr = set()
+    for fname in bigwigFilesList:
+        fh = pyBigWig.open(fname)
+        common_chr = common_chr.union(set(fh.chroms().items()))
+        fh.close()
+
     non_common_chr = set()
     for bw in bigwigFilesList:
         _names_and_size = set(pyBigWig.open(bw).chroms().items())
@@ -211,7 +218,6 @@ def getScorePerBin(bigWigFiles, binLength,
            [ 1.,  1.,  1.,  3.]])
 
     """
-
     # Try to determine an optimal fraction of the genome (chunkSize)
     # that is sent to workers for analysis. If too short, too much time
     # is spent loading the files

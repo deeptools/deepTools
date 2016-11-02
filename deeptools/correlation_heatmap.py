@@ -5,6 +5,8 @@ import numpy as np
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
 
+rcParams['pdf.fonttype'] = 42
+rcParams['svg.fonttype'] = 'none'
 old_settings = np.seterr(all='ignore')
 
 

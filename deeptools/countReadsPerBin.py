@@ -10,6 +10,7 @@ import deeptools.utilities
 from deeptools import bamHandler
 from deeptools import mapReduce
 from deeptoolsintervals import GTF
+import pyBigWig
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -227,14 +228,21 @@ class CountReadsPerBin(object):
             self.maxPairedFragmentLength = 4 * self.defaultFragmentLength
         else:
             self.maxPairedFragmentLength = 1000
+        if self.maxFragmentLength > 0:
+            self.maxPairedFragmentLength = self.maxFragmentLength
 
     def run(self, allArgs=None):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
         # the following values are empirical
-
-        bamFilesHandlers = [bamHandler.openBam(x) for x in self.bamFilesList]
+        bamFilesHandlers = []
+        for x in self.bamFilesList:
+            try:
+                y = bamHandler.openBam(x)
+            except:
+                y = pyBigWig.open(x)
+            bamFilesHandlers.append(y)
         chromSizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
 
         # skip chromosome in the list. This is usually for the
@@ -262,13 +270,27 @@ class CountReadsPerBin(object):
             min_num_of_samples = int(genomeSize / np.mean(chrLengths))
             raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
 
-        max_mapped = max([x.mapped for x in bamFilesHandlers])
+        max_mapped = []
+        for x in bamFilesHandlers:
+            try:
+                max_mapped.append(x.mapped)
+            except:
+                # bigWig, use a fixed value
+                max_mapped.append(0)
+        max_mapped = max(max_mapped)
 
-        reads_per_bp = float(max_mapped) / genomeSize
-        # chunkSize =  int(100 / ( reads_per_bp  * len(bamFilesList)) )
-
-        chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
+        # If max_mapped is 0 (i.e., bigWig input), set chunkSize to a multiple of binLength and use every bin
+        if max_mapped == 0:
+            chunkSize = 10000 * self.binLength
+            self.stepSize = self.binLength
+        else:
+            reads_per_bp = float(max_mapped) / genomeSize
+            chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
         [bam_h.close() for bam_h in bamFilesHandlers]
+
+        # Ensure that chunkSize is always at least self.stepSize
+        if chunkSize < self.stepSize:
+            chunkSize = self.stepSize
 
         if self.verbose:
             print("step size is {}".format(self.stepSize))
@@ -387,7 +409,12 @@ class CountReadsPerBin(object):
 
         start_time = time.time()
 
-        bam_handlers = [bamHandler.openBam(bam) for bam in self.bamFilesList]
+        bam_handlers = []
+        for fname in self.bamFilesList:
+            try:
+                bam_handlers.append(bamHandler.openBam(fname))
+            except:
+                bam_handlers.append(pyBigWig.open(fname))
 
         blackList = None
         if self.blackListFileName is not None:
@@ -536,11 +563,22 @@ class CountReadsPerBin(object):
             start_time = time.time()
             # caching seems faster. TODO: profile the function
             c = 0
-            if chrom in bamHandle.references:
-                reads = [r for r in bamHandle.fetch(chrom, regStart, regEnd)
-                         if r.flag & 4 == 0]
-            else:
-                raise NameError("chromosome {} not found in bam file".format(chrom))
+            try:
+                # BAM input
+                if chrom in bamHandle.references:
+                    reads = [r for r in bamHandle.fetch(chrom, regStart, regEnd)
+                             if r.flag & 4 == 0]
+                else:
+                    raise NameError("chromosome {} not found in bam file".format(chrom))
+            except:
+                # bigWig input, as used by plotFingerprint
+                if bamHandle.chroms(chrom):
+                    _ = np.array(bamHandle.stats(chrom, regStart, regEnd, type="mean", nBins=nRegBins), dtype=np.float)
+                    _[np.isnan(_)] = 0.0
+                    coverages += _
+                    continue
+                else:
+                    raise NameError("chromosome {} not found in bigWig file with chroms {}".format(chrom, bamHandle.chroms()))
 
             prev_start_pos = None  # to store the start positions
             # of previous processed read pair
@@ -620,7 +658,8 @@ class CountReadsPerBin(object):
         """
         Checks if a read is proper pair meaning that both mates are facing each other and are in
         the same chromosome and are not to far away. The sam flag for proper pair can not
-        always be trusted.
+        always be trusted. Note that if the fragment size is > maxPairedFragmentLength (~2kb
+        usually) that False will be returned.
         :return: bool
 
         >>> import pysam

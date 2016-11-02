@@ -22,6 +22,7 @@ galaxy/wrapper/bamPEFragmentSize.xml \
 galaxy/wrapper/bigwigCompare.xml \
 galaxy/wrapper/computeGCBias.xml \
 galaxy/wrapper/computeMatrix.xml \
+galaxy/wrapper/computeMatrixOperations.xml \
 galaxy/wrapper/correctGCBias.xml \
 galaxy/wrapper/multiBamSummary.xml \
 galaxy/wrapper/multiBigwigSummary.xml \

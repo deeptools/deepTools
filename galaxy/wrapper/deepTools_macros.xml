@@ -98,11 +98,11 @@
     </xml>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.3.6</token>
+    <token name="@WRAPPER_VERSION@">2.4.0</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
-            <requirement type="package" version="2.3.6">deepTools</requirement>
+            <requirement type="package" version="2.4.0">deepTools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -285,11 +285,21 @@
         </param>
     </xml>
 
+    <xml name="sortRegionsComputeMatrix">
+        <param argument="--sortRegions" type="select" label="Sort regions"
+            help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
+            <option value="no">no ordering</option>
+            <option value="keep" selected="true">maintain the same ordering as the input files</option>
+            <option value="descend">descending order</option>
+            <option value="ascend">ascending order</option>
+        </param>
+    </xml>
+
     <xml name="sortRegions">
         <param argument="--sortRegions" type="select" label="Sort regions"
             help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
             <option value="no">no ordering</option>
-            <option value="descend" selected="true">descending order</option>
+            <option value="descend">descending order</option>
             <option value="ascend">ascending order</option>
         </param>
     </xml>
@@ -362,21 +372,62 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     </xml>
 
     <xml name="multiple_input_bams">
-        <param argument="--bamfiles" type="data" format="bam" min="1"
-            label="Bam file" multiple="true"
-            help=""/>
+        <conditional name="multibam_conditional">
+        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples is vital to you, select Yes below.">
+            <option value="No" selected="true">No</option>
+            <option value="Yes">Yes</option>
+        </param>
+        <when value="No">
+            <param argument="--bamfiles" type="data" format="bam" min="1"
+                label="Bam file" multiple="true"
+                help=""/>
+        </when>
+        <when value="Yes">
+            <repeat name="multibam_repeats" min="1" title="BAM Files">
+                <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
+            </repeat>
+        </when>
+        </conditional>
     </xml>
 
     <xml name="multiple_input_bams_min2">
-        <param argument="--bamfiles" type="data" format="bam" min="2"
-            label="Bam file" multiple="true"
-            help=""/>
+        <conditional name="multibam_conditional">
+        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples 
+is vital to you, select Yes below.">
+            <option value="No" selected="true">No</option>
+            <option value="Yes">Yes</option>
+        </param>
+        <when value="No">
+            <param argument="--bamfiles" type="data" format="bam" min="2"
+                label="Bam file" multiple="true"
+                help=""/>
+        </when>
+        <when value="Yes">
+            <repeat name="multibam_repeats" min="2" title="BAM Files">
+                <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
+            </repeat>
+        </when>
+        </conditional>
     </xml>
 
     <xml name="multiple_input_bigwigs">
-        <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="2"
-            label="Bigwig file"
-            help="A Bigwig file."/>
+        <conditional name="multibigwig_conditional">
+        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples 
+is vital to you, select Yes below.">
+            <option value="No" selected="true">No</option>
+            <option value="Yes">Yes</option>
+        </param>
+        <when value="No">
+            <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="2"
+                label="Bigwig file"
+                help="A Bigwig file."/>
+        </when>
+        <when value="Yes">
+            <repeat name="multibigwig_repeats" min="2" title="BigWig files">
+                <param argument="--bigwigfiles" type="data" format="bigwig" label="Bigwig file" help="A Bigwig file."/>
+            </repeat>
+        </when>
+        </conditional>
     </xml>
 
     <xml name="plotTitle">
@@ -390,12 +441,21 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 <![CDATA[
         #set files=[]
         #set labels=[]
-        #for $counter, $bamfile in enumerate($bamfiles):
-            ln -s "${bamfile}" "./${counter}.bam" &&
-            ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
-            #silent $files.append('%s.bam' % $counter)
-            #silent $labels.append("'%s'" % ($bamfile.display_name))
-        #end for
+        #if $multibam_conditional.orderMatters == "No":
+            #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
+                ln -s "${bamfile}" "./${counter}.bam" &&
+                ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #silent $files.append('%s.bam' % $counter)
+                #silent $labels.append("'%s'" % ($bamfile.display_name))
+            #end for
+        #else:
+            #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
+                ln -s "${f.bamfile}" "./${counter}.bam" &&
+                ln -s "${f.bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #silent $files.append('%s.bam' % $counter)
+                #silent $labels.append("'%s'" % ($f.bamfile.display_name))
+            #end for
+        #end if
 ]]>
     </token>
 
@@ -403,11 +463,19 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 <![CDATA[
         #set files=[]
         #set labels=[]
-        #for $counter, $bigwig in enumerate($bigwigfiles):
-            ln -s "${bigwig}" "${counter}.bw" &&
-            #silent $files.append('%s.bw' % $counter)
-            #silent $labels.append("'%s'" % ($bigwig.display_name))
-        #end for
+        #if $multibigwig_conditional.orderMatters == "No":
+            #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
+                ln -s "${bigwig}" "${counter}.bw" &&
+                #silent $files.append('%s.bw' % $counter)
+                #silent $labels.append("'%s'" % ($bigwig.display_name))
+            #end for
+        #else:
+            #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
+                ln -s "${f.bigwig}" "${counter}.bw" &&
+                #silent $files.append('%s.bw' % $counter)
+                #silent $labels.append("'%s'" % ($f.bigwig.display_name))
+            #end for
+        #end if
 ]]>
     </token>
 

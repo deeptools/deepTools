@@ -19,6 +19,15 @@
                 #if $output.saveRawCounts:
                     --outRawCounts '$outFileRawCounts'
                 #end if
+                #if $output.saveQualityMetrics:
+                    --outQualityMetrics '$outFileQualityMetrics'
+                    #if $output.JSDsample:
+                        #if "'{}'".format($output.JSDsample.display_name) in $labels:
+                            #set JSDidx = $labels.index("'{}'".format($output.JSDsample.display_name))
+                            --JSDsample "./${JSDidx}.bam"
+                        #end if
+                    #end if
+                #end if
             #else
                 --plotFileFormat 'png'
             #end if
@@ -33,10 +42,6 @@
 
                 $advancedOpt.ignoreDuplicates
                 $advancedOpt.skipZeros
-
-                #if $advancedOpt.minMappingQuality:
-                --minMappingQuality '$advancedOpt.minMappingQuality'
-                #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                     --plotTitle '$advancedOpt.plotTitle'
@@ -80,6 +85,11 @@
             <when value="yes">
                 <expand macro="input_image_file_format" />
                 <param name="saveRawCounts" type="boolean" label="Save the bin counts" help="(--outRawCounts)"/>
+                <param name="saveQualityMetrics" type="boolean" label="Save quality metrics"
+                   help="The file will have one row per input BAM file and columns containing a variety of QC metrics. For the full description of all metrics and their interpretation, please see our online documentation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html. (--outQualityMetrics)"/>
+                <param name="JSDsample" type="data" format="bam"
+                   label="Jensen-Shannon distance reference sample"
+                   help="If output metrics should be saved, then use this sample as the reference for computing the Jensen-Shannon distance and CHANCE metrics of all other samples. Normally this is an input sample. If you don't specify this, then these metrics will not be computed. This is only applicable if quality metrics are being saved. (--JSDsample)" />
             </when>
         </conditional>
     </inputs>
@@ -90,6 +100,14 @@
             ((
                 output['showOutputSettings'] == 'yes' and
                 output['saveRawCounts'] is True
+            ))
+            </filter>
+        </data>
+        <data format="tabular" name="outFileQualityMetrics" label="${tool.name} on ${on_string}: quality metrics">
+            <filter>
+            ((
+                output['showOutputSettings'] == 'yes' and
+                output['saveQualityMetrics'] is True
             ))
             </filter>
         </data>
@@ -106,9 +124,12 @@
             <param name="showAdvancedOpt" value="yes" />
             <param name="showOutputSettings" value="yes" />
             <param name="saveRawCounts" value="True" />
+            <param name="saveQualityMetrics" value="True" />
             <param name="plotTitle" value="Test Fingerprint Plot" />
+            <param name="JSDsample" value="bowtie2 test1.bam" ftype="bam" />
             <output name="outFileName" file="plotFingerprint_result2.png" ftype="png" compare="sim_size" />
             <output name="outFileRawCounts" file="plotFingerprint_result2.tabular" ftype="tabular" />
+            <output name="outFileQualityMetrics" file="plotFingerprint_quality_metrics.tabular" ftype="tabular" />
         </test>
     </tests>
     <help>

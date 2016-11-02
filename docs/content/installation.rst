@@ -13,7 +13,7 @@ Requirements
 * Python 2.7 or Python 3.x
 * numpy >= 1.8.0
 * scipy >= 0.17.0
-* twobitreader
+* py2bit >= 0.1.0
 * pyBigWig >= 0.2.1
 * pysam >= 0.8
 * matplotlib >= 1.4.0

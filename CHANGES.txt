@@ -1,3 +1,20 @@
+2.4.0
+
+ * The --Offset option to bamCoverage can now take two values, which can be used to specify a range within each alignment of bases to use. As an example, `--Offset 5 -1` will use ignore the first 4 bases of an alignment (accounting for orientation) and use only the 5th through last base. This can be useful for things like ATACseq (see #370).
+ * Read extension can now be used in conjunction with --Offset in bamCoverage.
+ * plotFingerprint can now output quality metrics, including the Jensen-Shannon distance if a reference sample is specified (see #328). Additionally, various statistics from CHANCE can be produced.
+ * Switched from using the 'twobitreader' python module to our new custom 'py2bit' module for accessing 2bit files. This fixes the performance regression seen in computeGCBias starting in version 2.3.0 (#383).
+ * `bigwigCompare`, `computeMatrix`, and `multiBigwigSummary` can read signal files hosted on [deepBlue](http://deepblue.mpi-inf.mpg.de/).
+ * Fixed a minor bug in `deeptools`, where the `--version` option was ignored (see #404).
+ * Text in SVG and PDF files is now actual text and not a path (see #403).
+ * The `--maxFragmentLength` option in bamCoverage now alters the `maxPairedFragmentLength` that is otherwise hard-coded (see #410).
+ * Added the `computeMatrixOperations` tools, which can be used to sort/reorder/subset/filter/combine the output of `computeMatrix`.
+ * `computeMatrix --sortRegions` has a new `keep` option, which is the default. This mimics the behavior in deepTools prior to 2.3.0 where the output order matched the input order. This is, of course, a bit slower, so if the order doesn't matter then use `no`.
+ * Fixed issue #435, where `plotHeatmap --sortRegions region_length` would crash with an error.
+ * Output bedGraph files are now sorted (#439).
+ * Values stored in bedGraph files (and therefore placed into bigWig files) now use python's "general" format with 6 digits of precision. This tends to produce slightly larger files, but with less loss for values near 0 (see #438).
+ * Corrected how computeGCBias determines the lambda parameter, which should only really affect very atypical experiments (i.e., correctGCBias would have crashed is this greatly affected you).
+
 2.3.6
 
  * multiBamSummary will now not automatically append .npz to the output file name if it's not present. This was bug #436

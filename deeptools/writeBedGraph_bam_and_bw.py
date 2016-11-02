@@ -5,6 +5,7 @@ import os
 import shutil
 import tempfile
 import numpy as np
+import sys
 
 # NGS packages
 import pyBigWig
@@ -97,10 +98,9 @@ def writeBedGraph_worker(
                 try:
                     tileCoverage.append(coverage[index][tileIndex])
                 except IndexError:
-                    print("Chromosome {} probably not in one of the bigwig "
-                          "files. Remove this chromosome from the bigwig file "
-                          "to continue".format(chrom))
-                    exit(0)
+                    sys.exit("Chromosome {} probably not in one of the bigwig "
+                             "files. Remove this chromosome from the bigwig file "
+                             "to continue".format(chrom))
 
 #        if  zerosToNans == True and sum(tileCoverage) == 0.0:
 #            continue
@@ -128,8 +128,8 @@ def writeBedGraph_worker(
             elif previousValue != value:
                 if not np.isnan(previousValue):
                     _file.write(
-                        toBytes("{0}\t{1}\t{2}\t{3:.2f}\n".format(chrom, writeStart,
-                                                                  writeEnd, previousValue)))
+                        toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
+                                                                writeEnd, previousValue)))
                 previousValue = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
@@ -138,8 +138,8 @@ def writeBedGraph_worker(
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
-            _file.write(toBytes("{0}\t{1}\t{2}\t{3:.1f}\n".format(chrom, writeStart,
-                                                                  end, previousValue)))
+            _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
+                                                                end, previousValue)))
 
     tempFileName = _file.name
     _file.close()
@@ -150,7 +150,7 @@ def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=None,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
-        smoothLength=0, fixed_step=False):
+        smoothLength=0, fixed_step=False, verbose=False):
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -167,31 +167,33 @@ def writeBedGraph(
         genomeChunkLength = getGenomeChunkLength(bamHandlers, tileSize)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=False)
+        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
-        bigwigs = [fileName for fileName,
-                   fileFormat in bamOrBwFileList if fileFormat == 'bigwig']
         cCommon = []
         chromNamesAndSize = {}
-        for bw in bigwigs:
-            bwh = pyBigWig.open(bw)
-            for chromName, size in list(bwh.chroms().items()):
+        for fileName, fileFormat in bamOrBwFileList:
+            if fileFormat == 'bigwig':
+                fh = pyBigWig.open(fileName)
+            else:
+                continue
+
+            for chromName, size in list(fh.chroms().items()):
                 if chromName in chromNamesAndSize:
                     cCommon.append(chromName)
                     if chromNamesAndSize[chromName] != size:
                         print("\nWARNING\n"
                               "Chromosome {} length reported in the "
-                              "bigwig files differ.\n{} for {}\n"
+                              "input files differ.\n{} for {}\n"
                               "{} for {}.\n\nThe smallest "
                               "length will be used".format(
                                   chromName, chromNamesAndSize[chromName],
-                                  bigwigs[0], size, bw))
+                                  bamOrBwFileList[0][0], size, fileName))
                         chromNamesAndSize[chromName] = min(
                             chromNamesAndSize[chromName], size)
                 else:
                     chromNamesAndSize[chromName] = size
-            bwh.close()
+            fh.close()
 
         # get the list of common chromosome names and sizes
         chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
@@ -209,7 +211,8 @@ def writeBedGraph(
                               genomeChunkLength=genomeChunkLength,
                               region=region,
                               blackListFileName=blackListFileName,
-                              numberOfProcessors=numberOfProcessors)
+                              numberOfProcessors=numberOfProcessors,
+                              verbose=verbose)
 
     # concatenate intermediary bedgraph files
     outFile = open(outputFileName + ".bg", 'wb')

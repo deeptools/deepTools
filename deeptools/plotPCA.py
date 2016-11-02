@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-from matplotlib import use as mplt_use
-mplt_use('Agg')
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['svg.fonttype'] = 'none'
 
 from deeptools.correlation import Correlation
 from deeptools._version import __version__

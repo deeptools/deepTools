@@ -137,7 +137,7 @@ setup(
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/plotProfile',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/multiBigwigSummary',
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation',
-             'bin/plotEnrichment', 'bin/deeptools'],
+             'bin/plotEnrichment', 'bin/deeptools', 'bin/computeMatrixOperations'],
     include_package_data=True,
     package_data={'': ['config/deeptools.cfg']},
     url='http://pypi.python.org/pypi/deepTools/',
@@ -149,9 +149,9 @@ setup(
         "scipy >= 0.17.0",
         "matplotlib >= 1.4.0",
         "pysam >= 0.8.2",
-        "twobitreader >= 3.1.4",
         "numpydoc >=0.5",
-        "pyBigWig >=0.2.1"
+        "pyBigWig >=0.2.1",
+        "py2bit >= 0.2.0"
     ],
     zip_safe=False,
     ext_modules=[module1],

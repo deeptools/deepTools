@@ -131,6 +131,8 @@ def main(args=None):
     if args.histogram:
         import matplotlib
         matplotlib.use('Agg')
+        matplotlib.rcParams['pdf.fonttype'] = 42
+        matplotlib.rcParams['svg.fonttype'] = 'none'
         import matplotlib.pyplot as plt
 
         if args.samplesLabel:
@@ -140,7 +142,7 @@ def main(args=None):
             else:
                 labels = args.samplesLabel
         else:
-            labels = fraglengths.keys()
+            labels = list(fraglengths.keys())
 
         i = 0
         for bam in fraglengths.keys():

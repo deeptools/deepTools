@@ -52,7 +52,7 @@
                 #end if
 
                 #if $advancedOpt.Offset:
-                    --Offset '$advancedOpt.Offset'
+                    --Offset $advancedOpt.Offset
                 #end if
 
                 @blacklist@
@@ -115,7 +115,7 @@
                     label="Determine nucleosome positions from MNase-seq data"
                     help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data. By default, only fragments between 130 and 200 bases will be used, though this can be changed with the --minFragmentLength and --maxFragmentLength options." />
 
-                <param argument="--Offset" type="integer"  value="" optional="True"
+                <param argument="--Offset" type="text"  value="" optional="True"
                     label="Offset inside each alignment to use for the signal location."
                     help="Uses this offset inside of each read as the signal. This is useful in
                         cases like RiboSeq or GROseq, where only the 12th, 15th or 1st base aligned
@@ -124,8 +124,10 @@
                         that negative values indicate offsets from the end of each read. A value of
                         1 indicates the first base of the alignment (taking alignment orientation
                         into account). Likewise, a value of -1 is the last base of the alignment. An
-                        offset of 0 is not permitted. By default, the entire alignment is used to
-                        denote where the signal is located." />
+                        offset of 0 is not permitted. If two values (separated by spaces) are specified, then they will be
+                        used to specify a range of positions. Note that specifying something like
+                        --Offset 5 -1 will result in the 5th through last position being used, which
+                        is equivalent to trimming 4 bases from the 5-prime end of alignments." />
 
                 <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
                     help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
@@ -191,6 +193,17 @@
             <param name="filterRNAstrand" value="reverse" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
+        </test>
+        <test>
+            <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="binSize" value="10" />
+            <param name="Offset" value="-4 -1" />
+            <param name="doExtend" value="yes" />
+            <param name="minMappingQuality" value="0" />
+            <param name="type" value="no" />
+            <output name="outFileName" file="bamCoverage_result6.bw" ftype="bigwig" />
         </test>
     </tests>
     <help>

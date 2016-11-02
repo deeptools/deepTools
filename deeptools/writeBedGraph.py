@@ -82,8 +82,10 @@ class WriteBedGraph(cr.CountReadsPerBin):
     >>> num_sample_sites = 0 #overruled by step_size
     >>> c = WriteBedGraph([bam_file], binLength=bin_length, region=region, stepSize=step_size)
     >>> c.run(function_to_call, funcArgs, outFile.name)
-    >>> open(outFile.name, 'r').readlines()
-    ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.50\n']
+    >>> f = open(outFile.name, 'r')
+    >>> f.readlines()
+    ['3R\t0\t100\t0\n', '3R\t100\t200\t1.5\n']
+    >>> f.close()
     >>> outFile.close()
 
 
@@ -152,7 +154,9 @@ class WriteBedGraph(cr.CountReadsPerBin):
         bedgraph_file = out_file.name
         out_file.close()
         if format == 'bedgraph':
-            os.rename(bedgraph_file, out_file_name)
+            sort_cmd = cfg.config.get('external_tools', 'sort')
+            os.system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd, bedgraph_file, out_file_name))
+            os.remove(bedgraph_file)
             if self.verbose:
                 print("output file: {}".format(out_file_name))
         else:
@@ -208,8 +212,10 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples, stepSize=50)
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
-        >>> open(tempFile, 'r').readlines()
-        ['3R\t0\t100\t0.00\n', '3R\t100\t200\t1.00\n']
+        >>> f = open(tempFile, 'r')
+        >>> f.readlines()
+        ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
+        >>> f.close()
         >>> os.remove(tempFile)
 
 
@@ -222,7 +228,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
         previous_value = None
-        line_string = "{}\t{}\t{}\t{:.2f}\n"
+        line_string = "{}\t{}\t{}\t{:g}\n"
         for tileIndex in range(coverage.shape[0]):
 
             if self.smoothLength is not None and self.smoothLength > 0:
@@ -287,9 +293,11 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     _file.close()
     system("LC_ALL=C {} -k1,1 -k2,2n {} > {}.sorted".format(sort_cmd, _file.name, _file.name))
     cl = []
-    for line in open("{}.sorted".format(_file.name)):
+    f = open("{}.sorted".format(_file.name))
+    for line in f:
         chrom, chromLen = line.split()
         cl.append((chrom, int(chromLen)))
+    f.close()
     remove(_file.name)
     remove("{}.sorted".format(_file.name))
 
@@ -312,9 +320,11 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     assert(bw is not None)
     # The lack of maxZooms will change the results a bit, perhaps the defaults are better
     bw.addHeader(cl, maxZooms=10)
-    for line in open(bedGraphPath):
+    f = open(bedGraphPath)
+    for line in f:
         interval = line.split()
         bw.addEntries([interval[0]], [int(interval[1])], ends=[int(interval[2])], values=[float(interval[3])])
+    f.close()
     bw.close()
 
     if sort:

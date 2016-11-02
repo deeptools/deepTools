@@ -1,0 +1,179 @@
+<tool id="deeptools_compute_matrix_operations" name="computeMatrixOperations" version="@WRAPPER_VERSION@.0">
+    <description>Modify or combine the output of computeMatrix in a variety of ways.</description>
+    <macros>
+        <token name="@BINARY@">computeMatrixOperations</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements"/>
+    <command>
+<![CDATA[
+        @BINARY@
+            #if $submodule.command == "info":
+                info
+                -m $submodule.matrixFile
+                > $outFileTxt
+            #else if $submodule.command == "subset":
+                subset
+                -m $submodule.matrixFile
+                #if $submodule.groups is not None and str($submodule.groups) != '':
+                    --groups $submodule.groups
+                #end if
+                #if $submodule.samples is not None and str($submodule.samples) != '':
+                    --samples $submodule.samples
+                #end if
+                -o $outFileName
+            #else if $submodule.command == "filterStrand":
+                filterStrand
+                -m $submodule.matrixFile
+                --strand $submodule.strand
+                -o $outFileName
+            #else if $submodule.command == "rbind":
+                #set $files=[]
+                #for $f in $submodule.matrixFiles:
+                    #silent $files.append(str($f.matrixFile))
+                #end for
+                rbind
+                -m '#echo "' '".join($files)#'
+                -o $outFileName
+            #else if $submodule.command == "cbind":
+                cbind
+                #set $files=[]
+                #for $f in $submodule.matrixFiles:
+                    #silent $files.append(str($f.matrixFile))
+                #end for
+                -m '#echo "' '".join($files)#'
+                -o $outFileName
+            #else if $submodule.command == "sort":
+                sort
+                #set $files=[]
+                #for $f in $submodule.regionsFiles:
+                    #silent $files.append(str($f.regionsFile))
+                #end for
+                -m $submodule.matrixFile
+                -R '#echo "' '".join($files)#'
+                -o $outFileName
+            #end if
+]]>
+    </command>
+    <inputs>
+        <conditional name="submodule">
+            <param name="command" type="select" label="Operation type">
+                <option value="info" selected="true">Print information (info)</option>
+                <option value="subset">Subset by samples and/or groups of regions (subset)</option>
+                <option value="filterStrand">Filter by strand (filterStrand)</option>
+                <option value="rbind">Bind matrices, top to bottom (rbind)</option>
+                <option value="cbind">Bind matrices, left to right (cbind)</option>
+                <option value="sort">Sort by region order in specified files (sort)</option>
+            </param>
+            <when value="info">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+            </when>
+
+            <when value="subset">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="groups" type="text" optional="true" label="Region groups to include."
+                    help="If blank, all region groups are output. Alternatively, one or more groups listed in the output of the 'info' command can be used (separate groups by a space and enclose in quotes if needed)" />
+                <param argument="samples" type="text" optional="true" label="Samples to include."
+                    help="If blank, all samples are output. Alternatively, one or more samples listed in the output of the 'info' command can be used (separate sample names by a space and enclose in quotes if needed)" />
+            </when>
+
+            <when value="filterStrand">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="strand" type="select" label="Only include regions on this strand."
+                    help="Only regions on the desired strand will be included in the output. If you desire to instead remove regions on only one strand (or the . strand), separately run this on the other strand and then use the rbind operation.">
+                    <option value="+">+</option>
+                    <option value="-">-</option>
+                    <option value=".">. (no annotated strand)</option>
+                </param>
+            </when>
+
+            <when value="rbind">
+                <repeat name="matrixFiles" title="Matrix files from computeMatrix" min="2">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                </repeat>
+            </when>
+
+            <when value="cbind">
+                <repeat name="matrixFiles" title="Matrix files from computeMatrix" min="2">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                </repeat>
+            </when>
+
+            <when value="sort">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                <repeat name="regionsFiles" title="BED or GTF files of regions" min="1">
+                    <param name="regionsFile" format="bed,gtf" type="data" label="Regions to plot"
+                        help="File, in BED format, containing the regions to plot."/>
+                </repeat>
+            </when>
+        </conditional>
+    </inputs>
+    <outputs>
+        <data format="deeptools_compute_matrix_archive" name="outFileName" label="${tool.name} ${submodule.command} on ${on_string}">
+            <filter>
+            ((
+                submodule['command'] != "info"
+            ))
+            </filter>
+        </data>
+        <data format="txt" name="outFileTxt" label="${tool.name} info on ${on_string}">
+            <filter>
+            ((
+                submodule['command'] == "info"
+            ))
+            </filter>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="command" value="info" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <output name="outFileTxt" file="computeMatrixOperations.txt" ftype="txt" />
+        </test>
+        <test>
+            <param name="command" value="rbind" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <output name="outFileName" file="computeMatrixOperations_result2.mat.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" delta="100"/>
+        </test>
+    </tests>
+    <help>
+<![CDATA[
+
+What it does
+------------
+
+``computeMatrixOperations`` can perform a variety of operations on one or more files produced by ``computeMatrix`` (N.B., the output is always written to a new file):
+
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ **Subcommand** | **What it does**                                                                                                         |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ info           | Prints out the sample and region group names in the order in which they appear.                                          |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ subset         | Subsets a file by the desired samples/region group names. This can also change the order of these samples/region groups. |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ filterStrand   | Filters the file to only include regions annotated as being on a particular strand.                                      |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ rbind          | Concatenates multiple matrices together, top to bottom.                                                                  |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ cbind          | Merges multiple matrices, left to right.                                                                                 |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
++ sort           | Sorts the given file so regions are in the order of occurence in the input BED/GTF file(s).                              |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
+
+
+These operations are useful when you want to run computeMatrix on multiple files (thereby keeping all of the values together) and later exclude regions/samples or add new ones. Another common use would be if you require the output of computeMatrix to be sorted to match the order of regions in the input file.
+
+-----
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>

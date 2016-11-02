@@ -35,6 +35,11 @@ We chose these examples to show you how the nature of the ChIP signal (narrow an
 
 .. image:: ../../images/QC_fingerprint.png
 
+Quality control metrics
+~~~~~~~~~~~~~~~~~~~~~~~
+
+For a detailed explanation of the QC metrics, please see: :doc:`../feature/plotFingerprint_QC_metrics`.
+
 Usage example
 ^^^^^^^^^^^^^^^^
 
