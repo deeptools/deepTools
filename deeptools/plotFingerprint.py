@@ -11,8 +11,6 @@ matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
-import multiprocessing
-import os
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
