@@ -8,6 +8,7 @@ import numpy as np
 import argparse
 from scipy.stats import poisson
 import py2bit
+import sys
 
 from deeptoolsintervals import GTF
 from deeptools.utilities import tbitToBamChrName, getGC_content
@@ -416,14 +417,14 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
     >>> res = tabulateGCcontent(*arg)
     >>> res
     array([[   0.        ,   18.        ,    1.        ],
-           [   3.        ,   63.        ,    0.42857143],
-           [   7.        ,  159.        ,    0.39622642],
-           [  25.        ,  192.        ,    1.171875  ],
-           [  28.        ,  215.        ,    1.17209302],
-           [  16.        ,  214.        ,    0.6728972 ],
-           [  12.        ,   95.        ,    1.13684211],
-           [   9.        ,   24.        ,    3.375     ],
-           [   3.        ,   11.        ,    2.45454545],
+           [   3.        ,   63.        ,    0.45815996],
+           [   7.        ,  159.        ,    0.42358185],
+           [  25.        ,  192.        ,    1.25278115],
+           [  28.        ,  215.        ,    1.25301422],
+           [  16.        ,  214.        ,    0.71935396],
+           [  12.        ,   95.        ,    1.21532959],
+           [   9.        ,   24.        ,    3.60800971],
+           [   3.        ,   11.        ,    2.62400706],
            [   0.        ,    0.        ,    1.        ],
            [   0.        ,    0.        ,    1.        ]])
     """
@@ -450,7 +451,9 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
             F_gc = subF_gc
             N_gc = subN_gc
 
-    scaling = sum(N_gc) // sum(F_gc)
+    if sum(F_gc) == 0:
+        sys.exit("No fragments included in the sampling! Consider decreasing (or maybe increasing) the --sampleSize parameter")
+    scaling = float(sum(N_gc)) / float(sum(F_gc))
 
     R_gc = np.array([float(F_gc[x]) / N_gc[x] * scaling
                      if N_gc[x] and F_gc[x] > 0 else 1
