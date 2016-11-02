@@ -318,7 +318,7 @@ def getJSDcommon(chip, input):
 
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
-    JSD = 0.5 * (np.sum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.sum(PMFchip * np.log2(PMFchip / M)))
+    JSD = 0.5 * (np.nansum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.nansum(PMFchip * np.log2(PMFchip / M)))
 
     return np.sqrt(JSD)
 
@@ -423,6 +423,7 @@ def main(args=None):
                 args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
             args.outQualityMetrics.write("\n")
         args.outQualityMetrics.close()
+
 
 if __name__ == "__main__":
     main()
