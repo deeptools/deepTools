@@ -450,11 +450,9 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
             F_gc = subF_gc
             N_gc = subN_gc
 
-    try:
-        scaling = float(sum(N_gc)) / float(sum(F_gc))
-    except:
-        # For some reason x // 0 = 0 if sum() is used with integer arithmetic!!!
-        scaling = 0.0
+    if sum(F_gc) == 0:
+        sys.exit("No fragments included in the sampling! Consider decreasing (or maybe increasing) the --sampleSize parameter")
+    scaling = float(sum(N_gc)) / float(sum(F_gc))
 
     R_gc = np.array([float(F_gc[x]) / N_gc[x] * scaling
                      if N_gc[x] and F_gc[x] > 0 else 1

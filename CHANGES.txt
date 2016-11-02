@@ -13,6 +13,7 @@
  * Fixed issue #435, where `plotHeatmap --sortRegions region_length` would crash with an error.
  * Output bedGraph files are now sorted (#439).
  * Values stored in bedGraph files (and therefore placed into bigWig files) now use python's "general" format with 6 digits of precision. This tends to produce slightly larger files, but with less loss for values near 0 (see #438).
+ * Corrected how computeGCBias determines the lambda parameter, which should only really affect very atypical experiments (i.e., correctGCBias would have crashed is this greatly affected you).
 
 2.3.6
 
