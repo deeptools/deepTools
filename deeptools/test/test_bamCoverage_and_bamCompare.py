@@ -85,6 +85,18 @@ def test_bam_coverage_skipnas():
     assert_equal(resp, expected)
     unlink(outfile)
 
+def test_bam_coverage_filtering():
+    outfile = '/tmp/test_file.bg'
+    args = "--bam {} -o {} --outFileFormat bedgraph --ignoreDuplicates --verbose".format(BAMFILE_B, outfile).split()
+    bam_cov.main(args)
+
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t200\t1\n']
+    assert_equal(resp, expected)
+    unlink(outfile)
+
 
 def test_bam_compare_arguments():
     """
