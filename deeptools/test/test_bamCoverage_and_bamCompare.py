@@ -85,6 +85,7 @@ def test_bam_coverage_skipnas():
     assert_equal(resp, expected)
     unlink(outfile)
 
+
 def test_bam_coverage_filtering():
     outfile = '/tmp/test_file.bg'
     args = "--bam {} -o {} --outFileFormat bedgraph --ignoreDuplicates --verbose".format(BAMFILE_B, outfile).split()
