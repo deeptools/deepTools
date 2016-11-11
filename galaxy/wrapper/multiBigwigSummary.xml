@@ -63,7 +63,7 @@
                 <expand macro="distanceBetweenBins" />
             </when>
             <when value="BED-file">
-                <param name="region_file" type="data" format="bed"
+                <param name="region_file" type="data" format="bed,gtf"
                     label="Region file in BED format"
                     help="Correlation is computed for the number of reads that overlap such regions."/>
             </when>
