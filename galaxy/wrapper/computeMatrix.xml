@@ -87,7 +87,7 @@
     <inputs>
 
         <repeat name="regionsFiles" title="Select regions" min="1">
-            <param name="regionsFile" format="bed" type="data" label="Regions to plot"
+            <param name="regionsFile" format="bed,gtf" type="data" label="Regions to plot"
                 help="File, in BED format, containing the regions to plot."/>
         </repeat>
 
