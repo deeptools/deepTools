@@ -1,3 +1,7 @@
+2.4.1
+
+ * Setting --zMin to the same value as --zMax, whether intentionally or because the --zMax value computed by deepTools happens to be now larger than the desired value, will result in the maximum value in the dataset being used (internally, --zMax gets set to None).
+
 2.4.0
 
  * The --Offset option to bamCoverage can now take two values, which can be used to specify a range within each alignment of bases to use. As an example, `--Offset 5 -1` will use ignore the first 4 bases of an alignment (accounting for orientation) and use only the 5th through last base. This can be useful for things like ATACseq (see #370).

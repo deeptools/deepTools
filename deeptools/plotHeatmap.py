@@ -201,7 +201,7 @@ def plotMatrix(hm, outFileName,
             matrix_flatten = hm.matrix.flatten()
         # try to avoid outliers by using np.percentile
         zMax = np.percentile(matrix_flatten, 98.0)
-        if np.isnan(zMax):
+        if np.isnan(zMax) or zMax <= zMin[0]:
             zMax = [None]
         else:
             zMax = [zMax]
