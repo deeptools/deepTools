@@ -12,6 +12,7 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
 
+import deeptools.countReadsPerBin as countR
 import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
 

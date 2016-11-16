@@ -1,6 +1,12 @@
-from deeptools import countReadsPerBin
+import numpy as np
+import multiprocessing
+import time
 
-class SumCoveragePerBin(CountReadsPerBin):
+from deeptools import countReadsPerBin
+from deeptoolsintervals import GTF
+
+
+class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
     r"""This is an extension of CountReadsPerBin for use with plotFingerprint.
     There, we need to sum the per-base coverage.
     """
@@ -182,7 +188,6 @@ class SumCoveragePerBin(CountReadsPerBin):
                         elif _ < 0:
                             _ = 0
                         coverages[eIdx] += _
-                    #coverages[sIdx:eIdx] += 1
                     last_eIdx = eIdx
 
                 prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
