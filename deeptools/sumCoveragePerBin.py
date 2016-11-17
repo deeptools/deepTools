@@ -18,31 +18,21 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
 
         >>> test = Tester()
         >>> import pysam
-        >>> c = CountReadsPerBin([], stepSize=1, extendReads=300)
+        >>> c = SumCoveragePerBin([], stepSize=1, extendReads=300)
 
         For this case the reads are length 36. The number of overlapping
-        read fragments is 4 and 5 for the positions tested.
+        read fragments is 4 and 5 for the positions tested. Note that reads are
+        NOT extended, due to there being a 0 length input list of BAM files!
 
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
         ... [(5000833, 5000834), (5000834, 5000835)])
         array([ 4.,  5.])
 
-        In the following example a paired read is extended to the fragment length which is 100
-        The first mate starts at 5000000 and the second at 5000064. Each mate is
-        extended to the fragment length *independently*
-        At position 500090-500100 one fragment  of length 100 overlap, and after position 5000101
-        there should be zero reads.
-
-        >>> c.zerosToNans = True
-        >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
-        ... [(5000090, 5000100), (5000100, 5000110)])
-        array([  1.,  nan])
-
         In the following  case the reads length is 50. Reads are not extended.
 
         >>> c.extendReads=False
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', [(148, 150), (150, 152), (152, 154)])
-        array([ 1.,  2.,  2.])
+        array([ 2.,  4.,  4.])
 
 
         """
@@ -181,6 +171,8 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                     while _ < eIdx:
                         coverages[_] += tileSize
                         _ += 1
+                    while eIdx - sIdx >= nRegBins:
+                        eIdx -= 1
                     if eIdx > sIdx:
                         _ = fragmentEnd - (reg[0] + eIdx * tileSize)
                         if _ > tileSize:
@@ -205,3 +197,29 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
             coverages[coverages == 0] = np.nan
 
         return coverages
+
+
+class Tester(object):
+
+    def __init__(self):
+        """
+        The distribution of reads between the two bam files is as follows.
+
+        They cover 200 bp
+
+          0                              100                           200
+          |------------------------------------------------------------|
+        A                                ===============
+                                                        ===============
+
+
+        B                 ===============               ===============
+                                         ===============
+                                                        ===============
+        """
+        import os
+        self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
+        self.bamFile1 = self.root + "testA.bam"
+        self.bamFile2 = self.root + "testB.bam"
+        self.bamFile_PE = self.root + "test_paired2.bam"
+        self.chrom = '3R'
