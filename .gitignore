@@ -40,8 +40,6 @@ nosetests.xml
 _build
 _modules
 _sources
-_static
-_templates
 
 
 # Ignore all emacs backup files
