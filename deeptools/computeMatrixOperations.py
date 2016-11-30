@@ -614,7 +614,6 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
     for idx, label in enumerate(labelsList):
         # Make an ordered list out of the region names in this region group
         _ = [""] * len(regions[idx])
-        print("idx {} regions[idx] {}".format(idx, regions[idx]))
         for k, v in regions[idx].items():
             _[v] = k
         for name in _:
