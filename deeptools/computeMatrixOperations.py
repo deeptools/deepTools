@@ -440,16 +440,15 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
             labels[label] = len(labels)
         labelIdx = labels[label]
         if labelIdx >= len(regions):
-            regions.append([])
+            regions.append(localRegions)
+        else:
+            localRegions = regions[labelIdx]
 
     if len(cols) >= 6:
         name = cols[3]
     else:
         name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
-    if labelIdx is not None:
-        regions[labelIdx].append(name)
-    else:
-        localRegions[name] = len(localRegions)
+    localRegions[name] = len(localRegions)
 
     for line in fp:
         if line.startswith("#") and labelColumn is None:
@@ -474,18 +473,15 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
                 labels[label] = len(labels)
             labelIdx = labels[label]
             if labelIdx >= len(regions):
-                regions.append([])
+                regions.append({})
+            localRegions = regions[labelIdx]
 
         if len(cols) >= 6:
             name = cols[3]
         else:
             name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
-        if labelIdx is not None:
-            name = dti.findRandomLabel(regions[labelIdx], name)
-            regions[labelIdx].append(name)
-        else:
-            name = dti.findRandomLabel(localRegions, name)
-            localRegions[name] = len(localRegions)
+        name = dti.findRandomLabel(localRegions, name)
+        localRegions[name] = len(localRegions)
 
     # Handle the last group if there is no label
     if labelIdx is None and len(localRegions) > 0:
