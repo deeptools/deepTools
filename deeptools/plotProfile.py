@@ -250,7 +250,7 @@ class Profile(object):
                     lims = (lims[0], lims[0] + 1)
                 ax.set_ylim(lims)
 
-            if max(self.xticks) != float(ma.shape[1]):
+            if np.ceil(max(self.xticks)) != float(ma.shape[1]):
                 tickscale = float(sub_matrix['matrix'].shape[1]) / max(self.xticks)
                 xticks_use = [x * tickscale for x in self.xticks]
                 ax_list[0].axes.set_xticks(xticks_use)
@@ -339,7 +339,7 @@ class Profile(object):
             self.fig.colorbar(img, cax=cax)
 
             totalWidth = np.vstack(mat).shape[1]
-            if max(self.xticks) != float(totalWidth):
+            if np.ceil(max(self.xticks)) != float(totalWidth):
                 tickscale = float(totalWidth) / max(self.xticks)
                 xticks_use = [x * tickscale for x in self.xticks]
                 ax.axes.set_xticks(xticks_use)
@@ -449,7 +449,7 @@ class Profile(object):
                 """
 
             totalWidth = sub_matrix['matrix'].shape[1]
-            if max(self.xticks) != float(totalWidth):
+            if np.ceil(max(self.xticks)) != float(totalWidth):
                 tickscale = float(totalWidth) / max(self.xticks)
                 xticks_use = [x * tickscale for x in self.xticks]
                 ax.axes.set_xticks(xticks_use)
