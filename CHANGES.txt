@@ -3,6 +3,7 @@
  * Setting --zMin to the same value as --zMax, whether intentionally or because the --zMax value computed by deepTools happens to be now larger than the desired value, will result in the maximum value in the dataset being used (internally, --zMax gets set to None).
  * Scale factor is now set to 1 in bamCoverage if no normalization is used. The fact that this wasn't being done previously was a bug.
  * Fixed a bug (#451) affecting BED files with a `deepTools_group` column that caused a problem with `--sortRegions keep` in computeMatrix.
+ * Fixed a bug where some matrices produced with `computeMatrixOperations cbind` would result in the right-most samples sometimes getting squished due to having ticks outside of their graph bounds. Ticks are now scaled if they don't match the data range (issue #452).
 
 2.4.0
 
