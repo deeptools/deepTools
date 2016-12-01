@@ -387,8 +387,8 @@ def plotMatrix(hm, outFileName,
 
                 # add xticks to the bottom heatmap (last group)
                 ax.axes.get_xaxis().set_visible(True)
-                if max(xticks_heat) != float(sub_matrix['matrix'].shape[1]):
-                    sys.stderr.write("got here!\n")
+                if np.ceil(max(xticks_heat)) != float(sub_matrix['matrix'].shape[1]):
+                    sys.stderr.write("got here max(xticks_heat) {} shape {}!\n".format(max(xticks_heat), float(sub_matrix['matrix'].shape[1])))
                     tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks_heat)
                     xticks_heat_use = [x * tickscale for x in xticks_heat]
                     ax.axes.set_xticks(xticks_heat_use)
@@ -473,8 +473,8 @@ def plotMatrix(hm, outFileName,
 
             if sample_id == 0 and yAxisLabel != '':
                 ax_profile.set_ylabel(yAxisLabel)
-            if max(xticks) != float(sub_matrix['matrix'].shape[1]):
-                sys.stderr.write("got here!\n")
+            if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
+                sys.stderr.write("got here max(ticks) {} shape {}!\n".format(max(xticks), float(sub_matrix['matrix'].shape[1])))
                 tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax_profile.axes.set_xticks(xticks_use)
