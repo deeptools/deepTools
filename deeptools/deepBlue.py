@@ -137,7 +137,7 @@ class deepBlue(object):
         # Set self.experimentID
         experimentID = self.getEID()
         if not experimentID:
-            raise RuntimeError("The requested sample({}) has no associated experiment!".format(sample))
+            raise RuntimeError("The requested sample({}) has no associated experiment! If you did not intend to use samples on deepBlue, then it appears either you misspelled a file name or one of your BAM files is lacking a valid index.".format(sample))
 
         # Set self.info
         (status, resp) = self.server.info(self.experimentID, userKey)
