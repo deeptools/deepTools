@@ -563,22 +563,11 @@ class CountReadsPerBin(object):
             start_time = time.time()
             # caching seems faster. TODO: profile the function
             c = 0
-            try:
-                # BAM input
-                if chrom in bamHandle.references:
-                    reads = [r for r in bamHandle.fetch(chrom, regStart, regEnd)
-                             if r.flag & 4 == 0]
-                else:
-                    raise NameError("chromosome {} not found in bam file".format(chrom))
-            except:
-                # bigWig input, as used by plotFingerprint
-                if bamHandle.chroms(chrom):
-                    _ = np.array(bamHandle.stats(chrom, regStart, regEnd, type="mean", nBins=nRegBins), dtype=np.float)
-                    _[np.isnan(_)] = 0.0
-                    coverages += _
-                    continue
-                else:
-                    raise NameError("chromosome {} not found in bigWig file with chroms {}".format(chrom, bamHandle.chroms()))
+            if chrom in bamHandle.references:
+                reads = [r for r in bamHandle.fetch(chrom, regStart, regEnd)
+                         if r.flag & 4 == 0]
+            else:
+                raise NameError("chromosome {} not found in bam file".format(chrom))
 
             prev_start_pos = None  # to store the start positions
             # of previous processed read pair
@@ -624,6 +613,11 @@ class CountReadsPerBin(object):
                     # evaluated.
                     if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
                         continue
+
+                    if fragmentStart < reg[0]:
+                        fragmentStart = reg[0]
+                    if fragmentEnd > reg[0] + len(coverages) * tileSize:
+                        fragmentEnd = reg[0] + len(coverages) * tileSize
 
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)

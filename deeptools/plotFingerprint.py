@@ -13,6 +13,7 @@ from scipy import interpolate
 from scipy.stats import poisson
 
 import deeptools.countReadsPerBin as countR
+import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
 
 old_settings = np.seterr(all='ignore')
@@ -342,7 +343,7 @@ def getExpected(mu):
 def main(args=None):
     args = process_args(args)
 
-    cr = countR.CountReadsPerBin(
+    cr = sumR.SumCoveragePerBin(
         args.bamfiles,
         args.binSize,
         args.numberOfSamples,

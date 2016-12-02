@@ -148,7 +148,7 @@ Output
 
 The default output is a diagnostic plot (see below for an example and further down for some background information).
 
-Optionally, you can obtain the table of raw counts that was used to generate the plot.
+Optionally, you can obtain the table of raw values that were used to generate the plot.
 
 .. image:: $PATH_TO_IMAGES/plotFingerprint_output.png
   :width: 600
@@ -170,10 +170,10 @@ What follows is the output of ``plotFingerprint`` with our test ChIP-Seq data se
 Theoretical Background
 ----------------------
 
-The tool first samples indexed BAM files and counts all reads overlapping a window (bin) of the specified length.
-These counts are then sorted according to their rank (the bin with the highest number of reads has the highest rank)
-and the cumulative sum of read counts are plotted. An ideal input (control) with a uniform distribution of reads alignments
-result in a diagonal line. A very specific and strong ChIP enrichment, on the other hand, would result in a large portion
+The tool first samples indexed BAM files and sums the per-base coverage of reads/fragments overlapping a window (bin) of the specified length.
+These values are then sorted according to their rank (the bin with the highest number of reads has the highest rank)
+and the cumulative sum plotted. An ideal input (control) with a uniform distribution of reads alignments
+and infinite sequencing depth will result in a diagonal line. A very specific and strong ChIP enrichment, on the other hand, would result in a large portion
 of reads accumulating in just a few bins and the resulting plot showing a steep rise toward the right-most edge. Such results are
 most commonly seen with transcription factors.
 
