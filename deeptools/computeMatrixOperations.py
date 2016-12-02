@@ -89,7 +89,7 @@ or
         'cbind',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bindArgs()],
-        help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs.",
+        help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs. Note that if you cbind matrices where the samples have different widths, then the x-axis tick positions for the left-most samples will be correct and those on the right-most samples will be incorrect. The labels may also be incorrect for all but the left-most samples. This is due to ticks and labels being the same in all samples (the tick positions are scaled according to the number of data-points per row in a sample)",
         usage='Example usage:\n  computeMatrixOperations cbind -m '
         'input1.mat.gz input2.mat.gz -o output.mat.gz\n\n')
 
@@ -440,16 +440,15 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
             labels[label] = len(labels)
         labelIdx = labels[label]
         if labelIdx >= len(regions):
-            regions.append([])
+            regions.append(localRegions)
+        else:
+            localRegions = regions[labelIdx]
 
     if len(cols) >= 6:
         name = cols[3]
     else:
         name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
-    if labelIdx is not None:
-        regions[labelIdx].append(name)
-    else:
-        localRegions[name] = len(localRegions)
+    localRegions[name] = len(localRegions)
 
     for line in fp:
         if line.startswith("#") and labelColumn is None:
@@ -474,18 +473,15 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
                 labels[label] = len(labels)
             labelIdx = labels[label]
             if labelIdx >= len(regions):
-                regions.append([])
+                regions.append({})
+            localRegions = regions[labelIdx]
 
         if len(cols) >= 6:
             name = cols[3]
         else:
             name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
-        if labelIdx is not None:
-            name = dti.findRandomLabel(regions[labelIdx], name)
-            regions[labelIdx].append(name)
-        else:
-            name = dti.findRandomLabel(localRegions, name)
-            localRegions[name] = len(localRegions)
+        name = dti.findRandomLabel(localRegions, name)
+        localRegions[name] = len(localRegions)
 
     # Handle the last group if there is no label
     if labelIdx is None and len(localRegions) > 0:
