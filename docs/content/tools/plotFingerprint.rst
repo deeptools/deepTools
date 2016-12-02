@@ -21,14 +21,14 @@ It determines how well the signal in the ChIP-seq sample can be differentiated f
 For factors that will enrich well-defined, rather narrow regions (e.g. transcription factors such as p300), the resulting plot can be used to assess the strength of a ChIP, but the broader the enrichments are to be expected, the less clear the plot will be.
 Vice versa, if you do not know what kind of signal to expect, the fingerprint plot will give you a straight-forward indication of how careful you will have to be during your downstream analyses to separate biological noise from meaningful signal.
 
-Similar to ``multiBamSummary``, ``plotFingerprint`` randomly samples genome regions (bins) of a specified length and counts the reads from indexed [BAM][] files that overlap with those regions.
-These counts are then sorted according to their rank and the cumulative sum of read counts is plotted. 
+Similar to ``multiBamSummary``, ``plotFingerprint`` randomly samples genome regions (bins) of a specified length and sums the per-base coverage in indexed [BAM][] (or bigWig) files that overlap with those regions.
+These values are then sorted according to their rank and the cumulative sum of read counts is plotted. 
 
 
 What the plots tell you
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-An ideal [input][] with perfect uniform distribution of reads along the genome (i.e. without enrichments in open chromatin etc.) should generate a straight diagonal line. A very specific and strong ChIP enrichment will be indicated by a prominent and steep rise of the cumulative sum towards the highest rank. This means that a big chunk of reads from the ChIP sample is located in few bins which corresponds to high, narrow enrichments typically seen for transcription factors.
+An ideal [input][] with perfect uniform distribution of reads along the genome (i.e. without enrichments in open chromatin etc.) and infinite sequencing coverage should generate a straight diagonal line. A very specific and strong ChIP enrichment will be indicated by a prominent and steep rise of the cumulative sum towards the highest rank. This means that a big chunk of reads from the ChIP sample is located in few bins which corresponds to high, narrow enrichments typically seen for transcription factors.
 
 Here you see 3 different fingerprint plots.
 We chose these examples to show you how the nature of the ChIP signal (narrow and high vs. wide and not extremely high) is reflected in the "fingerprint" plots. 
@@ -58,7 +58,7 @@ The following example generates the fingerprints for the invididual ENCODE histo
 
 .. image:: ../../images/test_plots/fingerprints.png
 
-The table that you can obtain via ``--outRawCounts`` simply contains the number of reads overlapping with each individually sampled genome bin. For the plot above, each column is sorted in increasing order and then the cumulative sum is plotted.
+The table that you can obtain via ``--outRawCounts`` simply contains the sum of the per-base coverage inside each sampled genome bin. For the plot above, each column is sorted in increasing order and then the cumulative sum is plotted.
 
 .. code:: bash
 
