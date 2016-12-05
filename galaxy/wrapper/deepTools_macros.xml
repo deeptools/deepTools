@@ -102,7 +102,7 @@
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.7.10">python</requirement>
-            <requirement type="package" version="2.4.1">deepTools</requirement>
+            <requirement type="package" version="2.4.1">deeptools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
