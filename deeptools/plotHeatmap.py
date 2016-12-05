@@ -201,7 +201,7 @@ def plotMatrix(hm, outFileName,
             matrix_flatten = hm.matrix.flatten()
         # try to avoid outliers by using np.percentile
         zMax = np.percentile(matrix_flatten, 98.0)
-        if np.isnan(zMax):
+        if np.isnan(zMax) or zMax <= zMin[0]:
             zMax = [None]
         else:
             zMax = [zMax]
@@ -387,7 +387,12 @@ def plotMatrix(hm, outFileName,
 
                 # add xticks to the bottom heatmap (last group)
                 ax.axes.get_xaxis().set_visible(True)
-                ax.axes.set_xticks(xticks_heat)
+                if np.ceil(max(xticks_heat)) != float(sub_matrix['matrix'].shape[1]):
+                    tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks_heat)
+                    xticks_heat_use = [x * tickscale for x in xticks_heat]
+                    ax.axes.set_xticks(xticks_heat_use)
+                else:
+                    ax.axes.set_xticks(xticks_heat)
                 ax.axes.set_xticklabels(xtickslabel_heat, size=8)
 
                 # align the first and last label
@@ -467,7 +472,12 @@ def plotMatrix(hm, outFileName,
 
             if sample_id == 0 and yAxisLabel != '':
                 ax_profile.set_ylabel(yAxisLabel)
-            ax_profile.axes.set_xticks(xticks)
+            if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
+                tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
+                xticks_use = [x * tickscale for x in xticks]
+                ax_profile.axes.set_xticks(xticks_use)
+            else:
+                ax_profile.axes.set_xticks(xticks)
             ax_profile.axes.set_xticklabels(xtickslabel)
             ax_list.append(ax_profile)
 

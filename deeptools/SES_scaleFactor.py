@@ -102,7 +102,6 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     # the transpose is taken to easily iterate by columns which are now
     # converted to rows
     num_reads_per_bin = num_reads_per_bin.transpose()
-#    np.savetxt("/home/ramirez/tmp/test.num_reads", num_reads_per_bin)
     # size factors based on order statistics
     # see Signal extraction scaling (SES) method in: Diaz et al (2012)
     # Normalization, bias correction, and peak calling for ChIP-seq.

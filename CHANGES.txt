@@ -1,3 +1,11 @@
+2.4.1
+
+ * Setting --zMin to the same value as --zMax, whether intentionally or because the --zMax value computed by deepTools happens to be now larger than the desired value, will result in the maximum value in the dataset being used (internally, --zMax gets set to None).
+ * Scale factor is now set to 1 in bamCoverage if no normalization is used. The fact that this wasn't being done previously was a bug.
+ * Fixed a bug (#451) affecting BED files with a `deepTools_group` column that caused a problem with `--sortRegions keep` in computeMatrix.
+ * Fixed a bug where some matrices produced with `computeMatrixOperations cbind` would result in the right-most samples sometimes getting squished due to having ticks outside of their graph bounds. Ticks are now scaled if they don't match the data range (issue #452).
+ * In plotFingerprint, the number of reads per-bin are no longer used. Instead, the sum of the per-base coverage (or signal if bigWig input is used) is used. This leads to more similar metrics produced by us and others regarding things like Jensen-Shannon metrics. For those just interested in the plots, there's little effective change here.
+
 2.4.0
 
  * The --Offset option to bamCoverage can now take two values, which can be used to specify a range within each alignment of bases to use. As an example, `--Offset 5 -1` will use ignore the first 4 bases of an alignment (accounting for orientation) and use only the 5th through last base. This can be useful for things like ATACseq (see #370).

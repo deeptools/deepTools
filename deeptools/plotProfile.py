@@ -250,7 +250,12 @@ class Profile(object):
                     lims = (lims[0], lims[0] + 1)
                 ax.set_ylim(lims)
 
-            ax_list[0].axes.set_xticks(self.xticks)
+            if np.ceil(max(self.xticks)) != float(ma.shape[1]):
+                tickscale = float(sub_matrix['matrix'].shape[1]) / max(self.xticks)
+                xticks_use = [x * tickscale for x in self.xticks]
+                ax_list[0].axes.set_xticks(xticks_use)
+            else:
+                ax_list[0].axes.set_xticks(self.xticks)
             ax_list[0].axes.set_xticklabels(self.xtickslabel)
             # align the first and last label
             # such that they don't fall off
@@ -333,7 +338,13 @@ class Profile(object):
                             cmap='RdYlBu_r', aspect='auto', vmin=self.y_min, vmax=self.y_max)
             self.fig.colorbar(img, cax=cax)
 
-            ax.axes.set_xticks(self.xticks)
+            totalWidth = np.vstack(mat).shape[1]
+            if np.ceil(max(self.xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(self.xticks)
+                xticks_use = [x * tickscale for x in self.xticks]
+                ax.axes.set_xticks(xticks_use)
+            else:
+                ax.axes.set_xticks(self.xticks)
             ax.axes.set_xticklabels(self.xtickslabel)
             # align the first and last label
             # such that they don't fall off
@@ -437,7 +448,13 @@ class Profile(object):
                 ax.set_yticks(yticks)
                 """
 
-            ax.axes.set_xticks(self.xticks)
+            totalWidth = sub_matrix['matrix'].shape[1]
+            if np.ceil(max(self.xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(self.xticks)
+                xticks_use = [x * tickscale for x in self.xticks]
+                ax.axes.set_xticks(xticks_use)
+            else:
+                ax.axes.set_xticks(self.xticks)
             ax.axes.set_xticklabels(self.xtickslabel)
             # align the first and last label
             # such that they don't fall off

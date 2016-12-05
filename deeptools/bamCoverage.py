@@ -141,7 +141,13 @@ def main(args=None):
     else:
         debug = 0
 
-    func_args = {'scaleFactor': get_scale_factor(args)}
+    if args.normalizeTo1x or args.normalizeUsingRPKM:
+        # if a normalization is required then compute the scale factors
+        scale_factor = get_scale_factor(args)
+    else:
+        scale_factor = 1
+
+    func_args = {'scaleFactor': scale_factor}
 
     if args.MNase:
         # check that library is paired end

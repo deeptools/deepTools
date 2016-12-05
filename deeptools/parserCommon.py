@@ -11,6 +11,16 @@ def check_float_0_1(value):
     return v
 
 
+def check_list_of_comma_values(value):
+    if value is None:
+        return None
+    for foo in value:
+        foo = value.split(",")
+        if len(foo) < 2:
+            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. Only argument elements of the following form are accepted: 'foo,bar'" % foo)
+    return value
+
+
 def output(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
@@ -610,7 +620,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                  'As for --colorMap, the color lists are recycled if their number is smaller thatn the number of'
                  'plotted heatmaps.  '
                  'The number of transitions is defined by the --colorNumber option.',
-
+            type=check_list_of_comma_values,
             nargs='+')
 
         optional.add_argument(
