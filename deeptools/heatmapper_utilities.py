@@ -61,7 +61,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
 
 
     """
-    summary = np.__getattribute__(average_type)(ma, axis=0)
+    summary = np.ma.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     x = np.arange(len(summary))
     ax.plot(x, summary, color=color, label=label, alpha=0.9)
