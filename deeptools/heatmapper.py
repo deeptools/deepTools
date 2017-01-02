@@ -451,7 +451,10 @@ class heatmapper(object):
                     if padLeft > 0 and parameters['nan after end'] is True:
                         padLeftNaN += padLeft
                     elif padLeft > 0:
-                        upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                        if len(upstream) > 0:
+                            upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                        else:
+                            upstream = [(downstream[0][0] - padLeft, downstream[0][0])]
                     padLeft = 0
                     if padRight > 0 and parameters['nan after end'] is True:
                         padRightNaN += padRight
@@ -460,6 +463,13 @@ class heatmapper(object):
                     padRight = 0
                     a = np.sum([x[1] - x[0] for x in upstream]) // parameters['bin size']
                     e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
+                    # It's possible for a/e to be floats or 0 yet upstream/downstream isn't empty
+                    if a < 1:
+                        upstream = []
+                        a = 0
+                    if e < 1:
+                        downstream = []
+                        e = 0
                     zones = [(upstream, a), (downstream, e)]
                 else:  # around TSS
                     if feature_strand == '-':
