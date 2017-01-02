@@ -149,7 +149,7 @@
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated by space is required.
                           If a label itself contains a space, then quotes are needed.
-                          For example, label_1, &quot;label 2&quot;" />
+                          For example, label_1 &quot;label 2&quot;" />
 
                 <expand macro="plotTitle" />
                 <param argument="--colors" type="text" value="" size="40"
