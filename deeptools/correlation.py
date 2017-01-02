@@ -162,7 +162,7 @@ class Correlation:
         """
         if self.column_order:
             self.corr_matrix[self.column_order, self.column_order]
-            self.labels = self.labels[self.column_order]
+            self.labels = [self.labels[i] for i in self.column_order]
 
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
