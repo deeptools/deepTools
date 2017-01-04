@@ -60,8 +60,13 @@
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
-                --sortRegions '$advancedOpt.sortRegions'
-                --sortUsing '$advancedOpt.sortUsing'
+                #if $advancedOpt.sortRegions:
+                    --sortRegions '$advancedOpt.sortRegions'
+                #end if
+                #if $advancedOpt.sortUsing:
+                    --sortUsing '$advancedOpt.sortUsing'
+                #end if
+
                 --averageTypeBins '$advancedOpt.averageTypeBins'
                 $advancedOpt.skipZeros
                 $advancedOpt.missingDataAsZero
