@@ -127,7 +127,7 @@ def getOptionalArgs():
                           'alternatively be output for the first or second file using '
                           'the \'--ratio first\' or \'--ratio second\'',
                           default='log2',
-                          choices=['log2', 'ratio', 'subtract', 'add',
+                          choices=['log2', 'ratio', 'subtract', 'add', 'mean',
                                    'reciprocal_ratio', 'first', 'second'],
                           required=False)
 

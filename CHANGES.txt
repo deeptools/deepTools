@@ -2,6 +2,7 @@
 
  * Fixed an issue where `computeMatrix reference-point --referencePoint center` would break if 1-base regions were used. This was bug #456.
  * `plotCorrelation` with `--outFileCorMatrix` now works with `--labels` again (thanks to @sklasfeld for supplying the patch).
+ * `bigwigCompare` and `bamCompare` can now return the average (mean) of two input files (issue #467).
 
 2.4.1
 
