@@ -331,8 +331,7 @@ class Profile(object):
                 else:
                     label = sub_matrix['group']
                 labels.append(label)
-
-                mat.append(np.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
+                mat.append(np.ma.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
 
             img = ax.imshow(np.vstack(mat), interpolation='nearest',
                             cmap='RdYlBu_r', aspect='auto', vmin=self.y_min, vmax=self.y_max)

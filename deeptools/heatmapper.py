@@ -451,7 +451,10 @@ class heatmapper(object):
                     if padLeft > 0 and parameters['nan after end'] is True:
                         padLeftNaN += padLeft
                     elif padLeft > 0:
-                        upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                        if len(upstream) > 0:
+                            upstream.insert(0, (upstream[0][0] - padLeft, upstream[0][0]))
+                        else:
+                            upstream = [(downstream[0][0] - padLeft, downstream[0][0])]
                     padLeft = 0
                     if padRight > 0 and parameters['nan after end'] is True:
                         padRightNaN += padRight
@@ -460,6 +463,13 @@ class heatmapper(object):
                     padRight = 0
                     a = np.sum([x[1] - x[0] for x in upstream]) // parameters['bin size']
                     e = np.sum([x[1] - x[0] for x in downstream]) // parameters['bin size']
+                    # It's possible for a/e to be floats or 0 yet upstream/downstream isn't empty
+                    if a < 1:
+                        upstream = []
+                        a = 0
+                    if e < 1:
+                        downstream = []
+                        e = 0
                     zones = [(upstream, a), (downstream, e)]
                 else:  # around TSS
                     if feature_strand == '-':
@@ -706,7 +716,7 @@ class heatmapper(object):
         that are not Nan
         """
         valuesArray = np.ma.masked_invalid(valuesArray)
-        avg = np.__getattribute__(avgType)(valuesArray)
+        avg = np.ma.__getattribute__(avgType)(valuesArray)
         if isinstance(avg, np.ma.core.MaskedConstant):
             return np.nan
         else:
@@ -894,7 +904,7 @@ class heatmapper(object):
             for sample_idx in range(self.matrix.get_num_samples()):
                 for group_idx in range(self.matrix.get_num_groups()):
                     sub_matrix = self.matrix.get_matrix(group_idx, sample_idx)
-                    values = [str(x) for x in np.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
+                    values = [str(x) for x in np.ma.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
                     fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
 
     def save_matrix_values(self, file_name):
@@ -960,7 +970,7 @@ class heatmapper(object):
     @staticmethod
     def matrix_avg(matrix, avgType='mean'):
         matrix = np.ma.masked_invalid(matrix)
-        return np.__getattribute__(avgType)(matrix, axis=0)
+        return np.ma.__getattribute__(avgType)(matrix, axis=0)
 
     def get_individual_matrices(self, matrix):
         """In case multiple matrices are saved one after the other
@@ -1129,8 +1139,7 @@ class _matrix(object):
                 matrix_avgs.append(np.sum([bar[1] - bar[0] for bar in x[1]]))
             matrix_avgs = np.array(matrix_avgs)
         else:
-            matrix_avgs = np.__getattribute__(sort_using)(
-                matrix, axis=1)
+            matrix_avgs = np.ma.__getattribute__(sort_using)(matrix, axis=1)
 
         # order per group
         _sorted_regions = []
