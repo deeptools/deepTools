@@ -49,15 +49,16 @@
                 help="The default is to output the log2ratio between the two samples.
                 The reciprocal ratio returns the negative of the inverse of the ratio if
                 the ratio is less than 0. The resulting values are interpreted as negative
-                fold changes. To output the scaled values from the first or second BAM file,
+                fold changes. To output the scaled values from the first or second bigWig file,
                 select 'first' or 'second'.">
-                <option value="log2" selected="true">Compute log2 of the number of reads ratio</option>
-                <option value="ratio">Compute the ratio of the number of reads</option>
-                <option value="subtract">Compute difference (subtract input from treatment) of the number of reads</option>
-                <option value="add">Compute the sum of number of reads</option>
+                <option value="log2" selected="true">Compute log2 of the signal ratio</option>
+                <option value="ratio">Compute the ratio signals</option>
+                <option value="subtract">Compute difference (subtract input from treatment) of the signal</option>
+                <option value="add">Compute the sum of the signals</option>
+                <option value="mean">Compute the mean of the signal in the two files</option>
                 <option value="reciprocal_ratio">Computes the fold change. If the fold change is less than 1, the negative of the inverse is reported. E.g. A fold change of 10 to 5 would be reported not as 0.5 but as -2</option>
-                <option value="first">Returns the scaled value of the first BAM file</option>
-                <option value="second">Returns the scaled value of the second BAM file</option>
+                <option value="first">Returns the scaled value of the first bigWig file</option>
+                <option value="second">Returns the scaled value of the second bigWig file</option>
             </param>
             <when value="log2">
                 <expand macro="pseudocount" />
@@ -67,6 +68,7 @@
             </when>
             <when value="subtract" />
             <when value="add" />
+            <when value="mean" />
             <when value="first" />
             <when value="second" />
             <when value="reciprocal_ratio">
