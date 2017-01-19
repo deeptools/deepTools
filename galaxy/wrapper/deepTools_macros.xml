@@ -450,10 +450,10 @@ is vital to you, select Yes below.">
             #end for
         #else:
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
-                ln -s "${f.bamfile}" "./${counter}.bam" &&
-                ln -s "${f.bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                ln -s "${f.bamfiles}" "./${counter}.bam" &&
+                ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
                 #silent $files.append('%s.bam' % $counter)
-                #silent $labels.append("'%s'" % ($f.bamfile.display_name))
+                #silent $labels.append("'%s'" % ($f.bamfiles.display_name))
             #end for
         #end if
 ]]>
@@ -471,9 +471,9 @@ is vital to you, select Yes below.">
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
-                ln -s "${f.bigwig}" "${counter}.bw" &&
+                ln -s "${f.bigwigfiles}" "${counter}.bw" &&
                 #silent $files.append('%s.bw' % $counter)
-                #silent $labels.append("'%s'" % ($f.bigwig.display_name))
+                #silent $labels.append("'%s'" % ($f.bigwigfiles.display_name))
             #end for
         #end if
 ]]>
