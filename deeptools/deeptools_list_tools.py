@@ -21,8 +21,8 @@ If you find deepTools useful for your research please cite as:
 
 Ramírez, Fidel, Devon P. Ryan, Björn Grüning, Vivek Bhardwaj, Fabian Kilpert,
 Andreas S. Richter, Steffen Heyne, Friederike Dündar,
-and Thomas Manke. 2016. “deepTools2: A next Generation Web Server for Deep-Sequencing
-Data Analysis.” Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
+and Thomas Manke. 2016. "deepTools2: A next Generation Web Server for Deep-Sequencing
+Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
 
 
 
