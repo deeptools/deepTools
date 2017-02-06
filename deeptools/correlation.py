@@ -474,7 +474,7 @@ class Correlation:
         width = 0.35        # the width of the bars
 
         if mpl.__version__ >= "2.0.0":
-            ax2.bar(2*width + ind, eigenvalues, width * 2)
+            ax2.bar(2 * width + ind, eigenvalues, width * 2)
         else:
             ax2.bar(width + ind, eigenvalues, width * 2)
         ax2.set_ylabel('Eigenvalue')
