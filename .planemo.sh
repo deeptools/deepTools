@@ -11,7 +11,7 @@ cd clone
 #Add the custom data types
 sed -i '4i\    <datatype extension="deeptools_compute_matrix_archive" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
 sed -i '5i\    <datatype extension="deeptools_coverage_matrix" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
-./scripts/common_startup.sh --skip-venv --dev-wheels
+./scripts/common_startup.sh --skip-venv
 cd ..
 conda uninstall -y sqlite
 pip install . 
