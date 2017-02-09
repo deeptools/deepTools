@@ -5,8 +5,8 @@ bash miniconda.sh -b -p $blah/conda
 export PATH=$blah/conda/bin:$PATH
 conda create -y --name deeptools_galaxy numpy matplotlib scipy
 source activate deeptools_galaxy
-conda config --add channels bioconda
 conda config --add channels conda-forge
+conda config --add channels bioconda
 conda install -c bioconda samtools
 git clone --depth 1 --single-branch --branch release_16.10 https://github.com/galaxyproject/galaxy.git clone
 cd clone
