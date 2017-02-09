@@ -27,7 +27,7 @@ cd ..
 ls
 pip install .
 echo "6"
-/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --conda_prefix $blah/conda \
+/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --conda_prefix $blah/conda --conda_ensure_channels bioconda,conda-forge,linux64 \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
