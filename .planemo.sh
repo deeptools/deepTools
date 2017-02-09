@@ -7,9 +7,10 @@ export PATH=$blah/conda/bin:$PATH
 echo "0"
 conda create -y --name deeptools_galaxy numpy matplotlib scipy
 source activate deeptools_galaxy
-conda config --add channels bioconda,conda-forge
+conda config --add channels bioconda
+conda config --add channels conda-forge
 echo "1"
-conda install -c bioconda samtools
+conda install samtools
 echo "2"
 git clone --depth 1 --single-branch --branch release_16.10 https://github.com/galaxyproject/galaxy.git clone
 cd clone
