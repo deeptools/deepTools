@@ -18,8 +18,8 @@ echo "1"
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 echo "2"
 cd ..
-conda uninstall -y sqlite
-echo "3"
+#conda uninstall -y sqlite
+#echo "3"
 ls
 pip install .
 echo "4"
