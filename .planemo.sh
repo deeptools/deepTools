@@ -1,7 +1,7 @@
 #!/bin/bash
 blah=`mktemp -d`
 /home/travis/build/fidelram/deepTools/foo/bin/planemo database_create galaxy
-/home/travis/build/fidelram/deepTools/foo/bin/planemo conda_init --conda_prefix $blah/conda
+#/home/travis/build/fidelram/deepTools/foo/bin/planemo conda_init --conda_prefix $blah/conda
 export PATH=$blah/conda/bin:$PATH
 conda create -y --name deeptools_galaxy numpy matplotlib scipy
 source activate deeptools_galaxy
@@ -20,7 +20,7 @@ cd ..
 conda uninstall -y sqlite
 echo "3"
 ls
-pip install . 
+#pip install . 
 echo "4"
 /home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres \
 galaxy/wrapper/bamCompare.xml \
