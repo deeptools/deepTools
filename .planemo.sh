@@ -11,14 +11,17 @@ cd clone
 #Add the custom data types
 sed -i '4i\    <datatype extension="deeptools_compute_matrix_archive" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
 sed -i '5i\    <datatype extension="deeptools_coverage_matrix" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
-pip install PyYAML==1.5.11
+echo "0"
+pip install PyYAML==3.11
 echo "1"
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 echo "2"
 cd ..
 conda uninstall -y sqlite
-pip install . 
 echo "3"
+ls
+pip install . 
+echo "4"
 /home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
