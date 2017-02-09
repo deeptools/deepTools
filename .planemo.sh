@@ -1,7 +1,7 @@
 #!/bin/bash
 blah=`mktemp -d`
 /home/travis/build/fidelram/deepTools/foo/bin/planemo database_create galaxy
-bash miniconda.sh -b $blah/conda
+bash miniconda.sh -b -p $blah/conda
 #/home/travis/build/fidelram/deepTools/foo/bin/planemo conda_init --conda_prefix $blah/conda
 export PATH=$blah/conda/bin:$PATH
 conda create -y --name deeptools_galaxy numpy matplotlib scipy
