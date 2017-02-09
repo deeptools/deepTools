@@ -17,7 +17,7 @@ pip install PyYAML==3.11
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 pip install .
-/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --conda_prefix $blah/conda --conda_ensure_channels bioconda,conda-forge \
+/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --conda_prefix $blah/conda --conda_ensure_channels bioconda,conda-forge,default \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
