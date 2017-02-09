@@ -7,7 +7,7 @@ export PATH=$blah/conda/bin:$PATH
 echo "0"
 conda create -y --name deeptools_galaxy numpy matplotlib scipy
 source activate deeptools_galaxy
-conda config --add channels bioconda conda-forge
+conda config --add channels bioconda,conda-forge
 echo "1"
 conda install -c bioconda samtools
 echo "2"
@@ -27,7 +27,7 @@ cd ..
 ls
 pip install .
 echo "6"
-/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --conda_prefix $blah/conda --conda_ensure_channels bioconda,conda-forge,linux64 \
+/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
