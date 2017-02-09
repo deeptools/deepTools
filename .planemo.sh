@@ -6,7 +6,7 @@ export PATH=$blah/conda/bin:$PATH
 conda create -y --name deeptools_galaxy numpy matplotlib scipy
 source activate deeptools_galaxy
 conda install -c bioconda samtools
-git clone --depth 1 --branch 16.10 https://github.com/galaxyproject/galaxy.git clone
+git clone --depth 1 --single-branch --branch release_16.10 https://github.com/galaxyproject/galaxy.git clone
 cd clone
 #Add the custom data types
 sed -i '4i\    <datatype extension="deeptools_compute_matrix_archive" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
