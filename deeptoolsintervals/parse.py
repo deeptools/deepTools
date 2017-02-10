@@ -235,13 +235,13 @@ class GTF(object):
             score = cols[4]
 
         # Ensure that the name is unique
-        name = findRandomLabel(self.exons, name)
+        name = findRandomLabel(self.exons[self.labelIdx], name)
         self.tree.addEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), name, strand, self.labelIdx, score)
         if ncols != 12 or self.keepExons is False:
-            self.exons[name] = [(int(cols[1]), int(cols[2]))]
+            self.exons[self.labelIdx][name] = [(int(cols[1]), int(cols[2]))]
         else:
             assert(len(cols) == 12)
-            self.exons[name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
+            self.exons[self.labelIdx][name] = parseExonBounds(int(cols[1]), int(cols[2]), int(cols[9]), cols[10], cols[11])
 
     def parseBED(self, fp, line, ncols=3, labelColumn=None):
         """
@@ -304,7 +304,11 @@ class GTF(object):
                 self.labelIdx = self.labels.index(label)
             else:
                 self.labels.append(label)
+                self.exons.append(dict())
                 self.labelIdx = len(self.labels) - 1
+        else:
+            self.exons.append(dict())
+
         self.parseBEDcore(line, ncols)
         groupEntries = 1
 
@@ -334,6 +338,7 @@ class GTF(object):
                     # I'm sure someone will try an empty label...
                     self.labels.append(findRandomLabel(self.labels, os.path.basename(self.filename)))
                 self.labelIdx += 1
+                self.exons.append(dict())
                 groupLabelsFound += 1
                 groupEntries = 0
             elif line.startswith("#") and labelColumn is not None:
@@ -347,6 +352,7 @@ class GTF(object):
                         self.labelIdx = self.labels.index(label)
                     else:
                         self.labels.append(label)
+                        self.exons.append(dict())
                         self.labelIdx = len(self.labels) - 1
                 self.parseBEDcore(line, ncols)
                 if labelColumn is None:
@@ -383,12 +389,6 @@ class GTF(object):
             sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
             return
 
-        name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
-        if name in self.exons:
-            sys.stderr.write("Warning: {0} occurs more than once! Only using the first instance.\n".format(name))
-            self.transcriptIDduplicated.append(name)
-            return
-
         if int(cols[3]) > int(cols[4]) or int(cols[3]) < 1:
             sys.stderr.write("Warning: {0}:{1}-{2} is an invalid GTF interval! Ignoring it.\n".format(cols[0], cols[3], cols[4]))
             return
@@ -404,13 +404,21 @@ class GTF(object):
         # Get the label index
         if label not in self.labels:
             self.labels.append(label)
+            self.exons.append(dict())
         self.labelIdx = self.labels.index(label)
+
+        # Ensure unique names within GTF files
+        name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
+        if name in self.exons[self.labelIdx]:
+            sys.stderr.write("Warning: {0} occurs more than once! Only using the first instance.\n".format(name))
+            self.transcriptIDduplicated.append(name)
+            return
 
         chrom = self.mungeChromosome(cols[0])
         self.tree.addEntry(chrom, int(cols[3]) - 1, int(cols[4]), name, strand, self.labelIdx, score)
 
         # Exon bounds placeholder
-        self.exons[name] = []
+        self.exons[self.labelIdx][name] = []
 
     def parseGTFexon(self, cols):
         """
@@ -428,10 +436,10 @@ class GTF(object):
         name = s[s.index(self.transcript_id_designator) + 1].rstrip(";")
         if name in self.transcriptIDduplicated:
             return
-        if name not in self.exons:
-            self.exons[name] = []
+        if name not in self.exons[self.labelIdx]:
+            self.exons[self.labelIdx][name] = []
 
-        self.exons[name].append((int(cols[3]) - 1, int(cols[4])))
+        self.exons[self.labelIdx][name].append((int(cols[3]) - 1, int(cols[4])))
 
     def parseGTF(self, fp, line):
         """
@@ -547,7 +555,7 @@ class GTF(object):
         self.fname = []
         self.filename = ""
         self.chroms = []
-        self.exons = {}
+        self.exons = []
         self.labels = []
         self.transcriptIDduplicated = []
         self.tree = tree.initTree()
@@ -682,10 +690,10 @@ class GTF(object):
             return None
 
         for i, o in enumerate(overlaps):
-            if o[2] not in self.exons or len(self.exons[o[2]]) == 0:
+            if o[2] not in self.exons[o[3]] or len(self.exons[o[3]][o[2]]) == 0:
                 exons = [(o[0], o[1])]
             else:
-                exons = sorted(self.exons[o[2]])
+                exons = sorted(self.exons[o[3]][o[2]])
 
             if numericGroups:
                 overlaps[i] = (o[0], o[1], o[2], o[3], exons)
