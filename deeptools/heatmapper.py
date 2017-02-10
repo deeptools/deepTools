@@ -1138,8 +1138,20 @@ class _matrix(object):
             for x in self.regions:
                 matrix_avgs.append(np.sum([bar[1] - bar[0] for bar in x[1]]))
             matrix_avgs = np.array(matrix_avgs)
+        elif sort_using == 'mean':
+            matrix_avgs = np.nanmean(matrix, axis=1)
+        elif sort_using == 'mean':
+            matrix_avgs = np.nanmean(matrix, axis=1)
+        elif sort_using == 'median':
+            matrix_avgs = np.nanmedian(matrix, axis=1)
+        elif sort_using == 'max':
+            matrix_avgs = np.nanmax(matrix, axis=1)
+        elif sort_using == 'min':
+            matrix_avgs = np.nanmin(matrix, axis=1)
+        elif sort_using == 'sum':
+            matrix_avgs = np.nansum(matrix, axis=1)
         else:
-            matrix_avgs = np.ma.__getattribute__(sort_using)(matrix, axis=1)
+            sys.exit("{} is an unsupported sorting method".format(sort_using))
 
         # order per group
         _sorted_regions = []
