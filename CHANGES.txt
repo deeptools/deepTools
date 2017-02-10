@@ -1,3 +1,10 @@
+2.5.0
+
+ * Fix a bug where using regions with the same name in multiple BED files in computeMatrix caused downstream problems in plotHeatmap/plotProfile (issue #477).
+ * If computeMatrix/plotHeatmap/plotProfile is asked to sort the output matrix, it now does so by ignoring NaN values. Previously, any row with an NaN was placed at the top of the output (issue #447).
+ * Fixed issue #471
+ * Various Galaxy wrapper fixes
+
 2.4.2
 
  * Fixed an issue where `computeMatrix reference-point --referencePoint center` would break if 1-base regions were used. This was bug #456.
