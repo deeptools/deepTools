@@ -23,7 +23,7 @@
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
         <param argument="--outFileNameData" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
-        <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically." truevalue="--rowCenter" />
+        <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically." truevalue="--rowCenter" falsevalue="" />
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
