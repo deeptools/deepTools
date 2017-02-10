@@ -82,7 +82,7 @@ def plotCorrelationArgs():
 
     optional.add_argument('--rowCenter',
                           help='When specified, each row (bin, gene, etc.) '
-                          'in the matrix centered at 0 before the PCA is '
+                          'in the matrix is centered at 0 before the PCA is '
                           'computed. This is useful only if you have a strong '
                           'bin/gene/etc. correlation and the resulting '
                           'principal component has samples stacked vertically.',
