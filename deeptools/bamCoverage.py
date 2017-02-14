@@ -64,9 +64,8 @@ def get_optional_args():
                           help="show this help message and exit")
 
     optional.add_argument('--scaleFactor',
-                          help='Indicate a number that you would like to use. When used in combination '
-                          'with --normalizeTo1x or --normalizeUsingRPKM, the computed '
-                          'scaling factor will be multiplied by the given scale factor.',
+                          help='The computed scaling factor (or 1, if not applicable) will '
+                          'be multiplied by this.',
                           default=1.0,
                           type=float,
                           required=False)
@@ -145,7 +144,7 @@ def main(args=None):
         # if a normalization is required then compute the scale factors
         scale_factor = get_scale_factor(args)
     else:
-        scale_factor = 1
+        scale_factor = args.scaleFactor
 
     func_args = {'scaleFactor': scale_factor}
 
