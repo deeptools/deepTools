@@ -312,9 +312,6 @@ def getJSDcommon(chip, input):
     # Differentiate to PMFs, do some sanity checking
     PMFinput = np.ediff1d(inputSignalInterp)
     PMFchip = np.ediff1d(chipSignalInterp)
-    #print("Coverage\tInput\tChIP\tPMFInput\tPMFChIP")
-    #for i in range(len(PMFchip)):
-    #    print("{}\t{}\t{}\t{}\t{}".format(i, inputSignalInterp[i], chipSignalInterp[i], PMFinput[i], PMFchip[i]))
 
     if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip) - 1) > 0.01:
         sys.stderr.write("Warning: At least one PMF integral is significantly different from 1! The JSD will not be returned")
