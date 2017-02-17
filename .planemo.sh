@@ -10,7 +10,7 @@ touch tool-data/twobit.loc
 #Add the custom data types
 sed -i '4i\    <datatype extension="deeptools_compute_matrix_archive" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
 sed -i '5i\    <datatype extension="deeptools_coverage_matrix" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
-sed -i '7d' lib/galaxy/dependencies/pinned-requirements.tx
+sed -i '7d' lib/galaxy/dependencies/pinned-requirements.txt
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 pip install .
