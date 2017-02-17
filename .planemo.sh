@@ -2,7 +2,6 @@
 blah=`mktemp -d`
 conda config --add channels conda-forge
 conda config --add channels bioconda
-conda install -c bioconda samtools
 /home/travis/build/fidelram/deepTools/foo/bin/planemo database_create galaxy
 
 git clone --depth 1 --single-branch --branch release_16.10 https://github.com/galaxyproject/galaxy.git clone
@@ -11,6 +10,7 @@ touch tool-data/twobit.loc
 #Add the custom data types
 sed -i '4i\    <datatype extension="deeptools_compute_matrix_archive" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
 sed -i '5i\    <datatype extension="deeptools_coverage_matrix" type="galaxy.datatypes.binary:CompressedArchive" subclass="True" display_in_upload="True"/>' config/datatypes_conf.xml.sample
+sed -i '7d' lib/galaxy/dependencies/pinned-requirements.tx
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 pip install .
