@@ -336,5 +336,6 @@ def main(args=None):
 
     wr.run(FUNC, func_args, args.outFileName, blackListFileName=args.blackListFileName, format=args.outFileFormat, smoothLength=args.smoothLength)
 
+
 if __name__ == "__main__":
     main()
