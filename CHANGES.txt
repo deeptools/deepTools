@@ -4,6 +4,7 @@
  * If computeMatrix/plotHeatmap/plotProfile is asked to sort the output matrix, it now does so by ignoring NaN values. Previously, any row with an NaN was placed at the top of the output (issue #447).
  * Fixed issue #471
  * Various Galaxy wrapper fixes
+ * There is now a `--rowCenter` option in `plotPCA`, which can be used to make each row of the matrix used in the PCA to have a mean of 0. This can be useful in cases where there's extreme region-based depth variation that is shared between all samples.
 
 2.4.2
 
