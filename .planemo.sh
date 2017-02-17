@@ -14,6 +14,7 @@ sed -i '7d' lib/galaxy/dependencies/pinned-requirements.txt
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 pip install .
+#galaxy/wrapper/correctGCBias.xml \
 /home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --no_conda_auto_install --no_conda_auto_init \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
@@ -22,7 +23,6 @@ galaxy/wrapper/bigwigCompare.xml \
 galaxy/wrapper/computeGCBias.xml \
 galaxy/wrapper/computeMatrix.xml \
 galaxy/wrapper/computeMatrixOperations.xml \
-galaxy/wrapper/correctGCBias.xml \
 galaxy/wrapper/multiBamSummary.xml \
 galaxy/wrapper/multiBigwigSummary.xml \
 galaxy/wrapper/plotCorrelation.xml \
