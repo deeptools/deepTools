@@ -80,6 +80,14 @@ def plotCorrelationArgs():
                           'myProfile.tab.',
                           type=argparse.FileType('w'))
 
+    optional.add_argument('--rowCenter',
+                          help='When specified, each row (bin, gene, etc.) '
+                          'in the matrix is centered at 0 before the PCA is '
+                          'computed. This is useful only if you have a strong '
+                          'bin/gene/etc. correlation and the resulting '
+                          'principal component has samples stacked vertically.',
+                          action='store_true')
+
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
 
@@ -93,6 +101,7 @@ def main(args=None):
                        labels=args.labels,)
 
     args.plotFile.close()
+    corr.rowCenter = args.rowCenter
 
     corr.plot_pca(args.plotFile.name,
                   plot_title=args.plotTitle,
