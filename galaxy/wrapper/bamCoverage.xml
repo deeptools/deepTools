@@ -21,14 +21,12 @@
 
             #if $scaling.type=='rpkm':
                 --normalizeUsingRPKM
-                --scaleFactor $scaling.scaleFactor
             #elif $scaling.type=='1x':
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
                 #end if
-                --scaleFactor $scaling.scaleFactor
             #end if
 
             #if str($region).strip() != '':
@@ -36,6 +34,10 @@
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
+                #if str($advancedOpt.scaleFactor).strip() != '':
+                    --scaleFactor $advancedOpt.scaleFactor
+                #end if
+
                 #if $advancedOpt.smoothLength:
                     --smoothLength '$advancedOpt.smoothLength'
                 #end if
@@ -74,13 +76,10 @@
                 <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
                 <option value="no">Do not normalize or scale</option>
             </param>
-            <when value="rpkm">
-                <expand macro="scaleFactor" />
-            </when>
+            <when value="rpkm"/>
             <when value="no"/>
             <when value="1x">
                 <expand macro="effectiveGenomeSize" />
-                <expand macro="scaleFactor" />
             </when>
         </conditional>
 
@@ -98,6 +97,7 @@
             </param>
             <when value="no" />
             <when value="yes">
+                <expand macro="scaleFactor" />
                 <expand macro="smoothLength" />
 
                 <param argument="ignoreForNormalization" type="text" value=""
