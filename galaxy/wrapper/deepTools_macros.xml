@@ -324,9 +324,7 @@
 
     <xml name="scaleFactor">
         <param argument="--scaleFactor" type="float" value="1" label="Scaling factor"
-            help="When used in combination with --normalizeTo1x or
-                --normalizeUsingRPKM, the computed scaling factor will
-                be multiplied by the given scale factor." />
+            help="The computed scaling factor will be multiplied by this (default 1)." />
     </xml>
 
     <xml name="scaleFactors">
