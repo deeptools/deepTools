@@ -228,5 +228,6 @@ def main(args=None):
     plt.savefig(args.plotFile, format=args.plotFileFormat)
     plt.close()
 
+
 if __name__ == "__main__":
     main()

@@ -36,6 +36,7 @@ class Correlation:
         self.corr_method = corr_method
         self.corr_matrix = None  # correlation matrix
         self.column_order = None
+        self.rowCenter = False
         if labels is not None:
             # test that the length of labels
             # corresponds to the length of
@@ -437,6 +438,9 @@ class Correlation:
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 10))
         # PCA
+        if self.rowCenter:
+            _ = self.matrix.mean(axis=1)
+            self.matrix -= _[:, None]
         mlab_pca = matplotlib.mlab.PCA(self.matrix)
         n = len(self.labels)
         markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
@@ -469,7 +473,10 @@ class Correlation:
         ind = np.arange(n)  # the x locations for the groups
         width = 0.35        # the width of the bars
 
-        ax2.bar(width + ind, eigenvalues, width * 2)
+        if mpl.__version__ >= "2.0.0":
+            ax2.bar(2 * width + ind, eigenvalues, width * 2)
+        else:
+            ax2.bar(width + ind, eigenvalues, width * 2)
         ax2.set_ylabel('Eigenvalue')
         ax2.set_xlabel('Factors')
         ax2.set_title('Scree plot')

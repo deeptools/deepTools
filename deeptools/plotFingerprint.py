@@ -17,6 +17,7 @@ import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
 
 old_settings = np.seterr(all='ignore')
+MAXLEN = 2000000
 
 
 def parse_arguments(args=None):
@@ -222,17 +223,17 @@ def getSyntheticJSD(vec):
     lamb = np.mean(vec)  # Average coverage
     coverage = np.sum(vec)
 
-    chip = np.zeros(20000, dtype=np.int)
-    input = np.zeros(20000, dtype=np.float)
+    chip = np.zeros(MAXLEN, dtype=np.int)
     for val in vec:
         # N.B., we need to clip past the end of the array
-        if val >= 20000:
-            val = 19999
+        if val >= MAXLEN:
+            val = MAXLEN - 1
         # This effectively removes differences due to coverage percentages
         if val > 0:
             chip[int(val)] += 1
-    for i in np.arange(1, 20000):
-        input[i] = coverage * poisson.pmf(i, lamb)
+    input = coverage * poisson.pmf(np.arange(1, MAXLEN), lamb)
+    if chip[-1] > 0:
+        print("{} bins had coverage over the maximum value of {} in the ChIP sample during synthetic JSD computation".format(chip[-1], MAXLEN))
 
     return getJSDcommon(chip, input)
 
@@ -259,24 +260,28 @@ def getJSD(args, idx, mat):
         return "NA"
 
     # These will hold the coverage histograms
-    chip = np.zeros(20000, dtype=np.int)
-    input = np.zeros(20000, dtype=np.int)
+    chip = np.zeros(MAXLEN, dtype=np.int)
+    input = np.zeros(MAXLEN, dtype=np.int)
     for row in mat:
         # ChIP
         val = row[idx]
         # N.B., we need to clip past the end of the array
-        if val >= 20000:
-            val = 19999
+        if val >= MAXLEN:
+            val = MAXLEN - 1
         # This effectively removes differences due to coverage percentages
         if val > 0:
             chip[int(val)] += 1
 
         # Input
         val = row[refIdx]
-        if val >= 20000:
-            val = 19999
+        if val >= MAXLEN:
+            val = MAXLEN - 1
         if val > 0:
             input[int(val)] += 1
+    if input[-1] > 0:
+        print("{} bins had coverage over the maximum value of {} in the input sample".format(input[-1], MAXLEN))
+    if chip[-1] > 0:
+        print("{} bins had coverage over the maximum value of {} in the ChIP sample".format(chip[-1], MAXLEN))
 
     return getJSDcommon(chip, input)
 
@@ -313,6 +318,7 @@ def getJSDcommon(chip, input):
     # Differentiate to PMFs, do some sanity checking
     PMFinput = np.ediff1d(inputSignalInterp)
     PMFchip = np.ediff1d(chipSignalInterp)
+
     if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip) - 1) > 0.01:
         sys.stderr.write("Warning: At least one PMF integral is significantly different from 1! The JSD will not be returned")
         return "NA"

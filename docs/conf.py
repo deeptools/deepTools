@@ -93,6 +93,7 @@ def get_version():
             return ver
     return None
 
+
 version = get_version()
 # The full version, including alpha/beta/rc tags.
 release = version
