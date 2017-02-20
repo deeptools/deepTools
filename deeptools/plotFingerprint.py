@@ -232,6 +232,8 @@ def getSyntheticJSD(vec):
         if val > 0:
             chip[int(val)] += 1
     input = coverage * poisson.pmf(np.arange(1, MAXLEN), lamb)
+    if chip[-1] > 0:
+        print("{} bins had coverage over the maximum value of {} in the ChIP sample during synthetic JSD computation".format(chip[-1], MAXLEN))
 
     return getJSDcommon(chip, input)
 
@@ -276,6 +278,10 @@ def getJSD(args, idx, mat):
             val = MAXLEN - 1
         if val > 0:
             input[int(val)] += 1
+    if input[-1] > 0:
+        print("{} bins had coverage over the maximum value of {} in the input sample".format(input[-1], MAXLEN))
+    if chip[-1] > 0:
+        print("{} bins had coverage over the maximum value of {} in the ChIP sample".format(chip[-1], MAXLEN))
 
     return getJSDcommon(chip, input)
 
