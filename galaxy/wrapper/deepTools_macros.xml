@@ -1,9 +1,11 @@
 <macros>
 
     <token name="@SETTMPDIR@">
+        <![CDATA[
         export TMP=. &&
         export TMPDIR=. &&
         export TEMP=. &&
+        ]]>
     </token>
 
     <xml name="advancedOpt_scaffold">
