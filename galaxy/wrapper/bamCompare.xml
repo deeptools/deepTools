@@ -7,6 +7,8 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
+        @SETTMPDIR@
+
         ln -s '$bamFile1' one.bam &&
         ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
         ln -s '$bamFile2' two.bam &&
