@@ -4,7 +4,10 @@
  * If computeMatrix/plotHeatmap/plotProfile is asked to sort the output matrix, it now does so by ignoring NaN values. Previously, any row with an NaN was placed at the top of the output (issue #447).
  * Fixed issue #471
  * Various Galaxy wrapper fixes
- * There is now a `--rowCenter` option in `plotPCA`, which can be used to make each row of the matrix used in the PCA to have a mean of 0. This can be useful in cases where there's extreme region-based depth variation that is shared between all samples.
+ * There is now a `--rowCenter` option in `plotPCA`, which can be used to make each row of the matrix used in the PCA to have a mean of 0. This can be useful in cases where there's extreme region-based depth variation that is shared between all samples. This was issue #477.
+ * The --Offset option is now available in `plotEnrichment`. This was issue #481.
+ * The maximum coverage allowed while calculating the Jensen-Shannon distance in `plotFingerprint` has been increased to 2 million and an informational message containing the number of bins above this value is printed to the standard output.
+ * `bamCoverage` now respects the `--scaleFactor` argument even if not other normalization is performed (issue #482).
 
 2.4.2
 
