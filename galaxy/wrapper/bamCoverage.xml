@@ -7,8 +7,6 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        @SETTMPDIR@
-
         ln -s '$bamInput' one.bam &&
         ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
 

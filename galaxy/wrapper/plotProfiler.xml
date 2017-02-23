@@ -9,8 +9,6 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        @SETTMPDIR@
-
         @BINARY@
             --matrixFile "$matrixFile"
             --outFileName "$outFileName"

@@ -7,8 +7,6 @@
     <expand macro="requirements"/>
     <command>
 <![CDATA[
-        @SETTMPDIR@
-
         @BINARY@
             #if $submodule.command == "info":
                 info

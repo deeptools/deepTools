@@ -1,13 +1,5 @@
 <macros>
 
-    <token name="@SETTMPDIR@">
-        <![CDATA[
-        export TMP=. &&
-        export TMPDIR=. &&
-        export TEMP=. &&
-        ]]>
-    </token>
-
     <xml name="advancedOpt_scaffold">
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >

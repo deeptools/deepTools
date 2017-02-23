@@ -7,8 +7,6 @@
     <expand macro="requirements"/>
     <command>
 <![CDATA[
-        @SETTMPDIR@
-
         @BINARY@
             @THREADS@
             --bigwig1 '$bigwigFile1'
