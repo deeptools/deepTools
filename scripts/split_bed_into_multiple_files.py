@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This script is usted to split a bed file into
+This script is use to split a bed file into
 smaller beds following the convention that I introduced
 in which a # indicates a group in the bed file
 
