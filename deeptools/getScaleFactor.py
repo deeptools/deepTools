@@ -40,10 +40,11 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 continue
 
             # fragment length filtering
-            if args.minFragmentLength > 0 and abs(read.template_length) < args.minFragmentLength:
+            tLen = utilities.getTLen(read)
+            if args.minFragmentLength > 0 and tLen < args.minFragmentLength:
                 filtered += 1
                 continue
-            if args.maxFragmentLength > 0 and abs(read.template_length) > args.maxFragmentLength:
+            if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
                 filtered += 1
                 continue
 

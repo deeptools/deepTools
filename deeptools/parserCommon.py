@@ -118,8 +118,7 @@ def read_options():
 
     group.add_argument('--minFragmentLength',
                        help='The minimum fragment length needed for read/pair '
-                       'inclusion. Note that a value other than 0 will exclude '
-                       'all single-end reads. This option is primarily useful '
+                       'inclusion. This option is primarily useful '
                        'in ATACseq experiments, for filtering mono- or '
                        'di-nucleosome fragments.',
                        metavar='INT',
@@ -129,8 +128,7 @@ def read_options():
 
     group.add_argument('--maxFragmentLength',
                        help='The maximum fragment length needed for read/pair '
-                       'inclusion. A value of 0 disables filtering and is '
-                       'needed for including single-end and orphan reads.',
+                       'inclusion.',
                        metavar='INT',
                        default=0,
                        type=int,

@@ -582,9 +582,10 @@ class CountReadsPerBin(object):
                     continue
 
                 # Fragment lengths
-                if self.minFragmentLength > 0 and abs(read.template_length) < self.minFragmentLength:
+                tLen = deeptools.utilities.getTLen(read)
+                if self.minFragmentLength > 0 and tLen < self.minFragmentLength:
                     continue
-                if self.maxFragmentLength > 0 and abs(read.template_length) > self.maxFragmentLength:
+                if self.maxFragmentLength > 0 and tLen > self.maxFragmentLength:
                     continue
 
                 # get rid of duplicate reads that have same position on each of the

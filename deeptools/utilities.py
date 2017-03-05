@@ -8,6 +8,28 @@ from deeptools.bamHandler import openBam
 debug = 0
 
 
+def getTLen(read):
+    """
+    Get the observed template length of a read. For a paired-end read, this is
+    normally just the TLEN field. For SE reads this is the observed coverage of
+    the genome (excluding splicing).
+    """
+    if abs(read.template_length) > 0:
+        return read.template_length
+
+    tlen = 0
+    for op, opLen in read.cigartuples:
+        if op == 0:
+            tlen += opLen
+        elif op == 2:
+            tlen += opLen
+        elif op == 7:
+            tlen += opLen
+        elif op == 8:
+            tlen += opLen
+    return tlen
+
+
 def getGC_content(tb, chrom, fragStart, fragEnd, fraction=True):
     bases = tb.bases(chrom, fragStart, fragEnd, fraction=False)
     if fragEnd > tb.chroms(chrom):

@@ -181,10 +181,10 @@
     <xml name="fragLength">
         <param argument="--minFragmentLength" type="integer" optional="True" value="0" min="0"
             label="Minimum fragment length for inclusion."
-            help="A value greater than 0 will filter out ALL single-end reads. This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
+            help="This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
         <param argument="--maxFragmentLength" type="integer" optional="True" value="0" min="0"
             label="Maximum fragment length for inclusion."
-            help="As above, but the maximum length. A value of 0 (the default) is equivalent to no maximum." />
+            help="A value of 0 (the default) is equivalent to no maximum." />
     </xml>
 
     <xml name="read_processing_options">

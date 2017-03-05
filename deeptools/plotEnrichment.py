@@ -13,7 +13,7 @@ import matplotlib.gridspec as gridspec
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome
+from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
@@ -302,9 +302,10 @@ def getEnrichment_worker(arglist):
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
                 continue
-            if args.minFragmentLength > 0 and abs(read.template_length) < args.minFragmentLength:
+            tLen = getTLen(read)
+            if args.minFragmentLength > 0 and tLen < args.minFragmentLength:
                 continue
-            if args.maxFragmentLength > 0 and abs(read.template_length) > args.maxFragmentLength:
+            if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
                 continue
             if args.ignoreDuplicates and prev_start_pos \
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
