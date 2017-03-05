@@ -7,7 +7,6 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-
         @multiple_input_bams@
         @BINARY@
             @THREADS@
