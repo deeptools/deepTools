@@ -15,7 +15,7 @@ def getTLen(read):
     the genome (excluding splicing).
     """
     if abs(read.template_length) > 0:
-        return read.template_length
+        return abs(read.template_length)
 
     tlen = 0
     for op, opLen in read.cigartuples:
