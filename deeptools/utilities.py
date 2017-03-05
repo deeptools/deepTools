@@ -18,15 +18,20 @@ def getTLen(read):
         return abs(read.template_length)
 
     tlen = 0
-    for op, opLen in read.cigartuples:
-        if op == 0:
-            tlen += opLen
-        elif op == 2:
-            tlen += opLen
-        elif op == 7:
-            tlen += opLen
-        elif op == 8:
-            tlen += opLen
+    try:
+        # the cigartuples property apparently didn't always exist
+        for op, opLen in read.cigartuples:
+            if op == 0:
+                tlen += opLen
+            elif op == 2:
+                tlen += opLen
+            elif op == 7:
+                tlen += opLen
+            elif op == 8:
+                tlen += opLen
+    except:
+        pass
+
     return tlen
 
 
