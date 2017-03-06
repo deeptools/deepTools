@@ -443,7 +443,7 @@ def plotMatrix(hm, outFileName,
                 title = hm.matrix.group_labels[sample_id]
             else:
                 title = hm.matrix.sample_labels[sample_id]
-            if sample_id > 0:
+            if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
                 ax_profile = fig.add_subplot(grids[0, sample_id],
                                              sharey=ax_list[0])
             else:
@@ -467,7 +467,7 @@ def plotMatrix(hm, outFileName,
                             line_label,
                             plot_type='simple')
 
-            if sample_id > 0:
+            if sample_id > 0 and len(yMin) == 0 and len(yMax) == 0:
                 plt.setp(ax_profile.get_yticklabels(), visible=False)
 
             if sample_id == 0 and yAxisLabel != '':
@@ -488,12 +488,15 @@ def plotMatrix(hm, outFileName,
             ticks[0].label1.set_horizontalalignment('left')
             ticks[-1].label1.set_horizontalalignment('right')
 
-        # It turns out that set_ylim only takes np.float64s
-        if yMin:
-            yMin = np.float64(yMin)
-        if yMax:
-            yMax = np.float64(yMax)
-        ax_list[0].set_ylim(yMin, yMax)
+            # It turns out that set_ylim only takes np.float64s
+            localYMin = yMin[sample_id % len(yMin)]
+            localYMax = yMax[sample_id % len(yMax)]
+            if localYMin:
+                localYMin = np.float64(localYMin)
+            if localYMax:
+                localYMax = np.float64(localYMax)
+            ax_list[0].set_ylim(localYMin, localYMax)
+
         # reduce the number of yticks by half
         num_ticks = len(ax_list[0].get_yticks())
         yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
