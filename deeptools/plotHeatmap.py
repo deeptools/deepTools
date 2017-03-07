@@ -169,6 +169,76 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     return grids
 
 
+def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, wspace, hspace):
+    """
+    A function to add profile plots to the given figure, possibly in a custom grid subplot which mimics a tight layout (if wspace and hspace are not None)
+    """
+    if wspace is not None and hspace is not None:
+        gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec = grids[0, :], wspace=wspace, hspace=hspace)
+
+    ax_list = []
+    for sample_id in range(iterNum):
+        if perGroup:
+            title = hm.matrix.group_labels[sample_id]
+        else:
+            title = hm.matrix.sample_labels[sample_id]
+        if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
+            ax_profile = fig.add_subplot(grids[0, sample_id], sharey=ax_list[0])
+        else:
+            if wspace is not None and hspace is not None:
+                ax_profile = fig.add_subplot(gridsSub[0, sample_id])
+            else:
+                ax_profile = fig.add_subplot(grids[0, sample_id])
+
+        ax_profile.set_title(title)
+        for group in range(iterNum2):
+            if perGroup:
+                sub_matrix = hm.matrix.get_matrix(sample_id, group)
+                line_label = sub_matrix['sample']
+            else:
+                sub_matrix = hm.matrix.get_matrix(group, sample_id)
+                line_label = sub_matrix['group']
+            plot_single(ax_profile, sub_matrix['matrix'],
+                        averageType,
+                        color_list[group],
+                        line_label,
+                        plot_type='simple')
+
+        if sample_id > 0 and len(yMin) == 0 and len(yMax) == 0:
+            plt.setp(ax_profile.get_yticklabels(), visible=False)
+
+        if sample_id == 0 and yAxisLabel != '':
+            ax_profile.set_ylabel(yAxisLabel)
+        if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
+            tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
+            xticks_use = [x * tickscale for x in xticks]
+            ax_profile.axes.set_xticks(xticks_use)
+        else:
+            ax_profile.axes.set_xticks(xticks)
+        ax_profile.axes.set_xticklabels(xtickslabel)
+        ax_list.append(ax_profile)
+
+        # align the first and last label
+        # such that they don't fall off
+        # the heatmap sides
+        ticks = ax_profile.xaxis.get_major_ticks()
+        ticks[0].label1.set_horizontalalignment('left')
+        ticks[-1].label1.set_horizontalalignment('right')
+
+        # It turns out that set_ylim only takes np.float64s
+        localYMin = yMin[sample_id % len(yMin)]
+        localYMax = yMax[sample_id % len(yMax)]
+        if localYMin:
+            localYMin = np.float64(localYMin)
+        if localYMax:
+            localYMax = np.float64(localYMax)
+        if len(yMin) == 1 and len(yMax) == 1:
+            ax_list[0].set_ylim(localYMin, localYMax)
+        else:
+            ax_list[-1].set_ylim(localYMin, localYMax)
+    return ax_list
+
+
 def plotMatrix(hm, outFileName,
                colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0},
                plotTitle='',
@@ -302,6 +372,35 @@ def plotMatrix(hm, outFileName,
     else:
         regions_length_in_bins = None
 
+    # plot the profiles on top of the heatmaps
+    if showSummaryPlot:
+        if perGroup:
+            iterNum = numgroups
+            iterNum2 = hm.matrix.get_num_samples()
+        else:
+            iterNum = hm.matrix.get_num_samples()
+            iterNum2 = numgroups
+        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, None, None)
+        if len(yMin) > 1 or len(yMax) > 1:
+            # replot with a tight layout
+            import matplotlib.tight_layout as tl
+            specList = tl.get_subplotspec_list(fig.axes, grid_spec=grids)
+            renderer = tl.get_renderer(fig)
+            kwargs = tl.get_tight_layout_figure(fig, fig.axes, specList, renderer, pad=1.08)
+
+            for ax in ax_list:
+                fig.delaxes(ax)
+
+            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'])
+
+        # reduce the number of yticks by half
+        num_ticks = len(ax_list[0].get_yticks())
+        yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
+        ax_list[0].set_yticks(yticks)
+        if legend_location != 'none':
+            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
+                               frameon=False, markerscale=0.5)
+
     first_group = 0  # helper variable to place the title per sample/group
     for sample in range(hm.matrix.get_num_samples()):
         sample_idx = sample
@@ -429,81 +528,6 @@ def plotMatrix(hm, outFileName,
                         # with other labels
                         labels[-1].set_horizontalalignment('right')
                     # cbar.ax.set_xticklabels(labels, rotation=90)
-
-    # plot the profiles on top of the heatmaps
-    if showSummaryPlot:
-        ax_list = []
-        if perGroup:
-            iterNum = numgroups
-        else:
-            iterNum = hm.matrix.get_num_samples()
-        # plot each of the profiles
-        for sample_id in range(iterNum):
-            if perGroup:
-                title = hm.matrix.group_labels[sample_id]
-            else:
-                title = hm.matrix.sample_labels[sample_id]
-            if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
-                ax_profile = fig.add_subplot(grids[0, sample_id],
-                                             sharey=ax_list[0])
-            else:
-                ax_profile = fig.add_subplot(grids[0, sample_id])
-
-            ax_profile.set_title(title)
-            if perGroup:
-                iterNum2 = hm.matrix.get_num_samples()
-            else:
-                iterNum2 = numgroups
-            for group in range(iterNum2):
-                if perGroup:
-                    sub_matrix = hm.matrix.get_matrix(sample_id, group)
-                    line_label = sub_matrix['sample']
-                else:
-                    sub_matrix = hm.matrix.get_matrix(group, sample_id)
-                    line_label = sub_matrix['group']
-                plot_single(ax_profile, sub_matrix['matrix'],
-                            averageType,
-                            color_list[group],
-                            line_label,
-                            plot_type='simple')
-
-            if sample_id > 0 and len(yMin) == 0 and len(yMax) == 0:
-                plt.setp(ax_profile.get_yticklabels(), visible=False)
-
-            if sample_id == 0 and yAxisLabel != '':
-                ax_profile.set_ylabel(yAxisLabel)
-            if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
-                tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
-                xticks_use = [x * tickscale for x in xticks]
-                ax_profile.axes.set_xticks(xticks_use)
-            else:
-                ax_profile.axes.set_xticks(xticks)
-            ax_profile.axes.set_xticklabels(xtickslabel)
-            ax_list.append(ax_profile)
-
-            # align the first and last label
-            # such that they don't fall off
-            # the heatmap sides
-            ticks = ax_profile.xaxis.get_major_ticks()
-            ticks[0].label1.set_horizontalalignment('left')
-            ticks[-1].label1.set_horizontalalignment('right')
-
-            # It turns out that set_ylim only takes np.float64s
-            localYMin = yMin[sample_id % len(yMin)]
-            localYMax = yMax[sample_id % len(yMax)]
-            if localYMin:
-                localYMin = np.float64(localYMin)
-            if localYMax:
-                localYMax = np.float64(localYMax)
-            ax_list[0].set_ylim(localYMin, localYMax)
-
-        # reduce the number of yticks by half
-        num_ticks = len(ax_list[0].get_yticks())
-        yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
-        ax_list[0].set_yticks(yticks)
-        if legend_location != 'none':
-            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
-                               frameon=False, markerscale=0.5)
 
     if showColorbar and colorbar_position != 'below':
         if showSummaryPlot:
