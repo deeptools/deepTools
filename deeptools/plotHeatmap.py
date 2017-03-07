@@ -175,9 +175,9 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
     """
     if wspace is not None and hspace is not None:
         if colorbar_position == 'side':
-            gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec = grids[0, :-1], wspace=wspace, hspace=hspace)
+            gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec=grids[0, :-1], wspace=wspace, hspace=hspace)
         else:
-            gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec = grids[0, :], wspace=wspace, hspace=hspace)
+            gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec=grids[0, :], wspace=wspace, hspace=hspace)
 
     ax_list = []
     for sample_id in range(iterNum):
