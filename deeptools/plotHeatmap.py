@@ -169,12 +169,15 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     return grids
 
 
-def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, wspace, hspace):
+def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position):
     """
     A function to add profile plots to the given figure, possibly in a custom grid subplot which mimics a tight layout (if wspace and hspace are not None)
     """
     if wspace is not None and hspace is not None:
-        gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec = grids[0, :], wspace=wspace, hspace=hspace)
+        if colorbar_position == 'side':
+            gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec = grids[0, :-1], wspace=wspace, hspace=hspace)
+        else:
+            gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec = grids[0, :], wspace=wspace, hspace=hspace)
 
     ax_list = []
     for sample_id in range(iterNum):
@@ -204,7 +207,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
                         line_label,
                         plot_type='simple')
 
-        if sample_id > 0 and len(yMin) == 0 and len(yMax) == 0:
+        if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
             plt.setp(ax_profile.get_yticklabels(), visible=False)
 
         if sample_id == 0 and yAxisLabel != '':
@@ -228,14 +231,17 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         # It turns out that set_ylim only takes np.float64s
         localYMin = yMin[sample_id % len(yMin)]
         localYMax = yMax[sample_id % len(yMax)]
+        lims = ax_list[0].get_ylim()
         if localYMin:
-            localYMin = np.float64(localYMin)
+            lims = (np.float64(localYMin), lims[1])
         if localYMax:
-            localYMax = np.float64(localYMax)
+            lims = (lims[0], np.float64(localYMax))
+        if lims[0] >= lims[1]:
+            lims = (lims[0], lims[0] + 1)
         if len(yMin) == 1 and len(yMax) == 1:
-            ax_list[0].set_ylim(localYMin, localYMax)
+            ax_list[0].set_ylim(lims)
         else:
-            ax_list[-1].set_ylim(localYMin, localYMax)
+            ax_list[-1].set_ylim(lims)
     return ax_list
 
 
@@ -275,6 +281,15 @@ def plotMatrix(hm, outFileName,
             zMax = [None]
         else:
             zMax = [zMax]
+
+    if yMin is None:
+        yMin = [None]
+    if yMax is None:
+        yMax = [None]
+    if not isinstance(yMin, list):
+        yMin = [yMin]
+    if not isinstance(yMax, list):
+        yMax = [yMax]
 
     plt.rcParams['font.size'] = 8.0
     fontP = FontProperties()
@@ -380,7 +395,7 @@ def plotMatrix(hm, outFileName,
         else:
             iterNum = hm.matrix.get_num_samples()
             iterNum2 = numgroups
-        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, None, None)
+        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position)
         if len(yMin) > 1 or len(yMax) > 1:
             # replot with a tight layout
             import matplotlib.tight_layout as tl
@@ -391,7 +406,7 @@ def plotMatrix(hm, outFileName,
             for ax in ax_list:
                 fig.delaxes(ax)
 
-            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'])
+            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position)
 
         # reduce the number of yticks by half
         num_ticks = len(ax_list[0].get_yticks())
