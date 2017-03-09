@@ -1,3 +1,3 @@
 numpydoc>=0.4
 pysam>=0.8.3
-https://github.com/fidelram/sphinx-argparse/archive/master.zip
+sphinx-argparse
