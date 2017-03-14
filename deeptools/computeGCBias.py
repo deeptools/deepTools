@@ -749,5 +749,6 @@ class Tester():
         return (regionSize,
                 chrNameBitToBam, stepSize, chromSizes, 1)
 
+
 if __name__ == "__main__":
     main()
