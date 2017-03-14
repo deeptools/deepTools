@@ -161,7 +161,7 @@ class Correlation:
         saves the correlation matrix
         """
         if self.column_order:
-            self.corr_matrix[self.column_order, self.column_order]
+            self.corr_matrix = self.corr_matrix[:, self.column_order][self.column_order]
             self.labels = [self.labels[i] for i in self.column_order]
 
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")

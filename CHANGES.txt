@@ -1,3 +1,8 @@
+2.4.3
+
+ * Fixed incorrect label ordering in the `plotCorrelation` command with the `--outFileCorMatrix` options.
+ * Fixed bug #491, which involved python 3 and bamCoverage.
+
 2.4.2
 
  * Fixed an issue where `computeMatrix reference-point --referencePoint center` would break if 1-base regions were used. This was bug #456.
