@@ -732,10 +732,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
     optional.add_argument('--yMin',
                           default=None,
-                          help='Minimum value for the Y-axis.')
+                          nargs='+',
+                          help='Minimum value for the Y-axis. Multiple values, separated by '
+                               'spaces can be set for each profile. If the number of yMin values is smaller than'
+                               'the number of plots, the values are recycled.')
     optional.add_argument('--yMax',
                           default=None,
-                          help='Maximum value for the Y-axis.')
+                          nargs='+',
+                          help='Maximum value for the Y-axis. Multiple values, separated by '
+                               'spaces can be set for each profile. If the number of yMin values is smaller than'
+                               'the number of plots, the values are recycled.')
 
     optional.add_argument('--legendLocation',
                           default='best',
