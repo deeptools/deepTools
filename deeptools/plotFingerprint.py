@@ -17,7 +17,7 @@ import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
 
 old_settings = np.seterr(all='ignore')
-MAXLEN = 2000000
+MAXLEN = 10000000
 
 
 def parse_arguments(args=None):
