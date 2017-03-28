@@ -1,19 +1,17 @@
-======================================================================
-deepTools
-======================================================================
+# deepTools
 [![Build Status](https://travis-ci.org/fidelram/deepTools.svg?branch=master)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) [![PyPI version](https://badge.fury.io/py/deeptools.svg)](https://badge.fury.io/py/deeptools) [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io)
 
-### User-friendly tools for exploring deep-sequencing data
+## User-friendly tools for exploring deep-sequencing data
 
 deepTools addresses the challenge of handling the large amounts of data that are now routinely generated from DNA sequencing centers. deepTools contains useful modules to process the mapped reads data for multiple quality checks, creating **normalized coverage files** in standard bedGraph and bigWig file formats, that allow comparison between different files (for example, treatment and control). Finally, using such normalized and standardized files, deepTools can create many publication-ready  **visualizations** to identify enrichments and for functional annotations of the genome.
 
 For support, questions, or feature requests contact: deeptools@googlegroups.com
 
-####Citation:
+### Citation:
 
 Ramírez F, Ryan DP, Grüning B, Bhardwaj V, Kilpert F, Richter AS, Heyne S, Dündar F, Manke T. [deepTools2: a next generation web server for deep-sequencing data analysis.](https://nar.oxfordjournals.org/content/early/2016/04/12/nar.gkw257.abstract) Nucleic Acids Research. 2016 Apr 13:gkw257.
 
-####Documentation:
+### Documentation:
 
 Our [documentation](http://deeptools.readthedocs.org/) contains more details on the [individual tool scopes and usages](http://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](http://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](http://deeptools.readthedocs.org/en/latest/content/example_usage.html).
 
@@ -25,7 +23,7 @@ Our [Gallery](http://deeptools.readthedocs.org/en/latest/content/example_gallery
 
 -------------------------------------------------------------------------------------------------------------------
 
-####Installation
+### Installation
 
 deepTools are available for:
 
