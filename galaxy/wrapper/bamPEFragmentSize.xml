@@ -13,6 +13,8 @@
             --bamfiles #echo " ".join($files)
             #if $samplesLabel:
                 --samplesLabel #echo " ".join($samplesLabel)
+            #else:
+                --samplesLabel #echo " ".join($labels)
             #end if
             #if $histogram:
                 --histogram ./hist.png

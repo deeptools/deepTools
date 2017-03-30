@@ -1,4 +1,4 @@
 Groups:
 	genes
 Samples:
-	file_0
+	bamCoverage_result4_bw_0
