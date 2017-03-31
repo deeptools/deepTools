@@ -118,8 +118,7 @@ def read_options():
 
     group.add_argument('--minFragmentLength',
                        help='The minimum fragment length needed for read/pair '
-                       'inclusion. Note that a value other than 0 will exclude '
-                       'all single-end reads. This option is primarily useful '
+                       'inclusion. This option is primarily useful '
                        'in ATACseq experiments, for filtering mono- or '
                        'di-nucleosome fragments.',
                        metavar='INT',
@@ -129,8 +128,7 @@ def read_options():
 
     group.add_argument('--maxFragmentLength',
                        help='The maximum fragment length needed for read/pair '
-                       'inclusion. A value of 0 disables filtering and is '
-                       'needed for including single-end and orphan reads.',
+                       'inclusion.',
                        metavar='INT',
                        default=0,
                        type=int,
@@ -734,10 +732,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
     optional.add_argument('--yMin',
                           default=None,
-                          help='Minimum value for the Y-axis.')
+                          nargs='+',
+                          help='Minimum value for the Y-axis. Multiple values, separated by '
+                               'spaces can be set for each profile. If the number of yMin values is smaller than'
+                               'the number of plots, the values are recycled.')
     optional.add_argument('--yMax',
                           default=None,
-                          help='Maximum value for the Y-axis.')
+                          nargs='+',
+                          help='Maximum value for the Y-axis. Multiple values, separated by '
+                               'spaces can be set for each profile. If the number of yMin values is smaller than'
+                               'the number of plots, the values are recycled.')
 
     optional.add_argument('--legendLocation',
                           default='best',

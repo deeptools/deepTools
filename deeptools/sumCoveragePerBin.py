@@ -3,6 +3,7 @@ import multiprocessing
 import time
 
 from deeptools import countReadsPerBin
+from deeptools.utilities import getTLen
 from deeptoolsintervals import GTF
 
 
@@ -113,9 +114,10 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                     continue
 
                 # Fragment lengths
-                if self.minFragmentLength > 0 and abs(read.template_length) < self.minFragmentLength:
+                tLen = getTLen(read)
+                if self.minFragmentLength > 0 and tLen < self.minFragmentLength:
                     continue
-                if self.maxFragmentLength > 0 and abs(read.template_length) > self.maxFragmentLength:
+                if self.maxFragmentLength > 0 and tLen > self.maxFragmentLength:
                     continue
 
                 # get rid of duplicate reads that have same position on each of the

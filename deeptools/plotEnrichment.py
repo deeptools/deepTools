@@ -13,7 +13,7 @@ import matplotlib.gridspec as gridspec
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome
+from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
@@ -155,6 +155,22 @@ def plot_enrichment_args():
                           help='The alpha channel (transparency) to use for the bars. '
                           'The default is 0.9 and values must be between 0 and 1.')
 
+    optional.add_argument('--Offset',
+                          help='Uses this offset inside of each read as the signal. This is useful in '
+                          'cases like RiboSeq or GROseq, where the signal is 12, 15 or 0 bases past the '
+                          'start of the read. This can be paired with the --filterRNAstrand option. '
+                          'Note that negative values indicate offsets from the end of each read. A value '
+                          'of 1 indicates the first base of the alignment (taking alignment orientation '
+                          'into account). Likewise, a value of -1 is the last base of the alignment. An '
+                          'offset of 0 is not permitted. If two values are specified, then they will be '
+                          'used to specify a range of positions. Note that specifying something like '
+                          '--Offset 5 -1 will result in the 5th through last position being used, which '
+                          'is equivalent to trimming 4 bases from the 5-prime end of alignments.',
+                          metavar='INT',
+                          type=int,
+                          nargs='+',
+                          required=False)
+
     bed12 = parser.add_argument_group('BED12 arguments')
 
     bed12.add_argument('--keepExons',
@@ -164,16 +180,17 @@ def plot_enrichment_args():
     return parser
 
 
-def getBAMBlocks(read, defaultFragmentLength, centerRead):
+def getBAMBlocks(read, defaultFragmentLength, centerRead, offset=None):
     """
     This is basically get_fragment_from_read from countReadsPerBin
     """
+    blocks = None
     maxPairedFragmentLength = 0
     if defaultFragmentLength != "read length":
         maxPairedFragmentLength = 4 * defaultFragmentLength
 
     if defaultFragmentLength == 'read length':
-        return read.get_blocks()
+        blocks = read.get_blocks()
     else:
         if cr.is_proper_pair(read, maxPairedFragmentLength):
             if read.is_reverse:
@@ -199,7 +216,53 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead):
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
                                             "end for read {}".format(read.query_name)
-        return [(int(fragmentStart), int(fragmentEnd))]
+        blocks = [(int(fragmentStart), int(fragmentEnd))]
+
+    # Handle read offsets, if needed
+    if offset is not None:
+        rv = [(None, None)]
+        if len(offset) > 1:
+            if offset[0] > 0:
+                offset[0] -= 1
+            if offset[1] < 0:
+                offset[1] += 1
+        else:
+            if offset[0] > 0:
+                offset[0] -= 1
+                offset = [offset[0], offset[0] + 1]
+            else:
+                offset = [offset[0], None]
+        if offset[1] == 0:
+            # -1 gets switched to 0, which screws things up
+            offset = (offset[0], None)
+
+        stretch = []
+        # For the sake of simplicity, convert [(10, 20), (30, 40)] to [10, 11, 12, 13, ..., 40]
+        # Then subset accordingly
+        for block in blocks:
+            stretch.extend(range(block[0], block[1]))
+        if read.is_reverse:
+            stretch = stretch[::-1]
+        try:
+            foo = stretch[offset[0]:offset[1]]
+        except:
+            return rv
+
+        if len(foo) == 0:
+            return rv
+        if read.is_reverse:
+            foo = foo[::-1]
+        # Convert the stretch back to a list of tuples
+        foo = np.array(foo)
+        d = foo[1:] - foo[:-1]
+        idx = np.argwhere(d > 1).flatten().tolist()  # This now holds the interval bounds as a list
+        idx.append(-1)
+        last = 0
+        blocks = []
+        for i in idx:
+            blocks.append((foo[last].astype("int"), foo[i].astype("int") + 1))
+            last = i + 1
+    return blocks
 
 
 def getEnrichment_worker(arglist):
@@ -239,9 +302,10 @@ def getEnrichment_worker(arglist):
                 continue
             if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
                 continue
-            if args.minFragmentLength > 0 and abs(read.template_length) < args.minFragmentLength:
+            tLen = getTLen(read)
+            if args.minFragmentLength > 0 and tLen < args.minFragmentLength:
                 continue
-            if args.maxFragmentLength > 0 and abs(read.template_length) > args.maxFragmentLength:
+            if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
                 continue
             if args.ignoreDuplicates and prev_start_pos \
                     and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
@@ -250,7 +314,7 @@ def getEnrichment_worker(arglist):
             total[idx] += 1
 
             # Get blocks, possibly extending
-            features = gtf.findOverlaps(chrom, getBAMBlocks(read, defaultFragmentLength, args.centerReads))
+            features = gtf.findOverlaps(chrom, getBAMBlocks(read, defaultFragmentLength, args.centerReads, args.Offset))
 
             if features is not None and len(features) > 0:
                 for x in features:

@@ -1,5 +1,4 @@
 # deepTools
-
 [![Build Status](https://travis-ci.org/fidelram/deepTools.svg?branch=master)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) [![PyPI version](https://badge.fury.io/py/deeptools.svg)](https://badge.fury.io/py/deeptools) [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io)
 
 ## User-friendly tools for exploring deep-sequencing data

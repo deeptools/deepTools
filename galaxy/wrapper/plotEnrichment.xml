@@ -7,7 +7,6 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-
         @multiple_input_bams@
         @BINARY@
             @THREADS@
@@ -63,6 +62,10 @@
                 --alpha '$advancedOpt.alpha'
 
                 @ADVANCED_OPTS_READ_PROCESSING@
+
+                #if $advancedOpt.Offset:
+                    --Offset $advancedOpt.Offset
+                #end if
 
                 @blacklist@
 
@@ -133,6 +136,20 @@
             <param argument="--keepExons" type="boolean" truevalue="--keepExons" falsevalue=""
                 label="Include BED12 exons"
                 help="Only for BED12 files, include columns 10-12 rather than just 2 and 3." />
+
+            <param argument="--Offset" type="text"  value="" optional="True"
+                label="Offset inside each alignment to use for the signal location."
+                help="Uses this offset inside of each read as the signal. This is useful in
+                    cases like RiboSeq or GROseq, where only the 12th, 15th or 1st base aligned
+                    should be used to denote where the signal is (rather than the span of the
+                    whole alignment). This can be paired with the --filterRNAstrand option. Note
+                    that negative values indicate offsets from the end of each read. A value of
+                    1 indicates the first base of the alignment (taking alignment orientation
+                    into account). Likewise, a value of -1 is the last base of the alignment. An
+                    offset of 0 is not permitted. If two values (separated by spaces) are specified, then they will be
+                    used to specify a range of positions. Note that specifying something like
+                    --Offset 5 -1 will result in the 5th through last position being used, which
+                    is equivalent to trimming 4 bases from the 5-prime end of alignments." />
 
             <expand macro="blacklist" />
 

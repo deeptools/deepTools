@@ -181,10 +181,10 @@
     <xml name="fragLength">
         <param argument="--minFragmentLength" type="integer" optional="True" value="0" min="0"
             label="Minimum fragment length for inclusion."
-            help="A value greater than 0 will filter out ALL single-end reads. This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
+            help="This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
         <param argument="--maxFragmentLength" type="integer" optional="True" value="0" min="0"
             label="Maximum fragment length for inclusion."
-            help="As above, but the maximum length. A value of 0 (the default) is equivalent to no maximum." />
+            help="A value of 0 (the default) is equivalent to no maximum." />
     </xml>
 
     <xml name="read_processing_options">
@@ -324,9 +324,7 @@
 
     <xml name="scaleFactor">
         <param argument="--scaleFactor" type="float" value="1" label="Scaling factor"
-            help="When used in combination with --normalizeTo1x or
-                --normalizeUsingRPKM, the computed scaling factor will
-                be multiplied by the given scale factor." />
+            help="The computed scaling factor will be multiplied by this (default 1)." />
     </xml>
 
     <xml name="scaleFactors">
@@ -441,19 +439,22 @@ is vital to you, select Yes below.">
 <![CDATA[
         #set files=[]
         #set labels=[]
+        #import re
         #if $multibam_conditional.orderMatters == "No":
             #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
+                #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
                 ln -s "${bamfile}" "./${counter}.bam" &&
                 ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
                 #silent $files.append('%s.bam' % $counter)
-                #silent $labels.append("'%s'" % ($bamfile.display_name))
+                #silent $labels.append("'%s'" % identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
+                #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
                 ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
                 #silent $files.append('%s.bam' % $counter)
-                #silent $labels.append("'%s'" % ($f.bamfiles.display_name))
+                #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
 ]]>
@@ -463,17 +464,20 @@ is vital to you, select Yes below.">
 <![CDATA[
         #set files=[]
         #set labels=[]
+        #import re
         #if $multibigwig_conditional.orderMatters == "No":
             #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
+            #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
                 ln -s "${bigwig}" "${counter}.bw" &&
                 #silent $files.append('%s.bw' % $counter)
-                #silent $labels.append("'%s'" % ($bigwig.display_name))
+                #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
+                #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bigwigfiles.element_identifier))
                 ln -s "${f.bigwigfiles}" "${counter}.bw" &&
                 #silent $files.append('%s.bw' % $counter)
-                #silent $labels.append("'%s'" % ($f.bigwigfiles.display_name))
+                #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
 ]]>

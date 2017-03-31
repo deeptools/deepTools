@@ -144,6 +144,12 @@ setup(
     license='LICENSE.txt',
     description='Useful tools for exploring deep sequencing data ',
     long_description=openREADME(),
+    classifiers=[
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Bioinformatics',
+        'Topic :: Scientific/Engineering :: Genomics',
+        'Topic :: Scientific/Engineering :: ChIP-seq',
+        'Topic :: Scientific/Engineering :: RNA-seq'],
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 0.17.0",

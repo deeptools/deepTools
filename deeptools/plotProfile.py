@@ -46,13 +46,29 @@ def parse_arguments(args=None):
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
-    # Because of galaxy, the value of this variables is normally
-    # set to ''. Therefore this check is needed
-    for attr in ['yMax', 'yMin']:
-        try:
-            args.__setattr__(attr, float(args.__getattribute__(attr)))
-        except:
-            args.__setattr__(attr, None)
+    # Ensure that yMin/yMax are there and a list
+    try:
+        assert(args.yMin is not None)
+    except:
+        args.yMin = [None]
+    try:
+        assert(args.yMax is not None)
+    except:
+        args.yMax = [None]
+
+    # Sometimes Galaxy sends --yMax '' and --yMin ''
+    if args.yMin == ['']:
+        args.yMin = [None]
+    if args.yMax == ['']:
+        args.yMax = [None]
+
+    # Convert to floats
+    if args.yMin != [None]:
+        foo = [float(x) for x in args.yMin]
+        args.yMin = foo
+    if args.yMax != [None]:
+        foo = [float(x) for x in args.yMax]
+        args.yMax = foo
 
     if args.plotHeight < 0.5:
         args.plotHeight = 0.5
@@ -89,8 +105,8 @@ class Profile(object):
             out_file_name: string
             plot_title: string
             y_axis_label: list
-            y_min: int
-            y_max: int
+            y_min: list
+            y_max: list
             averagetype: mean, sum, median
             reference_point_label: string
             start_label: string
@@ -170,6 +186,8 @@ class Profile(object):
         for plot in range(self.numplots):
             col = plot % self.plots_per_row
             row = int(plot / float(self.plots_per_row))
+            localYMin = None
+            localYMax = None
 
             # split the ax to make room for the colorbar and for each of the
             # groups
@@ -208,6 +226,11 @@ class Profile(object):
                     vmin = _vmin
                 if _vmax > vmax:
                     vmax = _vmax
+
+                if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
+                    localYMin = self.y_min[col % len(self.y_min)]
+                if localYMax is None or self.y_max[col % len(self.y_max)] > localYMax:
+                    localYMax = self.y_max[col % len(self.y_max)]
             self.fig.delaxes(ax)
 
             # iterate again after having computed the vmin and vmax
@@ -232,20 +255,25 @@ class Profile(object):
                     label = sub_matrix['group']
 
                 ma = sub_matrix['matrix']
-                ax.set_axis_bgcolor('black')
+                try:
+                    # matplotlib 2.0
+                    ax.set_facecolor('black')
+                except:
+                    # matplotlib <2.0
+                    ax.set_axis_bgcolor('black')
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
                 img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1, vmin=vmin, vmax=vmax)
 
-                # remove the numbers of the y axis for all plots
-                ax.axes.set_ylabel(label)
+                if plot == 0:
+                    ax.axes.set_ylabel(label)
 
                 ax_list.append(ax)
 
                 lims = ax.get_ylim()
-                if self.y_min is not None:
-                    lims = (self.y_min, lims[1])
-                if self.y_max is not None:
-                    lims = (lims[0], self.y_max)
+                if localYMin is not None:
+                    lims = (localYMin, lims[1])
+                if localYMax is not None:
+                    lims = (lims[0], localYMax)
                 if lims[0] >= lims[1]:
                     lims = (lims[0], lims[0] + 1)
                 ax.set_ylim(lims)
@@ -274,20 +302,20 @@ class Profile(object):
 
     def plot_heatmap(self):
         matrix_flatten = None
-        if self.y_min is None:
+        if self.y_min == [None]:
             matrix_flatten = self.hm.matrix.flatten()
             # try to avoid outliers by using np.percentile
-            self.y_min = np.percentile(matrix_flatten, 1.0)
-            if np.isnan(self.y_min):
-                self.y_min = None
+            self.y_min = [np.percentile(matrix_flatten, 1.0)]
+            if np.isnan(self.y_min[0]):
+                self.y_min = [None]
 
-        if self.y_max is None:
+        if self.y_max == [None]:
             if matrix_flatten is None:
                 matrix_flatten = self.hm.matrix.flatten()
             # try to avoid outliers by using np.percentile
-            self.y_max = np.percentile(matrix_flatten, 98.0)
-            if np.isnan(self.y_max):
-                self.y_max = None
+            self.y_max = [np.percentile(matrix_flatten, 98.0)]
+            if np.isnan(self.y_max[0]):
+                self.y_max = [None]
 
         ax_list = []
         # turn off y ticks
@@ -296,6 +324,8 @@ class Profile(object):
             labels = []
             col = plot % self.plots_per_row
             row = int(plot / float(self.plots_per_row))
+            localYMin = None
+            localYMax = None
 
             # split the ax to make room for the colorbar
             sub_grid = gridspec.GridSpecFromSubplotSpec(1, 2, subplot_spec=self.grids[row, col],
@@ -323,6 +353,10 @@ class Profile(object):
                     row, col = plot, data_idx
                 else:
                     row, col = data_idx, plot
+                if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
+                    localYMin = self.y_min[col % len(self.y_min)]
+                if localYMax is None or self.y_max[col % len(self.y_max)] > localYMax:
+                    localYMax = self.y_max[col % len(self.y_max)]
 
                 sub_matrix = self.hm.matrix.get_matrix(row, col)
 
@@ -334,7 +368,7 @@ class Profile(object):
                 mat.append(np.ma.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
 
             img = ax.imshow(np.vstack(mat), interpolation='nearest',
-                            cmap='RdYlBu_r', aspect='auto', vmin=self.y_min, vmax=self.y_max)
+                            cmap='RdYlBu_r', aspect='auto', vmin=localYMin, vmax=localYMax)
             self.fig.colorbar(img, cax=cax)
 
             totalWidth = np.vstack(mat).shape[1]
@@ -358,10 +392,13 @@ class Profile(object):
             d_half = float(distance) / 2
             yticks = [x + d_half for x in pos]
 
-            ax.axes.set_yticks(yticks)
             # TODO: make rotation a parameter
             # ax.axes.set_yticklabels(labels[::-1], rotation='vertical')
-            ax.axes.set_yticklabels(labels[::-1])
+            if plot == 0:
+                ax.axes.set_yticks(yticks)
+                ax.axes.set_yticklabels(labels[::-1])
+            else:
+                ax.axes.set_yticklabels([])
 
             ax_list.append(ax)
 
@@ -371,6 +408,10 @@ class Profile(object):
         plt.close()
 
     def plot_profile(self):
+        if self.y_min is None:
+            self.y_min = [None]
+        if self.y_max is None:
+            self.y_max = [None]
 
         if not self.color_list:
             cmap_plot = plt.get_cmap('jet')
@@ -392,20 +433,22 @@ class Profile(object):
         first = True
         ax_list = []
         for plot in range(self.numplots):
+            localYMin = None
+            localYMax = None
             col = plot % self.plots_per_row
             row = int(plot / float(self.plots_per_row))
-            if row == 0 and col == 0:
+            if (row == 0 and col == 0) or len(self.y_min) > 1 or len(self.y_max) > 1:
                 ax = self.fig.add_subplot(self.grids[row, col])
             else:
                 ax = self.fig.add_subplot(self.grids[row, col], sharey=ax_list[0])
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
-                if row != 0:
+                if row != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
             else:
                 title = self.hm.matrix.sample_labels[plot]
-                if col != 0:
+                if col != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
 
             ax.set_title(title)
@@ -414,6 +457,10 @@ class Profile(object):
                     _row, _col = plot, data_idx
                 else:
                     _row, _col = data_idx, plot
+                if localYMin is None or self.y_min[_col % len(self.y_min)] < localYMin:
+                    localYMin = self.y_min[_col % len(self.y_min)]
+                if localYMax is None or self.y_max[_col % len(self.y_max)] > localYMax:
+                    localYMax = self.y_max[_col % len(self.y_max)]
 
                 sub_matrix = self.hm.matrix.get_matrix(_row, _col)
 
@@ -435,7 +482,7 @@ class Profile(object):
             # remove the numbers of the y axis for all plots
             plt.setp(ax.get_yticklabels(), visible=False)
 
-            if col == 0:
+            if col == 0 or len(self.y_min) > 1 or len(self.y_max) > 1:
                 # add the y axis label for the first plot
                 # on each row and make the numbers and ticks visible
                 plt.setp(ax.get_yticklabels(), visible=True)
@@ -466,7 +513,8 @@ class Profile(object):
                 ax.legend(loc=self.legend_location.replace('-', ' '),
                           ncol=1, prop=self.font_p,
                           frameon=False, markerscale=0.5)
-                first = False
+                if len(self.y_min) == 1 and len(self.y_max) == 1:
+                    first = False
 
             """
             ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
@@ -474,12 +522,11 @@ class Profile(object):
                       ncol=1, mode="expand", prop=font_p,
                       frameon=False, markerscale=0.5)
             """
-
             lims = ax.get_ylim()
-            if self.y_min is not None:
-                lims = (self.y_min, lims[1])
-            if self.y_max is not None:
-                lims = (lims[0], self.y_max)
+            if localYMin is not None:
+                lims = (localYMin, lims[1])
+            if localYMax is not None:
+                lims = (lims[0], localYMax)
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
             ax.set_ylim(lims)
