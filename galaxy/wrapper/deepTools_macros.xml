@@ -1,5 +1,17 @@
 <macros>
 
+    <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
+    <token name="@WRAPPER_VERSION@">2.5.0</token>
+    <xml name="requirements">
+        <requirements>
+            <requirement type="package" version="2.7.10">python</requirement>
+            <requirement type="package" version="@WRAPPER_VERSION@">deeptools</requirement>
+            <yield />
+        </requirements>
+        <expand macro="stdio" />
+        <version_command>@BINARY@ --version</version_command>
+    </xml>
+
     <xml name="advancedOpt_scaffold">
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -95,18 +107,6 @@
                  </valid>
             </sanitizer>
         </param>
-    </xml>
-
-    <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.4.2</token>
-    <xml name="requirements">
-        <requirements>
-            <requirement type="package" version="2.7.10">python</requirement>
-            <requirement type="package" version="2.4.2">deeptools</requirement>
-            <yield />
-        </requirements>
-        <expand macro="stdio" />
-        <version_command>@BINARY@ --version</version_command>
     </xml>
 
     <xml name="smoothLength">
