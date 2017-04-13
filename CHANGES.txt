@@ -1,3 +1,7 @@
+2.5.1
+
+ * Added universal new line support to deeptoolsintervals (issue #506).
+
 2.5.0
 
  * Fix a bug where using regions with the same name in multiple BED files in computeMatrix caused downstream problems in plotHeatmap/plotProfile (issue #477).
