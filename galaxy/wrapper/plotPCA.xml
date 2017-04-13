@@ -12,6 +12,7 @@
             --plotTitle "$plotTitle"
             --plotFile "$outFileName"
             --plotFileFormat "$outFileFormat"
+            @PLOTWIDTHHEIGHT@
             $rowCenter
             #if $outFileNameData
                 --outFileNameData "$output_outFileNameData"
@@ -24,6 +25,16 @@
         <expand macro="plotTitle" />
         <param argument="--outFileNameData" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
         <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically." truevalue="--rowCenter" falsevalue="" />
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <expand macro="plotWidthHeight" plotWidth="5" plotHeight="10" />
+            </when>
+        </conditional>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />

@@ -14,6 +14,8 @@
             --whatToPlot "$plotting_type.whatToPlot"
             #if str($plotting_type.whatToPlot) == 'heatmap':
                 @HEATMAP_OPTIONS@
+                --plotWidth $plotting_type.plotWidth
+                --plotHeight $plotting_type.plotHeight
             #else:
                 --plotTitle '$plotting_type.plotTitle'
             #end if
@@ -37,6 +39,7 @@
             </param>
             <when value="heatmap">
                 <expand macro="heatmap_options" />
+                <expand macro="plotWidthHeight" width="11" height="9.5"
             </when>
             <when value="scatterplot">
                 <expand macro="plotTitle" />

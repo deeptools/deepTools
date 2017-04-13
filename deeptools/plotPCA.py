@@ -74,6 +74,16 @@ def plotCorrelationArgs():
                           'eps, pdf and svg.',
                           choices=['png', 'pdf', 'svg', 'eps'])
 
+    optional.add_argument('--plotHeight',
+                          help='Plot height in cm.',
+                          type=float,
+                          default=10)
+
+    optional.add_argument('--plotWidth',
+                          help='Plot width in cm. The minimum value is 1 cm.',
+                          type=float,
+                          default=5)
+
     optional.add_argument('--outFileNameData',
                           help='File name to save the data '
                           'underlying data for the average profile, e.g., '
@@ -105,7 +115,9 @@ def main(args=None):
 
     corr.plot_pca(args.plotFile.name,
                   plot_title=args.plotTitle,
-                  image_format=args.plotFileFormat)
+                  image_format=args.plotFileFormat,
+                  plotWidth=args.plotWidth,
+                  plotHeight=args.plotHeight)
 
     if args.outFileNameData is not None:
         import matplotlib
