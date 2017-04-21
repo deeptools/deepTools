@@ -286,7 +286,7 @@
     </xml>
 
     <xml name="sortUsing">
-        <param argument="--sortUsing" type="select" label="Method used for sorting"
+        <param argument="--sortUsing" type="select" optional="true" label="Method used for sorting"
             help="For each row the method is computed.">
             <option value="mean" selected="true">mean</option>
             <option value="median">median</option>
