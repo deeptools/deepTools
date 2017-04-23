@@ -555,9 +555,9 @@ class heatmapper(object):
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
 
-            if parameters['min threshold'] and coverage.min() <= parameters['min threshold']:
+            if parameters['min threshold'] is not None and coverage.min() <= parameters['min threshold']:
                 continue
-            if parameters['max threshold'] and coverage.max() >= parameters['max threshold']:
+            if parameters['max threshold'] is not None and coverage.max() >= parameters['max threshold']:
                 continue
             if parameters['scale'] != 1:
                 coverage = parameters['scale'] * coverage
