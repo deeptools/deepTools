@@ -110,6 +110,16 @@ def required_args():
                           help='Save raw counts (coverages) to file.',
                           metavar='FILE')
 
+    optional.add_argument('--plotHeight',
+                          help='Plot height in cm.',
+                          type=float,
+                          default=5.)
+
+    optional.add_argument('--plotWidth',
+                          help='Plot width in cm. The minimum value is 1 cm.',
+                          type=float,
+                          default=15)
+
     optional.add_argument('--plotFileFormat',
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '
@@ -165,7 +175,7 @@ def main(args=None):
     if args.skipZeros:
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
 
-    fig, axs = plt.subplots(1, 2, figsize=(15, 5))
+    fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
     plt.suptitle(args.plotTitle)
     # plot up to two std from mean
     num_reads_per_bin = num_reads_per_bin.astype(int)
@@ -212,9 +222,8 @@ def main(args=None):
                                                                   sample_max[idx],
                                                                   ))
 
-    # The 'good' x-axis is computed for each sample. The lower value is favored in which
-    # distributions with a wider x-range can better be seen.
-    y_max = min(y_max)
+    # Don't clip plots
+    y_max = max(y_max)
     axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
     axs[0].set_xlim(0, x_max)
     axs[0].set_xlabel('coverage (#reads per bp)')
