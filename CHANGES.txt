@@ -1,6 +1,7 @@
 2.5.1
 
  * Added universal new line support to deeptoolsintervals (issue #506).
+ * Fixed a few issues with correctGCBias under python 3.5 (thanks to @drakeeee)
 
 2.5.0
 
