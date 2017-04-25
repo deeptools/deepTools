@@ -12,7 +12,9 @@
             --plotTitle "$plotTitle"
             --plotFile "$outFileName"
             --plotFileFormat "$outFileFormat"
-            @PLOTWIDTHHEIGHT@
+            #if str($advancedOpt.showAdvancedOpt) == 'yes':
+                @PLOTWIDTHHEIGHT@
+            #end if
             $rowCenter
             #if $outFileNameData
                 --outFileNameData "$output_outFileNameData"
@@ -32,7 +34,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <expand macro="plotWidthHeight" plotWidth="5" plotHeight="10" />
+                <expand macro="plotWidthHeight" PLOTWIDTH="5.0" PLOTHEIGHT="10.0" />
             </when>
         </conditional>
     </inputs>

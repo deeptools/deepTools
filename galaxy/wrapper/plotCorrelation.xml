@@ -39,7 +39,7 @@
             </param>
             <when value="heatmap">
                 <expand macro="heatmap_options" />
-                <expand macro="plotWidthHeight" width="11" height="9.5" />
+                <expand macro="plotWidthHeight" PLOTWIDTH="11.0" PLOTHEIGHT="9.5" />
             </when>
             <when value="scatterplot">
                 <expand macro="plotTitle" />
