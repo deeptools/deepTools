@@ -113,12 +113,12 @@ def required_args():
     optional.add_argument('--plotHeight',
                           help='Plot height in cm.',
                           type=float,
-                          default=5.)
+                          default=5.0)
 
     optional.add_argument('--plotWidth',
                           help='Plot width in cm. The minimum value is 1 cm.',
                           type=float,
-                          default=15)
+                          default=15.0)
 
     optional.add_argument('--plotFileFormat',
                           metavar='FILETYPE',

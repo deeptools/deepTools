@@ -58,7 +58,7 @@
                 <param argument="--numberOfSamples" type="integer" value="100000" min="1"
                    label="Number of samples"
                    help="Number of samples taken from the genome to compute the scaling factors."/>
-                <expand macro="plotWidthHeight" width="15" height="5" />
+                <expand macro="plotWidthHeight" PLOTWIDTH="15.0" PLOTHEIGHT="5.0" />
                 <expand macro="region_limit_operation" />
                 <expand macro="read_processing_options" />
                 <expand macro="skipZeros" />

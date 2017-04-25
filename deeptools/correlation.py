@@ -227,7 +227,7 @@ class Correlation:
 
     def plot_correlation(self, plot_fiilename, plot_title='', vmax=None,
                          vmin=None, colormap='jet', image_format=None,
-                         plot_numbers=False):
+                         plot_numbers=False, plotWidth=11, plotHeight=9.5):
         """
         plots a correlation using a symmetric heatmap
         """
@@ -248,7 +248,7 @@ class Correlation:
             vmin = 0 if corr_matrix .min() >= 0 else -1
 
         # Compute and plot dendrogram.
-        fig = plt.figure(figsize=(11, 9.5))
+        fig = plt.figure(figsize=(plotWidth, plotHeight))
         plt.suptitle(plot_title)
 
         axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
@@ -431,12 +431,12 @@ class Correlation:
         plt.savefig(plot_fiilename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False):
+    def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
         """
         Plot the PCA of a matrix
         """
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(5, 10))
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight))
         # PCA
         if self.rowCenter:
             _ = self.matrix.mean(axis=1)

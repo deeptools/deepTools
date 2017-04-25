@@ -27,61 +27,63 @@ z
 " style="fill:#ffffff;"/>
    </g>
    <g id="line2d_1">
-    <path clip-path="url(#p84f06e9854)" d="M 135 -2027.688312 
-M 159.034477 -1 
-L 166.704545 207.116883 
-L 174.815423 -1 
-M 266.959162 -1 
-L 277.670455 62.181818 
-L 293.522727 136.987013 
-L 309.375 132.311688 
-L 325.227273 183.74026 
-L 341.079545 291.272727 
-L 356.931818 188.415584 
-L 372.784091 267.896104 
-L 388.636364 249.194805 
-L 404.488636 291.272727 
-L 420.340909 305.298701 
-L 436.193182 286.597403 
-L 452.045455 267.896104 
-L 467.897727 281.922078 
-L 483.75 319.324675 
-L 499.602273 244.519481 
-L 515.454545 291.272727 
-L 531.306818 277.246753 
+    <path clip-path="url(#pfc8818de03)" d="M 135 -851.844156 
+M 149.947635 -1 
+L 150.852273 50.493506 
+L 166.704545 265.558442 
+L 182.556818 62.181818 
+L 198.409091 158.025974 
+L 214.261364 43.480519 
+L 230.113636 108.935065 
+L 245.965909 141.662338 
+L 261.818182 146.337662 
+L 277.670455 193.090909 
+L 293.522727 230.493506 
+L 309.375 228.155844 
+L 325.227273 253.87013 
+L 341.079545 307.636364 
+L 356.931818 256.207792 
+L 372.784091 295.948052 
+L 388.636364 286.597403 
+L 404.488636 307.636364 
+L 420.340909 314.649351 
+L 436.193182 305.298701 
+L 452.045455 295.948052 
+L 467.897727 302.961039 
+L 483.75 321.662338 
+L 499.602273 284.25974 
+L 515.454545 307.636364 
+L 531.306818 300.623377 
 " style="fill:none;stroke:#0000ff;stroke-linecap:square;"/>
    </g>
    <g id="line2d_2">
-    <path clip-path="url(#p84f06e9854)" d="M 135 -1901.454545 
-M 149.480289 -1 
-L 150.852273 179.064935 
-L 159.331893 -1 
-M 176.912833 -1 
-L 182.556818 85.558442 
-L 198.409091 1.402597 
-L 214.261364 62.181818 
-L 230.113636 43.480519 
-L 245.965909 52.831169 
-L 261.818182 113.61039 
-L 277.670455 71.532468 
-L 292.136949 -1 
-M 294.831518 -1 
-L 309.375 76.207792 
-L 317.307808 -1 
-M 331.760831 -1 
-L 341.079545 108.935065 
-L 356.931818 230.493506 
-L 372.784091 141.662338 
-L 388.636364 207.116883 
-L 404.488636 136.987013 
-L 420.340909 216.467532 
-L 436.193182 202.441558 
-L 452.045455 272.571429 
-L 467.897727 281.922078 
-L 483.75 221.142857 
-L 499.602273 272.571429 
-L 515.454545 267.896104 
-L 531.306818 309.974026 
+    <path clip-path="url(#pfc8818de03)" d="M 135 -788.727273 
+M 147.00399 -1 
+L 150.852273 251.532468 
+L 166.704545 83.220779 
+L 182.556818 204.779221 
+L 198.409091 162.701299 
+L 214.261364 193.090909 
+L 230.113636 183.74026 
+L 245.965909 188.415584 
+L 261.818182 218.805195 
+L 277.670455 197.766234 
+L 293.522727 158.025974 
+L 309.375 200.103896 
+L 325.227273 122.961039 
+L 341.079545 216.467532 
+L 356.931818 277.246753 
+L 372.784091 232.831169 
+L 388.636364 265.558442 
+L 404.488636 230.493506 
+L 420.340909 270.233766 
+L 436.193182 263.220779 
+L 452.045455 298.285714 
+L 467.897727 302.961039 
+L 483.75 272.571429 
+L 499.602273 298.285714 
+L 515.454545 295.948052 
+L 531.306818 316.987013 
 " style="fill:none;stroke:#008000;stroke-linecap:square;"/>
    </g>
    <g id="patch_3">
@@ -110,88 +112,88 @@ L 135 36
       <defs>
        <path d="M 0 0 
 L 0 -4 
-" id="m9175cb6d6b" style="stroke:#000000;stroke-width:0.5;"/>
+" id="mff963b8507" style="stroke:#000000;stroke-width:0.5;"/>
       </defs>
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_4">
       <defs>
        <path d="M 0 0 
 L 0 4 
-" id="m7a92acea38" style="stroke:#000000;stroke-width:0.5;"/>
+" id="md768ea7117" style="stroke:#000000;stroke-width:0.5;"/>
       </defs>
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_1">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 135.000000, 335.598437)" x="135.0" y="335.5984375">0</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 135.000000, 337.118125)" x="135.0" y="337.118125">0</text>
      </g>
     </g>
     <g id="xtick_2">
      <g id="line2d_5">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="214.261363636" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="214.261363636" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_6">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="214.261363636" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="214.261363636" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_2">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 214.261364, 335.598437)" x="214.261363636" y="335.5984375">5</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 214.261364, 337.118125)" x="214.261363636" y="337.118125">5</text>
      </g>
     </g>
     <g id="xtick_3">
      <g id="line2d_7">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="293.522727273" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="293.522727273" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_8">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="293.522727273" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="293.522727273" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_3">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 293.522727, 335.598437)" x="293.522727273" y="335.5984375">10</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 293.522727, 337.118125)" x="293.522727273" y="337.118125">10</text>
      </g>
     </g>
     <g id="xtick_4">
      <g id="line2d_9">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="372.784090909" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="372.784090909" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_10">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="372.784090909" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="372.784090909" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_4">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 372.784091, 335.598437)" x="372.784090909" y="335.5984375">15</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 372.784091, 337.118125)" x="372.784090909" y="337.118125">15</text>
      </g>
     </g>
     <g id="xtick_5">
      <g id="line2d_11">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="452.045454545" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="452.045454545" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_12">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="452.045454545" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="452.045454545" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_5">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 452.045455, 335.598437)" x="452.045454545" y="335.5984375">20</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 452.045455, 337.118125)" x="452.045454545" y="337.118125">20</text>
      </g>
     </g>
     <g id="text_6">
-     <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 325.227273, 350.276563)" x="325.227272727" y="350.2765625">coverage (#reads per bp)</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 325.227273, 353.731875)" x="325.227272727" y="353.731875">coverage (#reads per bp)</text>
     </g>
    </g>
    <g id="matplotlib.axis_2">
@@ -200,181 +202,181 @@ L 0 4
       <defs>
        <path d="M 0 0 
 L 4 0 
-" id="mab92854b2e" style="stroke:#000000;stroke-width:0.5;"/>
+" id="m0f5c49241b" style="stroke:#000000;stroke-width:0.5;"/>
       </defs>
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="324.0"/>
       </g>
      </g>
      <g id="line2d_14">
       <defs>
        <path d="M 0 0 
 L -4 0 
-" id="m0d9336f966" style="stroke:#000000;stroke-width:0.5;"/>
+" id="m047a7b7093" style="stroke:#000000;stroke-width:0.5;"/>
       </defs>
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="324.0"/>
       </g>
      </g>
      <g id="text_7">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 326.759375)" x="131.0" y="326.759375">0.000</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 327.311250)" x="131.0" y="327.31125">0.00</text>
      </g>
     </g>
     <g id="ytick_2">
      <g id="line2d_15">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="288.935064935"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="288.935064935"/>
       </g>
      </g>
      <g id="line2d_16">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="288.935064935"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="288.935064935"/>
       </g>
      </g>
      <g id="text_8">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 291.694440)" x="131.0" y="291.694439935">0.005</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 292.246315)" x="131.0" y="292.246314935">0.01</text>
      </g>
     </g>
     <g id="ytick_3">
      <g id="line2d_17">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="253.87012987"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="253.87012987"/>
       </g>
      </g>
      <g id="line2d_18">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="253.87012987"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="253.87012987"/>
       </g>
      </g>
      <g id="text_9">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 256.629505)" x="131.0" y="256.62950487">0.010</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 257.181380)" x="131.0" y="257.18137987">0.02</text>
      </g>
     </g>
     <g id="ytick_4">
      <g id="line2d_19">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="218.805194805"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="218.805194805"/>
       </g>
      </g>
      <g id="line2d_20">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="218.805194805"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="218.805194805"/>
       </g>
      </g>
      <g id="text_10">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 221.564570)" x="131.0" y="221.564569805">0.015</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 222.116445)" x="131.0" y="222.116444805">0.03</text>
      </g>
     </g>
     <g id="ytick_5">
      <g id="line2d_21">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="183.74025974"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="183.74025974"/>
       </g>
      </g>
      <g id="line2d_22">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="183.74025974"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="183.74025974"/>
       </g>
      </g>
      <g id="text_11">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 186.499635)" x="131.0" y="186.49963474">0.020</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 187.051510)" x="131.0" y="187.05150974">0.04</text>
      </g>
     </g>
     <g id="ytick_6">
      <g id="line2d_23">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="148.675324675"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="148.675324675"/>
       </g>
      </g>
      <g id="line2d_24">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="148.675324675"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="148.675324675"/>
       </g>
      </g>
      <g id="text_12">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 151.434700)" x="131.0" y="151.434699675">0.025</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 151.986575)" x="131.0" y="151.986574675">0.05</text>
      </g>
     </g>
     <g id="ytick_7">
      <g id="line2d_25">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="113.61038961"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="113.61038961"/>
       </g>
      </g>
      <g id="line2d_26">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="113.61038961"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="113.61038961"/>
       </g>
      </g>
      <g id="text_13">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 116.369765)" x="131.0" y="116.36976461">0.030</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 116.921640)" x="131.0" y="116.92163961">0.06</text>
      </g>
     </g>
     <g id="ytick_8">
      <g id="line2d_27">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="78.5454545455"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="78.5454545455"/>
       </g>
      </g>
      <g id="line2d_28">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="78.5454545455"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="78.5454545455"/>
       </g>
      </g>
      <g id="text_14">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 81.304830)" x="131.0" y="81.3048295455">0.035</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 81.856705)" x="131.0" y="81.8567045455">0.07</text>
      </g>
     </g>
     <g id="ytick_9">
      <g id="line2d_29">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#mab92854b2e" y="43.4805194805"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="135.0" xlink:href="#m0f5c49241b" y="43.4805194805"/>
       </g>
      </g>
      <g id="line2d_30">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m0d9336f966" y="43.4805194805"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="515.454545455" xlink:href="#m047a7b7093" y="43.4805194805"/>
       </g>
      </g>
      <g id="text_15">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 46.239894)" x="131.0" y="46.2398944805">0.040</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 131.000000, 46.791769)" x="131.0" y="46.7917694805">0.08</text>
      </g>
     </g>
     <g id="text_16">
-     <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-90.000000, 95.292187, 180.000000)" x="95.2921875" y="180.0">fraction of bases sampled</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-90.000000, 96.785625, 180.000000)" x="96.785625" y="180.0">fraction of bases sampled</text>
     </g>
    </g>
    <g id="legend_1">
     <g id="patch_7">
-     <path d="M 336.703295 80.8275 
-L 507.054545 80.8275 
-Q 509.454545 80.8275 509.454545 78.4275 
-L 509.454545 44.4 
-Q 509.454545 42 507.054545 42 
-L 336.703295 42 
-Q 334.303295 42 334.303295 44.4 
-L 334.303295 78.4275 
-Q 334.303295 80.8275 336.703295 80.8275 
+     <path d="M 300.953045 89.793 
+L 505.374545 89.793 
+Q 508.254545 89.793 508.254545 86.913 
+L 508.254545 46.08 
+Q 508.254545 43.2 505.374545 43.2 
+L 300.953045 43.2 
+Q 298.073045 43.2 298.073045 46.08 
+L 298.073045 86.913 
+Q 298.073045 89.793 300.953045 89.793 
 z
 " style="fill:#ffffff;opacity:0.5;stroke:#000000;stroke-linejoin:miter;"/>
     </g>
     <g id="line2d_31">
-     <path d="M 342.703295 51.718125 
-L 359.503295 51.718125 
+     <path d="M 308.153045 54.86175 
+L 328.313045 54.86175 
 " style="fill:none;stroke:#0000ff;stroke-linecap:square;"/>
     </g>
     <g id="line2d_32"/>
     <g id="text_17">
-     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 372.703295, 55.918125)" x="372.703295455" y="55.918125">test1.bam, mean=4.9</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:14.4px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 344.153045, 59.901750)" x="344.153045455" y="59.90175">test1.bam, mean=4.9</text>
     </g>
     <g id="line2d_33">
-     <path d="M 342.703295 69.331875 
-L 359.503295 69.331875 
+     <path d="M 308.153045 75.99825 
+L 328.313045 75.99825 
 " style="fill:none;stroke:#008000;stroke-linecap:square;"/>
     </g>
     <g id="line2d_34"/>
     <g id="text_18">
-     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 372.703295, 73.531875)" x="372.703295455" y="73.531875">test2.bam, mean=6.6</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:14.4px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 344.153045, 81.038250)" x="344.153045455" y="81.03825">test2.bam, mean=6.6</text>
     </g>
    </g>
   </g>
@@ -388,7 +390,7 @@ z
 " style="fill:#ffffff;"/>
    </g>
    <g id="line2d_35">
-    <path clip-path="url(#pff2a5535a5)" d="M 591.545455 36 
+    <path clip-path="url(#p625e2c4646)" d="M 591.545455 36 
 L 607.397727 132.576 
 L 623.25 155.04 
 L 639.102273 159.84 
@@ -417,7 +419,7 @@ L 987.852273 322.08
 " style="fill:none;stroke:#0000ff;stroke-linecap:square;"/>
    </g>
    <g id="line2d_36">
-    <path clip-path="url(#pff2a5535a5)" d="M 591.545455 36 
+    <path clip-path="url(#p625e2c4646)" d="M 591.545455 36 
 L 607.397727 127.392 
 L 623.25 133.344 
 L 639.102273 153.12 
@@ -469,217 +471,217 @@ L 591.545455 36
     <g id="xtick_6">
      <g id="line2d_37">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_38">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_19">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 591.545455, 335.598437)" x="591.545454545" y="335.5984375">0</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 591.545455, 337.118125)" x="591.545454545" y="337.118125">0</text>
      </g>
     </g>
     <g id="xtick_7">
      <g id="line2d_39">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="670.806818182" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="670.806818182" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_40">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="670.806818182" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="670.806818182" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_20">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 670.806818, 335.598437)" x="670.806818182" y="335.5984375">5</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 670.806818, 337.118125)" x="670.806818182" y="337.118125">5</text>
      </g>
     </g>
     <g id="xtick_8">
      <g id="line2d_41">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="750.068181818" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="750.068181818" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_42">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="750.068181818" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="750.068181818" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_21">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 750.068182, 335.598437)" x="750.068181818" y="335.5984375">10</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 750.068182, 337.118125)" x="750.068181818" y="337.118125">10</text>
      </g>
     </g>
     <g id="xtick_9">
      <g id="line2d_43">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="829.329545455" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="829.329545455" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_44">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="829.329545455" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="829.329545455" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_22">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 829.329545, 335.598437)" x="829.329545455" y="335.5984375">15</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 829.329545, 337.118125)" x="829.329545455" y="337.118125">15</text>
      </g>
     </g>
     <g id="xtick_10">
      <g id="line2d_45">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="908.590909091" xlink:href="#m9175cb6d6b" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="908.590909091" xlink:href="#mff963b8507" y="324.0"/>
       </g>
      </g>
      <g id="line2d_46">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="908.590909091" xlink:href="#m7a92acea38" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="908.590909091" xlink:href="#md768ea7117" y="36.0"/>
       </g>
      </g>
      <g id="text_23">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 908.590909, 335.598437)" x="908.590909091" y="335.5984375">20</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 908.590909, 337.118125)" x="908.590909091" y="337.118125">20</text>
      </g>
     </g>
     <g id="text_24">
-     <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 781.772727, 350.276563)" x="781.772727273" y="350.2765625">coverage (#reads per bp)</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-0.000000, 781.772727, 353.731875)" x="781.772727273" y="353.731875">coverage (#reads per bp)</text>
     </g>
    </g>
    <g id="matplotlib.axis_4">
     <g id="ytick_10">
      <g id="line2d_47">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mab92854b2e" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m0f5c49241b" y="324.0"/>
       </g>
      </g>
      <g id="line2d_48">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m0d9336f966" y="324.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m047a7b7093" y="324.0"/>
       </g>
      </g>
      <g id="text_25">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 326.759375)" x="587.545454545" y="326.759375">0.0</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 327.311250)" x="587.545454545" y="327.31125">0.0</text>
      </g>
     </g>
     <g id="ytick_11">
      <g id="line2d_49">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mab92854b2e" y="266.4"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m0f5c49241b" y="266.4"/>
       </g>
      </g>
      <g id="line2d_50">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m0d9336f966" y="266.4"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m047a7b7093" y="266.4"/>
       </g>
      </g>
      <g id="text_26">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 269.159375)" x="587.545454545" y="269.159375">0.2</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 269.711250)" x="587.545454545" y="269.71125">0.2</text>
      </g>
     </g>
     <g id="ytick_12">
      <g id="line2d_51">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mab92854b2e" y="208.8"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m0f5c49241b" y="208.8"/>
       </g>
      </g>
      <g id="line2d_52">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m0d9336f966" y="208.8"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m047a7b7093" y="208.8"/>
       </g>
      </g>
      <g id="text_27">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 211.559375)" x="587.545454545" y="211.559375">0.4</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 212.111250)" x="587.545454545" y="212.11125">0.4</text>
      </g>
     </g>
     <g id="ytick_13">
      <g id="line2d_53">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mab92854b2e" y="151.2"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m0f5c49241b" y="151.2"/>
       </g>
      </g>
      <g id="line2d_54">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m0d9336f966" y="151.2"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m047a7b7093" y="151.2"/>
       </g>
      </g>
      <g id="text_28">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 153.959375)" x="587.545454545" y="153.959375">0.6</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 154.511250)" x="587.545454545" y="154.51125">0.6</text>
      </g>
     </g>
     <g id="ytick_14">
      <g id="line2d_55">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mab92854b2e" y="93.6"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m0f5c49241b" y="93.6"/>
       </g>
      </g>
      <g id="line2d_56">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m0d9336f966" y="93.6"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m047a7b7093" y="93.6"/>
       </g>
      </g>
      <g id="text_29">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 96.359375)" x="587.545454545" y="96.359375">0.8</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 96.911250)" x="587.545454545" y="96.91125">0.8</text>
      </g>
     </g>
     <g id="ytick_15">
      <g id="line2d_57">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#mab92854b2e" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="591.545454545" xlink:href="#m0f5c49241b" y="36.0"/>
       </g>
      </g>
      <g id="line2d_58">
       <g>
-       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m0d9336f966" y="36.0"/>
+       <use style="stroke:#000000;stroke-width:0.5;" x="972.0" xlink:href="#m047a7b7093" y="36.0"/>
       </g>
      </g>
      <g id="text_30">
-      <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 38.759375)" x="587.545454545" y="38.759375">1.0</text>
+      <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:end;" transform="rotate(-0.000000, 587.545455, 39.311250)" x="587.545454545" y="39.31125">1.0</text>
      </g>
     </g>
     <g id="text_31">
-     <text style="font-family:Bitstream Vera Sans;font-size:10.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-90.000000, 564.562642, 180.000000)" x="564.562642045" y="180.0">fraction of bases sampled &gt;= coverage</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:middle;" transform="rotate(-90.000000, 560.966080, 180.000000)" x="560.966079545" y="180.0">fraction of bases sampled &gt;= coverage</text>
     </g>
    </g>
    <g id="legend_2">
     <g id="patch_13">
-     <path d="M 864.046875 80.8275 
-L 963.6 80.8275 
-Q 966 80.8275 966 78.4275 
-L 966 44.4 
-Q 966 42 963.6 42 
-L 864.046875 42 
-Q 861.646875 42 861.646875 44.4 
-L 861.646875 78.4275 
-Q 861.646875 80.8275 864.046875 80.8275 
+     <path d="M 842.45625 89.793 
+L 961.92 89.793 
+Q 964.8 89.793 964.8 86.913 
+L 964.8 46.08 
+Q 964.8 43.2 961.92 43.2 
+L 842.45625 43.2 
+Q 839.57625 43.2 839.57625 46.08 
+L 839.57625 86.913 
+Q 839.57625 89.793 842.45625 89.793 
 z
 " style="fill:#ffffff;opacity:0.5;stroke:#000000;stroke-linejoin:miter;"/>
     </g>
     <g id="line2d_59">
-     <path d="M 870.046875 51.718125 
-L 886.846875 51.718125 
+     <path d="M 849.65625 54.86175 
+L 869.81625 54.86175 
 " style="fill:none;stroke:#0000ff;stroke-linecap:square;"/>
     </g>
     <g id="line2d_60"/>
     <g id="text_32">
-     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 900.046875, 55.918125)" x="900.046875" y="55.918125">test1.bam</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:14.4px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 885.656250, 59.901750)" x="885.65625" y="59.90175">test1.bam</text>
     </g>
     <g id="line2d_61">
-     <path d="M 870.046875 69.331875 
-L 886.846875 69.331875 
+     <path d="M 849.65625 75.99825 
+L 869.81625 75.99825 
 " style="fill:none;stroke:#008000;stroke-linecap:square;"/>
     </g>
     <g id="line2d_62"/>
     <g id="text_33">
-     <text style="font-family:Bitstream Vera Sans;font-size:12.0px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 900.046875, 73.531875)" x="900.046875" y="73.531875">test2.bam</text>
+     <text style="font-family:Bitstream Vera Sans;font-size:14.4px;font-style:normal;font-weight:400;text-anchor:start;" transform="rotate(-0.000000, 885.656250, 81.038250)" x="885.65625" y="81.03825">test2.bam</text>
     </g>
    </g>
   </g>
  </g>
  <defs>
-  <clipPath id="pff2a5535a5">
+  <clipPath id="p625e2c4646">
    <rect height="288.0" width="380.454545455" x="591.545454545" y="36.0"/>
   </clipPath>
-  <clipPath id="p84f06e9854">
+  <clipPath id="pfc8818de03">
    <rect height="288.0" width="380.454545455" x="135.0" y="36.0"/>
   </clipPath>
  </defs>

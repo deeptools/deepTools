@@ -237,12 +237,16 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
 
         cvg_corr[vectorStart:vectorEnd] += float(1) / R_gc[gc]
         i += 1
-    if debug:
-        endTime = time.time()
-        print("{}, processing {} ({:.1f} per sec) ")
-        "reads @ {}:{}-{}".format(multiprocessing.current_process().name,
-                                  i, i / (endTime - startTime),
-                                  chrNameBit, start, end)
+
+    try:
+        if debug:
+            endTime = time.time()
+            print("{}, processing {} ({:.1f} per sec) ")
+            "reads @ {}:{}-{}".format(multiprocessing.current_process().name,
+                                      i, i / (endTime - startTime),
+                                      chrNameBit, start, end)
+    except NameError:
+        pass
 
     if i == 0:
         return None
@@ -661,7 +665,7 @@ def main(args=None):
             res = list(map(writeCorrected_wrapper, mp_args))
 
         # concatenate intermediary bedgraph files
-        _temp_bg_file = open(_temp_bg_file_name, 'w')
+        _temp_bg_file = open(_temp_bg_file_name, 'wb')
         for tempFileName in res:
             if tempFileName:
                 # concatenate all intermediate tempfiles into one
