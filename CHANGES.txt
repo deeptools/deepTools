@@ -3,6 +3,7 @@
  * Added universal new line support to deeptoolsintervals (issue #506).
  * Fixed a few issues with correctGCBias under python 3.5 (thanks to @drakeeee)
  * Setting `--minThreshold 0.0` or `--maxThreshold 0.0` now works properly. Previously, setting either of these to 0 was ignored. (issue #516)
+ * You can now specify the plot width and height in `plotPCA` and `plotCorrelation` (heatmap only) with the `--plotWidth` and `--plotHeight` parameters. (issue #507)
 
 2.5.0
 
