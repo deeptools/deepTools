@@ -83,14 +83,18 @@ def parse_arguments():
     return parser
 
 
-def getFragSize(bam, args):
+def getFragSize(bam, args, idx):
         fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
                                                                         blackListFileName=args.blackListFileName,
                                                                         numberOfProcessors=args.numberOfProcessors,
                                                                         verbose=args.verbose,
                                                                         binSize=args.binSize,
                                                                         distanceBetweenBins=args.distanceBetweenBins)
-        print("\n\nBAM file : {}".format(bam))
+        if args.samplesLabel and idx < len(args.samplesLabel):
+            print("\n\nSample label: {}".format(args.samplesLabel[idx]))
+        else:
+            print("\n\nBAM file : {}".format(bam))
+
         if fragment_len_dict:
             if fragment_len_dict['mean'] == 0:
                 print("No pairs were found. Is the data from a paired-end sequencing experiment?")
@@ -125,8 +129,8 @@ def main(args=None):
     args = parse_arguments().parse_args(args)
 
     fraglengths = {}
-    for bam in args.bamfiles:
-        fraglengths[bam] = getFragSize(bam, args)
+    for idx, bam in enumerate(args.bamfiles):
+        fraglengths[bam] = getFragSize(bam, args, idx)
 
     if args.histogram:
         import matplotlib
