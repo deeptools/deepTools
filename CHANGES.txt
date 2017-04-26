@@ -6,6 +6,7 @@
  * You can now specify the plot width and height in `plotPCA` and `plotCorrelation` (heatmap only) with the `--plotWidth` and `--plotHeight` parameters. (issue #507)
  * plotCoverage no longer clips the top off of plots. Further, you can now set the plot width and height with `--plotWidth` and `--plotHeight`. (issue #508)
  * In bamCoverage, specifying `--filterRNAstrand` no longer results in `--extendReads` being ignored. (issue #520)
+ * `plotFingerprint` no longers requires producing a plot, which is useful if you only need QC metrics and are using a LOT of samples (such that matplotlib would crash anyway). (issue #519)
 
 2.5.0
 
