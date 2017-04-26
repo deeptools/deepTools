@@ -84,6 +84,19 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
 
     distanceBetweenBins *= 2
     fl = []
+
+    # Fix issue #522, allow distanceBetweenBins == 0
+    if distanceBetweenBins == 0:
+        imap_res = mapReduce.mapReduce((bam_handle.filename, distanceBetweenBins),
+                                       getFragmentLength_wrapper,
+                                       chrom_sizes,
+                                       genomeChunkLength=binSize,
+                                       blackListFileName=blackListFileName,
+                                       numberOfProcessors=numberOfProcessors,
+                                       verbose=verbose)
+        fl = np.concatenate(imap_res)
+
+    # Try to ensure we have at least 1000 regions from which to compute statistics, halving the intra-bin distance as needed
     while len(fl) < 1000 and distanceBetweenBins > 1:
         distanceBetweenBins /= 2
         stepsize = binSize + distanceBetweenBins

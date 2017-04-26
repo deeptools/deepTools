@@ -1,6 +1,6 @@
 
 
-BAM file : 0.bam
+Sample label: bowtie2 test1.bam
 Sample size: 3
 
 Fragment lengths:
