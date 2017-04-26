@@ -5,6 +5,7 @@
  * Setting `--minThreshold 0.0` or `--maxThreshold 0.0` now works properly. Previously, setting either of these to 0 was ignored. (issue #516)
  * You can now specify the plot width and height in `plotPCA` and `plotCorrelation` (heatmap only) with the `--plotWidth` and `--plotHeight` parameters. (issue #507)
  * plotCoverage no longer clips the top off of plots. Further, you can now set the plot width and height with `--plotWidth` and `--plotHeight`. (issue #508)
+ * In bamCoverage, specifying `--filterRNAstrand` no longer results in `--extendReads` being ignored. (issue #520)
 
 2.5.0
 
