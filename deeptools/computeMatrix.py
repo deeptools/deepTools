@@ -324,7 +324,6 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
-
     # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
