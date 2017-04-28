@@ -218,8 +218,8 @@
                 <param name="scale" type="float" optional="True" label="Scaling factor"
                     help="If set, all values are multiplied by this number. (--scale)"/>
                 <param argument="--samplesLabel" type="text" size="30"
-                    label="Labels for the samples (each bigwig) plotted"
-                    help="The default is to use the file name of the sample. The sample labels should be separated by
+                    label="Labels for the samples (each bigwig)"
+                    help="The default is to use the history item label. The sample labels should be separated by
                     spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;">
                     <sanitizer>
                         <valid initial="string.printable">
