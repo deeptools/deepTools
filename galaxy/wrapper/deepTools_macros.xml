@@ -396,46 +396,26 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </citations>
     </xml>
 
-    <xml name="multiple_input_bams">
+    <xml name="multiple_input_bams" tokens="MIN">
         <conditional name="multibam_conditional">
         <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples is vital to you, select Yes below.">
             <option value="No" selected="true">No</option>
             <option value="Yes">Yes</option>
         </param>
         <when value="No">
-            <param argument="--bamfiles" type="data" format="bam" min="1"
+            <param argument="--bamfiles" type="data" format="bam" min="@MIN@"
                 label="Bam file" multiple="true"
                 help=""/>
         </when>
         <when value="Yes">
-            <repeat name="multibam_repeats" min="1" title="BAM Files">
+            <repeat name="multibam_repeats" min="@MIN@" title="BAM Files">
                 <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
             </repeat>
         </when>
         </conditional>
     </xml>
 
-    <xml name="multiple_input_bams_min2">
-        <conditional name="multibam_conditional">
-        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples 
-is vital to you, select Yes below.">
-            <option value="No" selected="true">No</option>
-            <option value="Yes">Yes</option>
-        </param>
-        <when value="No">
-            <param argument="--bamfiles" type="data" format="bam" min="2"
-                label="Bam file" multiple="true"
-                help=""/>
-        </when>
-        <when value="Yes">
-            <repeat name="multibam_repeats" min="2" title="BAM Files">
-                <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
-            </repeat>
-        </when>
-        </conditional>
-    </xml>
-
-    <xml name="multiple_input_bigwigs">
+    <xml name="multiple_input_bigwigs" tokens="MIN,LABEL,TITLE">
         <conditional name="multibigwig_conditional">
         <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples 
 is vital to you, select Yes below.">
@@ -443,13 +423,13 @@ is vital to you, select Yes below.">
             <option value="Yes">Yes</option>
         </param>
         <when value="No">
-            <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="2"
-                label="Bigwig file"
-                help="A Bigwig file."/>
+            <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="@MIN@"
+                label="@LABEL@"
+                help="You can generate a bigWig file from a BAM file using the bamCoverage tool."/>
         </when>
         <when value="Yes">
-            <repeat name="multibigwig_repeats" min="2" title="BigWig files">
-                <param argument="--bigwigfiles" type="data" format="bigwig" label="Bigwig file" help="A Bigwig file."/>
+            <repeat name="multibigwig_repeats" min="@MIN@" title="@TITLE@">
+                <param argument="--bigwigfiles" type="data" format="bigwig" label="@LABEL@" help="You can generate a bigWig file from a BAM file using the bamCoverage tool."/>
             </repeat>
         </when>
         </conditional>
@@ -494,16 +474,16 @@ is vital to you, select Yes below.">
         #import re
         #if $multibigwig_conditional.orderMatters == "No":
             #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
-            #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
-                ln -s "${bigwig}" "${counter}.bw" &&
-                #silent $files.append('%s.bw' % $counter)
+                #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
+                ln -f -s "${bigwig}" "${identifier}_${counter}.bw" &&
+                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bigwigfiles.element_identifier))
-                ln -s "${f.bigwigfiles}" "${counter}.bw" &&
-                #silent $files.append('%s.bw' % $counter)
+                ln -f -s "${f.bigwigfiles}" "${identifier}_${counter}.bw" &&
+                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
