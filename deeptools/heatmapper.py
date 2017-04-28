@@ -296,7 +296,10 @@ class heatmapper(object):
         numcols = matrix.shape[1]
         num_ind_cols = self.get_num_individual_matrix_cols()
         sample_boundaries = list(range(0, numcols + num_ind_cols, num_ind_cols))
-        sample_labels = [splitext(basename(x))[0] for x in score_file_list]
+        if allArgs is not None and allArgs['samplesLabel'] is not None:
+            sample_labels = allArgs['samplesLabel']
+        else:
+            sample_labels = [splitext(basename(x))[0] for x in score_file_list]
 
         # Determine the group boundaries
         group_boundaries = []
