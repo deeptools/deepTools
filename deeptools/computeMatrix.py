@@ -316,6 +316,14 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           metavar="BED file",
                           required=False)
 
+    optional.add_argument('--samplesLabel',
+                          help='Labels for the samples. This will then be passed to plotHeatmap and plotProfile. The '
+                          'default is to use the file name of the '
+                          'sample. The sample labels should be separated '
+                          'by spaces and quoted if a label itself'
+                          'contains a space E.g. --samplesLabel label-1 "label 2"  ',
+                          nargs='+')
+
     # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
