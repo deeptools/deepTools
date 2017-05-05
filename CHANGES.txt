@@ -6,7 +6,7 @@
  * You can now specify the plot width and height in `plotPCA` and `plotCorrelation` (heatmap only) with the `--plotWidth` and `--plotHeight` parameters. (issue #507)
  * plotCoverage no longer clips the top off of plots. Further, you can now set the plot width and height with `--plotWidth` and `--plotHeight`. (issue #508)
  * In bamCoverage, specifying `--filterRNAstrand` no longer results in `--extendReads` being ignored. (issue #520)
- * `plotFingerprint` no longers requires producing a plot, which is useful if you only need QC metrics and are using a LOT of samples (such that matplotlib would crash anyway). This hasn't been implemented in Galaxy, but can if people would like it. (issue #519)
+ * `plotFingerprint` and `plotEnrichment` no longer require producing a plot, which is useful if you only need QC metrics and are using a LOT of samples (such that matplotlib would crash anyway). This hasn't been implemented in Galaxy, but can if people would like it. (issues #519 and #526)
  * `computeMatrix` now accepts a `--samplesLabel` option, which is useful in those cases when you aren't immediately running `plotHeatmap` and don't have terribly descriptive file names (issue #523)
 
 2.5.0
