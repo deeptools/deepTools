@@ -24,7 +24,7 @@
                     #if $output.JSDsample:
                         #if "'{}'".format($output.JSDsample.display_name) in $labels:
                             #set JSDidx = $labels.index("'{}'".format($output.JSDsample.display_name))
-                            --JSDsample "./${JSDidx}.bam"
+                            --JSDsample "${JSDidx}.bam"
                         #end if
                     #end if
                 #end if
