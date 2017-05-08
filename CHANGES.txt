@@ -9,6 +9,7 @@
  * `plotFingerprint` and `plotEnrichment` no longer require producing a plot, which is useful if you only need QC metrics and are using a LOT of samples (such that matplotlib would crash anyway). This hasn't been implemented in Galaxy, but can if people would like it. (issues #519 and #526)
  * `computeMatrix` now accepts a `--samplesLabel` option, which is useful in those cases when you aren't immediately running `plotHeatmap` and don't have terribly descriptive file names (issue #523)
  * If you use `plotFingerprint` with the `--JSDsample` option and forget to list that file under `--bamfiles` it will be added automatically and the file name added to the labels if needed (issue #527)
+ * Various Galaxy wrapper fixes
 
 2.5.0
 

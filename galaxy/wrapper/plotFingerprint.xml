@@ -87,7 +87,7 @@
                 <param name="saveRawCounts" type="boolean" label="Save the bin counts" help="(--outRawCounts)"/>
                 <param name="saveQualityMetrics" type="boolean" label="Save quality metrics"
                    help="The file will have one row per input BAM file and columns containing a variety of QC metrics. For the full description of all metrics and their interpretation, please see our online documentation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html. (--outQualityMetrics)"/>
-                <param name="JSDsample" type="data" format="bam"
+                <param name="JSDsample" type="data" format="bam" optional="true"
                    label="Jensen-Shannon distance reference sample"
                    help="If output metrics should be saved, then use this sample as the reference for computing the Jensen-Shannon distance and CHANCE metrics of all other samples. Normally this is an input sample. If you don't specify this, then these metrics will not be computed. This is only applicable if quality metrics are being saved. (--JSDsample)" />
             </when>
