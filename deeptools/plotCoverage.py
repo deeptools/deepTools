@@ -40,7 +40,7 @@ detailed usage help:
 
 """,
             epilog='example usages:\nplotCoverage '
-                   '--bamfiles file1.bam file2.bam -out results.png\n\n'
+                   '--bamfiles file1.bam file2.bam -o results.png\n\n'
                    ' \n\n',
             conflict_handler='resolve')
 
