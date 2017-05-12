@@ -46,7 +46,7 @@
     </command>
     <inputs>
 
-        <expand macro="multiple_input_bams" />
+        <expand macro="multiple_input_bams" MIN="1"/>
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >

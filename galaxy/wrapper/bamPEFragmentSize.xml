@@ -31,7 +31,7 @@
 ]]>
     </command>
     <inputs>
-        <expand macro="multiple_input_bams" />
+        <expand macro="multiple_input_bams" MIN="1" />
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribution of fragment lengths as a histogram"
             help=""/>
