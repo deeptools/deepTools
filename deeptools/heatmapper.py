@@ -271,9 +271,7 @@ class heatmapper(object):
             "matrix length does not match regions length"
 
         if len(regions) == 0:
-            sys.stderr.write(
-                "\nERROR: BED file does not contain any valid regions. "
-                "Please check\n")
+            sys.stderr.write("\nERROR: Either the BED file does not contain any valid regions or there are none remaining after filtering.\n")
             exit(1)
         if regions_no_score == len(regions):
             exit("\nERROR: None of the BED regions could be found in the bigWig"
@@ -298,7 +296,10 @@ class heatmapper(object):
         numcols = matrix.shape[1]
         num_ind_cols = self.get_num_individual_matrix_cols()
         sample_boundaries = list(range(0, numcols + num_ind_cols, num_ind_cols))
-        sample_labels = [splitext(basename(x))[0] for x in score_file_list]
+        if allArgs is not None and allArgs['samplesLabel'] is not None:
+            sample_labels = allArgs['samplesLabel']
+        else:
+            sample_labels = [splitext(basename(x))[0] for x in score_file_list]
 
         # Determine the group boundaries
         group_boundaries = []
@@ -555,9 +556,9 @@ class heatmapper(object):
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
 
-            if parameters['min threshold'] and coverage.min() <= parameters['min threshold']:
+            if parameters['min threshold'] is not None and coverage.min() <= parameters['min threshold']:
                 continue
-            if parameters['max threshold'] and coverage.max() >= parameters['max threshold']:
+            if parameters['max threshold'] is not None and coverage.max() >= parameters['max threshold']:
                 continue
             if parameters['scale'] != 1:
                 coverage = parameters['scale'] * coverage

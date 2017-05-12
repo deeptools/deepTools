@@ -134,6 +134,16 @@ def heatmap_options():
     parser = argparse.ArgumentParser(add_help=False)
     heatmap = parser.add_argument_group('Heatmap options')
 
+    heatmap.add_argument('--plotHeight',
+                         help='Plot height in cm.',
+                         type=float,
+                         default=9.5)
+
+    heatmap.add_argument('--plotWidth',
+                         help='Plot width in cm. The minimum value is 1 cm.',
+                         type=float,
+                         default=11)
+
     heatmap.add_argument('--zMin', '-min',
                          default=None,
                          help='Minimum value for the heatmap intensities. '
@@ -206,7 +216,9 @@ def main(args=None):
                               colormap=args.colorMap,
                               plot_title=args.plotTitle,
                               image_format=args.plotFileFormat,
-                              plot_numbers=args.plotNumbers)
+                              plot_numbers=args.plotNumbers,
+                              plotWidth=args.plotWidth,
+                              plotHeight=args.plotHeight)
 
     if args.outFileCorMatrix:
         corr.save_corr_matrix(args.outFileCorMatrix)

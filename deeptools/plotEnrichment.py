@@ -78,8 +78,7 @@ def plot_enrichment_args():
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
-                          metavar='FILE',
-                          required=True)
+                          metavar='FILE')
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -417,6 +416,9 @@ def main(args=None):
 
     args = parse_arguments().parse_args(args)
 
+    if not args.outRawCounts and not args.plotFile:
+        sys.exit("Error: You need to specify at least one of --plotFile or --outRawCounts!\n")
+
     if args.labels is None:
         args.labels = args.bamfiles
     if len(args.labels) != len(args.bamfiles):
@@ -485,7 +487,8 @@ def main(args=None):
                 featureCounts[i][k] += v
 
     # Make a plot
-    plotEnrichment(args, featureCounts, totalCounts, features)
+    if args.plotFile:
+        plotEnrichment(args, featureCounts, totalCounts, features)
 
     # Raw counts
     if args.outRawCounts:

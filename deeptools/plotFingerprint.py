@@ -48,6 +48,11 @@ def process_args(args=None):
 
     args = parse_arguments().parse_args(args)
 
+    if args.JSDsample is not None and args.JSDsample not in args.bamfiles:
+        args.bamfiles.append(args.JSDsample)
+        if args.labels and len(args.bamfiles) == len(args.labels) - 1:
+            args.labels.append(args.JSDsample)
+
     if args.labels and len(args.bamfiles) != len(args.labels):
         print("The number of labels does not match the number of BAM files.")
         exit(0)
@@ -151,8 +156,7 @@ def get_output_args():
                        'format. The available options are typically: "png", '
                        '"eps", "pdf" and "svg", e.g. : fingerprint.png.',
                        metavar='',
-                       type=argparse.FileType('w'),
-                       required=True)
+                       type=argparse.FileType('w'))
 
     group.add_argument('--outRawCounts',
                        help='Output file name to save the read counts per bin.',
@@ -349,6 +353,10 @@ def getExpected(mu):
 def main(args=None):
     args = process_args(args)
 
+    if not args.plotFile and not args.outRawCounts and not args.outQualityMetrics:
+        sys.stderr.write("\nAt least one of --plotFile, --outRawCounts or --outQualityMetrics is required.\n")
+        sys.exit(1)
+
     cr = sumR.SumCoveragePerBin(
         args.bamfiles,
         args.binSize,
@@ -382,25 +390,26 @@ def main(args=None):
     total = len(num_reads_per_bin[:, 0])
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
-    i = 0
-    # matplotlib won't iterate through line styles by itself
-    pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"], 7 * ["."]], [])
-    for i, reads in enumerate(num_reads_per_bin.T):
-        count = np.cumsum(np.sort(reads))
-        count = count / count[-1]  # to normalize y from 0 to 1
-        j = i % 35
-        plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
-        plt.xlabel('rank')
-        plt.ylabel('fraction w.r.t. bin with highest coverage')
-    plt.legend(loc='upper left')
-    plt.suptitle(args.plotTitle)
-    # set the plotFileFormat explicitly to None to trigger the
-    # format from the file-extension
-    if not args.plotFileFormat:
-        args.plotFileFormat = None
+    if args.plotFile:
+        i = 0
+        # matplotlib won't iterate through line styles by itself
+        pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"], 7 * ["."]], [])
+        for i, reads in enumerate(num_reads_per_bin.T):
+            count = np.cumsum(np.sort(reads))
+            count = count / count[-1]  # to normalize y from 0 to 1
+            j = i % 35
+            plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
+            plt.xlabel('rank')
+            plt.ylabel('fraction w.r.t. bin with highest coverage')
+        plt.legend(loc='upper left')
+        plt.suptitle(args.plotTitle)
+        # set the plotFileFormat explicitly to None to trigger the
+        # format from the file-extension
+        if not args.plotFileFormat:
+            args.plotFileFormat = None
 
-    plt.savefig(args.plotFile.name, bbox_inches=0, format=args.plotFileFormat)
-    plt.close()
+        plt.savefig(args.plotFile.name, bbox_inches=0, format=args.plotFileFormat)
+        plt.close()
 
     if args.outRawCounts:
         args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")

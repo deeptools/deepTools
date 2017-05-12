@@ -30,6 +30,8 @@ Usage hints
 
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output via ``--outFileFormat``.
 
+.. note:: Note that the value used for normalization by RPKM or to 1x depth will always take filtering into account. In otherwords, it will be adjusted appropriately if you specify `--filterRNAstrand` or `--minMappingQuality` or anything of that sort.
+
 Usage example for ChIP-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

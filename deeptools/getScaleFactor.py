@@ -168,7 +168,7 @@ def get_scale_factor(args):
     bam_mapped, bam_mapped_total = get_num_kept_reads(args)
     if args.normalizeTo1x:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
-        sys.stderr.write("normalization: 1x\n")
+        sys.stderr.write("normalization: 1x (effective genome size {})\n".format(args.normalizeTo1x))
 
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length

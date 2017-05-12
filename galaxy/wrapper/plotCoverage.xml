@@ -38,6 +38,7 @@
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
                 @ADVANCED_OPTS_READ_PROCESSING@
+                @PLOTWIDTHHEIGHT@
                 @blacklist@
             #end if
 
@@ -45,7 +46,7 @@
     </command>
     <inputs>
 
-        <expand macro="multiple_input_bams" />
+        <expand macro="multiple_input_bams" MIN="1"/>
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
@@ -57,6 +58,7 @@
                 <param argument="--numberOfSamples" type="integer" value="100000" min="1"
                    label="Number of samples"
                    help="Number of samples taken from the genome to compute the scaling factors."/>
+                <expand macro="plotWidthHeight" PLOTWIDTH="15.0" PLOTHEIGHT="5.0" />
                 <expand macro="region_limit_operation" />
                 <expand macro="read_processing_options" />
                 <expand macro="skipZeros" />
