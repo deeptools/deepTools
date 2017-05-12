@@ -256,7 +256,7 @@ class Enrichment(GTF):
 
         oset = frozenset()
         for block in blocks:
-            overlaps = self.tree.findOverlappingFeatures(chrom, block[0], block[1], strand, matchType, strandType)
+            overlaps = self.tree.findOverlappingFeatures(chrom, int(block[0]), int(block[1]), strand, matchType, strandType)
             if overlaps is not None:
                 oset = oset.union(frozenset(overlaps))
 
