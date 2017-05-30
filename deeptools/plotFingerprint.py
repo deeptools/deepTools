@@ -54,8 +54,7 @@ def process_args(args=None):
             args.labels.append(args.JSDsample)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print("The number of labels does not match the number of BAM files.")
-        exit(0)
+        sys.exit("The number of labels does not match the number of BAM files.")
 
     if not args.labels:
         args.labels = args.bamfiles

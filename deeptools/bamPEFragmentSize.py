@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import sys
 
 # own tools
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -141,8 +142,7 @@ def main(args=None):
 
         if args.samplesLabel:
             if len(args.bamfiles) != len(args.samplesLabel):
-                print("The number of labels does not match the number of BAM files.")
-                exit(0)
+                sys.exit("The number of labels does not match the number of BAM files.")
             else:
                 labels = args.samplesLabel
         else:
