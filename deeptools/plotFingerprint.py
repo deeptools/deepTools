@@ -392,7 +392,7 @@ def main(args=None):
     if args.plotFile:
         i = 0
         # matplotlib won't iterate through line styles by itself
-        pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"], 7 * ["."]], [])
+        pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
         for i, reads in enumerate(num_reads_per_bin.T):
             count = np.cumsum(np.sort(reads))
             count = count / count[-1]  # to normalize y from 0 to 1

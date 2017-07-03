@@ -3,6 +3,7 @@
  * Fixed a bug in `bamCoverage` that can cause crashes when python3 is used.
  * Fixed a bug in the multiBigwigSummary Galaxy wrapper.
  * A more reasonable exit code (not 0) is now returned if there's a mismatch in the label and file number.
+ * `plotFingerprint` no longer tries to use illegal line designators (issue #538)
 
 2.5.1
 
