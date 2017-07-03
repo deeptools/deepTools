@@ -120,7 +120,7 @@ def multiBigwigSummaryArgs(case='bins'):
 
     required.add_argument('--outFileName', '-out',
                           help='File name to save the compressed matrix file (npz format)'
-                          'needed by the "plotHeatmap" and "plotProfile" tools.',
+                          'needed by the "plotPCA" and "plotCorrelation" tools.',
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
