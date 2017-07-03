@@ -59,7 +59,7 @@ $ computeMatrix scale-regions --help
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix scale-regions -S '
-        '<biwig file> -R <bed file> -b 1000\n\n')
+        '<biwig file(s)> -R <bed file> -b 1000\n\n')
 
     # reference point arguments
     subparsers.add_parser(
@@ -75,7 +75,7 @@ $ computeMatrix scale-regions --help
         "positions before (upstream) and/or after (downstream) of the "
         "reference point will be plotted.",
         usage='An example usage is:\n  computeMatrix reference-point -S '
-        '<biwig file> -R <bed file> -a 3000 -b 3000\n\n')
+        '<biwig file(s)> -R <bed file> -a 3000 -b 3000\n\n')
 
     return parser
 
@@ -85,7 +85,7 @@ def computeMatrixRequiredArgs(args=None):
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--regionsFileName', '-R',
                           metavar='File',
-                          help='File name, in BED format, containing '
+                          help='File name or names, in BED or GTF format, containing '
                                'the regions to plot. If multiple bed files are given, each one is considered a '
                                'group that can be plotted separately. Also, adding a "#" symbol in the bed file '
                                'causes all the regions until the previous "#" to be considered one group.',
@@ -93,7 +93,7 @@ def computeMatrixRequiredArgs(args=None):
                           required=True)
     required.add_argument('--scoreFileName', '-S',
                           help='bigWig file(s) containing '
-                          'the scores to be plotted. BigWig '
+                          'the scores to be plotted. Multiple files should be separated by spaced. BigWig '
                           'files can be obtained by using the bamCoverage '
                           'or bamCompare tools. More information about '
                           'the bigWig file format can be found at '
