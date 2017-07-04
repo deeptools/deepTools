@@ -19,6 +19,7 @@ old_settings = np.seterr(all='ignore')
 def parse_arguments(args=None):
     basic_args = plot_correlation_args()
     heatmap_parser = heatmap_options()
+    scatter_parser = scatterplot_options()
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
@@ -38,7 +39,7 @@ detailed help:
         epilog='example usages:\n'
                'plotCorrelation -in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
                ' \n\n',
-        parents=[basic_args, heatmap_parser])
+        parents=[basic_args, heatmap_parser, scatter_parser])
 
     return parser
 
@@ -127,9 +128,28 @@ def plot_correlation_args():
     return parser
 
 
+def scatterplot_options():
+    """
+    Options specific for creating the scatter plot
+    """
+    parser = argparse.ArgumentParser(add_help=False)
+    scatter_opts = parser.add_argument_group('Scatter plot options')
+
+    scatter_opts.add_argument('--maxRange',
+                              help='Maximum (integer) value for the X and Y axes. The default scales these such that the full range of dots is displayed. If you specify --log1p, please ensure that this value is within the range it will produce.',
+                              type=int,
+                              default=None)
+
+    scatter_opts.add_argument('--log1p',
+                              help='Plot the natural log of the scatter plot after adding 1. Note that this is ONLY for plotting, the correlation is unaffected.',
+                              action='store_true')
+
+    return parser
+
+
 def heatmap_options():
     """
-    Options for generating the correlation heat map
+    Options for generating the correlation heatmap
     """
     parser = argparse.ArgumentParser(add_help=False)
     heatmap = parser.add_argument_group('Heatmap options')
@@ -180,7 +200,6 @@ def main(args=None):
                        args.corMethod,
                        labels=args.labels,
                        remove_outliers=args.removeOutliers,
-                       log1p=None,
                        skip_zeros=args.skipZeros)
 
     if args.corMethod == 'pearson':
@@ -208,7 +227,9 @@ def main(args=None):
     if args.whatToPlot == 'scatterplot':
         corr.plot_scatter(args.plotFile.name,
                           plot_title=args.plotTitle,
-                          image_format=args.plotFileFormat)
+                          image_format=args.plotFileFormat,
+                          maxRange=args.maxRange,
+                          log1p=args.log1p)
     else:
         corr.plot_correlation(args.plotFile.name,
                               vmax=args.zMax,
