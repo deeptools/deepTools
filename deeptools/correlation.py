@@ -12,6 +12,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
+from deeptools.utilities import toString
 
 old_settings = np.seterr(all='ignore')
 
@@ -43,6 +44,7 @@ class Correlation:
             # samples
 
             self.labels = labels
+        self.labels = [toString(x) for x in self.labels]
 
         if self.matrix.shape[1] == 1:
             # There's nothing that can be done with a single sample
@@ -326,7 +328,7 @@ class Correlation:
         fig.savefig(plot_fiilename, format=image_format)
         plt.close()
 
-    def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
+    def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, maxRange=None):
         """
         Plot the scatter plots of a matrix
         in which each row is a sample
@@ -339,16 +341,16 @@ class Correlation:
         fig = plt.figure(figsize=(2 * num_samples, 2 * num_samples))
         plt.rcParams['font.size'] = 8.0
         plt.suptitle(plot_title)
+        if log1p is True:
+            self.matrix = np.log1p(self.matrix)
         min_value = self.matrix.min()
         max_value = self.matrix.max()
+        if maxRange is not None:
+            max_value = maxRange
         if (min_value % 2 == 0 and max_value % 2 == 0) or \
                 (min_value % 1 == 0 and max_value % 2 == 1):
             # make one value odd and the other even
             max_value += 1
-
-        if log1p:
-            major_locator = matplotlib.ticker.FixedLocator(list(range(min_value, max_value, 2)))
-            minor_locator = matplotlib.ticker.FixedLocator(list(range(min_value, max_value, 1)))
 
         rows, cols = np.triu_indices(num_samples)
         for index in range(len(rows)):
@@ -367,11 +369,6 @@ class Correlation:
                 continue
 
             ax = fig.add_subplot(grids[row, col])
-            if log1p:
-                ax.xaxis.set_major_locator(major_locator)
-                ax.xaxis.set_minor_locator(minor_locator)
-                ax.yaxis.set_major_locator(major_locator)
-                ax.yaxis.set_minor_locator(minor_locator)
 
             vector1 = self.matrix[:, row]
             vector2 = self.matrix[:, col]
@@ -417,18 +414,15 @@ class Correlation:
                 ax.set_xticklabels([])
 
             ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
-            # downsample for plotting
-    #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
-    #        ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
-    #                    alpha=0.3, color='darkblue',
-    #                    markeredgecolor=None)
 
-    #        ax.set_ylim(min_value, max_value)
-    #        ax.set_xlim(min_value,max_value)
-            ax.set_ylim(min_value, ax.get_ylim()[1])
-            ax.set_xlim(min_value, ax.get_xlim()[1])
+            if maxRange is not None:
+                ax.set_xlim(min_value, min(maxRange, ax.get_xlim()[1]))
+                ax.set_ylim(min_value, min(maxRange, ax.get_ylim()[1]))
+            else:
+                ax.set_xlim(min_value, ax.get_xlim()[1])
+                ax.set_ylim(min_value, ax.get_ylim()[1])
 
-        plt.savefig(plot_fiilename, format=image_format)
+        plt.savefig(plot_filename, format=image_format)
         plt.close()
 
     def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
