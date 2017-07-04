@@ -49,14 +49,14 @@
             <param name="corData" value="multiBamSummary_result2b.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
-            <output name="outFileName" file="plotPCA_result1.png" ftype="png" compare="sim_size" delta="4000" />
+            <output name="outFileName" file="plotPCA_result1.png" ftype="png" compare="sim_size" delta="12000" />
         </test>
         <test>
             <param name="corData" value="multiBamSummary_result2b.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
             <param name="outFileNameData" value="True" />
-            <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="sim_size" delta="4000" />
+            <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="sim_size" delta="12000" />
             <output name="output_outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" />
         </test>
     </tests>
