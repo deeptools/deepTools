@@ -5,6 +5,11 @@ env:
 os:
   - linux
   - osx
+jobs:
+  include:
+    - stage: galaxy
+      env:
+        - TESTGALAXY="1"
 
 # Setup anaconda
 before_install:
@@ -31,12 +36,12 @@ install:
 
 # command to run tests
 script:
-  - flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402,F999,F405
-  - export owd=`pwd`
-  - cd ~/ && nosetests --with-doctest -sv deeptools deeptoolsintervals
-  - cd ${owd}
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then ./.planemo.sh ; fi
+  - if [[ ${TESTGALAXY:"0"} == "0" ]] ; then flake8 . --exclude=.venv,.build,foo,build,deeptoolsintervals/__init__.py --ignore=E501,F403,E402,F999,F405 ; fi
+  - if [[ ${TESTGALAXY:"0"} == "0" ]] ; then export owd=`pwd` ; fi
+  - if [[ ${TESTGALAXY:"0"} == "0" ]] ; then cd ~/ && nosetests --with-doctest -sv deeptools deeptoolsintervals ; fi
+  - if [[ ${TESTGALAXY:"0"} == "0" ]] ; then cd ${owd} ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" && ${TESTGALAXY,"0"} == "1"]]; then /home/travis/build/fidelram/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" && ${TESTGALAXY,"0"} == "1"]]; then ./.planemo.sh ; fi
 sudo: false
 
 services:
