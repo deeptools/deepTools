@@ -10,6 +10,7 @@ jobs:
     - stage: galaxy
       env:
         - TESTGALAXY="1"
+        - TRAVIS_PYTHON_VERSION=2.7
 
 # Setup anaconda
 before_install:
