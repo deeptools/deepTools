@@ -538,6 +538,12 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               type=int,
                               default=8)
 
+        optional.add_argument('--labelRotation',
+                              dest='label_rotation',
+                              help='Rotation of the X-axis labels in degrees. The default is 0, positive values denote a counter-clockwise rotation.',
+                              type=float,
+                              default=0.0)
+
     elif mode == 'heatmap':
         optional.add_argument('--sortRegions',
                               help='Whether the heatmap should present '

@@ -2,6 +2,7 @@
 
  * plotCorrelation` now has `--log1p` and `--maxRange` options if a scatter plot is produced. `--log1p` plots the natural log of the values (plus 1). `--maxRange` sets the maximum X and Y axis ranges. If they would normally be below this value then they are left unchanged. (issue #536)
  * The PCA plot now includes "% of var. explained" in the top axis labels. (issue #547)
+ * `plotProfile` now has a `--labelRotation` option that can rotate the X-axis labels. This is one of the more common requests for customization. For further customization, please modify your .matplotlibrc file or save as a PDF and modify further in Illustrator or a similar program. (issue #537)
 
 2.5.1
 
