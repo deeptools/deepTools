@@ -538,12 +538,6 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               type=int,
                               default=8)
 
-        optional.add_argument('--labelRotation',
-                              dest='label_rotation',
-                              help='Rotation of the X-axis labels in degrees. The default is 0, positive values denote a counter-clockwise rotation.',
-                              type=float,
-                              default=0.0)
-
     elif mode == 'heatmap':
         optional.add_argument('--sortRegions',
                               help='Whether the heatmap should present '
@@ -707,6 +701,13 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           '(e.g. TSS), but could be anything, e.g. '
                           '"peak start".',
                           default='TSS')
+
+    optional.add_argument('--labelRotation',
+                          dest='label_rotation',
+                          help='Rotation of the X-axis labels in degrees. The default is 0, positive values denote a counter-clockwise rotation.',
+                          type=float,
+                          default=0.0)
+
     optional.add_argument('--nanAfterEnd',
                           help=argparse.SUPPRESS,
                           default=False)
