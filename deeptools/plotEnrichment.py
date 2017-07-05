@@ -294,7 +294,7 @@ def getEnrichment_worker(arglist):
             if read.pos < start:
                 # Ensure that a given alignment is processed only once
                 continue
-            if read.flag & 4:
+            if read.is_unmapped is True:
                 continue
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
                 continue
@@ -318,7 +318,7 @@ def getEnrichment_worker(arglist):
                 if read.reference_name != read.next_reference_name:
                     e = read.pnext
                 if lpos is not None and lpos == read.reference_start \
-                    and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                        and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
                     continue
                 if lpos != read.reference_start:
                     prev_pos.clear()

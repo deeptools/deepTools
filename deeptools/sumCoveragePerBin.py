@@ -105,6 +105,9 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
             lpos = None
             # of previous processed read pair
             for read in reads:
+                if read.is_unmapped is True:
+                    continue
+
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
                     continue
 
@@ -123,8 +126,8 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
 
                 # get rid of duplicate reads that have same position on each of the
                 # pairs
-                if args.ignoreDuplicates:
-                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                if self.ignoreDuplicates:
+                    # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
                     if tLen >= 0:
                         s = read.pos
                         e = s + tLen
@@ -134,7 +137,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                     if read.reference_name != read.next_reference_name:
                         e = read.pnext
                     if lpos is not None and lpos == read.reference_start \
-                        and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                            and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
                         continue
                     if lpos != read.reference_start:
                         prev_pos.clear()
@@ -199,7 +202,6 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                         coverages[eIdx] += _
                     last_eIdx = eIdx
 
-                prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
 
             if self.verbose:

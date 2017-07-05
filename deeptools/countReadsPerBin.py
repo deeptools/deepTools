@@ -573,6 +573,9 @@ class CountReadsPerBin(object):
             lpos = None
             # of previous processed read pair
             for read in reads:
+                if read.is_unmapped is True:
+                    continue
+
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
                     continue
 
@@ -602,7 +605,7 @@ class CountReadsPerBin(object):
                     if read.reference_name != read.next_reference_name:
                         e = read.pnext
                     if lpos is not None and lpos == read.reference_start \
-                        and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                            and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
                         continue
                     if lpos != read.reference_start:
                         prev_pos.clear()
