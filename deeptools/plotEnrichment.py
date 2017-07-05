@@ -287,7 +287,8 @@ def getEnrichment_worker(arglist):
 
         chrom = mungeChromosome(chrom, fh.references)
 
-        prev_start_pos = None  # to store the start positions
+        lpos = None
+        prev_pos = set()
         for read in fh.fetch(chrom, start, end):
             # Filter
             if read.pos < start:
@@ -306,10 +307,23 @@ def getEnrichment_worker(arglist):
                 continue
             if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
                 continue
-            if args.ignoreDuplicates and prev_start_pos \
-                    and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                continue
-            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+            if args.ignoreDuplicates:
+                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                if tLen >= 0:
+                    s = read.pos
+                    e = s + tLen
+                else:
+                    s = read.pnext
+                    e = s - tLen
+                if read.reference_name != read.next_reference_name:
+                    e = read.pnext
+                if lpos is not None and lpos == read.reference_start \
+                    and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                    continue
+                if lpos != read.reference_start:
+                    prev_pos.clear()
+                lpos = read.reference_start
+                prev_pos.add((s, e, read.next_reference_name, read.is_reverse))
             total[idx] += 1
 
             # Get blocks, possibly extending

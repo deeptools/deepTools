@@ -23,7 +23,8 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
     end = min(end, start + 50000)
     tot = 0
     filtered = 0
-    prev_start_pos = None  # to store the start positions
+    prev_pos = set()
+    lpos = None
     if chrom in bam.references:
         for read in bam.fetch(chrom, start, end):
             tot += 1
@@ -50,11 +51,23 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
 
             # get rid of duplicate reads that have same position on each of the
             # pairs
-            if args.ignoreDuplicates and prev_start_pos \
-                    and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                filtered += 1
-                continue
-            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+            if args.ignoreDuplicates:
+                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                if tLen >= 0:
+                    s = read.pos
+                    e = s + tLen
+                else:
+                    s = read.pnext
+                    e = s - tLen
+                if read.reference_name != read.next_reference_name:
+                    e = read.pnext
+                if lpos is not None and lpos == read.reference_start \
+                    and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                    continue
+                if lpos != read.reference_start:
+                    prev_pos.clear()
+                lpos = read.reference_start
+                prev_pos.add((s, e, read.next_reference_name, read.is_reverse))
 
             # If filterRNAstrand is in args, then filter accordingly
             # This is very similar to what's used in the get_fragment_from_read function in the filterRnaStrand class

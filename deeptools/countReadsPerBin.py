@@ -569,7 +569,8 @@ class CountReadsPerBin(object):
             else:
                 raise NameError("chromosome {} not found in bam file".format(chrom))
 
-            prev_start_pos = None  # to store the start positions
+            prev_pos = set()
+            lpos = None
             # of previous processed read pair
             for read in reads:
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
@@ -590,9 +591,23 @@ class CountReadsPerBin(object):
 
                 # get rid of duplicate reads that have same position on each of the
                 # pairs
-                if self.ignoreDuplicates and prev_start_pos \
-                        and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                    continue
+                if self.ignoreDuplicates:
+                    # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                    if tLen >= 0:
+                        s = read.pos
+                        e = s + tLen
+                    else:
+                        s = read.pnext
+                        e = s - tLen
+                    if read.reference_name != read.next_reference_name:
+                        e = read.pnext
+                    if lpos is not None and lpos == read.reference_start \
+                        and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                        continue
+                    if lpos != read.reference_start:
+                        prev_pos.clear()
+                    lpos = read.reference_start
+                    prev_pos.add((s, e, read.next_reference_name, read.is_reverse))
 
                 # since reads can be split (e.g. RNA-seq reads) each part of the
                 # read that maps is called a position block.
@@ -629,7 +644,6 @@ class CountReadsPerBin(object):
                     coverages[sIdx:eIdx] += 1
                     last_eIdx = eIdx
 
-                prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
 
             if self.verbose:
