@@ -1,6 +1,7 @@
 2.6.0
 
  * plotCorrelation` now has `--log1p` and `--maxRange` options if a scatter plot is produced. `--log1p` plots the natural log of the values (plus 1). `--maxRange` sets the maximum X and Y axis ranges. If they would normally be below this value then they are left unchanged. (issue #536)
+ * The PCA plot now includes "% of var. explained" in the top axis labels. (issue #547)
 
 2.5.1
 

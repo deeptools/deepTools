@@ -449,8 +449,8 @@ class Correlation:
             ax1.set_title('PCA')
         else:
             ax1.set_title(plot_title)
-        ax1.set_xlabel('PC1')
-        ax1.set_ylabel('PC2')
+        ax1.set_xlabel('PC1 ({:5.1f}% of var. explained)'.format(100.0 * mlab_pca.fracs[0]))
+        ax1.set_ylabel('PC2 ({:5.1f}% of var. explained)'.format(100.0 * mlab_pca.fracs[1]))
         lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
                          bbox_to_anchor=(1, 0.5),
                          prop={'size': 12}, markerscale=0.9)
@@ -480,7 +480,7 @@ class Correlation:
         ax3 = ax2.twinx()
         ax3.axhline(y=1, color="black", linestyle="dotted")
         ax3.plot(width * 2 + ind, cumulative[0:], "r-")
-        ax3.plot(width * 2 + ind, cumulative[0:], "wo")
+        ax3.plot(width * 2 + ind, cumulative[0:], "wo", markeredgecolor="black")
         ax3.set_ylim([0, 1.05])
         ax3.set_ylabel('Cumulative variability')
 
