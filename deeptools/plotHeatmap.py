@@ -169,7 +169,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     return grids
 
 
-def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position):
+def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position, label_rotation=0.0):
     """
     A function to add profile plots to the given figure, possibly in a custom grid subplot which mimics a tight layout (if wspace and hspace are not None)
     """
@@ -218,7 +218,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             ax_profile.axes.set_xticks(xticks_use)
         else:
             ax_profile.axes.set_xticks(xticks)
-        ax_profile.axes.set_xticklabels(xtickslabel)
+        ax_profile.axes.set_xticklabels(xtickslabel, rotation=label_rotation)
         ax_list.append(ax_profile)
 
         # align the first and last label
@@ -260,6 +260,7 @@ def plotMatrix(hm, outFileName,
                image_format=None,
                legend_location='upper-left',
                box_around_heatmaps=True,
+               label_rotation=0.0,
                dpi=200):
 
     matrix_flatten = None
@@ -395,7 +396,7 @@ def plotMatrix(hm, outFileName,
         else:
             iterNum = hm.matrix.get_num_samples()
             iterNum2 = numgroups
-        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position)
+        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position, label_rotation)
         if len(yMin) > 1 or len(yMax) > 1:
             # replot with a tight layout
             import matplotlib.tight_layout as tl
@@ -406,7 +407,7 @@ def plotMatrix(hm, outFileName,
             for ax in ax_list:
                 fig.delaxes(ax)
 
-            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position)
+            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position, label_rotation)
 
         # reduce the number of yticks by half
         num_ticks = len(ax_list[0].get_yticks())
@@ -672,4 +673,5 @@ def main(args=None):
                image_format=args.plotFileFormat,
                legend_location=args.legendLocation,
                box_around_heatmaps=args.boxAroundHeatmaps,
+               label_rotation=args.label_rotation,
                dpi=args.dpi)

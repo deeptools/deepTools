@@ -94,6 +94,7 @@ class Profile(object):
                  color_list=None,
                  legend_location='auto',
                  plots_per_row=8,
+                 label_rotation=0,
                  dpi=200):
         """
         Using the hm matrix, makes a line plot
@@ -119,6 +120,7 @@ class Profile(object):
             color_list: list
             legend_location:
             plots_per_row: int
+            label_rotation: float
 
         Returns:
 
@@ -141,6 +143,7 @@ class Profile(object):
         self.color_list = color_list
         self.legend_location = legend_location
         self.plots_per_row = plots_per_row
+        self.label_rotation = label_rotation
         self.dpi = dpi
 
         # decide how many plots are needed
@@ -284,7 +287,7 @@ class Profile(object):
                 ax_list[0].axes.set_xticks(xticks_use)
             else:
                 ax_list[0].axes.set_xticks(self.xticks)
-            ax_list[0].axes.set_xticklabels(self.xtickslabel)
+            ax_list[0].axes.set_xticklabels(self.xtickslabel, rotation=self.label_rotation)
             # align the first and last label
             # such that they don't fall off
             # the heatmap sides
@@ -378,7 +381,7 @@ class Profile(object):
                 ax.axes.set_xticks(xticks_use)
             else:
                 ax.axes.set_xticks(self.xticks)
-            ax.axes.set_xticklabels(self.xtickslabel)
+            ax.axes.set_xticklabels(self.xtickslabel, rotation=self.label_rotation)
             # align the first and last label
             # such that they don't fall off
             # the heatmap sides
@@ -501,7 +504,7 @@ class Profile(object):
                 ax.axes.set_xticks(xticks_use)
             else:
                 ax.axes.set_xticks(self.xticks)
-            ax.axes.set_xticklabels(self.xtickslabel)
+            ax.axes.set_xticklabels(self.xtickslabel, rotation=self.label_rotation)
             # align the first and last label
             # such that they don't fall off
             # the heatmap sides
@@ -590,6 +593,7 @@ def main(args=None):
                    color_list=args.colors,
                    legend_location=args.legendLocation,
                    plots_per_row=args.numPlotsPerRow,
+                   label_rotation=args.label_rotation,
                    dpi=args.dpi)
 
     if args.plotType == 'heatmap':
