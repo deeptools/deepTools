@@ -29,6 +29,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
         for read in bam.fetch(chrom, start, end):
             tot += 1
             if read.is_unmapped is True:
+                filtered += 1
                 continue
 
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
@@ -66,6 +67,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                     e = read.pnext
                 if lpos is not None and lpos == read.reference_start \
                         and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+                    filtered += 1
                     continue
                 if lpos != read.reference_start:
                     prev_pos.clear()
