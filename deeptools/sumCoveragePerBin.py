@@ -134,15 +134,15 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                     else:
                         s = read.pnext
                         e = s - tLen
-                    if read.reference_name != read.next_reference_name:
+                    if read.reference_id != read.next_reference_id:
                         e = read.pnext
                     if lpos is not None and lpos == read.reference_start \
-                            and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                            and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
                         continue
                     if lpos != read.reference_start:
                         prev_pos.clear()
                     lpos = read.reference_start
-                    prev_pos.add((s, e, read.next_reference_name, read.is_reverse))
+                    prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
 
                 # since reads can be split (e.g. RNA-seq reads) each part of the
                 # read that maps is called a position block.

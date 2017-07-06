@@ -62,15 +62,15 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
                 else:
                     s = read.pnext
                     e = s - tLen
-                if read.reference_name != read.next_reference_name:
+                if read.reference_id != read.next_reference_id:
                     e = read.pnext
                 if lpos is not None and lpos == read.reference_start \
-                        and (s, e, read.next_reference_name, read.is_reverse) in prev_pos:
+                        and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
                     continue
                 if lpos != read.reference_start:
                     prev_pos.clear()
                 lpos = read.reference_start
-                prev_pos.add((s, e, read.next_reference_name, read.is_reverse))
+                prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
 
             # If filterRNAstrand is in args, then filter accordingly
             # This is very similar to what's used in the get_fragment_from_read function in the filterRnaStrand class
