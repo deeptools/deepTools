@@ -294,8 +294,6 @@ def getEnrichment_worker(arglist):
             if read.pos < start:
                 # Ensure that a given alignment is processed only once
                 continue
-            if read.is_unmapped is True:
-                continue
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
                 continue
             if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:

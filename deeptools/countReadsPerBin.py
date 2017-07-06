@@ -573,9 +573,6 @@ class CountReadsPerBin(object):
             lpos = None
             # of previous processed read pair
             for read in reads:
-                if read.is_unmapped is True:
-                    continue
-
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
                     continue
 
