@@ -10,7 +10,7 @@ import deeptools.config as cfg
 
 def parseArguments():
     parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
 This tool estimates the number of reads that would be filtered given a set of
 settings and prints this to the terminal. Further, it tracks the number of singleton reads. The following metrics will always be tracked regardless of what you specify (the order output also matches this):
