@@ -428,6 +428,12 @@ is vital to you, select Yes below.">
             help="Title of the plot, to be printed on top of the generated image." />
     </xml>
 
+    <xml name="labelRotation">
+        <param argument="--labelRotation" type="integer" value="0"
+            label="Rotation of the X-axis labels (in degrees)"
+            help="The rotation of things like TSS or TES on the X-axis of profile plots in both plotHeatmap and plotProfile. The default is 0, positive values denome a counter-clockwise rotation." />
+    </xml>
+
 
     <token name="@multiple_input_bams@">
 <![CDATA[

@@ -93,6 +93,8 @@
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
 
+                --labelRotation '$advancedOpt.labelRotation'
+
                 $advancedOpt.perGroup
 
                 @KMEANS_CLUSTERING@
@@ -196,6 +198,7 @@
                           For example, label_1 &quot;label 2&quot;" />
 
                 <expand macro="plotTitle" />
+                <expand macro="labelRotation" />
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Make one plot per group of regions"
                     help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions."/>
