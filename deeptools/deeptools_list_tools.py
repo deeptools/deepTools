@@ -43,6 +43,7 @@ Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
     bamPEFragmentSize       returns the read length and paired-end distance from a bam file
     computeGCBias           computes and plots the GC bias of a sample
     plotCoverage            plots a histogram of read coverage
+    estimateReadFiltering   estimates the number of reads that will be filtered from a BAM file or files given certain criteria
 
 
 [Heatmaps and summary plots]
