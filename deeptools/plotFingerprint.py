@@ -54,8 +54,7 @@ def process_args(args=None):
             args.labels.append(args.JSDsample)
 
     if args.labels and len(args.bamfiles) != len(args.labels):
-        print("The number of labels does not match the number of BAM files.")
-        exit(0)
+        sys.exit("The number of labels does not match the number of BAM files.")
 
     if not args.labels:
         args.labels = args.bamfiles
@@ -393,7 +392,7 @@ def main(args=None):
     if args.plotFile:
         i = 0
         # matplotlib won't iterate through line styles by itself
-        pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"], 7 * ["."]], [])
+        pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
         for i, reads in enumerate(num_reads_per_bin.T):
             count = np.cumsum(np.sort(reads))
             count = count / count[-1]  # to normalize y from 0 to 1

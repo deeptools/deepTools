@@ -18,7 +18,8 @@
             @THREADS@
 
             --outFileName $outFile
-            --bwfiles #echo " ".join($files)#
+
+            --bwfiles '#echo "' '".join($files)#'
             --labels #echo " ".join($labels)#
 
             #if $outRawCounts:
