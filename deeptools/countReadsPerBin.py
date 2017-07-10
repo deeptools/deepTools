@@ -641,6 +641,8 @@ class CountReadsPerBin(object):
                         sIdx = max(last_eIdx, sIdx)
                         if sIdx >= eIdx:
                             continue
+                    sIdx = int(sIdx)
+                    eIdx = int(eIdx)
                     coverages[sIdx:eIdx] += 1
                     last_eIdx = eIdx
 

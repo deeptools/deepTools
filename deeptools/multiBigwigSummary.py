@@ -95,8 +95,7 @@ def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
     if args.labels and len(args.bwfiles) != len(args.labels):
-        print("The number of labels does not match the number of bigWig files.")
-        exit(0)
+        sys.exit("The number of labels does not match the number of bigWig files.")
     if not args.labels:
         args.labels = []
         for f in args.bwfiles:
@@ -121,7 +120,7 @@ def multiBigwigSummaryArgs(case='bins'):
 
     required.add_argument('--outFileName', '-out',
                           help='File name to save the compressed matrix file (npz format)'
-                          'needed by the "plotHeatmap" and "plotProfile" tools.',
+                          'needed by the "plotPCA" and "plotCorrelation" tools.',
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')

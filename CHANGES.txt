@@ -6,6 +6,14 @@
  * The `--ignoreDuplicates` algorithm has been updated to better handle paired-end reads. (issue #524)
  * Added the `estimateReadFiltering` tool to estimate how many reads would be filtered from a BAM file or files if a variety of desired filtering criterion are applied (issue #518).
 
+2.5.2
+
+ * Fixed a bug in `bamCoverage` that can cause crashes when python3 is used.
+ * Fixed a bug in the multiBigwigSummary Galaxy wrapper.
+ * A more reasonable exit code (not 0) is now returned if there's a mismatch in the label and file number.
+ * `plotFingerprint` no longer tries to use illegal line designators (issue #538)
+ * Various documentation fixes
+
 2.5.1
 
  * Added universal new line support to deeptoolsintervals (issue #506).

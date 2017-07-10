@@ -45,9 +45,9 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosummary',
-    'sphinxarg.ext',
-    'numpydoc'
+    'sphinxarg.ext'
 ]
+#    'numpydoc'
 
 # This is needed to suppress autosummary reordering
 numpydoc_show_class_members = False
