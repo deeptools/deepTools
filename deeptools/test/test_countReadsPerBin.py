@@ -178,7 +178,7 @@ class TestCountReadsPerBin(object):
     def test_bed_file(self):
         bed = "chr3R\t0\t10\nchr3R\t110\t120\nchr3R\t160\t180"
         import tempfile
-        bed_file = tempfile.NamedTemporaryFile(suffix="bed", delete=False)
+        bed_file = tempfile.NamedTemporaryFile(suffix=".bed", delete=False)
         bed_file.write(bed)
         bed_file.close()
 
@@ -189,3 +189,6 @@ class TestCountReadsPerBin(object):
         nt.assert_equal(resp, np.array([[ 0.],
                                         [ 1.],
                                         [ 2.]]))
+
+        import os
+        os.unlink(bed_file.name)
