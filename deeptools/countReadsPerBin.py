@@ -311,7 +311,7 @@ class CountReadsPerBin(object):
             self.region += ":{}".format(self.binLength)
 
         # Handle GTF options
-        transcriptID, exonID, transcript_id_designator, keepExons=deeptools.utilities.gtfOptions(allArgs)
+        transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
 
         # use map reduce to call countReadsInRegions_wrapper
         imap_res = mapReduce.mapReduce([],
