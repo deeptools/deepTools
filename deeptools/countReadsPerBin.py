@@ -231,7 +231,7 @@ class CountReadsPerBin(object):
         if self.maxFragmentLength > 0:
             self.maxPairedFragmentLength = self.maxFragmentLength
 
-    def get_chunk_length(self, bamFilesHandlers, genomeSize):
+    def get_chunk_length(self, bamFilesHandlers, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
@@ -281,6 +281,7 @@ class CountReadsPerBin(object):
             except:
                 y = pyBigWig.open(x)
             bamFilesHandlers.append(y)
+
         chromsizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
 
         # skip chromosome in the list. This is usually for the
@@ -296,7 +297,7 @@ class CountReadsPerBin(object):
         genomeSize = sum(chrLengths)
 
         if self.bedFile is None:
-            chunkSize = self.get_chunk_length(bamFilesHandlers, genomeSize)
+            chunkSize = self.get_chunk_length(bamFilesHandlers, genomeSize, chromsizes, chrLengths)
         else:
             chunkSize = None
 
@@ -310,7 +311,7 @@ class CountReadsPerBin(object):
             self.region += ":{}".format(self.binLength)
 
         # Handle GTF options
-        transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
+        transcriptID, exonID, transcript_id_designator, keepExons=deeptools.utilities.gtfOptions(allArgs)
 
         # use map reduce to call countReadsInRegions_wrapper
         imap_res = mapReduce.mapReduce([],

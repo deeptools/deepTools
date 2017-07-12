@@ -186,9 +186,9 @@ class TestCountReadsPerBin(object):
                                      bedFile=[bed_file.name])
 
         resp = self.c.run()
-        nt.assert_equal(resp, np.array([[ 0.],
-                                        [ 1.],
-                                        [ 2.]]))
+        nt.assert_equal(resp, np.array([[0.],
+                                        [1.],
+                                        [2.]]))
 
         import os
         os.unlink(bed_file.name)
