@@ -176,7 +176,7 @@ going to be used, corresponding to two biological replicates.
 
     bed_file = open("peaks.bed", 'r')
     cr = countReadsPerBin.CountReadsPerBin([bam_file1, bam_file2],
-                                            bedFile=bed_file,
+                                            bedFile=[bed_file],
                                             numberOfProcessors=10)
     reads_at_peaks = cr.run()
     print reads_at_peaks

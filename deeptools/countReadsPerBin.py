@@ -58,8 +58,8 @@ class CountReadsPerBin(object):
     region : str
         Region to limit the computation in the form chrom:start:end.
 
-    bedFile : file_handle
-        File handle of a bed file containing the regions for which to compute the coverage. This option
+    bedFile : list of file_handles.
+        Each file handle corresponds to a bed file containing the regions for which to compute the coverage. This option
         overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
 
     blackListFileName : str
@@ -231,31 +231,11 @@ class CountReadsPerBin(object):
         if self.maxFragmentLength > 0:
             self.maxPairedFragmentLength = self.maxFragmentLength
 
-    def run(self, allArgs=None):
+    def get_chunk_length(self, bamFilesHandlers, genomeSize):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
         # the following values are empirical
-        bamFilesHandlers = []
-        for x in self.bamFilesList:
-            try:
-                y = bamHandler.openBam(x)
-            except:
-                y = pyBigWig.open(x)
-            bamFilesHandlers.append(y)
-        chromSizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
-
-        # skip chromosome in the list. This is usually for the
-        # X chromosome which may have either one copy  in a male sample
-        # or a mixture of male/female and is unreliable.
-        # Also the skip may contain heterochromatic regions and
-        # mitochondrial DNA
-        if len(self.chrsToSkip):
-            chromSizes = [x for x in chromSizes if x[0] not in self.chrsToSkip]
-
-        chrNames, chrLengths = list(zip(*chromSizes))
-
-        genomeSize = sum(chrLengths)
         if self.stepSize is None:
             if self.region is None:
                 self.stepSize = max(int(float(genomeSize) / self.numberOfSamples), 1)
@@ -286,11 +266,41 @@ class CountReadsPerBin(object):
         else:
             reads_per_bp = float(max_mapped) / genomeSize
             chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
-        [bam_h.close() for bam_h in bamFilesHandlers]
 
         # Ensure that chunkSize is always at least self.stepSize
         if chunkSize < self.stepSize:
             chunkSize = self.stepSize
+
+        return chunkSize
+
+    def run(self, allArgs=None):
+        bamFilesHandlers = []
+        for x in self.bamFilesList:
+            try:
+                y = bamHandler.openBam(x)
+            except:
+                y = pyBigWig.open(x)
+            bamFilesHandlers.append(y)
+        chromsizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
+
+        # skip chromosome in the list. This is usually for the
+        # X chromosome which may have either one copy  in a male sample
+        # or a mixture of male/female and is unreliable.
+        # Also the skip may contain heterochromatic regions and
+        # mitochondrial DNA
+        if len(self.chrsToSkip):
+            chromsizes = [x for x in chromsizes if x[0] not in self.chrsToSkip]
+
+        chrNames, chrLengths = list(zip(*chromsizes))
+
+        genomeSize = sum(chrLengths)
+
+        if self.bedFile is None:
+            chunkSize = self.get_chunk_length(bamFilesHandlers, genomeSize)
+        else:
+            chunkSize = None
+
+        [bam_h.close() for bam_h in bamFilesHandlers]
 
         if self.verbose:
             print("step size is {}".format(self.stepSize))
@@ -305,7 +315,7 @@ class CountReadsPerBin(object):
         # use map reduce to call countReadsInRegions_wrapper
         imap_res = mapReduce.mapReduce([],
                                        countReadsInRegions_wrapper,
-                                       chromSizes,
+                                       chromsizes,
                                        self_=self,
                                        genomeChunkLength=chunkSize,
                                        bedFile=self.bedFile,
@@ -402,7 +412,7 @@ class CountReadsPerBin(object):
         if start > end:
             raise NameError("start %d bigger that end %d" % (start, end))
 
-        if self.stepSize is None:
+        if self.stepSize is None and bed_regions_list is None:
             raise ValueError("stepSize is not set!")
         # array to keep the read counts for the regions
         subnum_reads_per_bin = []
