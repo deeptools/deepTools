@@ -90,6 +90,15 @@ def plotCorrelationArgs():
                           'myProfile.tab.',
                           type=argparse.FileType('w'))
 
+    optional.add_argument('--noTranspose',
+                          help='As of version 2.6, the default is to perform the '
+                          'PCA on the transpose of the matrix. That is, on the '
+                          'matrix where rows are samples and columns are '
+                          'bins/features. This then matches what is typically '
+                          'done in R. To keep the previous row-centric PCA, '
+                          'specify this option instead.',
+                          action='store_true')
+
     optional.add_argument('--rowCenter',
                           help='When specified, each row (bin, gene, etc.) '
                           'in the matrix is centered at 0 before the PCA is '
@@ -114,6 +123,7 @@ def main(args=None):
     corr.rowCenter = args.rowCenter
 
     corr.plot_pca(args.plotFile.name,
+                  transpose=not args.noTranspose,
                   plot_title=args.plotTitle,
                   image_format=args.plotFileFormat,
                   plotWidth=args.plotWidth,

@@ -425,7 +425,7 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
+    def plot_pca(self, plot_filename, transpose=True, plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
         """
         Plot the PCA of a matrix
         """
@@ -435,32 +435,55 @@ class Correlation:
         if self.rowCenter:
             _ = self.matrix.mean(axis=1)
             self.matrix -= _[:, None]
-        mlab_pca = matplotlib.mlab.PCA(self.matrix)
+
+        m = self.matrix
+        if transpose:
+            m = m.T
+
+        dev = np.std(m, axis=0)
+        m = m[:, np.nonzero(dev)]
+        m2 = (m - np.mean(m, axis=0)) / np.std(m, axis=0)
+        U, s, V = np.linalg.svd(m2, full_matrices=not transpose, compute_uv=True)
+        if transpose:
+            V = V.T
+            Wt = np.dot(m2, V)
+        else:
+            Wt = V
+        s = s**2
+        var = s / len(s)
+        fracs = var / var.sum()
+        #else:
+        #    mlab_pca = matplotlib.mlab.PCA(m)
+        #    Wt = mlab_pca.Wt.T
+        #    s = mlab_pca.s
+        #    fracs = mlab_pca.fracs
+
         n = len(self.labels)
         markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
         colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
+        print(Wt)
         for i in range(n):
-            ax1.scatter(mlab_pca.Wt[0, i], mlab_pca.Wt[1, i],
+            ax1.scatter(Wt[i, 0], Wt[i, 1],
                         marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
         if plot_title == '':
             ax1.set_title('PCA')
         else:
             ax1.set_title(plot_title)
-        ax1.set_xlabel('PC1 ({:5.1f}% of var. explained)'.format(100.0 * mlab_pca.fracs[0]))
-        ax1.set_ylabel('PC2 ({:5.1f}% of var. explained)'.format(100.0 * mlab_pca.fracs[1]))
+        ax1.set_xlabel('PC1 ({:5.1f}% of var. explained)'.format(100.0 * fracs[0]))
+        ax1.set_ylabel('PC2 ({:5.1f}% of var. explained)'.format(100.0 * fracs[1]))
         lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
                          bbox_to_anchor=(1, 0.5),
                          prop={'size': 12}, markerscale=0.9)
 
         # Scree plot
-        eigenvalues = mlab_pca.s
+        eigenvalues = s
 
         cumulative = []
         c = 0
-        for x in mlab_pca.fracs:
+        for x in fracs:
             c += x
             cumulative.append(c)
 
