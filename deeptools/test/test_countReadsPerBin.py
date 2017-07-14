@@ -178,8 +178,9 @@ class TestCountReadsPerBin(object):
     def test_bed_file(self):
         bed = "chr3R\t0\t10\nchr3R\t110\t120\nchr3R\t160\t180"
         import tempfile
+        from deeptools.utilities import toBytes
         bed_file = tempfile.NamedTemporaryFile(suffix=".bed", delete=False)
-        bed_file.write(bed)
+        bed_file.write(toBytes(bed))
         bed_file.close()
 
         self.c = cr.CountReadsPerBin([self.bamFile2],
