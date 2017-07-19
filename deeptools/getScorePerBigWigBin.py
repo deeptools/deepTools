@@ -146,9 +146,6 @@ def getChromSizes(bigwigFilesList):
     Chromosome name(s) and size(s).
     >>> assert(getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([])))
     """
-    # check that the path to USCS bedGraphToBigWig as set in the config
-    # is installed and is executable.
-
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:
