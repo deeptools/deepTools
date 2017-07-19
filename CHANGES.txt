@@ -1,6 +1,7 @@
 2.5.3
 
  * Fixed a bug in `plotEnrichment`, the `--keepExons` option with a BED12 file would cause an error. (issue #559)
+ * `bamCoverage` now doesn't cause and error to be thrown by `sort` in there are "/spaces in quoted path/". (issue #558)
 
 2.5.2
 
