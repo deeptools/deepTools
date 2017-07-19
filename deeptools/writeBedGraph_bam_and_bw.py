@@ -12,7 +12,7 @@ import pyBigWig
 
 # own module
 from deeptools import mapReduce
-from deeptools.utilities import getCommonChrNames, toBytes
+from deeptools.utilities import getCommonChrNames
 from deeptools.writeBedGraph import *
 from deeptools import bamHandler
 
