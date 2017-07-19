@@ -6,7 +6,7 @@ import pyBigWig
 
 # own modules
 from deeptools import mapReduce
-from deeptools.utilities import getCommonChrNames, toBytes
+from deeptools.utilities import getCommonChrNames
 import deeptools.countReadsPerBin as cr
 from deeptools import bamHandler
 from deeptools import utilities
