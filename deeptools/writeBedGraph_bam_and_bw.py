@@ -222,7 +222,7 @@ def writeBedGraph(
     res.sort()
 
     if format == 'bedgraph':
-        of = open(outputFileName, 'rb')
+        of = open(outputFileName, 'wb')
         for r in res:
             if r is not None:
                 _ = open(r[3], 'rb')
