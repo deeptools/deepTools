@@ -63,20 +63,16 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	$ wget https://github.com/fidelram/deepTools/archive/1.5.12.tar.gz
 	$ tar -xzvf
 
-3. The config file will tell you what deepTools expects to be installed properly:
+3. The config file can be modified to set the temporary directory and default number of threads to use:
 ::
 
 	$ cat deepTools/deeptools/config/deeptools.cfg
-	
-	[external_tools]
-	sort: sort
 	
 	[general]
 	# if set to max/2 (no quotes around)
 	# half the available processors will
 	# be used
 	default_proc_number: max/2
-	test_root: ../deeptools/test/
 
 	# temporary dir:
 	# deepTools bamCoverage, bamCompare and correctGCbias
