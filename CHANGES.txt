@@ -5,6 +5,7 @@
  * `plotProfile` and `plotHeatmap` now have a `--labelRotation` option that can rotate the X-axis labels. This is one of the more common requests for customization. For further customization, please modify your .matplotlibrc file or save as a PDF and modify further in Illustrator or a similar program. (issue #537)
  * The `--ignoreDuplicates` algorithm has been updated to better handle paired-end reads. (issue #524)
  * Added the `estimateReadFiltering` tool to estimate how many reads would be filtered from a BAM file or files if a variety of desired filtering criterion are applied (issue #518).
+ * Rewrote the bigWig creation functions so there are no longer steps involving creating a single large bedGraph and then sorting it. That was a hold-over from previous versions that used UCSC tools. This was issue #546. This also means that there are no longer any required external programs (previously, only `sort` was required).
 
 2.5.2
 

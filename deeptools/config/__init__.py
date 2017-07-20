@@ -56,9 +56,6 @@ if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
     # N.B., the TMPDIR variable can be used!
     config.set('general', 'tmp_dir', tempfile.gettempdir())
 
-    config.add_section('external_tools')
-    config.set('external_tools', 'sort', 'sort')
-
 else:
     import pkg_resources
     # load the deepTools configuration file

@@ -143,7 +143,7 @@ def writeBedGraph_worker(
 
     tempFileName = _file.name
     _file.close()
-    return(tempFileName)
+    return chrom, start, end, tempFileName
 
 
 def writeBedGraph(
@@ -214,26 +214,21 @@ def writeBedGraph(
                               numberOfProcessors=numberOfProcessors,
                               verbose=verbose)
 
-    # concatenate intermediary bedgraph files
-    outFile = open(outputFileName + ".bg", 'wb')
-    for tempFileName in res:
-        if tempFileName:
-            # concatenate all intermediate tempfiles into one
-            # bedgraph file
-            _foo = open(tempFileName, 'rb')
-            shutil.copyfileobj(_foo, outFile)
-            _foo.close()
-            os.remove(tempFileName)
+    # Determine the sorted order of the temp files
+    chrom_order = dict()
+    for i, _ in enumerate(chromNamesAndSize):
+        chrom_order[_[0]] = i
+    res = [[chrom_order[x[0]], x[1], x[2], x[3]] for x in res]
+    res.sort()
 
-    bedGraphFile = outFile.name
-    outFile.close()
     if format == 'bedgraph':
-        os.rename(bedGraphFile, outputFileName)
-        if debug:
-            print("output file: %s" % (outputFileName))
+        of = open(outputFileName, 'wb')
+        for r in res:
+            if r is not None:
+                _ = open(r[3], 'rb')
+                shutil.copyfileobj(_, of)
+                _.close()
+                os.remove(r[3])
+        of.close()
     else:
-        bedGraphToBigWig(
-            chromNamesAndSize, bedGraphFile, outputFileName, True)
-        if debug:
-            print("output file: %s" % (outputFileName))
-        os.remove(bedGraphFile)
+        bedGraphToBigWig(chromNamesAndSize, [x[3] for x in res], outputFileName)

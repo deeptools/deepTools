@@ -657,32 +657,24 @@ def main(args=None):
     if args.correctedFile.name.endswith('bg') or \
             args.correctedFile.name.endswith('bw'):
 
-        _temp_bg_file_name = utilities.getTempFileName(suffix='_all.bg')
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
 
             res = pool.map_async(writeCorrected_wrapper, mp_args).get(9999999)
         else:
             res = list(map(writeCorrected_wrapper, mp_args))
 
-        # concatenate intermediary bedgraph files
-        _temp_bg_file = open(_temp_bg_file_name, 'wb')
-        for tempFileName in res:
-            if tempFileName:
-                # concatenate all intermediate tempfiles into one
-                # bedgraph file
-                shutil.copyfileobj(open(tempFileName, 'rb'), _temp_bg_file)
-                os.remove(tempFileName)
-        _temp_bg_file.close()
+        oname = args.correctedFile.name
         args.correctedFile.close()
-
-        if args.correctedFile.name.endswith('bg'):
-            shutil.move(_temp_bg_file_name, args.correctedFile.name)
-
+        if oname.endswith('bg'):
+            f = open(oname, 'wb')
+            for tempFileName in res:
+                if tempFileName:
+                    shutil.copyfileobj(open(tempFileName, 'rb'), f)
+                    os.remove(tempFileName)
+            f.close()
         else:
             chromSizes = [(k, v) for k, v in tbit.chroms().items()]
-            writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file_name,
-                                           args.correctedFile.name)
-            os.remove(_temp_bg_file)
+            writeBedGraph.bedGraphToBigWig(chromSizes, res, oname)
 
 
 class Tester():
