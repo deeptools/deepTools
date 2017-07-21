@@ -425,38 +425,48 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename, transpose=True, plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
+    def plot_pca(self, plot_filename, PCs = [1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
         """
         Plot the PCA of a matrix
-        """
 
+        Returns the matrix of plotted values.
+        """
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight))
-        # PCA
-        if self.rowCenter:
+
+        # Filter
+        m = self.matrix
+        rvs = m.var(axis=1)
+        if self.transpose:
+            m = m[np.nonzero(rvs)[0], :]
+            rvs = rvs[np.nonzero(rvs)[0]]
+        if self.ntop > 0 and m.shape[0] > self.ntop:
+            m = m[np.argpartition(rvs, -self.ntop)[-self.ntop:], :]
+            rvs = rvs[np.argpartition(rvs, -self.ntop)[-self.ntop:]]
+
+        # Row center / transpose
+        if self.rowCenter and not self.transpose:
             _ = self.matrix.mean(axis=1)
             self.matrix -= _[:, None]
-
-        m = self.matrix
-        if transpose:
+        if self.transpose:
             m = m.T
 
-        dev = np.std(m, axis=0)
-        m = m[:, np.nonzero(dev)]
+        # Center and scale
+        dev = np.sqrt(rvs)
         m2 = (m - np.mean(m, axis=0)) / np.std(m, axis=0)
-        U, s, V = np.linalg.svd(m2, full_matrices=not transpose, compute_uv=True)
-        if transpose:
-            V = V.T
-            Wt = np.dot(m2, V)
-        else:
-            Wt = V
-        s = s**2
-        var = s / len(s)
-        fracs = var / var.sum()
-        #else:
-        #    mlab_pca = matplotlib.mlab.PCA(m)
-        #    Wt = mlab_pca.Wt.T
-        #    s = mlab_pca.s
-        #    fracs = mlab_pca.fracs
+
+        # SVD
+        U, s, Vh = np.linalg.svd(m2, full_matrices=True, compute_uv=True)  # Is full_matrices ever needed?
+
+        # % variance, eigenvalues
+        eigenvalues = s**2
+        variance = eigenvalues / float(np.max([1, m2.shape[1] - 1]))
+        pvar =  variance / variance.sum()
+
+        # Weights/projections
+        Wt = Vh
+        if self.transpose:
+            # Use the projected coordinates for the transposed matrix
+            Wt = np.dot(m2, Vh.T).T
 
         n = len(self.labels)
         markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
@@ -464,46 +474,41 @@ class Correlation:
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
-        print(Wt)
         for i in range(n):
-            ax1.scatter(Wt[i, 0], Wt[i, 1],
+            ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
                         marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
         if plot_title == '':
             ax1.set_title('PCA')
         else:
             ax1.set_title(plot_title)
-        ax1.set_xlabel('PC1 ({:5.1f}% of var. explained)'.format(100.0 * fracs[0]))
-        ax1.set_ylabel('PC2 ({:5.1f}% of var. explained)'.format(100.0 * fracs[1]))
+        ax1.set_xlabel('PC{} ({:5.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
+        ax1.set_ylabel('PC{} ({:5.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
         lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
                          bbox_to_anchor=(1, 0.5),
                          prop={'size': 12}, markerscale=0.9)
 
         # Scree plot
-        eigenvalues = s
-
-        cumulative = []
-        c = 0
-        for x in fracs:
-            c += x
-            cumulative.append(c)
-
+        if self.transpose:
+            n = np.where(pvar > 0.01)[0].shape[0]
+            if n < 2:
+                n = 2
         ind = np.arange(n)  # the x locations for the groups
         width = 0.35        # the width of the bars
 
         if mpl.__version__ >= "2.0.0":
-            ax2.bar(2 * width + ind, eigenvalues, width * 2)
+            ax2.bar(2 * width + ind, eigenvalues[:n], width * 2)
         else:
-            ax2.bar(width + ind, eigenvalues, width * 2)
+            ax2.bar(width + ind, eigenvalues[:n], width * 2)
         ax2.set_ylabel('Eigenvalue')
-        ax2.set_xlabel('Factors')
+        ax2.set_xlabel('Principal Component')
         ax2.set_title('Scree plot')
         ax2.set_xticks(ind + width * 2)
         ax2.set_xticklabels(ind + 1)
 
         ax3 = ax2.twinx()
         ax3.axhline(y=1, color="black", linestyle="dotted")
-        ax3.plot(width * 2 + ind, cumulative[0:], "r-")
-        ax3.plot(width * 2 + ind, cumulative[0:], "wo", markeredgecolor="black")
+        ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "r-")
+        ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "wo", markeredgecolor="black")
         ax3.set_ylim([0, 1.05])
         ax3.set_ylabel('Cumulative variability')
 
@@ -511,3 +516,6 @@ class Correlation:
         plt.tight_layout()
         plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
         plt.close()
+
+        print("Wt.shape {} eigenvalues.shape {}".format(Wt.shape, eigenvalues.shape))
+        return Wt, eigenvalues
