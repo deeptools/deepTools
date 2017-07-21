@@ -164,7 +164,7 @@ def main(args=None):
         of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
         n = eigenvalues.shape[0]
         for i in range(n):
-            of.write("{}\t{}\t{}\n".format(i, "\t".join(["{}".format(x) for x in Wt[i,:]]), eigenvalues[i]))
+            of.write("{}\t{}\t{}\n".format(i, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
         of.close()
 
 

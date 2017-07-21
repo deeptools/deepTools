@@ -425,7 +425,7 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename, PCs = [1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
+    def plot_pca(self, plot_filename, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
         """
         Plot the PCA of a matrix
 
@@ -451,7 +451,6 @@ class Correlation:
             m = m.T
 
         # Center and scale
-        dev = np.sqrt(rvs)
         m2 = (m - np.mean(m, axis=0)) / np.std(m, axis=0)
 
         # SVD
@@ -460,7 +459,7 @@ class Correlation:
         # % variance, eigenvalues
         eigenvalues = s**2
         variance = eigenvalues / float(np.max([1, m2.shape[1] - 1]))
-        pvar =  variance / variance.sum()
+        pvar = variance / variance.sum()
 
         # Weights/projections
         Wt = Vh
