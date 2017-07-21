@@ -98,14 +98,14 @@ def plotCorrelationArgs():
                           'original matrix. Specifying 0 will result in all '
                           'rows being used. If the matrix is to be transposed, '
                           'rows with 0 variance are always excluded, even if a '
-                          'values of 0 is specified.',
+                          'values of 0 is specified. The default is 1000.',
                           type=int,
                           default=1000)
 
     optional.add_argument('--PCs',
                           help='The principal components to plot. If specified, '
                           'you must provide two different integers, greater '
-                          'than zero, separated by a space. An example is "1 2".',
+                          'than zero, separated by a space. An example (and the default) is "1 2".',
                           type=int,
                           nargs=2,
                           default=[1, 2])
