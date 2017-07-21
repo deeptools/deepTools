@@ -425,7 +425,7 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
+    def plot_pca(self, plot_filename, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None):
         """
         Plot the PCA of a matrix
 
@@ -436,9 +436,9 @@ class Correlation:
         # Filter
         m = self.matrix
         rvs = m.var(axis=1)
-        #if self.transpose:
-        #    m = m[np.nonzero(rvs)[0], :]
-        #    rvs = rvs[np.nonzero(rvs)[0]]
+        if self.transpose:
+            m = m[np.nonzero(rvs)[0], :]
+            rvs = rvs[np.nonzero(rvs)[0]]
         if self.ntop > 0 and m.shape[0] > self.ntop:
             m = m[np.argpartition(rvs, -self.ntop)[-self.ntop:], :]
             rvs = rvs[np.argpartition(rvs, -self.ntop)[-self.ntop:]]
@@ -470,7 +470,10 @@ class Correlation:
 
         n = len(self.labels)
         markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
-        colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
+        if cols is not None:
+            colors = itertools.cycle(cols)
+        else:
+            colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
 
         ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
         ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)

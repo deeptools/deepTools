@@ -110,6 +110,11 @@ def plotCorrelationArgs():
                           nargs=2,
                           default=[1, 2])
 
+    optional.add_argument('--colors',
+                          metavar="COLORS",
+                          nargs='+',
+                          help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors red blue green. If not specified, the symbols will be given automatic colors.")
+
     optionalEx = optional.add_mutually_exclusive_group()
     optionalEx.add_argument('--transpose',
                             help='As of version 2.6, the default is to perform the '
@@ -157,7 +162,8 @@ def main(args=None):
                                     plot_title=args.plotTitle,
                                     image_format=args.plotFileFormat,
                                     plotWidth=args.plotWidth,
-                                    plotHeight=args.plotHeight)
+                                    plotHeight=args.plotHeight,
+                                    cols = args.colors)
 
     if args.outFileNameData is not None:
         of = open(args.outFileNameData, "w")
