@@ -163,7 +163,7 @@ def main(args=None):
                                     image_format=args.plotFileFormat,
                                     plotWidth=args.plotWidth,
                                     plotHeight=args.plotHeight,
-                                    cols = args.colors)
+                                    cols=args.colors)
 
     if args.outFileNameData is not None:
         of = open(args.outFileNameData, "w")
