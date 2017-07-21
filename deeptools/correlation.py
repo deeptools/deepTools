@@ -436,9 +436,9 @@ class Correlation:
         # Filter
         m = self.matrix
         rvs = m.var(axis=1)
-        if self.transpose:
-            m = m[np.nonzero(rvs)[0], :]
-            rvs = rvs[np.nonzero(rvs)[0]]
+        #if self.transpose:
+        #    m = m[np.nonzero(rvs)[0], :]
+        #    rvs = rvs[np.nonzero(rvs)[0]]
         if self.ntop > 0 and m.shape[0] > self.ntop:
             m = m[np.argpartition(rvs, -self.ntop)[-self.ntop:], :]
             rvs = rvs[np.argpartition(rvs, -self.ntop)[-self.ntop:]]
@@ -451,10 +451,11 @@ class Correlation:
             m = m.T
 
         # Center and scale
-        m2 = (m - np.mean(m, axis=0)) / np.std(m, axis=0)
+        m2 = (m - np.mean(m, axis=0))
+        m2 /= np.std(m2, axis=0, ddof=1)  # Use the unbiased std. dev.
 
         # SVD
-        U, s, Vh = np.linalg.svd(m2, full_matrices=True, compute_uv=True)  # Is full_matrices ever needed?
+        U, s, Vh = np.linalg.svd(m2, full_matrices=False, compute_uv=True)  # Is full_matrices ever needed?
 
         # % variance, eigenvalues
         eigenvalues = s**2
@@ -487,10 +488,6 @@ class Correlation:
                          prop={'size': 12}, markerscale=0.9)
 
         # Scree plot
-        if self.transpose:
-            n = np.where(pvar > 0.01)[0].shape[0]
-            if n < 2:
-                n = 2
         ind = np.arange(n)  # the x locations for the groups
         width = 0.35        # the width of the bars
 
@@ -516,5 +513,4 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
         plt.close()
 
-        print("Wt.shape {} eigenvalues.shape {}".format(Wt.shape, eigenvalues.shape))
         return Wt, eigenvalues
