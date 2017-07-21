@@ -480,8 +480,8 @@ class Correlation:
             ax1.set_title('PCA')
         else:
             ax1.set_title(plot_title)
-        ax1.set_xlabel('PC{} ({:5.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
-        ax1.set_ylabel('PC{} ({:5.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
+        ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
+        ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
         lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
                          bbox_to_anchor=(1, 0.5),
                          prop={'size': 12}, markerscale=0.9)
