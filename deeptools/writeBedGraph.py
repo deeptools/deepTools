@@ -155,7 +155,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
         out_file.close()
         if format == 'bedgraph':
             sort_cmd = cfg.config.get('external_tools', 'sort')
-            os.system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd, bedgraph_file, out_file_name))
+            os.system("LC_ALL=C {} -k1,1 -k2,2n '{}' > '{}'".format(sort_cmd, bedgraph_file, out_file_name))
             os.remove(bedgraph_file)
             if self.verbose:
                 print("output file: {}".format(out_file_name))
@@ -291,7 +291,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
     for chrom, size in chromSizes:
         _file.write(toBytes("{}\t{}\n".format(chrom, size)))
     _file.close()
-    system("LC_ALL=C {} -k1,1 -k2,2n {} > {}.sorted".format(sort_cmd, _file.name, _file.name))
+    system("LC_ALL=C {} -k1,1 -k2,2n '{}' > '{}.sorted'".format(sort_cmd, _file.name, _file.name))
     cl = []
     f = open("{}.sorted".format(_file.name))
     for line in f:
@@ -313,7 +313,7 @@ def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
         # temporary file to store sorted bedgraph file
         _file = NamedTemporaryFile(delete=False)
         tempfilename1 = _file.name
-        system("LC_ALL=C {} -k1,1 -k2,2n {} > {}".format(sort_cmd, bedGraphPath, tempfilename1))
+        system("LC_ALL=C {} -k1,1 -k2,2n '{}' > '{}'".format(sort_cmd, bedGraphPath, tempfilename1))
         bedGraphPath = tempfilename1
 
     bw = pyBigWig.open(bigWigPath, "w")

@@ -35,8 +35,8 @@ class Enrichment(GTF):
         if ncols != 12 or self.keepExons is False:
             self.tree.addEnrichmentEntry(self.mungeChromosome(cols[0]), int(cols[1]), int(cols[2]), strand, score, feature)
         else:
-            starts = cols[10].strip(",").split(",")
-            widths = cols[11].strip(",").split(",")
+            starts = cols[11].strip(",").split(",")
+            widths = cols[10].strip(",").split(",")
             starts = [int(x) + int(cols[1]) for x in starts]
             ends = [x + int(y) for x, y in zip(starts, widths)]
             for x, y in zip(starts, ends):

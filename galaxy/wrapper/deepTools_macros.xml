@@ -1,10 +1,10 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.5.2.0</token>
+    <token name="@WRAPPER_VERSION@">2.5.3.0</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="2.5.2">deeptools</requirement>
+            <requirement type="package" version="2.5.3">deeptools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -211,7 +211,7 @@
     </xml>
 
     <xml name="gtf_options">
-        <param argument="--metagene" type="boolean" truevalue="--boolean" falsevalue=""
+        <param argument="--metagene" type="boolean" truevalue="--metagene" falsevalue=""
             label="Use a metagene model"
             help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
         <param argument="--transcriptID" optional="True" value="transcript" type="text"
