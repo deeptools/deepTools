@@ -7,6 +7,11 @@
  * Added the `estimateReadFiltering` tool to estimate how many reads would be filtered from a BAM file or files if a variety of desired filtering criterion are applied (issue #518).
  * Rewrote the bigWig creation functions so there are no longer steps involving creating a single large bedGraph and then sorting it. That was a hold-over from previous versions that used UCSC tools. This was issue #546. This also means that there are no longer any required external programs (previously, only `sort` was required).
 
+2.5.3
+
+ * Fixed a bug in `plotEnrichment`, the `--keepExons` option with a BED12 file would cause an error. (issue #559)
+ * `bamCoverage` now doesn't cause and error to be thrown by `sort` in there are "/spaces in quoted path/". (issue #558)
+
 2.5.2
 
  * Fixed a bug in `bamCoverage` that can cause crashes when python3 is used.
