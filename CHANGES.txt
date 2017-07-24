@@ -5,6 +5,8 @@
  * `plotProfile` and `plotHeatmap` now have a `--labelRotation` option that can rotate the X-axis labels. This is one of the more common requests for customization. For further customization, please modify your .matplotlibrc file or save as a PDF and modify further in Illustrator or a similar program. (issue #537)
  * The `--ignoreDuplicates` algorithm has been updated to better handle paired-end reads. (issue #524)
  * Added the `estimateReadFiltering` tool to estimate how many reads would be filtered from a BAM file or files if a variety of desired filtering criterion are applied (issue #518).
+ * `plotPCA` can now be run on the transposed matrix, as is typically done with RNAseq data (e.g., with deepTools). Further, matplotlib is now no longer used for computing the PCA, but rather an SVD is performed and the results directly used. The options `--transpose` and `--ntop` were also added. The former computes the PCA of the transposed matrix and the latter specifies how many of the most variable rows in the matrix to use. By default, the 1000 most variable features are used. In the (now optional) plot, the `--PCs` option can now be used to specify which principal components to plot. Finally, the unbiased standard deviation is used in the out, as is done by `prcomp()` in R.  This was issue #496.
+ * Symbol colors for `plotPCA` can now be specified. (issue #560)
 
 2.5.2
 

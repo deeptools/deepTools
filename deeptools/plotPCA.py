@@ -48,9 +48,8 @@ def plotCorrelationArgs():
                           'For example: '
                           'pca.pdf will save the PCA plot in PDF format. '
                           'The available options are: .png, '
-                          '.eps, .pdf and .svg.',
-                          metavar='FILE',
-                          required=True)
+                          '.eps, .pdf and .svg. If this option is omitted, then you MUST specify --outFileNameData',
+                          metavar='FILE')
 
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--labels', '-l',
@@ -85,6 +84,7 @@ def plotCorrelationArgs():
                           default=5)
 
     optional.add_argument('--outFileNameData',
+                          metavar='file.tab',
                           help='File name to which the data underlying the plot '
                           'should be saved, such as myPCA.tab. For untransposed '
                           'data, this is the loading per-sample and PC as well '
@@ -115,14 +115,15 @@ def plotCorrelationArgs():
                           nargs='+',
                           help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors red blue green. If not specified, the symbols will be given automatic colors.")
 
+    optional.add_argument('--version', action='version',
+                          version='%(prog)s {}'.format(__version__))
+
     optionalEx = optional.add_mutually_exclusive_group()
     optionalEx.add_argument('--transpose',
-                            help='As of version 2.6, the default is to perform the '
-                            'PCA on the transpose of the matrix. That is, on the '
+                            help='Perform the PCA on the transposed matrix, (i.e., on the '
                             'matrix where rows are samples and columns are '
                             'bins/features. This then matches what is typically '
-                            'done in R. To keep the previous row-centric PCA, '
-                            'specify this option instead.',
+                            'done in R.',
                             action='store_true')
 
     optionalEx.add_argument('--rowCenter',
@@ -133,14 +134,14 @@ def plotCorrelationArgs():
                             'principal component has samples stacked vertically. This option is not applicable if --transpose is specified.',
                             action='store_true')
 
-    optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
-
     return parser
 
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
+
+    if args.plotFile is None and args.outFileNameData is None:
+        sys.exit("At least one of --plotFile and --outFileNameData must be specified!\n")
 
     if args.ntop < 0:
         sys.exit("The value specified for --ntop must be >= 0!\n")
