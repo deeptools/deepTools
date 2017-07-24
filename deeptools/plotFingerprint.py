@@ -421,6 +421,8 @@ def main(args=None):
         args.outQualityMetrics.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
         if args.JSDsample:
             args.outQualityMetrics.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
+        else:
+            args.outQualityMetrics.write("\tSynthetic JS Distance")
         args.outQualityMetrics.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
@@ -436,6 +438,9 @@ def main(args=None):
                 syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                 CHANCE = getCHANCE(args, idx, num_reads_per_bin)
                 args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+            else: 
+                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                args.outQualityMetrics.write("\t{0}".format(syntheticJSD))
             args.outQualityMetrics.write("\n")
         args.outQualityMetrics.close()
 
