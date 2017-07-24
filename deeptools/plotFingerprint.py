@@ -438,7 +438,7 @@ def main(args=None):
                 syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                 CHANCE = getCHANCE(args, idx, num_reads_per_bin)
                 args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
-            else: 
+            else:
                 syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                 args.outQualityMetrics.write("\t{0}".format(syntheticJSD))
             args.outQualityMetrics.write("\n")
