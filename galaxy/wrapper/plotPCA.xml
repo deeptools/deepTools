@@ -40,7 +40,7 @@
             <when value="no" />
             <when value="yes">
                 <expand macro="plotWidthHeight" PLOTWIDTH="5.0" PLOTHEIGHT="10.0" />
-                <param name="PCs", argument="--PCs" label="Principal components to plot" value="1 2" type="text"
+                <param name="PCs" argument="--PCs" label="Principal components to plot" value="1 2" type="text"
                     help="The principal components to plot. If specified, you must provide two different integers, greater than zero, separated by a space. An example (and the default) is '1 2'." />
                 <param name="ntop" argument="--ntop" label="Number of rows to use" value="1000" type="integer"
                     help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. If the matrix is to be transposed, rows with 0 variance are always excluded, even if a values of 0 is specified. The default is 1000." />
