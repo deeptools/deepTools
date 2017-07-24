@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 import argparse
 import matplotlib
 matplotlib.use('Agg')
@@ -17,7 +18,7 @@ def parse_arguments(args=None):
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
 Tool for generating a principal component analysis (PCA)
-plot from multiBamSummary or multiBigwigSummary output.
+plot from multiBamSummary or multiBigwigSummary output. By default, the loadings for each sample in each principal component is plotted. If the data is transposed, the projections of each sample on the requested principal components is plotted instead.
 
 Detailed help:
 
@@ -47,10 +48,8 @@ def plotCorrelationArgs():
                           'For example: '
                           'pca.pdf will save the PCA plot in PDF format. '
                           'The available options are: .png, '
-                          '.eps, .pdf and .svg.',
-                          type=argparse.FileType('w'),
-                          metavar='FILE',
-                          required=True)
+                          '.eps, .pdf and .svg. If this option is omitted, then you MUST specify --outFileNameData',
+                          metavar='FILE')
 
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--labels', '-l',
@@ -85,21 +84,55 @@ def plotCorrelationArgs():
                           default=5)
 
     optional.add_argument('--outFileNameData',
-                          help='File name to save the data '
-                          'underlying data for the average profile, e.g., '
-                          'myProfile.tab.',
-                          type=argparse.FileType('w'))
+                          metavar='file.tab',
+                          help='File name to which the data underlying the plot '
+                          'should be saved, such as myPCA.tab. For untransposed '
+                          'data, this is the loading per-sample and PC as well '
+                          'as the eigenvalues. For transposed data, this is the '
+                          'rotation per-sample and PC and the eigenvalues. The '
+                          'projections are truncated to the number of '
+                          'eigenvalues for transposed data.')
 
-    optional.add_argument('--rowCenter',
-                          help='When specified, each row (bin, gene, etc.) '
-                          'in the matrix is centered at 0 before the PCA is '
-                          'computed. This is useful only if you have a strong '
-                          'bin/gene/etc. correlation and the resulting '
-                          'principal component has samples stacked vertically.',
-                          action='store_true')
+    optional.add_argument('--ntop',
+                          help='Use only the top N most variable rows in the '
+                          'original matrix. Specifying 0 will result in all '
+                          'rows being used. If the matrix is to be transposed, '
+                          'rows with 0 variance are always excluded, even if a '
+                          'values of 0 is specified. The default is 1000.',
+                          type=int,
+                          default=1000)
+
+    optional.add_argument('--PCs',
+                          help='The principal components to plot. If specified, '
+                          'you must provide two different integers, greater '
+                          'than zero, separated by a space. An example (and the default) is "1 2".',
+                          type=int,
+                          nargs=2,
+                          default=[1, 2])
+
+    optional.add_argument('--colors',
+                          metavar="COLORS",
+                          nargs='+',
+                          help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors red blue green. If not specified, the symbols will be given automatic colors.")
 
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
+
+    optionalEx = optional.add_mutually_exclusive_group()
+    optionalEx.add_argument('--transpose',
+                            help='Perform the PCA on the transposed matrix, (i.e., on the '
+                            'matrix where rows are samples and columns are '
+                            'bins/features. This then matches what is typically '
+                            'done in R.',
+                            action='store_true')
+
+    optionalEx.add_argument('--rowCenter',
+                            help='When specified, each row (bin, gene, etc.) '
+                            'in the matrix is centered at 0 before the PCA is '
+                            'computed. This is useful only if you have a strong '
+                            'bin/gene/etc. correlation and the resulting '
+                            'principal component has samples stacked vertically. This option is not applicable if --transpose is specified.',
+                            action='store_true')
 
     return parser
 
@@ -107,30 +140,39 @@ def plotCorrelationArgs():
 def main(args=None):
     args = parse_arguments().parse_args(args)
 
+    if args.plotFile is None and args.outFileNameData is None:
+        sys.exit("At least one of --plotFile and --outFileNameData must be specified!\n")
+
+    if args.ntop < 0:
+        sys.exit("The value specified for --ntop must be >= 0!\n")
+
+    if args.PCs[0] == args.PCs[1]:
+        sys.exit("You must specify different principal components!\n")
+    if args.PCs[0] <= 0 or args.PCs[1] <= 0:
+        sys.exit("The specified principal components must be at least 1!\n")
+
     corr = Correlation(args.corData,
                        labels=args.labels,)
 
-    args.plotFile.close()
     corr.rowCenter = args.rowCenter
+    corr.transpose = args.transpose
+    corr.ntop = args.ntop
 
-    corr.plot_pca(args.plotFile.name,
-                  plot_title=args.plotTitle,
-                  image_format=args.plotFileFormat,
-                  plotWidth=args.plotWidth,
-                  plotHeight=args.plotHeight)
+    Wt, eigenvalues = corr.plot_pca(args.plotFile,
+                                    PCs=args.PCs,
+                                    plot_title=args.plotTitle,
+                                    image_format=args.plotFileFormat,
+                                    plotWidth=args.plotWidth,
+                                    plotHeight=args.plotHeight,
+                                    cols=args.colors)
 
     if args.outFileNameData is not None:
-        import matplotlib
-        mlab_pca = matplotlib.mlab.PCA(corr.matrix)
-        n = len(corr.labels)
-        of = args.outFileNameData
+        of = open(args.outFileNameData, "w")
         of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
+        n = eigenvalues.shape[0]
         for i in range(n):
-            of.write("{}".format(i + 1))
-            for v in mlab_pca.Wt[i, :]:
-                of.write("\t{}".format(v))
-            of.write("\t{}\n".format(mlab_pca.s[i]))
-        args.outFileNameData.close()
+            of.write("{}\t{}\t{}\n".format(i + 1, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
+        of.close()
 
 
 if __name__ == "__main__":

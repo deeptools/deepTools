@@ -6,6 +6,8 @@
  * The `--ignoreDuplicates` algorithm has been updated to better handle paired-end reads. (issue #524)
  * Added the `estimateReadFiltering` tool to estimate how many reads would be filtered from a BAM file or files if a variety of desired filtering criterion are applied (issue #518).
  * Rewrote the bigWig creation functions so there are no longer steps involving creating a single large bedGraph and then sorting it. That was a hold-over from previous versions that used UCSC tools. This was issue #546. This also means that there are no longer any required external programs (previously, only `sort` was required).
+ * `plotPCA` can now be run on the transposed matrix, as is typically done with RNAseq data (e.g., with deepTools). Further, matplotlib is now no longer used for computing the PCA, but rather an SVD is performed and the results directly used. The options `--transpose` and `--ntop` were also added. The former computes the PCA of the transposed matrix and the latter specifies how many of the most variable rows in the matrix to use. By default, the 1000 most variable features are used. In the (now optional) plot, the `--PCs` option can now be used to specify which principal components to plot. Finally, the unbiased standard deviation is used in the out, as is done by `prcomp()` in R.  This was issue #496.
+ * Symbol colors for `plotPCA` can now be specified. (issue #560)
 
 2.5.3
 
