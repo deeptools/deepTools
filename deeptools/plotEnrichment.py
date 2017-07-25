@@ -276,7 +276,6 @@ def getEnrichment_worker(arglist):
     if args.verbose:
         sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
 
-    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
     total = [0] * len(args.bamfiles)
     for idx, f in enumerate(args.bamfiles):
@@ -437,6 +436,9 @@ def main(args=None):
         args.labels = args.bamfiles
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
+
+    global gtf
+    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
 
     # Get fragment size and chromosome dict
     fhs = [openBam(x) for x in args.bamfiles]
