@@ -12,7 +12,12 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
-from deeptools.utilities import toString
+from deeptools.utilities import toString, convertCmap
+
+import plotly.offline as offline
+import plotly.graph_objs as go
+import plotly.figure_factory as ff
+from plotly import tools
 
 old_settings = np.seterr(all='ignore')
 
@@ -227,7 +232,30 @@ class Correlation:
 
         return self.corr_matrix
 
-    def plot_correlation(self, plot_fiilename, plot_title='', vmax=None,
+    def plotly_correlation(self, corr_matrix, plot_filename, labels, plot_title='',
+                           vmax=None, vmin=None, plot_numbers=True,
+                           colormap='jet'):
+        """plot_correlation, but using plotly"""
+        textElement = []
+        for row in range(corr_matrix.shape[0]):
+            trow = []
+            for col in range(corr_matrix.shape[0]):
+                if plot_numbers:
+                    trow.append("{:0.2f}".format(corr_matrix[row, col]))
+                else:
+                    trow.append('')
+            textElement.append(trow)
+
+        zauto=True
+        if vmax is not None or vmin is not None:
+            zauto=False
+
+        convertedCmap = convertCmap(colormap)
+        fig = ff.create_annotated_heatmap(corr_matrix, x=labels, y=labels, colorscale=convertedCmap, showscale=True, zauto=zauto, zmin=vmin, zmax=vmax, annotation_text=textElement)
+        fig.layout['title'] = plot_title
+        offline.plot(fig, filename=plot_filename, auto_open=False)
+
+    def plot_correlation(self, plot_filename, plot_title='', vmax=None,
                          vmin=None, colormap='jet', image_format=None,
                          plot_numbers=False, plotWidth=11, plotHeight=9.5):
         """
@@ -284,6 +312,18 @@ class Correlation:
             edge_color = 'none'
         else:
             edge_color = 'black'
+
+        if image_format == "plotly":
+            self.plotly_correlation(corr_matrix,
+                               plot_filename,
+                               self.labels,
+                               plot_title=plot_title,
+                               vmax=vmax,
+                               vmin=vmin,
+                               colormap=colormap,
+                               plot_numbers=plot_numbers)
+            return
+
         img_mat = axmatrix.pcolormesh(corr_matrix,
                                       edgecolors=edge_color,
                                       cmap=cmap,
@@ -325,8 +365,46 @@ class Correlation:
                                   ha='center', va='center')
 
         self.column_order = index
-        fig.savefig(plot_fiilename, format=image_format)
+        fig.savefig(plot_filename, format=image_format)
         plt.close()
+
+    def plotly_scatter(self, plot_filename, plot_title='', minVal=None, maxVal=None):
+        """Make the scatter plot of a matrix with plotly"""
+        n = self.matrix.shape[1]
+        fig = go.Figure()
+        
+        midPoint = minVal + 0.5 * (maxVal - minVal)
+        domainWidth = 1. / n
+        for x in range(n):
+            xanchor = 'x{}'.format(x + 1)
+            yanchor = 'y{}'.format(x + 1)
+            domain = [x * domainWidth, (x + 1) * domainWidth]
+            fig['layout']['xaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': xanchor}
+            fig['layout']['yaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': yanchor}
+
+        for x in range(n):
+            for y in range(n):
+                xanchor = 'x{}'.format(x + 1)
+                yanchor = 'y{}'.format(y + 1)
+                if x < y:
+                    print([x, y, xanchor, yanchor])
+                    vector1 = self.matrix[:, x]
+                    vector2 = self.matrix[:, y]
+                    trace = go.Scattergl(x=vector1, y=vector2, mode='markers', showlegend=False, xaxis={'range': [minVal, maxVal]}, yaxis={'range': [minVal, maxVal]})
+                    trace.update(xaxis=xanchor)
+                    trace.update(yaxis=yanchor)
+                else:
+                    trace = {'showlegend': False, 'yaxis': yanchor, 'mode': 'text', 'xaxis': xanchor, 'x': [0], 'y': [0], 'text': [self.labels[x]]}
+                print(trace)
+                fig['data'].append(trace)
+        fig['layout'].update(title=plot_title)
+        #fig['layout']['xaxis']['range'] = [minVal, maxVal]
+        #fig['layout']['yaxis']['range'] = [minVal, maxVal]
+        #fig['layout']['showlegend'] = False
+        print(fig['data'])
+        print(fig['layout'])
+
+        offline.plot(fig, filename=plot_filename, auto_open=False)
 
     def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, maxRange=None):
         """
@@ -352,7 +430,13 @@ class Correlation:
             # make one value odd and the other even
             max_value += 1
 
+        # plotly output
+        if image_format == 'plotly':
+            self.plotly_scatter(plot_filename, plot_title=plot_title, minVal=min_value, maxVal=max_value)
+            return
+
         rows, cols = np.triu_indices(num_samples)
+
         for index in range(len(rows)):
             row = rows[index]
             col = cols[index]

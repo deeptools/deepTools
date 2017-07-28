@@ -155,7 +155,8 @@ setup(
         "pysam >= 0.8.2",
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1",
-        "py2bit >= 0.2.0"
+        "py2bit >= 0.2.0",
+        "plotly >= 1.9.0"
     ],
     zip_safe=False,
     ext_modules=[module1],

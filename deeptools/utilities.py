@@ -3,9 +3,30 @@ import os
 import pysam
 from deeptoolsintervals import GTF
 from deeptools.bamHandler import openBam
+import matplotlib as mpl
+mpl.use('Agg')
+import numpy as np
 
 
 debug = 0
+
+
+def convertCmap(c, vmin=0, vmax=1):
+    cmap = mpl.cm.get_cmap(c)
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    cmap_rgb = []
+
+    for i in range(255):
+        k = mpl.colors.colorConverter.to_rgb(cmap(norm(i)))
+        cmap_rgb.append(k)
+
+    h = 1.0 / 254
+    colorScale = []
+    for k in range(255):
+        C = map(np.uint8, np.array(cmap(k*h)[:3])*255)
+        colorScale.append([k*h, 'rgb' + str((C[0], C[1], C[2]))])
+
+    return colorScale
 
 
 def getTLen(read):
