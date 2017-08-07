@@ -11,7 +11,7 @@
  * `plotFingerprint` always returns the synthetic JSD, even if no `--JSDsample` is specified. (issue #564)
  * `plotEnrichment` will only read in annotation files a single time rather than in each thread. This prevents terrible performance when using many tens of millions of BED/GTF regions at the expense of a slight memory increase. (issue #530)
  * Fixed a small bug generally affecting `plotFingerprint` where BAM files without an index were processed as bigWig files, resulting in a confusing error message (issue #574). Thanks to Sitanshu Gakkhar for poiting this out!
- * `bamPEFragmentSize` now has `--table` and `--outRawFragmentLengths` options. The former option will output the read/fragment metrics to a file in tabular format (in addition to the previous information written to the screen). The latter option will write the raw read/fragment counts to a tsv file. The format of the file is a line with "#bamPEFragmentSize", followed by a header line of "Size\tOccurences\tSample", which should facilitate processing in things like R. (issue #574)
+ * `bamPEFragmentSize` now has `--table` and `--outRawFragmentLengths` options. The former option will output the read/fragment metrics to a file in tabular format (in addition to the previous information written to the screen). The latter option will write the raw read/fragment counts to a tsv file. The format of the file is a line with "#bamPEFragmentSize", followed by a header line of "Size\tOccurences\tSample", which should facilitate processing in things like R. (issue #572)
  * `bamPEFragmentSize` will now plot the read length distribution for single-end BAM files. Note that if you mix single and paired-end files that the resulting plots may be difficult to interpret.
 
 2.5.3
