@@ -1,0 +1,2 @@
+	Frag. Len. Min.	Frag. Len. 1st. Qu.	Frag. Len. Mean	Frag. Len. Median	Frag. Len. 3rd Qu.	Frag. Len. Max	Frag. Len. Std.	Read Len. Min.	Read Len. 1st. Qu.	Read Len. Mean	Read Len. Median	Read Len. 3rd Qu.	Read Len. Max	Read Len. Std.
+bowtie2 test1.bam	241.0	241.5	244.666666667	242.0	246.5	251.0	4.49691252108	251.0	251.0	251.0	251.0	251.0	251.0	0.0

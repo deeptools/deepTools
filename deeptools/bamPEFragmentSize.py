@@ -77,12 +77,12 @@ def parse_arguments():
                         required=False)
     parser.add_argument('--table',
                         metavar='FILE',
-                        help='Rather than printing read and fragment length metrics to the screen, write them to the given file in tabular format.',
+                        help='In addition to printing read and fragment length metrics to the screen, write them to the given file in tabular format.',
                         required=False)
     parser.add_argument('--outRawFragmentLengths',
                         metavar='FILE',
                         required=False,
-                        help='Save the fragment (or read if the input is single-end) length and their associated number of occurences to a tab-separated file. Columns are length, number of occurences, and the sample label.')
+                        help='Save the fragment (or read if the input is single-end) length and their associated number of occurrences to a tab-separated file. Columns are length, number of occurrences, and the sample label.')
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
                         action='store_true',
@@ -93,7 +93,7 @@ def parse_arguments():
     return parser
 
 
-def getFragSize(bam, args, idx, outRawFrags, doPrint=True):
+def getFragSize(bam, args, idx, outRawFrags):
     fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
                                                                     blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
@@ -114,9 +114,6 @@ def getFragSize(bam, args, idx, outRawFrags, doPrint=True):
         for idx, v in enumerate(cnts):
             if v > 0:
                 outRawFrags.write("{}\t{}\t{}\n".format(idx, v, label))
-
-    if doPrint is False:
-        return (fragment_len_dict, read_len_dict)
 
     if args.samplesLabel and idx < len(args.samplesLabel):
         print("\n\nSample label: {}".format(args.samplesLabel[idx]))
@@ -150,7 +147,7 @@ def getFragSize(bam, args, idx, outRawFrags, doPrint=True):
                                                   read_len_dict['qtile75'],
                                                   read_len_dict['max'],
                                                   read_len_dict['std']))
-    return fragment_len_dict
+    return (fragment_len_dict, read_len_dict)
 
 
 def printTable(args, fragDict, readDict):
@@ -196,14 +193,11 @@ def main(args=None):
     of = None
     if args.outRawFragmentLengths is not None:
         of = open(args.outRawFragmentLengths, "w")
-        of.write("#bamPEFragmentSize\nSize\tOccurences\tSample\n")
+        of.write("#bamPEFragmentSize\nSize\tOccurrences\tSample\n")
     for idx, bam in enumerate(args.bamfiles):
-        if args.table is not None:
-            f, r = getFragSize(bam, args, idx, of, doPrint=False)
-            fraglengths[bam] = f
-            readlengths[bam] = r
-        else:
-            fraglengths[bam] = getFragSize(bam, args, idx, of)
+        f, r = getFragSize(bam, args, idx, of)
+        fraglengths[bam] = f
+        readlengths[bam] = r
 
     if args.table is not None:
         printTable(args, fraglengths, readlengths)
@@ -225,14 +219,16 @@ def main(args=None):
 
         i = 0
         for bam in fraglengths.keys():
-
+            d = fraglengths[bam]
+            if d is None:
+                d = readlengths[bam]
             if args.maxFragmentLength > 0:
                 maxVal = args.maxFragmentLength
             else:
-                maxVal = fraglengths[bam]['mean'] * 2
+                maxVal = d['mean'] * 2
 
-            plt.hist(fraglengths[bam]['lengths'], 100,
-                     range=(fraglengths[bam]['min'], maxVal),
+            plt.hist(d['lengths'], 100,
+                     range=(d['min'], maxVal),
                      alpha=0.5, label=labels[i],
                      log=args.logScale, normed=True)
             i += 1
