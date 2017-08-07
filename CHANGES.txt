@@ -10,6 +10,7 @@
  * Symbol colors for `plotPCA` can now be specified. (issue #560)
  * `plotFingerprint` always returns the synthetic JSD, even if no `--JSDsample` is specified. (issue #564)
  * `plotEnrichment` will only read in annotation files a single time rather than in each thread. This prevents terrible performance when using many tens of millions of BED/GTF regions at the expense of a slight memory increase. (issue #530)
+ * Fixed a small bug generally affecting `plotFingerprint` where BAM files without an index were processed as bigWig files, resulting in a confusing error message (issue #574). Thanks to Sitanshu Gakkhar for poiting this out!
 
 2.5.3
 
