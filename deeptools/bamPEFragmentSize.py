@@ -3,6 +3,7 @@
 
 import argparse
 import sys
+import numpy as np
 
 # own tools
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -74,6 +75,14 @@ def parse_arguments():
                         help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
                         metavar="BED file",
                         required=False)
+    parser.add_argument('--table',
+                        metavar='FILE',
+                        help='Rather than printing read and fragment length metrics to the screen, write them to the given file in tabular format.',
+                        required=False)
+    parser.add_argument('--outRawFragmentLengths',
+                        metavar='FILE',
+                        required=False,
+                        help='Save the fragment (or read if the input is single-end) length and their associated number of occurences to a tab-separated file. Columns are length, number of occurences, and the sample label.')
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',
                         action='store_true',
@@ -84,54 +93,120 @@ def parse_arguments():
     return parser
 
 
-def getFragSize(bam, args, idx):
-        fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
-                                                                        blackListFileName=args.blackListFileName,
-                                                                        numberOfProcessors=args.numberOfProcessors,
-                                                                        verbose=args.verbose,
-                                                                        binSize=args.binSize,
-                                                                        distanceBetweenBins=args.distanceBetweenBins)
+def getFragSize(bam, args, idx, outRawFrags, doPrint=True):
+    fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
+                                                                    blackListFileName=args.blackListFileName,
+                                                                    numberOfProcessors=args.numberOfProcessors,
+                                                                    verbose=args.verbose,
+                                                                    binSize=args.binSize,
+                                                                    distanceBetweenBins=args.distanceBetweenBins)
+
+    if outRawFrags:
+        label = bam
         if args.samplesLabel and idx < len(args.samplesLabel):
-            print("\n\nSample label: {}".format(args.samplesLabel[idx]))
-        else:
-            print("\n\nBAM file : {}".format(bam))
-
+            label = args.samplesLabel[idx]
         if fragment_len_dict:
-            if fragment_len_dict['mean'] == 0:
-                print("No pairs were found. Is the data from a paired-end sequencing experiment?")
-
-            print("Sample size: {}\n".format(fragment_len_dict['sample_size']))
-
-            print("Fragment lengths:")
-            print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
-                  "3rd Qu.: {}\nMax.: {}\nStd: {}".format(fragment_len_dict['min'],
-                                                          fragment_len_dict['qtile25'],
-                                                          fragment_len_dict['mean'],
-                                                          fragment_len_dict['median'],
-                                                          fragment_len_dict['qtile75'],
-                                                          fragment_len_dict['max'],
-                                                          fragment_len_dict['std']))
+            fragment_len_dict['lengths'] = [int(x) for x in fragment_len_dict['lengths']]
+            cnts = np.bincount(fragment_len_dict['lengths'], minlength=int(fragment_len_dict['max']) + 1)
         else:
+            read_len_dict['lengths'] = [int(x) for x in read_len_dict['lengths']]
+            cnts = np.bincount(read_len_dict['lengths'], minlength=int(read_len_dict['max']) + 1)
+        for idx, v in enumerate(cnts):
+            if v > 0:
+                outRawFrags.write("{}\t{}\t{}\n".format(idx, v, label))
+
+    if doPrint is False:
+        return (fragment_len_dict, read_len_dict)
+
+    if args.samplesLabel and idx < len(args.samplesLabel):
+        print("\n\nSample label: {}".format(args.samplesLabel[idx]))
+    else:
+        print("\n\nBAM file : {}".format(bam))
+
+    if fragment_len_dict:
+        if fragment_len_dict['mean'] == 0:
             print("No pairs were found. Is the data from a paired-end sequencing experiment?")
 
-        print("\nRead lengths:")
+        print("Sample size: {}\n".format(fragment_len_dict['sample_size']))
+
+        print("Fragment lengths:")
         print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
-              "3rd Qu.: {}\nMax.: {}\nStd: {}".format(read_len_dict['min'],
-                                                      read_len_dict['qtile25'],
-                                                      read_len_dict['mean'],
-                                                      read_len_dict['median'],
-                                                      read_len_dict['qtile75'],
-                                                      read_len_dict['max'],
-                                                      read_len_dict['std']))
-        return fragment_len_dict
+              "3rd Qu.: {}\nMax.: {}\nStd: {}".format(fragment_len_dict['min'],
+                                                      fragment_len_dict['qtile25'],
+                                                      fragment_len_dict['mean'],
+                                                      fragment_len_dict['median'],
+                                                      fragment_len_dict['qtile75'],
+                                                      fragment_len_dict['max'],
+                                                      fragment_len_dict['std']))
+    else:
+        print("No pairs were found. Is the data from a paired-end sequencing experiment?")
+
+    print("\nRead lengths:")
+    print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
+          "3rd Qu.: {}\nMax.: {}\nStd: {}".format(read_len_dict['min'],
+                                                  read_len_dict['qtile25'],
+                                                  read_len_dict['mean'],
+                                                  read_len_dict['median'],
+                                                  read_len_dict['qtile75'],
+                                                  read_len_dict['max'],
+                                                  read_len_dict['std']))
+    return fragment_len_dict
+
+
+def printTable(args, fragDict, readDict):
+    """
+    Print the read and fragment dictionary in more easily parsable tabular format to a file.
+    """
+    of = open(args.table, "w")
+    of.write("\tFrag. Len. Min.\tFrag. Len. 1st. Qu.\tFrag. Len. Mean\tFrag. Len. Median\tFrag. Len. 3rd Qu.\tFrag. Len. Max\tFrag. Len. Std.")
+    of.write("\tRead Len. Min.\tRead Len. 1st. Qu.\tRead Len. Mean\tRead Len. Median\tRead Len. 3rd Qu.\tRead Len. Max\tRead Len. Std.\n")
+
+    for idx, bam in enumerate(args.bamfiles):
+        if args.samplesLabel and idx < len(args.samplesLabel):
+            of.write(args.samplesLabel[idx])
+        else:
+            of.write(bam)
+        if fragDict is not None and fragDict[bam] is not None:
+            d = fragDict[bam]
+            of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(d['min'],
+                                                           d['qtile25'],
+                                                           d['mean'],
+                                                           d['median'],
+                                                           d['qtile75'],
+                                                           d['max'],
+                                                           d['std']))
+        else:
+            of.write("\t0\t0\t0\t0\t0\t0\t0")
+        d = readDict[bam]
+        of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(d['min'],
+                                                         d['qtile25'],
+                                                         d['mean'],
+                                                         d['median'],
+                                                         d['qtile75'],
+                                                         d['max'],
+                                                         d['std']))
+    of.close()
 
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
 
     fraglengths = {}
+    readlengths = {}
+    of = None
+    if args.outRawFragmentLengths is not None:
+        of = open(args.outRawFragmentLengths, "w")
+        of.write("#bamPEFragmentSize\nSize\tOccurences\tSample\n")
     for idx, bam in enumerate(args.bamfiles):
-        fraglengths[bam] = getFragSize(bam, args, idx)
+        if args.table is not None:
+            f, r = getFragSize(bam, args, idx, of, doPrint=False)
+            fraglengths[bam] = f
+            readlengths[bam] = r
+        else:
+            fraglengths[bam] = getFragSize(bam, args, idx, of)
+
+    if args.table is not None:
+        printTable(args, fraglengths, readlengths)
 
     if args.histogram:
         import matplotlib
