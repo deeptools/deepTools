@@ -278,6 +278,8 @@ class CountReadsPerBin(object):
         for x in self.bamFilesList:
             try:
                 y = bamHandler.openBam(x)
+            except SystemExit:
+                sys.exit(sys.exc_info()[1])
             except:
                 y = pyBigWig.open(x)
             bamFilesHandlers.append(y)
@@ -424,6 +426,8 @@ class CountReadsPerBin(object):
         for fname in self.bamFilesList:
             try:
                 bam_handlers.append(bamHandler.openBam(fname))
+            except SystemExit:
+                sys.exit(sys.exc_info()[1])
             except:
                 bam_handlers.append(pyBigWig.open(fname))
 
