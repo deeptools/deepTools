@@ -128,6 +128,9 @@ def process_args(args=None):
               "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
         args.smoothLength = None
 
+    if not args.ignoreForNormalization:
+        args.ignoreForNormalization = []
+
     return args
 
 
@@ -185,6 +188,7 @@ def main(args=None):
                             samFlag_exclude=args.samFlagExclude,
                             minFragmentLength=args.minFragmentLength,
                             maxFragmentLength=args.maxFragmentLength,
+                            chrsToSkip=args.ignoreForNormalization,
                             verbose=args.verbose,
                             )
 
@@ -211,6 +215,7 @@ def main(args=None):
                             samFlag_exclude=args.samFlagExclude,
                             minFragmentLength=args.minFragmentLength,
                             maxFragmentLength=args.maxFragmentLength,
+                            chrsToSkip=args.ignoreForNormalization,
                             verbose=args.verbose)
         wr.filter_strand = args.filterRNAstrand
         wr.Offset = args.Offset
@@ -230,6 +235,7 @@ def main(args=None):
                                          samFlag_exclude=args.samFlagExclude,
                                          minFragmentLength=args.minFragmentLength,
                                          maxFragmentLength=args.maxFragmentLength,
+                                         chrsToSkip=args.ignoreForNormalization,
                                          verbose=args.verbose,
                                          )
 
