@@ -509,8 +509,8 @@ def main(args=None):
     # Raw counts
     if args.outRawCounts:
         of = open(args.outRawCounts, "w")
-        of.write("file\tfeatureType\tpercent\n")
+        of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
         for i, x in enumerate(args.labels):
             for k, v in featureCounts[i].items():
-                of.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
+                of.write("{0}\t{1}\t{2:5.2f}\t{3}\t{4}\n".format(x, k, (100.0 * v) / totalCounts[i],v,totalCounts[i]))
         of.close()
