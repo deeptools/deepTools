@@ -188,7 +188,7 @@ This tool determines read/fragment coverage of regions. The regions (e.g., exons
 Output
 --------
 
-The output file is a plot in the format specified. A table of the percentages can also be created.
+The output file is a plot in the format specified. A table of the percentages and raw counts can also be created.
 
 .. image:: $PATH_TO_IMAGES/plotEnrichment_output.png
    :width: 600
