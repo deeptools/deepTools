@@ -72,8 +72,7 @@ def required_args():
                           required=True)
 
     required.add_argument('--plotFile', '-o',
-                          help='File name to save the plot to.',
-                          required=True)
+                          help='File name to save the plot to.')
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -133,6 +132,10 @@ def required_args():
 
 def main(args=None):
     args = process_args(args)
+
+    if args.outRawCounts is None and args.plotFile is None:
+        sys.exit("At least one of --plotFile and --outRawCounts are required.\n")
+
     cr = countR.CountReadsPerBin(args.bamfiles,
                                  binLength=1,
                                  numberOfSamples=args.numberOfSamples,
@@ -151,9 +154,6 @@ def main(args=None):
                                  out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
-
-    sys.stderr.write("Number of non zero bins "
-                     "used: {}\n".format(num_reads_per_bin.shape[0]))
 
     if args.outRawCounts:
         # append to the generated file the
@@ -174,8 +174,10 @@ def main(args=None):
     if args.skipZeros:
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
 
-    fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
-    plt.suptitle(args.plotTitle)
+    if args.plotFile:
+        fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
+        plt.suptitle(args.plotTitle)
+
     # plot up to two std from mean
     num_reads_per_bin = num_reads_per_bin.astype(int)
     sample_mean = num_reads_per_bin.mean(axis=0)
@@ -202,15 +204,16 @@ def main(args=None):
     # sets that as the x_axis range.
     y_max = []
     for idx, col in enumerate(num_reads_per_bin.T):
-        frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
-        axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
-        csum = np.bincount(col.astype(int))[::-1].cumsum()
-        csum_frac = csum.astype(float)[::-1] / csum.max()
-        axs[1].plot(csum_frac, label=args.labels[idx])
-        # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
-        # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
-        # then find the fraction of bases sampled that that have the largest x
-        y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac > 0.5))])
+        if args.plotFile:
+            frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
+            axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+            csum = np.bincount(col.astype(int))[::-1].cumsum()
+            csum_frac = csum.astype(float)[::-1] / csum.max()
+            axs[1].plot(csum_frac, label=args.labels[idx])
+            # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
+            # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
+            # then find the fraction of bases sampled that that have the largest x
+            y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac > 0.5))])
         print("{}\t{:0.2f}\t{:0.2f}\t{}\t{}\t{}\t{}\t{}\t".format(args.labels[idx],
                                                                   sample_mean[idx],
                                                                   sample_std[idx],
@@ -221,20 +224,21 @@ def main(args=None):
                                                                   sample_max[idx],
                                                                   ))
 
-    # Don't clip plots
-    y_max = max(y_max)
-    axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
-    axs[0].set_xlim(0, x_max)
-    axs[0].set_xlabel('coverage (#reads per bp)')
-    axs[0].legend(fancybox=True, framealpha=0.5)
-    axs[0].set_ylabel('fraction of bases sampled')
-    # plot cumulative coverage
-    axs[1].set_xlim(0, x_max)
-    axs[1].set_xlabel('coverage (#reads per bp)')
-    axs[1].set_ylabel('fraction of bases sampled >= coverage')
-    axs[1].legend(fancybox=True, framealpha=0.5)
-    plt.savefig(args.plotFile, format=args.plotFileFormat)
-    plt.close()
+    if args.plotFile:
+        # Don't clip plots
+        y_max = max(y_max)
+        axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
+        axs[0].set_xlim(0, x_max)
+        axs[0].set_xlabel('coverage (#reads per bp)')
+        axs[0].legend(fancybox=True, framealpha=0.5)
+        axs[0].set_ylabel('fraction of bases sampled')
+        # plot cumulative coverage
+        axs[1].set_xlim(0, x_max)
+        axs[1].set_xlabel('coverage (#reads per bp)')
+        axs[1].set_ylabel('fraction of bases sampled >= coverage')
+        axs[1].legend(fancybox=True, framealpha=0.5)
+        plt.savefig(args.plotFile, format=args.plotFileFormat)
+        plt.close()
 
 
 if __name__ == "__main__":
