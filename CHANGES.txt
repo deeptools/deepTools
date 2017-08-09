@@ -13,6 +13,7 @@
  * Fixed a small bug generally affecting `plotFingerprint` where BAM files without an index were processed as bigWig files, resulting in a confusing error message (issue #574). Thanks to Sitanshu Gakkhar for poiting this out!
  * `bamPEFragmentSize` now has `--table` and `--outRawFragmentLengths` options. The former option will output the read/fragment metrics to a file in tabular format (in addition to the previous information written to the screen). The latter option will write the raw read/fragment counts to a tsv file. The format of the file is a line with "#bamPEFragmentSize", followed by a header line of "Size\tOccurences\tSample", which should facilitate processing in things like R. (issue #572)
  * `bamPEFragmentSize` will now plot the read length distribution for single-end BAM files. Note that if you mix single and paired-end files that the resulting plots may be difficult to interpret.
+ * The various plot commands do not actually have to plot anything, instead they can optionally only print their raw metrics or other text output. This is mostly useful with large numbers of input files, since the resulting plots can become quickly crowded. (issue #5719
 
 2.5.3
 
