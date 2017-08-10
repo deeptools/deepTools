@@ -121,7 +121,17 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
                                  'median': np.median(fragment_length),
                                  'qtile75': np.percentile(fragment_length, 75),
                                  'max': fragment_length.max(),
-                                 'std': np.std(fragment_length)}
+                                 'std': np.std(fragment_length),
+                                 'mad': np.median(np.abs(fragment_length - np.median(fragment_length))),
+                                 'qtile10': np.percentile(fragment_length, 10),
+                                 'qtile20': np.percentile(fragment_length, 20),
+                                 'qtile30': np.percentile(fragment_length, 30),
+                                 'qtile40': np.percentile(fragment_length, 40),
+                                 'qtile60': np.percentile(fragment_length, 60),
+                                 'qtile70': np.percentile(fragment_length, 70),
+                                 'qtile80': np.percentile(fragment_length, 80),
+                                 'qtile90': np.percentile(fragment_length, 90),
+                                 'qtile99': np.percentile(fragment_length, 99)}
         else:
             fragment_len_dict = None
 
@@ -135,7 +145,17 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
                          'median': np.median(read_length),
                          'qtile75': np.percentile(read_length, 75),
                          'max': read_length.max(),
-                         'std': np.std(read_length)}
+                         'std': np.std(read_length),
+                         'mad': np.median(np.abs(read_length - np.median(read_length))),
+                         'qtile10': np.percentile(read_length, 10),
+                         'qtile20': np.percentile(read_length, 20),
+                         'qtile30': np.percentile(read_length, 30),
+                         'qtile40': np.percentile(read_length, 40),
+                         'qtile60': np.percentile(read_length, 60),
+                         'qtile70': np.percentile(read_length, 70),
+                         'qtile80': np.percentile(read_length, 80),
+                         'qtile90': np.percentile(read_length, 90),
+                         'qtile99': np.percentile(read_length, 99)}
         if return_lengths:
             read_len_dict['lengths'] = read_length
     else:

@@ -135,10 +135,21 @@ def getFragSize(bam, args, idx, outRawFrags):
                                                       fragment_len_dict['qtile75'],
                                                       fragment_len_dict['max'],
                                                       fragment_len_dict['std']))
+        print("MAD: {}\nLen. 10%: {}\nLen. 20%: {}\nLen. 30%: {}\nLen. 40%: {}\nLen. 60%: {}\nLen. 70%: {}\nLen. 80%: {}\nLen. 90%: {}\nLen. 99%: {}\n".format(fragment_len_dict['mad'],
+                                                                                                                                                               fragment_len_dict['qtile10'],
+                                                                                                                                                               fragment_len_dict['qtile20'],
+                                                                                                                                                               fragment_len_dict['qtile30'],
+                                                                                                                                                               fragment_len_dict['qtile40'],
+                                                                                                                                                               fragment_len_dict['qtile60'],
+                                                                                                                                                               fragment_len_dict['qtile70'],
+                                                                                                                                                               fragment_len_dict['qtile80'],
+                                                                                                                                                               fragment_len_dict['qtile90'],
+                                                                                                                                                               fragment_len_dict['qtile99']))
     else:
         print("No pairs were found. Is the data from a paired-end sequencing experiment?")
 
     print("\nRead lengths:")
+    print("Sample size: {}\n".format(read_len_dict['sample_size']))
     print("Min.: {}\n1st Qu.: {}\nMean: {}\nMedian: {}\n"
           "3rd Qu.: {}\nMax.: {}\nStd: {}".format(read_len_dict['min'],
                                                   read_len_dict['qtile25'],
@@ -147,6 +158,16 @@ def getFragSize(bam, args, idx, outRawFrags):
                                                   read_len_dict['qtile75'],
                                                   read_len_dict['max'],
                                                   read_len_dict['std']))
+    print("MAD: {}\nLen. 10%: {}\nLen. 20%: {}\nLen. 30%: {}\nLen. 40%: {}\nLen. 60%: {}\nLen. 70%: {}\nLen. 80%: {}\nLen. 90%: {}\nLen. 99%: {}\n".format(read_len_dict['mad'],
+                                                                                                                                                           read_len_dict['qtile10'],
+                                                                                                                                                           read_len_dict['qtile20'],
+                                                                                                                                                           read_len_dict['qtile30'],
+                                                                                                                                                           read_len_dict['qtile40'],
+                                                                                                                                                           read_len_dict['qtile60'],
+                                                                                                                                                           read_len_dict['qtile70'],
+                                                                                                                                                           read_len_dict['qtile80'],
+                                                                                                                                                           read_len_dict['qtile90'],
+                                                                                                                                                           read_len_dict['qtile99']))
     return (fragment_len_dict, read_len_dict)
 
 
@@ -155,8 +176,12 @@ def printTable(args, fragDict, readDict):
     Print the read and fragment dictionary in more easily parsable tabular format to a file.
     """
     of = open(args.table, "w")
+    of.write("\tFrag. Sampled")
     of.write("\tFrag. Len. Min.\tFrag. Len. 1st. Qu.\tFrag. Len. Mean\tFrag. Len. Median\tFrag. Len. 3rd Qu.\tFrag. Len. Max\tFrag. Len. Std.")
-    of.write("\tRead Len. Min.\tRead Len. 1st. Qu.\tRead Len. Mean\tRead Len. Median\tRead Len. 3rd Qu.\tRead Len. Max\tRead Len. Std.\n")
+    of.write("\tFrag. Med. Abs. Dev.\tFrag. Len. 10%\tFrag. Len. 20%\tFrag. Len. 30%\tFrag. Len. 40%\tFrag. Len. 60%\tFrag. Len. 70%\tFrag. Len. 80%\tFrag. Len. 90%\tFrag. Len. 99%")
+    of.write("\tReads Sampled")
+    of.write("\tRead Len. Min.\tRead Len. 1st. Qu.\tRead Len. Mean\tRead Len. Median\tRead Len. 3rd Qu.\tRead Len. Max\tRead Len. Std.")
+    of.write("\tRead Med. Abs. Dev.\tRead Len. 10%\tRead Len. 20%\tRead Len. 30%\tRead Len. 40%\tRead Len. 60%\tRead Len. 70%\tRead Len. 80%\tRead Len. 90%\tRead Len. 99%\n")
 
     for idx, bam in enumerate(args.bamfiles):
         if args.samplesLabel and idx < len(args.samplesLabel):
@@ -165,6 +190,7 @@ def printTable(args, fragDict, readDict):
             of.write(bam)
         if fragDict is not None and fragDict[bam] is not None:
             d = fragDict[bam]
+            of.write("\t{}".format(d['sample_size']))
             of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(d['min'],
                                                            d['qtile25'],
                                                            d['mean'],
@@ -172,16 +198,39 @@ def printTable(args, fragDict, readDict):
                                                            d['qtile75'],
                                                            d['max'],
                                                            d['std']))
+            of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(d['mad'],
+                                                                       d['qtile10'],
+                                                                       d['qtile20'],
+                                                                       d['qtile30'],
+                                                                       d['qtile40'],
+                                                                       d['qtile60'],
+                                                                       d['qtile70'],
+                                                                       d['qtile80'],
+                                                                       d['qtile90'],
+                                                                       d['qtile99']))
         else:
+            of.write("\t0")
             of.write("\t0\t0\t0\t0\t0\t0\t0")
+            of.write("\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0")
         d = readDict[bam]
-        of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(d['min'],
-                                                         d['qtile25'],
-                                                         d['mean'],
-                                                         d['median'],
-                                                         d['qtile75'],
-                                                         d['max'],
-                                                         d['std']))
+        of.write("\t{}".format(d['sample_size']))
+        of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(d['min'],
+                                                       d['qtile25'],
+                                                       d['mean'],
+                                                       d['median'],
+                                                       d['qtile75'],
+                                                       d['max'],
+                                                       d['std']))
+        of.write("\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(d['mad'],
+                                                                     d['qtile10'],
+                                                                     d['qtile20'],
+                                                                     d['qtile30'],
+                                                                     d['qtile40'],
+                                                                     d['qtile60'],
+                                                                     d['qtile70'],
+                                                                     d['qtile80'],
+                                                                     d['qtile90'],
+                                                                     d['qtile99']))
     of.close()
 
 
