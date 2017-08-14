@@ -382,27 +382,27 @@ class Correlation:
             fig['layout']['xaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': xanchor}
             fig['layout']['yaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': yanchor}
 
+        annos = []
         for x in range(n):
             for y in range(n):
                 xanchor = 'x{}'.format(x + 1)
                 yanchor = 'y{}'.format(y + 1)
-                if x < y:
-                    print([x, y, xanchor, yanchor])
+                if x + y == n:
+                    # On the diagonal
+                    annos.append({'text': self.labels[x], 'showarrow': False, 'xref': xanchor, 'yref': yanchor, 'x': midPoint, 'y': midPoint})
+                elif x + y > n:
                     vector1 = self.matrix[:, x]
                     vector2 = self.matrix[:, y]
-                    trace = go.Scattergl(x=vector1, y=vector2, mode='markers', showlegend=False, xaxis={'range': [minVal, maxVal]}, yaxis={'range': [minVal, maxVal]})
+                    H, xEdges, yEdges = np.histogram2d(vector1, vector2, bins=100)
+                    trace = go.Contour(z=H, x=xEdges, y=yEdges, line=dict(smoothing=0.85), showlegend=False)
                     trace.update(xaxis=xanchor)
                     trace.update(yaxis=yanchor)
-                else:
-                    trace = {'showlegend': False, 'yaxis': yanchor, 'mode': 'text', 'xaxis': xanchor, 'x': [0], 'y': [0], 'text': [self.labels[x]]}
-                print(trace)
-                fig['data'].append(trace)
+                    fig['data'].append(trace)
         fig['layout'].update(title=plot_title)
-        #fig['layout']['xaxis']['range'] = [minVal, maxVal]
-        #fig['layout']['yaxis']['range'] = [minVal, maxVal]
-        #fig['layout']['showlegend'] = False
-        print(fig['data'])
-        print(fig['layout'])
+        fig['layout']['xaxis']['range'] = [minVal, maxVal]
+        fig['layout']['yaxis']['range'] = [minVal, maxVal]
+        fig['layout']['showlegend'] = False
+        fig['layout']['annotations'] = annos
 
         offline.plot(fig, filename=plot_filename, auto_open=False)
 

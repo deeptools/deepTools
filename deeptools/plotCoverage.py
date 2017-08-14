@@ -11,6 +11,8 @@ matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
+import plotly.offline as py
+import plotly.graph_objs as go
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -124,9 +126,9 @@ def required_args():
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
-                          'eps, pdf and svg.',
+                          'eps, pdf, svg and plotly.',
                           default=None,
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     return parser
 
@@ -174,8 +176,16 @@ def main(args=None):
     if args.skipZeros:
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
 
-    fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
-    plt.suptitle(args.plotTitle)
+    if args.plotFileFormat == 'plotly':
+        fig = go.Figure()
+        fig['layout']['xaxis1'] = {'domain': [0.0, 0.48], 'anchor': 'x1', 'title': 'coverage (#reads per base)'}
+        fig['layout']['xaxis2'] = {'domain': [0.52, 1.0], 'anchor': 'x2', 'title': 'coverage (#reads per base)'}
+        fig['layout']['yaxis1'] = {'domain': [0.0, 1.0], 'anchor': 'x1', 'title': 'fraction of bases sampled'}
+        fig['layout']['yaxis2'] = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'fraction of bases sampled >= coverage'}
+        fig['layout'].update(title=args.plotTitle)
+    else:
+        fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
+        plt.suptitle(args.plotTitle)
     # plot up to two std from mean
     num_reads_per_bin = num_reads_per_bin.astype(int)
     sample_mean = num_reads_per_bin.mean(axis=0)
@@ -201,12 +211,30 @@ def main(args=None):
     # the current implementation aims to find the y_value for which 50% of the reads >= x (coverage) and
     # sets that as the x_axis range.
     y_max = []
+    data = []
     for idx, col in enumerate(num_reads_per_bin.T):
         frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
-        axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
         csum = np.bincount(col.astype(int))[::-1].cumsum()
         csum_frac = csum.astype(float)[::-1] / csum.max()
-        axs[1].plot(csum_frac, label=args.labels[idx])
+        if args.plotFileFormat == 'plotly':
+            print(x_max)
+            trace = go.Scatter(x=np.arange(0, int(x_max) - 1),
+                               y=frac_reads_per_coverage[:int(x_max)],
+                               mode='lines',
+                               xaxis='x1',
+                               yaxis='y1',
+                               name="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+            data.append(trace)
+            trace = go.Scatter(x=np.arange(0, int(x_max) - 1),
+                               y=csum_frac[:int(x_max)],
+                               mode='lines',
+                               xaxis='x2',
+                               yaxis='y2',
+                               name=args.labels[idx])
+            data.append(trace)
+        else:
+            axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+            axs[1].plot(csum_frac, label=args.labels[idx])
         # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
         # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
         # then find the fraction of bases sampled that that have the largest x
@@ -223,18 +251,24 @@ def main(args=None):
 
     # Don't clip plots
     y_max = max(y_max)
-    axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
-    axs[0].set_xlim(0, x_max)
-    axs[0].set_xlabel('coverage (#reads per bp)')
-    axs[0].legend(fancybox=True, framealpha=0.5)
-    axs[0].set_ylabel('fraction of bases sampled')
-    # plot cumulative coverage
-    axs[1].set_xlim(0, x_max)
-    axs[1].set_xlabel('coverage (#reads per bp)')
-    axs[1].set_ylabel('fraction of bases sampled >= coverage')
-    axs[1].legend(fancybox=True, framealpha=0.5)
-    plt.savefig(args.plotFile, format=args.plotFileFormat)
-    plt.close()
+    if args.plotFileFormat == "plotly":
+        fig['data'] = data
+        fig['layout']['yaxis1'].update(range=[0.0,  min(1, y_max + (y_max * 0.10))])
+        fig['layout']['yaxis2'].update(range=[0.0,  1.0])
+        py.plot(fig, show_link=False, filename=args.plotFile, auto_open=False)
+    else:
+        axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
+        axs[0].set_xlim(0, x_max)
+        axs[0].set_xlabel('coverage (#reads per bp)')
+        axs[0].legend(fancybox=True, framealpha=0.5)
+        axs[0].set_ylabel('fraction of bases sampled')
+        # plot cumulative coverage
+        axs[1].set_xlim(0, x_max)
+        axs[1].set_xlabel('coverage (#reads per bp)')
+        axs[1].set_ylabel('fraction of bases sampled >= coverage')
+        axs[1].legend(fancybox=True, framealpha=0.5)
+        plt.savefig(args.plotFile, format=args.plotFileFormat)
+        plt.close()
 
 
 if __name__ == "__main__":
