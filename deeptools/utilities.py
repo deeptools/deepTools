@@ -157,8 +157,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         """
         try:
             # BAM file
-            return [(bam_handler.references[i], bam_handler.lengths[i])
-                    for i in range(0, len(bam_handler.references))]
+            return [(x, y) for x, y in zip(bam_handler.references, bam_handler.lengths)]
         except:
             return [(k, v) for k, v in bam_handler.chroms().items()]
 
