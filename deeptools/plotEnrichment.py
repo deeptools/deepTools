@@ -365,11 +365,11 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
         domainWidth = .9 / cols
         domainHeight = .9 / rows
         bufferHeight = 0.0
-        if cols > 1:
-            bufferHeight = 0.1 / (cols - 1)
-        bufferWidth = 0.0
         if rows > 1:
-            bufferWidth = 0.1 / (rows - 1)
+            bufferHeight = 0.1 / (rows - 1)
+        bufferWidth = 0.0
+        if cols > 1:
+            bufferWidth = 0.1 / (cols - 1)
     else:
         grids = gridspec.GridSpec(rows, cols)
         plt.rcParams['font.size'] = 10.0
