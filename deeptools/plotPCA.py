@@ -70,8 +70,8 @@ def plotCorrelationArgs():
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
-                          'eps, pdf and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          'eps, pdf, plotly and svg.',
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument('--plotHeight',
                           help='Plot height in cm.',

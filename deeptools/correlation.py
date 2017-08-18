@@ -509,6 +509,65 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
+    def plotly_pca(self, plotFile, Wt, pvar, PCs, eigenvalues, cols, plotTitle):
+        """
+        A plotly version of plot_pca, that's called by it to do the actual plotting
+        """
+        fig = go.Figure()
+        fig['layout']['xaxis1'] = {'domain': [0.0, 0.48], 'anchor': 'x1', 'title': 'PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1])}
+        fig['layout']['yaxis1'] = {'domain': [0.0, 1.0], 'anchor': 'x1', 'title': 'PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1])}
+        fig['layout']['xaxis2'] = {'domain': [0.52, 1.0], 'anchor': 'x2', 'title': 'Principal Component'}
+        fig['layout']['yaxis2'] = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'Eigenvalue', 'rangemode': 'tozero', 'overlaying': 'y'}
+        fig['layout']['yaxis3'] = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'Cumulative variability', 'rangemode': 'tozero', 'side': 'right', 'overlaying': 'y'}
+        fig['layout'].update(title=plotTitle)
+
+        # PCA
+        if cols is not None:
+            colors = itertools.cycle(cols)
+        n = len(self.labels)
+        data = []
+        for i in range(n):
+            trace = go.Scatter(x=[Wt[PCs[0] - 1, i]],
+                               y=[Wt[PCs[1] - 1, i]],
+                               mode='marker',
+                               xaxis='x1',
+                               yaxis='y1',
+                               name=self.labels[i])
+            trace['marker'].update(size=20)
+            if cols is not None:
+                trace['marker'].update(color=next(colors))
+            data.append(trace)
+
+        # Scree plot
+        trace = go.Bar(showlegend=False,
+                       name='Eigenvalues',
+                       x=range(1, n+1),
+                       y=eigenvalues[:n],
+                       xaxis='x2',
+                       yaxis='y2')
+        data.append(trace)
+
+        # Cumulative variability
+        trace = go.Scatter(showlegend=False,
+                           x=range(1, n+1),
+                           y=pvar.cumsum()[:n],
+                           mode='lines+markers',
+                           name='Cumulative variability',
+                           xaxis='x2',
+                           yaxis='y3',
+                           line={'color': 'red'},
+                           marker={'symbol': 'circle-open-dot', 'color': 'black'})
+        data.append(trace)
+
+        annos = []
+        annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': 'PCA', 'y': 1.0, 'x': 0.25, 'font': {'size': 16}, 'showarrow': False})
+        annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': 'Scree plot', 'y': 1.0, 'x': 0.75, 'font': {'size': 16}, 'showarrow': False})
+
+        fig['data'] = data
+        fig['layout']['annotations'] = annos
+        offline.plot(fig, show_link=False, filename=plotFile, auto_open=False)
+
+
     def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None):
         """
         Plot the PCA of a matrix
@@ -560,45 +619,48 @@ class Correlation:
             else:
                 colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
 
-            ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
-            ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
-            for i in range(n):
-                ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
-                            marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
-            if plot_title == '':
-                ax1.set_title('PCA')
+            if image_format == 'plotly':
+                self.plotly_pca(plot_filename, Wt, pvar, PCs, eigenvalues, cols, plot_title)
             else:
-                ax1.set_title(plot_title)
-            ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
-            ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
-            lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
-                             bbox_to_anchor=(1, 0.5),
-                             prop={'size': 12}, markerscale=0.9)
+                ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
+                ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
+                for i in range(n):
+                    ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
+                                marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
+                if plot_title == '':
+                    ax1.set_title('PCA')
+                else:
+                    ax1.set_title(plot_title)
+                ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
+                ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
+                lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
+                                 bbox_to_anchor=(1, 0.5),
+                                 prop={'size': 12}, markerscale=0.9)
 
-            # Scree plot
-            ind = np.arange(n)  # the x locations for the groups
-            width = 0.35        # the width of the bars
+                # Scree plot
+                ind = np.arange(n)  # the x locations for the groups
+                width = 0.35        # the width of the bars
 
-            if mpl.__version__ >= "2.0.0":
-                ax2.bar(2 * width + ind, eigenvalues[:n], width * 2)
-            else:
-                ax2.bar(width + ind, eigenvalues[:n], width * 2)
-            ax2.set_ylabel('Eigenvalue')
-            ax2.set_xlabel('Principal Component')
-            ax2.set_title('Scree plot')
-            ax2.set_xticks(ind + width * 2)
-            ax2.set_xticklabels(ind + 1)
+                if mpl.__version__ >= "2.0.0":
+                    ax2.bar(2 * width + ind, eigenvalues[:n], width * 2)
+                else:
+                    ax2.bar(width + ind, eigenvalues[:n], width * 2)
+                ax2.set_ylabel('Eigenvalue')
+                ax2.set_xlabel('Principal Component')
+                ax2.set_title('Scree plot')
+                ax2.set_xticks(ind + width * 2)
+                ax2.set_xticklabels(ind + 1)
 
-            ax3 = ax2.twinx()
-            ax3.axhline(y=1, color="black", linestyle="dotted")
-            ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "r-")
-            ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "wo", markeredgecolor="black")
-            ax3.set_ylim([0, 1.05])
-            ax3.set_ylabel('Cumulative variability')
+                ax3 = ax2.twinx()
+                ax3.axhline(y=1, color="black", linestyle="dotted")
+                ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "r-")
+                ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "wo", markeredgecolor="black")
+                ax3.set_ylim([0, 1.05])
+                ax3.set_ylabel('Cumulative variability')
 
-            plt.subplots_adjust(top=3.85)
-            plt.tight_layout()
-            plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
-            plt.close()
+                plt.subplots_adjust(top=3.85)
+                plt.tight_layout()
+                plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+                plt.close()
 
         return Wt, eigenvalues
