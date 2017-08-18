@@ -236,6 +236,18 @@ def get_scale_factor(args):
 
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
+
+    elif args.normalizeUsingCPM:
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: CPM\n")
+
+        # the CPM
+        million_reads_mapped = float(bam_mapped) / 1e6
+        scale_factor *= 1.0 / (million_reads_mapped)
+
+        if debug:
+            print("scale factor using CPM is {0}".format(args.scaleFactor))
+
     else:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: depth\n")

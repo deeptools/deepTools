@@ -143,7 +143,7 @@ def main(args=None):
     else:
         debug = 0
 
-    if args.normalizeTo1x or args.normalizeUsingRPKM:
+    if args.normalizeTo1x or args.normalizeUsingRPKM or args.normalizeUsingCPM:
         # if a normalization is required then compute the scale factors
         scale_factor = get_scale_factor(args)
     else:

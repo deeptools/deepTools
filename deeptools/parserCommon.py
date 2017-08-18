@@ -242,6 +242,17 @@ def normalization_options():
                        action='store_true',
                        required=False)
 
+    group.add_argument('--normalizeUsingCPM',
+                       help='Use Counts Per per Million reads to '
+                       'normalize the number of reads per bin. (Same as CPM used for RNA seq)'
+                       'The formula is: CPM (per bin) =  number of reads per bin / '
+                       'number of mapped reads (in millions) '
+                       'Each read is considered independently,'
+                       'if you want to only count either of the mate pairs in'
+                       'paired-end data, use the --samFlag option.',
+                       action='store_true',
+                       required=False)
+
     group.add_argument('--ignoreForNormalization', '-ignore',
                        help='A list of space-delimited chromosome names '
                        'containing those chromosomes that should be excluded '
