@@ -398,11 +398,9 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
             yanchor = 'y{}'.format(i + 1)
             base = row * (domainHeight + bufferHeight)
             domain = [base, base + domainHeight]
-            print("x[{}] {}".format(i, domain))
             fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': yanchor}
             base = col * (domainWidth + bufferWidth)
             domain = [base, base + domainWidth]
-            print("y[{}] {}".format(i, domain))
             fig['layout']['yaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': xanchor, 'title': ylabel}
             if args.variableScales is False:
                 fig['layout']['yaxis{}'.format(i + 1)].update(range=[0, 100])
@@ -427,7 +425,6 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
 
     if args.plotFileFormat == 'plotly':
         fig['data'] = data
-        print(fig)
         py.plot(fig, filename=args.plotFile, auto_open=False)
         # colors
     else:
