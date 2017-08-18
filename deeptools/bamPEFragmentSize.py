@@ -4,6 +4,9 @@
 import argparse
 import sys
 
+import plotly.offline as py
+import plotly.graph_objs as go
+
 # own tools
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools._version import __version__
@@ -28,6 +31,15 @@ def parse_arguments():
                         help='Save a .png file with a histogram '
                         'of the fragment length distribution.',
                         metavar='FILE')
+
+    parser.add_argument('--plotFileFormat',
+                        metavar='FILETYPE',
+                        help='Image format type. If given, this option '
+                        'overrides the image format based on the plotFile '
+                        'ending. The available options are: png, '
+                        'eps, pdf, svg and plotly.',
+                        default=None,
+                        choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     parser.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. The default is '
@@ -149,25 +161,45 @@ def main(args=None):
             labels = list(fraglengths.keys())
 
         i = 0
+        data = []
         for bam in fraglengths.keys():
-
             if args.maxFragmentLength > 0:
                 maxVal = args.maxFragmentLength
             else:
                 maxVal = fraglengths[bam]['mean'] * 2
 
-            plt.hist(fraglengths[bam]['lengths'], 100,
-                     range=(fraglengths[bam]['min'], maxVal),
-                     alpha=0.5, label=labels[i],
-                     log=args.logScale, normed=True)
+            if args.plotFileFormat == 'plotly':
+                trace = go.Histogram(x=fraglengths[bam]['lengths'],
+                                     histnorm='probability',
+                                     opacity=0.5,
+                                     name=labels[i],
+                                     nbinsx=100,
+                                     xbins=dict(start=fraglengths[bam]['min'], end=maxVal))
+                data.append(trace)
+            else:
+                plt.hist(fraglengths[bam]['lengths'], 100,
+                         range=(fraglengths[bam]['min'], maxVal),
+                         alpha=0.5, label=labels[i],
+                         log=args.logScale, normed=True)
             i += 1
 
-        plt.xlabel('Fragment Length')
-        plt.ylabel('Frequency')
-        plt.legend(loc='upper right')
-        plt.title(args.plotTitle)
-        plt.savefig(args.histogram, bbox_inches=0)
-        plt.close()
+        if args.plotFileFormat == 'plotly':
+            fig = go.Figure()
+            fig['data'] = data
+            fig['layout']['yaxis1'].update(title='Frequency')
+            fig['layout']['xaxis1'].update(title='Fragment Length')
+            fig['layout'].update(title=args.plotTitle)
+            fig['layout'].update(showlegend=True)
+            if args.logScale:
+                fig['layout']['yaxis1'].update(type='log')
+            py.plot(fig, show_link=False, filename=args.histogram, auto_open=False)
+        else:
+            plt.xlabel('Fragment Length')
+            plt.ylabel('Frequency')
+            plt.legend(loc='upper right')
+            plt.title(args.plotTitle)
+            plt.savefig(args.histogram, bbox_inches=0, format=args.plotFileFormat)
+            plt.close()
 
 
 if __name__ == "__main__":
