@@ -445,7 +445,7 @@ is vital to you, select Yes below.">
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
                 ln -s "${bamfile}" "./${counter}.bam" &&
                 ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
-                #silent $files.append('%s.bam' % $counter)
+                #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % identifier)
             #end for
         #else:
@@ -453,7 +453,7 @@ is vital to you, select Yes below.">
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
                 ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
-                #silent $files.append('%s.bam' % $counter)
+                #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
@@ -469,14 +469,14 @@ is vital to you, select Yes below.">
             #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
                 ln -f -s "${bigwig}" "${identifier}_${counter}.bw" &&
-                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
+                #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bigwigfiles.element_identifier))
                 ln -f -s "${f.bigwigfiles}" "${identifier}_${counter}.bw" &&
-                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
+                #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
