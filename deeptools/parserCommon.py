@@ -781,8 +781,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'option overrides the '
                           'image format based on the plotFile ending. '
                           'The available options are: "png", '
-                          '"eps", "pdf" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          '"eps", "pdf", "plotly" and "svg"',
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument('--verbose',
                           help='If set, warning messages and '

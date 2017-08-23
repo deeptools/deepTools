@@ -4,6 +4,8 @@ matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.colors as pltcolors
+import plotly.offline as py
+import plotly.graph_objs as go
 
 old_settings = np.seterr(all='ignore')
 
@@ -86,6 +88,36 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     ax.set_xlim(0, max(x))
 
     return ax
+
+
+def plotly_single(ma, average_type, color, label, plot_type='simple'):
+    """A plotly version of plot_single. Returns a list of traces"""
+    summary = list(np.ma.__getattribute__(average_type)(ma, axis=0))
+    x = list(np.arange(len(summary)))
+    if isinstance(color, str):
+        color = list(matplotlib.colors.to_rgb(color))
+    traces = [go.Scatter(x=x, y=summary, name=label, line={'color': "rgba({},{},{},0.9)".format(color[0], color[1], color[2])}, showlegend=False)]
+    if plot_type == 'fill':
+        traces[0].update(fill='tozeroy', fillcolor=color)
+
+    if plot_type in ['se', 'std']:
+        if plot_type == 'se':  # standard error
+            std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
+        else:
+            std = np.std(ma, axis=0)
+
+        x_rev = x[::-1]
+        lower = summary - std
+        trace = go.Scatter(x=x + x_rev,
+                           y=np.concatenate([summary + std, lower[::-1]]),
+                           fill='tozerox',
+                           fillcolor="rgba({},{},{},0.2)".format(color[0], color[1], color[2]),
+                           line=go.Line(color='transparent'),
+                           showlegend=False,
+                           name=label)
+        traces.append(trace)
+
+    return traces
 
 
 def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
