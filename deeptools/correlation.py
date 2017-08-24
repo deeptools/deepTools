@@ -374,7 +374,7 @@ class Correlation:
 
         midPoint = minVal + 0.5 * (maxVal - minVal)
         domainWidth = 1. / n
-        for x in range(n):
+        for x in range(1, n):
             xanchor = 'x{}'.format(x + 1)
             yanchor = 'y{}'.format(x + 1)
             domain = [x * domainWidth, (x + 1) * domainWidth]
