@@ -138,8 +138,8 @@ def getRequiredArgs():
                        'option overrides the '
                        'image format based on the plotFile ending. '
                        'The available options are: "png", '
-                       '"eps", "pdf" and "svg"',
-                       choices=['png', 'pdf', 'svg', 'eps'])
+                       '"eps", "pdf", "plotly" and "svg"',
+                       choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     return parser
 
@@ -543,6 +543,50 @@ def bin_by(x, y, nbins=10):
     return output, bins
 
 
+def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
+    import plotly.offline as py
+    import plotly.graph_objs as go
+    import matplotlib.cbook as cbook
+
+    fig = go.Figure()
+    fig['layout']['xaxis1'] = dict(domain=[0.0, 1.0], anchor="y1", title="GC fraction")
+    fig['layout']['yaxis1'] = dict(domain=[0.55, 1.0], anchor="x1", title="Number of reads")
+    fig['layout']['xaxis2'] = dict(domain=[0.0, 1.0], anchor="y2", title="GC fraction", range=[0.2, 0.7])
+    fig['layout']['yaxis2'] = dict(domain=[0.0, 0.45], anchor="x2", title="log2(observed/expected)")
+    text = "reads per {} base region".format(region_size)
+    annos = [{'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': text, 'y': 1.0, 'x': 0.5, 'font': {'size': 16}, 'showarrow': False}]
+    text = "normalized observed/expected read counts"
+    annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': text, 'y': 0.5, 'x': 0.5, 'font': {'size': 16}, 'showarrow': False})
+
+    # prepare data for boxplot
+    reads, GC = reads_per_gc.T
+    reads_per_gc, bin_labels = bin_by(reads, GC, nbins=100)
+    to_keep = [idx for idx, x in enumerate(bin_labels) if 0.2 <= x <= 0.7]
+    reads_per_gc = [reads_per_gc[x] for x in to_keep]
+    bin_labels = [bin_labels[x] for x in to_keep]
+
+    # produce the same boxplot as matplotlib as vastly reduce the output file size
+    bins = []
+    for b in reads_per_gc:
+        s = cbook.boxplot_stats(b)[0] # whislo, q1, med, q3, whishi
+        bins.append([s['whislo'], s['q1'], s['q1'], s['med'], s['med'], s['med'], s['q3'], s['q3'], s['whishi']])
+
+    data = []
+
+    # top plot
+    for x, y in zip(bin_labels, bins):
+        trace = go.Box(x=x, y=y, xaxis='x1', yaxis='y1', boxpoints='outliers', showlegend=False, name="{}".format(x), line=dict(color='rgb(107,174,214)'))
+        data.append(trace)
+
+    # bottom plot
+    x = np.linspace(0, 1, frequencies.shape[0])
+    trace = go.Scatter(x=x, y=np.log2(frequencies[:, 2]), xaxis='x2', yaxis='y2', showlegend=False, line=dict(color='rgb(107,174,214)'))
+    data.append(trace)
+    fig['data'] = data
+    fig['layout']['annotations'] = annos
+    py.plot(fig, show_link=False, filename=file_name, auto_open=False)
+
+
 def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=None):
     import matplotlib
     matplotlib.use('Agg')
@@ -678,7 +722,10 @@ def main(args=None):
                                        numberOfProcessors=args.numberOfProcessors,
                                        verbose=args.verbose,
                                        region=args.region)
-        plotGCbias(args.biasPlot, data, reads_per_gc, args.regionSize, image_format=args.plotFileFormat)
+        if args.plotFileFormat == "plotly":
+            plotlyGCbias(args.biasPlot, data, reads_per_gc, args.regionSize)
+        else:
+            plotGCbias(args.biasPlot, data, reads_per_gc, args.regionSize, image_format=args.plotFileFormat)
 
 
 class Tester():
