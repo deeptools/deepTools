@@ -223,7 +223,7 @@ def get_scale_factor(args):
             print("Estimated current coverage {}".format(current_coverage))
             print("Scaling factor {}".format(args.scaleFactor))
 
-    elif args.normalizeUsingRPKM:
+    elif args.normalizeUsing == 'RPKM':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: RPKM\n")
 
@@ -237,7 +237,7 @@ def get_scale_factor(args):
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
 
-    elif args.normalizeUsingCPM:
+    elif args.normalizeUsing == 'CPM':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: CPM\n")
 
@@ -248,7 +248,7 @@ def get_scale_factor(args):
         if debug:
             print("scale factor using CPM is {0}".format(args.scaleFactor))
 
-    elif args.normalizeUsingBPM:
+    elif args.normalizeUsing == 'BPM':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: BPM\n")
         # the BPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")

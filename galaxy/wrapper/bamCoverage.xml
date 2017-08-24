@@ -20,7 +20,7 @@
             --binSize $binSize
 
             #if $scaling.type=='rpkm':
-                --normalizeUsingRPKM
+                --normalizeUsing RPKM
             #elif $scaling.type=='1x':
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
@@ -129,7 +129,7 @@
                         --Offset 5 -1 will result in the 5th through last position being used, which
                         is equivalent to trimming 4 bases from the 5-prime end of alignments." />
 
-                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
+                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
                     help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                           Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
                     <option value="no" selected="true">no</option>

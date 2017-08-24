@@ -122,7 +122,7 @@ def getOptionalArgs():
                           'if the ratio is less than 0. The resulting '
                           'values are interpreted as negative fold changes. '
                           '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
-                          '--normalizeUsingRPKM be used. Instead of performing a '
+                          '--normalizeUsing RPKM be used. Instead of performing a '
                           'computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
                           'the \'--ratio first\' or \'--ratio second\'',
@@ -160,9 +160,9 @@ def get_scale_factors(args):
     if args.ratio == 'subtract':
         # We need raw counts in this case
         normalizeTo1x = args.normalizeTo1x
-        normalizeUsingRPKM = args.normalizeUsingRPKM
+        normalizeUsing = args.normalizeUsing
         args.normalizeTo1x = False
-        args.normalizeUsingRPKM = False
+        args.normalizeUsing = None
 
     # This is only used if we subtract
     mapped_reads = [None, None]
@@ -269,7 +269,7 @@ def get_scale_factors(args):
 
         # Replace the arguments
         args.normalizeTo1x = normalizeTo1x
-        args.normalizeUsingRPKM = normalizeUsingRPKM
+        args.normalizeUsing = normalizeUsing
 
         if args.scaleFactors is None:
             if args.normalizeTo1x:

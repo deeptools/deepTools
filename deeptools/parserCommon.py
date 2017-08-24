@@ -231,37 +231,20 @@ def normalization_options():
                        type=int,
                        required=False)
 
-    group.add_argument('--normalizeUsingRPKM',
-                       help='Use Reads Per Kilobase per Million reads to '
-                       'normalize the number of reads per bin. The formula '
-                       'is: RPKM (per bin) =  number of reads per bin / '
-                       '( number of mapped reads (in millions) * bin '
-                       'length (kb) ). Each read is considered independently,'
-                       'if you want to only count either of the mate pairs in'
-                       'paired-end data, use the --samFlag option.',
-                       action='store_true',
-                       required=False)
-
-    group.add_argument('--normalizeUsingCPM',
-                       help='Use Counts Per per Million reads to '
-                       'normalize the number of reads per bin. (Same as CPM used for RNA seq)'
-                       'The formula is: CPM (per bin) =  number of reads per bin / '
-                       'number of mapped reads (in millions) '
+    group.add_argument('--normalizeUsing',
+                       help='Use on of the entered method to '
+                       'normalize the number of reads per bin. The formulas are: '
+                       'RPKM (per bin) =  number of reads per bin / '
+                       '( number of mapped reads (in millions) * bin length (kb) ).'
+                       'CPM (per bin) =  number of reads per bin / '
+                       'number of mapped reads (in millions). '
+                       'BPM (per bin) =  number of reads per bin / '
+                       'sum of all reads per bin (in millions). '
                        'Each read is considered independently,'
                        'if you want to only count either of the mate pairs in'
                        'paired-end data, use the --samFlag option.',
-                       action='store_true',
-                       required=False)
-
-    group.add_argument('--normalizeUsingBPM',
-                       help='Use Bins Per per Million reads to '
-                       'normalize the number of reads. (Same as TPM used for RNA seq)'
-                       'The formula is: BPM (per bin) =  number of reads per bin / '
-                       'sum of all reads per bin (in millions) '
-                       'Each read is considered independently, '
-                       'if you want to only count either of the mate pairs in'
-                       'paired-end data, use the --samFlag option.',
-                       action='store_true',
+                       choices=['RPKM', 'CPM', 'BPM'],
+                       default=None,
                        required=False)
 
     group.add_argument('--ignoreForNormalization', '-ignore',

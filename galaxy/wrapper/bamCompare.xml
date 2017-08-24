@@ -36,7 +36,7 @@
 
             #if $comparison.type == 'subtract':
                 #if $comparison.normalization.type == 'rpkm':
-                    --normalizeUsingRPKM
+                    --normalizeUsing RPKM
                 #elif $comparison.normalization.type == '1x':
 
                     #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
