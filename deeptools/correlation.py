@@ -367,40 +367,58 @@ class Correlation:
         fig.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plotly_scatter(self, plot_filename, plot_title='', minVal=None, maxVal=None):
+    def plotly_scatter(self, plot_filename, corr_matrix, plot_title='', minVal=None, maxVal=None):
         """Make the scatter plot of a matrix with plotly"""
         n = self.matrix.shape[1]
+        self.matrix = self.matrix
         fig = go.Figure()
-
-        midPoint = minVal + 0.5 * (maxVal - minVal)
         domainWidth = 1. / n
-        for x in range(1, n):
-            xanchor = 'x{}'.format(x + 1)
-            yanchor = 'y{}'.format(x + 1)
-            domain = [x * domainWidth, (x + 1) * domainWidth]
-            fig['layout']['xaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': xanchor}
-            fig['layout']['yaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': yanchor}
 
         annos = []
+        for i in range(n):
+            x = domainWidth * (i + 1)
+            y = 1 - (domainWidth * i + 0.5 * domainWidth)
+            anno = dict(text=self.labels[i], showarrow=False, xref='paper', yref='paper', x=x, y=y, xanchor='right', yanchor='middle')
+            annos.append(anno)
+
         data = []
+        zMin = np.inf
+        zMax = -np.inf
         for x in range(n):
-            for y in range(n):
-                xanchor = 'x{}'.format(x + 1)
+            xanchor = 'x{}'.format(x + 1)
+            base = x * domainWidth
+            domain = [base, base + domainWidth]
+            if x > 0:
+                base = 1 - base
+                fig['layout']['xaxis{}'.format(x + 1)] = dict(domain=domain, range=[minVal, maxVal], anchor='free', position=base)
+            for y in range(0, n):
                 yanchor = 'y{}'.format(y + 1)
-                if x + y == n:
-                    # On the diagonal
-                    annos.append({'text': self.labels[x], 'showarrow': False, 'xref': xanchor, 'yref': yanchor, 'x': midPoint, 'y': midPoint})
-                elif x + y > n:
+                if x == 1:
+                    base = 1 - y * domainWidth
+                    domain = [base - domainWidth, base]
+                    fig['layout']['yaxis{}'.format(y + 1)] = dict(domain=domain, range=[minVal, maxVal], side='right', anchor='free', position=1.0)
+
+                if x > y:
                     vector1 = self.matrix[:, x]
                     vector2 = self.matrix[:, y]
-                    H, xEdges, yEdges = np.histogram2d(vector1, vector2, bins=100)
-                    trace = go.Contour(z=H, x=xEdges, y=yEdges, line=dict(smoothing=0.85), showlegend=False, xaxis=xanchor, yaxis=yanchor, connectgaps=True)
+                    Z, xEdges, yEdges = np.histogram2d(vector1, vector2, bins=50)
+                    Z = np.log10(Z)
+                    if np.min(Z) < zMin:
+                        zMin = np.min(Z)
+                    if np.max(Z) > zMax:
+                        zMax = np.max(Z)
+                    name = '{}={:.2f}'.format(self.corr_method, corr_matrix[x, y])
+                    trace = go.Heatmap(z=Z, x=xEdges, y=yEdges, showlegend=False, xaxis=xanchor, yaxis=yanchor, name=name, showscale=False)
                     data.append(trace)
+
+        # Fix the colorbar bounds
+        for trace in data:
+            trace.update(zmin=zMin, zmax=zMax)
+        data[-1]['colorbar'].update(title="log10(instances per bin)", titleside="right")
+        data[-1].update(showscale=True)
+
         fig['data'] = data
-        fig['layout'].update(title=plot_title, showlegend=False)
-        fig['layout']['xaxis']['range'] = [minVal, maxVal]
-        fig['layout']['yaxis']['range'] = [minVal, maxVal]
-        fig['layout']['annotations'] = annos
+        fig['layout'].update(title=plot_title, showlegend=False, annotations=annos)
 
         offline.plot(fig, filename=plot_filename, auto_open=False)
 
@@ -430,7 +448,7 @@ class Correlation:
 
         # plotly output
         if image_format == 'plotly':
-            self.plotly_scatter(plot_filename, plot_title=plot_title, minVal=min_value, maxVal=max_value)
+            self.plotly_scatter(plot_filename, corr_matrix, plot_title=plot_title, minVal=min_value, maxVal=max_value)
             return
 
         rows, cols = np.triu_indices(num_samples)
