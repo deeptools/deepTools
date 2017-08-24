@@ -609,14 +609,13 @@ class Profile(object):
                 if np.max(mat[-1]) > zmax:
                     zmax = np.max(mat[-1])
             totalWidth = len(mat[-1])
-            x = range(totalWidth + 1)
-            trace = go.Heatmap(name=title, z=mat, x=x, y=labels, xaxis=xanchor, yaxis=yanchor)
+            trace = go.Heatmap(name=title, z=mat, x=range(totalWidth + 1), y=labels, xaxis=xanchor, yaxis=yanchor)
             data.append(trace)
 
             # Add ticks
             if np.ceil(max(self.xticks)) != float(totalWidth):
                 tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x_ * tickscale for x_ in self.xticks]
+                xticks_use = [x * tickscale for x in self.xticks]
             else:
                 xticks_use = self.xticks
             xticks_use = [np.ceil(x) for x in xticks_use]

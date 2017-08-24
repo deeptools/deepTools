@@ -568,7 +568,7 @@ def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
     # produce the same boxplot as matplotlib as vastly reduce the output file size
     bins = []
     for b in reads_per_gc:
-        s = cbook.boxplot_stats(b)[0] # whislo, q1, med, q3, whishi
+        s = cbook.boxplot_stats(b)[0]
         bins.append([s['whislo'], s['q1'], s['q1'], s['med'], s['med'], s['med'], s['q3'], s['q3'], s['whishi']])
 
     data = []
