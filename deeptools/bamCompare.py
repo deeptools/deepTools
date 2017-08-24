@@ -84,7 +84,7 @@ def getOptionalArgs():
     optional.add_argument('--scaleFactorsMethod',
                           help='Method to use to scale the samples. '
                           'Default "readCount".',
-                          choices=['readCount', 'SES'],
+                          choices=['readCount', 'SES', 'BPM'],
                           default='readCount')
 
     optional.add_argument('--sampleLength', '-l',
@@ -198,19 +198,54 @@ def get_scale_factors(args):
             bam2.close()
 
     elif args.scaleFactorsMethod == 'readCount':
-        args.bam = args.bamfile1
+        # change the scaleFactor to 1.0
         args.scaleFactor = 1.0
+        # get num of kept reads for bam file 1
+        args.bam = args.bamfile1
         bam1_mapped, _ = get_num_kept_reads(args)
+
+        # get num of kept reads for bam file 2
         args.bam = args.bamfile2
         bam2_mapped, _ = get_num_kept_reads(args)
-        scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array([bam1_mapped, bam2_mapped])
         mapped_reads = [bam1_mapped, bam2_mapped]
+
+        # new scale_factors (relative to min of two bams)
+        scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array(mapped_reads)
         if args.verbose:
             print("Size factors using total number "
                   "of mapped reads: {}".format(scale_factors))
 
+    elif args.scaleFactorsMethod == 'BPM':
+        # change the scaleFactor to 1.0
+        args.scaleFactor = 1.0
+        # get num of kept reads for bam file 1
+        args.bam = args.bamfile1
+        bam1_mapped, _ = get_num_kept_reads(args)
+
+        # get num of kept reads for bam file 2
+        args.bam = args.bamfile2
+        bam2_mapped, _ = get_num_kept_reads(args)
+
+    	# the BPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
+    	tile_len_in_kb = float(args.binSize) / 1000
+        # TPM scale_factor for bam1
+    	tpm_scaleFactor_bam1 = (bam1_mapped/tile_len_in_kb) / 1e6
+    	coverage_scale_factor_bam1 = 1/(tpm_scaleFactor_bam1*tile_len_in_kb)
+        # TPM scale_factor for bam2
+        tpm_scaleFactor_bam2 = (bam2_mapped/tile_len_in_kb) / 1e6
+    	coverage_scale_factor_bam2 = 1/(tpm_scaleFactor_bam2*tile_len_in_kb)
+
+    	scale_factors = np.array([coverage_scale_factor_bam1, coverage_scale_factor_bam2])
+    	if debug:
+    		print("Size factors using BPM is {0}".format(args.scaleFactor))
+
     # in case the subtract method is used, the final difference
     # would be normalized according to the given method
+    # VIVEK --> This doesn't belong here, subtract can go wrong with normal readcounts and therefore
+    # we should provide an option for --normalizeTo1x with subtract, which can be
+    # implemented below. Otherwise users should use scaleFactorsMethod == 'BPM'/'CPM'
+    # with "subtract" <--
+
     if args.ratio == 'subtract':
         # The next lines identify which of the samples is not scaled down.
         # The normalization using RPKM or normalize to 1x would use
@@ -277,16 +312,17 @@ def get_scale_factors(args):
                     print("Estimated current coverage {}".format(current_coverage))
                     print("Scale factor to convert "
                           "current coverage to 1: {}".format(coverage_scale_factor))
-            else:
-                # by default normalize using RPKM
+#            else:
+                # by default normalize using RPKM :
+                # Vivek --> Don't use this, subtracted RPKM values are not meaningful <--
                 # the RPKM is:
                 # Num reads per tile/(total reads (in millions)*tile length in Kb)
-                millionReadsMapped = float(mapped_reads) / 1e6
-                tileLengthInKb = float(args.binSize) / 1000
-                coverage_scale_factor = 1.0 / (millionReadsMapped * tileLengthInKb)
-                scale_factors = np.array(scale_factors) * coverage_scale_factor
-                if args.verbose:
-                    print("Scale factor for RPKM is {0}".format(coverage_scale_factor))
+#                millionReadsMapped = float(mapped_reads) / 1e6
+#                tileLengthInKb = float(args.binSize) / 1000
+#                coverage_scale_factor = 1.0 / (millionReadsMapped * tileLengthInKb)
+#                scale_factors = np.array(scale_factors) * coverage_scale_factor
+#                if args.verbose:
+#                    print("Scale factor for RPKM is {0}".format(coverage_scale_factor))
 
     return scale_factors
 
