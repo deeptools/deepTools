@@ -17,7 +17,6 @@ from deeptools.utilities import toString, convertCmap
 import plotly.offline as offline
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
-from plotly import tools
 
 old_settings = np.seterr(all='ignore')
 
@@ -246,9 +245,9 @@ class Correlation:
                     trow.append('')
             textElement.append(trow)
 
-        zauto=True
+        zauto = True
         if vmax is not None or vmin is not None:
-            zauto=False
+            zauto = False
 
         convertedCmap = convertCmap(colormap)
         fig = ff.create_annotated_heatmap(corr_matrix, x=labels, y=labels, colorscale=convertedCmap, showscale=True, zauto=zauto, zmin=vmin, zmax=vmax, annotation_text=textElement)
@@ -315,13 +314,13 @@ class Correlation:
 
         if image_format == "plotly":
             self.plotly_correlation(corr_matrix,
-                               plot_filename,
-                               self.labels,
-                               plot_title=plot_title,
-                               vmax=vmax,
-                               vmin=vmin,
-                               colormap=colormap,
-                               plot_numbers=plot_numbers)
+                                    plot_filename,
+                                    self.labels,
+                                    plot_title=plot_title,
+                                    vmax=vmax,
+                                    vmin=vmin,
+                                    colormap=colormap,
+                                    plot_numbers=plot_numbers)
             return
 
         img_mat = axmatrix.pcolormesh(corr_matrix,
@@ -372,7 +371,7 @@ class Correlation:
         """Make the scatter plot of a matrix with plotly"""
         n = self.matrix.shape[1]
         fig = go.Figure()
-        
+
         midPoint = minVal + 0.5 * (maxVal - minVal)
         domainWidth = 1. / n
         for x in range(n):
@@ -383,6 +382,7 @@ class Correlation:
             fig['layout']['yaxis{}'.format(x + 1)] = {'domain': domain, 'anchor': yanchor}
 
         annos = []
+        data = []
         for x in range(n):
             for y in range(n):
                 xanchor = 'x{}'.format(x + 1)
@@ -394,14 +394,12 @@ class Correlation:
                     vector1 = self.matrix[:, x]
                     vector2 = self.matrix[:, y]
                     H, xEdges, yEdges = np.histogram2d(vector1, vector2, bins=100)
-                    trace = go.Contour(z=H, x=xEdges, y=yEdges, line=dict(smoothing=0.85), showlegend=False)
-                    trace.update(xaxis=xanchor)
-                    trace.update(yaxis=yanchor)
-                    fig['data'].append(trace)
-        fig['layout'].update(title=plot_title)
+                    trace = go.Contour(z=H, x=xEdges, y=yEdges, line=dict(smoothing=0.85), showlegend=False, xaxis=xanchor, yaxis=yanchor, connectgaps=True)
+                    data.append(trace)
+        fig['data'] = data
+        fig['layout'].update(title=plot_title, showlegend=False)
         fig['layout']['xaxis']['range'] = [minVal, maxVal]
         fig['layout']['yaxis']['range'] = [minVal, maxVal]
-        fig['layout']['showlegend'] = False
         fig['layout']['annotations'] = annos
 
         offline.plot(fig, filename=plot_filename, auto_open=False)
@@ -541,7 +539,7 @@ class Correlation:
         # Scree plot
         trace = go.Bar(showlegend=False,
                        name='Eigenvalues',
-                       x=range(1, n+1),
+                       x=range(1, n + 1),
                        y=eigenvalues[:n],
                        xaxis='x2',
                        yaxis='y2')
@@ -549,7 +547,7 @@ class Correlation:
 
         # Cumulative variability
         trace = go.Scatter(showlegend=False,
-                           x=range(1, n+1),
+                           x=range(1, n + 1),
                            y=pvar.cumsum()[:n],
                            mode='lines+markers',
                            name='Cumulative variability',
@@ -566,7 +564,6 @@ class Correlation:
         fig['data'] = data
         fig['layout']['annotations'] = annos
         offline.plot(fig, show_link=False, filename=plotFile, auto_open=False)
-
 
     def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None):
         """

@@ -4,7 +4,6 @@ matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.colors as pltcolors
-import plotly.offline as py
 import plotly.graph_objs as go
 
 old_settings = np.seterr(all='ignore')

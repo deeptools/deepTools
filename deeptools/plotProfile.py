@@ -344,7 +344,7 @@ class Profile(object):
             if self.per_group:
                 title = self.hm.matrix.group_labels[i]
             else:
-                title = self.hm.matrix.sample_labels[i] 
+                title = self.hm.matrix.sample_labels[i]
 
             base = row * (domainHeight + bufferHeight)
             domain = [base, base + domainHeight]
@@ -559,10 +559,6 @@ class Profile(object):
             bufferWidth = 0.1 / (cols - 1)
         else:
             domainWidth = 1.0
-        if self.per_group:
-            sideLabels = self.hm.matrix.sample_labels
-        else:
-            sideLabels = self.hm.matrix.group_labels
 
         data = []
         annos = []
@@ -620,7 +616,7 @@ class Profile(object):
             # Add ticks
             if np.ceil(max(self.xticks)) != float(totalWidth):
                 tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+                xticks_use = [x_ * tickscale for x_ in self.xticks]
             else:
                 xticks_use = self.xticks
             xticks_use = [np.ceil(x) for x in xticks_use]
@@ -639,7 +635,6 @@ class Profile(object):
         fig['data'] = data
         fig['layout']['annotations'] = annos
         py.plot(fig, show_link=False, filename=self.out_file_name, auto_open=False)
-
 
     def plot_profile(self):
         if self.y_min is None:
@@ -815,7 +810,7 @@ class Profile(object):
             if self.per_group:
                 title = self.hm.matrix.group_labels[i]
             else:
-                title = self.hm.matrix.sample_labels[i] 
+                title = self.hm.matrix.sample_labels[i]
             annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': title, 'y': titleY, 'x': titleX, 'font': {'size': 16}, 'showarrow': False})
 
             for j in range(self.numlines):
@@ -838,10 +833,10 @@ class Profile(object):
                     coloridx = i
                 color = self.color_list[coloridx]
                 traces = plotly_single(sub_matrix['matrix'],
-                                      self.averagetype,
-                                      color,
-                                      label,
-                                      plot_type=self.plot_type)
+                                       self.averagetype,
+                                       color,
+                                       label,
+                                       plot_type=self.plot_type)
                 for trace in traces:
                     trace.update(xaxis=xanchor, yaxis=yanchor)
                     if yMin is None or min(trace['y']) < yMin:

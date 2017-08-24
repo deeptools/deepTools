@@ -16,7 +16,7 @@ import plotly.graph_objs as go
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen, convertCmap
+from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
