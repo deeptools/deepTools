@@ -212,25 +212,37 @@ def main(args=None):
     # sets that as the x_axis range.
     y_max = []
     data = []
+    # We need to manually set the line colors so they're shared between the two plots.
+    plotly_colors = ["#d73027", "#fc8d59", "#f33090", "#e0f3f8", "#91bfdb", "#4575b4"]
+    plotly_styles = []
+    for _ in ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]:
+        plotly_styles.extend([_] * len(plotly_colors))
+
     for idx, col in enumerate(num_reads_per_bin.T):
         frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
         csum = np.bincount(col.astype(int))[::-1].cumsum()
         csum_frac = csum.astype(float)[::-1] / csum.max()
         if args.plotFileFormat == 'plotly':
-            print(x_max)
+            color = plotly_colors[idx % len(plotly_colors)]
+            dash = plotly_styles[idx % len(plotly_styles)]
             trace = go.Scatter(x=np.arange(0, int(x_max) - 1),
                                y=frac_reads_per_coverage[:int(x_max)],
                                mode='lines',
                                xaxis='x1',
                                yaxis='y1',
-                               name="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+                               line=dict(color=color, dash=dash),
+                               name="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]),
+                               legendgroup="{}".format(idx))
             data.append(trace)
             trace = go.Scatter(x=np.arange(0, int(x_max) - 1),
                                y=csum_frac[:int(x_max)],
                                mode='lines',
                                xaxis='x2',
                                yaxis='y2',
-                               name=args.labels[idx])
+                               line=dict(color=color, dash=dash),
+                               name=args.labels[idx],
+                               showlegend=False,
+                               legendgroup="{}".format(idx))
             data.append(trace)
         else:
             axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
