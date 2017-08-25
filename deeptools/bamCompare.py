@@ -229,11 +229,11 @@ def get_scale_factors(args):
         # the BPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
         tile_len_in_kb = float(args.binSize) / 1000
         # TPM scale_factor for bam1
-        tpm_scaleFactor_bam1 = (bam1_mapped/tile_len_in_kb) / 1e6
-        coverage_scale_factor_bam1 = 1/(tpm_scaleFactor_bam1*tile_len_in_kb)
+        tpm_scaleFactor_bam1 = (bam1_mapped / tile_len_in_kb) / 1e6
+        coverage_scale_factor_bam1 = 1 / (tpm_scaleFactor_bam1 * tile_len_in_kb)
         # TPM scale_factor for bam2
-        tpm_scaleFactor_bam2 = (bam2_mapped/tile_len_in_kb) / 1e6
-        coverage_scale_factor_bam2 = 1/(tpm_scaleFactor_bam2*tile_len_in_kb)
+        tpm_scaleFactor_bam2 = (bam2_mapped / tile_len_in_kb) / 1e6
+        coverage_scale_factor_bam2 = 1 / (tpm_scaleFactor_bam2 * tile_len_in_kb)
 
         scale_factors = np.array([coverage_scale_factor_bam1, coverage_scale_factor_bam2])
         if debug:
