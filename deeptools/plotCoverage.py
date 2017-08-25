@@ -214,10 +214,7 @@ def main(args=None):
     data = []
     # We need to manually set the line colors so they're shared between the two plots.
     plotly_colors = ["#d73027", "#fc8d59", "#f33090", "#e0f3f8", "#91bfdb", "#4575b4"]
-    plotly_styles = []
-    for _ in ["solid", "dot", "dash", "longdash", "dashdot", "longdashdot"]:
-        plotly_styles.extend([_] * len(plotly_colors))
-
+    plotly_styles = sum([6 * ["solid"], 6 * ["dot"], 6 * ["dash"], 6 * ["longdash"], 6 * ["dashdot"], 6 * ["longdashdot"]], [])
     for idx, col in enumerate(num_reads_per_bin.T):
         frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
         csum = np.bincount(col.astype(int))[::-1].cumsum()

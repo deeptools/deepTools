@@ -393,15 +393,15 @@ def main(args=None):
         i = 0
         # matplotlib won't iterate through line styles by itself
         pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
-        plotly_line_styles = ['solid', 'dash', 'dot', 'dashdot', 'longdash', 'longdashdot']
+        plotly_colors = ["#d73027", "#fc8d59", "#f33090", "#e0f3f8", "#91bfdb", "#4575b4"]
+        plotly_line_styles = sum([6 * ["solid"], 6 * ["dot"], 6 * ["dash"], 6 * ["longdash"], 6 * ["dashdot"], 6 * ["longdashdot"]], [])
         data = []
         for i, reads in enumerate(num_reads_per_bin.T):
             count = np.cumsum(np.sort(reads))
             count = count / count[-1]  # to normalize y from 0 to 1
             if args.plotFileFormat == 'plotly':
-                j = i % 6
                 trace = go.Scatter(x=x, y=count, mode='lines', name=args.labels[i])
-                trace['line'].update(dash=plotly_line_styles[j])
+                trace['line'].update(dash=plotly_line_styles[i % 36], color=plotly_colors[i % 6])
                 data.append(trace)
             else:
                 j = i % 35
