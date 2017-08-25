@@ -353,7 +353,7 @@ class Profile(object):
             domain = [base, base + domainWidth]
             titleX = base + 0.5 * domainWidth
             xanchor = 'x{}'.format(i + 1)
-            fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain}
+            fig['layout']['xaxis{}'.format(i + 1)] = dict(domain=domain)
             annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': title, 'y': titleY, 'x': titleX, 'font': {'size': 16}, 'showarrow': False})
 
             # set yMin/yMax
@@ -386,6 +386,9 @@ class Profile(object):
                 base = row * (domainHeight + bufferHeight) + j * subHeight
                 domain = [base, base + subHeight]
                 fig['layout']['yaxis{}'.format(foo)] = {'domain': domain, 'title': self.y_axis_label, 'anchor': xanchor, 'range': [yMin, yMax]}
+                if j == 0:
+                    _ = "xaxis{}".format(xanchor[1:])
+                    fig['layout'][_].update(anchor='y{}'.format(foo))
                 if col == 0:
                     titleY = base + 0.5 * subHeight
                     annos.append({'yanchor': 'middle', 'xref': 'paper', 'xanchor': 'left', 'yref': 'paper', 'text': sideLabels[j], 'y': titleY, 'x': -0.03, 'font': {'size': 16}, 'showarrow': False, 'textangle': -90})
