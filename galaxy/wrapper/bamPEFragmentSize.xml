@@ -26,6 +26,12 @@
                 $advancedOpt.logScale
                 --maxFragmentLength '$advancedOpt.maxFragmentLength'
                 @blacklist@
+                #if $advancedOpt.table
+                    --table $table
+                #end if
+                #if $advancedOpt.outRawFragmentLengths
+                    --outRawFragmentLengths $fragLengths
+                #end if
             #end if
             > $outfile
 ]]>
@@ -33,7 +39,7 @@
     <inputs>
         <expand macro="multiple_input_bams" MIN="1" />
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
-            label="Get the distribution of fragment lengths as a histogram"
+            label="Get the distribution of read/fragment lengths as a histogram"
             help=""/>
         <param argument="--samplesLabel" type="text" size="30"
             label="Labels for the samples (each BAM file) plotted"
@@ -57,6 +63,12 @@
                 <param argument="--distanceBetweenBins" type="integer" value="1000000" min="0" optional="true"
                     label="bin spacing, in bases"
                     help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased. (--distanceBetweenBins)"/>
+                <param argument="--table" type="boolean" truevalue="--table" falsevalue=""
+                    label="Write metrics to a tab-separated file?"
+                    help="Write the read/fragment metrics to a tab-separated file, which is primarily useful for more automated downstream processing." />
+                <param argument="--outRawFragmentLengths" type="boolean" truevalue="--outRawFragmentLengths" falsevalue=""
+                    label="Write a file containing the read/fragment length information?"
+                    help="Write the read/fragment length distribution underlying the (optional) plot to a file. This can then be processed in R or other downstream applications." />
                 <param argument="--logScale" type="boolean" truevalue="--logScale" falsevalue=""
                     label="Plot log frequencies"
                     help="Plot the frequencies on the log10 scale" />
@@ -70,9 +82,15 @@
 
     </inputs>
     <outputs>
-        <data name="outfile" format="txt"/>
-        <data name="histogram_outfile" from_work_dir="hist.png" format="png">
+        <data name="outfile" format="txt" label="${tool.name} on ${on_string}: Read/Fragment metrics"/>
+        <data name="histogram_outfile" from_work_dir="hist.png" format="png" label="${tool.name} on ${on_string}: Read/Fragment histogram">
             <filter>histogram is True</filter>
+        </data>
+        <data name="table" format="tabular" label="${tool.name} on ${on_string}: Read/Fragment metrics in tabular format">
+            <filter>table is True</filter>
+        </data>
+        <data name="fragLengths" format="tabular" label="${tool.name} on ${on_string}: Raw Read/Fragment lengths occurrences">
+            <filter>outRawFragmentLengths is True</filter>
         </data>
     </outputs>
     <tests>
@@ -82,6 +100,14 @@
             <param name="plotTitle" value="Test Plot" />
             <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt" />
             <output name="histogram_outfile" file="bamPEFragmentSize_histogram_result1.png" ftype="png" compare="sim_size" />
+        </test>
+        <test>
+            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="table" value="True" />
+            <param name="outRawFragmentLengths" value="yes" />
+            <output name="table" file="bamPEFragmentSize_table1.txt" ftype="tabular" />
+            <output name="fragLengths" file="bamPEFragmentSize_lengths1.txt" ftype="tabular" />
         </test>
     </tests>
     <help>
@@ -103,6 +129,21 @@ Optionally, you can obtain a histogram of fragment sizes, which will give you a 
 .. image:: $PATH_TO_IMAGES/bamPEFragmentSize_output.png
    :width: 600
    :height: 520
+
+If the ``--table`` option is specified, the summary statistics are additionally printed in a tabular format::
+
+    	Frag. Len. Min.	Frag. Len. 1st. Qu.	Frag. Len. Mean	Frag. Len. Median	Frag. Len. 3rd Qu.	Frag. Len. Max	Frag. Len. Std.	Read Len. Min.	Read Len. 1st. Qu.	Read Len. Mean	Read Len. Median	Read Len. 3rd Qu.	Read Len. Max	Read Len. Std.
+    bowtie2 test1.bam	241.0	241.5	244.666666667	242.0	246.5	251.0	4.49691252108	251.0	251.0	251.0	251.0	251.0	251.0	0.0
+
+If the ``--outRawFragmentLengths`` option is provided, another history item will be produced, containing the raw data underlying the histogram. It has the following format::
+
+    #bamPEFragmentSize
+    Size	Occurrences	Sample
+    241	1	bowtie2 test1.bam
+    242	1	bowtie2 test1.bam
+    251	1	bowtie2 test1.bam
+
+The "Size" is the fragment (or read, for single-end datasets) size and "Occurrences" are the number of times reads/fragments with that length were observed. For easing downstream processing, the sample name is also included on each row.
 
 
 -----

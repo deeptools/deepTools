@@ -331,6 +331,7 @@ def main(args=None):
                                      samFlag_exclude=args.samFlagExclude,
                                      minFragmentLength=args.minFragmentLength,
                                      maxFragmentLength=args.maxFragmentLength,
+                                     chrsToSkip=args.ignoreForNormalization,
                                      verbose=args.verbose
                                      )
 

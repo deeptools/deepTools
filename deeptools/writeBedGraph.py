@@ -276,14 +276,31 @@ def bedGraphToBigWig(chromSizes, bedGraphFiles, bigWigPath):
     bw = pyBigWig.open(bigWigPath, "w")
     assert(bw is not None)
     bw.addHeader(chromSizes, maxZooms=10)
+    lastChrom = None
+    starts = []
+    ends = []
+    vals = []
     for bg in bedGraphFiles:
         if bg is not None:
             f = open(bg)
             for line in f:
                 interval = line.split()
-                bw.addEntries([interval[0]], [int(interval[1])], ends=[int(interval[2])], values=[float(interval[3])])
+                # Buffer up to a million entries
+                if interval[0] != lastChrom or len(starts) == 1000000:
+                    if lastChrom is not None:
+                        bw.addEntries([lastChrom] * len(starts), starts, ends=ends, values=vals)
+                    lastChrom = interval[0]
+                    starts = [int(interval[1])]
+                    ends = [int(interval[2])]
+                    vals = [float(interval[3])]
+                else:
+                    starts.append(int(interval[1]))
+                    ends.append(int(interval[2]))
+                    vals.append(float(interval[3]))
             f.close()
             os.remove(bg)
+    if len(starts) > 0:
+        bw.addEntries([lastChrom] * len(starts), starts, ends=ends, values=vals)
     bw.close()
 
 

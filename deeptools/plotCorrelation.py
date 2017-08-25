@@ -59,9 +59,7 @@ def plot_correlation_args():
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
-                          type=argparse.FileType('w'),
-                          metavar='FILE',
-                          required=True)
+                          metavar='FILE')
 
     required.add_argument('--corMethod', '-c',
                           help="Correlation method.",
@@ -196,6 +194,9 @@ def main(args=None):
 
     args = parse_arguments().parse_args(args)
 
+    if args.plotFile is None and args.outFileCorMatrix is None:
+        sys.exit("At least one of --plotFile and --outFileCorMatrix must be specified!\n")
+
     corr = Correlation(args.corData,
                        args.corMethod,
                        labels=args.labels,
@@ -223,23 +224,23 @@ def main(args=None):
                 "A problem was found. Message: {}\n".format(error))
             exit()
 
-    args.plotFile.close()
-    if args.whatToPlot == 'scatterplot':
-        corr.plot_scatter(args.plotFile.name,
-                          plot_title=args.plotTitle,
-                          image_format=args.plotFileFormat,
-                          maxRange=args.maxRange,
-                          log1p=args.log1p)
-    else:
-        corr.plot_correlation(args.plotFile.name,
-                              vmax=args.zMax,
-                              vmin=args.zMin,
-                              colormap=args.colorMap,
+    if args.plotFile is not None:
+        if args.whatToPlot == 'scatterplot':
+            corr.plot_scatter(args.plotFile,
                               plot_title=args.plotTitle,
                               image_format=args.plotFileFormat,
-                              plot_numbers=args.plotNumbers,
-                              plotWidth=args.plotWidth,
-                              plotHeight=args.plotHeight)
+                              maxRange=args.maxRange,
+                              log1p=args.log1p)
+        else:
+            corr.plot_correlation(args.plotFile,
+                                  vmax=args.zMax,
+                                  vmin=args.zMin,
+                                  colormap=args.colorMap,
+                                  plot_title=args.plotTitle,
+                                  image_format=args.plotFileFormat,
+                                  plot_numbers=args.plotNumbers,
+                                  plotWidth=args.plotWidth,
+                                  plotHeight=args.plotHeight)
 
     if args.outFileCorMatrix:
         corr.save_corr_matrix(args.outFileCorMatrix)
