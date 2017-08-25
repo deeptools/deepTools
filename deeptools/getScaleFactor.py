@@ -252,13 +252,13 @@ def get_scale_factor(args):
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: BPM\n")
         # the BPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
-        #sampled_bins_sum = getSampledSum(args.bam)
+        # sampled_bins_sum = getSampledSum(args.bam)
         tile_len_in_kb = float(args.binSize) / 1000
-        tpm_scaleFactor = (bam_mapped/tile_len_in_kb) / 1e6
+        tpm_scaleFactor = (bam_mapped / tile_len_in_kb) / 1e6
 
-        scale_factor *= 1/(tpm_scaleFactor*tile_len_in_kb)
+        scale_factor *= 1 / (tpm_scaleFactor * tile_len_in_kb)
         if debug:
-        	print("scale factor using BPM is {0}".format(args.scaleFactor))
+            print("scale factor using BPM is {0}".format(args.scaleFactor))
 
     else:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
