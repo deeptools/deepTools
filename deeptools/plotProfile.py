@@ -432,7 +432,7 @@ class Profile(object):
 
         fig['data'] = data
         fig['layout']['annotations'] = annos
-        py.plot(fig, show_link=False, filename=self.out_file_name, auto_open=False)
+        py.plot(fig, filename=self.out_file_name, auto_open=False)
 
     def plot_heatmap(self):
         matrix_flatten = None
@@ -636,7 +636,7 @@ class Profile(object):
 
         fig['data'] = data
         fig['layout']['annotations'] = annos
-        py.plot(fig, show_link=False, filename=self.out_file_name, auto_open=False)
+        py.plot(fig, filename=self.out_file_name, auto_open=False)
 
     def plot_profile(self):
         if self.y_min is None:
@@ -869,7 +869,7 @@ class Profile(object):
 
         fig['data'] = data
         fig['layout']['annotations'] = annos
-        py.plot(fig, show_link=False, filename=self.out_file_name, auto_open=False)
+        py.plot(fig, filename=self.out_file_name, auto_open=False)
 
 
 def main(args=None):

@@ -584,7 +584,7 @@ def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
     data.append(trace)
     fig['data'] = data
     fig['layout']['annotations'] = annos
-    py.plot(fig, show_link=False, filename=file_name, auto_open=False)
+    py.plot(fig, filename=file_name, auto_open=False)
 
 
 def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=None):

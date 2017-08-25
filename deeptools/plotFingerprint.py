@@ -419,7 +419,7 @@ def main(args=None):
             fig['layout'].update(title=args.plotTitle)
             fig['layout']['xaxis1'].update(title="rank")
             fig['layout']['yaxis1'].update(title="fraction w.r.t bin with highest coverage")
-            py.plot(fig, show_link=False, filename=args.plotFile, auto_open=False)
+            py.plot(fig, filename=args.plotFile, auto_open=False)
         else:
             plt.legend(loc='upper left')
             plt.suptitle(args.plotTitle)

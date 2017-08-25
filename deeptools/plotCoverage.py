@@ -268,7 +268,7 @@ def main(args=None):
             fig['data'] = data
             fig['layout']['yaxis1'].update(range=[0.0, min(1, y_max + (y_max * 0.10))])
             fig['layout']['yaxis2'].update(range=[0.0, 1.0])
-            py.plot(fig, show_link=False, filename=args.plotFile, auto_open=False)
+            py.plot(fig, filename=args.plotFile, auto_open=False)
         else:
             axs[0].set_ylim(0, min(1, y_max + (y_max * 0.10)))
             axs[0].set_xlim(0, x_max)

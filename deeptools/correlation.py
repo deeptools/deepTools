@@ -581,7 +581,7 @@ class Correlation:
 
         fig['data'] = data
         fig['layout']['annotations'] = annos
-        offline.plot(fig, show_link=True, filename=plotFile, auto_open=False)
+        offline.plot(fig, filename=plotFile, auto_open=False)
 
     def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None):
         """

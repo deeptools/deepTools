@@ -313,7 +313,7 @@ def main(args=None):
             fig['layout'].update(showlegend=True)
             if args.logScale:
                 fig['layout']['yaxis1'].update(type='log')
-            py.plot(fig, show_link=False, filename=args.histogram, auto_open=False)
+            py.plot(fig, filename=args.histogram, auto_open=False)
         else:
             plt.xlabel('Fragment Length')
             plt.ylabel('Frequency')
