@@ -329,7 +329,6 @@ def plotlyMatrix(hm,
             yAxisN += 1
 
         # Adjust y-bounds as appropriate:
-        col = 0
         for i in range(1, yAxisN):
             yMinUse = yMinLocal
             if yMin[(i - 1) % len(yMin)] is not None:
