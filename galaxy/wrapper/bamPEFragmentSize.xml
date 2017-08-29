@@ -17,7 +17,8 @@
                 --samplesLabel #echo " ".join($labels)
             #end if
             #if $histogram:
-                --histogram ./hist.png
+                --histogram '$histogram_outfile'
+                --plotFileFormat '$outFileFormat'
             #end if
             --plotTitle "$plotTitle"
             #if $advancedOpt.showAdvancedOpt == 'yes'
@@ -27,13 +28,13 @@
                 --maxFragmentLength '$advancedOpt.maxFragmentLength'
                 @blacklist@
                 #if $advancedOpt.table
-                    --table $table
+                    --table '$table'
                 #end if
                 #if $advancedOpt.outRawFragmentLengths
-                    --outRawFragmentLengths $fragLengths
+                    --outRawFragmentLengths '$fragLengths'
                 #end if
             #end if
-            > $outfile
+            > '$outfile'
 ]]>
     </command>
     <inputs>
@@ -41,6 +42,7 @@
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
             label="Get the distribution of read/fragment lengths as a histogram"
             help=""/>
+        <expand macro="input_image_file_format" />
         <param argument="--samplesLabel" type="text" size="30"
             label="Labels for the samples (each BAM file) plotted"
             help="The default is to use the file name of the sample. The sample labels should be separated by
@@ -83,8 +85,14 @@
     </inputs>
     <outputs>
         <data name="outfile" format="txt" label="${tool.name} on ${on_string}: Read/Fragment metrics"/>
-        <data name="histogram_outfile" from_work_dir="hist.png" format="png" label="${tool.name} on ${on_string}: Read/Fragment histogram">
+        <data name="histogram_outfile" format="png" label="${tool.name} on ${on_string}: Read/Fragment histogram">
             <filter>histogram is True</filter>
+            <change_format>
+                <when input="outFileFormat" value="pdf" format="pdf" />
+                <when input="outFileFormat" value="svg" format="svg" />
+                <when input="outFileFormat" value="eps" format="eps" />
+                <when input="outFileFormat" value="plotly" format="html" />
+            </change_format>
         </data>
         <data name="table" format="tabular" label="${tool.name} on ${on_string}: Read/Fragment metrics in tabular format">
             <filter>table is True</filter>

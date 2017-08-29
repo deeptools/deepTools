@@ -98,7 +98,7 @@ def plot_correlation_args():
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
                           'eps, pdf and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument(
         '--removeOutliers',
