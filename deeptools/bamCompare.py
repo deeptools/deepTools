@@ -121,8 +121,8 @@ def getOptionalArgs():
                           'the negative of the inverse of the ratio '
                           'if the ratio is less than 0. The resulting '
                           'values are interpreted as negative fold changes. '
-                          '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
-                          '--normalizeUsingRPKM be used. Instead of performing a '
+                          '*NOTE*: --ratio subtract requires one of --normalizeTo1x or '
+                          '--normalizeUsingRPKM, with the later used by default. Instead of performing a '
                           'computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
                           'the \'--ratio first\' or \'--ratio second\'',
