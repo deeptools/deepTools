@@ -371,9 +371,15 @@ def plotlyMatrix(hm,
             if perGroup:
                 mat = hm.matrix.get_matrix(i, j)
                 label = mat['sample']
+                start = hm.matrix.group_boundaries[i]
+                end = hm.matrix.group_boundaries[i + 1]
             else:
                 mat = hm.matrix.get_matrix(j, i)
                 label = mat['group']
+                start = hm.matrix.group_boundaries[j]
+                end = hm.matrix.group_boundaries[j + 1]
+            regs = hm.matrix.regions[start:end]
+            regs = [x[2] for x in regs]
             yanchor = 'y{}'.format(yAxisN)
             yDomain = [heatmapHeight - fractionalHeights[j + 1], heatmapHeight - fractionalHeights[j]]
             visible = False
@@ -386,6 +392,7 @@ def plotlyMatrix(hm,
                 zMaxLocal = np.max(mat['matrix'])
 
             trace = go.Heatmap(z=np.flipud(mat['matrix']),
+                               y=regs[::-1],
                                xaxis=xanchor,
                                yaxis=yanchor,
                                showlegend=False,
