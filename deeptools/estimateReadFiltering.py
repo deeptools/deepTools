@@ -16,7 +16,7 @@ This tool estimates the number of reads that would be filtered given a set of
 settings and prints this to the terminal. Further, it tracks the number of singleton reads. The following metrics will always be tracked regardless of what you specify (the order output also matches this):
 
  * Total reads (including unmapped)
- * Unmapped reads
+ * Mapped reads
  * Reads in blacklisted regions (--blackListFileName)
 
 The following metrics are estimated according to the --binSize and --distanceBetweenBins parameters
