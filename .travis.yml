@@ -31,8 +31,8 @@ before_install:
 
 # Install packages
 install:
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose flake8
-  - conda install --yes -c https://conda.anaconda.org/bioconda pysam pyBigWig py2bit
+  - conda install --yes -c conda-forge python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib nose flake8 plotly==2.0.12
+  - conda install --yes -c bioconda pysam pyBigWig py2bit
   - python setup.py install
 
 # command to run tests

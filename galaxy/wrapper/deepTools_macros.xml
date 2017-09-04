@@ -445,7 +445,7 @@ is vital to you, select Yes below.">
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
                 ln -s "${bamfile}" "./${counter}.bam" &&
                 ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
-                #silent $files.append('%s.bam' % $counter)
+                #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % identifier)
             #end for
         #else:
@@ -453,7 +453,7 @@ is vital to you, select Yes below.">
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
                 ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
-                #silent $files.append('%s.bam' % $counter)
+                #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
@@ -469,14 +469,14 @@ is vital to you, select Yes below.">
             #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
                 ln -f -s "${bigwig}" "${identifier}_${counter}.bw" &&
-                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
+                #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bigwigfiles.element_identifier))
                 ln -f -s "${f.bigwigfiles}" "${identifier}_${counter}.bw" &&
-                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
+                #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
@@ -611,11 +611,12 @@ is vital to you, select Yes below.">
 
 
     <xml name="input_image_file_format">
-        <param argument="--outFileFormat" type="select" label="Image file format">
+        <param argument="--outFileFormat" type="select" label="Image file format" help="Note that the plotly output can be very large and not all options are supported.">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
+            <option value="plotly">plotly</option>
         </param>
     </xml>
 
@@ -630,6 +631,7 @@ is vital to you, select Yes below.">
                 <when input="output.outFileFormat" value="pdf" format="pdf" />
                 <when input="output.outFileFormat" value="svg" format="svg" />
                 <when input="output.outFileFormat" value="eps" format="eps" />
+                <when input="output.outFileFormat" value="plotly" format="html" />
             </change_format>
         </data>
     </xml>
@@ -640,6 +642,7 @@ is vital to you, select Yes below.">
                 <when input="outFileFormat" value="pdf" format="pdf" />
                 <when input="outFileFormat" value="svg" format="svg" />
                 <when input="outFileFormat" value="eps" format="eps" />
+                <when input="outFileFormat" value="plotly" format="html" />
             </change_format>
         </data>
     </xml>
