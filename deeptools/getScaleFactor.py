@@ -238,7 +238,7 @@ def get_scale_factor(args):
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
     else:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
-        sys.stderr.write("normalization: depth\n")
+        sys.stderr.write("normalization: none (signal scaled by percent of alignments kept after filtering)\n")
 
         scale_factor *= bam_mapped / float(bam_mapped_total)
 
