@@ -98,7 +98,7 @@ or
         'sort',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[sortArgs()],
-        help='Sort a matrix file to correspond to the order if entries in the desired input files. The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first).',
+        help='Sort a matrix file to correspond to the order of entries in the desired input file(s). The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first). Note that this subcommand can also be used to remove unwanted regions, since regions not present in the input file(s) will be omitted from the output.',
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
