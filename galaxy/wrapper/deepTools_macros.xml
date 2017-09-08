@@ -331,7 +331,7 @@
     </xml>
 
     <xml name="fragmentLength">
-        <param argument="--fragmentLength" type="integer" value="300" min="1"
+        <param argument="--fragmentLength" type="integer" min="1" optional="true"
             label="Fragment length used for the sequencing"
             help ="If paired-end reads are used, the fragment length is computed from the BAM file, so this is only needed for single-end data."/>
     </xml>

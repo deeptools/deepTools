@@ -78,15 +78,14 @@ def getRequiredArgs():
                           metavar='2bit FILE',
                           required=True)
 
-    required.add_argument('--fragmentLength', '-l',
+    # define the optional arguments
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--fragmentLength', '-l',
                           help='Fragment length used for the sequencing. If '
                           'paired-end reads are used, the fragment length is '
                           'computed based from the bam file',
-                          type=int,
-                          required=True)
+                          type=int)
 
-    # define the optional arguments
-    optional = parser.add_argument_group('Optional arguments')
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
 

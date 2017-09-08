@@ -76,14 +76,14 @@ def plot_enrichment_args():
                           nargs='+',
                           required=True)
 
-    required.add_argument('--plotFile', '-o',
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--plotFile', '-o',
                           help='File to save the plot to. The file extension determines the format, '
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
                           metavar='FILE')
-
-    optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument('--labels', '-l',
                           metavar='sample1 sample2',
