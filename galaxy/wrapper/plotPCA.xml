@@ -14,6 +14,7 @@
             --plotFileFormat "$outFileFormat"
             #if str($advancedOpt.showAdvancedOpt) == 'yes':
                 @PLOTWIDTHHEIGHT@
+                $advancedOpt.log2
                 --PCs $advancedOpt.PCs
                 --ntop $advancedOpt.ntop
                 $advancedOpt.transpose
@@ -44,6 +45,7 @@
                     help="The principal components to plot. If specified, you must provide two different integers, greater than zero, separated by a space. An example (and the default) is '1 2'." />
                 <param name="ntop" argument="--ntop" label="Number of rows to use" value="1000" type="integer"
                     help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. If the matrix is to be transposed, rows with 0 variance are always excluded, even if a values of 0 is specified. The default is 1000." />
+                <param name="log2" argument="log2" type="boolean" truevalue="--log2" falsevalue="" label="log2 transform data" help="log2 transform the datapoints prior to computing the PCA. Note that 0.01 is added to all values to prevent 0 values from becoming -infinity. Using this option with input that contains negative values will result in an error." />
                 <param argument="--transpose" type="boolean" label="Transpose Matrix?" help="Perform the PCA on the transpose of the matrix, (i.e., with samples as rows and features/genes as columns). This then matches what is typically done in R for RNAseq data." truevalue="--transpose" falsevalue="" />
                 <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically. This option is not applicable if the PCA is performed on the transposed matrix." truevalue="--rowCenter" falsevalue="" />
                 <param argument="--colors" type="text" name="colors" label="Symbol colors" value="" optional="True"
