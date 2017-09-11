@@ -14,7 +14,10 @@
             @THREADS@
             --bamfile local_bamInput.bam
             --GCbiasFrequenciesFile $outFileName
-            --fragmentLength $fragmentLength
+
+            #if $fragmentLength != "":
+                --fragmentLength $fragmentLength
+            #end if
 
             @reference_genome_source@
 
@@ -116,6 +119,7 @@
             <param name="effectiveGenomeSize" value="10050" />
             <param name="region" value="chr2L" />
             <param name="image_format" value="none" />
+            <param name="fragmentLength" value="300" />
             <output name="outFileName" file="computeGCBias_result1.tabular" ftype="tabular" />
         </test>
     </tests>

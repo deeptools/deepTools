@@ -73,13 +73,14 @@ def required_args():
                           nargs='+',
                           required=True)
 
-    required.add_argument('--plotFile', '-o',
-                          help='File name to save the plot to.')
-
     optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
+
+    optional.add_argument('--plotFile', '-o',
+                          help='File name to save the plot to.')
+
     optional.add_argument('--labels', '-l',
                           metavar='sample1 sample2',
                           help='User defined labels instead of default labels from '
