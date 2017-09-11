@@ -616,12 +616,16 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         _ = [""] * len(regions[idx])
         for k, v in regions[idx].items():
             _[v] = k
+        sz = 0  # Track the number of enries actually matched
         for name in _:
             if name not in d[label]:
                 sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
+            sz += 1
             order.append(d[label][name])
-        boundaries.append(groupSizes[label] + boundaries[-1])
+        if sz == 0:
+            sys.exit("The region group {} had no matching entries!\n".format(label))
+        boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
     hm.matrix.matrix = hm.matrix.matrix[order, :]
