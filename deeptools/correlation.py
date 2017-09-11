@@ -601,6 +601,10 @@ class Correlation:
             m = m[np.argpartition(rvs, -self.ntop)[-self.ntop:], :]
             rvs = rvs[np.argpartition(rvs, -self.ntop)[-self.ntop:]]
 
+        # log2 (if requested)
+        if self.log2:
+            self.matrix = np.log2(self.matrix + 0.01)
+
         # Row center / transpose
         if self.rowCenter and not self.transpose:
             _ = self.matrix.mean(axis=1)
