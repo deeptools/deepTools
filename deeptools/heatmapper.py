@@ -220,6 +220,9 @@ class heatmapper(object):
             exit("Length of the unscaled 5 prime region has to be a multiple of "
                  "--binSize\nCurrent value is {}\n".format(parameters['unscaled 3 prime']))
 
+        if parameters['unscaled 5 prime'] + parameters['unscaled 3 prime'] > 0 and parameters['body'] == 0:
+            exit('Unscaled 5- and 3-prime regions only make sense with the scale-regions subcommand.\n')
+
         # Take care of GTF options
         transcriptID = "transcript"
         exonID = "exon"
