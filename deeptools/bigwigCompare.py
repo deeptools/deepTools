@@ -94,7 +94,8 @@ def getType(fname):
         return "wiggle"
     elif fname.endswith(".bedgraph"):
         return "bedgraph"
-    return "bigwig"
+    else:
+        return "bigwig"
 
 
 def main(args=None):
