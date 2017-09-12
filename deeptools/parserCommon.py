@@ -17,7 +17,8 @@ def check_list_of_comma_values(value):
     for foo in value:
         foo = value.split(",")
         if len(foo) < 2:
-            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. Only argument elements of the following form are accepted: 'foo,bar'" % foo)
+            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. "
+                                            "Only argument elements of the following form are accepted: 'foo,bar'" % foo)
     return value
 
 
@@ -232,7 +233,7 @@ def normalization_options():
                        required=False)
 
     group.add_argument('--normalizeUsing',
-                       help='Use on of the entered method to '
+                       help='Use one of the entered method to '
                        'normalize the number of reads per bin. The formulas are: '
                        'RPKM (per bin) =  number of reads per bin / '
                        '( number of mapped reads (in millions) * bin length (kb) ).'
