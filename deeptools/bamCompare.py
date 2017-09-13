@@ -223,7 +223,7 @@ def get_scale_factors(args):
 
 def main(args=None):
     """
-    The algorithm is composed of two parts.
+    The algorithm is composed of two steps.
 
     1. Per-sample scaling / depth Normalization:
      + If scaling is used (using the SES or read counts method), appropriate scaling
@@ -232,7 +232,7 @@ def main(args=None):
        RPKM, BPM or CPM methods
 
     2. Ratio calculation between two bam files:
-     + The genome is transversed, scaling the BAM files, and computing
+     + The genome is transversed and computing
        the log ratio/ratio/difference etc. for bins of fixed width
        given by the user.
 
