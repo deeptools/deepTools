@@ -30,23 +30,13 @@
                 --scaleFactorsMethod readCount
             #elif $scaling.method == 'own':
                 --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
+            #elif $scaling.method == 'None':
+                --scaleFactorsMethod None
             #end if
 
-            --ratio $comparison.type
+            --ratio $scaling.normalization.type
 
-            #if $comparison.type == 'subtract':
-                #if $comparison.normalization.type == 'rpkm':
-                    --normalizeUsing RPKM
-                #elif $comparison.normalization.type == '1x':
-
-                    #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                        --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
-                    #else:
-                        --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
-                    #end if
-
-                #end if
-            #elif $comparison.type in ['ratio','log2']:
+            #if $comparison.type in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
             #end if
 
@@ -87,6 +77,7 @@
                 <option value="readCount" selected="true">read count</option>
                 <option value="SES">signal extraction scaling (SES), check with plotFingerprint before using it!</option>
                 <option value="own">enter own scaling factors</option>
+                <option value="None">Don't scale reads. Samples can instead be normalized using one of the normalization methods</option>
             </param>
             <when value="SES">
                 <param argument="--sampleLength" type="integer" value="1000" min="10"
@@ -99,6 +90,20 @@
             <when value="readCount" />
             <when value="own">
                 <expand macro="scaleFactors" />
+            </when>
+            <when value="None">
+                <conditional name="normalization">
+                    <param name="type" type="select" label="Normalization method" >
+                        <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
+                        <option value="cpm">Normalize to counts per million (CPM), same as CPM in RNA-seq</option>
+                        <option value="bpm">Normalize to bins per million (BPM), same as TPM in RNA-seq</option>
+                        <option value="no">Do not normalize or scale</option>
+                    </param>
+                    <when value="rpkm" />
+                    <when value="cpm" />
+                    <when value="bpm" />
+                    <when value="no" />
+                </conditional>
             </when>
         </conditional>
 
@@ -131,20 +136,6 @@
             <when value="second" />
             <when value="reciprocal_ratio">
                 <expand macro="pseudocount" />
-            </when>
-            <when value="subtract">
-                <conditional name="normalization">
-                    <param name="type" type="select" label="Normalization method" >
-                        <option value="1x">Normalize coverage to 1x</option>
-                        <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
-                        <option value="no">Do not normalize or scale</option>
-                    </param>
-                    <when value="rpkm" />
-                    <when value="no" />
-                    <when value="1x">
-                        <expand macro="effectiveGenomeSize" />
-                    </when>
-                </conditional>
             </when>
         </conditional>
 
