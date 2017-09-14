@@ -252,7 +252,7 @@ def test_bam_compare_scale_factors_subtract():
     """
     outfile = '/tmp/test_file.bg'
     args = "--bamfile1 {} --bamfile2 {} --ratio subtract --ignoreForNormalization chr_cigar " \
-           "-o {} -p 1 --outFileFormat bedgraph --normalizeTo1x 200".format(BAMFILE_A, BAMFILE_B, outfile).split()
+           "-o {} -p 1 --outFileFormat bedgraph --normalizeUsing CPM".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
 
@@ -277,14 +277,13 @@ def test_bam_compare_scale_factors_subtract():
 
     ------------------------------------------------------------------------------
 
-    subtract: scale factors [1,0.5], after applying normalize to 1x, coverage of test_A is 0.5, thus
-    the factor to reach a coverate of 1 is x2. Thus, the final scale factors are [2,1]
+    subtract: After applying CPM normalization, the scale factors are [500000,250000]
 
-    after applying factors:    0         -1              1              0
+    after applying factors:    0         -25k              25k              0
 
     """
 
-    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-1\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-25000\n', '3R\t100\t150\t25000\n', '3R\t150\t200\t0\n']
     assert_equal(resp, expected)
     unlink(outfile)
 
