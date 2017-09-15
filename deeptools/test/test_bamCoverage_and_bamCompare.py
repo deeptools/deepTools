@@ -252,7 +252,7 @@ def test_bam_compare_scale_factors_subtract():
     """
     outfile = '/tmp/test_file.bg'
     args = "--bamfile1 {} --bamfile2 {} --ratio subtract --ignoreForNormalization chr_cigar " \
-           "-o {} -p 1 --outFileFormat bedgraph --normalizeUsing CPM".format(BAMFILE_A, BAMFILE_B, outfile).split()
+           "-o {} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
 
