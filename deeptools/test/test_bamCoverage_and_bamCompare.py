@@ -283,7 +283,7 @@ def test_bam_compare_scale_factors_subtract():
 
     """
 
-    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-25000\n', '3R\t100\t150\t25000\n', '3R\t150\t200\t0\n']
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-250000\n', '3R\t100\t150\t250000\n', '3R\t150\t200\t0\n']
     assert_equal(resp, expected)
     unlink(outfile)
 
