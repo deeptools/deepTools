@@ -270,7 +270,7 @@ What it does
 This tool prepares an intermediate file (a gzipped table of values)
 that contains scores associated with genomic regions.
 The regions can either be scaled to the same size (using the ``scale-regions`` mode) or you can choose the start, end, or center of each region as the focus point for the score calculations.
-For more details, check out the explanation `here <file:///Users/frd2007/Documents/MPI/deepTools/docs/_build/html/content/tools/computeMatrix.html#details>`_.
+For more details, check out the explanation `here <https://deeptools.readthedocs.io/en/latest/content/tools/computeMatrix.html#details>`_.
 
 The intermediate file produced by ``computeMatrix`` is meant to be used with ``plotHeatmap`` and ``plotProfile``.
 See the descriptions of ``plotHeatmap`` and ``plotProfile`` for example plots.
