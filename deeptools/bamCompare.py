@@ -161,6 +161,7 @@ def process_args(args=None):
 # get_scale_factors function is used for scaling in bamCompare
 # while get_scale_factor is used for depth normalization
 
+
 def get_scale_factors(args):
 
     if args.scaleFactors:
@@ -216,7 +217,6 @@ def get_scale_factors(args):
 
     return scale_factors
 
-# skip all the conditional 'subtract' code
 
 def main(args=None):
     """
@@ -253,7 +253,7 @@ def main(args=None):
             scale_factor_bam2 = get_scale_factor(args)
             scale_factors = [scale_factor_bam1, scale_factor_bam2]
         else:
-            scale_factors = [1,1]
+            scale_factors = [1, 1]
 
     if args.verbose:
         print("Individual scale factors are {0}".format(scale_factors))
