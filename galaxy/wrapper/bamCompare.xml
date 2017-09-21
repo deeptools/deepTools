@@ -34,8 +34,11 @@
                 --scaleFactorsMethod None
             #end if
 
-            --ratio $scaling.normalization.type
+            --ratio $scaling.comparison.type
 
+            #if $scaling.normalization.type is not None:
+                --normalizeUsing $scaling.normalization.type
+            
             #if $comparison.type in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
             #end if
