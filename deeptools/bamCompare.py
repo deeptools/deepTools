@@ -83,12 +83,12 @@ def getOptionalArgs():
 
     optional.add_argument('--scaleFactorsMethod',
                           help='Method to use to scale the samples. '
-                                'If scaling is selected, per-sample depth normalization '
-                                'would not be used, instead counts would be scaled between samples '
-                                'to account for sequencing depth differences between the two. '
-                                'As an alternative, scaling can be set to None, and the option '
-                                '--normalizeUsing <method> can be used, to normalize each sample '
-                                'by sequencing depth before comparing them. ',
+                          'If scaling is selected, per-sample depth normalization '
+                          'would not be used, instead counts would be scaled between samples '
+                          'to account for sequencing depth differences between the two. '
+                          'As an alternative, scaling can be set to None, and the option '
+                          '--normalizeUsing <method> can be used, to normalize each sample '
+                          'by sequencing depth before comparing them. ',
                           choices=['readCount', 'SES', 'None'],
                           default='readCount')
 
@@ -126,9 +126,7 @@ def getOptionalArgs():
                           'the negative of the inverse of the ratio '
                           'if the ratio is less than 0. The resulting '
                           'values are interpreted as negative fold changes. '
-                          '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
-                          '--normalizeUsing RPKM be used. Instead of performing a '
-                          'computation using both files, the scaled signal can '
+                          'Instead of performing a computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
                           'the \'--ratio first\' or \'--ratio second\'',
                           default='log2',
@@ -167,7 +165,6 @@ def get_scale_factors(args):
 
     if args.scaleFactors:
         scale_factors = list(map(float, args.scaleFactors.split(":")))
-
     elif args.scaleFactorsMethod == 'SES':
         scalefactors_dict = estimateScaleFactor(
             [args.bamfile1, args.bamfile2],
@@ -219,11 +216,12 @@ def get_scale_factors(args):
 
     return scale_factors
 
-## skip all the conditional 'subtract' code
+# skip all the conditional 'subtract' code
 
 def main(args=None):
     """
     The algorithm is composed of two steps.
+
 
     1. Per-sample scaling / depth Normalization:
      + If scaling is used (using the SES or read counts method), appropriate scaling

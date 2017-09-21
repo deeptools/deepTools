@@ -238,7 +238,7 @@
     <xml name="extendReads">
         <conditional name="doExtendCustom">
             <param name="doExtend" type="select" label="Extend reads to the given average fragment size."
-                help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
+                help="If selected : Single-end reads and singletons are extended to match the given length and Paired-end reads are extended to match the fragment size.
                      By default *each* read mate is extended.
                      This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
                      Unmated reads, mate reads that map to different chromosomes or too far apart are extended to the given value.
@@ -404,7 +404,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     <xml name="multiple_input_bigwigs" tokens="MIN,LABEL,TITLE">
         <conditional name="multibigwig_conditional">
-        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples 
+        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples
 is vital to you, select Yes below.">
             <option value="No" selected="true">No</option>
             <option value="Yes">Yes</option>
@@ -500,7 +500,7 @@ is vital to you, select Yes below.">
                 --blackListFileName #echo ' '.join($blfiles)#
             #end if
         #end if
-]]> 
+]]>
     </token>
 
     <xml name="multiple_bed">
@@ -521,7 +521,7 @@ is vital to you, select Yes below.">
             --BED #echo ' '.join($files)#
             --regionLabels #echo ' '.join($labels)#
         #end if
-]]> 
+]]>
     </token>
 
     <xml name="reference_genome_source">

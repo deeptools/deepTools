@@ -233,14 +233,15 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 tileCoverage = coverage[tileIndex, :]
 
             value = func_to_call(tileCoverage, func_args)
-            """
+#            """
             # uncomment these lines if fixed step bedgraph is required
             if not np.isnan(value):
                 writeStart = start + tileIndex*self.binLength
                 writeEnd  =  min(writeStart+self.binLength, end)
                 _file.write(line_string.format(chrom, writeStart,
-                                           end, previous_value))
-            """
+                                           writeEnd, value))
+            continue
+#            """
 
             if previous_value is None:
                 writeStart = start + tileIndex * self.binLength

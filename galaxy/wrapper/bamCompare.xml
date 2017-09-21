@@ -205,13 +205,13 @@ What it does
 This tool can be used to generate a bigWig or bedGraph file based on **two BAM** files that are compared to each other while being simultaneously normalized for sequencing depth.
 
 To compare the BAM files to each other, the genome is partitioned into bins of equal size, then the number of reads found in each BAM file is counted per bin, and finally a summary value reported.
-This value can be the ratio of the number of reads per bin, the log2 of the ratio, or the difference.
 
-This tool can normalize the number of reads in each BAM file using the SES method proposed in Diaz et al. (2012). "Normalization, bias correction, and peak
-calling for ChIP-seq". Statistical applications in genetics and molecular
-biology, 11(3).
+The tool works in two steps:
+1. Scaling : To properly compare samples with different sequencing depth, each bam file can be scaled either using the SES method
+(proposed in Diaz et al. (2012). "Normalization, bias correction, and peak calling for ChIP-seq". Statistical applications in genetics and molecular
+biology, 11(3).) or total read count. additionally scaling can be turned off and a per-sample normalization can be used (--normalizeUsing RPKM/CPM/BPM)
 
-Normalization based on read counts is also available.
+2. Comparison : Two bam files are compared using one of the chosen methods (e.g. add, subtract, mean, log2 ratio etc.)
 
 By default, if reads are from a paired-end sequencing run and reads are properly paired, the fragment length reported in the BAM file is used.
 
