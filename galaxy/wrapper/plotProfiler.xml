@@ -185,7 +185,7 @@
         <expand macro="output_graphic_outputs" />
 
         <data format="tabular" name="output_outFileNameData" label="${tool.name} on ${on_string}: Underlying data">
-            <filter>outFileNameData</filter>
+            <filter>advancedOpt['showAdvancedOpt'] == "yes" and advancedOpt['outFileNameData'] is True</filter>
         </data>
 
     </outputs>
