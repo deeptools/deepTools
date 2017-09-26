@@ -1,3 +1,4 @@
+#plotCoverage --outRawCounts
 #'chr'	'start'	'end'	'test1.bam'	'test2.bam'
 3R	0	1	0.0	0.0
 3R	1	2	0.0	0.0
