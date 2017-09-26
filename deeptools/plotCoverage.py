@@ -161,7 +161,7 @@ def main(args=None):
     if args.outRawCounts:
         # append to the generated file the
         # labels
-        header = "#'chr'\t'start'\t'end'\t"
+        header = "#plotCoverage --outRawCounts\n#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
         f = open(args.outRawCounts, 'r+')
         content = f.read()
