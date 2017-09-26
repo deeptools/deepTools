@@ -225,12 +225,9 @@ read coverages. The way the method works is by first calculating all the
 number of reads (either extended to match the fragment length or not) that
 overlap each bin in the genome. Various options are available to normalize the reads:
 1) using a given scaling factor
-2) RPKM (reads per kilobase per million) : 'RPKM (per bin) =  number of reads per bin / '
-                       '( number of mapped reads (in millions) * bin length (kb) ).'
-3) CPM (counts per million) : CPM (per bin) =  number of reads per bin /
-                              number of mapped reads (in millions).
-4) BPM (bins per million) :  BPM (per bin) =  number of reads per bin /
-                             sum of all reads per bin (in millions).
+2) RPKM (reads per kilobase per million) : RPKM (per bin) =  number of reads per bin / ( number of mapped reads (in millions) * bin length (kb) ).
+3) CPM (counts per million) : CPM (per bin) =  number of reads per bin / number of mapped reads (in millions).
+4) BPM (bins per million) :  BPM (per bin) =  number of reads per bin / sum of all reads per bin (in millions).
 5) RPGC (1x sequencing depth ) : number of reads per bin /(total number of mapped reads * fragment length / effective genome size)
 
 In the case of paired-end mapping, each read mate is treated

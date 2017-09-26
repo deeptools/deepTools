@@ -134,6 +134,7 @@
                 <expand macro="pseudocount" />
             </when>
             <when value="add" />
+            <when value="subtract" />
             <when value="mean" />
             <when value="first" />
             <when value="second" />
