@@ -625,10 +625,22 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     ax1.set_xticklabels(["{:.1f}".format(bin_labels[x]) for x in xticks])
 
     x = np.linspace(0, 1, frequencies.shape[0])
-    ax2.plot(x, np.log2(frequencies[:, 2]), color='#8c96f0')
+    y = np.log2(frequencies[:, 2])
+    ax2.plot(x, y, color='#8c96f0')
     ax2.set_xlabel('GC fraction')
     ax2.set_ylabel('log2ratio observed/expected')
     ax2.set_xlim(0.2, 0.7)
+    y_max = max(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    y_min = min(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    if y_max > 0:
+        y_max *= 1.1
+    else:
+        y_max *= 0.9
+    if y_min < 0:
+        y_min *= 1.1
+    else:
+        y_min *= 0.9
+    ax2.set_ylim(y_min, y_max)
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
     plt.close()
