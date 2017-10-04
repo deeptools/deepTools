@@ -38,6 +38,7 @@
 
             #if $scaling.normalization.type is not None:
                 --normalizeUsing $scaling.normalization.type
+            #end if
             
             #if $comparison.type in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
