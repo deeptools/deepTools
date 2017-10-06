@@ -10,7 +10,7 @@ import json
 __author__ = 'Fidel'
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
-tolerance = 13  # default matplotlib pixed difference tolerance
+tolerance = 30  # default matplotlib pixel difference tolerance
 
 
 def cmpMatrices(f1, f2):
