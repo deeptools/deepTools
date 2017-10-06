@@ -141,7 +141,7 @@ def test_computeMatrix_metagene():
     os.remove('/tmp/_test_metagene.mat')
 
 
-#def test_plotHeatmap_simple_plot():
+# def test_plotHeatmap_simple_plot():
 #    """
 #    Test a simple plot generated using a matrix from
 #    the following command:
@@ -159,7 +159,7 @@ def test_computeMatrix_metagene():
 #    os.remove('/tmp/_test.png')
 
 
-#def test_plotHeatmap_rename_labels():
+# def test_plotHeatmap_rename_labels():
 #    args = "-m {}/master.mat.gz --outFileName /tmp/_test2.png --regionsLabel uno dos".format(ROOT).split()
 #    deeptools.plotHeatmap.main(args)
 #    res = compare_images(ROOT + '/master_relabeled.png', '/tmp/_test2.png', tolerance)
@@ -167,7 +167,7 @@ def test_computeMatrix_metagene():
 #    os.remove('/tmp/_test2.png')
 
 
-#def test_plotHeatmap_scale_regions():
+# def test_plotHeatmap_scale_regions():
 #    args = "-m {}/master_scale_reg.mat.gz --outFileName /tmp/_test3.png".format(ROOT).split()
 #    deeptools.plotHeatmap.main(args)
 #    res = compare_images(ROOT + '/master_scale_reg.png', '/tmp/_test3.png', tolerance)
@@ -175,7 +175,7 @@ def test_computeMatrix_metagene():
 #    os.remove('/tmp/_test3.png')
 
 
-#def test_plotHeatmap_multi_bigwig_pergroup():
+# def test_plotHeatmap_multi_bigwig_pergroup():
 #    args = "-m {}/master_multi.mat.gz --perGroup --samplesLabel file1 file2 file3 file4 " \
 #           "--outFileName /tmp/_test.png".format(ROOT).split()
 #    deeptools.plotHeatmap.main(args)
@@ -184,7 +184,7 @@ def test_computeMatrix_metagene():
 #    os.remove('/tmp/_test.png')
 
 
-#def test_plotHeatmap_multiple_colors_muti_scales():
+# def test_plotHeatmap_multiple_colors_muti_scales():
 #    args = "-m {}/master_multi.mat.gz --colorList white,blue white,red --zMin 1 0 --zMax 4 5 " \
 #           "--outFileName /tmp/_test.png".format(ROOT).split()
 #    deeptools.plotHeatmap.main(args)
@@ -193,7 +193,7 @@ def test_computeMatrix_metagene():
 #    os.remove('/tmp/_test.png')
 
 
-#def test_plotHeatmap_multiple_colormap_no_boxes():
+# def test_plotHeatmap_multiple_colormap_no_boxes():
 #    args = "-m {}/master_multi.mat.gz --colorMap Reds binary terrain --boxAroundHeatmaps no " \
 #           "--outFileName /tmp/_test.png".format(ROOT).split()
 #    deeptools.plotHeatmap.main(args)
