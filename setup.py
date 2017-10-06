@@ -138,7 +138,7 @@ setup(
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/multiBigwigSummary',
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation',
              'bin/plotEnrichment', 'bin/deeptools', 'bin/computeMatrixOperations',
-             'bin/estimateReadFiltering'],
+             'bin/estimateReadFiltering', 'bin/plotTracks'],
     include_package_data=True,
     package_data={'': ['config/deeptools.cfg']},
     url='http://pypi.python.org/pypi/deepTools/',

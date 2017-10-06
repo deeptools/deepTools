@@ -50,6 +50,7 @@ Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
     plotHeatmap             plots one or multiple heatmaps of user selected regions over different genomic scores
     plotProfile             plots the average profile of user selected regions over different genomic scores
     plotEnrichment          plots the read/fragment coverage of one or more sets of regions
+    plotTracks              makes plots similar to genome browser snapshots, but better looking
 
 [Miscellaneous]
     computeMatrixOperations Modifies the output of computeMatrix in a variety of ways.
