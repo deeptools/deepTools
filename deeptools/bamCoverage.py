@@ -98,7 +98,7 @@ def get_optional_args():
                           required=False)
 
     optional.add_argument('--filterRNAstrand',
-                          help='Selects RNA-seq reads (single-end or paired-end) in '
+                          help='Exclude RNA-seq reads (single-end or paired-end) from '
                                'the given strand.',
                           choices=['forward', 'reverse'],
                           default=None)
