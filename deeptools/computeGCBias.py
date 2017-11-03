@@ -345,7 +345,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         counts = np.bincount([r.pos - start_pos
                               for r in bam.fetch(chromNameBam, start_pos,
                                                  end_pos + 1)
-                              if not r.is_reverse and r.pos >= start_pos],
+                              if not r.is_reverse and not r.is_unmapped and r.pos >= start_pos],
                              minlength=end_pos - start_pos + 2)
 
         read_counts = counts[positions_to_sample - min(positions_to_sample)]

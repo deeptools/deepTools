@@ -98,8 +98,9 @@ def get_optional_args():
                           required=False)
 
     optional.add_argument('--filterRNAstrand',
-                          help='Selects RNA-seq reads (single-end or paired-end) in '
-                               'the given strand.',
+                          help='Selects RNA-seq reads (single-end or paired-end) originating from genes '
+                          'on the given strand. This option assumes a standard dUTP-based library '
+                          'preparation.',
                           choices=['forward', 'reverse'],
                           default=None)
 

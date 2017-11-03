@@ -40,13 +40,13 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
     if chrom in bam.references:
         reads = np.array([(abs(r.template_length), r.infer_query_length(always=False))
                           for r in bam.fetch(chrom, start, end)
-                          if r.is_proper_pair and r.is_read1])
+                          if r.is_proper_pair and r.is_read1 and not r.is_unmapped])
         if not len(reads):
             # if the previous operation produces an empty list
             # it could be that the data is not paired, then
             # we try with out filtering
             reads = np.array([(abs(r.template_length), r.infer_query_length(always=False))
-                              for r in bam.fetch(chrom, start, end)])
+                              for r in bam.fetch(chrom, start, end) if not r.is_unmapped])
     else:
         raise NameError("chromosome {} not found in bam file".format(chrom))
 
