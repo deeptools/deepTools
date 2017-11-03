@@ -1,6 +1,7 @@
 2.5.4
 
  * Fixed issue #612, which only occurs when unaligned reads have a position assigned to them.
+ * Ticks in the profile plot at the top of the output of `plotHeatmap` should now always line up properly. (issue #616)
 
 2.5.3
 
