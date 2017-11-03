@@ -23,6 +23,11 @@
  * `computeMatrixOperations sort` can now properly perform filtering of individual regions, as was originally intended (issue #594)
  * `plotCoverage --outRawCounts` now has another line it its header, which is meant to aid MultiQC.
 
+2.5.4
+
+ * Fixed issue #612, which only occurs when unaligned reads have a position assigned to them.
+ * Ticks in the profile plot at the top of the output of `plotHeatmap` should now always line up properly. (issue #616)
+
 2.5.3
 
  * Fixed a bug in `plotEnrichment`, the `--keepExons` option with a BED12 file would cause an error. (issue #559)
