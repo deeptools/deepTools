@@ -2,6 +2,10 @@ import os
 import sys
 import filecmp
 import matplotlib as mpl
+mpl.use('agg')
+from matplotlib.testing.compare import compare_images
+from tempfile import NamedTemporaryFile
+
 import deeptools.computeMatrix
 import deeptools.plotHeatmap
 import deeptools.plotProfile
@@ -11,6 +15,8 @@ import json
 __author__ = 'Fidel'
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
+
+tolerance = 13  # default matplotlib pixed difference tolerance
 
 
 def cmpMatrices(f1, f2):
@@ -51,18 +57,6 @@ def cmpMatrices(f1, f2):
 
 class TestHeatmapper(object):
 
-    def setUp(self):
-        # the tests based on images were done with
-        # matplotlib 1.5.0 and will fail if other
-        # version is used
-        self.run_image_tests = True
-        if mpl.__version__ != '1.5.0':
-            sys.stderr.write("\nTests based on images are skipped because of "
-                             "different matplotlib version ({}) != 1.5.0\n".format(mpl.__version__))
-            self.run_image_tests = False
-        if sys.version_info[0] != 2:
-            self.run_image_tests = False
-
     def test_computeMatrix_reference_point(self):
         args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
                "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
@@ -100,7 +94,6 @@ class TestHeatmapper(object):
                "--outFileName /tmp/_test2.mat.gz -bs 1 -p 1".format(ROOT).split()
 
         deeptools.computeMatrix.main(args)
-
         os.system('gunzip -f /tmp/_test2.mat.gz')
         assert cmpMatrices(ROOT + '/master_scale_reg.mat', '/tmp/_test2.mat') is True
         os.remove('/tmp/_test2.mat')
@@ -154,90 +147,110 @@ class TestHeatmapper(object):
           -R {test_path}/test.bed -o /tmp/mat.gz -bs 25
 
         """
-        if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg".format(ROOT).split()
-            deeptools.plotHeatmap.main(args)
-
-            # may fail if diff version of matplotlib library is used
-            assert self.compare_svg(ROOT + '/master.svg', '/tmp/_test.svg') is True
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master.mat.gz --outFileName {}".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        res = compare_images(ROOT + '/master.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotHeatmap_rename_labels(self):
-        if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test2.svg --regionsLabel uno dos".format(ROOT).split()
-            deeptools.plotHeatmap.main(args)
-            assert self.compare_svg(ROOT + '/master_relabeled.svg', '/tmp/_test2.svg') is True
-            os.remove('/tmp/_test2.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+
+        args = "-m {}/master.mat.gz --outFileName {} --regionsLabel uno dos".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        res = compare_images(ROOT + '/master_relabeled.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotHeatmap_scale_regions(self):
-        if self.run_image_tests:
-            args = "-m {}/master_scale_reg.mat.gz --outFileName /tmp/_test3.svg".format(ROOT).split()
-            deeptools.plotHeatmap.main(args)
-            assert self.compare_svg(ROOT + '/master_scale_reg.svg', '/tmp/_test3.svg') is True
-            os.remove('/tmp/_test3.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master_scale_reg.mat.gz --outFileName {}".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        res = compare_images(ROOT + '/master_scale_reg.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotHeatmap_multi_bigwig_pergroup(self):
-        if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --perGroup --samplesLabel file1 file2 file3 file4 " \
-                   "--outFileName /tmp/_test.svg".format(ROOT).split()
-            deeptools.plotHeatmap.main(args)
-            assert self.compare_svg(ROOT + '/heatmap_master_multi_pergroup.svg', '/tmp/_test.svg') is True
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master_multi.mat.gz --perGroup --samplesLabel file1 file2 file3 file4 " \
+               "--outFileName {}".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        res = compare_images(ROOT + '/heatmap_master_multi_pergroup.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotHeatmap_multiple_colors_muti_scales(self):
-        if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --colorList white,blue white,red --zMin 1 0 --zMax 4 5 " \
-                   "--outFileName /tmp/_test.svg".format(ROOT).split()
-            deeptools.plotHeatmap.main(args)
-            assert self.compare_svg(ROOT + '/heatmap_master_multi_color.svg', '/tmp/_test.svg') is True
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master_multi.mat.gz --colorList white,blue white,red --zMin 1 0 --zMax 4 5 " \
+               "--outFileName {}".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        res = compare_images(ROOT + '/heatmap_master_multi_color.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotHeatmap_multiple_colormap_no_boxes(self):
-        if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --colorMap Reds binary terrain --boxAroundHeatmaps no " \
-                   "--outFileName /tmp/_test.svg".format(ROOT).split()
-            deeptools.plotHeatmap.main(args)
-            assert self.compare_svg(ROOT + '/heatmap_master_multi_colormap_no_box.svg', '/tmp/_test.svg') is True
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master_multi.mat.gz --colorMap Reds binary terrain --boxAroundHeatmaps no " \
+               "--outFileName {}".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        res = compare_images(ROOT + '/heatmap_master_multi_colormap_no_box.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
+
+    def test_plotHeatmap_interpolation(self):
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/large_matrix.mat.gz --interpolation bilinear " \
+               "--outFileName {}".format(ROOT, outfile.name).split()
+        deeptools.plotHeatmap.main(args)
+        print " ".join(args)
+        res = compare_images(ROOT + '/heatmap_master_interpolation_bilinear.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotProfiler(self):
-        if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --regionsLabel uno dos " \
-                   "--plotType std".format(ROOT).split()
-            deeptools.plotProfile.main(args)
-            assert self.compare_svg(ROOT + '/profile_master.svg', '/tmp/_test.svg')
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master.mat.gz --outFileName {} --regionsLabel uno dos " \
+               "--plotType std".format(ROOT, outfile.name).split()
+        deeptools.plotProfile.main(args)
+        res = compare_images(ROOT + '/profile_master.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotProfiler_heatmap(self):
-        if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg --plotType heatmap".format(ROOT).split()
-            deeptools.plotProfile.main(args)
-            assert self.compare_svg(ROOT + '/profile_master_heatmap.svg', '/tmp/_test.svg')
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master.mat.gz --outFileName {} --plotType heatmap".format(ROOT, outfile.name).split()
+        deeptools.plotProfile.main(args)
+        res = compare_images(ROOT + '/profile_master_heatmap.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotProfiler_overlapped_lines(self):
-        if self.run_image_tests:
-            args = "-m {}/master.mat.gz --outFileName /tmp/_test.svg " \
-                   "--plotType overlapped_lines --yMin -1".format(ROOT).split()
-            deeptools.plotProfile.main(args)
-            assert self.compare_svg(ROOT + '/profile_master_overlap_lines.svg', '/tmp/_test.svg')
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master.mat.gz --outFileName {} " \
+               "--plotType overlapped_lines --yMin -1".format(ROOT, outfile.name).split()
+        deeptools.plotProfile.main(args)
+        res = compare_images(ROOT + '/profile_master_overlap_lines.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotProfiler_multibigwig(self):
-        if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
-                   "--numPlotsPerRow 2 --yMax 1.5".format(ROOT).split()
-            deeptools.plotProfile.main(args)
-            assert self.compare_svg(ROOT + '/profile_master_multi.svg', '/tmp/_test.svg')
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master_multi.mat.gz --outFileName {} " \
+               "--numPlotsPerRow 2 --yMax 1.5".format(ROOT, outfile.name).split()
+        deeptools.plotProfile.main(args)
+        res = compare_images(ROOT + '/profile_master_multi.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_plotProfiler_multibigwig_pergroup(self):
-        if self.run_image_tests:
-            args = "-m {}/master_multi.mat.gz --outFileName /tmp/_test.svg " \
-                   "--perGroup --yMax 1.5".format(ROOT).split()
-            deeptools.plotProfile.main(args)
-            assert self.compare_svg(ROOT + '/profile_master_multi_pergroup.svg', '/tmp/_test.svg')
-            os.remove('/tmp/_test.svg')
+        outfile = NamedTemporaryFile(suffix='.png', prefix='plotHeatmap_test_', delete=False)
+        args = "-m {}/master_multi.mat.gz --outFileName {} " \
+               "--perGroup --yMax 1.5".format(ROOT, outfile.name).split()
+        deeptools.plotProfile.main(args)
+        res = compare_images(ROOT + '/profile_master_multi_pergroup.png', outfile.name, tolerance)
+        assert res is None, res
+        os.remove(outfile.name)
 
     def test_chopRegions_body(self):
         region = [(0, 200), (300, 400), (800, 900)]
