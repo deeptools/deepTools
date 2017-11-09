@@ -435,6 +435,19 @@ def heatmapperOutputArgs(args=None,
                             'using this name, e.g. MyMatrix.tab.',
                             metavar='FILE',
                             type=writableFile)
+
+        output.add_argument('--interpolationMethod',
+                            help='If the heatmap image contains a large number of columns '
+                            'is usually better to use an interpolation method to produce '
+                            'better results (see '
+                            'https://matplotlib.org/examples/images_contours_and_fields/interpolation_methods.html). '
+                            'Be default, plotHeatmap uses the method `nearest` if the number of columns is 1000 or '
+                            'less. Otherwise it uses the bilinear method. This default behaviour can be changed by '
+                            'using any of the following options: "nearest", "bilinear", "bicubic", '
+                            '"gaussian"',
+                            choices=['auto', 'nearest', 'bilinear', 'bicubic', 'gaussian'],
+                            metavar='STR',
+                            default='auto')
     elif mode == 'profile':
         output.add_argument('--outFileNameData',
                             help='File name to save the data '
@@ -491,8 +504,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         optional.add_argument(
             '--averageType',
             default='mean',
-            choices=["mean", "median", "min",
-                     "max", "std", "sum"],
+            choices=["mean", "median", "min", "max", "std", "sum"],
             help='The type of statistic that should be used for the '
             'profile. The options are: "mean", "median", "min", "max", '
             '"sum" and "std".')

@@ -37,6 +37,8 @@ computeMatrix reference-point -R group1.bed group2.bed -S test.bw test.bw test.b
 plotHeatmap -m master_multi.mat.gz --perGroup --outFileName heatmap_master_multi_pergroup.png --samplesLabel file1 file2 file3 file4
 plotHeatmap -m master_multi.mat.gz --colorList 'white,blue' 'white, red' --zMin 1 0 --zMax 4 5 -o heatmap_master_multi_color.png
 plotHeatmap -m master_multi.mat.gz --colorMap Reds binary terrain --boxAroundHeatmaps no -o heatmap_master_multi_colormap_no_box.png
+plotHeatmap -m large_matrix.mat.gz --interpolation bilinear --outFileName heatmap_master_interpolation_bilinear.png
+
 plotProfile -m master.mat.gz --outFileName profile_master_overlap_lines.png --plotType overlapped_lines --yMin -1
 plotProfile -m master_multi.mat.gz --outFileName profile_master_multi.png --numPlotsPerRow 2 --yMax 1.5
 plotProfile -m master_multi.mat.gz --outFileName profile_master_multi_pergroup.png --perGroup --yMax 1.5
