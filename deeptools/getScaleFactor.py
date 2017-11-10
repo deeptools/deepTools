@@ -28,6 +28,9 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
     if chrom in bam.references:
         for read in bam.fetch(chrom, start, end):
             tot += 1
+            if read.is_unmapped:
+                continue
+
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
                 filtered += 1
                 continue
@@ -262,7 +265,7 @@ def get_scale_factor(args):
 
     else:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
-        sys.stderr.write("normalization: depth\n")
+        sys.stderr.write("normalization: none (signal scaled by the fraction of alignments kept after filtering)\n")
 
         scale_factor *= bam_mapped / float(bam_mapped_total)
 

@@ -1,10 +1,10 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.5.3.0</token>
+    <token name="@WRAPPER_VERSION@">2.5.4.0</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="2.5.3">deeptools</requirement>
+            <requirement type="package" version="2.5.4">deeptools</requirement>
             <yield />
         </requirements>
         <expand macro="stdio" />
@@ -331,7 +331,7 @@
     </xml>
 
     <xml name="fragmentLength">
-        <param argument="--fragmentLength" type="integer" value="300" min="1"
+        <param argument="--fragmentLength" type="integer" min="1" optional="true"
             label="Fragment length used for the sequencing"
             help ="If paired-end reads are used, the fragment length is computed from the BAM file, so this is only needed for single-end data."/>
     </xml>

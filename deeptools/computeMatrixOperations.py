@@ -98,7 +98,7 @@ or
         'sort',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[sortArgs()],
-        help='Sort a matrix file to correspond to the order if entries in the desired input files. The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first).',
+        help='Sort a matrix file to correspond to the order of entries in the desired input file(s). The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first). Note that this subcommand can also be used to remove unwanted regions, since regions not present in the input file(s) will be omitted from the output.',
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
@@ -616,12 +616,16 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         _ = [""] * len(regions[idx])
         for k, v in regions[idx].items():
             _[v] = k
+        sz = 0  # Track the number of enries actually matched
         for name in _:
             if name not in d[label]:
                 sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
+            sz += 1
             order.append(d[label][name])
-        boundaries.append(groupSizes[label] + boundaries[-1])
+        if sz == 0:
+            sys.exit("The region group {} had no matching entries!\n".format(label))
+        boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
     hm.matrix.matrix = hm.matrix.matrix[order, :]

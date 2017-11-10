@@ -63,6 +63,7 @@ The table that you can obtain via ``--outRawCounts`` simply contains the sum of 
 .. code:: bash
 
   $ head fingerprints.tab 
+    #plotFingerprint --outRawCounts
     'H3K27me3'	'H3K4me1'	'H3K4me3'	'H3K9me3'	'input'
         1	0	0	0	0
         0	0	0	0	1

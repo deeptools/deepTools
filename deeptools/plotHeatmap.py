@@ -598,10 +598,6 @@ def plotMatrix(hm, outFileName,
 
             ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position, label_rotation)
 
-        # reduce the number of yticks by half
-        num_ticks = len(ax_list[0].get_yticks())
-        yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
-        ax_list[0].set_yticks(yticks)
         if legend_location != 'none':
             ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
                                frameon=False, markerscale=0.5)

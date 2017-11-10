@@ -391,6 +391,8 @@ def bam_blacklisted_worker(args):
     fh = openBam(bam)
     blacklisted = 0
     for r in fh.fetch(reference=chrom, start=start, end=end):
+        if r.is_unmapped:
+            continue
         if r.reference_start >= start and r.reference_start + r.infer_query_length(always=False) - 1 <= end:
             blacklisted += 1
     fh.close()

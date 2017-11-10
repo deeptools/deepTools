@@ -19,7 +19,7 @@ In this example we compute the coverage of reads over a small region for bins of
 
 .. code:: python
 
-    import deeptools.countReadsPerBin
+    import deeptools.countReadsPerBin as crpb
 
 
 We also need a BAM file containing the aligned reads.
@@ -30,7 +30,7 @@ falling into the regions of interest.
 
     bam_file = "file.bam"
 
-Now, the ``countReadsPerBin`` object can be initialized.
+Now, the ``CountReadsPerBin`` object can be initialized.
 The first argument to the constructor is a list of BAM files,
 which in this case is just one file.
 We are going to use a ``binLength`` of 50 bases, with subsequent bins adjacent
@@ -39,7 +39,7 @@ coverages can be used by setting a ``stepSize`` smaller than ``binLength``.
 
 .. code:: python
 
-    cr = countReadsPerBin.CountReadsPerBin([bam_file], binLength=50, stepSize=50)
+    cr = crpb.CountReadsPerBin([bam_file], binLength=50, stepSize=50)
 
 
 Now, we can compute the coverage over a region in chromosome 2 from position 0
@@ -83,11 +83,11 @@ Furthermore, duplicated reads are ignored.
 
 .. code:: python
 
-    cr = countReadsPerBin.CountReadsPerBin([bam_file], binLength=50, stepSize=50,
-                                            minMappingQuality=20,
-                                            samFlag_exclude=16,
-                                            ignoreDuplicates=True
-                                            )
+    cr = crpb.CountReadsPerBin([bam_file], binLength=50, stepSize=50,
+                               minMappingQuality=20,
+                               samFlag_exclude=16,
+                               ignoreDuplicates=True
+                               )
     cr.count_reads_in_region('chr2L', 1000000, 1001000)
 
 .. parsed-literal::
@@ -120,16 +120,15 @@ Instead of adjacent bins, as in the previous cases, a genome can
 simply be sampled. This is useful to estimate some values,
 like depth of sequencing, without having to look at the complete genome. In the following example,
 10,000 positions of size 1 base are going to be queried from three bam files to compute the average depth of sequencing.
-For this, we set the `numberOfSamples` parameter in the object constructor. The `skipZeros` parameter
-is added to exclude regions lacking reads in all BAM files.
-The `run()` method is used instead of `count_reads_in_region`.
+For this, we set the `numberOfSamples` parameter in the object constructor.
+
+The `run()` method is used instead of `count_reads_in_region` to provide efficient sampling over the entire genome.
 
 .. code:: python
 
-    cr = countReadsPerBin.CountReadsPerBin([bam_file1, bam_file2, bam_file3],
-                                            binLength=1, numberOfSamples=10000,
-                                            numberOfProcessors=10,
-                                            skipZeros=True)
+    cr = crpb.CountReadsPerBin([bam_file1, bam_file2, bam_file3],
+                               binLength=1, numberOfSamples=10000,
+                               numberOfProcessors=10)
     sequencing_depth = cr.run()
     print sequencing_depth.mean(axis=0)
 
@@ -174,9 +173,9 @@ going to be used, corresponding to two biological replicates.
 
 .. code:: python
 
-    bed_file = open("peaks.bed", 'r')
+    bed_files = ["peaks.bed"]
     cr = countReadsPerBin.CountReadsPerBin([bam_file1, bam_file2],
-                                            bedFile=[bed_file],
+                                            bedFile=bed_files,
                                             numberOfProcessors=10)
     reads_at_peaks = cr.run()
     print reads_at_peaks

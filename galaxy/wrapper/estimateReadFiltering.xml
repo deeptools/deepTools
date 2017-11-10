@@ -92,7 +92,7 @@ Output
 The output file is a simple text file with the following columns:
 
  * Total reads (including unmapped)
- * Unmapped reads
+ * Mapped reads
  * Reads in blacklisted regions (--blackListFileName)
 
 The following metrics are estimated according to the --binSize and --distanceBetweenBins parameters

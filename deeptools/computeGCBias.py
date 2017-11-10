@@ -78,15 +78,14 @@ def getRequiredArgs():
                           metavar='2bit FILE',
                           required=True)
 
-    required.add_argument('--fragmentLength', '-l',
+    # define the optional arguments
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--fragmentLength', '-l',
                           help='Fragment length used for the sequencing. If '
                           'paired-end reads are used, the fragment length is '
                           'computed based from the bam file',
-                          type=int,
-                          required=True)
+                          type=int)
 
-    # define the optional arguments
-    optional = parser.add_argument_group('Optional arguments')
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
 
@@ -345,7 +344,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         counts = np.bincount([r.pos - start_pos
                               for r in bam.fetch(chromNameBam, start_pos,
                                                  end_pos + 1)
-                              if not r.is_reverse and r.pos >= start_pos],
+                              if not r.is_reverse and not r.is_unmapped and r.pos >= start_pos],
                              minlength=end_pos - start_pos + 2)
 
         read_counts = counts[positions_to_sample - min(positions_to_sample)]
@@ -626,10 +625,22 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     ax1.set_xticklabels(["{:.1f}".format(bin_labels[x]) for x in xticks])
 
     x = np.linspace(0, 1, frequencies.shape[0])
-    ax2.plot(x, np.log2(frequencies[:, 2]), color='#8c96f0')
+    y = np.log2(frequencies[:, 2])
+    ax2.plot(x, y, color='#8c96f0')
     ax2.set_xlabel('GC fraction')
     ax2.set_ylabel('log2ratio observed/expected')
     ax2.set_xlim(0.2, 0.7)
+    y_max = max(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    y_min = min(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    if y_max > 0:
+        y_max *= 1.1
+    else:
+        y_max *= 0.9
+    if y_min < 0:
+        y_min *= 1.1
+    else:
+        y_min *= 0.9
+    ax2.set_ylim(y_min, y_max)
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
     plt.close()

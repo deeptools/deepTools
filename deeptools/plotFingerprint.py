@@ -428,6 +428,7 @@ def main(args=None):
 
     if args.outRawCounts is not None:
         of = open(args.outRawCounts, "w")
+        of.write("#plotFingerprint --outRawCounts\n")
         of.write("'" + "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
