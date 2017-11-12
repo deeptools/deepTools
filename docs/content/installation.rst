@@ -63,33 +63,7 @@ or if you want a particular release, choose one from https://github.com/fidelram
 	$ wget https://github.com/fidelram/deepTools/archive/1.5.12.tar.gz
 	$ tar -xzvf
 
-3. The config file can be modified to set the temporary directory and default number of threads to use:
-::
-
-	$ cat deepTools/deeptools/config/deeptools.cfg
-	
-	[general]
-	# if set to max/2 (no quotes around)
-	# half the available processors will
-	# be used
-	default_proc_number: max/2
-
-	# temporary dir:
-	# deepTools bamCoverage, bamCompare and correctGCbias
-	# write files to a temporary dir before merging them
-	# and creating a final file. This can be speed up
-	# by writting to /dev/shm but for this a large
-	# physical memory of the server is required. If
-	# this is the case in your system, uncomment
-	# the following line. Otherwise, setting the
-	# variable to 'default', deepTools will use the
-	# temporary file configured in the system.
-	# Any other path that wants to be used for temporary
-	# files can by given as well (ie, /tmp)
-	#tmp_dir: /dev/shm
-	tmp_dir: default
-
-4. install the source code (if you don't have root permission, you can set
+3. install the source code (if you don't have root permission, you can set
 a specific folder using the ``--prefix`` option)
 ::
 

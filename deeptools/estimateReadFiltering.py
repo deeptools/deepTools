@@ -5,7 +5,6 @@ import sys
 from deeptools import parserCommon, bamHandler, utilities
 from deeptools.mapReduce import mapReduce
 from deeptools._version import __version__
-import deeptools.config as cfg
 
 
 def parseArguments():
@@ -77,8 +76,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                          'to use all available processors.',
                          metavar="INT",
                          type=parserCommon.numberOfProcessors,
-                         default=cfg.config.get('general',
-                                                'default_proc_number'),
+                         default=1,
                          required=False)
 
     general.add_argument('--verbose', '-v',
