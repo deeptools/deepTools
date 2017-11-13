@@ -16,7 +16,7 @@ sed -i '7d;55d' lib/galaxy/dependencies/pinned-requirements.txt
 cd ..
 pip install .
 #galaxy/wrapper/correctGCBias.xml \
-/home/travis/build/deeptools/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --no_conda_auto_install --no_conda_auto_init \
+/home/travis/build/deeptools/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --no_conda_auto_install --no_conda_auto_init --no_dependency_resolution \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
