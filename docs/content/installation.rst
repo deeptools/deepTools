@@ -42,7 +42,7 @@ If you need to specify a specific path for the installation of the tools, make u
 
 .. code:: bash
 
-    $ pip install --install-option="--prefix=/MyPath/Tools/deepTools2.0" git+https://github.com/fidelram/deepTools.git
+    $ pip install --install-option="--prefix=/MyPath/Tools/deepTools2.0" git+https://github.com/deeptools/deepTools.git
 
 
 Command line installation without ``pip``
@@ -55,12 +55,12 @@ You are highly recommended to use `pip` rather than these more complicated steps
 2. Download source code
 ::
 
-	$ git clone https://github.com/fidelram/deepTools.git
+	$ git clone https://github.com/deeptools/deepTools.git
 
-or if you want a particular release, choose one from https://github.com/fidelram/deepTools/releases:
+or if you want a particular release, choose one from https://github.com/deeptools/deepTools/releases:
 ::
 
-	$ wget https://github.com/fidelram/deepTools/archive/1.5.12.tar.gz
+	$ wget https://github.com/deeptools/deepTools/archive/1.5.12.tar.gz
 	$ tar -xzvf
 
 3. install the source code (if you don't have root permission, you can set
