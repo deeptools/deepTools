@@ -22,7 +22,7 @@
  * `computeGCBias` no longer requires a fragment length for paired-end datasets. This was apparently always meant to be the case anyway. (issue #595)
  * `computeMatrixOperations sort` can now properly perform filtering of individual regions, as was originally intended (issue #594)
  * `plotCoverage --outRawCounts` now has another line it its header, which is meant to aid MultiQC.
- * There is no longer a configuration file. See issue #613.
+ * There is no longer a configuration file. The default number of threads for all tools is 1. See issue #613.
 
 2.5.4
 
