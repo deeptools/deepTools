@@ -20,14 +20,6 @@ deeptools.bamHandler module
     :show-inheritance:
 
 
-deeptools.correctReadCounts module
-----------------------------------
-
-.. automodule:: deeptools.correctReadCounts
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 deeptools.correlation module
 ----------------------------
 

@@ -20,7 +20,7 @@ of the tools see our poster_.
 
 deeptools is developed under here:
 
-    https://github.com/fidelram/deepTools
+    https://github.com/deeptools/deepTools
 
 For support, questions, or feature requests contact: deeptools@googlegroups.com
 
@@ -41,7 +41,7 @@ installing deepTools from the Tool Shed.
 Citation
 ========
 
-deeptools are currently under review. In the meantime please refere to https://github.com/fidelram/deepTools.
+deeptools are currently under review. In the meantime please refere to https://github.com/deeptools/deepTools.
 
 
 =======

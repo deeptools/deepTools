@@ -16,16 +16,16 @@ long_description: |
   created to identify enrichments with functional annotations of the genome.
   For a gallery of images that can be produced and a description of the tools see http://f1000.com/posters/browse/summary/1094053
 
-  https://github.com/fidelram/deepTools
+  https://github.com/deeptools/deepTools
   doi: 10.1093/nar/gku365
-  Wikipage: https://github.com/fidelram/deepTools/wiki
+  Wikipage: https://github.com/deeptools/deepTools/wiki
 
   Repository-Maintainer: Björn Grüning
 
-  https://github.com/fidelram/deepTools
+  https://github.com/deeptools/deepTools
 name: deeptools
 owner: bgruening
-remote_repository_url: https://github.com/fidelram/deepTools/tree/master/galaxy/wrapper/
+remote_repository_url: https://github.com/deeptools/deepTools/tree/master/galaxy/wrapper/
 type: unrestricted
 auto_tool_repositories:
   name_template: "{{ tool_id }}"
@@ -45,11 +45,11 @@ suite:
     created to identify enrichments with functional annotations of the genome.
     For a gallery of images that can be produced and a description of the tools see http://f1000.com/posters/browse/summary/1094053
 
-    https://github.com/fidelram/deepTools
+    https://github.com/deeptools/deepTools
     doi: 10.1093/nar/gku365
-    Wikipage: https://github.com/fidelram/deepTools/wiki
+    Wikipage: https://github.com/deeptools/deepTools/wiki
 
     Repository-Maintainer: Björn Grüning
 
-    https://github.com/fidelram/deepTools
+    https://github.com/deeptools/deepTools
 

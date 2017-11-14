@@ -101,7 +101,7 @@ release = version
 # An rst epilog to apper at the end of every page
 rst_epilog = """
 +----------------------------------------------------------------+------------------------------------------------------------+
-| `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_.     | `code @ github <https://github.com/fidelram/deepTools/>`_. |
+| `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_.     | `code @ github <https://github.com/deeptools/deepTools/>`_. |
 +----------------------------------------------------------------+------------------------------------------------------------+
 """
 
