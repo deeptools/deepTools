@@ -1,5 +1,4 @@
 import argparse
-import deeptools.config as cfg
 import os
 from deeptools._version import __version__
 
@@ -316,8 +315,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
-                          default=cfg.config.get('general',
-                                                 'default_proc_number'),
+                          default=1,
                           required=False)
 
     optional.add_argument('--verbose', '-v',

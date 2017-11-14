@@ -40,7 +40,7 @@ neglected.
 **Fast Facts:**
 
 * `computeMatrix` mode: reference-point
-* *regions file*: BED file with typical enhancer regions from `Whyte et al., 2013 <http://dx.doi.org/10.1016/j.cell.2013.03.035>`__ (download `here <https://raw.github.com/fidelram/deepTools/master/gallery/Whyte_TypicalEnhancers_ESC.bed>`__)
+* *regions file*: BED file with typical enhancer regions from `Whyte et al., 2013 <http://dx.doi.org/10.1016/j.cell.2013.03.035>`__ (download `here <https://raw.github.com/deeptools/deepTools/master/gallery/Whyte_TypicalEnhancers_ESC.bed>`__)
 * *signal file*: bigWig file with `DNase signal from UCSC <http://hgdownload.cse.ucsc.edu/goldenPath/mm9/encodeDCC/wgEncodeUwDnase/wgEncodeUwDnaseEscj7S129ME0SigRep1.bigWig>`_
 * *heatmap cosmetics*: labels, titles, heatmap height
 

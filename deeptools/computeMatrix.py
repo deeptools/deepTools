@@ -8,7 +8,6 @@ import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
-import deeptools.config as cfg
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo
@@ -343,8 +342,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
-                          default=cfg.config.get('general',
-                                                 'default_proc_number'),
+                          default=1,
                           required=False)
     return parser
 

@@ -229,60 +229,17 @@ def copyFileInMemory(filePath, suffix=''):
 
 def getTempFileName(suffix=''):
     """
-    returns a temporary file name.
-    If the special /dev/shm device is available,
-    the temporary file would be located in that folder.
-    /dv/shm is a folder that resides in memory and
-    which has much faster accession.
+    Return a temporary file name. The calling function is responsible for
+    deleting this upon completion.
     """
     import tempfile
-    from deeptools import config as cfg
-    # get temp dir from configuration file
-    tmp_dir = cfg.config.get('general', 'tmp_dir')
-    if tmp_dir == 'default':
-        _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                                suffix=suffix,
-                                                delete=False)
-
-    else:
-        try:
-            _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                                    suffix=suffix,
-                                                    dir=tmp_dir,
-                                                    delete=False)
-        # fall back to system tmp file
-        except OSError:
-            _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                                    suffix=suffix,
-                                                    delete=False)
+    _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                            suffix=suffix,
+                                            delete=False)
 
     memFileName = _tempFile.name
     _tempFile.close()
     return memFileName
-
-
-def which(program):
-    """ method to identify if a program
-    is on the user PATH variable.
-    From: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-    """
-    import os
-
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
 
 
 def gtfOptions(allArgs=None):

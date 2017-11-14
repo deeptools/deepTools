@@ -1,4 +1,4 @@
-2.6.0
+3.0.0
 
  * plotCorrelation` now has `--log1p` and `--maxRange` options if a scatter plot is produced. `--log1p` plots the natural log of the values (plus 1). `--maxRange` sets the maximum X and Y axis ranges. If they would normally be below this value then they are left unchanged. (issue #536)
  * The PCA plot now includes "% of var. explained" in the top axis labels. (issue #547)
@@ -22,6 +22,12 @@
  * `computeGCBias` no longer requires a fragment length for paired-end datasets. This was apparently always meant to be the case anyway. (issue #595)
  * `computeMatrixOperations sort` can now properly perform filtering of individual regions, as was originally intended (issue #594)
  * `plotCoverage --outRawCounts` now has another line it its header, which is meant to aid MultiQC.
+ * There is no longer a configuration file. The default number of threads for all tools is 1. See issue #613.
+
+2.5.4
+
+ * Fixed issue #612, which only occurs when unaligned reads have a position assigned to them.
+ * Ticks in the profile plot at the top of the output of `plotHeatmap` should now always line up properly. (issue #616)
 
 2.5.3
 
