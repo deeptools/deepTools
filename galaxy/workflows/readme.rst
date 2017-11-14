@@ -30,7 +30,7 @@ http://toolshed.g2.bx.psu.edu/view/bgruening/deeptools_workflows
 
 Development is being done on github:
 
-https://github.com/fidelram/deepTools
+https://github.com/deeptools/deepTools
 
 
 Dependencies
