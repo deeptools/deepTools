@@ -438,7 +438,8 @@ def plotMatrix(hm, outFileName,
                legend_location='upper-left',
                box_around_heatmaps=True,
                label_rotation=0.0,
-               dpi=200):
+               dpi=200,
+               interpolation_method='auto'):
 
     matrix_flatten = None
     if zMin is None:
@@ -645,10 +646,22 @@ def plotMatrix(hm, outFileName,
                 ax.spines['bottom'].set_visible(False)
                 ax.spines['left'].set_visible(False)
             rows, cols = sub_matrix['matrix'].shape
-            interpolation_type = None if rows >= 1000 and cols >= 200 else 'nearest'
+            # if the number of rows is too large, then the 'nearest' method simply
+            # drops rows. A better solution is to relate the threshold to the DPI of the image
+            if interpolation_method == 'auto':
+                if rows >= 1000:
+                    interpolation_method = 'bilinear'
+                else:
+                    interpolation_method = 'nearest'
+
+            # if np.clip is not used, then values of the matrix that exceed the zmax limit are
+            # highlighted. Usually, a significant amount of pixels are equal or above the zmax and
+            # the default behaviour produces images full of large highlighted dots.
+            # If interpolation='nearest' is used, this has no effect
+            sub_matrix['matrix'] = np.clip(sub_matrix['matrix'], zMin[zmin_idx], zMax[zmax_idx])
             img = ax.imshow(sub_matrix['matrix'],
                             aspect='auto',
-                            interpolation=interpolation_type,
+                            interpolation=interpolation_method,
                             origin='upper',
                             vmin=zMin[zmin_idx],
                             vmax=zMax[zmax_idx],
@@ -859,4 +872,5 @@ def main(args=None):
                legend_location=args.legendLocation,
                box_around_heatmaps=args.boxAroundHeatmaps,
                label_rotation=args.label_rotation,
-               dpi=args.dpi)
+               dpi=args.dpi,
+               interpolation_method=args.interpolationMethod)
