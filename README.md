@@ -1,5 +1,5 @@
 # deepTools
-[![Build Status](https://travis-ci.org/fidelram/deepTools.svg?branch=master)](https://travis-ci.org/fidelram/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) [![PyPI Version](https://img.shields.io/pypi/v/deeptools.svg?style=plastic)](https://pypi.org/project/deepTools/) [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io)
+[![Build Status](https://travis-ci.org/deeptools/deepTools.svg?branch=master)](https://travis-ci.org/deeptools/deepTools) [![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) [![PyPI Version](https://img.shields.io/pypi/v/deeptools.svg?style=plastic)](https://pypi.org/project/deepTools/) [![bioconda-badge](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat-square)](http://bioconda.github.io)
 
 ## User-friendly tools for exploring deep-sequencing data
 
@@ -36,7 +36,7 @@ There are many easy ways to install deepTools. Details can be found [here](https
 
 You can install any one of the deepTools branches on command line (linux/mac) by cloning this git repository :
 
-	$ git clone https://github.com/fidelram/deepTools
+	$ git clone https://github.com/deeptools/deepTools
 	$ cd deepTools
 	$ python setup.py install
 
