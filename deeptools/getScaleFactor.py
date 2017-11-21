@@ -226,7 +226,7 @@ def get_scale_factor(args):
             print("Estimated current coverage {}".format(current_coverage))
             print("Scaling factor {}".format(args.scaleFactor))
 
-    elif args.normalizeUsingRPKM:
+    elif args.normalizeUsing == 'RPKM':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: RPKM\n")
 
@@ -239,6 +239,30 @@ def get_scale_factor(args):
 
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
+
+    elif args.normalizeUsing == 'CPM':
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: CPM\n")
+
+        # the CPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
+        million_reads_mapped = float(bam_mapped) / 1e6
+        scale_factor *= 1.0 / (million_reads_mapped)
+
+        if debug:
+            print("scale factor using CPM is {0}".format(args.scaleFactor))
+
+    elif args.normalizeUsing == 'BPM':
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: BPM\n")
+        # the BPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
+        # sampled_bins_sum = getSampledSum(args.bam)
+        tile_len_in_kb = float(args.binSize) / 1000
+        tpm_scaleFactor = (bam_mapped / tile_len_in_kb) / 1e6
+
+        scale_factor *= 1 / (tpm_scaleFactor * tile_len_in_kb)
+        if debug:
+            print("scale factor using BPM is {0}".format(args.scaleFactor))
+
     else:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: none (signal scaled by the fraction of alignments kept after filtering)\n")

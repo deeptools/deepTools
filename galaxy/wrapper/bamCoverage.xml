@@ -20,7 +20,11 @@
             --binSize $binSize
 
             #if $scaling.type=='rpkm':
-                --normalizeUsingRPKM
+                --normalizeUsing RPKM
+            #elif $scaling.type=='cpm':
+                --normalizeUsing CPM
+            #elif $scaling.type=='bpm':
+                --normalizeUsing BPM
             #elif $scaling.type=='1x':
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
                     --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
@@ -73,10 +77,14 @@
         <conditional name="scaling">
             <param name="type" type="select" label="Scaling/Normalization method" >
                 <option value="1x">Normalize coverage to 1x</option>
-                <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
+                <option value="rpkm">Normalize to reads per kilobase per million (RPKM)</option>
+                <option value="cpm">Normalize to counts per million (CPM), same as CPM in RNA-seq</option>
+                <option value="bpm">Normalize to bins per million (BPM), same as TPM in RNA-seq</option>
                 <option value="no">Do not normalize or scale</option>
             </param>
             <when value="rpkm"/>
+            <when value="cpm"/>
+            <when value="bpm"/>
             <when value="no"/>
             <when value="1x">
                 <expand macro="effectiveGenomeSize" />
@@ -129,7 +137,7 @@
                         --Offset 5 -1 will result in the 5th through last position being used, which
                         is equivalent to trimming 4 bases from the 5-prime end of alignments." />
 
-                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
+                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
                     help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                           Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
                     <option value="no" selected="true">no</option>
@@ -215,9 +223,14 @@ What it does
 Given a BAM file, this tool generates a bigWig or bedGraph file of fragment or
 read coverages. The way the method works is by first calculating all the
 number of reads (either extended to match the fragment length or not) that
-overlap each bin in the genome. The resulting read counts can be normalized
-using either a given scaling factor, the RPKM formula or to get a 1x depth of
-coverage (RPGC). In the case of paired-end mapping, each read mate is treated
+overlap each bin in the genome. Various options are available to normalize the reads:
+1) using a given scaling factor
+2) RPKM (reads per kilobase per million) : RPKM (per bin) =  number of reads per bin / ( number of mapped reads (in millions) * bin length (kb) ).
+3) CPM (counts per million) : CPM (per bin) =  number of reads per bin / number of mapped reads (in millions).
+4) BPM (bins per million) :  BPM (per bin) =  number of reads per bin / sum of all reads per bin (in millions).
+5) RPGC (1x sequencing depth ) : number of reads per bin /(total number of mapped reads * fragment length / effective genome size)
+
+In the case of paired-end mapping, each read mate is treated
 independently to avoid a bias when a mixture of concordant and discordant
 pairs is present. This means that *each end* will be extended to match the
 fragment length.

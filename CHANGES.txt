@@ -23,6 +23,7 @@
  * `computeMatrixOperations sort` can now properly perform filtering of individual regions, as was originally intended (issue #594)
  * `plotCoverage --outRawCounts` now has another line it its header, which is meant to aid MultiQC.
  * There is no longer a configuration file. The default number of threads for all tools is 1. See issue #613.
+ * `bamCoverage` and `bamCompare` have rewritten normalization functions. They have both added CPM and BPM normalization and, importantly, filtering is now done **before** computing scaling factors. A few of the options associated with this (e.g., `--normalizeUsingRPKM`) have been replaced with the `--normalizeUsing` option. This behavior represents a break from that seen in earlier versions but should be easier to follow and more in line with what users expect is happening.
 
 2.5.4
 

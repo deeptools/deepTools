@@ -236,10 +236,11 @@ class WriteBedGraph(cr.CountReadsPerBin):
             """
             # uncomment these lines if fixed step bedgraph is required
             if not np.isnan(value):
-                writeStart = start + tileIndex*self.binLength
-                writeEnd  =  min(writeStart+self.binLength, end)
+                writeStart = start + tileIndex * self.binLength
+                writeEnd  =  min(writeStart + self.binLength, end)
                 _file.write(line_string.format(chrom, writeStart,
-                                           end, previous_value))
+                                               writeEnd, value))
+            continue
             """
 
             if previous_value is None:
