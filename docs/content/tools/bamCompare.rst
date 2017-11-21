@@ -17,6 +17,7 @@ The basic algorithm works proceeds in two steps:
      RPKM, BPM or CPM methods (or no normalization at all)
 
 2. A per-bin calculation is performed after accounting for scaling:
+
    - The genome is transversed and the log2 ratio/ratio/difference/etc. for each bin of fixed width is computed.
 
 
