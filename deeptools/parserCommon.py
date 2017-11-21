@@ -232,7 +232,7 @@ def normalization_options():
                        required=False)
 
     group.add_argument('--normalizeUsing',
-                       help='Use one of the entered method to '
+                       help='Use one of the entered methods to '
                        'normalize the number of reads per bin. By default, no normalization is performed. '
                        'RPKM = Reads Per Kilobase per Million mapped reads; '
                        'CPM = Counts Per Million mapped reads, same as CPM in RNA-seq; '

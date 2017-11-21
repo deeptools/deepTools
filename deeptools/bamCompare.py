@@ -38,12 +38,10 @@ def parseArguments():
         'peak calling for ChIP-seq". Statistical Applications in Genetics '
         'and Molecular Biology, 11(3). Normalization based on read counts '
         'is also available. The output is either a bedgraph or bigWig file '
-        'containing the bin location and the resulting comparison value. By '
-        'default, if reads are paired, the fragment length reported in the BAM '
-        'file is used. Each mate, however, '
-        'is treated independently to avoid a bias when a mixture of concordant '
-        'and discordant pairs is present. This means that *each end* will '
-        'be extended to match the fragment length.',
+        'containing the bin location and the resulting comparison value. '
+        'Note that *each end* in a pair (for paired-end reads) is treated '
+        'independently. If you this is undesirable, then use the --samFlagInclude '
+        'or --samFlagExclude options.',
 
         usage=' bamCompare -b1 treatment.bam -b2 control.bam -o log2ratio.bw',
 
@@ -83,12 +81,10 @@ def getOptionalArgs():
 
     optional.add_argument('--scaleFactorsMethod',
                           help='Method to use to scale the samples. '
-                          'If scaling is selected, per-sample depth normalization '
-                          'would not be used, instead counts would be scaled between samples '
-                          'to account for sequencing depth differences between the two. '
-                          'As an alternative, scaling can be set to None, and the option '
-                          '--normalizeUsing <method> can be used, to normalize each sample '
-                          'by sequencing depth before comparing them. ',
+                          'If a method is specified, then it will be used to compensate '
+                          'for sequencing depth differences between the samples. '
+                          'As an alternative, this can be set to None and an option from '
+                          '--normalizeUsing <method> can be used.',
                           choices=['readCount', 'SES', 'None'],
                           default='readCount')
 
@@ -121,7 +117,7 @@ def getOptionalArgs():
                           required=False)
 
     optional.add_argument('--ratio', '--method',
-                          help='The default is to output the log2ratio of the '
+                          help='The default is to output the log2 ratio of the '
                           'two samples. The reciprocal ratio returns the '
                           'the negative of the inverse of the ratio '
                           'if the ratio is less than 0. The resulting '

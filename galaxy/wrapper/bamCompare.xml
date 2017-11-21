@@ -96,10 +96,10 @@
             </when>
             <when value="None">
                 <param name="type" type="select" label="Normalization method" >
-                    <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
-                    <option value="cpm">Normalize to counts per million (CPM), same as CPM in RNA-seq</option>
-                    <option value="bpm">Normalize to bins per million (BPM), same as TPM in RNA-seq</option>
-                    <option value="no">Do not normalize or scale</option>
+                    <option value="RPKM">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
+                    <option value="CPM">Normalize to counts per million (CPM), same as CPM in RNA-seq</option>
+                    <option value="BPM">Normalize to bins per million (BPM), same as TPM in RNA-seq</option>
+                    <option value="">Do not normalize or scale</option>
                 </param>
             </when>
         </conditional>
