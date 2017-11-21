@@ -40,7 +40,7 @@ def parseArguments():
         'is also available. The output is either a bedgraph or bigWig file '
         'containing the bin location and the resulting comparison value. '
         'Note that *each end* in a pair (for paired-end reads) is treated '
-        'independently. If you this is undesirable, then use the --samFlagInclude '
+        'independently. If this is undesirable, then use the --samFlagInclude '
         'or --samFlagExclude options.',
 
         usage=' bamCompare -b1 treatment.bam -b2 control.bam -o log2ratio.bw',
