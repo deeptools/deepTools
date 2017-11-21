@@ -26,11 +26,7 @@ Usage hints
 
 .. warning:: If you already normalized for GC bias using ``correctGCbias``, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
 
-.. warning:: If you know that your files will be **strongly affected by the kind of filtering** you would like to apply (e.g., removal of duplicates with ``--ignoreDuplicates`` or ignoring reads of low quality) then consider removing those reads *beforehand*.
-
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output via ``--outFileFormat``.
-
-.. note:: Note that the value used for depth normalization by any method will always take filtering into account. In other words, it will be adjusted appropriately if you specify `--filterRNAstrand` or `--minMappingQuality` or anything of that sort.
 
 Usage example for ChIP-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
