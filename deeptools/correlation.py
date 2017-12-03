@@ -90,6 +90,7 @@ class Correlation:
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
 
         self.labels = _ma['labels']
+        self.labels = [toString(x) for x in self.labels]
 
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"
@@ -171,6 +172,7 @@ class Correlation:
             self.corr_matrix = self.corr_matrix[:, self.column_order][self.column_order]
             self.labels = [self.labels[i] for i in self.column_order]
 
+        self.labels = [toString(x) for x in self.labels]
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
         i = 0
