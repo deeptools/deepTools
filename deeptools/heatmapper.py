@@ -825,7 +825,7 @@ class heatmapper(object):
                 v = [v] * nSamples
             h[k] = v
         fh = gzip.open(file_name, 'wb')
-        params_str = json.dumps(self.h, separators=(',', ':'))
+        params_str = json.dumps(h, separators=(',', ':'))
         fh.write(toBytes("@" + params_str + "\n"))
         score_list = np.ma.masked_invalid(np.mean(self.matrix.matrix, axis=1))
         for idx, region in enumerate(self.matrix.regions):
