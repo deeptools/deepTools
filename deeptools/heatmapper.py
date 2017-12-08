@@ -185,6 +185,8 @@ class heatmapper(object):
         self.matrix = None
         self.regions = None
         self.blackList = None
+        # These are parameters that were single values in versions <3 but are now internally lists. See issue #614
+        self.special_params = set('unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point')
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """
@@ -781,6 +783,16 @@ class heatmapper(object):
         if 'sort regions' in self.parameters:
             self.matrix.set_sorting_method(self.parameters['sort regions'],
                                            self.parameters['sort using'])
+
+        # Versions of computeMatrix before 3.0 didn't have an entry of these per column, fix that
+        nSamples = len(self.matrix.sample_labels) - 1
+        h = dict()
+        for k, v in self.parameters.items():
+            if k in self.special_params:
+                v = [v] * nSamples
+            h[k] = v
+        self.parameters = h
+
         return
 
     def save_matrix(self, file_name):
@@ -805,8 +817,15 @@ class heatmapper(object):
         self.parameters['sample_boundaries'] = self.matrix.sample_boundaries
         self.parameters['group_boundaries'] = self.matrix.group_boundaries
 
+        # Redo the parameters, ensuring things related to ticks and labels are repeated appropriately
+        nSamples = len(self.matrix.sample_labels) - 1
+        h = dict()
+        for k, v in self.parameters.items():
+            if k in self.special_params:
+                v = [v] * nSamples
+            h[k] = v
         fh = gzip.open(file_name, 'wb')
-        params_str = json.dumps(self.parameters, separators=(',', ':'))
+        params_str = json.dumps(self.h, separators=(',', ':'))
         fh.write(toBytes("@" + params_str + "\n"))
         score_list = np.ma.masked_invalid(np.mean(self.matrix.matrix, axis=1))
         for idx, region in enumerate(self.matrix.regions):
