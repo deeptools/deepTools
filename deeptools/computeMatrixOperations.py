@@ -668,6 +668,13 @@ def main(args=None):
             args.samples = hm.matrix.sample_labels
         hm.matrix.sample_boundaries = hm.matrix.sample_boundaries[0:len(args.samples) + 1]
         hm.matrix.group_boundaries = gBounds.tolist()
+        # special params
+        keepIdx = set()
+        for _, sample in enumerate(hm.matrix.sample_labels):
+            if sample in args.samples:
+                keepIdx.add(_)
+        for param in hm.special_params:
+            hm.parameters[param] = [v for k, v in enumerate(hm.parameters[param]) if k in keepIdx]
         # labels
         hm.matrix.sample_labels = args.samples
         if args.groups is None:

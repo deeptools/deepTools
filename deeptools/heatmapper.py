@@ -785,11 +785,13 @@ class heatmapper(object):
                                            self.parameters['sort using'])
 
         # Versions of computeMatrix before 3.0 didn't have an entry of these per column, fix that
-        nSamples = len(self.matrix.sample_labels) - 1
+        nSamples = len(self.matrix.sample_labels)
         h = dict()
         for k, v in self.parameters.items():
-            if k in self.special_params:
+            if k in self.special_params and type(v) is not list:
                 v = [v] * nSamples
+                if len(v) == 0:
+                    v = [None] * nSamples
             h[k] = v
         self.parameters = h
 
@@ -818,11 +820,15 @@ class heatmapper(object):
         self.parameters['group_boundaries'] = self.matrix.group_boundaries
 
         # Redo the parameters, ensuring things related to ticks and labels are repeated appropriately
-        nSamples = len(self.matrix.sample_labels) - 1
+        nSamples = len(self.matrix.sample_labels)
         h = dict()
         for k, v in self.parameters.items():
-            if k in self.special_params:
+            if type(v) is list and len(v) == 0:
+                v = None
+            if k in self.special_params and type(v) is not list:
                 v = [v] * nSamples
+                if len(v) == 0:
+                    v = [None] * nSamples
             h[k] = v
         fh = gzip.open(file_name, 'wb')
         params_str = json.dumps(h, separators=(',', ':'))
