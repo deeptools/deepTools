@@ -65,6 +65,8 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     summary = np.ma.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     x = np.arange(len(summary))
+    if isinstance(color, np.ndarray):
+        color = pltcolors.to_hex(color, keep_alpha=True)
     ax.plot(x, summary, color=color, label=label, alpha=0.9)
     if plot_type == 'fill':
         pass
@@ -119,23 +121,36 @@ def plotly_single(ma, average_type, color, label, plot_type='simple'):
     return traces
 
 
-def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
+def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     """
     returns the position and labelling of the xticks that
     correspond to the heatmap
+
+    As of deepTools 3, the various parameters can be lists, in which case we then need to index things (the idx parameter)
     """
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
+    if idx is not None:
+        w = w[idx]
+        b = b[idx]
+        a = a[idx]
+
     try:
         c = hm.parameters['unscaled 5 prime']
+        if idx is not None:
+            c = c[idx]
     except:
         c = 0
     try:
         d = hm.parameters['unscaled 3 prime']
+        if idx is not None:
+            d = d[idx]
     except:
         d = 0
     m = hm.parameters['body']
+    if idx is not None:
+        m = m[idx]
     tickPlotAdj = 0.5
 
     if b < 1e5:

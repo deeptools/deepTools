@@ -186,7 +186,7 @@ class heatmapper(object):
         self.regions = None
         self.blackList = None
         # These are parameters that were single values in versions <3 but are now internally lists. See issue #614
-        self.special_params = set(['unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point'])
+        self.special_params = set(['unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point', 'bin size'])
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """

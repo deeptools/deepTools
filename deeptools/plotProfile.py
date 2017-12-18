@@ -173,8 +173,23 @@ class Profile(object):
         plot_height_inches = rows * self.cm2inch(self.plot_height)[0]
         self.fig = plt.figure(figsize=self.cm2inch(cols * self.plot_width, rows * self.plot_height))
         self.fig.suptitle(self.plot_title, y=(1 - (0.06 / plot_height_inches)))
-        self.xticks, self.xtickslabel = getProfileTicks(self.hm, self.reference_point_label,
-                                                        self.start_label, self.end_label)
+
+        # Ensure that the labels are vectors
+        nSamples = len(self.hm.matrix.sample_labels)
+        if not isinstance(self.reference_point_label, list):
+            self.reference_point_label = [self.reference_point_label] * nSamples
+        if not isinstance(self.start_label, list):
+            self.start_label = [self.start_label] * nSamples
+        if not isinstance(self.end_label, list):
+            self.end_label = [self.end_label] * nSamples
+
+
+    def getTicks(self, idx):
+        """
+        This is essentially a wrapper around getProfileTicks to accomdate the fact that each column has its own ticks.
+        """
+        xticks, xtickslabel = getProfileTicks(self.hm, self.reference_point_label[idx], self.start_label[idx], self.end_label[idx], idx)
+        return xticks, xtickslabel
 
     @staticmethod
     def cm2inch(*tupl):
@@ -287,13 +302,14 @@ class Profile(object):
                     lims = (lims[0], lims[0] + 1)
                 ax.set_ylim(lims)
 
-            if np.ceil(max(self.xticks)) != float(ma.shape[1]):
+            xticks, xtickslabel = self.getTicks(plot)
+            if np.ceil(max(xticks)) != float(ma.shape[1]):
                 tickscale = float(sub_matrix['matrix'].shape[1]) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+                xticks_use = [x * tickscale for x in xticks]
                 ax_list[0].axes.set_xticks(xticks_use)
             else:
-                ax_list[0].axes.set_xticks(self.xticks)
-            ax_list[0].axes.set_xticklabels(self.xtickslabel, rotation=self.label_rotation)
+                ax_list[0].axes.set_xticks(xticks)
+            ax_list[0].axes.set_xticklabels(xtickslabel, rotation=self.label_rotation)
             # align the first and last label
             # such that they don't fall off
             # the heatmap sides
@@ -419,13 +435,14 @@ class Profile(object):
 
             # Assume the bounds for the last graph are correct
             totalWidth = ma.shape[1]
-            if np.ceil(max(self.xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+            xticks, xtickslabel = self.getTicks(i)
+            if np.ceil(max(xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(xticks)
+                xticks_use = [x * tickscale for x in xticks]
             else:
-                xticks_use = self.xticks
+                xticks_use = xticks
             xticks_use = [np.ceil(x) for x in xticks_use]
-            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=self.xtickslabel, tickangle=self.label_rotation)
+            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=xtickslabel, tickangle=self.label_rotation)
 
         for trace in data:
             trace.update(zmin=vmin, zmax=vmax)
@@ -509,13 +526,14 @@ class Profile(object):
             self.fig.colorbar(img, cax=cax)
 
             totalWidth = np.vstack(mat).shape[1]
-            if np.ceil(max(self.xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+            xticks, xtickslabel = self.getTicks(plot)
+            if np.ceil(max(xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(xticks)
+                xticks_use = [x * tickscale for x in xticks]
                 ax.axes.set_xticks(xticks_use)
             else:
-                ax.axes.set_xticks(self.xticks)
-            ax.axes.set_xticklabels(self.xtickslabel, rotation=self.label_rotation)
+                ax.axes.set_xticks(xticks)
+            ax.axes.set_xticklabels(xtickslabel, rotation=self.label_rotation)
             # align the first and last label
             # such that they don't fall off
             # the heatmap sides
@@ -616,13 +634,14 @@ class Profile(object):
             data.append(trace)
 
             # Add ticks
-            if np.ceil(max(self.xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+            xticks, xtickslabel = self.getTicks(i)
+            if np.ceil(max(xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(xticks)
+                xticks_use = [x * tickscale for x in xticks]
             else:
-                xticks_use = self.xticks
+                xticks_use = xticks
             xticks_use = [np.ceil(x) for x in xticks_use]
-            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=self.xtickslabel, tickangle=self.label_rotation)
+            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=xtickslabel, tickangle=self.label_rotation)
 
         # Adjust color scale limits
         for i, trace in enumerate(data):
@@ -729,13 +748,14 @@ class Profile(object):
                 """
 
             totalWidth = sub_matrix['matrix'].shape[1]
-            if np.ceil(max(self.xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+            xticks, xtickslabel = self.getTicks(plot)
+            if np.ceil(max(xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(xticks)
+                xticks_use = [x * tickscale for x in xticks]
                 ax.axes.set_xticks(xticks_use)
             else:
-                ax.axes.set_xticks(self.xticks)
-            ax.axes.set_xticklabels(self.xtickslabel, rotation=self.label_rotation)
+                ax.axes.set_xticks(xticks)
+            ax.axes.set_xticklabels(xtickslabel, rotation=self.label_rotation)
             # align the first and last label
             # such that they don't fall off
             # the heatmap sides
@@ -849,13 +869,14 @@ class Profile(object):
                     traces[0].update(showlegend=True)
                 data.extend(traces)
             totalWidth = sub_matrix['matrix'].shape[1]
-            if np.ceil(max(self.xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(self.xticks)
-                xticks_use = [x * tickscale for x in self.xticks]
+            xticks, xtickslabel = self.getTicks(i)
+            if np.ceil(max(xticks)) != float(totalWidth):
+                tickscale = float(totalWidth) / max(xticks)
+                xticks_use = [x * tickscale for x in xticks]
             else:
-                xticks_use = self.xticks
+                xticks_use = xticks
             xticks_use = [np.ceil(x) for x in xticks_use]
-            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=self.xtickslabel, tickangle=self.label_rotation)
+            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=xtickslabel, tickangle=self.label_rotation)
 
         # Set the y limits
         for i in range(self.numplots):
