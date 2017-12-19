@@ -21,7 +21,7 @@ import plotly.graph_objs as go
 # own modules
 from deeptools import parserCommon
 from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, plotly_single, getProfileTicks
+from deeptools.heatmapper_utilities import plot_single, plotly_single
 from deeptools.utilities import convertCmap
 
 debug = 0

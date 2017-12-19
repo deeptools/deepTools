@@ -183,7 +183,6 @@ class Profile(object):
         if not isinstance(self.end_label, list):
             self.end_label = [self.end_label] * nSamples
 
-
     def getTicks(self, idx):
         """
         This is essentially a wrapper around getProfileTicks to accomdate the fact that each column has its own ticks.
