@@ -9,6 +9,8 @@ import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes
+from deeptools.heatmapper_utilities import getProfileTicks
+
 
 old_settings = np.seterr(all='ignore')
 
@@ -187,6 +189,13 @@ class heatmapper(object):
         self.blackList = None
         # These are parameters that were single values in versions <3 but are now internally lists. See issue #614
         self.special_params = set(['unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point', 'bin size'])
+
+    def getTicks(self, idx):
+        """
+        This is essentially a wrapper around getProfileTicks to accomdate the fact that each column has its own ticks.
+        """
+        xticks, xtickslabel = getProfileTicks(self, self.reference_point_label, self.startLabel, self.endLabel, idx)
+        return xticks, xtickslabel
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """
