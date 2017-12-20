@@ -652,7 +652,7 @@ class Correlation:
                     if isinstance(color, np.ndarray):
                         color = pltcolors.to_hex(color, keep_alpha=True)
                     ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
-                                marker=marker, color=color, edgecolors="face", s=150, label=self.labels[i], zorder=i + 3)
+                                marker=marker, color=color, s=150, label=self.labels[i], zorder=i + 3)
                 if plot_title == '':
                     ax1.set_title('PCA')
                 else:
