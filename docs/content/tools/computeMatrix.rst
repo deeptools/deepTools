@@ -41,6 +41,9 @@ The following tables summarizes the kinds of optional outputs that are available
 
 .. tip:: ``computeMatrix`` can use multiple threads (``-p`` option), which significantly decreases the time for calculating the values.
 
+.. attention::
+   As of version 3.0, computeMatrix produces output with labels present for each sample. Matrices produced with that or later versions can not be used with older versions of ``plotHeatmap`` or any other deepTools program.
+
 Examples
 ^^^^^^^^
 

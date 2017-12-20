@@ -33,6 +33,9 @@ Details
 
 These operations are useful when you want to run computeMatrix on multiple files (thereby keeping all of the values together) and later exclude regions/samples or add new ones. Another common use would be if you require the output of computeMatrix to be sorted to match the order of regions in the input file.
 
+.. attention::
+   As of version 3.0, computeMatrix (and therefore also computeMatrixOperations) produces output with labels present for each sample. If you run any operations on matrices output by older versions then they will be modified to be comformant with the new output, which is not backward compatible!
+
 Examples
 ^^^^^^^^
 
