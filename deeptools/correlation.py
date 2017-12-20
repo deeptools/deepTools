@@ -12,6 +12,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
+import matplotlib.colors as pltcolors
 from deeptools.utilities import toString, convertCmap
 
 import plotly.offline as offline
@@ -646,8 +647,12 @@ class Correlation:
                 ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
                 ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
                 for i in range(n):
+                    color = next(colors)
+                    marker = next(markers)
+                    if isinstance(color, np.ndarray):
+                        color = pltcolors.to_hex(color, keep_alpha=True)
                     ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
-                                marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
+                                marker=marker, color=color, edgecolors="face", s=150, label=self.labels[i], zorder=i + 3)
                 if plot_title == '':
                     ax1.set_title('PCA')
                 else:
