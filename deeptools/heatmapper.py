@@ -887,45 +887,53 @@ class heatmapper(object):
         d = self.parameters.get('unscaled 3 prime', 0)
         m = self.parameters['body']
 
-        if b < 1e5:
-            quotient = 1000
-            symbol = 'Kb'
-        else:
-            quotient = 1e6
-            symbol = 'Mb'
+        xticks = []
+        xtickslabel = []
+        for idx in range(self.matrix.get_num_samples()):
+            if b[idx] < 1e5:
+                quotient = 1000
+                symbol = 'Kb'
+            else:
+                quotient = 1e6
+                symbol = 'Mb'
 
-        if m == 0:
-            xticks = [(k / w) for k in [w, b, b + a]]
-            xtickslabel = ['{0:.1f}{1}'.format(-(float(b) / quotient), symbol), reference_point_label,
-                           '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+            if m[idx] == 0:
+                last = 0
+                if len(xticks):
+                    last = xticks[-1]
+                xticks.extend([last + (k / w[idx]) for k in [w[idx], b[idx], b[idx] + a[idx]]])
+                xtickslabel.extend(['{0:.1f}{1}'.format(-(float(b[idx]) / quotient), symbol), reference_point_label,
+                                    '{0:.1f}{1}'.format(float(a[idx]) / quotient, symbol)])
 
-        else:
-            xticks_values = [w]
-            xtickslabel = []
+            else:
+                xticks_values = [w[idx]]
 
-            # only if upstream region is set, add a x tick
-            if b > 0:
-                xticks_values.append(b)
-                xtickslabel.append('{0:.1f}{1}'.format(-(float(b) / quotient), symbol))
+                # only if upstream region is set, add a x tick
+                if b[idx] > 0:
+                    xticks_values.append(b[idx])
+                    xtickslabel.append('{0:.1f}{1}'.format(-(float(b[idx]) / quotient), symbol))
 
-            xtickslabel.append(start_label)
+                xtickslabel.append(start_label)
 
-            if c > 0:
-                xticks_values.append(b + c)
-                xtickslabel.append("")
+                if c[idx] > 0:
+                    xticks_values.append(b[idx] + c[idx])
+                    xtickslabel.append("")
 
-            if d > 0:
-                xticks_values.append(b + c + m)
-                xtickslabel.append("")
+                if d[idx] > 0:
+                    xticks_values.append(b[idx] + c[idx] + m[idx])
+                    xtickslabel.append("")
 
-            xticks_values.append(b + c + m + d)
-            xtickslabel.append(end_label)
+                xticks_values.append(b[idx] + c[idx] + m[idx] + d[idx])
+                xtickslabel.append(end_label)
 
-            if a > 0:
-                xticks_values.append(b + c + m + d + a)
-                xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+                if a[idx] > 0:
+                    xticks_values.append(b[idx] + c[idx] + m[idx] + d[idx] + a[idx])
+                    xtickslabel.append('{0:.1f}{1}'.format(float(a[idx]) / quotient, symbol))
 
-            xticks = [(k / w) for k in xticks_values]
+                last = 0
+                if len(xticks):
+                    last = xticks[-1]
+                xticks.extend([last + (k / w[idx]) for k in xticks_values])
         x_axis = np.arange(xticks[-1]) + 1
         labs = []
         for x_value in x_axis:
