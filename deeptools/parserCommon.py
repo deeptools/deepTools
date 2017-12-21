@@ -563,8 +563,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               help='Whether the heatmap should present '
                               'the regions sorted. The default is '
                               'to sort in descending order based on '
-                              'the mean value per region.',
-                              choices=["descend", "ascend", "no"],
+                              'the mean value per region. Note that "keep" and "no" are the same thing.',
+                              choices=["descend", "ascend", "no", "keep"],
                               default='descend')
 
         optional.add_argument('--sortUsing',

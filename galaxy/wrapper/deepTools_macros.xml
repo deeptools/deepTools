@@ -312,7 +312,7 @@
     <xml name="sortRegions">
         <param argument="--sortRegions" type="select" label="Sort regions"
             help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
-            <option value="no">no ordering</option>
+            <option value="no">maintain the same ordering as the input files</option>
             <option value="descend" selected="true">descending order</option>
             <option value="ascend">ascending order</option>
         </param>

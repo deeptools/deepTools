@@ -752,6 +752,9 @@ def main(args=None):
     args.matrixFile.close()
     hm.read_matrix_file(matrix_file)
 
+    if args.sortRegions == 'keep':
+        args.sortRegions = 'no'  # These are the same thing
+
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     else:
