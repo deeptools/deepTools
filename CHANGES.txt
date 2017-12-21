@@ -27,6 +27,7 @@
  * Fixed issue #631
  * `computeMatrix` now repeats labels for each column in a plot. This is convenient if you later want to merge reference-point and scale-regions runs and still have correct tick marks and labels in plotHeatmap/plotProfile (issue #614). Note that the output of computeMatrix and computeMatrixOperations can not be used with older versions of deepTools (but output from previous versions can still be used).
  * `plotHeatmap --sortRegions` now has a `keep` option. This is identical to `--sortRegions no`, but may be clearer (issue #621)
+ * `plotPCA --outFileNameData` and `plotCorrelation --outFileCorMatrix` now produce files with a single comment line (i.e., '#plotPCA --outFileNameData' and '#plotCorrelation --outFileCorMatrix'). These can then be more easily parsed by programs like MultiQC.
 
 2.5.4
 
