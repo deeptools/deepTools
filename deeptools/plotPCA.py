@@ -177,6 +177,7 @@ def main(args=None):
 
     if args.outFileNameData is not None:
         of = open(args.outFileNameData, "w")
+        of.write("#plotPCA --outFileNameData\n")
         of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
         n = eigenvalues.shape[0]
         for i in range(n):

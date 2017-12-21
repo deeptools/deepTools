@@ -1,3 +1,4 @@
+#plotPCA --outFileNameData
 Component	bowtie2-test1.bam	bowtie2-test1.bam	Eigenvalue
 1	-0.707106781187	-0.707106781187	4.0
 2	-0.707106781187	0.707106781187	1.23259516441e-32
