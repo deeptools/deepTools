@@ -312,7 +312,7 @@ def filterHeatmap(hm, args):
 
 def insertMatrix(hm, hm2, groupName):
     """
-    Given two heatmapper object and a region group name, insert the regions and
+    Given two heatmapper objects and a region group name, insert the regions and
     values from hm2 for that group to the end of those for hm.
     """
     # get the bounds for hm
@@ -418,6 +418,10 @@ def cbindMatrices(hm, args):
                 if reg[2] not in d[group]:
                     continue
                 hm.matrix.matrix[d[group][reg[2]], ncol:] = hm2.matrix.matrix[s + idx3, :]
+
+        # Append the special params
+        for s in hm.special_params:
+            hm.parameters[s].extend(hm2.parameters[s])
 
     # Update the sample parameters
     hm.matrix.sample_labels = hm.parameters['sample_labels']
@@ -664,6 +668,13 @@ def main(args=None):
             args.samples = hm.matrix.sample_labels
         hm.matrix.sample_boundaries = hm.matrix.sample_boundaries[0:len(args.samples) + 1]
         hm.matrix.group_boundaries = gBounds.tolist()
+        # special params
+        keepIdx = set()
+        for _, sample in enumerate(hm.matrix.sample_labels):
+            if sample in args.samples:
+                keepIdx.add(_)
+        for param in hm.special_params:
+            hm.parameters[param] = [v for k, v in enumerate(hm.parameters[param]) if k in keepIdx]
         # labels
         hm.matrix.sample_labels = args.samples
         if args.groups is None:

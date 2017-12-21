@@ -25,6 +25,7 @@
  * There is no longer a configuration file. The default number of threads for all tools is 1. See issue #613.
  * `bamCoverage` and `bamCompare` have rewritten normalization functions. They have both added CPM and BPM normalization and, importantly, filtering is now done **before** computing scaling factors. A few of the options associated with this (e.g., `--normalizeUsingRPKM`) have been replaced with the `--normalizeUsing` option. This behavior represents a break from that seen in earlier versions but should be easier to follow and more in line with what users expect is happening.
  * Fixed issue #631
+ * `computeMatrix` now repeats labels for each column in a plot. This is convenient if you later want to merge reference-point and scale-regions runs and still have correct tick marks and labels in plotHeatmap/plotProfile (issue #614). Note that the output of computeMatrix and computeMatrixOperations can not be used with older versions of deepTools (but output from previous versions can still be used).
 
 2.5.4
 

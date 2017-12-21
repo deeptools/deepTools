@@ -9,6 +9,8 @@ import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes
+from deeptools.heatmapper_utilities import getProfileTicks
+
 
 old_settings = np.seterr(all='ignore')
 
@@ -185,6 +187,15 @@ class heatmapper(object):
         self.matrix = None
         self.regions = None
         self.blackList = None
+        # These are parameters that were single values in versions <3 but are now internally lists. See issue #614
+        self.special_params = set(['unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point', 'bin size'])
+
+    def getTicks(self, idx):
+        """
+        This is essentially a wrapper around getProfileTicks to accomdate the fact that each column has its own ticks.
+        """
+        xticks, xtickslabel = getProfileTicks(self, self.reference_point_label, self.startLabel, self.endLabel, idx)
+        return xticks, xtickslabel
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
         """
@@ -781,6 +792,18 @@ class heatmapper(object):
         if 'sort regions' in self.parameters:
             self.matrix.set_sorting_method(self.parameters['sort regions'],
                                            self.parameters['sort using'])
+
+        # Versions of computeMatrix before 3.0 didn't have an entry of these per column, fix that
+        nSamples = len(self.matrix.sample_labels)
+        h = dict()
+        for k, v in self.parameters.items():
+            if k in self.special_params and type(v) is not list:
+                v = [v] * nSamples
+                if len(v) == 0:
+                    v = [None] * nSamples
+            h[k] = v
+        self.parameters = h
+
         return
 
     def save_matrix(self, file_name):
@@ -805,8 +828,19 @@ class heatmapper(object):
         self.parameters['sample_boundaries'] = self.matrix.sample_boundaries
         self.parameters['group_boundaries'] = self.matrix.group_boundaries
 
+        # Redo the parameters, ensuring things related to ticks and labels are repeated appropriately
+        nSamples = len(self.matrix.sample_labels)
+        h = dict()
+        for k, v in self.parameters.items():
+            if type(v) is list and len(v) == 0:
+                v = None
+            if k in self.special_params and type(v) is not list:
+                v = [v] * nSamples
+                if len(v) == 0:
+                    v = [None] * nSamples
+            h[k] = v
         fh = gzip.open(file_name, 'wb')
-        params_str = json.dumps(self.parameters, separators=(',', ':'))
+        params_str = json.dumps(h, separators=(',', ':'))
         fh.write(toBytes("@" + params_str + "\n"))
         score_list = np.ma.masked_invalid(np.mean(self.matrix.matrix, axis=1))
         for idx, region in enumerate(self.matrix.regions):
@@ -853,45 +887,53 @@ class heatmapper(object):
         d = self.parameters.get('unscaled 3 prime', 0)
         m = self.parameters['body']
 
-        if b < 1e5:
-            quotient = 1000
-            symbol = 'Kb'
-        else:
-            quotient = 1e6
-            symbol = 'Mb'
+        xticks = []
+        xtickslabel = []
+        for idx in range(self.matrix.get_num_samples()):
+            if b[idx] < 1e5:
+                quotient = 1000
+                symbol = 'Kb'
+            else:
+                quotient = 1e6
+                symbol = 'Mb'
 
-        if m == 0:
-            xticks = [(k / w) for k in [w, b, b + a]]
-            xtickslabel = ['{0:.1f}{1}'.format(-(float(b) / quotient), symbol), reference_point_label,
-                           '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+            if m[idx] == 0:
+                last = 0
+                if len(xticks):
+                    last = xticks[-1]
+                xticks.extend([last + (k / w[idx]) for k in [w[idx], b[idx], b[idx] + a[idx]]])
+                xtickslabel.extend(['{0:.1f}{1}'.format(-(float(b[idx]) / quotient), symbol), reference_point_label,
+                                    '{0:.1f}{1}'.format(float(a[idx]) / quotient, symbol)])
 
-        else:
-            xticks_values = [w]
-            xtickslabel = []
+            else:
+                xticks_values = [w[idx]]
 
-            # only if upstream region is set, add a x tick
-            if b > 0:
-                xticks_values.append(b)
-                xtickslabel.append('{0:.1f}{1}'.format(-(float(b) / quotient), symbol))
+                # only if upstream region is set, add a x tick
+                if b[idx] > 0:
+                    xticks_values.append(b[idx])
+                    xtickslabel.append('{0:.1f}{1}'.format(-(float(b[idx]) / quotient), symbol))
 
-            xtickslabel.append(start_label)
+                xtickslabel.append(start_label)
 
-            if c > 0:
-                xticks_values.append(b + c)
-                xtickslabel.append("")
+                if c[idx] > 0:
+                    xticks_values.append(b[idx] + c[idx])
+                    xtickslabel.append("")
 
-            if d > 0:
-                xticks_values.append(b + c + m)
-                xtickslabel.append("")
+                if d[idx] > 0:
+                    xticks_values.append(b[idx] + c[idx] + m[idx])
+                    xtickslabel.append("")
 
-            xticks_values.append(b + c + m + d)
-            xtickslabel.append(end_label)
+                xticks_values.append(b[idx] + c[idx] + m[idx] + d[idx])
+                xtickslabel.append(end_label)
 
-            if a > 0:
-                xticks_values.append(b + c + m + d + a)
-                xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+                if a[idx] > 0:
+                    xticks_values.append(b[idx] + c[idx] + m[idx] + d[idx] + a[idx])
+                    xtickslabel.append('{0:.1f}{1}'.format(float(a[idx]) / quotient, symbol))
 
-            xticks = [(k / w) for k in xticks_values]
+                last = 0
+                if len(xticks):
+                    last = xticks[-1]
+                xticks.extend([last + (k / w[idx]) for k in xticks_values])
         x_axis = np.arange(xticks[-1]) + 1
         labs = []
         for x_value in x_axis:
