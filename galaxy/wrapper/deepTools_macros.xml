@@ -602,6 +602,7 @@ is vital to you, select Yes below.">
             <when value="yes">
                 <yield />
                 <param name="saveSortedRegions" type="boolean"
+                       argument="--outFileSortedRegions"
                        label="Save the regions after skipping zeros or min/max threshold values"
                        help="The order of the regions in the file follows the sorting order selected. This is useful,
                        for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
