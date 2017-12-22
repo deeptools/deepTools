@@ -8,6 +8,7 @@ import numpy as np
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
+from deeptools.utilities import smartLabels
 from deeptools._version import __version__
 
 old_settings = np.seterr(all='ignore')
@@ -117,6 +118,11 @@ def bamcorrelate_args(case='bins'):
                                'Multiple labels have to be separated by a space, e.g. '
                                '--labels sample1 sample2 sample3',
                           nargs='+')
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'BAM files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
 
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
@@ -174,7 +180,10 @@ def process_args(args=None):
         print("The number of labels does not match the number of bam files.")
         exit(0)
     if not args.labels:
-        args.labels = [os.path.basename(x) for x in args.bamfiles]
+        if args.smartLabels:
+            args.labels = smartLabels(args.bamfiles)
+        else:
+            args.labels = [os.path.basename(x) for x in args.bamfiles]
 
     return args
 

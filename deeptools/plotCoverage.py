@@ -16,6 +16,7 @@ import plotly.graph_objs as go
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
+from deeptools.utilities import smartLabels
 from deeptools._version import __version__
 
 old_settings = np.seterr(all='ignore')
@@ -55,10 +56,13 @@ detailed usage help:
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
+    if not args.labels:
+        if args.smartLabels:
+            args.labels = smartLabels(args.bamfiles)
+        else:
+            args.labels = [os.path.basename(x) for x in args.bamfiles]
     if args.labels and len(args.bamfiles) != len(args.labels):
         sys.exit("The number of labels does not match the number of BAM files.")
-    if not args.labels:
-        args.labels = [os.path.basename(x) for x in args.bamfiles]
 
     return args
 
@@ -88,6 +92,12 @@ def required_args():
                                'Multiple labels have to be separated by spaces, e.g. '
                                '--labels sample1 sample2 sample3',
                           nargs='+')
+
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'BAM files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '

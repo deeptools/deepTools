@@ -8,6 +8,7 @@ import numpy as np
 import multiprocessing
 from deeptools import parserCommon
 from deeptools._version import __version__
+from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
 import deeptools.deepBlue as db
 
@@ -94,15 +95,18 @@ A detailed sub-commands help is available by typing:
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
-    if args.labels and len(args.bwfiles) != len(args.labels):
-        sys.exit("The number of labels does not match the number of bigWig files.")
-    if not args.labels:
+    if not args.labels and args.smartLabels:
+        args.labels = smartLabels(args.bwfiles)
+    elif not args.labels:
         args.labels = []
         for f in args.bwfiles:
             if f.startswith("http://") or f.startswith("https://") or f.startswith("ftp://"):
                 args.labels.append(f.split("/")[-1])
             else:
                 args.labels.append(os.path.basename(f))
+
+    if len(args.bwfiles) != len(args.labels):
+        sys.exit("The number of labels does not match the number of bigWig files.")
 
     return args
 
@@ -134,6 +138,11 @@ def multiBigwigSummaryArgs(case='bins'):
                           'Multiple labels have to be separated by spaces, e.g., '
                           '--labels sample1 sample2 sample3',
                           nargs='+')
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'bigWig files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
 
     optional.add_argument('--chromosomesToSkip',
                           metavar='chr1 chr2',

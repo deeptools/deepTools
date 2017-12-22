@@ -323,6 +323,12 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'bigWig and BED/GTF files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
+
     # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
@@ -419,7 +425,6 @@ def main(args=None):
     scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions not in ['no', 'keep']:
-
         sortUsingSamples = []
         if args.sortUsingSamples is not None:
             for i in args.sortUsingSamples:

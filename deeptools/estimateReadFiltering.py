@@ -4,6 +4,7 @@ import sys
 
 from deeptools import parserCommon, bamHandler, utilities
 from deeptools.mapReduce import mapReduce
+from deeptools.utilities import smartLabels
 from deeptools._version import __version__
 
 
@@ -51,6 +52,12 @@ The sum of these may be more than the total number of reads. Note that alignment
                          'by spaces and quoted if a label itself'
                          'contains a space E.g. --sampleLabels label-1 "label 2"  ',
                          nargs='+')
+
+    general.add_argument('--smartLabels',
+                         action='store_true',
+                         help='Instead of manually specifying labels for the input '
+                         'BAM files, this causes deepTools to use the '
+                         'file name after removing the path and extension.')
 
     general.add_argument('--binSize', '-bs',
                          metavar='INT',
@@ -247,6 +254,9 @@ def getFiltered_worker(arglist):
 
 def main(args=None):
     args = parseArguments().parse_args(args)
+
+    if not args.sampleLabels and args.smartLabels:
+        args.sampleLabels = smartLabels(args.bamfiles)
 
     if args.sampleLabels and len(args.sampleLabels) != len(args.bamfiles):
         sys.stderr.write("\nError: --sampleLabels specified but it doesn't match the number of BAM files!\n")
