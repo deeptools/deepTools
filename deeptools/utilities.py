@@ -20,7 +20,7 @@ def smartLabel(label):
     """
     lab = os.path.splitext(os.path.basename(label))[0]
     if lab == '':
-        #Maybe we have a dot file?
+        # Maybe we have a dot file?
         lab = os.path.basename(label)
     return lab
 

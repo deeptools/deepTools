@@ -18,6 +18,7 @@ import plotly.graph_objs as go
 import deeptools.countReadsPerBin as countR
 import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
+from deeptools.utilities import smartLabels
 
 old_settings = np.seterr(all='ignore')
 MAXLEN = 10000000
@@ -56,11 +57,14 @@ def process_args(args=None):
         if args.labels and len(args.bamfiles) == len(args.labels) - 1:
             args.labels.append(args.JSDsample)
 
-    if args.labels and len(args.bamfiles) != len(args.labels):
-        sys.exit("The number of labels does not match the number of BAM files.")
-
     if not args.labels:
-        args.labels = args.bamfiles
+        if args.smartLabels:
+            args.labels = smartLabels(args.bamfiles)
+        else:
+            args.labels = args.bamfiles
+
+    if len(args.bamfiles) != len(args.labels):
+        sys.exit("The number of labels does not match the number of BAM files.")
 
     return args
 
@@ -91,6 +95,12 @@ def get_optional_args():
                           'If not given, the file names will be used instead. '
                           'Separate the labels by spaces.',
                           nargs='+')
+
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'BAM/bigWig files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
 
     optional.add_argument('--binSize', '-bs',
                           help='Window size in base pairs to '
