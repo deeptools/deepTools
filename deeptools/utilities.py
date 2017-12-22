@@ -11,6 +11,24 @@ import numpy as np
 debug = 0
 
 
+def smartLabel(label):
+    """
+    Given a file name, likely with a path, return the file name without the path
+    and with the file extension removed. Thus, something like /path/to/some.special.file
+    should return some.special, since only the first extension (if present)
+    should be stripped.
+    """
+    lab = os.path.splitext(os.path.basename(label))[0]
+    if lab == '':
+        #Maybe we have a dot file?
+        lab = os.path.basename(label)
+    return lab
+
+
+def smartLabels(labels):
+    return [smartLabel(x) for x in labels]
+
+
 def convertCmap(c, vmin=0, vmax=1):
     cmap = mpl.cm.get_cmap(c)
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
