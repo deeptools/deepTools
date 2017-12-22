@@ -28,7 +28,7 @@ def parse_arguments():
                         nargs='+',
                         metavar='bam files')
 
-    parser.add_argument('--histogram', '-hist',
+    parser.add_argument('--histogram', '-hist', '-o',
                         help='Save a .png file with a histogram '
                         'of the fragment length distribution.',
                         metavar='FILE')

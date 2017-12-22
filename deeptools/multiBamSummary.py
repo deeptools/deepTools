@@ -37,9 +37,9 @@ A detailed sub-commands help is available by typing:
 
 """,
             epilog='example usages:\n'
-                   'multiBamSummary bins --bamfiles file1.bam file2.bam -out results.npz \n\n'
+                   'multiBamSummary bins --bamfiles file1.bam file2.bam -o results.npz \n\n'
                    'multiBamSummary BED-file --BED selection.bed --bamfiles file1.bam file2.bam \n'
-                   '-out results.npz'
+                   '-o results.npz'
                    ' \n\n',
             conflict_handler='resolve')
 
@@ -70,7 +70,7 @@ A detailed sub-commands help is available by typing:
         add_help=False,
         usage='%(prog)s '
               '--bamfiles file1.bam file2.bam '
-              '-out results.npz \n')
+              '-o results.npz \n')
 
     # BED file arguments
     subparsers.add_parser(
@@ -84,7 +84,7 @@ A detailed sub-commands help is available by typing:
              "that should be considered for the coverage analysis. A "
              "common use is to compare ChIP-seq coverages between two "
              "different samples for a set of peak regions.",
-        usage='%(prog)s --BED selection.bed --bamfiles file1.bam file2.bam -out results.npz\n',
+        usage='%(prog)s --BED selection.bed --bamfiles file1.bam file2.bam -o results.npz\n',
         add_help=False)
 
     return parser
@@ -101,7 +101,7 @@ def bamcorrelate_args(case='bins'):
                           nargs='+',
                           required=True)
 
-    required.add_argument('--outFileName', '-out',
+    required.add_argument('--outFileName', '-out', '-o',
                           help='File name to save the coverage matrix. This matrix '
                                'can be subsequently plotted using plotCorrelation or '
                                'or plotPCA.',

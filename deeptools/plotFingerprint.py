@@ -161,7 +161,7 @@ def get_optional_args():
 def get_output_args():
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
-    group.add_argument('--plotFile', '-plot',
+    group.add_argument('--plotFile', '-plot', '-o',
                        help='File name of the output figure. The file '
                        'ending will be used to determine the image '
                        'format. The available options are typically: "png", '
