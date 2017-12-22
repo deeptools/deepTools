@@ -16,7 +16,7 @@ import plotly.graph_objs as go
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen
+from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen, smartLabels
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
@@ -92,6 +92,14 @@ def plot_enrichment_args():
                           'Multiple labels have to be separated by spaces, e.g. '
                           '--labels sample1 sample2 sample3',
                           nargs='+')
+
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'BAM/BED/GTF files, this causes deepTools to use the file name '
+                          'after removing the path and extension. For BED/GTF files, the '
+                          'eventual region name will be overriden if specified inside '
+                          'the file.')
 
     optional.add_argument('--regionLabels',
                           metavar="region1 region2",
@@ -480,10 +488,14 @@ def main(args=None):
 
     if args.labels is None:
         args.labels = args.bamfiles
+    if args.smartLabels:
+        args.labels = smartLabels(args.bamfiles)
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
     global gtf
+    if not args.regionLabels and args.smartLabels:
+        args.regionLabels = smartLabels(args.BED)
     gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
 
     # Get fragment size and chromosome dict

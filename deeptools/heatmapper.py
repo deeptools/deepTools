@@ -1,5 +1,4 @@
 import sys
-from os.path import splitext, basename
 import gzip
 from collections import OrderedDict
 import numpy as np
@@ -8,7 +7,7 @@ from copy import deepcopy
 import pyBigWig
 from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
-from deeptools.utilities import toString, toBytes
+from deeptools.utilities import toString, toBytes, smartLabels
 from deeptools.heatmapper_utilities import getProfileTicks
 
 
@@ -313,7 +312,7 @@ class heatmapper(object):
         if allArgs is not None and allArgs['samplesLabel'] is not None:
             sample_labels = allArgs['samplesLabel']
         else:
-            sample_labels = [splitext(basename(x))[0] for x in score_file_list]
+            sample_labels = smartLabels(score_file_list)
 
         # Determine the group boundaries
         group_boundaries = []
