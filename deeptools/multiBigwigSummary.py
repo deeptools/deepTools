@@ -36,8 +36,8 @@ A detailed sub-commands help is available by typing:
 
 """,
             epilog='example usage:\n multiBigwigSummary bins '
-                   '-b file1.bw file2.bw -out results.npz\n\n'
-                   'multiBigwigSummary BED-file -b file1.bw file2.bw -out results.npz\n'
+                   '-b file1.bw file2.bw -o results.npz\n\n'
+                   'multiBigwigSummary BED-file -b file1.bw file2.bw -o results.npz\n'
                    '--BED selection.bed'
                    ' \n\n',
             conflict_handler='resolve')
@@ -69,7 +69,7 @@ A detailed sub-commands help is available by typing:
         add_help=False,
         usage='multiBigwigSummary '
               '-b file1.bw file2.bw '
-              '-out results.npz\n')
+              '-o results.npz\n')
 
     # BED file arguments
     subparsers.add_parser(
@@ -86,7 +86,7 @@ A detailed sub-commands help is available by typing:
              "different samples over a set of pre-defined peak regions.",
         usage='multiBigwigSummary '
               '-b file1.bw file2.bw '
-              '-out results.npz --BED selection.bed\n',
+              '-o results.npz --BED selection.bed\n',
         add_help=False)
 
     return parser
@@ -122,8 +122,8 @@ def multiBigwigSummaryArgs(case='bins'):
                           nargs='+',
                           required=True)
 
-    required.add_argument('--outFileName', '-out',
-                          help='File name to save the compressed matrix file (npz format)'
+    required.add_argument('--outFileName', '-out', '-o',
+                          help='File name to save the compressed matrix file (npz format) '
                           'needed by the "plotPCA" and "plotCorrelation" tools.',
                           required=True)
 

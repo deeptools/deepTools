@@ -106,18 +106,11 @@ def computeMatrixRequiredArgs(args=None):
 def computeMatrixOutputArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
-    output.add_argument('--outFileName', '-out',
+    output.add_argument('--outFileName', '-out', '-o',
                         help='File name to save the gzipped matrix file '
                         'needed by the "plotHeatmap" and "plotProfile" tools.',
                         type=writableFile,
                         required=True)
-    # TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
-    # output.add_argument('--outFileNameData',
-    #                    help='Name to save the averages per matrix '
-    #                    'column into a text file. This corresponds to '
-    #                    'the underlying data used to '
-    #                    'plot a summary profile. Example: myProfile.tab',
-    #                    type=argparse.FileType('w'))
 
     output.add_argument('--outFileNameMatrix',
                         help='If this option is given, then the matrix '

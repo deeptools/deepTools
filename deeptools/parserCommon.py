@@ -410,7 +410,7 @@ def heatmapperMatrixArgs(args=None):
                           type=argparse.FileType('r'),
                           )
 
-    required.add_argument('--outFileName', '-out',
+    required.add_argument('--outFileName', '-out', '-o',
                           help='File name to save the image to. The file '
                           'ending will be used to determine the image '
                           'format. The available options are: "png", '

@@ -78,6 +78,15 @@ def getRequiredArgs():
                           metavar='2bit FILE',
                           required=True)
 
+    required.add_argument('--GCbiasFrequenciesFile', '-freq', '-o',
+                          help='Path to save the file containing '
+                          'the observed and expected read frequencies per %%GC-'
+                          'content. This file is needed to run the '
+                          'correctGCBias tool. This is a text file.',
+                          type=argparse.FileType('w'),
+                          metavar='FILE',
+                          required=True)
+
     # define the optional arguments
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--fragmentLength', '-l',
@@ -101,23 +110,21 @@ def getRequiredArgs():
                           type=argparse.FileType('r'),
                           metavar='BED file')
 
-    group = parser.add_argument_group('Output options')
-
-    group.add_argument('--GCbiasFrequenciesFile', '-freq',
-                       help='Path to save the file containing '
-                       'the observed and expected read frequencies per %%GC-'
-                       'content. This file is needed to run the '
-                       'correctGCBias tool. This is a text file.',
-                       type=argparse.FileType('w'),
-                       metavar='FILE',
-                       required=True)
-
     plot = parser.add_argument_group('Diagnostic plot options')
 
     plot.add_argument('--biasPlot',
                       metavar='FILE NAME',
                       help='If given, a diagnostic image summarizing '
                       'the GC-bias will be saved.')
+
+    plot.add_argument('--plotFileFormat',
+                      metavar='',
+                      help='image format type. If given, this '
+                      'option overrides the '
+                      'image format based on the plotFile ending. '
+                      'The available options are: "png", '
+                      '"eps", "pdf", "plotly" and "svg"',
+                      choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     plot.add_argument('--regionSize',
                       metavar='INT',
@@ -130,15 +137,6 @@ def getRequiredArgs():
                       'if the depth of sequencing is low, a larger bin size '
                       'will be required, otherwise many bins will not '
                       'overlap with any read')
-
-    group.add_argument('--plotFileFormat',
-                       metavar='',
-                       help='image format type. If given, this '
-                       'option overrides the '
-                       'image format based on the plotFile ending. '
-                       'The available options are: "png", '
-                       '"eps", "pdf", "plotly" and "svg"',
-                       choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     return parser
 
