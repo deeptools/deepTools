@@ -96,7 +96,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
     return (filtered, tot)
 
 
-def fraction_kept(args):
+def fraction_kept(args, stats):
     """
     Count the following:
     (A) The total number of alignments sampled
@@ -121,7 +121,7 @@ def fraction_kept(args):
     total = 0
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization, stats)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
     if args.ignoreForNormalization:
         chrom_sizes = [(chrom_name, bam_handle.lengths[idx]) for idx, chrom_name in enumerate(bam_handle.references)
@@ -153,7 +153,7 @@ def fraction_kept(args):
     return 1.0 - float(filtered) / float(total)
 
 
-def get_num_kept_reads(args):
+def get_num_kept_reads(args, stats):
     """
     Substracts from the total number of mapped reads in a bamfile
     the proportion of reads that fall into blacklisted regions
@@ -161,8 +161,11 @@ def get_num_kept_reads(args):
 
     :return: integer
     """
-    bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    if stats is None:
+        bam_handle, mapped, unmapped, stats = bamHandler.openBam(args.bam, returnStats=True, nThreads=args.numberOfProcessors)
+    else:
+        bam_handle = bamHandler.openBam(args.bam)
+    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization, stats)
     if args.blackListFileName:
         blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization,
                                                       args.blackListFileName, args.numberOfProcessors)
@@ -171,7 +174,7 @@ def get_num_kept_reads(args):
         num_kept_reads = bam_mapped_total - blacklisted
     else:
         num_kept_reads = bam_mapped_total
-    ftk = fraction_kept(args)
+    ftk = fraction_kept(args, stats)
     if ftk < 1:
         num_kept_reads *= ftk
         print("Due to filtering, {0}% of the aforementioned alignments "
@@ -180,9 +183,9 @@ def get_num_kept_reads(args):
     return num_kept_reads, bam_mapped_total
 
 
-def get_scale_factor(args):
+def get_scale_factor(args, stats):
     scale_factor = args.scaleFactor
-    bam_mapped, bam_mapped_total = get_num_kept_reads(args)
+    bam_mapped, bam_mapped_total = get_num_kept_reads(args, stats)
     if args.normalizeTo1x:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: 1x (effective genome size {})\n".format(args.normalizeTo1x))

@@ -158,7 +158,7 @@ def process_args(args=None):
 # while get_scale_factor is used for depth normalization
 
 
-def get_scale_factors(args):
+def get_scale_factors(args, statsList, mappedList):
 
     if args.scaleFactors:
         scale_factors = list(map(float, args.scaleFactors.split(":")))
@@ -167,6 +167,7 @@ def get_scale_factors(args):
             [args.bamfile1, args.bamfile2],
             args.sampleLength, args.numberOfSamples,
             1,
+            mappingStatsList=mappedList,
             blackListFileName=args.blackListFileName,
             numberOfProcessors=args.numberOfProcessors,
             verbose=args.verbose,
@@ -175,9 +176,6 @@ def get_scale_factors(args):
         scale_factors = scalefactors_dict['size_factors']
 
         if args.verbose:
-            bam1 = bamHandler.openBam(args.bamfile1)
-            bam2 = bamHandler.openBam(args.bamfile2)
-
             print("Size factors using SES: {}".format(scale_factors))
             print("%s regions of size %s where used " %
                   (scalefactors_dict['sites_sampled'],
@@ -186,19 +184,17 @@ def get_scale_factors(args):
             print("ignoring filtering/blacklists, size factors if the number of mapped "
                   "reads would have been used:")
             print(tuple(
-                float(min(bam1.mapped, bam2.mapped)) / np.array([bam1.mapped, bam2.mapped])))
-            bam1.close()
-            bam2.close()
+                float(min(mappedList)) / np.array(mappedList)))
 
     elif args.scaleFactorsMethod == 'readCount':
         # change the scaleFactor to 1.0
         args.scaleFactor = 1.0
         # get num of kept reads for bam file 1
         args.bam = args.bamfile1
-        bam1_mapped, _ = get_num_kept_reads(args)
+        bam1_mapped, _ = get_num_kept_reads(args, statsList[0])
         # get num of kept reads for bam file 2
         args.bam = args.bamfile2
-        bam2_mapped, _ = get_num_kept_reads(args)
+        bam2_mapped, _ = get_num_kept_reads(args, statsList[1])
 
         mapped_reads = [bam1_mapped, bam2_mapped]
 
@@ -237,16 +233,22 @@ def main(args=None):
         print("Warning! RPGC normalization (--normalizeTo1x) is not supported with bamCompare. Ignored..")
         args.normalizeTo1x = None
 
-    scale_factors = get_scale_factors(args)
+    # Get mapping statistics
+    bam1, mapped1, unmapped1, stats1 = bamHandler.openBam(args.bamfile1, returnStats=True, nThreads=args.numberOfProcessors)
+    bam1.close()
+    bam2, mapped2, unmapped2, stats2 = bamHandler.openBam(args.bamfile2, returnStats=True, nThreads=args.numberOfProcessors)
+    bam2.close()
+
+    scale_factors = get_scale_factors(args, [stats1, stats2], [mapped1, mapped2])
     if scale_factors is None:
         # check whether one of the depth norm methods are selected
         if args.normalizeUsing is not None:
             args.scaleFactor = 1.0
             # if a normalization is required then compute the scale factors
             args.bam = args.bamfile1
-            scale_factor_bam1 = get_scale_factor(args)
+            scale_factor_bam1 = get_scale_factor(args, stats1)
             args.bam = args.bamfile2
-            scale_factor_bam2 = get_scale_factor(args)
+            scale_factor_bam2 = get_scale_factor(args, stats2)
             scale_factors = [scale_factor_bam1, scale_factor_bam2]
         else:
             scale_factors = [1, 1]

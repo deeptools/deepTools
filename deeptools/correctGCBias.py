@@ -18,6 +18,7 @@ from scipy.stats import binom
 from deeptools.utilities import tbitToBamChrName, getGC_content
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
+from deeptools.bamHandler import openBam
 
 old_settings = np.seterr(all='ignore')
 
@@ -187,7 +188,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     i = 0
 
     tbit = py2bit.open(global_vars['2bit'])
-    bam = pysam.Samfile(global_vars['bam'])
+    bam = openBam(global_vars['bam'])
     read_repetitions = 0
     removed_duplicated_reads = 0
     startTime = time.time()
@@ -337,7 +338,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
 
     tbit = py2bit.open(global_vars['2bit'])
 
-    bam = pysam.Samfile(global_vars['bam'])
+    bam = openBam(global_vars['bam'])
     tempFileName = utilities.getTempFileName(suffix='.bam')
 
     outfile = pysam.Samfile(tempFileName, 'wb', template=bam)
@@ -573,10 +574,10 @@ def main(args=None):
     global_vars['max_dup_gc'] = max_dup_gc
 
     tbit = py2bit.open(global_vars['2bit'])
-    bam = pysam.Samfile(global_vars['bam'])
+    bam, mapped, unmapped, stats = openBam(args.bamfile, returnStats=True, nThreads=args.numberOfProcessors)
 
     global_vars['genome_size'] = sum(tbit.chroms().values())
-    global_vars['total_reads'] = bam.mapped
+    global_vars['total_reads'] = mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
 
@@ -685,7 +686,7 @@ class Tester():
         self.bamFile = self.root + "test.bam"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        bam = pysam.Samfile(self.bamFile)
+        bam, mapped, unmapped, stats = openBam(self.bamFile, returnStats=True)
         tbit = py2bit.open(self.tbitFile)
         global debug
         debug = 0
@@ -698,7 +699,7 @@ class Tester():
                        'min_reads': 0,
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
-                       'total_reads': bam.mapped,
+                       'total_reads': mapped,
                        'genome_size': sum(tbit.chroms().values())}
 
     def testWriteCorrectedChunk(self):

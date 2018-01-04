@@ -17,12 +17,14 @@ def test_plotCoverage_default():
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
     txtfile = NamedTemporaryFile(suffix='.tab', prefix='deeptools_testfile_', delete=False)
 
-    args = "--bamfiles {0}test1.bam {0}test2.bam --plotFile {1}" \
-           " --plotFileFormat png --outRawCounts {2}".format(TEST_DATA, plotfile.name, txtfile.name).split()
-    deeptools.plotCoverage.main(args)
-    assert filecmp.cmp(os.path.join(ROOT, 'outRawCounts_default.tabular'), txtfile.name) is True
+    for fmat in ["bam", "cram"]:
+        args = "--bamfiles {0}test1.{3} {0}test2.{3} --plotFile {1}" \
+               " --plotFileFormat png --outRawCounts {2}".format(TEST_DATA, plotfile.name, txtfile.name, fmat).split()
+        deeptools.plotCoverage.main(args)
+        if fmat == "bam":
+            assert filecmp.cmp(os.path.join(ROOT, 'outRawCounts_default.tabular'), txtfile.name) is True
 
-    res = compare_images(ROOT + 'plotCoverage_default.png', plotfile.name, tolerance)
-    assert res is None, res
-    os.remove(txtfile.name)
-    os.remove(plotfile.name)
+        res = compare_images(ROOT + 'plotCoverage_default.png', plotfile.name, tolerance)
+        assert res is None, res
+        os.remove(txtfile.name)
+        os.remove(plotfile.name)

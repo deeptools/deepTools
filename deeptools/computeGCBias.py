@@ -661,7 +661,7 @@ def main(args=None):
     global_vars['extra_sampling_file'] = extra_sampling_file
 
     tbit = py2bit.open(global_vars['2bit'])
-    bam = bamHandler.openBam(global_vars['bam'])
+    bam, mapped, unmapped, stats = bamHandler.openBam(global_vars['bam'], returnStats=True, nThreads=args.numberOfProcessors)
 
     if args.fragmentLength:
         fragment_len_dict = \
@@ -682,7 +682,7 @@ def main(args=None):
     chrNameBitToBam = tbitToBamChrName(list(tbit.chroms().keys()), bam.references)
 
     global_vars['genome_size'] = sum(tbit.chroms().values())
-    global_vars['total_reads'] = bam.mapped
+    global_vars['total_reads'] = mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
 
@@ -746,7 +746,7 @@ class Tester():
         self.mappability = self.root + "mappability.bw"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        bam = bamHandler.openBam(self.bamFile)
+        bam, mapped, unmapped, stats = bamHandler.openBam(self.bamFile, returnStats=True)
         tbit = py2bit.open(self.tbitFile)
         global debug
         debug = 0
@@ -760,7 +760,7 @@ class Tester():
                        'min_reads': 0,
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
-                       'total_reads': bam.mapped,
+                       'total_reads': mapped,
                        'genome_size': sum(tbit.chroms().values())
                        }
 

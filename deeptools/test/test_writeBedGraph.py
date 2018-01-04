@@ -120,3 +120,24 @@ class TestWriteBedGraph(TestCase):
                            'chr_cigar\t40\t50\t1\n',
                            'chr_cigar\t50\t100\t0\n'])
         os.remove(tempFile[3])
+
+
+class TestWriteBedGraphCRAM(TestWriteBedGraph):
+    def setUp(self):
+        """
+        As above, but for CRAM files
+        """
+
+        self.root = ROOT
+        self.bamFile1 = self.root + "testA.cram"
+        self.bamFile2 = self.root + "testB.cram"
+        self.bamFile_PE = self.root + "test_paired2.cram"
+        self.chrom = '3R'
+
+        self.step_size = 50
+        self.bin_length = 50
+        self.func_args = {'scaleFactor': 1.0}
+
+        self.c = wr.WriteBedGraph([self.bamFile1],
+                                  binLength=self.bin_length,
+                                  stepSize=self.step_size)

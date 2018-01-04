@@ -356,9 +356,9 @@ class heatmapper(object):
         """
 
         # read BAM or scores file
-        score_file_handlers = []
+        score_file_handles = []
         for sc_file in score_file_list:
-            score_file_handlers.append(pyBigWig.open(sc_file))
+            score_file_handles.append(pyBigWig.open(sc_file))
 
         # determine the number of matrix columns based on the lengths
         # given by the user, times the number of score files
@@ -522,7 +522,7 @@ class heatmapper(object):
                 coverage = []
                 # compute the values for each of the files being processed.
                 # "cov" is a numpy array of bins
-                for sc_handler in score_file_handlers:
+                for sc_handler in score_file_handles:
                     # We're only supporting bigWig files at this point
                     cov = heatmapper.coverage_from_big_wig(
                         sc_handler, feature_chrom, zones,

@@ -117,17 +117,29 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         """
         self.__dict__["smoothLength"] = smoothLength
-        bam_handlers = [bamHandler.openBam(x) for x in self.bamFilesList]
-        genome_chunk_length = getGenomeChunkLength(bam_handlers, self.binLength)
+        getStats = len(self.mappedList) < self.bamFilesList
+        bam_handles = []
+        for x in self.bamFilesList:
+            if getStats:
+                bam, mapped, unmapped, stats = bamHandler.openBam(x, returnStats=True, nThreads=self.numberOfProcessors)
+                self.mappedList.append(mapped)
+                self.statsList.append(stats)
+            else:
+                bam = bamHandler.openBam(x)
+            bam_handles.append(bam)
+
+        genome_chunk_length = getGenomeChunkLength(bam_handles, self.binLength, self.mappedList)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chrom_names_and_size, non_common = getCommonChrNames(bam_handlers, verbose=False)
+        chrom_names_and_size, non_common = getCommonChrNames(bam_handles, verbose=False)
 
         if self.region:
             # in case a region is used, append the tilesize
             self.region += ":{}".format(self.binLength)
 
         for x in list(self.__dict__.keys()):
+            if x in ["mappedList", "statsList"]:
+                continue
             sys.stderr.write("{}: {}\n".format(x, self.__getattribute__(x)))
 
         res = mapReduce.mapReduce([func_to_call, func_args],
@@ -305,7 +317,7 @@ def bedGraphToBigWig(chromSizes, bedGraphFiles, bigWigPath):
     bw.close()
 
 
-def getGenomeChunkLength(bamHandlers, tile_size):
+def getGenomeChunkLength(bamHandles, tile_size, mappedList):
     """
     Tries to estimate the length of the genome sent to the workers
     based on the density of reads per bam file and the number
@@ -315,14 +327,12 @@ def getGenomeChunkLength(bamHandlers, tile_size):
 
     """
 
-    genomeLength = sum(bamHandlers[0].lengths)
+    genomeLength = sum(bamHandles[0].lengths)
 
-    max_reads_per_bp = max(
-        [float(x.mapped) / genomeLength for x in bamHandlers])
+    max_reads_per_bp = max([float(x) / genomeLength for x in mappedList])
 
     # 2e6 is an empirical estimate
-    genomeChunkLength = int(
-        min(5e6, int(2e6 / (max_reads_per_bp * len(bamHandlers)))))
+    genomeChunkLength = int(min(5e6, int(2e6 / (max_reads_per_bp * len(bamHandles)))))
 
     genomeChunkLength -= genomeChunkLength % tile_size
     return genomeChunkLength
