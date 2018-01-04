@@ -287,7 +287,6 @@ class CountReadsPerBin(object):
                 sys.exit(sys.exc_info()[1])
             except:
                 y = pyBigWig.open(x)
-                stats = None
             bamFilesHandles.append(y)
 
         chromsizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandles, verbose=self.verbose)

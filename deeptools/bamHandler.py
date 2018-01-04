@@ -64,7 +64,7 @@ def openBam(bamFile, returnStats=False, nThreads=1):
         mapped = bam.mapped
         unmapped = bam.unmapped
 
-        # Make the dictionary to hold the 
+        # Make the dictionary to hold the stats
         if returnStats:
             stats = {chrom.contig: [chrom.mapped, chrom.unmapped] for chrom in bam.get_index_statistics()}
 

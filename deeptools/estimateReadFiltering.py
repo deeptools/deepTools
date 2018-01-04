@@ -270,7 +270,6 @@ def main(args=None):
     bhs = [bamHandler.openBam(x, returnStats=True, nThreads=args.numberOfProcessors) for x in args.bamfiles]
     mapped = [x[1] for x in bhs]
     unmappedList = [x[2] for x in bhs]
-    statsList = [x[3] for x in bhs]
     bhs = [x[0] for x in bhs]
 
     # Get the reads in blacklisted regions

@@ -1,6 +1,5 @@
 import sys
 import os
-import pysam
 from deeptoolsintervals import GTF
 from deeptools.bamHandler import openBam
 import matplotlib as mpl
