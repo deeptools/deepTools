@@ -117,7 +117,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         """
         self.__dict__["smoothLength"] = smoothLength
-        getStats = len(self.mappedList) < self.bamFilesList
+        getStats = len(self.mappedList) < len(self.bamFilesList)
         bam_handles = []
         for x in self.bamFilesList:
             if getStats:
