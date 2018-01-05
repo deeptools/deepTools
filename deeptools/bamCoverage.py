@@ -32,7 +32,8 @@ def parseArguments():
             'size. It is possible to extended the length of the reads '
             'to better reflect the actual fragment length. *bamCoverage* '
             'offers normalization by scaling factor, Reads Per Kilobase per '
-            'Million mapped reads (RPKM), and 1x depth (reads per genome '
+            'Million mapped reads (RPKM), counts per million (CPM), bins per '
+            'million mapped reads (BPM) and 1x depth (reads per genome '
             'coverage, RPGC).\n',
             usage='An example usage is:'
             '$ bamCoverage -b reads.bam -o coverage.bw',
@@ -123,7 +124,7 @@ def process_args(args=None):
     args = parseArguments().parse_args(args)
 
     if args.scaleFactor != 1:
-        args.normalizeTo1x = None
+        args.effectiveGenomeSize = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print("Warning: the smooth length given ({}) is smaller than the bin "
               "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
@@ -144,7 +145,7 @@ def main(args=None):
     else:
         debug = 0
 
-    if args.normalizeTo1x or args.normalizeUsing is not None:
+    if args.normalizeUsing:
         # if a normalization is required then compute the scale factors
         scale_factor = get_scale_factor(args)
     else:

@@ -27,9 +27,9 @@
                 --normalizeUsing BPM
             #elif $scaling.type=='1x':
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                    --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
+                    --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
-                    --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
+                    --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
                 #end if
             #end if
 
