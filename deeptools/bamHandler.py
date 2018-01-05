@@ -11,7 +11,6 @@ def countReadsInInterval(args):
     unmapped = 0
     for b in bam.fetch(chrom, start, end):
         if chrom == "*":
-            print([b.query_name, b.pos])
             unmapped += 1
             continue
         if b.pos < start:
@@ -45,9 +44,31 @@ def getMappingStats(bam, nThreads):
     return mapped, unmapped, stats
 
 
-def openBam(bamFile, returnStats=False, nThreads=1):
+def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=False):
+    """
+    A wrapper for opening BAM/CRAM files.
+
+    bamFile: str
+        A BAM/CRAM file name
+
+    returnStats: bool
+        Return a tuple of (file_handle, nMappedReads, nUnmappedReads, statsDict).
+        These additional values are needed by some downstream functions, since one
+        can't use file_handle.mapped on CRAM files (or idxstats())
+
+    nThreads: int
+        If returnStats is True, number of threads to use for computing statistics
+
+    minimalDecoding: Bool
+        For CRAM files, don't decode the read name, sequence, qual, or auxiliary tag fields (these aren't used by most functions).
+
+    Returns either the file handle or a tuple as described in returnStats
+    """
+    format_options = ["required_fields=0x1FE"]
+    if not minimalDecoding:
+        format_options = None
     try:
-        bam = pysam.Samfile(bamFile, 'rb')
+        bam = pysam.Samfile(bamFile, 'rb', format_options=format_options)
     except IOError:
         sys.exit("The file '{}' does not exist".format(bamFile))
     except:
