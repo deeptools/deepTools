@@ -26,6 +26,7 @@
             #elif $scaling.type=='bpm':
                 --normalizeUsing BPM
             #elif $scaling.type=='1x':
+                --normalizeUsing RPGC
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
                     --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
