@@ -46,9 +46,14 @@
                     --missingDataColor '$advancedOpt.missingDataColor'
                 #end if
 
-                #if str($advancedOpt.colorMap).strip() != "":
-                    --colorMap #echo " ".join(str($advancedOpt.colorMap).strip().split(","))#
+                #set $colorMap = []
+                #for $cmap in $advancedOpt.colorMapRepeat:
+                    colorMap.append($s.colorMap)
+                #end for
+                #if len($colorMap) > 0:
+                    --colorMap #echo " ".join(str($advancedOpt.colorMap))#
                 #end if
+
                 --alpha '$advancedOpt.alpha'
                 #if str($advancedOpt.colorList).strip() != "":
                     --colorList $advancedOpt.colorList
@@ -138,7 +143,10 @@
                     Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html.
                     Alternatively colors can be specified using the #rrggbb notation." />
 
-                <expand macro="colorMap" />
+                <repeat name="colorMapRepeat" title="Colormap to use for each sample"
+                    help="A different colormap can be applied to each column of the heatmap. If you select fewer colormaps than you have samples in your matrix, then the select colormap(s) will be repeated (e.g., if you select one colormap then it will be applied to all samples).">
+                    <expand macro="colorMap" />
+                </repeat>
                 <param argument="--alpha" type="float" value="1.0" min="0.0"
                     max="1.0" optional="True"
                     label="Alpha channel (transparency)"
