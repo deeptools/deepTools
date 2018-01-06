@@ -504,21 +504,19 @@ def plotMatrix(hm, outFileName,
     # check if matrix is reference-point based using the upstream >0 value
     # and is sorted by region length. If this is
     # the case, prepare the data to plot a border at the regions end
-    if hm.parameters['upstream'] > 0 and \
-            hm.matrix.sort_using == 'region_length' and \
-            hm.matrix.sort_method != 'no':
-
-            _regions = hm.matrix.get_regions()
-            regions_length_in_bins = []
-            for _group in _regions:
-                _reg_len = []
-                for ind_reg in _group:
-                    if isinstance(ind_reg, dict):
-                        _len = ind_reg['end'] - ind_reg['start']
-                    else:
-                        _len = sum([x[1] - x[0] for x in ind_reg[1]])
-                    _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
-                regions_length_in_bins.append(_reg_len)
+    if hm.matrix.sort_using == 'region_length' and \
+       hm.matrix.sort_method != 'no':
+        _regions = hm.matrix.get_regions()
+        regions_length_in_bins = []
+        for _group in _regions:
+            _reg_len = []
+            for ind_reg in _group:
+                if isinstance(ind_reg, dict):
+                    _len = ind_reg['end'] - ind_reg['start']
+                else:
+                    _len = sum([x[1] - x[0] for x in ind_reg[1]])
+                _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
+        regions_length_in_bins.append(_reg_len)
     else:
         regions_length_in_bins = None
 
@@ -615,7 +613,7 @@ def plotMatrix(hm, outFileName,
             img.set_rasterized(True)
             # plot border at the end of the regions
             # if ordered by length
-            if regions_length_in_bins is not None:
+            if regions_length_in_bins is not None and hm.parameters['upstream'][sample] > 0:
                 x_lim = ax.get_xlim()
                 y_lim = ax.get_ylim()
 
