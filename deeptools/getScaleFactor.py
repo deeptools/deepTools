@@ -183,9 +183,9 @@ def get_num_kept_reads(args):
 def get_scale_factor(args):
     scale_factor = args.scaleFactor
     bam_mapped, bam_mapped_total = get_num_kept_reads(args)
-    if args.normalizeTo1x:
+    if args.normalizeUsing == 'RPGC':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
-        sys.stderr.write("normalization: 1x (effective genome size {})\n".format(args.normalizeTo1x))
+        sys.stderr.write("normalization: 1x (effective genome size {})\n".format(args.effectiveGenomeSize))
 
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -219,7 +219,7 @@ def get_scale_factor(args):
                 print("Estimated read length is {}".format(int(read_len_dict['median'])))
 
         current_coverage = \
-            float(bam_mapped * fragment_length) / args.normalizeTo1x
+            float(bam_mapped * fragment_length) / args.effectiveGenomeSize
         # the scaling sets the coverage to match 1x
         scale_factor *= 1.0 / current_coverage
         if debug:

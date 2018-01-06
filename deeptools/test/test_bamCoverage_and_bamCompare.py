@@ -57,10 +57,10 @@ def test_bam_coverage_extend():
     unlink(outfile)
 
 
-def test_bam_coverage_extend_and_normalizeto1x():
+def test_bam_coverage_extend_and_normalizeUsingRPGC():
 
     outfile = '/tmp/test_file.bg'
-    args = "-b {} -o {} --normalizeTo1x 200 --extendReads 100 " \
+    args = "-b {} -o {} --effectiveGenomeSize 200 --normalizeUsing RPGC --extendReads 100 " \
            "--outFileFormat bedgraph".format(BAMFILE_B, outfile).split()
     bam_cov.main(args)
     _foo = open(outfile, 'r')
@@ -107,7 +107,7 @@ def test_bam_compare_arguments():
     """
     outfile = '/tmp/test_file.bg'
     args = "--bamfile1 {} --bamfile2 {} " \
-           "-o {} -p 1 --outFileFormat bedgraph --ratio ratio".format(BAMFILE_B, BAMFILE_B, outfile).split()
+           "-o {} -p 1 --outFileFormat bedgraph --operation ratio".format(BAMFILE_B, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
 
@@ -124,7 +124,7 @@ def test_bam_compare_diff_files():
     Test with two different files
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
+    args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract " \
            "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
@@ -175,7 +175,7 @@ def test_bam_compare_diff_files_skipnas():
     is not included in the bedgraph file.
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
+    args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract " \
            "-o {} -p 1 --outFileFormat bedgraph --skipNAs".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
@@ -193,7 +193,7 @@ def test_bam_compare_extend():
     Test read extension
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --ratio subtract " \
+    args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --operation subtract " \
            "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
@@ -211,7 +211,7 @@ def test_bam_compare_scale_factors_ratio():
     Test scale factor
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} --ratio ratio --ignoreForNormalization chr_cigar " \
+    args = "--bamfile1 {} --bamfile2 {} --operation ratio --ignoreForNormalization chr_cigar " \
            "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
@@ -251,7 +251,7 @@ def test_bam_compare_scale_factors_subtract():
     Test scale factor
     """
     outfile = '/tmp/test_file.bg'
-    args = "--bamfile1 {} --bamfile2 {} --ratio subtract --ignoreForNormalization chr_cigar " \
+    args = "--bamfile1 {} --bamfile2 {} --operation subtract --ignoreForNormalization chr_cigar " \
            "-o {} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM".format(BAMFILE_A, BAMFILE_B, outfile).split()
 
     bam_comp.main(args)
@@ -293,7 +293,7 @@ def test_bam_coverage_filter_blacklist():
     Test --samFlagInclude --samFlagExclude --minMappingQuality --ignoreDuplicates and --blackListFileName
     """
     outfile = '/tmp/test_file_filter.bg'
-    args = "--bam {} --normalizeTo1x 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+    args = "--bam {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
            "--samFlagExclude 256 --minMappingQuality 5 --ignoreDuplicates " \
            "--blackListFileName {}".format(BAMFILE_FILTER1, outfile, BEDFILE_FILTER)
     args = args.split()
@@ -390,7 +390,7 @@ def test_bam_compare_filter_blacklist():
     Test --samFlagInclude --samFlagExclude --minMappingQuality --ignoreDuplicates and --blackListFileName
     """
     outfile = '/tmp/test_file_filter.bg'
-    args = "-b1 {} -b2 {} --normalizeTo1x 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+    args = "-b1 {} -b2 {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
            "--samFlagExclude 256 --minMappingQuality 5 --ignoreDuplicates " \
            "--blackListFileName {}".format(BAMFILE_FILTER1, BAMFILE_FILTER2, outfile, BEDFILE_FILTER)
     args = args.split()

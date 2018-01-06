@@ -116,7 +116,7 @@ def getOptionalArgs():
                           default=None,
                           required=False)
 
-    optional.add_argument('--ratio', '--method',
+    optional.add_argument('--operation',
                           help='The default is to output the log2 ratio of the '
                           'two samples. The reciprocal ratio returns the '
                           'the negative of the inverse of the ratio '
@@ -124,7 +124,7 @@ def getOptionalArgs():
                           'values are interpreted as negative fold changes. '
                           'Instead of performing a computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
-                          'the \'--ratio first\' or \'--ratio second\'',
+                          'the \'--operation first\' or \'--operation second\'',
                           default='log2',
                           choices=['log2', 'ratio', 'subtract', 'add', 'mean',
                                    'reciprocal_ratio', 'first', 'second'],
@@ -132,7 +132,7 @@ def getOptionalArgs():
 
     optional.add_argument('--pseudocount',
                           help='small number to avoid x/0. Only useful '
-                          'together with --ratio log2 or --ratio ratio .',
+                          'together with --operation log2 or --operation ratio .',
                           default=1,
                           type=float,
                           required=False)
@@ -233,9 +233,9 @@ def main(args=None):
     """
     args = process_args(args)
 
-    if args.normalizeTo1x is not None:
-        print("Warning! RPGC normalization (--normalizeTo1x) is not supported with bamCompare. Ignored..")
-        args.normalizeTo1x = None
+    if args.normalizeUsing == "RPGC":
+        print("Warning! RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare. Ignored..")
+        args.effectiveGenomeSize = None
 
     scale_factors = get_scale_factors(args)
     if scale_factors is None:
@@ -257,7 +257,7 @@ def main(args=None):
     # the getRatio function is called and receives
     # the func_args per each tile that is considered
     FUNC = getRatio
-    func_args = {'valueType': args.ratio,
+    func_args = {'valueType': args.operation,
                  'scaleFactors': scale_factors,
                  'pseudocount': args.pseudocount
                  }

@@ -37,7 +37,7 @@
                 #end if
             #end if
 
-            --ratio $comparison.type
+            --operation $comparison.type
 
             #if $comparison.type in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount

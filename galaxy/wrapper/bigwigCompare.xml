@@ -15,7 +15,7 @@
             --outFileName '$outFileName'
             --outFileFormat '$outFileFormat'
 
-            --ratio $comparison.comparison_select
+            --operation $comparison.comparison_select
 
             #if $comparison.comparison_select in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
