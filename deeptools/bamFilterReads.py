@@ -233,7 +233,7 @@ def main(args=None):
 
     bam = openBam(args.bam)
     total = bam.mapped + bam.unmapped
-    chrom_sizes = [(x, y) for x, y in zip(bam.header.references, bam.header.lengths)]
+    chrom_sizes = [(x, y) for x, y in zip(bam.references, bam.lengths)]
 
     # Filter, writing the results to a bunch of temporary files
     res = mapReduce([args],
