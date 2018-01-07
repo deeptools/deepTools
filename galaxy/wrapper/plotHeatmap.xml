@@ -46,12 +46,12 @@
                     --missingDataColor '$advancedOpt.missingDataColor'
                 #end if
 
-                #set $colorMap = []
+                #set colorMap = []
                 #for $cmap in $advancedOpt.colorMapRepeat:
-                    colorMap.append($s.colorMap)
+                    #silent $colorMap.append(str($cmap.colorMap))
                 #end for
                 #if len($colorMap) > 0:
-                    --colorMap #echo " ".join(str($advancedOpt.colorMap))#
+                    --colorMap #echo " ".join($colorMap)#
                 #end if
 
                 --alpha '$advancedOpt.alpha'
