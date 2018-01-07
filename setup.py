@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import subprocess
 import re
 from distutils import sysconfig
