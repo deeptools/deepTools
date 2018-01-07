@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 import pysam
+import os
 
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
@@ -128,12 +129,6 @@ def parseArguments():
 
 def filterWorker(arglist):
     chrom, start, end, args = arglist
-    # Fix the bounds
-    if end - start > args.binSize and end - start > args.distanceBetweenBins:
-        end -= args.distanceBetweenBins
-    if end <= start:
-        end = start + 1
-
     fh = openBam(args.bam)
 
     oname = getTempFileName(suffix='bam')
@@ -237,8 +232,8 @@ def main(args=None):
     args = parseArguments().parse_args(args)
 
     bam = openBam(args.bam)
+    total = bam.mapped + bam.unmapped
     chrom_sizes = [(x, y) for x, y in zip(bam.header.references, bam.header.lengths)]
-    del(chrom_sizes[-1])  # Unmapped
 
     # Filter, writing the results to a bunch of temporary files
     res = mapReduce([args],
@@ -249,36 +244,38 @@ def main(args=None):
                     verbose=args.verbose)
 
     res = sorted(res)  # The temp files are now in order for concatenation
-    total = sum([x[2] for x in res])
     nFiltered = sum([x[3] for x in res])
+    totalSeen = sum([x[2] for x in res])  # The * contig isn't queried
 
     mode = 'wb'
     if bam.is_cram:
         mode = 'wc'
-    obam = pysam.Alignment(args.outFile, mode, template=bam)
+    obam = pysam.AlignmentFile(args.outFile, mode, template=bam)
     bam.close()
 
     for tup in res:
         if tup[3] - tup[2] == 0:
             # No alignments, skip
+            os.remove(tup[4])
             continue
-        bam = openBam(tup[4])
-        for b in bam.fetch():
+        bam = pysam.AlignmentFile(tup[4])
+        for b in bam.fetch(until_eof=True):
             obam.write(b)
         bam.close()
+        os.remove(tup[4])
     obam.close()
 
     if args.filterMetrics:
         sampleName = args.bam
-        if args.labels:
-            sampleName = args.labels
+        if args.label:
+            sampleName = args.label
         if args.smartLabels:
-            sampleName = smartLabels([args.bam])
+            sampleName = smartLabels([args.bam])[0]
 
         of = open(args.filterMetrics, "w")
         of.write("#bamFilterReads --filterMetrics\n")
-        of.write("#File	Reads Filtered	Total Initial Reads\n")
-        of.write("{}\t{}\t{}\n".format(sampleName, nFiltered, total))
+        of.write("#File\tReads Remaining\tTotal Initial Reads\n")
+        of.write("{}\t{}\t{}\n".format(sampleName, totalSeen - nFiltered, total))
         of.close()
 
     return 0
