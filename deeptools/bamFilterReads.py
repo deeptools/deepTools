@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import argparse
-import sys
+import pysam
 
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
 from deeptools._version import __version__
-from deeptools.utilities import getTLen, smartLabels
+from deeptools.utilities import getTLen, smartLabels, getTempFileName
 
 
 def parseArguments():
@@ -44,10 +44,10 @@ def parseArguments():
                          '(file name).')
 
     general.add_argument('--smartLabels',
-                          action='store_true',
-                          help='Instead of manually specifying a labels for the input '
-                          'file, this causes deepTools to use the file name '
-                          'after removing the path and extension.')
+                         action='store_true',
+                         help='Instead of manually specifying a labels for the input '
+                         'file, this causes deepTools to use the file name '
+                         'after removing the path and extension.')
 
     general.add_argument('--verbose', '-v',
                          help='Set to see processing messages.',
@@ -134,7 +134,7 @@ def filterWorker(arglist):
     if end <= start:
         end = start + 1
 
-    fh = bamHandler.openBam(args.bam)
+    fh = openBam(args.bam)
 
     oname = getTempFileName(suffix='bam')
     ofh = pysam.AlignmentFile(oname, mode='wbu', template=fh)
@@ -167,7 +167,7 @@ def filterWorker(arglist):
             nFiltered += 1
             continue
 
-        tLen = getTlen(read)
+        tLen = getTLen(read)
         if args.minFragmentLength > 0 and tLen < args.minFragmentLength:
             nFiltered += 1
             continue
@@ -226,7 +226,7 @@ def filterWorker(arglist):
         ofh.write(read)
 
     # The results from the workers will get sorted, so get the TID
-    tid = bam.get_tid(chrom)
+    tid = fh.get_tid(chrom)
 
     ofh.close()
     fh.close()
