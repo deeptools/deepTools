@@ -71,5 +71,5 @@ def test_read_filtering():
     assert_equal(resp, expected)
     unlink(outlog)
     h = hashlib.md5(open(outfile, "rb").read()).hexdigest()
-    assert(h == "3ff11cf63032ced419af0e9fec869bb3")
+    assert(h == "977bdab227a4dbfa3fc9f27c23a3e0b7")
     unlink(outfile)

@@ -131,8 +131,13 @@ def filterWorker(arglist):
     chrom, start, end, args = arglist
     fh = openBam(args.bam)
 
-    oname = getTempFileName(suffix='bam')
-    ofh = pysam.AlignmentFile(oname, mode='wbu', template=fh)
+    if fh.is_cram:
+        mode = 'wc'
+        oname = getTempFileName(suffix='.cram')
+    else:
+        mode = 'wbu'
+        oname = getTempFileName(suffix='.bam')
+    ofh = pysam.AlignmentFile(oname, mode=mode, template=fh)
 
     prev_pos = set()
     lpos = None
@@ -247,23 +252,12 @@ def main(args=None):
     nFiltered = sum([x[3] for x in res])
     totalSeen = sum([x[2] for x in res])  # The * contig isn't queried
 
-    mode = 'wb'
-    if bam.is_cram:
-        mode = 'wc'
-    obam = pysam.AlignmentFile(args.outFile, mode, template=bam)
-    bam.close()
-
-    for tup in res:
-        if tup[3] - tup[2] == 0:
-            # No alignments, skip
-            os.remove(tup[4])
-            continue
-        bam = pysam.AlignmentFile(tup[4])
-        for b in bam.fetch(until_eof=True):
-            obam.write(b)
-        bam.close()
-        os.remove(tup[4])
-    obam.close()
+    tmpFiles = [x[4] for x in res]
+    arguments = ["-o", args.outFile]
+    arguments.extend(tmpFiles)  # [..., *someList] isn't available in python 2.7
+    pysam.samtools.cat(*arguments)
+    for tmpFile in tmpFiles:
+        os.unlink(tmpFile)
 
     if args.filterMetrics:
         sampleName = args.bam
