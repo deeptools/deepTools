@@ -39,6 +39,8 @@ The tools
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/estimateReadFiltering`   | information      | 1 or more BAM files                 | table of values                            | estimate the number of reads filtered from a BAM file or files                    |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
+|:doc:`tools/bamFilterReads`          | QC               | 1 BAM file                          | 1 filtered BAM file                        | filters a BAM file based on one or more criteria                                  |
++-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/plotHeatmap`             | visualization    | computeMatrix output                | heatmap of read coverages                  | visualize the read coverages for genomic regions                                  |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/plotProfile`             | visualization    | computeMatrix output                | summary plot (“meta-profile”)              | visualize the average read coverages over a group of genomic regions              |
@@ -125,6 +127,8 @@ Tools for BAM and bigWig file processing
 :doc:`tools/bigwigCompare`
 """"""""""""""""""""""""""
 :doc:`tools/computeMatrix`
+""""""""""""""""""""""""""
+:doc:`tools/bamFilterReads`
 """"""""""""""""""""""""""
 
 Tools for QC

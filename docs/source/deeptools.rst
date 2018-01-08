@@ -44,6 +44,14 @@ deeptools.countReadsPerBin module
     :undoc-members:
     :show-inheritance:
 
+deeptools.deepBlue
+------------------
+
+.. automodule:: deeptools.deepBlue
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 deeptools.getFragmentAndReadSize module
 ---------------------------------------
 
@@ -88,6 +96,14 @@ deeptools.mapReduce module
 --------------------------
 
 .. automodule:: deeptools.mapReduce
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+deeptools.sumCoveragePerBin
+---------------------------
+
+.. automodule:: deeptools.subCoveragePerBin
     :members:
     :undoc-members:
     :show-inheritance:
