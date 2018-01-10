@@ -57,8 +57,9 @@ def test_read_filtering():
     Test filtering a BAM file by MAPQ, flag, and blacklist
     """
     outfile = '/tmp/test_filtering1.bam'
+    outfiltered = '/tmp/test_filtered.bam'
     outlog = '/tmp/test_filtering1.log'
-    args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog).split()
+    args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {} --filteredReads {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog, outfiltered).split()
     filt.main(args)
 
     _foo = open(outlog, 'r')
@@ -73,3 +74,8 @@ def test_read_filtering():
     h = hashlib.md5(open(outfile, "rb").read()).hexdigest()
     assert(h == "977bdab227a4dbfa3fc9f27c23a3e0b7")
     unlink(outfile)
+
+    h = hashlib.md5(open(outfiltered, "rb").read()).hexdigest()
+    print(h)
+    assert(h == "977bdab227a4dbfa3fc9f27c23a3e0b7")
+    #unlink(outfile)

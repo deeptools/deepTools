@@ -13,8 +13,8 @@ from deeptools.utilities import getTLen, smartLabels, getTempFileName
 def parseArguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="This tool filters alignments in a BAM/CRAM file according the the specified parameters.",
-        usage='Example usage: bamFilterReads.py -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt')
+        description="This tool filters alignments in a BAM/CRAM file according the the specified parameters. It can optionally output to BED format.",
+        usage='Example usage: alignmentSieve.py -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt')
 
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--bam', '-b',
@@ -39,6 +39,10 @@ def parseArguments():
                          metavar="FILE.log",
                          help="The number of entries in total and filtered are saved to this file")
 
+    general.add_argument('--filteredReads',
+                         metavar="filtered.bam",
+                         help="If desired, all reads NOT passing the filtering criteria can be written to this file")
+
     general.add_argument('--label', '-l',
                          metavar='sample1',
                          help='User defined label instead of the default label '
@@ -56,6 +60,20 @@ def parseArguments():
 
     general.add_argument('--version', action='version',
                          version='%(prog)s {}'.format(__version__))
+
+    bed = parser.add_argument_group('BED arguments')
+    bed.add_argument('--BED',
+                     action='store_true',
+                     help='Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format.')
+
+    bed.add_argument('--ATACshift',
+                     action='store_true',
+                     help='Shift the produced BEDPE regions as required for ATAC-seq. Note that only a single read from a pair will be used.')
+
+    bed.add_argument('--shift',
+                     nargs='+',
+                     type=int,
+                     help='Shift the left and right end of a fragment. A positive value shift an end to the right (on the + strand) and a negative value shifts a fragment to the left. Either 2 or 4 integers can be provided. For example, "2 -3" will shift the left-most fragment end two bases to the right and the right-most end 3 bases to the left. If 4 integers are provided, then the first and last two refer to fragments whose read 1 is on the left or right, respectively. Consequently, it is possible to take strand into consideration for strand-specific protocols. A fragment whose length falls below 1 due to shifting will not be written to the output. See the online documentation for graphical examples.')
 
     filtering = parser.add_argument_group('Optional arguments')
 
@@ -134,10 +152,20 @@ def filterWorker(arglist):
     if fh.is_cram:
         mode = 'wc'
         oname = getTempFileName(suffix='.cram')
+        if args.filteredReads:
+            onameFiltered = getTempFileName(suffix='.cram')
     else:
         mode = 'wbu'
         oname = getTempFileName(suffix='.bam')
+        if args.filteredReads:
+            onameFiltered = getTempFileName(suffix='.bam')
+    if not args.filteredReads:
+        onameFiltered = None
     ofh = pysam.AlignmentFile(oname, mode=mode, template=fh)
+    if onameFiltered:
+        ofiltered = pysam.AlignmentFile(onameFiltered, mode=mode, template=fh)
+    else:
+        ofiltered = None
 
     prev_pos = set()
     lpos = None
@@ -153,27 +181,39 @@ def filterWorker(arglist):
         if read.flag & 4:
             # Ignore unmapped reads, they were counted already
             nFiltered += 1
+            if ofiltered:
+                ofiltered.write(read)
             continue
 
         if args.minMappingQuality and read.mapq < args.minMappingQuality:
             nFiltered += 1
+            if ofiltered:
+                ofiltered.write(read)
             continue
 
         if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:
             nFiltered += 1
+            if ofiltered:
+                ofiltered.write(read)
             continue
-
         if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
             nFiltered += 1
+            if ofiltered:
+                ofiltered.write(read)
             continue
 
         tLen = getTLen(read)
         if args.minFragmentLength > 0 and tLen < args.minFragmentLength:
             nFiltered += 1
+            if ofiltered:
+                ofiltered.write(read)
             continue
         if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
             nFiltered += 1
+            if ofiltered:
+                ofiltered.write(read)
             continue
+
         if args.ignoreDuplicates:
             # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
             if tLen >= 0:
@@ -187,6 +227,8 @@ def filterWorker(arglist):
             if lpos is not None and lpos == read.reference_start \
                     and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
                 nFiltered += 1
+                if ofiltered:
+                    ofiltered.write(read)
                 continue
             if lpos != read.reference_start:
                 prev_pos.clear()
@@ -201,12 +243,16 @@ def filterWorker(arglist):
                         pass
                     else:
                         nFiltered += 1
+                        if ofiltered:
+                            ofiltered.write(read)
                         continue
                 elif args.filterRNAstrand == 'reverse':
                     if read.flag & 144 == 144 or read.flag & 96 == 96:
                         pass
                     else:
                         nFiltered += 1
+                        if ofiltered:
+                            ofiltered.write(read)
                         continue
             else:
                 if args.filterRNAstrand == 'forward':
@@ -214,12 +260,16 @@ def filterWorker(arglist):
                         pass
                     else:
                         nFiltered += 1
+                        if ofiltered:
+                            ofiltered.write(read)
                         continue
                 elif args.filterRNAstrand == 'reverse':
                     if read.flag & 16 == 0:
                         pass
                     else:
                         nFiltered += 1
+                        if ofiltered:
+                            ofiltered.write(read)
                         continue
 
         # Read survived filtering
@@ -229,12 +279,52 @@ def filterWorker(arglist):
     tid = fh.get_tid(chrom)
 
     ofh.close()
+    if ofiltered:
+        ofiltered.close()
     fh.close()
-    return tid, start, total, nFiltered, oname
+    return tid, start, total, nFiltered, oname, onameFiltered
+
+
+def shiftConvertBED(oname, tmpFiles, args):
+    """
+    Stores results in BEDPE format, which is:
+    chromosome	frag_leftend	frag_rightend
+
+    The fragment ends can be shifted
+    """
+    ofile = open(oname, "w")
+    for tmpFile in tmpFiles:
+        fh = pysam.AlignmentFile(tmpFile)
+
+        for b in fh.fetch(until_eof=True):
+            tLen = getTLen(b, notAbs=True)
+            if tLen > 0:
+                start = b.pos
+                end = start + tLen
+                if args.shift:
+                    if b.is_read2 and len(args.shift) == 4:
+                        start -= args.shift[3]
+                        end -= args.shift[2]
+                    else:
+                        start += args.shift[0]
+                        end += args.shift[1]
+                if start < 0:
+                    start = 0
+                if end > fh.header.get_reference_length(b.reference_name):
+                    end = fh.header.get_reference_length(b.reference_name)
+                if end - start < 1:
+                    continue
+                ofile.write("{}\t{}\t{}\n".format(b.reference_name, start, end))
+        fh.close()
+        os.unlink(tmpFile)
+    ofile.close()
 
 
 def main(args=None):
     args = parseArguments().parse_args(args)
+    if args.shift:
+        if len(args.shift) not in [2, 4]:
+            sys.exit("The --shift option can accept either 2 or 4 values only.")
 
     bam = openBam(args.bam)
     total = bam.mapped + bam.unmapped
@@ -253,11 +343,25 @@ def main(args=None):
     totalSeen = sum([x[2] for x in res])  # The * contig isn't queried
 
     tmpFiles = [x[4] for x in res]
-    arguments = ["-o", args.outFile]
-    arguments.extend(tmpFiles)  # [..., *someList] isn't available in python 2.7
-    pysam.samtools.cat(*arguments)
-    for tmpFile in tmpFiles:
-        os.unlink(tmpFile)
+    if not args.BED:
+        arguments = ["-o", args.outFile]
+        arguments.extend(tmpFiles)  # [..., *someList] isn't available in python 2.7
+        pysam.samtools.cat(*arguments)
+        for tmpFile in tmpFiles:
+            os.unlink(tmpFile)
+    else:
+        shiftConvertBED(args.outFile, tmpFiles, args)
+
+    if args.filteredReads:
+        tmpFiles = [x[5] for x in res]
+        if not args.BED:
+            arguments = ["-o", args.filteredReads]
+            arguments.extend(tmpFiles)  # [..., *someList] isn't available in python 2.7
+            pysam.samtools.cat(*arguments)
+            for tmpFile in tmpFiles:
+                os.unlink(tmpFile)
+        else:
+            shiftConvertBED(args.outFile, tmpFiles, args)
 
     if args.filterMetrics:
         sampleName = args.bam

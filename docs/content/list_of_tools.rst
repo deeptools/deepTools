@@ -39,7 +39,7 @@ The tools
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/estimateReadFiltering`   | information      | 1 or more BAM files                 | table of values                            | estimate the number of reads filtered from a BAM file or files                    |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
-|:doc:`tools/bamFilterReads`          | QC               | 1 BAM file                          | 1 filtered BAM file                        | filters a BAM file based on one or more criteria                                  |
+|:doc:`tools/alignmentSieve`          | QC               | 1 BAM file                          | 1 filtered BAM or BEDPE file               | filters a BAM file based on one or more criteria                                  |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/plotHeatmap`             | visualization    | computeMatrix output                | heatmap of read coverages                  | visualize the read coverages for genomic regions                                  |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
@@ -128,8 +128,8 @@ Tools for BAM and bigWig file processing
 """"""""""""""""""""""""""
 :doc:`tools/computeMatrix`
 """"""""""""""""""""""""""
-:doc:`tools/bamFilterReads`
-""""""""""""""""""""""""""
+:doc:`tools/alignmentSieve`
+"""""""""""""""""""""""""""
 
 Tools for QC
 ^^^^^^^^^^^^
