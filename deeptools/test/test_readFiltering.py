@@ -60,7 +60,7 @@ def test_sieve():
     outfile = '/tmp/test_sieve.bam'
     outfiltered = '/tmp/test_sieveFiltered.bam'
     outlog = '/tmp/test_sieve.log'
-    args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {} --filteredReads {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog, outfiltered).split()
+    args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {} --filteredOutReads {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog, outfiltered).split()
     sieve.main(args)
 
     _foo = open(outlog, 'r')

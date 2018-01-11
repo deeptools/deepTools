@@ -60,6 +60,10 @@
             --filterMetrics '$filterMetricsFile'
         #end if
 
+        #if $filteredOutReads:
+            --filteredOutReads '$outFileFiltered'
+        #end if
+
         #if $BEDconditional.BED == "yes":
             --BED
             #if str($BEDconditional.shift) != "":
@@ -113,13 +117,16 @@
         <expand macro="samFlags" />
         <expand macro="fragLength" />
         <expand macro="blacklist" />
-        <param argument="--filterMetrics" type="boolean" label="Save the total number of reads seen and remaining after filtering to a text file" help="" />
+        <param argument="--filterMetrics" type="boolean" label="Save the total number of reads seen and remaining after filtering to a text file?" help="" />
+        <param argument="--filteredOutReads" type="boolean" label="Save alignments NOT passing the filtering criteria?" help="" />
     </inputs>
     <outputs>
         <data format="tabular" name="filterMetricsFile" label="${tool.name} on ${on_string}: filtering metrics">
             <filter>filterMetrics is True</filter>
         </data>
-        <data format="bam" name="outFileFiltered" label="${tool.name} on ${on_string}: Filtered Out Alignments"/>
+        <data format="bam" name="outFileFiltered" label="${tool.name} on ${on_string}: Filtered Out Alignments">
+            <filter>filteredOutReads is True</filter>
+        </data>
         <data format="bam" name="outFile" label="${tool.name} on ${on_string}">
             <change_format>
                 <when input="BEDconditional.BED" value='yes' format='bed'/>

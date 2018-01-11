@@ -14,7 +14,7 @@ from deeptools.utilities import getTLen, smartLabels, getTempFileName
 def parseArguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="This tool filters alignments in a BAM/CRAM file according the the specified parameters. It can optionally output to BED format.",
+        description="This tool filters alignments in a BAM/CRAM file according the the specified parameters. It can optionally output to BEDPE format.",
         usage='Example usage: alignmentSieve.py -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt')
 
     required = parser.add_argument_group('Required arguments')
@@ -24,7 +24,7 @@ def parseArguments():
                           required=True)
 
     required.add_argument('--outFile', '-o',
-                          help='The file to write results to.')
+                          help='The file to write results to. These are the alignments or fragments that pass the filtering criteria.')
 
     general = parser.add_argument_group('General arguments')
     general.add_argument('--numberOfProcessors', '-p',
@@ -40,9 +40,9 @@ def parseArguments():
                          metavar="FILE.log",
                          help="The number of entries in total and filtered are saved to this file")
 
-    general.add_argument('--filteredReads',
+    general.add_argument('--filteredOutReads',
                          metavar="filtered.bam",
-                         help="If desired, all reads NOT passing the filtering criteria can be written to this file")
+                         help="If desired, all reads NOT passing the filtering criteria can be written to this file.")
 
     general.add_argument('--label', '-l',
                          metavar='sample1',
@@ -153,14 +153,14 @@ def filterWorker(arglist):
     if fh.is_cram:
         mode = 'wc'
         oname = getTempFileName(suffix='.cram')
-        if args.filteredReads:
+        if args.filteredOutReads:
             onameFiltered = getTempFileName(suffix='.cram')
     else:
         mode = 'wbu'
         oname = getTempFileName(suffix='.bam')
-        if args.filteredReads:
+        if args.filteredOutReads:
             onameFiltered = getTempFileName(suffix='.bam')
-    if not args.filteredReads:
+    if not args.filteredOutReads:
         onameFiltered = None
     ofh = pysam.AlignmentFile(oname, mode=mode, template=fh)
     if onameFiltered:
@@ -354,10 +354,10 @@ def main(args=None):
     else:
         shiftConvertBED(args.outFile, tmpFiles, chromDict, args)
 
-    if args.filteredReads:
+    if args.filteredOutReads:
         tmpFiles = [x[5] for x in res]
         if not args.BED:
-            arguments = ["-o", args.filteredReads]
+            arguments = ["-o", args.filteredOutReads]
             arguments.extend(tmpFiles)  # [..., *someList] isn't available in python 2.7
             pysam.samtools.cat(*arguments)
             for tmpFile in tmpFiles:

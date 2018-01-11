@@ -13,7 +13,7 @@ alignmentSieve
 Background
 ^^^^^^^^^^
 
-This tool estimates the number of alignments that would be excluded from one or more BAM files given a variety of filtering criteria. This is useful for estimating the duplication rate in an experiment or more generally seeing what the effect of various option choices will be in other deepTools tools without actually spending the time to run them.
+This tool filters alignments in a BAM/CRAM file according the the specified parameters. It can optionally output to BEDPE format, possibly with the fragment ends shifted in a custom manner.
 
 Usage example
 ^^^^^^^^^^^^^
@@ -27,7 +27,7 @@ Usage example
     --samFlagExclude 256 --ignoreDuplicates \
     -o filtered.bam --filterMetrics metrics.txt
 
-The filtered results are then written to the file specified by ``-o``. If you would like to store metrics about the number of reads seen and the number remaining after filtering, then specify the file for that with ``--filterMetrics``. An example metrics file is below:
+The alignments passing the filtering criteria are then written to the file specified by ``-o``. You can additionally save alignments **NOT** passing the filtering criteria with the ``-filteredOutReads`` If you would like to store metrics about the number of reads seen and the number remaining after filtering, then specify the file for that with ``--filterMetrics``. An example metrics file is below:
 
     #bamFilterReads --filterMetrics
     #File	Reads Remaining	Total Initial Reads
