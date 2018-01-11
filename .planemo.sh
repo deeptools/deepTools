@@ -19,9 +19,9 @@ python setup.py install
 
 #galaxy/wrapper/correctGCBias.xml \
 $planemo test --postgres --no_dependency_resolution --galaxy_root $temp_dir/galaxy \
+galaxy/wrapper/alignmentSieve.xml \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
-galaxy/wrapper/bamFilterReads.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
 galaxy/wrapper/bigwigCompare.xml \
 galaxy/wrapper/computeGCBias.xml \

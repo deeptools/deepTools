@@ -2,6 +2,7 @@
 import argparse
 import pysam
 import os
+import sys
 
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
@@ -285,7 +286,7 @@ def filterWorker(arglist):
     return tid, start, total, nFiltered, oname, onameFiltered
 
 
-def shiftConvertBED(oname, tmpFiles, args):
+def shiftConvertBED(oname, tmpFiles, chromDict, args):
     """
     Stores results in BEDPE format, which is:
     chromosome	frag_leftend	frag_rightend
@@ -310,8 +311,8 @@ def shiftConvertBED(oname, tmpFiles, args):
                         end += args.shift[1]
                 if start < 0:
                     start = 0
-                if end > fh.header.get_reference_length(b.reference_name):
-                    end = fh.header.get_reference_length(b.reference_name)
+                if end > chromDict[b.reference_name]:
+                    end = chromDict[b.reference_name]
                 if end - start < 1:
                     continue
                 ofile.write("{}\t{}\t{}\n".format(b.reference_name, start, end))
@@ -329,6 +330,7 @@ def main(args=None):
     bam = openBam(args.bam)
     total = bam.mapped + bam.unmapped
     chrom_sizes = [(x, y) for x, y in zip(bam.references, bam.lengths)]
+    chromDict = {x: y for x, y in zip(bam.references, bam.lengths)}
 
     # Filter, writing the results to a bunch of temporary files
     res = mapReduce([args],
@@ -350,7 +352,7 @@ def main(args=None):
         for tmpFile in tmpFiles:
             os.unlink(tmpFile)
     else:
-        shiftConvertBED(args.outFile, tmpFiles, args)
+        shiftConvertBED(args.outFile, tmpFiles, chromDict, args)
 
     if args.filteredReads:
         tmpFiles = [x[5] for x in res]
@@ -361,7 +363,7 @@ def main(args=None):
             for tmpFile in tmpFiles:
                 os.unlink(tmpFile)
         else:
-            shiftConvertBED(args.outFile, tmpFiles, args)
+            shiftConvertBED(args.outFile, tmpFiles, chromDict, args)
 
     if args.filterMetrics:
         sampleName = args.bam
