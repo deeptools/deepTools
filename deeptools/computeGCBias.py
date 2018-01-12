@@ -55,14 +55,8 @@ def getRequiredArgs():
                           'discarded. Also, if repetitive regions were not '
                           'included in the mapping of reads, the effective '
                           'genome size needs to be adjusted accordingly. '
-                          'Common values are: mm9: 2150570000, '
-                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                          'See Table 2 of '
-                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                          'for several effective genome sizes. This value is '
-                          'needed to detect enriched regions that, if not '
-                          'discarded can bias the results.',
+                          'A table of values is available here: '
+                          'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                           default=None,
                           type=int,
                           required=True)

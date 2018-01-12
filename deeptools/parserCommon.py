@@ -207,16 +207,13 @@ def normalization_options():
 
     group.add_argument('--effectiveGenomeSize',
                        help='The effective genome size is the portion '
-                       'of the genome that is mappable. Large fractions of '
-                       'the genome are stretches of NNNN that should be '
-                       'discarded. Also, if repetitive regions were not '
-                       'included in the mapping of reads, the effective '
-                       'genome size needs to be adjusted accordingly. '
-                       'Common values are: mm9: 2,150,570,000; '
-                       'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
-                       'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                       'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                       'for several effective genome sizes.',
+                      'of the genome that is mappable. Large fractions of '
+                      'the genome are stretches of NNNN that should be '
+                      'discarded. Also, if repetitive regions were not '
+                      'included in the mapping of reads, the effective '
+                      'genome size needs to be adjusted accordingly. '
+                      'A table of values is available here: '
+                      'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                        default=None,
                        type=int,
                        required=False)
