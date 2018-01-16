@@ -207,13 +207,13 @@ def normalization_options():
 
     group.add_argument('--effectiveGenomeSize',
                        help='The effective genome size is the portion '
-                      'of the genome that is mappable. Large fractions of '
-                      'the genome are stretches of NNNN that should be '
-                      'discarded. Also, if repetitive regions were not '
-                      'included in the mapping of reads, the effective '
-                      'genome size needs to be adjusted accordingly. '
-                      'A table of values is available here: '
-                      'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
+                       'of the genome that is mappable. Large fractions of '
+                       'the genome are stretches of NNNN that should be '
+                       'discarded. Also, if repetitive regions were not '
+                       'included in the mapping of reads, the effective '
+                       'genome size needs to be adjusted accordingly. '
+                       'A table of values is available here: '
+                       'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                        default=None,
                        type=int,
                        required=False)
