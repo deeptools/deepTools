@@ -519,7 +519,7 @@ def plotMatrix(hm, outFileName,
                             _len = sum([x[1] - x[0] for x in ind_reg[1]])
                         _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
                     foo.append(_reg_len)
-                 regions_length_in_bins[idx] = foo
+                regions_length_in_bins[idx] = foo
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
