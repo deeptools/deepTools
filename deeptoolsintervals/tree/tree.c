@@ -201,6 +201,12 @@ static PyObject *pyIsTree(pyGTFtree_t *self, PyObject *args) {
     Py_RETURN_FALSE;
 }
 
+static PyObject *pyHasOverlaps(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    if(hasOverlaps(t)) Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+
 static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
     GTFtree *t = self->t;
     char *chrom = NULL, *name = NULL, *transcript_id = NULL, strandChar;
