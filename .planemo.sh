@@ -9,6 +9,7 @@ conda create -y --name gxtest numpy bx-python pysam
 source activate gxtest
 git clone --depth 1 https://github.com/galaxyproject/galaxy.git
 cd galaxy
+make client
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 # reset what's available in conda
