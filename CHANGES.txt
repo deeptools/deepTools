@@ -30,6 +30,7 @@
  * `plotPCA --outFileNameData` and `plotCorrelation --outFileCorMatrix` now produce files with a single comment line (i.e., '#plotPCA --outFileNameData' and '#plotCorrelation --outFileCorMatrix'). These can then be more easily parsed by programs like MultiQC.
  * All functions that accept file labels (e.g., via a `--samplesLabel` option) now also have a `--smartLabels` option. This will result in labels comprised of the file name, after stripping any path and the file extension. (issue #627)
  * The `-o` option can now be universally used to indicate the file to save a tool's primary output. Previously, some tools use `-o`, some used `-out` and still others used things like `-hist` or `-freq`. This caused annoyance due to having to always remember the appropriate switch. Hopefully standardizing to `-o` will alleviate this. (issue #640)
+ * Using a --blackListFileName with overlapping regions will typically now cause the various deepTools programs to stop. This is to ensure that resulting scale factors are correct (issue #649)
 
 2.5.4
 

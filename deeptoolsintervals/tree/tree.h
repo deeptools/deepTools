@@ -22,6 +22,7 @@ static PyObject *pyCountEntries(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyFindOverlappingFeatures(pyGTFtree_t *self, PyObject *args);
 static PyObject *pyIsTree(pyGTFtree_t *self, PyObject *args);
+static PyObject *pyHasOverlaps(pyGTFtree_t *self, PyObject *args);
 static void pyGTFDealloc(pyGTFtree_t *self);
 
 static PyMethodDef treeMethods[] = {
@@ -39,6 +40,8 @@ static PyMethodDef treeMethods[] = {
 "Count the number of entries in a GTFtree\n"},
     {"isTree", (PyCFunction) pyIsTree, METH_VARARGS,
 "Return True if the object is a tree\n"},
+    {"hasOverlaps", (PyCFunction) pyHasOverlaps, METH_VARARGS,
+"Return True if ANY of the entries in the tree overlap (ignoring strand).\n"},
     {"findOverlaps", (PyCFunction) pyFindOverlaps, METH_VARARGS,
 "Find overlapping intervals\n"},
     {"findOverlappingFeatures", (PyCFunction) pyFindOverlappingFeatures, METH_VARARGS,

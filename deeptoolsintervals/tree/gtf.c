@@ -539,6 +539,49 @@ void sortGTF(GTFtree *t) {
     t->balanced = 1;
 }
 
+int nodeHasOverlaps(GTFnode *node, int firstNode, uint32_t *lpos) {
+    int rv = 0;
+    GTFentry *e = node->starts;
+
+    // Go down the left
+    if(node->left) {
+        rv = nodeHasOverlaps(node->left, firstNode, lpos);
+        if(rv) return rv;
+    } else if(firstNode) {
+        //This only has to be specially set on the left-most node
+        *lpos = e->end;
+    }
+
+    // Test this node
+    e = e->right;
+    while(e) {
+        if(e->start < *lpos) return 1;
+        *lpos = e->end;
+        e = e->right;
+    }
+
+    // Go down the right
+    if(node->right) return nodeHasOverlaps(node->right, 0, lpos);
+    return rv;
+}
+
+int hasOverlapsChrom(GTFchrom *chrom) {
+    uint32_t lpos;
+    if(chrom->n_entries < 2) return 0;
+    return nodeHasOverlaps((GTFnode*) chrom->tree, 1, &lpos);
+}
+
+// Given a GTF tree, returning 1 if ANY of the entries overlap with each other, 0 otherwise
+int hasOverlaps(GTFtree *t) {
+    int32_t i;
+    int rv = 0;
+    for(i=0; i<t->n_targets; i++) {
+        rv = hasOverlapsChrom(t->chroms[i]);
+        if(rv) return rv;
+    }
+    return rv;
+}
+
 /*******************************************************************************
 *
 * Misc. functions
