@@ -390,6 +390,9 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
         chromLens[chrom] = int(_len)
 
     bl = GTF(blackListFileName)
+    if bl.hasOverlaps():
+        sys.exit("Your blacklist file(s) has (have) regions that overlap. Proceeding with such a file would result in deepTools incorrectly calculating scaling factors. As such, you MUST fix this issue before being able to proceed.\n")
+
     regions = []
     for chrom in bl.chroms:
         if (not chroms_to_ignore or chrom not in chroms_to_ignore) and chrom in chromLens:
