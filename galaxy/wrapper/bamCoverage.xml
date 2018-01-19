@@ -171,6 +171,7 @@
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result2.bw" ftype="bigwig" />
         </test>
@@ -178,6 +179,7 @@
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result3.bg" ftype="bedgraph" />
         </test>
@@ -185,6 +187,7 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bw" ftype="bigwig" />
         </test>
@@ -192,6 +195,7 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="yes" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph" />
         </test>
@@ -200,6 +204,7 @@
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="filterRNAstrand" value="reverse" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
         </test>
@@ -211,6 +216,7 @@
             <param name="Offset" value="-4 -1" />
             <param name="doExtend" value="yes" />
             <param name="minMappingQuality" value="0" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="type" value="no" />
             <output name="outFileName" file="bamCoverage_result6.bw" ftype="bigwig" />
         </test>
