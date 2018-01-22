@@ -399,7 +399,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
     if hasOverlaps:
         sys.exit("Your blacklist file(s) has (have) regions that overlap. Proceeding with such a file would result in deepTools incorrectly calculating scaling factors. As such, you MUST fix this issue before being able to proceed.\n")
     if minOverlap < 1000:
-        sys.write("WARNING: The minimum distance between intervals in your blacklist is {}. Please note that using a poorly formed blacklist (with nearly adjacent regions) MAY cause normalization problems in some circumstances.\n".format(minOverlaps))
+        sys.write("WARNING: The minimum distance between intervals in your blacklist is {}. Please note that using a poorly formed blacklist (with nearly adjacent regions) MAY cause normalization problems in some circumstances.\n".format(minOverlap))
 
     regions = []
     for chrom in bl.chroms:
