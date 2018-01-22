@@ -726,3 +726,25 @@ class GTF(object):
                     break
 
         return overlaps
+
+    def hasOverlaps(self, returnDistance=False):
+        """
+        By default, returns True if ANY intervals in the tree overlap each other, regardless of strand, and False otherwise.
+
+        If returnDistance is True, then a tuple is returned instead. The first value is as described above, the second is the minimum distance between intervals (0 on an overlap).
+
+        >>> from deeptoolsintervals import parse
+        >>> from os.path import dirname
+        >>> gtf = parse.GTF(["{0}/test/GRCh38.84.bed".format(dirname(parse.__file__))])
+        >>> assert(gtf.hasOverlaps())
+        >>> gtf = parse.GTF(["{0}/test/GRCh38.84.bed".format(dirname(parse.__file__))])
+        >>> assert(gtf.hasOverlaps(returnDistance=True) == (True, 0))
+        >>> gtf = parse.GTF(["{0}/test/noOverlaps.bed".format(dirname(parse.__file__))])
+        >>> assert(not gtf.hasOverlaps())
+        >>> gtf = parse.GTF(["{0}/test/noOverlaps.bed".format(dirname(parse.__file__))])
+        >>> assert(gtf.hasOverlaps(returnDistance=True) == (False, 9))
+        """
+        rv = self.tree.hasOverlaps()
+        if returnDistance:
+            return rv
+        return rv[0]
