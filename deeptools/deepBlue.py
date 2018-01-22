@@ -121,8 +121,8 @@ class deepBlue(object):
         Connect to the requested deepblue server with the given user key and request the specifed sample from it.
 
         >>> sample = "S002R5H1.ERX300721.H3K4me3.bwa.GRCh38.20150528.bedgraph"
-        >>> db = deepBlue(sample)
-        >>> assert(db.chroms("chr1") == 248956422)
+        >>> db = deepBlue(sample) # doctest: +SKIP
+        >>> assert(db.chroms("chr1") == 248956422) # doctest: +SKIP
         """
         self.sample = sample
         self.url = url

@@ -41,7 +41,7 @@ static PyMethodDef treeMethods[] = {
     {"isTree", (PyCFunction) pyIsTree, METH_VARARGS,
 "Return True if the object is a tree\n"},
     {"hasOverlaps", (PyCFunction) pyHasOverlaps, METH_VARARGS,
-"Return True if ANY of the entries in the tree overlap (ignoring strand).\n"},
+"Returns a tuple with the first value True if ANY of the entries in the tree overlap (ignoring strand) and False otherwise. The second value in the tuple is the minimum distance between intervals (0 on overlap).\n"},
     {"findOverlaps", (PyCFunction) pyFindOverlaps, METH_VARARGS,
 "Find overlapping intervals\n"},
     {"findOverlappingFeatures", (PyCFunction) pyFindOverlappingFeatures, METH_VARARGS,

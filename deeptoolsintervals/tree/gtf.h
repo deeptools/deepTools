@@ -139,7 +139,7 @@ void printGTFvineStart(GTFentry *e, const char *chrom, const char *str);
 void printGTFvineStartR(GTFentry *e, const char *chrom, const char *str);
 int addGTFentry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, char *transcriptID, uint32_t labelIDX, double score);
 int addEnrichmententry(GTFtree *t, char *chrom, uint32_t start, uint32_t end, uint8_t strand, double score, char *feature);
-int hasOverlaps(GTFtree *t);
+int hasOverlaps(GTFtree *t, uint32_t *minOverlap);
 
 //hashTable.c
 hashTable *initHT(uint64_t size);
