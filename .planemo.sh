@@ -2,7 +2,7 @@
 blah=`mktemp -d`
 conda config --add channels conda-forge
 conda config --add channels bioconda
-/home/travis/build/fidelram/deepTools/foo/bin/planemo database_create galaxy
+/home/travis/build/deeptools/deepTools/foo/bin/planemo database_create galaxy
 
 git clone --depth 1 --single-branch --branch release_16.10 https://github.com/galaxyproject/galaxy.git clone
 cd clone
@@ -15,7 +15,7 @@ sed -i '7d' lib/galaxy/dependencies/pinned-requirements.txt
 cd ..
 pip install .
 #galaxy/wrapper/correctGCBias.xml \
-/home/travis/build/fidelram/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --no_conda_auto_install --no_conda_auto_init \
+/home/travis/build/deeptools/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --no_conda_auto_install --no_conda_auto_init \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
