@@ -69,7 +69,7 @@ def parseArguments():
 
     bed.add_argument('--ATACshift',
                      action='store_true',
-                     help='Shift the produced BEDPE regions as required for ATAC-seq. Note that only a single read from a pair will be used.')
+                     help='Shift the produced BEDPE regions as required for ATAC-seq. Note that only a single read from a pair will be used. This is equivalent to --shift 4 -5 5 -4.')
 
     bed.add_argument('--shift',
                      nargs='+',
@@ -326,6 +326,8 @@ def main(args=None):
     if args.shift:
         if len(args.shift) not in [2, 4]:
             sys.exit("The --shift option can accept either 2 or 4 values only.")
+    else if args.ATACshift:
+        args.shift = [4, -5, 5, -4]
 
     bam = openBam(args.bam)
     total = bam.mapped + bam.unmapped
