@@ -1,3 +1,7 @@
+2.5.5
+
+ * Updated blacklist handling such that an error is thrown on overlapping regions.
+
 2.5.4
 
  * Fixed issue #612, which only occurs when unaligned reads have a position assigned to them.
