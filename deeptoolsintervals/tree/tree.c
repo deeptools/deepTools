@@ -201,6 +201,38 @@ static PyObject *pyIsTree(pyGTFtree_t *self, PyObject *args) {
     Py_RETURN_FALSE;
 }
 
+static PyObject *pyHasOverlaps(pyGTFtree_t *self, PyObject *args) {
+    GTFtree *t = self->t;
+    int rv;
+    uint32_t minDistance = (uint32_t) -1;
+    unsigned long long ominDistance;
+    PyObject *otuple = NULL, *oval = NULL;
+
+    rv = hasOverlaps(t, &minDistance);
+    ominDistance = minDistance; // ominDistance should have at least as much space as minDistance
+    otuple = PyTuple_New(2);
+    if(!otuple) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not allocate space for a tuple!\n");
+        return NULL;
+    }
+    oval = PyLong_FromUnsignedLongLong(ominDistance);
+    if(!oval) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not allocate space for a single integer!\n");
+        return NULL;
+    }
+
+    if(rv) {
+        Py_INCREF(Py_True);
+        PyTuple_SET_ITEM(otuple, 0, Py_True);
+    } else {
+        Py_INCREF(Py_False);
+        PyTuple_SET_ITEM(otuple, 0, Py_False);
+    }
+    PyTuple_SetItem(otuple, 1, oval);
+
+    return otuple;
+}
+
 static PyObject *pyFindOverlaps(pyGTFtree_t *self, PyObject *args) {
     GTFtree *t = self->t;
     char *chrom = NULL, *name = NULL, *transcript_id = NULL, strandChar;
