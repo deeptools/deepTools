@@ -20,7 +20,7 @@ conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit planemo
 python setup.py install
 
 #galaxy/wrapper/correctGCBias.xml \
-/home/travis/build/deeptools/deepTools/foo/bin/planemo test --galaxy_root clone --test_data galaxy/wrapper/test-data/ --skip_venv --postgres --no_conda_auto_install --no_conda_auto_init \
+$planemo test --postgres --no_dependency_resolution --galaxy_root $temp_dir/galaxy \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \
