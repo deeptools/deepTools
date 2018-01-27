@@ -1,10 +1,10 @@
 language: c
-env:
-  - TRAVIS_PYTHON_VERSION=2.7
-  - TRAVIS_PYTHON_VERSION=3.6
-os:
-  - linux
-  - osx
+#env:
+#  - TRAVIS_PYTHON_VERSION=2.7
+#  - TRAVIS_PYTHON_VERSION=3.6
+#os:
+#  - linux
+#  - osx
 jobs:
   include:
     - stage: galaxy
@@ -14,8 +14,7 @@ jobs:
 
 # Setup anaconda
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.6" ]] ; then pip install virtualenv --user ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.6" ]] ; then virtualenv foo; source foo/bin/activate; pip install planemo ; deactivate ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.6" ]] ; then python3 -m venv foo; source foo/bin/activate; pip3 install planemo ; deactivate ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]] ; then curl https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -o miniconda.sh ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.6" ]] ; then curl https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" && "$TRAVIS_PYTHON_VERSION" == "2.7" ]] ; then curl https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -o miniconda.sh ; fi
