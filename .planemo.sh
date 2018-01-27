@@ -6,7 +6,7 @@ temp_dir=`mktemp -d`
 cd $temp_dir
 conda config --add channels conda-forge
 conda config --add channels bioconda
-conda create -y --name gxtest numpy bx-python pysam
+conda create -y --name gxtest numpy pysam
 source activate gxtest
 git clone --depth 1 https://github.com/galaxyproject/galaxy.git
 cd galaxy
@@ -15,8 +15,8 @@ make client
 cd ..
 # reset what's available in conda
 cd $owd
-conda install --yes -c conda-forge python=3.6 numpy scipy matplotlib==2.1.0 plotly==2.0.12
-conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit planemo
+conda install --yes -c conda-forge numpy scipy matplotlib==2.1.0 plotly==2.0.12
+conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit
 python setup.py install
 
 #galaxy/wrapper/correctGCBias.xml \
