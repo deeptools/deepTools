@@ -83,7 +83,7 @@ class Correlation:
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
 
-        self.labels = _ma['labels']
+        self.labels = self.labels = list(map(str, _ma['labels']))
 
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"
