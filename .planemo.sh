@@ -15,7 +15,7 @@ make client
 cd ..
 # reset what's available in conda
 cd $owd
-conda install --yes -c conda-forge python=2.7 numpy scipy matplotlib==2.1.0 nose flake8 plotly==2.0.12
+conda install --yes -c conda-forge python=3.6 numpy scipy matplotlib==2.1.0 nose flake8 plotly==2.0.12
 conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit planemo
 python setup.py install
 
