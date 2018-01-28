@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 planemo=./foo/bin/planemo
 owd=`pwd`
 temp_dir=`mktemp -d`
