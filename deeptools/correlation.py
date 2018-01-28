@@ -12,6 +12,8 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
+from deeptools.utilities import toString
+
 
 old_settings = np.seterr(all='ignore')
 
@@ -83,7 +85,7 @@ class Correlation:
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
 
-        self.labels = _ma['labels']
+        self.labels = list(map(toString, _ma['labels']))
 
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"
