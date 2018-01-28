@@ -6,11 +6,11 @@ Sample size: 3
 Fragment lengths:
 Min.: 241.0
 1st Qu.: 241.5
-Mean: 244.666666667
+Mean: 244.66666666666666
 Median: 242.0
 3rd Qu.: 246.5
 Max.: 251.0
-Std: 4.49691252108
+Std: 4.496912521077347
 MAD: 1.0
 Len. 10%: 241.2
 Len. 20%: 241.4

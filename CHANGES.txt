@@ -32,6 +32,10 @@
  * The `-o` option can now be universally used to indicate the file to save a tool's primary output. Previously, some tools use `-o`, some used `-out` and still others used things like `-hist` or `-freq`. This caused annoyance due to having to always remember the appropriate switch. Hopefully standardizing to `-o` will alleviate this. (issue #640)
  * Using a --blackListFileName with overlapping regions will typically now cause the various deepTools programs to stop. This is to ensure that resulting scale factors are correct (issue #649)
 
+2.5.6
+
+ * Fixed a bug where deepTools in python3 can't handle npz file labels created under python 2.
+
 2.5.5
 
  * Updated blacklist handling such that an error is thrown on overlapping regions.
