@@ -62,19 +62,19 @@ def parseArguments():
     general.add_argument('--version', action='version',
                          version='%(prog)s {}'.format(__version__))
 
-    bed = parser.add_argument_group('BED arguments')
-    bed.add_argument('--BED',
-                     action='store_true',
-                     help='Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format.')
+    general.add_argument('--shift',
+                         nargs='+',
+                         type=int,
+                         help='Shift the left and right end of a read (for BAM files) or a fragment (for BED files). A positive value shift an end to the right (on the + strand) and a negative value shifts a fragment to the left. Either 2 or 4 integers can be provided. For example, "2 -3" will shift the left-most fragment end two bases to the right and the right-most end 3 bases to the left. If 4 integers are provided, then the first and last two refer to fragments whose read 1 is on the left or right, respectively. Consequently, it is possible to take strand into consideration for strand-specific protocols. A fragment whose length falls below 1 due to shifting will not be written to the output. See the online documentation for graphical examples.')
 
-    bed.add_argument('--ATACshift',
-                     action='store_true',
-                     help='Shift the produced BEDPE regions as required for ATAC-seq. Note that only a single read from a pair will be used. This is equivalent to --shift 4 -5 5 -4.')
+    general.add_argument('--ATACshift',
+                         action='store_true',
+                         help='Shift the produced BEDPE regions as required for ATAC-seq. Note that only a single read from a pair will be used. This is equivalent to --shift 4 -5 5 -4.')
 
-    bed.add_argument('--shift',
-                     nargs='+',
-                     type=int,
-                     help='Shift the left and right end of a fragment. A positive value shift an end to the right (on the + strand) and a negative value shifts a fragment to the left. Either 2 or 4 integers can be provided. For example, "2 -3" will shift the left-most fragment end two bases to the right and the right-most end 3 bases to the left. If 4 integers are provided, then the first and last two refer to fragments whose read 1 is on the left or right, respectively. Consequently, it is possible to take strand into consideration for strand-specific protocols. A fragment whose length falls below 1 due to shifting will not be written to the output. See the online documentation for graphical examples.')
+    output = parser.add_argument_group('Output arguments')
+    output.add_argument('--BED',
+                        action='store_true',
+                        help='Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format.')
 
     filtering = parser.add_argument_group('Optional arguments')
 
@@ -146,8 +146,55 @@ def parseArguments():
     return parser
 
 
+def shiftRead(b, chromDict, args):
+    tLen = getTLen(b)
+    start = b.pos
+    end = b.query_alignment_end
+    nextStart = b.next_reference_start
+    if b.is_reverse and not b.is_read2:
+        end -= args.shift[2]
+        deltaTLen = args.shift[0] + args.shift[1]
+    elif b.is_reverse and b.is_read2:
+        end += args.shift[1]
+        deltaTLen = args.shift[2] + args.shift[3]
+    elif not b.is_reverse and not b.is_read2:
+        start += args.shift[0]
+        deltaTLen = args.shift[0] + args.shift[1]
+    else:
+        start -= args.shift[3]
+        deltaTLen = args.shift[2] + args.shift[3]
+
+    # Sanity check
+    if end - start < 1:
+        if b.is_reverse:
+            start = end - 1
+        else:
+            end = start + 1
+    if start < 0:
+        start = 0
+    if end > chromDict[b.reference_name]:
+        end = chromDict[b.reference_name]
+    if end - start < 1:
+        return None
+
+    # create a new read
+    b2 = pysam.AlignedSegment()
+    b2.query_name = b.query_name
+    b2.flag = b.flag
+    b2.reference_id = b.reference_id
+    b2.reference_start = start
+    b2.mapping_quality = b.mapping_quality
+    b2.cigar = ((0, end - start))  # Returned cigar is only matches
+    if tLen < 0:
+        b2.template_length = tLen - deltaTLen
+    else:
+        b2.template_length = tLen + deltaTLen
+
+    return b2
+
+
 def filterWorker(arglist):
-    chrom, start, end, args = arglist
+    chrom, start, end, args, chromDict = arglist
     fh = openBam(args.bam)
 
     if fh.is_cram:
@@ -273,6 +320,11 @@ def filterWorker(arglist):
                             ofiltered.write(read)
                         continue
 
+        if args.shift:
+            read = shiftRead(read, chromDict, args)
+            if not read:
+                continue
+
         # Read survived filtering
         ofh.write(read)
 
@@ -286,7 +338,7 @@ def filterWorker(arglist):
     return tid, start, total, nFiltered, oname, onameFiltered
 
 
-def shiftConvertBED(oname, tmpFiles, chromDict, args):
+def convertBED(oname, tmpFiles, chromDict):
     """
     Stores results in BEDPE format, which is:
     chromosome	frag_leftend	frag_rightend
@@ -302,15 +354,6 @@ def shiftConvertBED(oname, tmpFiles, chromDict, args):
             if tLen > 0:
                 start = b.pos
                 end = start + tLen
-                if args.shift:
-                    if b.is_read2 and len(args.shift) == 4:
-                        start -= args.shift[3]
-                        end -= args.shift[2]
-                    else:
-                        start += args.shift[0]
-                        end += args.shift[1]
-                if start < 0:
-                    start = 0
                 if end > chromDict[b.reference_name]:
                     end = chromDict[b.reference_name]
                 if end - start < 1:
@@ -335,7 +378,7 @@ def main(args=None):
     chromDict = {x: y for x, y in zip(bam.references, bam.lengths)}
 
     # Filter, writing the results to a bunch of temporary files
-    res = mapReduce([args],
+    res = mapReduce([args, chromDict],
                     filterWorker,
                     chrom_sizes,
                     blackListFileName=args.blackListFileName,
@@ -354,7 +397,7 @@ def main(args=None):
         for tmpFile in tmpFiles:
             os.unlink(tmpFile)
     else:
-        shiftConvertBED(args.outFile, tmpFiles, chromDict, args)
+        convertBED(args.outFile, tmpFiles, chromDict)
 
     if args.filteredOutReads:
         tmpFiles = [x[5] for x in res]
