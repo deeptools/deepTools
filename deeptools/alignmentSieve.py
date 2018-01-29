@@ -369,7 +369,7 @@ def main(args=None):
     if args.shift:
         if len(args.shift) not in [2, 4]:
             sys.exit("The --shift option can accept either 2 or 4 values only.")
-    else if args.ATACshift:
+    elif args.ATACshift:
         args.shift = [4, -5, 5, -4]
 
     bam = openBam(args.bam)
