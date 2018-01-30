@@ -147,9 +147,9 @@ def parseArguments():
 
 
 def shiftRead(b, chromDict, args):
-    tLen = getTLen(b)
+    tLen = getTLen(b, notAbs=True)
     start = b.pos
-    end = b.query_alignment_end
+    end = start + b.query_alignment_end
     nextStart = b.next_reference_start
     if b.is_reverse and not b.is_read2:
         end -= args.shift[2]
@@ -184,11 +184,18 @@ def shiftRead(b, chromDict, args):
     b2.reference_id = b.reference_id
     b2.reference_start = start
     b2.mapping_quality = b.mapping_quality
-    b2.cigar = ((0, end - start))  # Returned cigar is only matches
+    b2.cigar = ((0, end - start),)  # Returned cigar is only matches
     if tLen < 0:
         b2.template_length = tLen - deltaTLen
     else:
         b2.template_length = tLen + deltaTLen
+    b2.next_reference_id = b.next_reference_id
+    b2.next_reference_start = b.next_reference_start
+    if b.is_proper_pair:
+        if not b2.is_read2 and b2.is_reverse: # r1r
+            b2.next_reference_start -= args.shift[3]
+        elif b2.is_read2 and not b2.is_reverse: # r2r
+            b2.next_reference_start += args.shift[0]
 
     return b2
 
