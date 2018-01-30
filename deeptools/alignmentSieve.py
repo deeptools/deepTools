@@ -150,7 +150,6 @@ def shiftRead(b, chromDict, args):
     tLen = getTLen(b, notAbs=True)
     start = b.pos
     end = start + b.query_alignment_end
-    nextStart = b.next_reference_start
     if b.is_reverse and not b.is_read2:
         end -= args.shift[2]
         deltaTLen = args.shift[0] + args.shift[1]
@@ -192,9 +191,9 @@ def shiftRead(b, chromDict, args):
     b2.next_reference_id = b.next_reference_id
     b2.next_reference_start = b.next_reference_start
     if b.is_proper_pair:
-        if not b2.is_read2 and b2.is_reverse: # r1r
+        if not b2.is_read2 and b2.is_reverse:
             b2.next_reference_start -= args.shift[3]
-        elif b2.is_read2 and not b2.is_reverse: # r2r
+        elif b2.is_read2 and not b2.is_reverse:
             b2.next_reference_start += args.shift[0]
 
     return b2
@@ -415,7 +414,7 @@ def main(args=None):
             for tmpFile in tmpFiles:
                 os.unlink(tmpFile)
         else:
-            shiftConvertBED(args.outFile, tmpFiles, chromDict, args)
+            convertBED(args.outFile, tmpFiles, chromDict, args)
 
     if args.filterMetrics:
         sampleName = args.bam
