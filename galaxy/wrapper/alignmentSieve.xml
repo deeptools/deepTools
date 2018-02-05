@@ -18,8 +18,6 @@
 
         --label '$label'
 
-        -o '$outFile'
-
         #if str($filterRNAstrand) != 'no':
             --filterRNAstrand '$filterRNAstrand'
         #end if
@@ -64,46 +62,42 @@
             --filteredOutReads '$outFileFiltered'
         #end if
 
-        #if $BEDconditional.BED == "yes":
+        #if str($shift) != "":
+            #set shifts = " ".join(["'{}'".format(x) for x in $shift.split(" ")])
+            --shift $shifts
+        #elif $ATACshift:
+            --ATACshift
+        #end if
+        #if $BED:
             --BED
-            #if str($BEDconditional.shift) != "":
-                #set shifts = " ".join(["'{}'".format(x) for x in $BEDconditional.shift.split(" ")])
-                --shift $shifts
-            #end if
-            #if $BEDconditional.ATACshift:
-                --ATACshift
-            #end if
+            -o '$outFile'
+        #elif str($shift) != "":
+            -o foo.bam &&
+            samtools sort -o '$outFile' -T foo.tmp -@ "\${GALAXY_SLOTS:-4}" foo.bam &&
+            rm foo.bam
+        #else:
+            -o '$outFile'
         #end if
 ]]>
     </command>
 
     <inputs>
         <param name="bamfile" format="bam" type="data" label="BAM file" />
-        <conditional name="BEDconditional">
-            <param name="BED" argument="--BED" type="select" label="Output in BEDPE format?"
-                help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format.">
-                <option value="no">No</option>
-                <option value="yes">Yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <param argument="--shift" type="text" label="Amount to shift fragments" value=""
-                    help="Shift the left and right end of a fragment. A positive
-                          value shift an end to the right (on the + strand) and
-                          a negative value shifts a fragment to the left. Either
-                          2 or 4 integers can be provided. For example, '2 -3'
-                          will shift the left-most fragment end two bases to the
-                          right and the right-most end 3 bases to the left. If 4
-                          integers are provided, then the first and last two
-                          refer to fragments whose read 1 is on the left or
-                          right, respectively. Consequently, it is possible to
-                          take strand into consideration for strand-specific
-                          protocols. A fragment whose length falls below 1 due
-                          to shifting will not be written to the output. See the
-                          online documentation for graphical examples." />
-                <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq" />
-            </when>
-        </conditional>
+        <param name="BED" argument="--BED" type="boolean" label="Output in BEDPE format?"
+            help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format." />
+        <param argument="--shift" type="text" label="Amount to shift fragments" value=""
+            help="Shift the left and right end of a fragment. A positive
+                  value shift an end to the right (on the + strand) and
+                  a negative value shifts a fragment to the left. Either
+                  2 or 4 integers can be provided. For example, '2 -3'
+                  will shift the left-most fragment end two bases to the
+                  right and the right-most end 3 bases to the left. If 4
+                  integers are provided, then the first and last two
+                  refer to fragments whose read 1 is on the left or
+                  right, respectively. Consequently, it is possible to
+                  take strand into consideration for strand-specific
+                  protocols. Note that only properly paired reads are considered."/>
+        <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq" />
         <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
             help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                   Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
@@ -129,7 +123,7 @@
         </data>
         <data format="bam" name="outFile" label="${tool.name} on ${on_string}">
             <change_format>
-                <when input="BEDconditional.BED" value='yes' format='bed'/>
+                <when input="BED" value='true' format='bed'/>
             </change_format>
         </data>
     </outputs>
@@ -144,9 +138,15 @@
         <test>
             <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
             <param name="minMappingQuality" value="10" />
-            <param name="BEDconditional|BED" value="yes" />
-            <param name="BEDconditional|shift" value="1 -2 3 -4" />
+            <param name="BED" value="yes" />
+            <param name="shift" value="1 -2 3 -4" />
             <output name="outFile" file="alignmentSieve.bed" ftype="bed" />
+        </test>
+        <test>
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
+            <param name="minMappingQuality" value="10" />
+            <param name="shift" value="1 -2 3 -4" />
+            <output name="outFile" file="alignmentSieve2.bam" ftype="bam" />
         </test>
     </tests>
 
