@@ -157,9 +157,7 @@ def test_sieve_BED_shift():
                 'chr2\t5001118\t5001410\n',
                 'chr2\t5001119\t5001266\n',
                 'chr2\t5001119\t5001266\n',
-                'chr2\t5001230\t5001600\n',
-                'chr2\t5001492\t5001525\n',
-                'chr2\t5001701\t5001734\n']
+                'chr2\t5001230\t5001600\n']
 
     assert_equal(resp, expected)
     unlink(outfile)

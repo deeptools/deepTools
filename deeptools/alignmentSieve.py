@@ -65,11 +65,11 @@ def parseArguments():
     general.add_argument('--shift',
                          nargs='+',
                          type=int,
-                         help='Shift the left and right end of a read (for BAM files) or a fragment (for BED files). A positive value shift an end to the right (on the + strand) and a negative value shifts a fragment to the left. Either 2 or 4 integers can be provided. For example, "2 -3" will shift the left-most fragment end two bases to the right and the right-most end 3 bases to the left. If 4 integers are provided, then the first and last two refer to fragments whose read 1 is on the left or right, respectively. Consequently, it is possible to take strand into consideration for strand-specific protocols. A fragment whose length falls below 1 due to shifting will not be written to the output. See the online documentation for graphical examples.')
+                         help='Shift the left and right end of a read (for BAM files) or a fragment (for BED files). A positive value shift an end to the right (on the + strand) and a negative value shifts a fragment to the left. Either 2 or 4 integers can be provided. For example, "2 -3" will shift the left-most fragment end two bases to the right and the right-most end 3 bases to the left. If 4 integers are provided, then the first and last two refer to fragments whose read 1 is on the left or right, respectively. Consequently, it is possible to take strand into consideration for strand-specific protocols. A fragment whose length falls below 1 due to shifting will not be written to the output. See the online documentation for graphical examples. Note that non-properly-paired reads will be filtered.')
 
     general.add_argument('--ATACshift',
                          action='store_true',
-                         help='Shift the produced BEDPE regions as required for ATAC-seq. Note that only a single read from a pair will be used. This is equivalent to --shift 4 -5 5 -4.')
+                         help='Shift the produced BAM file or BEDPE regions as required for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
@@ -147,6 +147,8 @@ def parseArguments():
 
 
 def shiftRead(b, chromDict, args):
+    if not b.is_proper_pair:
+        return None
     tLen = getTLen(b, notAbs=True)
     start = b.pos
     end = start + b.query_alignment_end
@@ -375,6 +377,8 @@ def main(args=None):
     if args.shift:
         if len(args.shift) not in [2, 4]:
             sys.exit("The --shift option can accept either 2 or 4 values only.")
+        if len(args.shift) == 2:
+            args.shift.extend([-args.shift[1], -args.shift[0]])
     elif args.ATACshift:
         args.shift = [4, -5, 5, -4]
 
