@@ -152,16 +152,16 @@ def shiftRead(b, chromDict, args):
     end = start + b.query_alignment_end
     if b.is_reverse and not b.is_read2:
         end -= args.shift[2]
-        deltaTLen = args.shift[0] + args.shift[1]
+        deltaTLen = args.shift[3] - args.shift[2]
     elif b.is_reverse and b.is_read2:
         end += args.shift[1]
-        deltaTLen = args.shift[2] + args.shift[3]
+        deltaTLen = args.shift[1] - args.shift[0]
     elif not b.is_reverse and not b.is_read2:
         start += args.shift[0]
-        deltaTLen = args.shift[0] + args.shift[1]
+        deltaTLen = args.shift[1] - args.shift[0]
     else:
         start -= args.shift[3]
-        deltaTLen = args.shift[2] + args.shift[3]
+        deltaTLen = args.shift[3] - args.shift[2]
 
     # Sanity check
     if end - start < 1:
@@ -191,10 +191,10 @@ def shiftRead(b, chromDict, args):
     b2.next_reference_id = b.next_reference_id
     b2.next_reference_start = b.next_reference_start
     if b.is_proper_pair:
-        if not b2.is_read2 and b2.is_reverse:
-            b2.next_reference_start -= args.shift[3]
-        elif b2.is_read2 and not b2.is_reverse:
+        if b2.is_read2 and b2.is_reverse:
             b2.next_reference_start += args.shift[0]
+        elif not b2.is_read2 and b2.is_reverse:
+            b2.next_reference_start -= args.shift[3]
 
     return b2
 
