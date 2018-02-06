@@ -5,7 +5,7 @@
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="2.5.7">deeptools</requirement>
-            <yield />
+            <requirement type="package" version="1.6">samtools</requirement>
         </requirements>
         <expand macro="stdio" />
         <version_command>@BINARY@ --version</version_command>

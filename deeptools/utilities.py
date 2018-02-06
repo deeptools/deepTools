@@ -47,13 +47,15 @@ def convertCmap(c, vmin=0, vmax=1):
     return colorScale
 
 
-def getTLen(read):
+def getTLen(read, notAbs=False):
     """
     Get the observed template length of a read. For a paired-end read, this is
     normally just the TLEN field. For SE reads this is the observed coverage of
     the genome (excluding splicing).
     """
     if abs(read.template_length) > 0:
+        if notAbs:
+            return read.template_length
         return abs(read.template_length)
 
     tlen = 0
