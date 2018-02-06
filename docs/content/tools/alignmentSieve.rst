@@ -33,7 +33,7 @@ The alignments passing the filtering criteria are then written to the file speci
     #File	Reads Remaining	Total Initial Reads
     paired_chr2L.bam	8440	12644
 
-Instead of a BAM file, a BEDPE file (suitable for input into MACS2) can be produced. This output also allows shifting of fragment ends, as is often desirable in ATAC-seq and related protocols:
+Instead of a BAM file, a BEDPE file (suitable for input into MACS2) can be produced. Like the BAM/CRAM output, BEDPE also allows shifting of fragment ends, as is often desirable in ATAC-seq and related protocols:
 
 .. code:: bash
     $ alignmentSieve -b paired_chr2L.bam \
@@ -75,3 +75,6 @@ and the ``-1 4`` set would produce the following::
              --------------------- shifted fragment
 
 As can be seen, such fragments are considered to be on the ``-`` strand, so negative values then shift to the left on its frame of reference (thus, to the right relative to the ``+`` strand).
+
+.. note::
+    If the ``--shift`` or ``--ATACshift`` options are used, then only properly-paired reads will be used.

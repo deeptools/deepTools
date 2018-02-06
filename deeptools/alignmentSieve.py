@@ -69,7 +69,7 @@ def parseArguments():
 
     general.add_argument('--ATACshift',
                          action='store_true',
-                         help='Shift the produced BAM file or BEDPE regions as required for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
+                         help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
