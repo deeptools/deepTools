@@ -1,11 +1,11 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.5.4.0</token>
+    <token name="@WRAPPER_VERSION@">2.5.7</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="2.5.4">deeptools</requirement>
-            <yield />
+            <requirement type="package" version="2.5.7">deeptools</requirement>
+            <requirement type="package" version="1.6">samtools</requirement>
         </requirements>
         <expand macro="stdio" />
         <version_command>@BINARY@ --version</version_command>
@@ -557,21 +557,27 @@ is vital to you, select Yes below.">
             <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
                 help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded.
                     Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly.
-                    See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
+                    We provide a table of useful sizes here: http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html">
                 <option value="93260000">ce10 (93260000)</option>
-                <option value="121400000">dm3 (121400000)</option>
-                <option value="2451960000" selected="true">hg19 (2451960000)</option>
-                <option value="2150570000">mm9 (2150570000)</option>
+                <option value="130428560">dm3 (130428560)</option>
+                <option value="125464728">dm6 (125464728)</option>
+                <option value="2685511504" selected="true">hg19/GRCh37 (2685511504)</option>
+                <option value="2701495761">GRCh38/hg38 (2701495761)</option>
+                <option value="2304947926">GRCm37/mm9 (2304947926)</option>
+                <option value="2308125349">GRCm38/mm10 (2308125349)</option>
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
                 <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size"
-                       help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
+                       help="e.g. ce10: 93260000, dm3: 130428560, hg19: 2685511504, mm9: 2304947926"/>
             </when>
-            <when value="2150570000" />
-            <when value="2451960000" />
-            <when value="121400000" />
             <when value="93260000" />
+            <when value="130428560" />
+            <when value="125464728" />
+            <when value="2685511504" />
+            <when value="2701495761" />
+            <when value="2304947926" />
+            <when value="2308125349" />
         </conditional>
     </xml>
 
@@ -672,8 +678,7 @@ is vital to you, select Yes below.">
 
     <xml name="colorMap">
         <param name="colorMap" type="select" label="Color map to use for the heatmap"
-               help=" Available color map names can be found here: http://matplotlib.org/examples/color/colormaps_reference.html"
-               multiple="true">
+               help=" Available color map names can be found here: http://matplotlib.org/examples/color/colormaps_reference.html">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>
             <option value="Spectral">Spectral</option>

@@ -19,6 +19,7 @@ import plotly.offline as offline
 import plotly.graph_objs as go
 import plotly.figure_factory as ff
 
+
 old_settings = np.seterr(all='ignore')
 
 
@@ -90,8 +91,7 @@ class Correlation:
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
 
-        self.labels = _ma['labels']
-        self.labels = [toString(x) for x in self.labels]
+        self.labels = list(map(toString, _ma['labels']))
 
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"

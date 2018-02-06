@@ -37,7 +37,8 @@ This is an example for ChIP-seq data using additional options (smaller bin size 
 
     bamCoverage --bam a.bam -o a.SeqDepthNorm.bw \
         --binSize 10
-        --normalizeTo1x 2150570000
+        --normalizeUsing RPGC
+        --effectiveGenomeSize 2150570000
         --ignoreForNormalization chrX
         --extendReads
 

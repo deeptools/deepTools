@@ -205,28 +205,15 @@ def normalization_options():
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Read coverage normalization options')
 
-    group.add_argument('--normalizeTo1x',
-                       help='Report read coverage normalized to 1x '
-                       'sequencing depth (also known as Reads Per Genomic '
-                       'Content (RPGC)). Sequencing depth is defined as: '
-                       '(total number of mapped reads * fragment length) / '
-                       'effective genome size.\nThe scaling factor used '
-                       'is the inverse of the sequencing depth computed '
-                       'for the sample to match the 1x coverage. '
-                       'To use this option, the '
-                       'effective genome size has to be indicated after the '
-                       'option. The effective genome size is the portion '
+    group.add_argument('--effectiveGenomeSize',
+                       help='The effective genome size is the portion '
                        'of the genome that is mappable. Large fractions of '
                        'the genome are stretches of NNNN that should be '
                        'discarded. Also, if repetitive regions were not '
                        'included in the mapping of reads, the effective '
                        'genome size needs to be adjusted accordingly. '
-                       'Common values are: mm9: 2,150,570,000; '
-                       'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
-                       'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                       'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                       'for several effective genome sizes.',
-                       metavar='EFFECTIVE GENOME SIZE LENGTH',
+                       'A table of values is available here: '
+                       'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                        default=None,
                        type=int,
                        required=False)
@@ -237,6 +224,7 @@ def normalization_options():
                        'RPKM = Reads Per Kilobase per Million mapped reads; '
                        'CPM = Counts Per Million mapped reads, same as CPM in RNA-seq; '
                        'BPM = Bins Per Million mapped reads, same as TPM in RNA-seq; '
+                       'RPGC = reads per genomic content (1x normalization); '
                        'Mapped reads are considered after blacklist filtering (if applied). '
                        'RPKM (per bin) =  number of reads per bin / '
                        '(number of mapped reads (in millions) * bin length (kb)). '
@@ -244,10 +232,17 @@ def normalization_options():
                        'number of mapped reads (in millions). '
                        'BPM (per bin) =  number of reads per bin / '
                        'sum of all reads per bin (in millions). '
+                       'RPGC (per bin) = number of reads per bin / '
+                       'scaling factor for 1x average coverage. '
+                       'This scaling factor, in turn, is determined from the '
+                       'sequencing depth: (total number of mapped reads * fragment length) / '
+                       'effective genome size.\nThe scaling factor used '
+                       'is the inverse of the sequencing depth computed '
+                       'for the sample to match the 1x coverage. This option requires --effectiveGenomeSize. '
                        'Each read is considered independently, '
                        'if you want to only count one mate from a pair in '
                        'paired-end data, then use the --samFlagInclude/--samFlagExclude options.',
-                       choices=['RPKM', 'CPM', 'BPM'],
+                       choices=['RPKM', 'CPM', 'BPM', 'RPGC'],
                        default=None,
                        required=False)
 

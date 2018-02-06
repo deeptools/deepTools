@@ -63,7 +63,7 @@ def test_bam_coverage_extend():
         unlink(outfile)
 
 
-def test_bam_coverage_extend_and_normalizeto1x():
+def test_bam_coverage_extend_and_normalizeUsingRPGC():
 
     outfile = '/tmp/test_file.bg'
     for fname in [BAMFILE_B, CRAMFILE_B]:
@@ -118,7 +118,6 @@ def test_bam_compare_arguments():
     for fname in [BAMFILE_B, CRAMFILE_B]:
         args = "--bamfile1 {} --bamfile2 {} " \
                "-o {} -p 1 --outFileFormat bedgraph --ratio ratio".format(fname, fname, outfile).split()
-
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -137,7 +136,6 @@ def test_bam_compare_diff_files():
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
                "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
-
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -190,7 +188,6 @@ def test_bam_compare_diff_files_skipnas():
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
                "-o {} -p 1 --outFileFormat bedgraph --skipNAs".format(A, B, outfile).split()
-
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -209,7 +206,6 @@ def test_bam_compare_extend():
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --ratio subtract " \
                "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
-
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -228,7 +224,6 @@ def test_bam_compare_scale_factors_ratio():
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --ratio ratio --ignoreForNormalization chr_cigar " \
                "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
-
         bam_comp.main(args)
 
         # The scale factors are [ 1.   0.5] because BAMFILE_B has double the amount of reads (4) compared to BAMFILE_A
@@ -269,7 +264,6 @@ def test_bam_compare_scale_factors_subtract():
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --ratio subtract --ignoreForNormalization chr_cigar " \
                "-o {} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM".format(A, B, outfile).split()
-
         bam_comp.main(args)
 
         # The scale factors are [ 1.   0.5] because BAMFILE_B has dowble the amount of reads (4) compared to BAMFILE_A

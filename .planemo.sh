@@ -5,22 +5,24 @@ temp_dir=`mktemp -d`
 cd $temp_dir
 conda config --add channels conda-forge
 conda config --add channels bioconda
-conda create -y --name gxtest numpy bx-python pysam
+conda create -y --name gxtest numpy pysam
 source activate gxtest
 git clone --depth 1 https://github.com/galaxyproject/galaxy.git
 cd galaxy
+make client
 ./scripts/common_startup.sh --skip-venv --dev-wheels
 cd ..
 # reset what's available in conda
 cd $owd
-conda install --yes -c conda-forge python=2.7 numpy scipy matplotlib==2.1.0 nose flake8 plotly==2.0.12 cython
-conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit planemo
+conda install --yes -c conda-forge numpy scipy matplotlib==2.1.0 plotly==2.0.12 cython
+conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit
 pip uninstall -y pysam
 pip install git+https://github.com/pysam-developers/pysam
 python setup.py install
 
 #galaxy/wrapper/correctGCBias.xml \
 $planemo test --postgres --no_dependency_resolution --galaxy_root $temp_dir/galaxy \
+galaxy/wrapper/alignmentSieve.xml \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
 galaxy/wrapper/bamPEFragmentSize.xml \

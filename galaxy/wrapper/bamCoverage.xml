@@ -26,10 +26,11 @@
             #elif $scaling.type=='bpm':
                 --normalizeUsing BPM
             #elif $scaling.type=='1x':
+                --normalizeUsing RPGC
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                    --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
+                    --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
-                    --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
+                    --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
                 #end if
             #end if
 
@@ -170,6 +171,8 @@
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result2.bw" ftype="bigwig" />
         </test>
@@ -177,6 +180,8 @@
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result3.bg" ftype="bedgraph" />
         </test>
@@ -184,6 +189,8 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bw" ftype="bigwig" />
         </test>
@@ -191,6 +198,8 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="yes" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph" />
         </test>
@@ -199,6 +208,8 @@
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="filterRNAstrand" value="reverse" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
         </test>

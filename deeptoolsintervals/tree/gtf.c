@@ -539,6 +539,57 @@ void sortGTF(GTFtree *t) {
     t->balanced = 1;
 }
 
+int nodeHasOverlaps(GTFnode *node, int firstNode, uint32_t *lpos, uint32_t *minDistance) {
+    int rv = 0;
+    GTFentry *e = node->starts;
+
+    // Go down the left
+    if(node->left) {
+        rv = nodeHasOverlaps(node->left, firstNode, lpos, minDistance);
+        if(rv) return rv;
+    } else if(firstNode) {
+        //This only has to be specially set on the left-most node
+        *lpos = e->end;
+        *minDistance = e->start;
+        e = e->right;
+    }
+
+    // Test this node
+    while(e) {
+        if(e->start < *lpos) {
+            *minDistance = 0;
+            return 1;
+        }
+        if(e->start - *lpos < *minDistance) *minDistance = e->start - *lpos;
+        *lpos = e->end;
+        e = e->right;
+    }
+
+    // Go down the right
+    if(node->right) return nodeHasOverlaps(node->right, 0, lpos, minDistance);
+    return rv;
+}
+
+int hasOverlapsChrom(GTFchrom *chrom, uint32_t *minDistance) {
+    uint32_t lpos;
+    if(chrom->n_entries < 2) return 0;
+    return nodeHasOverlaps((GTFnode*) chrom->tree, 1, &lpos, minDistance);
+}
+
+// Given a GTF tree, returning 1 if ANY of the entries overlap with each other, 0 otherwise
+// minDistance is updated to return the minimum distance between intervals. This will be 0 if there are overlaps.
+int hasOverlaps(GTFtree *t, uint32_t *minDistance) {
+    int32_t i;
+    int rv = 0;
+    *minDistance = (uint32_t) -1;
+
+    for(i=0; i<t->n_targets; i++) {
+        rv = hasOverlapsChrom(t->chroms[i], minDistance);
+        if(rv) return rv;
+    }
+    return rv;
+}
+
 /*******************************************************************************
 *
 * Misc. functions

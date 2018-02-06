@@ -46,13 +46,15 @@ def convertCmap(c, vmin=0, vmax=1):
     return colorScale
 
 
-def getTLen(read):
+def getTLen(read, notAbs=False):
     """
     Get the observed template length of a read. For a paired-end read, this is
     normally just the TLEN field. For SE reads this is the observed coverage of
     the genome (excluding splicing).
     """
     if abs(read.template_length) > 0:
+        if notAbs:
+            return read.template_length
         return abs(read.template_length)
 
     tlen = 0
@@ -362,6 +364,12 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
     chromLens = {x: y for x, y in zip(bam_handle.references, bam_handle.lengths)}
 
     bl = GTF(blackListFileName)
+    hasOverlaps, minOverlap = bl.hasOverlaps(returnDistance=True)
+    if hasOverlaps:
+        sys.exit("Your blacklist file(s) has (have) regions that overlap. Proceeding with such a file would result in deepTools incorrectly calculating scaling factors. As such, you MUST fix this issue before being able to proceed.\n")
+    if minOverlap < 1000:
+        sys.stderr.write("WARNING: The minimum distance between intervals in your blacklist is {}. It makes little biological sense to include small regions between two blacklisted regions. Instead, these should likely be blacklisted as well.\n".format(minOverlap))
+
     regions = []
     for chrom in bl.chroms:
         if (not chroms_to_ignore or chrom not in chroms_to_ignore) and chrom in chromLens:

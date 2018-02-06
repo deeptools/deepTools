@@ -34,6 +34,7 @@ Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
     bamCompare              computes log2 ratio and other operations of read coverage of two samples per bins or regions
     bigwigCompare           computes log2 ratio and other operations from bigwig scores of two samples per bins or regions
     computeMatrix           prepares the data from bigwig scores for plotting with plotHeatmap or plotProfile
+    alignmentSieve          filters BAM alignments according to specified parameters, optionally producing a BEDPE file
 
 
 [ Tools for QC ]

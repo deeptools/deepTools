@@ -55,17 +55,17 @@ def parse_arguments(args=None):
                         type=float,
                         required=False)
 
-    parser.add_argument('--ratio',
+    parser.add_argument('--operation',
                         help='The default is to output the log2ratio of the '
                         'two samples. The reciprocal ratio returns the '
                         'the negative of the inverse of the ratio '
                         'if the ratio is less than 0. The resulting '
                         'values are interpreted as negative fold changes. '
-                        '*NOTE*: Only with --ratio subtract can --normalizeTo1x or '
+                        '*NOTE*: Only with --operation subtract can --normalizeUsing RPGC or '
                         '--normalizeUsing RPKM be used. Instead of performing a '
                         'computation using both files, the scaled signal can '
                         'alternatively be output for the first or second file using '
-                        'the \'--ratio first\' or \'--ratio second\'',
+                        'the \'--operation first\' or \'--operation second\'',
                         default='log2',
                         choices=['log2', 'ratio', 'subtract', 'add', 'mean',
                                  'reciprocal_ratio', 'first', 'second'],
@@ -109,7 +109,7 @@ def main(args=None):
     # the getRatio function is called and receives
     # the function_args per each tile that is considered
     FUNC = getRatio
-    function_args = {'valueType': args.ratio,
+    function_args = {'valueType': args.operation,
                      'scaleFactors': scaleFactors,
                      'pseudocount': args.pseudocount}
 
