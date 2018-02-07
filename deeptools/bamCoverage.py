@@ -141,6 +141,7 @@ def main(args=None):
 
     global debug
     if args.verbose:
+        sys.stderr.write("Specified --scaleFactor: {}\n".format(args.scaleFactor))
         debug = 1
     else:
         debug = 0
