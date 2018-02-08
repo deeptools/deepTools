@@ -117,12 +117,26 @@ def fraction_kept(args):
     first 50000 bases. If this doesn't yield sufficient alignments then the bin
     size is halved.
     """
+    # Do we even need to proceed?
+    if (not args.minMappingQuality or args.minMappingQuality == 0) and \
+       (not args.samFlagInclude or args.samFlagInclude == 0) and \
+       (not args.samFlagExclude or args.samFlagExclude == 0) and \
+       (not args.minFragmentLength or args.minFragmentLength == 0) and \
+       (not args.maxFragmentLength or args.maxFragmentLength == 0):
+        if hasattr(args, "filterRNAstrand"):
+            if args.filterRNAstrand not in ["forward", "reverse"]:
+                return 1.0
+        else:
+            return 1.0
+
     filtered = 0
     total = 0
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
     num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
+    if num_needed_to_sample == bam_mapped:
+        distanceBetweenBins = 55000
     if args.ignoreForNormalization:
         chrom_sizes = [(chrom_name, bam_handle.lengths[idx]) for idx, chrom_name in enumerate(bam_handle.references)
                        if chrom_name not in args.ignoreForNormalization]
