@@ -15,9 +15,7 @@ cd ..
 # reset what's available in conda
 cd $owd
 conda install --yes -c conda-forge numpy scipy matplotlib==2.1.0 plotly==2.0.12 cython
-conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit
-pip uninstall -y pysam
-pip install git+https://github.com/pysam-developers/pysam
+conda install --yes -c bioconda -c conda-forge pysam==0.14.0 pyBigWig py2bit
 python setup.py install
 
 #galaxy/wrapper/correctGCBias.xml \

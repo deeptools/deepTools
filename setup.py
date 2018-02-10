@@ -124,7 +124,7 @@ setup(
         "numpy >= 1.9.0",
         "scipy >= 0.17.0",
         "matplotlib >= 2.1.1",
-        "pysam >= 0.13.0",
+        "pysam >= 0.14.0",
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1",
         "py2bit >= 0.2.0",
