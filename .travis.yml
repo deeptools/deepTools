@@ -40,6 +40,6 @@ script:
   - if [[ ${TESTGALAXY:-"2"} == "2" ]] ; then cd ~/ && nosetests --with-doctest -sv deeptools ; fi
   - if [[ ${TESTGALAXY:-"2"} == "2" ]] ; then nosetests --with-doctest -sv deeptoolsintervals ; fi
   - if [[ ${TESTGALAXY:-"2"} == "2" ]] ; then cd ${owd} ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && ${TESTGALAXY:-"0"} == "1" ]] ; then /home/travis/build/deeptools/deepTools/foo/bin/planemo lint galaxy/wrapper/ ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && ${TESTGALAXY:-"0"} == "1" ]] ; then /home/travis/miniconda/envs/planemo/bin/planemo lint galaxy/wrapper/ ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" && ${TESTGALAXY:-"0"} == "1" ]] ; then ./.planemo.sh ; fi
 sudo: false

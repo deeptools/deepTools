@@ -1,6 +1,6 @@
 #!/bin/bash
 echo $PATH
-planemo=./miniconda/envs/planemo/bin/planemo
+planemo=$HOME/miniconda/envs/planemo/bin/planemo
 owd=`pwd`
 temp_dir=`mktemp -d`
 cd $temp_dir
