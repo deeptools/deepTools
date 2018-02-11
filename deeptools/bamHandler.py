@@ -44,7 +44,7 @@ def getMappingStats(bam, nThreads):
     return mapped, unmapped, stats
 
 
-def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=False):
+def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
     """
     A wrapper for opening BAM/CRAM files.
 

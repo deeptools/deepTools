@@ -67,7 +67,7 @@ def test_bam_coverage_extend_and_normalizeUsingRPGC():
 
     outfile = '/tmp/test_file.bg'
     for fname in [BAMFILE_B, CRAMFILE_B]:
-        args = "-b {} -o {} --normalizeTo1x 200 --extendReads 100 " \
+        args = "-b {} -o {} --normalizeUsing RPGC --effectiveGenomeSize 200 --extendReads 100 " \
                "--outFileFormat bedgraph".format(fname, outfile).split()
         bam_cov.main(args)
         _foo = open(outfile, 'r')
@@ -117,7 +117,7 @@ def test_bam_compare_arguments():
     outfile = '/tmp/test_file.bg'
     for fname in [BAMFILE_B, CRAMFILE_B]:
         args = "--bamfile1 {} --bamfile2 {} " \
-               "-o {} -p 1 --outFileFormat bedgraph --ratio ratio".format(fname, fname, outfile).split()
+               "-o {} -p 1 --outFileFormat bedgraph --operation ratio".format(fname, fname, outfile).split()
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -134,7 +134,7 @@ def test_bam_compare_diff_files():
     """
     outfile = '/tmp/test_file.bg'
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
+        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract " \
                "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
         bam_comp.main(args)
 
@@ -186,7 +186,7 @@ def test_bam_compare_diff_files_skipnas():
     """
     outfile = '/tmp/test_file.bg'
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --ratio subtract " \
+        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract " \
                "-o {} -p 1 --outFileFormat bedgraph --skipNAs".format(A, B, outfile).split()
         bam_comp.main(args)
 
@@ -204,7 +204,7 @@ def test_bam_compare_extend():
     """
     outfile = '/tmp/test_file.bg'
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --ratio subtract " \
+        args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --operation subtract " \
                "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
         bam_comp.main(args)
 
@@ -222,7 +222,7 @@ def test_bam_compare_scale_factors_ratio():
     """
     outfile = '/tmp/test_file.bg'
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --ratio ratio --ignoreForNormalization chr_cigar " \
+        args = "--bamfile1 {} --bamfile2 {} --operation ratio --ignoreForNormalization chr_cigar " \
                "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
         bam_comp.main(args)
 
@@ -262,7 +262,7 @@ def test_bam_compare_scale_factors_subtract():
     """
     outfile = '/tmp/test_file.bg'
     for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --ratio subtract --ignoreForNormalization chr_cigar " \
+        args = "--bamfile1 {} --bamfile2 {} --operation subtract --ignoreForNormalization chr_cigar " \
                "-o {} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM".format(A, B, outfile).split()
         bam_comp.main(args)
 
@@ -304,7 +304,7 @@ def test_bam_coverage_filter_blacklist():
     """
     outfile = '/tmp/test_file_filter.bg'
     for fname in [BAMFILE_FILTER1, CRAMFILE_FILTER1]:
-        args = "--bam {} --normalizeTo1x 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+        args = "--bam {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
                "--samFlagExclude 256 --minMappingQuality 5 --ignoreDuplicates " \
                "--blackListFileName {}".format(fname, outfile, BEDFILE_FILTER)
         args = args.split()
@@ -406,7 +406,7 @@ def test_bam_compare_filter_blacklist():
     """
     outfile = '/tmp/test_file_filter.bg'
     for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2), (CRAMFILE_FILTER1, CRAMFILE_FILTER2)]:
-        args = "-b1 {} -b2 {} --normalizeTo1x 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+        args = "-b1 {} -b2 {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
                "--samFlagExclude 256 --minMappingQuality 5 --ignoreDuplicates " \
                "--blackListFileName {}".format(A, B, outfile, BEDFILE_FILTER)
         args = args.split()
