@@ -122,7 +122,7 @@
         <data format="tabular" name="filterMetricsFile" label="${tool.name} on ${on_string}: filtering metrics">
             <filter>filterMetrics is True</filter>
         </data>
-        <data format="bam" name="outFileFiltered" label="${tool.name} on ${on_string}: Filtered Out Alignments">
+        <data format_source="bamfile" name="outFileFiltered" label="${tool.name} on ${on_string}: Filtered Out Alignments">
             <filter>filteredOutReads is True</filter>
         </data>
         <data format="bam" name="outFile" label="${tool.name} on ${on_string}">

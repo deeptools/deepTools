@@ -15,9 +15,9 @@
         #end if
         ln -s '$bamFile2' two.bam &&
         #if $bamFile2.ext == 'bam':
-            ln -s '${bamFile2.metadata.bam_index}' one.bam.bai &&
+            ln -s '${bamFile2.metadata.bam_index}' two.bam.bai &&
         #else:
-            ln -s '${bamFile2.metadata.cram_index}' one.bam.crai &&
+            ln -s '${bamFile2.metadata.cram_index}' two.bam.crai &&
         #end if
 
         @BINARY@
