@@ -65,6 +65,8 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
     Returns either the file handle or a tuple as described in returnStats
     """
     format_options = ["required_fields=0x1FE"]
+    if sys.version_info.major >= 3:
+        format_options = [b"required_fields=0x1FE"]
     if not minimalDecoding:
         format_options = None
     try:
@@ -72,7 +74,7 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
     except IOError:
         sys.exit("The file '{}' does not exist".format(bamFile))
     except:
-        sys.exit("The file '{}' does not have BAM format ".format(bamFile))
+        sys.exit("The file '{}' does not have BAM or CRAM format ".format(bamFile))
 
     try:
         assert(bam.check_index() is not False)
