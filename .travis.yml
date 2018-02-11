@@ -23,7 +23,7 @@ before_install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.6" && ${TESTGALAXY:-"0"} == "1" ]] ; then conda create -n planemo planemo; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_PYTHON_VERSION" == "3.6" && ${TESTGALAXY:-"0"} == "1" ]] ; then conda create -c conda-forge -c bioconda -n planemo planemo; fi
 
   # Useful for debugging any issues with conda
   - conda info -a
