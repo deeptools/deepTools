@@ -10,7 +10,11 @@
         #import re
         #set label = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
         ln -s '$bamfile' one.bam &&
-        ln -s '${bamfile.metadata.bam_index}' one.bam.bai &&
+        #if $bamfile.ext == 'bam':
+            ln -s '${bamfile.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamfile.metadata.cram_index}' one.bam.crai &&
+        #end if
 
         @BINARY@
         @THREADS@
@@ -147,6 +151,12 @@
             <param name="minMappingQuality" value="10" />
             <param name="shift" value="1 -2 3 -4" />
             <output name="outFile" file="alignmentSieve2.bam" ftype="bam" />
+        </test>
+        <test>
+            <param name="bamfile" value="paired_chr2L.cram" ftype="cram" />
+            <param name="minMappingQuality" value="10" />
+            <param name="shift" value="1 -2 3 -4" />
+            <output name="outFile" file="alignmentSieve2.cram" ftype="cram" />
         </test>
     </tests>
 

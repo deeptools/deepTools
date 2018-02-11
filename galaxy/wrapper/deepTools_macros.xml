@@ -444,7 +444,11 @@ is vital to you, select Yes below.">
             #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
                 ln -s "${bamfile}" "./${counter}.bam" &&
-                ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #if $bamfile.ext == 'bam':
+                    ln -s '${bamfile.metadata.bam_index}' './${counter}.bam.bai' &&
+                #else:
+                    ln -s '${bamfile.metadata.cram_index}' './${counter}.bam.crai' &&
+                #end if
                 #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % identifier)
             #end for
@@ -453,6 +457,11 @@ is vital to you, select Yes below.">
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
                 ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #if $f.bamfiles.ext == 'bam':
+                    ln -s '${f.bamfiles.metadata.bam_index}' './${counter}.bam.bai' &&
+                #else:
+                    ln -s '${f.bamfiles.metadata.cram_index}' './${counter}.bam.crai' &&
+                #end if
                 #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % $identifier)
             #end for

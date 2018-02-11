@@ -8,7 +8,11 @@
     <command>
 <![CDATA[
         ln -s '$bamInput' one.bam &&
-        ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+        #if $bamInput.ext == 'bam':
+            ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamInput.metadata.cram_index}' one.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@

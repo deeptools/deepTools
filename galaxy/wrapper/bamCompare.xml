@@ -8,9 +8,17 @@
     <command>
 <![CDATA[
         ln -s '$bamFile1' one.bam &&
-        ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
+        #if $bamFile1.ext == 'bam':
+            ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamFile1.metadata.cram_index}' one.bam.crai &&
+        #end if
         ln -s '$bamFile2' two.bam &&
-        ln -s '${bamFile2.metadata.bam_index}' two.bam.bai &&
+        #if $bamFile2.ext == 'bam':
+            ln -s '${bamFile2.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamFile2.metadata.cram_index}' one.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@
