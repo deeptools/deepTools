@@ -1,5 +1,5 @@
 <tool id="deeptools_multi_bam_summary" name="multiBamSummary" version="@WRAPPER_VERSION@.0">
-    <description>calculates average read coverages for a list of two or more BAM files</description>
+    <description>calculates average read coverages for a list of two or more BAM/CRAM files</description>
     <macros>
         <token name="@BINARY@">multiBamSummary</token>
         <import>deepTools_macros.xml</import>

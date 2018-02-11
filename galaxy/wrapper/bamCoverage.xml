@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_coverage" name="bamCoverage" version="@WRAPPER_VERSION@.0">
-    <description>generates a coverage bigWig file from a given BAM file</description>
+    <description>generates a coverage bigWig file from a given BAM or CRAM file</description>
     <macros>
         <token name="@BINARY@">bamCoverage</token>
         <import>deepTools_macros.xml</import>
@@ -68,7 +68,7 @@
     </command>
 
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="BAM file"
+        <param name="bamInput" format="bam,cram" type="data" label="BAM/CRAM file"
             help=""/>
 
         <param name="binSize" type="integer" value="50" min="1"

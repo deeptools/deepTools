@@ -1,5 +1,5 @@
 <tool id="deeptools_alignmentsieve" name="alignmentsieve" version="@WRAPPER_VERSION@.0">
-    <description>Filter BAM files according to specified parameters</description>
+    <description>Filter BAM/CRAM files according to specified parameters</description>
     <macros>
         <token name="@BINARY@">alignmentSieve</token>
         <import>deepTools_macros.xml</import>
@@ -82,7 +82,7 @@
     </command>
 
     <inputs>
-        <param name="bamfile" format="bam" type="data" label="BAM file" />
+        <param name="bamfile" format="bam,cram" type="data" label="BAM file" />
         <param name="BED" argument="--BED" type="boolean" label="Output in BEDPE format?"
             help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format." />
         <param argument="--shift" type="text" label="Amount to shift fragments" value=""

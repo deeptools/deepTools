@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_compare" name="bamCompare" version="@WRAPPER_VERSION@.0">
-    <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference between them</description>
+    <description>normalizes and compares two BAM or CRAM files to obtain the ratio, log2ratio or difference between them</description>
     <macros>
         <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
@@ -64,14 +64,14 @@
 ]]>
     </command>
     <inputs>
-        <param argument="--bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
+        <param argument="--bamFile1" format="bam,cram" type="data" label="First BAM/CRAM file (e.g. treated sample)"
             help=""/>
-        <param argument="--bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
+        <param argument="--bamFile2" format="bam,cram" type="data" label="Second BAM/CRAM file (e.g. control sample)"
             help=""/>
 
         <param argument="--binSize" type="integer" value="50" min="1"
             label="Bin size in bases"
-            help="The genome will be divided into bins of the specified size. For each bin, the overlaping number of fragments (or reads) will be reported.
+            help="The genome will be divided into bins of the specified size. For each bin, the overlapping number of fragments (or reads) will be reported.
                 If only half a fragment overlaps then this fraction will be reported."/>
 
         <conditional name="scaling">
@@ -200,7 +200,7 @@
 What it does
 -------------
 
-This tool can be used to generate a bigWig or bedGraph file based on **two BAM** files that are compared to each other while being simultaneously normalized for sequencing depth.
+This tool can be used to generate a bigWig or bedGraph file based on **two BAM or CRAM** files that are compared to each other while being simultaneously normalized for sequencing depth.
 
 To compare the BAM files to each other, the genome is partitioned into bins of equal size, then the number of reads found in each BAM file is counted per bin, and finally a summary value reported.
 

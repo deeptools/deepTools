@@ -1,5 +1,5 @@
 <tool id="deeptools_correct_gc_bias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
-    <description>uses the output from computeGCBias to generate GC-corrected BAM files</description>
+    <description>uses the output from computeGCBias to generate GC-corrected BAM/CRAM files</description>
     <macros>
         <token name="@BINARY@">correctGCBias</token>
         <import>deepTools_macros.xml</import>
@@ -31,8 +31,8 @@
     </command>
     <inputs>
         <param argument="--GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" help="" />
-        <param argument="--bamInput" format="bam" type="data"
-            label="BAM file" help="This should be same file that was used for computeGCbias." />
+        <param argument="--bamInput" format="bam,cram" type="data"
+            label="BAM/CRAM file" help="This should be same file that was used for computeGCbias." />
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
         <expand macro="region_limit_operation" />

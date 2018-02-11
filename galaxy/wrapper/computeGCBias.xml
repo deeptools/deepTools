@@ -49,7 +49,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="BAM file"
+        <param name="bamInput" format="bam,cram" type="data" label="BAM file"
             help=""/>
 
         <expand macro="reference_genome_source" />
