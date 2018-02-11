@@ -14,7 +14,7 @@ conda create -y --name gxtest numpy pysam
 #./scripts/common_startup.sh --skip-venv --dev-wheels
 #cd ..
 ## reset what's available in conda
-#cd $owd
+cd $owd
 #conda install --yes -c conda-forge numpy scipy matplotlib==2.1.0 plotly==2.0.12 cython
 #conda install --yes -c bioconda -c conda-forge pysam==0.14.0 pyBigWig py2bit
 #python setup.py install
