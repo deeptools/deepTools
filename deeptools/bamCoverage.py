@@ -8,6 +8,7 @@ import numpy as np
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools.getScaleFactor import get_scale_factor
+from deeptools.bamHandler import openBam
 
 debug = 0
 
@@ -32,7 +33,8 @@ def parseArguments():
             'size. It is possible to extended the length of the reads '
             'to better reflect the actual fragment length. *bamCoverage* '
             'offers normalization by scaling factor, Reads Per Kilobase per '
-            'Million mapped reads (RPKM), and 1x depth (reads per genome '
+            'Million mapped reads (RPKM), counts per million (CPM), bins per '
+            'million mapped reads (BPM) and 1x depth (reads per genome '
             'coverage, RPGC).\n',
             usage='An example usage is:'
             '$ bamCoverage -b reads.bam -o coverage.bw',
@@ -123,11 +125,14 @@ def process_args(args=None):
     args = parseArguments().parse_args(args)
 
     if args.scaleFactor != 1:
-        args.normalizeTo1x = None
+        args.effectiveGenomeSize = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print("Warning: the smooth length given ({}) is smaller than the bin "
               "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
         args.smoothLength = None
+
+    if not args.ignoreForNormalization:
+        args.ignoreForNormalization = []
 
     return args
 
@@ -137,13 +142,16 @@ def main(args=None):
 
     global debug
     if args.verbose:
+        sys.stderr.write("Specified --scaleFactor: {}\n".format(args.scaleFactor))
         debug = 1
     else:
         debug = 0
 
-    if args.normalizeTo1x or args.normalizeUsingRPKM:
+    if args.normalizeUsing:
         # if a normalization is required then compute the scale factors
-        scale_factor = get_scale_factor(args)
+        bam, mapped, unmapped, stats = openBam(args.bam, returnStats=True, nThreads=args.numberOfProcessors)
+        bam.close()
+        scale_factor = get_scale_factor(args, stats)
     else:
         scale_factor = args.scaleFactor
 
@@ -186,6 +194,7 @@ def main(args=None):
                             samFlag_exclude=args.samFlagExclude,
                             minFragmentLength=args.minFragmentLength,
                             maxFragmentLength=args.maxFragmentLength,
+                            chrsToSkip=args.ignoreForNormalization,
                             verbose=args.verbose,
                             )
 
@@ -212,6 +221,7 @@ def main(args=None):
                             samFlag_exclude=args.samFlagExclude,
                             minFragmentLength=args.minFragmentLength,
                             maxFragmentLength=args.maxFragmentLength,
+                            chrsToSkip=args.ignoreForNormalization,
                             verbose=args.verbose)
         wr.filter_strand = args.filterRNAstrand
         wr.Offset = args.Offset
@@ -231,6 +241,7 @@ def main(args=None):
                                          samFlag_exclude=args.samFlagExclude,
                                          minFragmentLength=args.minFragmentLength,
                                          maxFragmentLength=args.maxFragmentLength,
+                                         chrsToSkip=args.ignoreForNormalization,
                                          verbose=args.verbose,
                                          )
 

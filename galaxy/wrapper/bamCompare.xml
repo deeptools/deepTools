@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_compare" name="bamCompare" version="@WRAPPER_VERSION@.0">
-    <description>normalizes and compares two BAM files to obtain the ratio, log2ratio or difference between them</description>
+    <description>normalizes and compares two BAM or CRAM files to obtain the ratio, log2ratio or difference between them</description>
     <macros>
         <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
@@ -8,9 +8,17 @@
     <command>
 <![CDATA[
         ln -s '$bamFile1' one.bam &&
-        ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
+        #if $bamFile1.ext == 'bam':
+            ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamFile1.metadata.cram_index}' one.bam.crai &&
+        #end if
         ln -s '$bamFile2' two.bam &&
-        ln -s '${bamFile2.metadata.bam_index}' two.bam.bai &&
+        #if $bamFile2.ext == 'bam':
+            ln -s '${bamFile2.metadata.bam_index}' two.bam.bai &&
+        #else:
+            ln -s '${bamFile2.metadata.cram_index}' two.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@
@@ -30,23 +38,16 @@
                 --scaleFactorsMethod readCount
             #elif $scaling.method == 'own':
                 --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
+            #elif $scaling.method == 'None':
+                --scaleFactorsMethod None
+                #if $scaling.type != '':
+                    --normalizeUsing $scaling.type
+                #end if
             #end if
 
-            --ratio $comparison.type
+            --operation $comparison.type
 
-            #if $comparison.type == 'subtract':
-                #if $comparison.normalization.type == 'rpkm':
-                    --normalizeUsingRPKM
-                #elif $comparison.normalization.type == '1x':
-
-                    #if $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                        --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize
-                    #else:
-                        --normalizeTo1x $comparison.normalization.effectiveGenomeSize.effectiveGenomeSize_opt
-                    #end if
-
-                #end if
-            #elif $comparison.type in ['ratio','log2']:
+            #if $comparison.type in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
             #end if
 
@@ -71,14 +72,14 @@
 ]]>
     </command>
     <inputs>
-        <param argument="--bamFile1" format="bam" type="data" label="First BAM file (e.g. treated sample)"
+        <param argument="--bamFile1" format="bam,cram" type="data" label="First BAM/CRAM file (e.g. treated sample)"
             help=""/>
-        <param argument="--bamFile2" format="bam" type="data" label="Second BAM file (e.g. control sample)"
+        <param argument="--bamFile2" format="bam,cram" type="data" label="Second BAM/CRAM file (e.g. control sample)"
             help=""/>
 
         <param argument="--binSize" type="integer" value="50" min="1"
             label="Bin size in bases"
-            help="The genome will be divided into bins of the specified size. For each bin, the overlaping number of fragments (or reads) will be reported.
+            help="The genome will be divided into bins of the specified size. For each bin, the overlapping number of fragments (or reads) will be reported.
                 If only half a fragment overlaps then this fraction will be reported."/>
 
         <conditional name="scaling">
@@ -87,6 +88,7 @@
                 <option value="readCount" selected="true">read count</option>
                 <option value="SES">signal extraction scaling (SES), check with plotFingerprint before using it!</option>
                 <option value="own">enter own scaling factors</option>
+                <option value="None">Don't scale reads. Samples can instead be normalized using one of the normalization methods</option>
             </param>
             <when value="SES">
                 <param argument="--sampleLength" type="integer" value="1000" min="10"
@@ -99,6 +101,14 @@
             <when value="readCount" />
             <when value="own">
                 <expand macro="scaleFactors" />
+            </when>
+            <when value="None">
+                <param name="type" type="select" label="Normalization method" >
+                    <option value="RPKM">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
+                    <option value="CPM">Normalize to counts per million (CPM), same as CPM in RNA-seq</option>
+                    <option value="BPM">Normalize to bins per million (BPM), same as TPM in RNA-seq</option>
+                    <option value="">Do not normalize or scale</option>
+                </param>
             </when>
         </conditional>
 
@@ -126,25 +136,12 @@
                 <expand macro="pseudocount" />
             </when>
             <when value="add" />
+            <when value="subtract" />
             <when value="mean" />
             <when value="first" />
             <when value="second" />
             <when value="reciprocal_ratio">
                 <expand macro="pseudocount" />
-            </when>
-            <when value="subtract">
-                <conditional name="normalization">
-                    <param name="type" type="select" label="Normalization method" >
-                        <option value="1x">Normalize coverage to 1x</option>
-                        <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
-                        <option value="no">Do not normalize or scale</option>
-                    </param>
-                    <when value="rpkm" />
-                    <when value="no" />
-                    <when value="1x">
-                        <expand macro="effectiveGenomeSize" />
-                    </when>
-                </conditional>
             </when>
         </conditional>
 
@@ -211,16 +208,16 @@
 What it does
 -------------
 
-This tool can be used to generate a bigWig or bedGraph file based on **two BAM** files that are compared to each other while being simultaneously normalized for sequencing depth.
+This tool can be used to generate a bigWig or bedGraph file based on **two BAM or CRAM** files that are compared to each other while being simultaneously normalized for sequencing depth.
 
 To compare the BAM files to each other, the genome is partitioned into bins of equal size, then the number of reads found in each BAM file is counted per bin, and finally a summary value reported.
-This value can be the ratio of the number of reads per bin, the log2 of the ratio, or the difference.
 
-This tool can normalize the number of reads in each BAM file using the SES method proposed in Diaz et al. (2012). "Normalization, bias correction, and peak
-calling for ChIP-seq". Statistical applications in genetics and molecular
-biology, 11(3).
+The tool works in two steps:
+1. Scaling : To properly compare samples with different sequencing depth, each bam file can be scaled either using the SES method
+(proposed in Diaz et al. (2012). "Normalization, bias correction, and peak calling for ChIP-seq". Statistical applications in genetics and molecular
+biology, 11(3).) or total read count. additionally scaling can be turned off and a per-sample normalization can be used (--normalizeUsing RPKM/CPM/BPM)
 
-Normalization based on read counts is also available.
+2. Comparison : Two bam files are compared using one of the chosen methods (e.g. add, subtract, mean, log2 ratio etc.)
 
 By default, if reads are from a paired-end sequencing run and reads are properly paired, the fragment length reported in the BAM file is used.
 

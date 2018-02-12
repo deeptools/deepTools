@@ -101,7 +101,8 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                 else:
                     raise NameError("chromosome {} not found in bigWig file with chroms {}".format(chrom, bamHandle.chroms()))
 
-            prev_start_pos = None  # to store the start positions
+            prev_pos = set()
+            lpos = None
             # of previous processed read pair
             for read in reads:
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
@@ -122,9 +123,23 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
 
                 # get rid of duplicate reads that have same position on each of the
                 # pairs
-                if self.ignoreDuplicates and prev_start_pos \
-                        and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                    continue
+                if self.ignoreDuplicates:
+                    # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                    if tLen >= 0:
+                        s = read.pos
+                        e = s + tLen
+                    else:
+                        s = read.pnext
+                        e = s - tLen
+                    if read.reference_id != read.next_reference_id:
+                        e = read.pnext
+                    if lpos is not None and lpos == read.reference_start \
+                            and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+                        continue
+                    if lpos != read.reference_start:
+                        prev_pos.clear()
+                    lpos = read.reference_start
+                    prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
 
                 # since reads can be split (e.g. RNA-seq reads) each part of the
                 # read that maps is called a position block.
@@ -184,7 +199,6 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                         coverages[eIdx] += _
                     last_eIdx = eIdx
 
-                prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
 
             if self.verbose:

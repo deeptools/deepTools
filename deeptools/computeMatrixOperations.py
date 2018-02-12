@@ -89,7 +89,7 @@ or
         'cbind',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bindArgs()],
-        help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs. Note that if you cbind matrices where the samples have different widths, then the x-axis tick positions for the left-most samples will be correct and those on the right-most samples will be incorrect. The labels may also be incorrect for all but the left-most samples. This is due to ticks and labels being the same in all samples (the tick positions are scaled according to the number of data-points per row in a sample)",
+        help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs. Regions are matches based on the first 6 columns of the computeMatrix output (essentially the columns in a BED file).",
         usage='Example usage:\n  computeMatrixOperations cbind -m '
         'input1.mat.gz input2.mat.gz -o output.mat.gz\n\n')
 
@@ -98,7 +98,7 @@ or
         'sort',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[sortArgs()],
-        help='Sort a matrix file to correspond to the order if entries in the desired input files. The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first).',
+        help='Sort a matrix file to correspond to the order of entries in the desired input file(s). The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first). Note that this subcommand can also be used to remove unwanted regions, since regions not present in the input file(s) will be omitted from the output.',
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
@@ -312,7 +312,7 @@ def filterHeatmap(hm, args):
 
 def insertMatrix(hm, hm2, groupName):
     """
-    Given two heatmapper object and a region group name, insert the regions and
+    Given two heatmapper objects and a region group name, insert the regions and
     values from hm2 for that group to the end of those for hm.
     """
     # get the bounds for hm
@@ -418,6 +418,10 @@ def cbindMatrices(hm, args):
                 if reg[2] not in d[group]:
                     continue
                 hm.matrix.matrix[d[group][reg[2]], ncol:] = hm2.matrix.matrix[s + idx3, :]
+
+        # Append the special params
+        for s in hm.special_params:
+            hm.parameters[s].extend(hm2.parameters[s])
 
     # Update the sample parameters
     hm.matrix.sample_labels = hm.parameters['sample_labels']
@@ -616,12 +620,16 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         _ = [""] * len(regions[idx])
         for k, v in regions[idx].items():
             _[v] = k
+        sz = 0  # Track the number of enries actually matched
         for name in _:
             if name not in d[label]:
                 sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
+            sz += 1
             order.append(d[label][name])
-        boundaries.append(groupSizes[label] + boundaries[-1])
+        if sz == 0:
+            sys.exit("The region group {} had no matching entries!\n".format(label))
+        boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
     hm.matrix.matrix = hm.matrix.matrix[order, :]
@@ -660,6 +668,13 @@ def main(args=None):
             args.samples = hm.matrix.sample_labels
         hm.matrix.sample_boundaries = hm.matrix.sample_boundaries[0:len(args.samples) + 1]
         hm.matrix.group_boundaries = gBounds.tolist()
+        # special params
+        keepIdx = set()
+        for _, sample in enumerate(hm.matrix.sample_labels):
+            if sample in args.samples:
+                keepIdx.add(_)
+        for param in hm.special_params:
+            hm.parameters[param] = [v for k, v in enumerate(hm.parameters[param]) if k in keepIdx]
         # labels
         hm.matrix.sample_labels = args.samples
         if args.groups is None:

@@ -59,9 +59,9 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigwig_handlers = []
+    bigwig_handles = []
     for foo in bigWigFiles:
-        bigwig_handlers.append(pyBigWig.open(foo))
+        bigwig_handles.append(pyBigWig.open(foo))
 
     regions_to_consider = []
     if bedRegions:
@@ -88,7 +88,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         avgReadsArray = []
         i += 1
 
-        for idx, bwh in enumerate(bigwig_handlers):
+        for idx, bwh in enumerate(bigwig_handles):
             if chrom not in bwh.chroms():
                 unmod_name = chrom
                 if chrom.startswith('chr'):
@@ -146,9 +146,6 @@ def getChromSizes(bigwigFilesList):
     Chromosome name(s) and size(s).
     >>> assert(getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([])))
     """
-    # check that the path to USCS bedGraphToBigWig as set in the config
-    # is installed and is executable.
-
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:

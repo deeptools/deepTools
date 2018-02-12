@@ -18,6 +18,10 @@
                 --plotHeight $plotting_type.plotHeight
             #else:
                 --plotTitle '$plotting_type.plotTitle'
+                #if str($plotting_type.maxRange) != '':
+                    --maxRange '$plotting_type.maxRange'
+                #end if
+                $plotting_type.log1p
             #end if
             $skipZeros
             --plotFileFormat "$outFileFormat"
@@ -43,6 +47,12 @@
             </when>
             <when value="scatterplot">
                 <expand macro="plotTitle" />
+                <param argument="--maxRange" type="integer" value="" optional="true"
+                    label="Maximum Range"
+                    help="Maximum (integer) value for the X and Y axes. The default scales these such that the full range of dots is displayed. If you specify --log1p, please ensure that this value is within the range it will produce." />
+                <param argument="--log1p" type="boolean" truevalue="--log1p" falsevalue=""
+                    label="Log transform"
+                    help="Plot the natural log of the scatter plot after adding 1. Note that this is ONLY for plotting, the correlation is unaffected." />
             </when>
         </conditional>
 
@@ -78,7 +88,7 @@
             <param name="outFileFormat" value="png" />
             <param name="outFileCorMatrix" value="True" />
             <output name="matrix" file="plotCorrelation_result1.tabular" ftype="tabular" />
-            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="300" />
+            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="400" />
         </test>
         <test>
             <param name="corData" value="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" />

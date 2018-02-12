@@ -55,6 +55,8 @@
                     --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
                 #end if
 
+                --labelRotation '$advancedOpt.labelRotation'
+
                 $advancedOpt.perGroup
 
                 #if $advancedOpt.yMin:
@@ -159,6 +161,7 @@
                     <validator type="expression"
                         message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
                 </param>
+                <expand macro="labelRotation" />
 
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Make one plot per group of regions"
@@ -182,7 +185,7 @@
         <expand macro="output_graphic_outputs" />
 
         <data format="tabular" name="output_outFileNameData" label="${tool.name} on ${on_string}: Underlying data">
-            <filter>outFileNameData</filter>
+            <filter>advancedOpt['showAdvancedOpt'] == "yes" and advancedOpt['outFileNameData'] is True</filter>
         </data>
 
     </outputs>

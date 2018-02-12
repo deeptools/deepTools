@@ -1,6 +1,5 @@
 include *.txt
 include README.md
-include deeptools/config/deeptools.cfg
 exclude examples/*
 exclude deepTools.egg-info/*
 include scripts/*

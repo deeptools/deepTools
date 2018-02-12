@@ -1,3 +1,4 @@
+#plotFingerprint --outRawCounts
 'bowtie2 test1.bam'	'bowtie2 test1.bam'
 1085	1085
 1782	1782

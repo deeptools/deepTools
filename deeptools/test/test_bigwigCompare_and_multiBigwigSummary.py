@@ -39,7 +39,7 @@ testB_skipNas:
 
 def test_bigwigCompare():
     outfile = '/tmp/result.bg'
-    args = "-b1 {} -b2 {} -o {} --ratio add --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
+    args = "-b1 {} -b2 {} -o {} --operation add --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwComp.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
@@ -51,7 +51,7 @@ def test_bigwigCompare():
 
 def test_bigwigCompare_skipnas():
     outfile = '/tmp/result.bg'
-    args = "-b1 {} -b2 {} -o {} --ratio add --skipNAs " \
+    args = "-b1 {} -b2 {} -o {} --operation add --skipNAs " \
            "--outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwComp.main(args)
     _foo = open(outfile, 'r')

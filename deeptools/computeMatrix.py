@@ -8,7 +8,6 @@ import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
-import deeptools.config as cfg
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo
@@ -107,18 +106,11 @@ def computeMatrixRequiredArgs(args=None):
 def computeMatrixOutputArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
-    output.add_argument('--outFileName', '-out',
+    output.add_argument('--outFileName', '-out', '-o',
                         help='File name to save the gzipped matrix file '
                         'needed by the "plotHeatmap" and "plotProfile" tools.',
                         type=writableFile,
                         required=True)
-    # TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
-    # output.add_argument('--outFileNameData',
-    #                    help='Name to save the averages per matrix '
-    #                    'column into a text file. This corresponds to '
-    #                    'the underlying data used to '
-    #                    'plot a summary profile. Example: myProfile.tab',
-    #                    type=argparse.FileType('w'))
 
     output.add_argument('--outFileNameMatrix',
                         help='If this option is given, then the matrix '
@@ -324,6 +316,12 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'bigWig and BED/GTF files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
+
     # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
@@ -343,8 +341,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
-                          default=cfg.config.get('general',
-                                                 'default_proc_number'),
+                          default=1,
                           required=False)
     return parser
 
@@ -421,7 +418,6 @@ def main(args=None):
     scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions not in ['no', 'keep']:
-
         sortUsingSamples = []
         if args.sortUsingSamples is not None:
             for i in args.sortUsingSamples:

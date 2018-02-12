@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import subprocess
 import re
 from distutils import sysconfig
@@ -80,32 +79,6 @@ class install(_install):
         self.distribution.metadata.version = get_version()
         _install.run(self)
         return
-        if os.environ.get('DEEP_TOOLS_NO_CONFIG', False):
-            return
-        self.config_file = self.install_platlib + \
-            "/deeptools/config/deeptools.cfg"
-
-    def checkProgramIsInstalled(self, program, args, where_to_download,
-                                affected_tools):
-        try:
-            subprocess.Popen([program, args],
-                             stderr=subprocess.PIPE,
-                             stdout=subprocess.PIPE)
-            return True
-        except EnvironmentError:
-            # handle file not found error.
-            # the config file is installed in:
-            msg = "\n**{0} not found. This " \
-                  "program is needed for the following "\
-                  "tools to work properly:\n"\
-                  " {1}\n"\
-                  "{0} can be downloaded from here:\n " \
-                  " {2}\n".format(program, affected_tools,
-                                  where_to_download)
-            sys.stderr.write(msg)
-
-        except Exception as e:
-            sys.stderr.write("Error: {}".format(e))
 
 
 def openREADME():
@@ -137,9 +110,9 @@ setup(
              'bin/bamPEFragmentSize', 'bin/computeMatrix', 'bin/plotProfile',
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/multiBigwigSummary',
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation',
-             'bin/plotEnrichment', 'bin/deeptools', 'bin/computeMatrixOperations'],
+             'bin/plotEnrichment', 'bin/deeptools', 'bin/computeMatrixOperations',
+             'bin/estimateReadFiltering', 'bin/alignmentSieve'],
     include_package_data=True,
-    package_data={'': ['config/deeptools.cfg']},
     url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
     description='Useful tools for exploring deep sequencing data ',
@@ -150,11 +123,12 @@ setup(
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 0.17.0",
-        "matplotlib >= 1.4.0",
-        "pysam >= 0.8.2",
+        "matplotlib >= 2.1.1",
+        "pysam >= 0.14.0",
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1",
-        "py2bit >= 0.2.0"
+        "py2bit >= 0.2.0",
+        "plotly >= 1.9.0"
     ],
     zip_safe=False,
     ext_modules=[module1],

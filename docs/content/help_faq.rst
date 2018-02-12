@@ -112,7 +112,7 @@ By default, deepTools (**since version 2**) makes use of the information stored 
 How does computeMatrix handle overlapping genome regions?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If the :ref:`bed` file supplied to :doc:`tools/computeMatrix` contains regions that overlap, the tool will report those regions and issue warnings, but they will just be taken as is. If you would like to prevent this, then clean the :ref:`BED` file before using ``computeMatrix``. There are several methods for modifying your BED file.
+If the :ref:`bed` file supplied to :doc:`tools/computeMatrix` contains regions that overlap but they will just be taken as is. If you would like to prevent this, then clean the :ref:`BED` file before using ``computeMatrix``. There are several methods for modifying your BED file.
 
 Let's say your file looks like this::
 

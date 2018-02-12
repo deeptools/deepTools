@@ -1,5 +1,5 @@
 <tool id="deeptools_bam_coverage" name="bamCoverage" version="@WRAPPER_VERSION@.0">
-    <description>generates a coverage bigWig file from a given BAM file</description>
+    <description>generates a coverage bigWig file from a given BAM or CRAM file</description>
     <macros>
         <token name="@BINARY@">bamCoverage</token>
         <import>deepTools_macros.xml</import>
@@ -8,7 +8,11 @@
     <command>
 <![CDATA[
         ln -s '$bamInput' one.bam &&
-        ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+        #if $bamInput.ext == 'bam':
+            ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamInput.metadata.cram_index}' one.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@
@@ -20,12 +24,17 @@
             --binSize $binSize
 
             #if $scaling.type=='rpkm':
-                --normalizeUsingRPKM
+                --normalizeUsing RPKM
+            #elif $scaling.type=='cpm':
+                --normalizeUsing CPM
+            #elif $scaling.type=='bpm':
+                --normalizeUsing BPM
             #elif $scaling.type=='1x':
+                --normalizeUsing RPGC
                 #if $scaling.effectiveGenomeSize.effectiveGenomeSize_opt == "specific":
-                    --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize
+                    --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize
                 #else:
-                    --normalizeTo1x $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
+                    --effectiveGenomeSize $scaling.effectiveGenomeSize.effectiveGenomeSize_opt
                 #end if
             #end if
 
@@ -63,7 +72,7 @@
     </command>
 
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="BAM file"
+        <param name="bamInput" format="bam,cram" type="data" label="BAM/CRAM file"
             help=""/>
 
         <param name="binSize" type="integer" value="50" min="1"
@@ -73,10 +82,14 @@
         <conditional name="scaling">
             <param name="type" type="select" label="Scaling/Normalization method" >
                 <option value="1x">Normalize coverage to 1x</option>
-                <option value="rpkm">Normalize to fragments (reads) per kilobase per million (RPKM)</option>
+                <option value="rpkm">Normalize to reads per kilobase per million (RPKM)</option>
+                <option value="cpm">Normalize to counts per million (CPM), same as CPM in RNA-seq</option>
+                <option value="bpm">Normalize to bins per million (BPM), same as TPM in RNA-seq</option>
                 <option value="no">Do not normalize or scale</option>
             </param>
             <when value="rpkm"/>
+            <when value="cpm"/>
+            <when value="bpm"/>
             <when value="no"/>
             <when value="1x">
                 <expand macro="effectiveGenomeSize" />
@@ -129,7 +142,7 @@
                         --Offset 5 -1 will result in the 5th through last position being used, which
                         is equivalent to trimming 4 bases from the 5-prime end of alignments." />
 
-                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
+                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
                     help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                           Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
                     <option value="no" selected="true">no</option>
@@ -162,6 +175,8 @@
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result2.bw" ftype="bigwig" />
         </test>
@@ -169,6 +184,8 @@
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result3.bg" ftype="bedgraph" />
         </test>
@@ -176,6 +193,8 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="no" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bw" ftype="bigwig" />
         </test>
@@ -183,6 +202,8 @@
             <param name="bamInput" value="phiX.bam" ftype="bam" />
             <param name="outFileFormat" value="bedgraph" />
             <param name="showAdvancedOpt" value="yes" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph" />
         </test>
@@ -191,6 +212,8 @@
             <param name="outFileFormat" value="bigwig" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="filterRNAstrand" value="reverse" />
+            <param name="effectiveGenomeSize_opt" value="specific" />
+            <param name="effectiveGenomeSize" value="2451960000" />
             <param name="binSize" value="10" />
             <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig" />
         </test>
@@ -215,9 +238,14 @@ What it does
 Given a BAM file, this tool generates a bigWig or bedGraph file of fragment or
 read coverages. The way the method works is by first calculating all the
 number of reads (either extended to match the fragment length or not) that
-overlap each bin in the genome. The resulting read counts can be normalized
-using either a given scaling factor, the RPKM formula or to get a 1x depth of
-coverage (RPGC). In the case of paired-end mapping, each read mate is treated
+overlap each bin in the genome. Various options are available to normalize the reads:
+1) using a given scaling factor
+2) RPKM (reads per kilobase per million) : RPKM (per bin) =  number of reads per bin / ( number of mapped reads (in millions) * bin length (kb) ).
+3) CPM (counts per million) : CPM (per bin) =  number of reads per bin / number of mapped reads (in millions).
+4) BPM (bins per million) :  BPM (per bin) =  number of reads per bin / sum of all reads per bin (in millions).
+5) RPGC (1x sequencing depth ) : number of reads per bin /(total number of mapped reads * fragment length / effective genome size)
+
+In the case of paired-end mapping, each read mate is treated
 independently to avoid a bias when a mixture of concordant and discordant
 pairs is present. This means that *each end* will be extended to match the
 fragment length.

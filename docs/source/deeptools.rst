@@ -20,14 +20,6 @@ deeptools.bamHandler module
     :show-inheritance:
 
 
-deeptools.correctReadCounts module
-----------------------------------
-
-.. automodule:: deeptools.correctReadCounts
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 deeptools.correlation module
 ----------------------------
 
@@ -48,6 +40,14 @@ deeptools.countReadsPerBin module
 ---------------------------------
 
 .. automodule:: deeptools.countReadsPerBin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+deeptools.deepBlue
+------------------
+
+.. automodule:: deeptools.deepBlue
     :members:
     :undoc-members:
     :show-inheritance:
@@ -96,6 +96,14 @@ deeptools.mapReduce module
 --------------------------
 
 .. automodule:: deeptools.mapReduce
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+deeptools.sumCoveragePerBin
+---------------------------
+
+.. automodule:: deeptools.subCoveragePerBin
     :members:
     :undoc-members:
     :show-inheritance:

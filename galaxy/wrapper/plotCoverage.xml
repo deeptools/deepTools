@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_coverage" name="plotCoverage" version="@WRAPPER_VERSION@.0">
-    <description>assesses the sequencing depth of BAM files </description>
+    <description>assesses the sequencing depth of BAM/CRAM files </description>
     <macros>
         <token name="@BINARY@">plotCoverage</token>
         <import>deepTools_macros.xml</import>

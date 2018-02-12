@@ -18,6 +18,7 @@ from scipy.stats import binom
 from deeptools.utilities import tbitToBamChrName, getGC_content
 from deeptools import writeBedGraph, parserCommon, mapReduce
 from deeptools import utilities
+from deeptools.bamHandler import openBam
 
 old_settings = np.seterr(all='ignore')
 
@@ -69,14 +70,8 @@ def getRequiredArgs():
                           'discarded. Also, if repetitive regions were not '
                           'included in the mapping of reads, the effective '
                           'genome size needs to be adjusted accordingly. '
-                          'Common values are: mm9: 2150570000, '
-                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                          'See Table 2 of '
-                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                          'for several effective genome sizes. This value is '
-                          'needed to detect enriched regions that, if not '
-                          'discarded, could bias the results.',
+                          'A table of values is available here: '
+                          'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                           default=None,
                           type=int,
                           required=True)
@@ -187,7 +182,7 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     i = 0
 
     tbit = py2bit.open(global_vars['2bit'])
-    bam = pysam.Samfile(global_vars['bam'])
+    bam = openBam(global_vars['bam'])
     read_repetitions = 0
     removed_duplicated_reads = 0
     startTime = time.time()
@@ -337,7 +332,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
 
     tbit = py2bit.open(global_vars['2bit'])
 
-    bam = pysam.Samfile(global_vars['bam'])
+    bam = openBam(global_vars['bam'])
     tempFileName = utilities.getTempFileName(suffix='.bam')
 
     outfile = pysam.Samfile(tempFileName, 'wb', template=bam)
@@ -573,10 +568,10 @@ def main(args=None):
     global_vars['max_dup_gc'] = max_dup_gc
 
     tbit = py2bit.open(global_vars['2bit'])
-    bam = pysam.Samfile(global_vars['bam'])
+    bam, mapped, unmapped, stats = openBam(args.bamfile, returnStats=True, nThreads=args.numberOfProcessors)
 
     global_vars['genome_size'] = sum(tbit.chroms().values())
-    global_vars['total_reads'] = bam.mapped
+    global_vars['total_reads'] = mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
 
@@ -657,32 +652,24 @@ def main(args=None):
     if args.correctedFile.name.endswith('bg') or \
             args.correctedFile.name.endswith('bw'):
 
-        _temp_bg_file_name = utilities.getTempFileName(suffix='_all.bg')
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
 
             res = pool.map_async(writeCorrected_wrapper, mp_args).get(9999999)
         else:
             res = list(map(writeCorrected_wrapper, mp_args))
 
-        # concatenate intermediary bedgraph files
-        _temp_bg_file = open(_temp_bg_file_name, 'wb')
-        for tempFileName in res:
-            if tempFileName:
-                # concatenate all intermediate tempfiles into one
-                # bedgraph file
-                shutil.copyfileobj(open(tempFileName, 'rb'), _temp_bg_file)
-                os.remove(tempFileName)
-        _temp_bg_file.close()
+        oname = args.correctedFile.name
         args.correctedFile.close()
-
-        if args.correctedFile.name.endswith('bg'):
-            shutil.move(_temp_bg_file_name, args.correctedFile.name)
-
+        if oname.endswith('bg'):
+            f = open(oname, 'wb')
+            for tempFileName in res:
+                if tempFileName:
+                    shutil.copyfileobj(open(tempFileName, 'rb'), f)
+                    os.remove(tempFileName)
+            f.close()
         else:
             chromSizes = [(k, v) for k, v in tbit.chroms().items()]
-            writeBedGraph.bedGraphToBigWig(chromSizes, _temp_bg_file_name,
-                                           args.correctedFile.name)
-            os.remove(_temp_bg_file)
+            writeBedGraph.bedGraphToBigWig(chromSizes, res, oname)
 
 
 class Tester():
@@ -693,7 +680,7 @@ class Tester():
         self.bamFile = self.root + "test.bam"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        bam = pysam.Samfile(self.bamFile)
+        bam, mapped, unmapped, stats = openBam(self.bamFile, returnStats=True)
         tbit = py2bit.open(self.tbitFile)
         global debug
         debug = 0
@@ -706,7 +693,7 @@ class Tester():
                        'min_reads': 0,
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
-                       'total_reads': bam.mapped,
+                       'total_reads': mapped,
                        'genome_size': sum(tbit.chroms().values())}
 
     def testWriteCorrectedChunk(self):

@@ -12,9 +12,13 @@ import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
 
+import plotly.offline as py
+import plotly.graph_objs as go
+
 import deeptools.countReadsPerBin as countR
 import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
+from deeptools.utilities import smartLabels
 
 old_settings = np.seterr(all='ignore')
 MAXLEN = 10000000
@@ -53,11 +57,14 @@ def process_args(args=None):
         if args.labels and len(args.bamfiles) == len(args.labels) - 1:
             args.labels.append(args.JSDsample)
 
-    if args.labels and len(args.bamfiles) != len(args.labels):
-        sys.exit("The number of labels does not match the number of BAM files.")
-
     if not args.labels:
-        args.labels = args.bamfiles
+        if args.smartLabels:
+            args.labels = smartLabels(args.bamfiles)
+        else:
+            args.labels = args.bamfiles
+
+    if len(args.bamfiles) != len(args.labels):
+        sys.exit("The number of labels does not match the number of BAM files.")
 
     return args
 
@@ -89,6 +96,12 @@ def get_optional_args():
                           'Separate the labels by spaces.',
                           nargs='+')
 
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'BAM/bigWig files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
+
     optional.add_argument('--binSize', '-bs',
                           help='Window size in base pairs to '
                           'sample the genome.',
@@ -107,8 +120,8 @@ def get_optional_args():
                           'overrides the image format based on the ending '
                           'given via --plotFile '
                           'ending. The available options are: "png", '
-                          '"eps", "pdf" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          '"eps", "pdf", "plotly" and "svg"',
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
@@ -128,8 +141,7 @@ def get_optional_args():
                           'file and columns containing a number of metrics. '
                           'Please see the online documentation for a longer '
                           'explanation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html .',
-                          metavar='FILE.txt',
-                          type=argparse.FileType('w'))
+                          metavar='FILE.txt')
 
     optional.add_argument('--JSDsample',
                           help='Reference sample against which to compute the '
@@ -149,18 +161,16 @@ def get_optional_args():
 def get_output_args():
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
-    group.add_argument('--plotFile', '-plot',
+    group.add_argument('--plotFile', '-plot', '-o',
                        help='File name of the output figure. The file '
                        'ending will be used to determine the image '
                        'format. The available options are typically: "png", '
                        '"eps", "pdf" and "svg", e.g. : fingerprint.png.',
-                       metavar='',
-                       type=argparse.FileType('w'))
+                       metavar='')
 
     group.add_argument('--outRawCounts',
                        help='Output file name to save the read counts per bin.',
-                       metavar='',
-                       type=argparse.FileType('w'))
+                       metavar='')
 
     return parser
 
@@ -389,39 +399,60 @@ def main(args=None):
     total = len(num_reads_per_bin[:, 0])
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
-    if args.plotFile:
+    if args.plotFile is not None:
         i = 0
         # matplotlib won't iterate through line styles by itself
         pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
+        plotly_colors = ["#d73027", "#fc8d59", "#f33090", "#e0f3f8", "#91bfdb", "#4575b4"]
+        plotly_line_styles = sum([6 * ["solid"], 6 * ["dot"], 6 * ["dash"], 6 * ["longdash"], 6 * ["dashdot"], 6 * ["longdashdot"]], [])
+        data = []
         for i, reads in enumerate(num_reads_per_bin.T):
             count = np.cumsum(np.sort(reads))
             count = count / count[-1]  # to normalize y from 0 to 1
-            j = i % 35
-            plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
-            plt.xlabel('rank')
-            plt.ylabel('fraction w.r.t. bin with highest coverage')
-        plt.legend(loc='upper left')
-        plt.suptitle(args.plotTitle)
+            if args.plotFileFormat == 'plotly':
+                trace = go.Scatter(x=x, y=count, mode='lines', name=args.labels[i])
+                trace['line'].update(dash=plotly_line_styles[i % 36], color=plotly_colors[i % 6])
+                data.append(trace)
+            else:
+                j = i % 35
+                plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
+                plt.xlabel('rank')
+                plt.ylabel('fraction w.r.t. bin with highest coverage')
         # set the plotFileFormat explicitly to None to trigger the
         # format from the file-extension
         if not args.plotFileFormat:
             args.plotFileFormat = None
 
-        plt.savefig(args.plotFile.name, bbox_inches=0, format=args.plotFileFormat)
-        plt.close()
+        if args.plotFileFormat == 'plotly':
+            fig = go.Figure()
+            fig['data'] = data
+            fig['layout'].update(title=args.plotTitle)
+            fig['layout']['xaxis1'].update(title="rank")
+            fig['layout']['yaxis1'].update(title="fraction w.r.t bin with highest coverage")
+            py.plot(fig, filename=args.plotFile, auto_open=False)
+        else:
+            plt.legend(loc='upper left')
+            plt.suptitle(args.plotTitle)
+            plt.savefig(args.plotFile, bbox_inches=0, format=args.plotFileFormat)
+            plt.close()
 
-    if args.outRawCounts:
-        args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+    if args.outRawCounts is not None:
+        of = open(args.outRawCounts, "w")
+        of.write("#plotFingerprint --outRawCounts\n")
+        of.write("'" + "'\t'".join(args.labels) + "'\n")
         fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
         for row in num_reads_per_bin:
-            args.outRawCounts.write(fmt % tuple(row))
-        args.outRawCounts.close()
+            of.write(fmt % tuple(row))
+        of.close()
 
-    if args.outQualityMetrics:
-        args.outQualityMetrics.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
+    if args.outQualityMetrics is not None:
+        of = open(args.outQualityMetrics, "w")
+        of.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
         if args.JSDsample:
-            args.outQualityMetrics.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
-        args.outQualityMetrics.write("\n")
+            of.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
+        else:
+            of.write("\tSynthetic JS Distance")
+        of.write("\n")
         line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
         for idx, reads in enumerate(num_reads_per_bin.T):
             counts = np.cumsum(np.sort(reads))
@@ -430,14 +461,17 @@ def main(args=None):
             XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
             elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
             expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
-            args.outQualityMetrics.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
+            of.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
             if args.JSDsample:
                 JSD = getJSD(args, idx, num_reads_per_bin)
                 syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                 CHANCE = getCHANCE(args, idx, num_reads_per_bin)
-                args.outQualityMetrics.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
-            args.outQualityMetrics.write("\n")
-        args.outQualityMetrics.close()
+                of.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+            else:
+                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                of.write("\t{0}".format(syntheticJSD))
+            of.write("\n")
+        of.close()
 
 
 if __name__ == "__main__":

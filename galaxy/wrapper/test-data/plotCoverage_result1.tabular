@@ -1,3 +1,4 @@
+#plotCoverage --outRawCounts
 #'chr'	'start'	'end'	'bowtie2 test1.bam'	'bowtie2 test1.bam'
 chrM	0	1	23.0	23.0
 chrM	1	2	35.0	35.0

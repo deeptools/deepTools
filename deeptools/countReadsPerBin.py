@@ -58,8 +58,8 @@ class CountReadsPerBin(object):
     region : str
         Region to limit the computation in the form chrom:start:end.
 
-    bedFile : file_handle
-        File handle of a bed file containing the regions for which to compute the coverage. This option
+    bedFile : list of file_handles.
+        Each file handle corresponds to a bed file containing the regions for which to compute the coverage. This option
         overrules ``binLength``, ``numberOfSamples`` and ``stepSize``.
 
     blackListFileName : str
@@ -121,6 +121,12 @@ class CountReadsPerBin(object):
     out_file_for_raw_data : str
         File name to save the raw counts computed
 
+    statsList : list
+        For each BAM file in bamFilesList, the associated per-chromosome statistics returned by openBam
+
+    mappedList : list
+        For each BAM file in bamFilesList, the number of mapped reads in the file.
+
     Returns
     -------
     numpy array
@@ -160,12 +166,16 @@ class CountReadsPerBin(object):
                  smoothLength=0,
                  minFragmentLength=0,
                  maxFragmentLength=0,
-                 out_file_for_raw_data=None):
+                 out_file_for_raw_data=None,
+                 statsList=[],
+                 mappedList=[]):
 
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
         self.blackListFileName = blackListFileName
+        self.statsList = statsList
+        self.mappedList = mappedList
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -231,31 +241,22 @@ class CountReadsPerBin(object):
         if self.maxFragmentLength > 0:
             self.maxPairedFragmentLength = self.maxFragmentLength
 
-    def run(self, allArgs=None):
+        if len(self.mappedList) == 0:
+            try:
+                for fname in self.bamFilesList:
+                    bam, mapped, unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
+                    self.mappedList.append(mapped)
+                    self.statsList.append(stats)
+                    bam.close()
+            except:
+                self.mappedList = []
+                self.statsList = []
+
+    def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
         # the following values are empirical
-        bamFilesHandlers = []
-        for x in self.bamFilesList:
-            try:
-                y = bamHandler.openBam(x)
-            except:
-                y = pyBigWig.open(x)
-            bamFilesHandlers.append(y)
-        chromSizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
-
-        # skip chromosome in the list. This is usually for the
-        # X chromosome which may have either one copy  in a male sample
-        # or a mixture of male/female and is unreliable.
-        # Also the skip may contain heterochromatic regions and
-        # mitochondrial DNA
-        if len(self.chrsToSkip):
-            chromSizes = [x for x in chromSizes if x[0] not in self.chrsToSkip]
-
-        chrNames, chrLengths = list(zip(*chromSizes))
-
-        genomeSize = sum(chrLengths)
         if self.stepSize is None:
             if self.region is None:
                 self.stepSize = max(int(float(genomeSize) / self.numberOfSamples), 1)
@@ -270,14 +271,9 @@ class CountReadsPerBin(object):
             min_num_of_samples = int(genomeSize / np.mean(chrLengths))
             raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
 
-        max_mapped = []
-        for x in bamFilesHandlers:
-            try:
-                max_mapped.append(x.mapped)
-            except:
-                # bigWig, use a fixed value
-                max_mapped.append(0)
-        max_mapped = max(max_mapped)
+        max_mapped = 0
+        if len(self.mappedList) > 0:
+            max_mapped = max(self.mappedList)
 
         # If max_mapped is 0 (i.e., bigWig input), set chunkSize to a multiple of binLength and use every bin
         if max_mapped == 0:
@@ -285,12 +281,45 @@ class CountReadsPerBin(object):
             self.stepSize = self.binLength
         else:
             reads_per_bp = float(max_mapped) / genomeSize
-            chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
-        [bam_h.close() for bam_h in bamFilesHandlers]
+            chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandles)))
 
         # Ensure that chunkSize is always at least self.stepSize
         if chunkSize < self.stepSize:
             chunkSize = self.stepSize
+
+        return chunkSize
+
+    def run(self, allArgs=None):
+        bamFilesHandles = []
+        for x in self.bamFilesList:
+            try:
+                y = bamHandler.openBam(x)
+            except SystemExit:
+                sys.exit(sys.exc_info()[1])
+            except:
+                y = pyBigWig.open(x)
+            bamFilesHandles.append(y)
+
+        chromsizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandles, verbose=self.verbose)
+
+        # skip chromosome in the list. This is usually for the
+        # X chromosome which may have either one copy  in a male sample
+        # or a mixture of male/female and is unreliable.
+        # Also the skip may contain heterochromatic regions and
+        # mitochondrial DNA
+        if len(self.chrsToSkip):
+            chromsizes = [x for x in chromsizes if x[0] not in self.chrsToSkip]
+
+        chrNames, chrLengths = list(zip(*chromsizes))
+
+        genomeSize = sum(chrLengths)
+
+        if self.bedFile is None:
+            chunkSize = self.get_chunk_length(bamFilesHandles, genomeSize, chromsizes, chrLengths)
+        else:
+            chunkSize = None
+
+        [bam_h.close() for bam_h in bamFilesHandles]
 
         if self.verbose:
             print("step size is {}".format(self.stepSize))
@@ -305,7 +334,7 @@ class CountReadsPerBin(object):
         # use map reduce to call countReadsInRegions_wrapper
         imap_res = mapReduce.mapReduce([],
                                        countReadsInRegions_wrapper,
-                                       chromSizes,
+                                       chromsizes,
                                        self_=self,
                                        genomeChunkLength=chunkSize,
                                        bedFile=self.bedFile,
@@ -402,19 +431,21 @@ class CountReadsPerBin(object):
         if start > end:
             raise NameError("start %d bigger that end %d" % (start, end))
 
-        if self.stepSize is None:
+        if self.stepSize is None and bed_regions_list is None:
             raise ValueError("stepSize is not set!")
         # array to keep the read counts for the regions
         subnum_reads_per_bin = []
 
         start_time = time.time()
 
-        bam_handlers = []
+        bam_handles = []
         for fname in self.bamFilesList:
             try:
-                bam_handlers.append(bamHandler.openBam(fname))
+                bam_handles.append(bamHandler.openBam(fname))
+            except SystemExit:
+                sys.exit(sys.exc_info()[1])
             except:
-                bam_handlers.append(pyBigWig.open(fname))
+                bam_handles.append(pyBigWig.open(fname))
 
         blackList = None
         if self.blackListFileName is not None:
@@ -441,7 +472,7 @@ class CountReadsPerBin(object):
         else:
             _file_name = ''
 
-        for bam in bam_handlers:
+        for bam in bam_handles:
             for trans in transcriptsToConsider:
                 tcov = self.get_coverage_of_region(bam, chrom, trans)
                 if bed_regions_list is not None:
@@ -569,7 +600,8 @@ class CountReadsPerBin(object):
             else:
                 raise NameError("chromosome {} not found in bam file".format(chrom))
 
-            prev_start_pos = None  # to store the start positions
+            prev_pos = set()
+            lpos = None
             # of previous processed read pair
             for read in reads:
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
@@ -590,9 +622,23 @@ class CountReadsPerBin(object):
 
                 # get rid of duplicate reads that have same position on each of the
                 # pairs
-                if self.ignoreDuplicates and prev_start_pos \
-                        and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                    continue
+                if self.ignoreDuplicates:
+                    # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                    if tLen >= 0:
+                        s = read.pos
+                        e = s + tLen
+                    else:
+                        s = read.pnext
+                        e = s - tLen
+                    if read.reference_id != read.next_reference_id:
+                        e = read.pnext
+                    if lpos is not None and lpos == read.reference_start \
+                            and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+                        continue
+                    if lpos != read.reference_start:
+                        prev_pos.clear()
+                    lpos = read.reference_start
+                    prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
 
                 # since reads can be split (e.g. RNA-seq reads) each part of the
                 # read that maps is called a position block.
@@ -631,7 +677,6 @@ class CountReadsPerBin(object):
                     coverages[sIdx:eIdx] += 1
                     last_eIdx = eIdx
 
-                prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
                 c += 1
 
             if self.verbose:

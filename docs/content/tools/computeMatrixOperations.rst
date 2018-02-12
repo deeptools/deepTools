@@ -33,6 +33,9 @@ Details
 
 These operations are useful when you want to run computeMatrix on multiple files (thereby keeping all of the values together) and later exclude regions/samples or add new ones. Another common use would be if you require the output of computeMatrix to be sorted to match the order of regions in the input file.
 
+.. attention::
+   As of version 3.0, computeMatrix (and therefore also computeMatrixOperations) produces output with labels present for each sample. If you run any operations on matrices output by older versions then they will be modified to be comformant with the new output, which is not backward compatible!
+
 Examples
 ^^^^^^^^
 
@@ -84,5 +87,3 @@ Suppose that we have a strand-specific RNAseq dataset and would like to plot onl
     $ computeMatrixOperations sort -m merged.mat.gz -o sorted.mat.gz -R genes.gtf
 
 The resulting file can then be used with ``plotHeatmap`` or ``plotProfile``. Note that we could have skipped the subset step and run ``computeMatrix`` independently on the forward and reverse bigWig files.
-    
-.. tip:: The ``cbind`` subcommand can be used to merge, left to right, matrices using very different signal types. For example, a scale-region matrix can be merged in this way with a reference-point matrix. When these are plotted, however, the tick labels on the Y-axis will only be correct for the left-most columns. The deepTools plot functions using the same X-axis ticks and labels for each profile/heatmap, so the left-most plots will have correct labels and the others may note. The plotted data is nonetheless correct, so simply ignore these. Note further that the tick positions will be scaled according to the sample width, so the ticks will always appear in the same relative position, but not the same absolute position within each group of samples.

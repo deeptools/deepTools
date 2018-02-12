@@ -565,6 +565,7 @@ int nodeHasOverlaps(GTFnode *node, int firstNode, uint32_t *lpos, uint32_t *minD
         e = e->right;
     }
 
+    // Go down the right
     if(node->right) return nodeHasOverlaps(node->right, 0, lpos, minDistance);
     return rv;
 }

@@ -8,13 +8,20 @@
     <command>
 <![CDATA[
         ln -s "$bamInput" "local_bamInput.bam" &&
-        ln -s "$bamInput.metadata.bam_index" local_bamInput.bam.bai &&
+        #if $bamInput.ext == 'bam':
+            ln -s '${bamInput.metadata.bam_index}' local_bamInput.bam.bai &&
+        #else:
+            ln -s '${bamInput.metadata.cram_index}' local_bamInput.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@
             --bamfile local_bamInput.bam
             --GCbiasFrequenciesFile $outFileName
-            --fragmentLength $fragmentLength
+
+            #if $fragmentLength != "":
+                --fragmentLength $fragmentLength
+            #end if
 
             @reference_genome_source@
 
@@ -46,7 +53,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="BAM file"
+        <param name="bamInput" format="bam,cram" type="data" label="BAM file"
             help=""/>
 
         <expand macro="reference_genome_source" />
@@ -84,6 +91,7 @@
             <option value="pdf">Image in pdf format</option>
             <option value="svg">Image in svg format</option>
             <option value="eps">Image in eps format</option>
+            <option value="plotly">HTML page rendered with plotly</option>
         </param>
     </inputs>
     <outputs>
@@ -98,6 +106,7 @@
                 <when input="image_format" value="pdf" format="pdf" />
                 <when input="image_format" value="svg" format="svg" />
                 <when input="image_format" value="eps" format="eps" />
+                <when input="image_format" value="plotly" format="html" />
             </change_format>
         </data>
     </outputs>
@@ -114,6 +123,7 @@
             <param name="effectiveGenomeSize" value="10050" />
             <param name="region" value="chr2L" />
             <param name="image_format" value="none" />
+            <param name="fragmentLength" value="300" />
             <output name="outFileName" file="computeGCBias_result1.tabular" ftype="tabular" />
         </test>
     </tests>

@@ -1,0 +1,3 @@
+#bamFilterReads --filterMetrics
+#File	Reads Remaining	Total Initial Reads
+paired_chr2L.bam	8440	12644
