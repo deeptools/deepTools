@@ -1,7 +1,6 @@
 #!/bin/bash
 planemo=$HOME/miniconda/envs/planemo/bin/planemo
 
-#galaxy/wrapper/correctGCBias.xml \
 $planemo test --no_dependency_resolution --install_galaxy \
 galaxy/wrapper/alignmentSieve.xml \
 galaxy/wrapper/bamCompare.xml \
@@ -11,6 +10,7 @@ galaxy/wrapper/bigwigCompare.xml \
 galaxy/wrapper/computeGCBias.xml \
 galaxy/wrapper/computeMatrix.xml \
 galaxy/wrapper/computeMatrixOperations.xml \
+galaxy/wrapper/correctGCBias.xml \
 galaxy/wrapper/estimateReadFiltering.xml \
 galaxy/wrapper/multiBamSummary.xml \
 galaxy/wrapper/multiBigwigSummary.xml \

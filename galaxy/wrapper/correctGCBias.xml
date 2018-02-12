@@ -9,9 +9,9 @@
 <![CDATA[
         ln -s "$bamInput" "local_bamInput.bam" &&
         #if $bamInput.ext == 'bam':
-            ln -s '${bamInput.metadata.bam_index}' one.bam.bai &&
+            ln -s '${bamInput.metadata.bam_index}' local_bamInput.bam.bai &&
         #else:
-            ln -s '${bamInput.metadata.cram_index}' one.bam.crai &&
+            ln -s '${bamInput.metadata.cram_index}' local_bamInput.bam.crai &&
         #end if
 
         @BINARY@
