@@ -102,7 +102,7 @@
                   take strand into consideration for strand-specific
                   protocols. Note that only properly paired reads are considered."/>
         <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq" />
-        <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
+        <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
             help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                   Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
             <option value="no" selected="true">no</option>
@@ -176,7 +176,7 @@ The primary output is a BAM file with all alignments passing the desired criteri
  * Number of reads passing the filtering criteria
  * Total number of initial reads
 
-Instead of producing a filtered BAM file, a BEDPE file appropriate for use with MACS2 can be used, optionally with fragment ends shifted. This is useful in cases like ATAC-seq. 
+Instead of producing a filtered BAM file, a BEDPE file appropriate for use with MACS2 can be used, optionally with fragment ends shifted. This is useful in cases like ATAC-seq.
 
 The ``--shift`` option can take either 2 or 4 integers. If two integers are given, then the first value shifts the left-most end of a fragment and the second the right-most end. Positive values shift to the right and negative values to the left. See below for how setting ``--shift`` to '-5 3' would shift a single fragment::
 
@@ -184,7 +184,7 @@ The ``--shift`` option can take either 2 or 4 integers. If two integers are give
                      read 2 <----
 
          ------------------------ fragment
-    
+
     -------------------------------- shifted fragment
 
 The same results will be produced if read 1 and read 2 are swapped. If, instead, the protocol is strand-specific, then the first set of integers in a pair would be applied to fragments where read 1 precedes read 2, and the second set to cases where read 2 precedes read 1. In this case, the first value in each pair is applied to the end of read 1 and the second to the end of read 2. For example, suppose "-5 3 -1 4" were given as the option to ``--shift``. The ``-5 3`` set would produce the following::
@@ -193,7 +193,7 @@ The same results will be produced if read 1 and read 2 are swapped. If, instead,
                      read 2 <----
 
          ------------------------ fragment
-    
+
     -------------------------------- shifted fragment
 
 and the ``-1 4`` set would produce the following::
