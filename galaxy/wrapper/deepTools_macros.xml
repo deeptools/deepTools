@@ -100,7 +100,7 @@
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
-            help="If set, then regions with zero counts for *all* BAM files are included. The default behavior is to ignore such regions." />
+            help="If set, then regions with zero counts for *all* BAM/CRAM files are included. The default behavior is to ignore such regions." />
     </xml>
 
     <xml name="zMin_zMax">
@@ -327,13 +327,13 @@
     <xml name="skipZeros">
         <param argument="--skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
             label ="Skip zeros"
-            help ="If set, then zero counts that happen for *all* BAM files given are ignored. This may result in fewer considered regions." />
+            help ="If set, then zero counts that happen for *all* BAM/CRAM files given are ignored. This may result in fewer considered regions." />
     </xml>
 
     <xml name="fragmentLength">
         <param argument="--fragmentLength" type="integer" min="1" optional="true"
             label="Fragment length used for the sequencing"
-            help ="If paired-end reads are used, the fragment length is computed from the BAM file, so this is only needed for single-end data."/>
+            help ="If paired-end reads are used, the fragment length is computed from the BAM/CRAM file, so this is only needed for single-end data."/>
     </xml>
 
     <xml name="scaleFactor">
@@ -390,13 +390,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="Yes">Yes</option>
         </param>
         <when value="No">
-            <param argument="--bamfiles" type="data" format="bam" min="@MIN@"
-                label="Bam file" multiple="true"
+            <param argument="--bamfiles" type="data" format="bam,cram" min="@MIN@"
+                label="BAM/CRAM file" multiple="true"
                 help=""/>
         </when>
         <when value="Yes">
-            <repeat name="multibam_repeats" min="@MIN@" title="BAM Files">
-                <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
+            <repeat name="multibam_repeats" min="@MIN@" title="BAM/CRAM Files">
+                <param argument="--bamfiles" type="data" format="bam,cram" label="BAM/CRAM file" help="" />
             </repeat>
         </when>
         </conditional>
@@ -412,11 +412,11 @@ is vital to you, select Yes below.">
         <when value="No">
             <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="@MIN@"
                 label="@LABEL@"
-                help="You can generate a bigWig file from a BAM file using the bamCoverage tool."/>
+                help="You can generate a bigWig file from a BAM/CRAM file using the bamCoverage tool."/>
         </when>
         <when value="Yes">
             <repeat name="multibigwig_repeats" min="@MIN@" title="@TITLE@">
-                <param argument="--bigwigfiles" type="data" format="bigwig" label="@LABEL@" help="You can generate a bigWig file from a BAM file using the bamCoverage tool."/>
+                <param argument="--bigwigfiles" type="data" format="bigwig" label="@LABEL@" help="You can generate a bigWig file from a BAM/CRAM file using the bamCoverage tool."/>
             </repeat>
         </when>
         </conditional>
@@ -444,7 +444,11 @@ is vital to you, select Yes below.">
             #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
                 ln -s "${bamfile}" "./${counter}.bam" &&
-                ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #if $bamfile.ext == 'bam':
+                    ln -s '${bamfile.metadata.bam_index}' './${counter}.bam.bai' &&
+                #else:
+                    ln -s '${bamfile.metadata.cram_index}' './${counter}.bam.crai' &&
+                #end if
                 #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % identifier)
             #end for
@@ -453,6 +457,11 @@ is vital to you, select Yes below.">
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
                 ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
+                #if $f.bamfiles.ext == 'bam':
+                    ln -s '${f.bamfiles.metadata.bam_index}' './${counter}.bam.bai' &&
+                #else:
+                    ln -s '${f.bamfiles.metadata.cram_index}' './${counter}.bam.crai' &&
+                #end if
                 #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % $identifier)
             #end for

@@ -8,6 +8,7 @@ import numpy as np
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools.getScaleFactor import get_scale_factor
+from deeptools.bamHandler import openBam
 
 debug = 0
 
@@ -148,7 +149,9 @@ def main(args=None):
 
     if args.normalizeUsing:
         # if a normalization is required then compute the scale factors
-        scale_factor = get_scale_factor(args)
+        bam, mapped, unmapped, stats = openBam(args.bam, returnStats=True, nThreads=args.numberOfProcessors)
+        bam.close()
+        scale_factor = get_scale_factor(args, stats)
     else:
         scale_factor = args.scaleFactor
 

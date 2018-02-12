@@ -1,5 +1,5 @@
 <tool id="deeptools_correct_gc_bias" name="correctGCBias" version="@WRAPPER_VERSION@.0">
-    <description>uses the output from computeGCBias to generate GC-corrected BAM files</description>
+    <description>uses the output from computeGCBias to generate GC-corrected BAM/CRAM files</description>
     <macros>
         <token name="@BINARY@">correctGCBias</token>
         <import>deepTools_macros.xml</import>
@@ -8,7 +8,11 @@
     <command>
 <![CDATA[
         ln -s "$bamInput" "local_bamInput.bam" &&
-        ln -s "$bamInput.metadata.bam_index" local_bamInput.bam.bai &&
+        #if $bamInput.ext == 'bam':
+            ln -s '${bamInput.metadata.bam_index}' local_bamInput.bam.bai &&
+        #else:
+            ln -s '${bamInput.metadata.cram_index}' local_bamInput.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@
@@ -31,8 +35,8 @@
     </command>
     <inputs>
         <param argument="--GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" help="" />
-        <param argument="--bamInput" format="bam" type="data"
-            label="BAM file" help="This should be same file that was used for computeGCbias." />
+        <param argument="--bamInput" format="bam,cram" type="data"
+            label="BAM/CRAM file" help="This should be same file that was used for computeGCbias." />
         <expand macro="reference_genome_source" />
         <expand macro="effectiveGenomeSize" />
         <expand macro="region_limit_operation" />
@@ -48,7 +52,7 @@
             <param name="input1" value="sequence.2bit" />
             <param name="effectiveGenomeSize_opt" value="specific" />
             <param name="effectiveGenomeSize" value="10050" />
-            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" lines_diff="100" />
+            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" lines_diff="200" />
         </test>
     </tests>
     <help>

@@ -504,21 +504,22 @@ def plotMatrix(hm, outFileName,
     # check if matrix is reference-point based using the upstream >0 value
     # and is sorted by region length. If this is
     # the case, prepare the data to plot a border at the regions end
-    if hm.matrix.sort_using == 'region_length' and \
-       hm.matrix.sort_method != 'no':
-        _regions = hm.matrix.get_regions()
-        regions_length_in_bins = []
-        for _group in _regions:
-            _reg_len = []
-            for ind_reg in _group:
-                if isinstance(ind_reg, dict):
-                    _len = ind_reg['end'] - ind_reg['start']
-                else:
-                    _len = sum([x[1] - x[0] for x in ind_reg[1]])
-                _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
-        regions_length_in_bins.append(_reg_len)
-    else:
-        regions_length_in_bins = None
+    regions_length_in_bins = [None] * len(hm.parameters['upstream'])
+    if hm.matrix.sort_using == 'region_length' and hm.matrix.sort_method != 'no':
+        for idx in range(len(hm.parameters['upstream'])):
+            if hm.paramters['upstream'] > 0:
+                _regions = hm.matrix.get_regions()
+                foo = []
+                for _group in _regions:
+                    _reg_len = []
+                    for ind_reg in _group:
+                        if isinstance(ind_reg, dict):
+                            _len = ind_reg['end'] - ind_reg['start']
+                        else:
+                            _len = sum([x[1] - x[0] for x in ind_reg[1]])
+                        _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
+                    foo.append(_reg_len)
+                regions_length_in_bins[idx] = foo
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
@@ -613,12 +614,12 @@ def plotMatrix(hm, outFileName,
             img.set_rasterized(True)
             # plot border at the end of the regions
             # if ordered by length
-            if regions_length_in_bins is not None and hm.parameters['upstream'][sample] > 0:
+            if regions_length_in_bins[sample] is not None:
                 x_lim = ax.get_xlim()
                 y_lim = ax.get_ylim()
 
-                ax.plot(regions_length_in_bins[group_idx],
-                        np.arange(len(regions_length_in_bins[group_idx])),
+                ax.plot(regions_length_in_bins[sample][group_idx],
+                        np.arange(len(regions_length_in_bins[sample][group_idx])),
                         '--', color='black', linewidth=0.5, dashes=(3, 2))
                 ax.set_xlim(x_lim)
                 ax.set_ylim(y_lim)

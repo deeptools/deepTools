@@ -1,5 +1,5 @@
 <tool id="deeptools_plot_fingerprint" name="plotFingerprint" version="@WRAPPER_VERSION@.0">
-    <description>plots profiles of BAM files; useful for assesing ChIP signal strength</description>
+    <description>plots profiles of BAM files; useful for assessing ChIP signal strength</description>
     <macros>
         <token name="@BINARY@">plotFingerprint</token>
         <import>deepTools_macros.xml</import>

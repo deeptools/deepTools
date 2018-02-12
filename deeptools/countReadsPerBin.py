@@ -121,6 +121,12 @@ class CountReadsPerBin(object):
     out_file_for_raw_data : str
         File name to save the raw counts computed
 
+    statsList : list
+        For each BAM file in bamFilesList, the associated per-chromosome statistics returned by openBam
+
+    mappedList : list
+        For each BAM file in bamFilesList, the number of mapped reads in the file.
+
     Returns
     -------
     numpy array
@@ -160,12 +166,16 @@ class CountReadsPerBin(object):
                  smoothLength=0,
                  minFragmentLength=0,
                  maxFragmentLength=0,
-                 out_file_for_raw_data=None):
+                 out_file_for_raw_data=None,
+                 statsList=[],
+                 mappedList=[]):
 
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
         self.blackListFileName = blackListFileName
+        self.statsList = statsList
+        self.mappedList = mappedList
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -231,7 +241,18 @@ class CountReadsPerBin(object):
         if self.maxFragmentLength > 0:
             self.maxPairedFragmentLength = self.maxFragmentLength
 
-    def get_chunk_length(self, bamFilesHandlers, genomeSize, chromSizes, chrLengths):
+        if len(self.mappedList) == 0:
+            try:
+                for fname in self.bamFilesList:
+                    bam, mapped, unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
+                    self.mappedList.append(mapped)
+                    self.statsList.append(stats)
+                    bam.close()
+            except:
+                self.mappedList = []
+                self.statsList = []
+
+    def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
         # if too long, some processors end up free.
@@ -250,14 +271,9 @@ class CountReadsPerBin(object):
             min_num_of_samples = int(genomeSize / np.mean(chrLengths))
             raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
 
-        max_mapped = []
-        for x in bamFilesHandlers:
-            try:
-                max_mapped.append(x.mapped)
-            except:
-                # bigWig, use a fixed value
-                max_mapped.append(0)
-        max_mapped = max(max_mapped)
+        max_mapped = 0
+        if len(self.mappedList) > 0:
+            max_mapped = max(self.mappedList)
 
         # If max_mapped is 0 (i.e., bigWig input), set chunkSize to a multiple of binLength and use every bin
         if max_mapped == 0:
@@ -265,7 +281,7 @@ class CountReadsPerBin(object):
             self.stepSize = self.binLength
         else:
             reads_per_bp = float(max_mapped) / genomeSize
-            chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandlers)))
+            chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandles)))
 
         # Ensure that chunkSize is always at least self.stepSize
         if chunkSize < self.stepSize:
@@ -274,7 +290,7 @@ class CountReadsPerBin(object):
         return chunkSize
 
     def run(self, allArgs=None):
-        bamFilesHandlers = []
+        bamFilesHandles = []
         for x in self.bamFilesList:
             try:
                 y = bamHandler.openBam(x)
@@ -282,9 +298,9 @@ class CountReadsPerBin(object):
                 sys.exit(sys.exc_info()[1])
             except:
                 y = pyBigWig.open(x)
-            bamFilesHandlers.append(y)
+            bamFilesHandles.append(y)
 
-        chromsizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandlers, verbose=self.verbose)
+        chromsizes, non_common = deeptools.utilities.getCommonChrNames(bamFilesHandles, verbose=self.verbose)
 
         # skip chromosome in the list. This is usually for the
         # X chromosome which may have either one copy  in a male sample
@@ -299,11 +315,11 @@ class CountReadsPerBin(object):
         genomeSize = sum(chrLengths)
 
         if self.bedFile is None:
-            chunkSize = self.get_chunk_length(bamFilesHandlers, genomeSize, chromsizes, chrLengths)
+            chunkSize = self.get_chunk_length(bamFilesHandles, genomeSize, chromsizes, chrLengths)
         else:
             chunkSize = None
 
-        [bam_h.close() for bam_h in bamFilesHandlers]
+        [bam_h.close() for bam_h in bamFilesHandles]
 
         if self.verbose:
             print("step size is {}".format(self.stepSize))
@@ -422,14 +438,14 @@ class CountReadsPerBin(object):
 
         start_time = time.time()
 
-        bam_handlers = []
+        bam_handles = []
         for fname in self.bamFilesList:
             try:
-                bam_handlers.append(bamHandler.openBam(fname))
+                bam_handles.append(bamHandler.openBam(fname))
             except SystemExit:
                 sys.exit(sys.exc_info()[1])
             except:
-                bam_handlers.append(pyBigWig.open(fname))
+                bam_handles.append(pyBigWig.open(fname))
 
         blackList = None
         if self.blackListFileName is not None:
@@ -456,7 +472,7 @@ class CountReadsPerBin(object):
         else:
             _file_name = ''
 
-        for bam in bam_handlers:
+        for bam in bam_handles:
             for trans in transcriptsToConsider:
                 tcov = self.get_coverage_of_region(bam, chrom, trans)
                 if bed_regions_list is not None:

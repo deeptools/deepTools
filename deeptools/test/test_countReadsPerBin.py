@@ -192,3 +192,34 @@ class TestCountReadsPerBin(object):
 
         import os
         os.unlink(bed_file.name)
+
+
+class TestCountReadsPerBinCRAM(TestCountReadsPerBin):
+    def setUp(self):
+        """
+        As above, but using CRAM rather than BAM
+        The distribution of reads between the two bam files is as follows.
+
+        They cover 200 bp::
+
+              0                              100                           200
+              |------------------------------------------------------------|
+            A                                ==============>
+                                                            <==============
+
+
+            B                 <==============               ==============>
+                                             ==============>
+                                                            ==============>
+        """
+        self.root = ROOT
+        self.bamFile1 = self.root + "testA.cram"
+        self.bamFile2 = self.root + "testB.cram"
+        self.bamFile_PE = self.root + "test_paired2.cram"
+        self.chrom = '3R'
+        step_size = 50
+        bin_length = 25
+
+        self.c = cr.CountReadsPerBin([self.bamFile1, self.bamFile2],
+                                     binLength=bin_length,
+                                     stepSize=step_size)

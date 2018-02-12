@@ -32,6 +32,7 @@
  * The `-o` option can now be universally used to indicate the file to save a tool's primary output. Previously, some tools use `-o`, some used `-out` and still others used things like `-hist` or `-freq`. This caused annoyance due to having to always remember the appropriate switch. Hopefully standardizing to `-o` will alleviate this. (issue #640)
  * Using a --blackListFileName with overlapping regions will typically now cause the various deepTools programs to stop. This is to ensure that resulting scale factors are correct (issue #649)
  * `bamCoverage` is a bit more efficient with small BAM files now due to underlying algorithmic changes. Relatedely, bamCoverage will skip some unnecessary estimation steps if you are not filtering reads, further speeding processing a bit. (issue #662)
+ * Added support for CRAM files. This requires pysam > 0.13.0 (issue #619).
 
 2.5.7
 

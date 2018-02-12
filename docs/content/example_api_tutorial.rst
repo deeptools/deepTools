@@ -51,7 +51,7 @@ to 1000.
 
 .. parsed-literal::
 
-    array([[ 2.],
+    (array([[ 2.],
            [ 3.],
            [ 1.],
            [ 2.],
@@ -66,9 +66,9 @@ to 1000.
            [ 4.],
            [ 2.],
            [ 2.],
-           [ 1.]])
+           [ 1.]]), '')
 
-The result is a numpy array with one row per bin and one column per bam file. Since only one BAM file was used, there is only one column.
+The result is a tuple with the first element a numpy array with one row per bin and one column per bam file. Since only one BAM file was used, there is only one column. If a file name for saving the raw data had been specificied, then the temporary file name used for this would appear in the second item of the tuple.
 
 Filtering reads
 ---------------
@@ -92,7 +92,7 @@ Furthermore, duplicated reads are ignored.
 
 .. parsed-literal::
 
-    array([[ 1.],
+    (array([[ 1.],
            [ 1.],
            [ 0.],
            [ 0.],
@@ -111,7 +111,7 @@ Furthermore, duplicated reads are ignored.
            [ 1.],
            [ 0.],
            [ 0.],
-           [ 0.]])
+           [ 0.]]), '')
 
 Sampling the genome
 -------------------
@@ -257,9 +257,9 @@ a tuple with the parameters: chromosome name, start position, end position, and 
     import numpy as np
     def get_fragment_length(args):
         chrom, start, end, bam_file_name = args
-        bam = pysam.Aligmementfile(bam_file_name)
+        bam = pysam.AlignmentFile(bam_file_name)
         f_lens_list = []
-        for fetch_start in range(start, end, 1e6):
+        for fetch_start in range(start, end, 1000000):
             # simply get the reads over a region of 10000 bases
             fetch_end = min(end, start + 10000)
 
@@ -268,7 +268,7 @@ a tuple with the parameters: chromosome name, start position, end position, and 
                                   if read.is_proper_pair and read.is_read1]))
 
         # concatenate all results
-        return np.concatenate(fragment_lengths)
+        return np.concatenate(f_lens_list)
 
 
 Now, we can use `mapReduce` to call this function and compute fragment lengths
@@ -285,20 +285,20 @@ to the function, the BAM file name. The next two positional arguments are the na
 .. code:: python
 
     import deeptools.mapReduce
-    bam = pysam.Aligmentfile(bamFile)
-    chroms_sizes = zip(bam.references, bam.lengths)
+    bam = pysam.AlignmentFile(bamFile)
+    chroms_sizes = list(zip(bam.references, bam.lengths))
 
-    result = mapReduce.mapReduce((bam_file_name, ),
-                                  get_fragment_length
-                                  chrom_sizes,
-                                  genomeChunkLength=10000000,
-                                  numberOfProcessors=20,
-                                  verbose=True)
+    result = mapReduce.mapReduce([bam_file_name],
+                                 get_fragment_length,
+                                 chrom_sizes,
+                                 genomeChunkLength=10000000,
+                                 numberOfProcessors=20,
+                                 verbose=True)
 
     fragment_lengths =  np.concatenate(result)
 
-    print "mean fragment length {}".format(fragment_lengths.mean()"
-    print "median fragment length {}".format(np.median(fragment_lengths)"
+    print("mean fragment length {}".format(fragment_lengths.mean()))
+    print("median fragment length {}".format(np.median(fragment_lengths)))
 
 
 .. parsed-literal::

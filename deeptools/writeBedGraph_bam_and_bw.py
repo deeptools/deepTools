@@ -148,7 +148,7 @@ def writeBedGraph_worker(
 
 def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
-        func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=None,
+        func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=1,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
         smoothLength=0, fixed_step=False, verbose=False):
     r"""
@@ -159,15 +159,19 @@ def writeBedGraph(
     and that is related to the coverage underlying the tile.
 
     """
+    bamHandles = []
+    mappedList = []
+    for indexedFile, fileFormat in bamOrBwFileList:
+        if fileFormat == 'bam':
+            bam, mapped, unmapped, stats = bamHandler.openBam(indexedFile, returnStats=True, nThreads=numberOfProcessors)
+            bamHandles.append(bam)
+            mappedList.append(mapped)
 
-    bamHandlers = [bamHandler.openBam(indexedFile) for
-                   indexedFile,
-                   fileFormat in bamOrBwFileList if fileFormat == 'bam']
-    if len(bamHandlers):
-        genomeChunkLength = getGenomeChunkLength(bamHandlers, tileSize)
+    if len(bamHandles):
+        genomeChunkLength = getGenomeChunkLength(bamHandles, tileSize, mappedList)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=verbose)
+        chromNamesAndSize, __ = getCommonChrNames(bamHandles, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
         cCommon = []

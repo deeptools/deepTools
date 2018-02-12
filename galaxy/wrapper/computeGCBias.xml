@@ -8,7 +8,11 @@
     <command>
 <![CDATA[
         ln -s "$bamInput" "local_bamInput.bam" &&
-        ln -s "$bamInput.metadata.bam_index" local_bamInput.bam.bai &&
+        #if $bamInput.ext == 'bam':
+            ln -s '${bamInput.metadata.bam_index}' local_bamInput.bam.bai &&
+        #else:
+            ln -s '${bamInput.metadata.cram_index}' local_bamInput.bam.crai &&
+        #end if
 
         @BINARY@
             @THREADS@
@@ -49,7 +53,7 @@
 ]]>
     </command>
     <inputs>
-        <param name="bamInput" format="bam" type="data" label="BAM file"
+        <param name="bamInput" format="bam,cram" type="data" label="BAM file"
             help=""/>
 
         <expand macro="reference_genome_source" />

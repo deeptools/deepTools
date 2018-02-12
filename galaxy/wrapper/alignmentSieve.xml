@@ -1,5 +1,5 @@
 <tool id="deeptools_alignmentsieve" name="alignmentsieve" version="@WRAPPER_VERSION@.0">
-    <description>Filter BAM files according to specified parameters</description>
+    <description>Filter BAM/CRAM files according to specified parameters</description>
     <macros>
         <token name="@BINARY@">alignmentSieve</token>
         <import>deepTools_macros.xml</import>
@@ -10,7 +10,11 @@
         #import re
         #set label = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
         ln -s '$bamfile' one.bam &&
-        ln -s '${bamfile.metadata.bam_index}' one.bam.bai &&
+        #if $bamfile.ext == 'bam':
+            ln -s '${bamfile.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamfile.metadata.cram_index}' one.bam.crai &&
+        #end if
 
         @BINARY@
         @THREADS@
@@ -82,7 +86,7 @@
     </command>
 
     <inputs>
-        <param name="bamfile" format="bam" type="data" label="BAM file" />
+        <param name="bamfile" format="bam,cram" type="data" label="BAM file" />
         <param name="BED" argument="--BED" type="boolean" label="Output in BEDPE format?"
             help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format." />
         <param argument="--shift" type="text" label="Amount to shift fragments" value=""
@@ -147,6 +151,12 @@
             <param name="minMappingQuality" value="10" />
             <param name="shift" value="1 -2 3 -4" />
             <output name="outFile" file="alignmentSieve2.bam" ftype="bam" />
+        </test>
+        <test>
+            <param name="bamfile" value="paired_chr2L.cram" ftype="cram" />
+            <param name="minMappingQuality" value="10" />
+            <param name="shift" value="1 -2 3 -4" />
+            <output name="outFile" file="alignmentSieve3.bam" ftype="bam" />
         </test>
     </tests>
 

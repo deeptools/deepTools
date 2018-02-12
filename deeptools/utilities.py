@@ -1,6 +1,5 @@
 import sys
 import os
-import pysam
 from deeptoolsintervals import GTF
 from deeptools.bamHandler import openBam
 import matplotlib as mpl
@@ -158,10 +157,10 @@ def tbitToBamChrName(tbitNames, bamNames):
     return chrNameBitToBam
 
 
-def getCommonChrNames(bamFileHandlers, verbose=True):
+def getCommonChrNames(bamFileHandles, verbose=True):
     r"""
-    Compares the names and lengths of a list of bam file handlers.
-    The input is list of pysam file handlers.
+    Compares the names and lengths of a list of bam file handles.
+    The input is list of pysam file handles.
 
     The function returns a duple containing the common chromosome names
     and the common chromome lengths.
@@ -186,11 +185,11 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         for name, size in chr_set:
             sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
 
-    common_chr = set(get_chrom_and_size(bamFileHandlers[0]))
+    common_chr = set(get_chrom_and_size(bamFileHandles[0]))
     non_common_chr = set()
 
-    for j in range(1, len(bamFileHandlers)):
-        _names_and_size = set(get_chrom_and_size(bamFileHandlers[j]))
+    for j in range(1, len(bamFileHandles)):
+        _names_and_size = set(get_chrom_and_size(bamFileHandles[j]))
         if len(common_chr & _names_and_size) == 0:
             #  try to add remove 'chr' from the chromosome name
             _corr_names_size = set()
@@ -206,7 +205,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
                 print_chr_names_and_size(common_chr)
 
                 sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
-                                 "lengths from file\n{}\n".format(bamFileHandlers.name))
+                                 "lengths from file\n{}\n".format(bamFileHandles.name))
                 print_chr_names_and_size(_names_and_size)
                 exit(1)
             else:
@@ -222,7 +221,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
     # the common chromosomes has to be sorted as in the original
     # bam files
     chr_sizes = []
-    for tuple in get_chrom_and_size(bamFileHandlers[0]):
+    for tuple in get_chrom_and_size(bamFileHandles[0]):
         if tuple in common_chr:
             chr_sizes.append(tuple)
 
@@ -332,35 +331,15 @@ def mungeChromosome(chrom, chromList):
     return None
 
 
-def bam_total_reads(bam_handle, chroms_to_ignore):
-    """Count the total number of mapped reads in a BAM file, filtering
+def bam_total_reads(bam_handle, chroms_to_ignore, stats):
+    """
+    Count the total number of mapped reads in a BAM file, filtering
     the chromosome given in chroms_to_ignore list
     """
     if chroms_to_ignore:
-        import pysam
-
-        lines = pysam.idxstats(bam_handle.filename)
-        lines = toString(lines)
-        if type(lines) is str:
-            lines = lines.strip().split('\n')
-        if len(lines) == 0:
-            # check if this is a test running under nose
-            # in which case it will fail.
-            if len([val for val in sys.modules.keys() if val.find("nose") >= 0]):
-                sys.stderr.write("To run this code inside a test use disable "
-                                 "output buffering `nosetest -s`\n".format(bam_handle.filename))
-            else:
-                sys.stderr.write("Error running idxstats on {}\n".format(bam_handle.filename))
-        tot_mapped_reads = 0
-        for line in lines:
-            chrom, _len, nmapped, _nunmapped = line.split('\t')
-            if chrom not in chroms_to_ignore:
-                tot_mapped_reads += int(nmapped)
-
+        return sum([s[0] for k, s in stats.items() if k not in chroms_to_ignore])
     else:
-        tot_mapped_reads = bam_handle.mapped
-
-    return tot_mapped_reads
+        return sum([s[0] for s in stats.values()])
 
 
 def bam_blacklisted_worker(args):
@@ -382,14 +361,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
         return blacklisted
 
     # Get the chromosome lengths
-    chromLens = {}
-    lines = pysam.idxstats(bam_handle.filename)
-    lines = toString(lines)
-    if type(lines) is str:
-        lines = lines.strip().split('\n')
-    for line in lines:
-        chrom, _len, nmapped, _nunmapped = line.split('\t')
-        chromLens[chrom] = int(_len)
+    chromLens = {x: y for x, y in zip(bam_handle.references, bam_handle.lengths)}
 
     bl = GTF(blackListFileName)
     hasOverlaps, minOverlap = bl.hasOverlaps(returnDistance=True)

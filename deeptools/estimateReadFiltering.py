@@ -267,7 +267,10 @@ def main(args=None):
     else:
         of = open(args.outFile, "w")
 
-    bhs = [bamHandler.openBam(x) for x in args.bamfiles]
+    bhs = [bamHandler.openBam(x, returnStats=True, nThreads=args.numberOfProcessors) for x in args.bamfiles]
+    mapped = [x[1] for x in bhs]
+    unmappedList = [x[2] for x in bhs]
+    bhs = [x[0] for x in bhs]
 
     # Get the reads in blacklisted regions
     if args.blackListFileName:
@@ -278,11 +281,7 @@ def main(args=None):
         blacklisted = [0] * len(bhs)
 
     # Get the total and mapped reads
-    total = []
-    mapped = []
-    for bh in bhs:
-        total.append(bh.mapped + bh.unmapped)
-        mapped.append(bh.mapped)
+    total = [x + y for x, y in list(zip(mapped, unmappedList))]
 
     chrom_sizes = list(zip(bhs[0].references, bhs[0].lengths))
     for x in bhs:

@@ -205,17 +205,11 @@ def filterWorker(arglist):
     chrom, start, end, args, chromDict = arglist
     fh = openBam(args.bam)
 
-    if fh.is_cram:
-        mode = 'wc'
-        oname = getTempFileName(suffix='.cram')
-        if args.filteredOutReads:
-            onameFiltered = getTempFileName(suffix='.cram')
+    mode = 'wbu'
+    oname = getTempFileName(suffix='.bam')
+    if args.filteredOutReads:
+        onameFiltered = getTempFileName(suffix='.bam')
     else:
-        mode = 'wbu'
-        oname = getTempFileName(suffix='.bam')
-        if args.filteredOutReads:
-            onameFiltered = getTempFileName(suffix='.bam')
-    if not args.filteredOutReads:
         onameFiltered = None
     ofh = pysam.AlignmentFile(oname, mode=mode, template=fh)
     if onameFiltered:
@@ -382,8 +376,8 @@ def main(args=None):
     elif args.ATACshift:
         args.shift = [4, -5, 5, -4]
 
-    bam = openBam(args.bam)
-    total = bam.mapped + bam.unmapped
+    bam, mapped, unmapped, stats = openBam(args.bam, returnStats=True, nThreads=args.numberOfProcessors)
+    total = mapped + unmapped
     chrom_sizes = [(x, y) for x, y in zip(bam.references, bam.lengths)]
     chromDict = {x: y for x, y in zip(bam.references, bam.lengths)}
 

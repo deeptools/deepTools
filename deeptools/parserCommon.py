@@ -373,7 +373,6 @@ def genomicRegion(string):
     except:
         region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
-        print("oh no!")
         raise argparse.ArgumentTypeError(
             "{} is not a valid region".format(string))
     return region

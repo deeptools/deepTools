@@ -1,25 +1,7 @@
 #!/bin/bash
-planemo=./foo/bin/planemo
-owd=`pwd`
-temp_dir=`mktemp -d`
-cd $temp_dir
-conda config --add channels conda-forge
-conda config --add channels bioconda
-conda create -y --name gxtest numpy pysam
-source activate gxtest
-git clone --depth 1 https://github.com/galaxyproject/galaxy.git
-cd galaxy
-make client
-./scripts/common_startup.sh --skip-venv --dev-wheels
-cd ..
-# reset what's available in conda
-cd $owd
-conda install --yes -c conda-forge numpy scipy matplotlib==2.1.0 plotly==2.0.12
-conda install --yes -c bioconda -c conda-forge pysam pyBigWig py2bit
-python setup.py install
+planemo=$HOME/miniconda/envs/planemo/bin/planemo
 
-#galaxy/wrapper/correctGCBias.xml \
-$planemo test --postgres --no_dependency_resolution --galaxy_root $temp_dir/galaxy \
+$planemo test --no_dependency_resolution --install_galaxy \
 galaxy/wrapper/alignmentSieve.xml \
 galaxy/wrapper/bamCompare.xml \
 galaxy/wrapper/bamCoverage.xml \
@@ -28,6 +10,7 @@ galaxy/wrapper/bigwigCompare.xml \
 galaxy/wrapper/computeGCBias.xml \
 galaxy/wrapper/computeMatrix.xml \
 galaxy/wrapper/computeMatrixOperations.xml \
+galaxy/wrapper/correctGCBias.xml \
 galaxy/wrapper/estimateReadFiltering.xml \
 galaxy/wrapper/multiBamSummary.xml \
 galaxy/wrapper/multiBigwigSummary.xml \
