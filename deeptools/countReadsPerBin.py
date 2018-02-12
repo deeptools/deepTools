@@ -241,6 +241,17 @@ class CountReadsPerBin(object):
         if self.maxFragmentLength > 0:
             self.maxPairedFragmentLength = self.maxFragmentLength
 
+        if len(self.mappedList) == 0:
+            try:
+                for fname in self.bamFilesList:
+                    bam, mapped, unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
+                    self.mappedList.append(mapped)
+                    self.statsList.append(stats)
+                    bam.close()
+            except:
+                self.mappedList = []
+                self.statsList = []
+
     def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
         # workers for analysis. If too short, too much time is spend loading the files
