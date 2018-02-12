@@ -156,7 +156,7 @@
             <param name="bamfile" value="paired_chr2L.cram" ftype="cram" />
             <param name="minMappingQuality" value="10" />
             <param name="shift" value="1 -2 3 -4" />
-            <output name="outFile" file="alignmentSieve2.bam" ftype="bam" />
+            <output name="outFile" file="alignmentSieve3.bam" ftype="bam" />
         </test>
     </tests>
 

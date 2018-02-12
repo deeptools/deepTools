@@ -64,9 +64,9 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
 
     Returns either the file handle or a tuple as described in returnStats
     """
-    format_options = ["required_fields=0x1FE"]
+    format_options = ["required_fields=0x1FF"]
     if sys.version_info.major >= 3:
-        format_options = [b"required_fields=0x1FE"]
+        format_options = [b"required_fields=0x1FF"]
     if not minimalDecoding:
         format_options = None
     try:
