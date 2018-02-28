@@ -698,10 +698,12 @@ class Profile(object):
                 title = self.hm.matrix.group_labels[plot]
                 if row != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
+                tickIdx = plot % self.hm.matrix.get_num_samples()
             else:
                 title = self.hm.matrix.sample_labels[plot]
                 if col != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
+                tickIdx = plot
 
             ax.set_title(title)
             for data_idx in range(self.numlines):
@@ -747,7 +749,7 @@ class Profile(object):
                 """
 
             totalWidth = sub_matrix['matrix'].shape[1]
-            xticks, xtickslabel = self.getTicks(plot)
+            xticks, xtickslabel = self.getTicks(tickIdx)
             if np.ceil(max(xticks)) != float(totalWidth):
                 tickscale = float(totalWidth) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
