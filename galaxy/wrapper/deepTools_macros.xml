@@ -456,7 +456,6 @@ is vital to you, select Yes below.">
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
-                ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
                 #if $f.bamfiles.ext == 'bam':
                     ln -s '${f.bamfiles.metadata.bam_index}' './${counter}.bam.bai' &&
                 #else:
