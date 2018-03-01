@@ -128,8 +128,10 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
     for sample_id in range(iterNum):
         if perGroup:
             title = hm.matrix.group_labels[sample_id]
+            tickIdx = sample_id % hm.matrix.get_num_samples()
         else:
             title = hm.matrix.sample_labels[sample_id]
+            tickIdx = sample_id
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
             ax_profile = fig.add_subplot(grids[0, sample_id], sharey=ax_list[0])
         else:
@@ -157,7 +159,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
 
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
-        xticks, xtickslabel = hm.getTicks(sample_id)
+        xticks, xtickslabel = hm.getTicks(tickIdx)
         if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
             tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
             xticks_use = [x * tickscale for x in xticks]
