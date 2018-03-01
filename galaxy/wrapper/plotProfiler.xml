@@ -59,10 +59,10 @@
 
                 $advancedOpt.perGroup
 
-                #if $advancedOpt.yMin:
+                #if str($advancedOpt.yMin):
                     --yMin $advancedOpt.yMin
                 #end if
-                #if $advancedOpt.yMax:
+                #if str($advancedOpt.yMax):
                     --yMax $advancedOpt.yMax
                 #end if
 
