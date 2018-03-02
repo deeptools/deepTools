@@ -1,10 +1,10 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">3.0.0</token>
+    <token name="@WRAPPER_VERSION@">3.0.1</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="3.0.0">deeptools</requirement>
+            <requirement type="package" version="3.0.1">deeptools</requirement>
             <requirement type="package" version="1.7">samtools</requirement>
         </requirements>
         <expand macro="stdio" />
@@ -456,7 +456,6 @@ is vital to you, select Yes below.">
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
                 ln -s "${f.bamfiles}" "./${counter}.bam" &&
-                ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
                 #if $f.bamfiles.ext == 'bam':
                     ln -s '${f.bamfiles.metadata.bam_index}' './${counter}.bam.bai' &&
                 #else:

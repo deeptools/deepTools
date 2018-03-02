@@ -21,7 +21,7 @@
             $mode.mode_select
             --regionsFileName '#echo "' '".join($bed_files)#'
 
-            --scoreFileName '#echo "' '".join($files)#'
+            --scoreFileName #echo ' '.join($files)#
 
             --outFileName '$outFileName'
 
