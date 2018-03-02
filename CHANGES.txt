@@ -1,6 +1,7 @@
 3.0.1
 
- * Fixed the `--perGroup` option in plotProfile and plotHeatmap when multiple groups were being used. In version 3.0.0, this would typically cause an error and deepTools to crash.
+ * Fixed the `--perGroup` option in plotProfile and plotHeatmap when multiple groups were being used. In version 3.0.0, this would typically cause an error and deepTools to crash. (issue #673)
+ * Fixed a few issues with the Galaxy wrappers. Thanks to Ralf Gilsbach, Claudia Keller, and @bgruening (e.g., issue #678)
 
 3.0.0
 
