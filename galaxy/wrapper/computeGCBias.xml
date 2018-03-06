@@ -7,7 +7,7 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
-        ln -s "$bamInput" "local_bamInput.bam" &&
+        ln -s '$bamInput' local_bamInput.bam &&
         #if $bamInput.ext == 'bam':
             ln -s '${bamInput.metadata.bam_index}' local_bamInput.bam.bai &&
         #else:

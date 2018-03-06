@@ -8,10 +8,10 @@
     <command>
 <![CDATA[
         @BINARY@
-            --corData "$corData"
-            --plotTitle "$plotTitle"
-            --plotFile "$outFileName"
-            --plotFileFormat "$outFileFormat"
+            --corData '$corData'
+            --plotTitle '$plotTitle'
+            --plotFile '$outFileName'
+            --plotFileFormat '$outFileFormat'
             #if str($advancedOpt.showAdvancedOpt) == 'yes':
                 @PLOTWIDTHHEIGHT@
                 $advancedOpt.log2
@@ -24,7 +24,7 @@
                 #end if
             #end if
             #if $outFileNameData
-                --outFileNameData "$output_outFileNameData"
+                --outFileNameData '$output_outFileNameData'
             #end if
 ]]>
     </command>

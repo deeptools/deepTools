@@ -17,7 +17,7 @@
                 --plotFileFormat $output.outFileFormat
 
                 #if $output.dpi:
-                    --dpi "$output.dpi"
+                    --dpi '$output.dpi'
                 #end if
 
                 #if $output.saveSortedRegions:
@@ -67,7 +67,7 @@
                 #end if
 
                 #if $advancedOpt.outFileNameData:
-                    --outFileNameData "$output_outFileNameData"
+                    --outFileNameData '$output_outFileNameData'
                 #end if
 
                 @KMEANS_CLUSTERING@

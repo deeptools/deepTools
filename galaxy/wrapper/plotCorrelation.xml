@@ -8,10 +8,10 @@
     <command>
 <![CDATA[
         @BINARY@
-            --corData "$corData"
-            --plotFile "$outFileName"
-            --corMethod "$corMethod"
-            --whatToPlot "$plotting_type.whatToPlot"
+            --corData '$corData'
+            --plotFile '$outFileName'
+            --corMethod '$corMethod'
+            --whatToPlot '$plotting_type.whatToPlot'
             #if str($plotting_type.whatToPlot) == 'heatmap':
                 @HEATMAP_OPTIONS@
                 --plotWidth $plotting_type.plotWidth
@@ -24,10 +24,10 @@
                 $plotting_type.log1p
             #end if
             $skipZeros
-            --plotFileFormat "$outFileFormat"
+            --plotFileFormat '$outFileFormat'
             $removeOutliers
             #if $outFileCorMatrix:
-                --outFileCorMatrix "$matrix"
+                --outFileCorMatrix '$matrix'
             #end if
 
 ]]>
