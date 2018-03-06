@@ -7,16 +7,13 @@ os:
   - osx
 jobs:
   include:
-    - stage: galaxy36_1
-      env:
+    - env:
         - TESTGALAXY="1"
         - TRAVIS_PYTHON_VERSION=3.6
-    - stage: galaxy36_2
-      env:
+    - env:
         - TESTGALAXY="2"
         - TRAVIS_PYTHON_VERSION=3.6
-    - stage: galaxy36_3
-      env:
+    - env:
         - TESTGALAXY="3"
         - TRAVIS_PYTHON_VERSION=3.6
 
@@ -38,7 +35,7 @@ before_install:
 
 # Install packages
 install:
-  - conda install --yes -c conda-forge -c bioconda python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib==2.1.0 nose flake8 plotly==2.0.12 pysam==0.14.0 pyBigWig py2bit cython
+  - conda install --yes -c conda-forge -c bioconda python=$TRAVIS_PYTHON_VERSION numpy scipy matplotlib==2.1.2 nose flake8 plotly==2.0.12 pysam pyBigWig py2bit cython
   - python setup.py install
 
 # command to run tests
