@@ -7,7 +7,7 @@ os:
   - osx
 jobs:
   include:
-    - stage: galaxy
+    stage: galaxy
       - env:
         - TESTGALAXY="1"
         - TRAVIS_PYTHON_VERSION=3.6
