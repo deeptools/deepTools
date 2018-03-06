@@ -1,22 +1,18 @@
 language: c
 env:
-  - TRAVIS_PYTHON_VERSION=2.7
   - TRAVIS_PYTHON_VERSION=3.6
+  - TRAVIS_PYTHON_VERSION=2.7
 os:
   - linux
   - osx
 jobs:
   include:
-    stage: galaxy
-      - env:
-        - TESTGALAXY="1"
-        - TRAVIS_PYTHON_VERSION=3.6
-      - env:
-        - TESTGALAXY="2"
-        - TRAVIS_PYTHON_VERSION=3.6
-      - env:
-        - TESTGALAXY="3"
-        - TRAVIS_PYTHON_VERSION=3.6
+    - stage: galaxy
+      env:  TESTGALAXY="1"
+    - stage: galaxy
+      env: TESTGALAXY="2"
+    - stage: galaxy
+      env: TESTGALAXY="3"
 
 # Setup anaconda
 before_install:
