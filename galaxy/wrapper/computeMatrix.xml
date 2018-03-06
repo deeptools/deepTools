@@ -12,7 +12,7 @@
         #set bed_files=[]
         #for $counter, $rf, in enumerate($regionsFiles):
             #set identifier = re.sub('[^\s\w\-]', '_', str($rf.regionsFile.element_identifier))
-            ln -f -s "${rf.regionsFile}" "${identifier}_${counter}.bed" &&
+            ln -f -s '${rf.regionsFile}' '${identifier}_${counter}.bed' &&
             #silent $bed_files.append('%s_%s.bed' % ($identifier, $counter))
         #end for
 
