@@ -19,7 +19,7 @@
             --plotFile '$outFileName'
             --bamfiles #echo " ".join($files)#
             --labels #echo " ".join($labels)#
-            --plotFileFormat "$outFileFormat"
+            --plotFileFormat '$outFileFormat'
 
             #if $outRawCounts:
                 --outRawCounts '$outFileRawCounts'

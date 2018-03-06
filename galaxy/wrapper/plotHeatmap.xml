@@ -8,22 +8,22 @@
     <command>
 <![CDATA[
         @BINARY@
-            --matrixFile "$matrixFile"
-            --outFileName "$outFileName"
+            --matrixFile '$matrixFile'
+            --outFileName '$outFileName'
 
             #if $output.showOutputSettings == "yes"
-                --plotFileFormat "$output.outFileFormat"
+                --plotFileFormat '$output.outFileFormat'
 
                 #if $outFileNameMatrix:
-                    --outFileNameMatrix "$outFileNameMatrix"
+                    --outFileNameMatrix '$outFileNameMatrix'
                 #end if
 
                 #if $outFileSortedRegions:
-                    --outFileSortedRegions "$outFileSortedRegions"
+                    --outFileSortedRegions '$outFileSortedRegions'
                 #end if
 
                 #if $output.dpi:
-                    --dpi "$output.dpi"
+                    --dpi '$output.dpi'
                 #end if
             #else
                 --plotFileFormat 'png'

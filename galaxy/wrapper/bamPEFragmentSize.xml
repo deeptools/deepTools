@@ -20,7 +20,7 @@
                 --histogram '$histogram_outfile'
                 --plotFileFormat '$outFileFormat'
             #end if
-            --plotTitle "$plotTitle"
+            --plotTitle '$plotTitle'
             #if $advancedOpt.showAdvancedOpt == 'yes'
                 --binSize '$advancedOpt.binSize'
                 --distanceBetweenBins '$advancedOpt.distanceBetweenBins'

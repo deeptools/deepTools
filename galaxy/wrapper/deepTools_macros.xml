@@ -443,7 +443,7 @@ is vital to you, select Yes below.">
         #if $multibam_conditional.orderMatters == "No":
             #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
-                ln -s "${bamfile}" "./${counter}.bam" &&
+                ln -s '${bamfile}' './${counter}.bam' &&
                 #if $bamfile.ext == 'bam':
                     ln -s '${bamfile.metadata.bam_index}' './${counter}.bam.bai' &&
                 #else:
@@ -455,7 +455,7 @@ is vital to you, select Yes below.">
         #else:
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
-                ln -s "${f.bamfiles}" "./${counter}.bam" &&
+                ln -s '${f.bamfiles}' './${counter}.bam' &&
                 #if $f.bamfiles.ext == 'bam':
                     ln -s '${f.bamfiles.metadata.bam_index}' './${counter}.bam.bai' &&
                 #else:
@@ -476,14 +476,14 @@ is vital to you, select Yes below.">
         #if $multibigwig_conditional.orderMatters == "No":
             #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
-                ln -f -s "${bigwig}" "${identifier}_${counter}.bw" &&
+                ln -f -s '${bigwig}' '${identifier}_${counter}.bw' &&
                 #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bigwigfiles.element_identifier))
-                ln -f -s "${f.bigwigfiles}" "${identifier}_${counter}.bw" &&
+                ln -f -s '${f.bigwigfiles}' '${identifier}_${counter}.bw' &&
                 #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
@@ -556,7 +556,7 @@ is vital to you, select Yes below.">
     #if $source.ref_source=="history":
         --genome $source.input1
     #else:
-        --genome "$source.input1_2bit.fields.path"
+        --genome '$source.input1_2bit.fields.path'
     #end if
     </token>
 

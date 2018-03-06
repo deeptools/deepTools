@@ -19,10 +19,10 @@
             @multiple_bed@
 
             #if $outRawCounts:
-                --outRawCounts "$outFileRawCounts"
+                --outRawCounts '$outFileRawCounts'
             #end if
 
-            --plotFileFormat "$outFileFormat"
+            --plotFileFormat '$outFileFormat'
 
             #if str($region).strip() != "":
                 --region '$region'
