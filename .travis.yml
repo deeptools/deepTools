@@ -8,11 +8,17 @@ os:
 jobs:
   include:
     - stage: galaxy
-      env:  TESTGALAXY="1"
+      env:
+        - TESTGALAXY="1"
+        - TRAVIS_PYTHON_VERSION=3.6
     - stage: galaxy
-      env: TESTGALAXY="2"
+      env:
+        - TESTGALAXY="2"
+        - TRAVIS_PYTHON_VERSION=3.6
     - stage: galaxy
-      env: TESTGALAXY="3"
+      env:
+        - TESTGALAXY="3"
+        - TRAVIS_PYTHON_VERSION=3.6
 
 # Setup anaconda
 before_install:
