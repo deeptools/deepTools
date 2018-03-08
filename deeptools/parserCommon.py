@@ -563,8 +563,11 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--sortUsing',
                               help='Indicate which method should be used for '
-                              'sorting. For each row the '
-                              'method is computed.',
+                              'sorting. For each row the method is computed. '
+                              'For region_length, a dashed line is drawn at '
+                              'the end of the region (reference point TSS and '
+                              'center) or the beginning of the region '
+                              '(reference point TES) as appropriate.',
                               choices=["mean", "median", "max", "min", "sum",
                                        "region_length"],
                               default='mean')
