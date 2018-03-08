@@ -1,3 +1,7 @@
+3.0.2
+
+ * Fixed handling of `--sortUsing region_length` in `plotHeatmap`. This now works properly for `--referencePoint center` and `--referencePoint TES`, where in the latter case the dashed line is drawn at the region start. The documentation has been updated to mention this. (issue #671)
+
 3.0.1
 
  * Fixed the `--perGroup` option in plotProfile and plotHeatmap when multiple groups were being used. In version 3.0.0, this would typically cause an error and deepTools to crash. (issue #673)

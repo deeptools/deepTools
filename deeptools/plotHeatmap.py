@@ -509,19 +509,28 @@ def plotMatrix(hm, outFileName,
     regions_length_in_bins = [None] * len(hm.parameters['upstream'])
     if hm.matrix.sort_using == 'region_length' and hm.matrix.sort_method != 'no':
         for idx in range(len(hm.parameters['upstream'])):
-            if hm.paramters['upstream'] > 0:
-                _regions = hm.matrix.get_regions()
-                foo = []
-                for _group in _regions:
-                    _reg_len = []
-                    for ind_reg in _group:
-                        if isinstance(ind_reg, dict):
-                            _len = ind_reg['end'] - ind_reg['start']
-                        else:
-                            _len = sum([x[1] - x[0] for x in ind_reg[1]])
+            if hm.parameters['ref point'][idx] is None:
+                regions_length_in_bins[idx] = None
+                continue
+
+            _regions = hm.matrix.get_regions()
+            foo = []
+            for _group in _regions:
+                _reg_len = []
+                for ind_reg in _group:
+                    if isinstance(ind_reg, dict):
+                        _len = ind_reg['end'] - ind_reg['start']
+                    else:
+                        _len = sum([x[1] - x[0] for x in ind_reg[1]])
+                    if hm.parameters['ref point'][idx] == 'TSS':
                         _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
-                    foo.append(_reg_len)
-                regions_length_in_bins[idx] = foo
+                    elif hm.parameters['ref point'][idx] == 'center':
+                        _len *= 0.5
+                        _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
+                    elif hm.parameters['ref point'][idx] == 'TES':
+                        _reg_len.append((hm.parameters['downstream'][idx] - _len) / hm.parameters['bin size'][idx])
+                foo.append(_reg_len)
+            regions_length_in_bins[idx] = foo
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
@@ -663,7 +672,7 @@ def plotMatrix(hm, outFileName,
 
                 ax.get_xaxis().set_tick_params(
                     which='both',
-                    top='off',
+                    top=False,
                     direction='out')
 
                 if showColorbar and colorbar_position == 'below':
