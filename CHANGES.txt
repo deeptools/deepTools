@@ -1,6 +1,7 @@
 3.0.2
 
  * Fixed handling of `--sortUsing region_length` in `plotHeatmap`. This now works properly for `--referencePoint center` and `--referencePoint TES`, where in the latter case the dashed line is drawn at the region start. The documentation has been updated to mention this. (issue #671)
+ * The reference point label specified by `computeMatrix reference-point` is now respected by plotHeatmap and plotProfile. So if you used `computeMatrix reference-point --referencePointLabel center` then 'center' will now appear as the tick label in your heatmaps and profiles automatically. (issues #606 and #683)
 
 3.0.1
 
