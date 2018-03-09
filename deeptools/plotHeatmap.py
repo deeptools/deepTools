@@ -375,7 +375,7 @@ def plotMatrix(hm, outFileName,
                zMin=None, zMax=None,
                yMin=None, yMax=None,
                averageType='median',
-               reference_point_label='TSS',
+               reference_point_label=None,
                startLabel='TSS', endLabel="TES",
                heatmapHeight=25,
                heatmapWidth=7.5,
@@ -387,7 +387,9 @@ def plotMatrix(hm, outFileName,
                dpi=200,
                interpolation_method='auto'):
 
-    hm.reference_point_label = reference_point_label
+    hm.reference_point_label = hm.parameters['ref point']
+    if reference_point_label is not None:
+        hm.reference_point_label = [reference_point_label] * hm.matrix.get_num_samples()
     hm.startLabel = startLabel
     hm.endLabel = endLabel
 

@@ -717,7 +717,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'is the same as the reference point selected '
                           '(e.g. TSS), but could be anything, e.g. '
                           '"peak start".',
-                          default='TSS')
+                          default=None)
 
     optional.add_argument('--labelRotation',
                           dest='label_rotation',
