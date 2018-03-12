@@ -103,7 +103,7 @@ deeptools.mapReduce module
 deeptools.sumCoveragePerBin
 ---------------------------
 
-.. automodule:: deeptools.subCoveragePerBin
+.. automodule:: deeptools.sumCoveragePerBin
     :members:
     :undoc-members:
     :show-inheritance:
