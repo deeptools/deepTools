@@ -19,7 +19,7 @@ import os
 import mock
 
 # MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
-MOCK_MODULES = ['pyBigWig', 'py2bit', 'plotly', 'plotly.offline']
+MOCK_MODULES = ['pyBigWig', 'py2bit', 'plotly', 'plotly.offline', 'plotly.graph_objs']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
