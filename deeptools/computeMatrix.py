@@ -330,6 +330,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'messages.',
                           action='store_true')
 
+    optional.add_argument('--verbose',
+                          help='Being VERY verbose in the status messages. --quiet will disable this.',
+                          action='store_true')
+
     optional.add_argument('--scale',
                           help='If set, all values are multiplied by '
                           'this number.',
@@ -349,9 +353,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
-    if args.quiet is False:
-        args.verbose = True
-    else:
+    if args.quiet is True:
         args.verbose = False
 
     if args.command == 'scale-regions':

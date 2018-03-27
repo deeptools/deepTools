@@ -186,6 +186,7 @@ class heatmapper(object):
         self.matrix = None
         self.regions = None
         self.blackList = None
+        self.quiet = True
         # These are parameters that were single values in versions <3 but are now internally lists. See issue #614
         self.special_params = set(['unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point', 'bin size'])
 
@@ -233,6 +234,9 @@ class heatmapper(object):
         if parameters['unscaled 5 prime'] + parameters['unscaled 3 prime'] > 0 and parameters['body'] == 0:
             exit('Unscaled 5- and 3-prime regions only make sense with the scale-regions subcommand.\n')
 
+        if 'quiet' in allArgs:
+            self.quiet = allArgs['quiet']
+
         # Take care of GTF options
         transcriptID = "transcript"
         exonID = "exon"
@@ -257,7 +261,8 @@ class heatmapper(object):
                                           transcriptID=transcriptID,
                                           exonID=exonID,
                                           transcript_id_designator=transcript_id_designator,
-                                          keepExons=keepExons)
+                                          keepExons=keepExons,
+                                          verbose=verbose)
         # each worker in the pool returns a tuple containing
         # the submatrix data, the regions that correspond to the
         # submatrix, and the number of regions lacking scores
@@ -395,7 +400,7 @@ class heatmapper(object):
             # print some information
             if parameters['body'] > 0 and \
                     body_length < parameters['bin size']:
-                if parameters['verbose']:
+                if not self.quiet:
                     sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
                                      "({0}) {1} {2}:{3}:{4}. Skipping...\n".format((body_length - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
                                                                                    feature_name, feature_chrom,
@@ -529,7 +534,7 @@ class heatmapper(object):
                         parameters['bin size'],
                         parameters['bin avg type'],
                         parameters['missing data as zero'],
-                        parameters['verbose'])
+                        not self.quiet)
 
                     if padLeftNaN > 0:
                         cov = np.concatenate([[np.nan] * padLeftNaN, cov])
@@ -543,7 +548,7 @@ class heatmapper(object):
 
             if coverage is None:
                 regions_no_score += 1
-                if parameters['verbose']:
+                if not self.quiet:
                     sys.stderr.write(
                         "No data was found for region "
                         "{0} {1}:{2}-{3}. Skipping...\n".format(
@@ -558,7 +563,7 @@ class heatmapper(object):
                 temp = coverage.copy()
                 temp[np.isnan(temp)] = 0
             except:
-                if parameters['verbose']:
+                if not self.quiet:
                     sys.stderr.write(
                         "No scores defined for region "
                         "{0} {1}:{2}-{3}. Skipping...\n".format(feature_name,
