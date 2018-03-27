@@ -234,20 +234,19 @@ class heatmapper(object):
         if parameters['unscaled 5 prime'] + parameters['unscaled 3 prime'] > 0 and parameters['body'] == 0:
             exit('Unscaled 5- and 3-prime regions only make sense with the scale-regions subcommand.\n')
 
-        if 'quiet' in allArgs:
-            self.quiet = allArgs['quiet']
-
         # Take care of GTF options
         transcriptID = "transcript"
         exonID = "exon"
         transcript_id_designator = "transcript_id"
         keepExons = False
+        self.quiet = False
         if allArgs is not None:
             allArgs = vars(allArgs)
             transcriptID = allArgs.get("transcriptID", transcriptID)
             exonID = allArgs.get("exonID", exonID)
             transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
             keepExons = allArgs.get("keepExons", keepExons)
+            self.quiet = allArgs.get("quiet", self.quiet)
 
         chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list)
         res, labels = mapReduce.mapReduce([score_file_list, parameters],
