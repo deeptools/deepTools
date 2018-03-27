@@ -193,7 +193,7 @@ class heatmapper(object):
         """
         This is essentially a wrapper around getProfileTicks to accomdate the fact that each column has its own ticks.
         """
-        xticks, xtickslabel = getProfileTicks(self, self.reference_point_label, self.startLabel, self.endLabel, idx)
+        xticks, xtickslabel = getProfileTicks(self, self.reference_point_label[idx], self.startLabel, self.endLabel, idx)
         return xticks, xtickslabel
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):

@@ -87,8 +87,8 @@ class Profile(object):
                  plot_title='', y_axis_label='',
                  y_min=None, y_max=None,
                  averagetype='median',
-                 reference_point_label='TSS',
-                 start_label='TSS', end_label="TES",
+                 reference_point_label=None,
+                 start_label='TSS', end_label='TES',
                  plot_height=7,
                  plot_width=11,
                  per_group=False,
@@ -148,6 +148,10 @@ class Profile(object):
         self.plots_per_row = plots_per_row
         self.label_rotation = label_rotation
         self.dpi = dpi
+
+        # Honor reference point labels from computeMatrix
+        if reference_point_label is None:
+            self.reference_point_label = hm.parameters['ref point']
 
         # decide how many plots are needed
         if self.per_group:

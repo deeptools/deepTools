@@ -123,7 +123,7 @@ setup(
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 0.17.0",
-        "matplotlib >= 2.1.1",
+        "matplotlib >= 2.1.2",
         "pysam >= 0.14.0",
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1",
