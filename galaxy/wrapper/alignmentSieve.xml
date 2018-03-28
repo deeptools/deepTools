@@ -10,10 +10,10 @@
         #import re
         #set label = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
         ln -s '$bamfile' one.bam &&
-        #if str($bamfile.metadata.cram_index) != "None":
-            ln -s '${bamfile.metadata.cram_index}' one.bam.crai &&
-        #else:
+        #if $bamfile.ext == 'bam':
             ln -s '${bamfile.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamfile.metadata.cram_index}' one.bam.crai &&
         #end if
 
         @BINARY@
