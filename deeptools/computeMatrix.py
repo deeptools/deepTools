@@ -433,7 +433,7 @@ def main(args=None):
     elif args.sortRegions == 'keep':
         hm.parameters['group_labels'] = hm.matrix.group_labels
         hm.parameters["group_boundaries"] = hm.matrix.group_boundaries
-        cmo.sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
+        cmo.sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator, verbose=not args.quiet)
 
     hm.save_matrix(args.outFileName)
 

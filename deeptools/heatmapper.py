@@ -358,6 +358,8 @@ class heatmapper(object):
         numpy matrix
             A numpy matrix that contains per each row the values found per each of the regions given
         """
+        if parameters['verbose']:
+            sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
 
         # read BAM or scores file
         score_file_handles = []
