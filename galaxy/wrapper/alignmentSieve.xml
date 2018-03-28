@@ -75,7 +75,7 @@
         #if $BED:
             --BED
             -o '$outFile'
-        #elif str($shift) != "":
+        #elif str($shift) != "" or $ATACshift:
             -o foo.bam &&
             samtools sort -o '$outFile' -T foo.tmp -@ "\${GALAXY_SLOTS:-4}" foo.bam &&
             rm foo.bam
