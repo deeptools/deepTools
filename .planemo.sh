@@ -25,5 +25,5 @@ else
     galaxy/wrapper/plotProfiler.xml"
 fi
 
-${planemo} test --no_dependency_resolution --galaxy_branch release_17.09 --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
+${planemo} test --no_dependency_resolution --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
 test ${PIPESTATUS[0]} -eq 0
