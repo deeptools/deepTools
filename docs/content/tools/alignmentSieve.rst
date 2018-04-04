@@ -36,6 +36,7 @@ The alignments passing the filtering criteria are then written to the file speci
 Instead of a BAM file, a BEDPE file (suitable for input into MACS2) can be produced. Like the BAM/CRAM output, BEDPE also allows shifting of fragment ends, as is often desirable in ATAC-seq and related protocols:
 
 .. code:: bash
+
     $ alignmentSieve -b paired_chr2L.bam \
     --minFragmentLength 140 --BED \
     --shift -5 3 -o fragments.bedpe
@@ -52,6 +53,7 @@ The ``--shift`` option can take either 2 or 4 integers. If two integers are give
 The same results will be produced if read 1 and read 2 are swapped. If, instead, the protocol is strand-specific, then the first set of integers in a pair would be applied to fragments where read 1 precedes read 2, and the second set to cases where read 2 precedes read 1. In this case, the first value in each pair is applied to the end of read 1 and the second to the end of read 2. Take the following command as an example:
 
 .. code:: bash
+
     $ alignmentSieve -b paired_chr2L.bam \
     --minFragmentLength 140 --BED \
     --shift -5 3 -1 4 -o fragments.bedpe

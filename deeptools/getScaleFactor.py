@@ -134,7 +134,13 @@ def fraction_kept(args, stats):
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
     bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization, stats)
-    num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
+    if bam_mapped < 1000000:
+        num_needed_to_sample = bam_mapped
+    else:
+        if 0.1 * bam_mapped >= 1000000:
+            num_needed_to_sample = 0.1 * bam_mapped
+        else:
+            num_needed_to_sample = 1000000
     if num_needed_to_sample == bam_mapped:
         distanceBetweenBins = 55000
     if args.ignoreForNormalization:

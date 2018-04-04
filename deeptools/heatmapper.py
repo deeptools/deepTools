@@ -186,6 +186,7 @@ class heatmapper(object):
         self.matrix = None
         self.regions = None
         self.blackList = None
+        self.quiet = True
         # These are parameters that were single values in versions <3 but are now internally lists. See issue #614
         self.special_params = set(['unscaled 5 prime', 'unscaled 3 prime', 'body', 'downstream', 'upstream', 'ref point', 'bin size'])
 
@@ -193,7 +194,7 @@ class heatmapper(object):
         """
         This is essentially a wrapper around getProfileTicks to accomdate the fact that each column has its own ticks.
         """
-        xticks, xtickslabel = getProfileTicks(self, self.reference_point_label, self.startLabel, self.endLabel, idx)
+        xticks, xtickslabel = getProfileTicks(self, self.reference_point_label[idx], self.startLabel, self.endLabel, idx)
         return xticks, xtickslabel
 
     def computeMatrix(self, score_file_list, regions_file, parameters, blackListFileName=None, verbose=False, allArgs=None):
@@ -238,12 +239,14 @@ class heatmapper(object):
         exonID = "exon"
         transcript_id_designator = "transcript_id"
         keepExons = False
+        self.quiet = False
         if allArgs is not None:
             allArgs = vars(allArgs)
             transcriptID = allArgs.get("transcriptID", transcriptID)
             exonID = allArgs.get("exonID", exonID)
             transcript_id_designator = allArgs.get("transcript_id_designator", transcript_id_designator)
             keepExons = allArgs.get("keepExons", keepExons)
+            self.quiet = allArgs.get("quiet", self.quiet)
 
         chromSizes, _ = getScorePerBigWigBin.getChromSizes(score_file_list)
         res, labels = mapReduce.mapReduce([score_file_list, parameters],
@@ -257,7 +260,8 @@ class heatmapper(object):
                                           transcriptID=transcriptID,
                                           exonID=exonID,
                                           transcript_id_designator=transcript_id_designator,
-                                          keepExons=keepExons)
+                                          keepExons=keepExons,
+                                          verbose=verbose)
         # each worker in the pool returns a tuple containing
         # the submatrix data, the regions that correspond to the
         # submatrix, and the number of regions lacking scores
@@ -354,6 +358,8 @@ class heatmapper(object):
         numpy matrix
             A numpy matrix that contains per each row the values found per each of the regions given
         """
+        if parameters['verbose']:
+            sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
 
         # read BAM or scores file
         score_file_handles = []
@@ -395,7 +401,7 @@ class heatmapper(object):
             # print some information
             if parameters['body'] > 0 and \
                     body_length < parameters['bin size']:
-                if parameters['verbose']:
+                if not self.quiet:
                     sys.stderr.write("A region that is shorter than the bin size (possibly only after accounting for unscaled regions) was found: "
                                      "({0}) {1} {2}:{3}:{4}. Skipping...\n".format((body_length - parameters['unscaled 5 prime'] - parameters['unscaled 3 prime']),
                                                                                    feature_name, feature_chrom,
@@ -529,7 +535,7 @@ class heatmapper(object):
                         parameters['bin size'],
                         parameters['bin avg type'],
                         parameters['missing data as zero'],
-                        parameters['verbose'])
+                        not self.quiet)
 
                     if padLeftNaN > 0:
                         cov = np.concatenate([[np.nan] * padLeftNaN, cov])
@@ -543,7 +549,7 @@ class heatmapper(object):
 
             if coverage is None:
                 regions_no_score += 1
-                if parameters['verbose']:
+                if not self.quiet:
                     sys.stderr.write(
                         "No data was found for region "
                         "{0} {1}:{2}-{3}. Skipping...\n".format(
@@ -558,7 +564,7 @@ class heatmapper(object):
                 temp = coverage.copy()
                 temp[np.isnan(temp)] = 0
             except:
-                if parameters['verbose']:
+                if not self.quiet:
                     sys.stderr.write(
                         "No scores defined for region "
                         "{0} {1}:{2}-{3}. Skipping...\n".format(feature_name,

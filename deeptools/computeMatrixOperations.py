@@ -548,7 +548,7 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                 regions[labelIdx][name] = len(regions[labelIdx])
 
 
-def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
+def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verbose=True):
     """
     Iterate through the files noted by regionsFileName and sort hm accordingly
     """
@@ -586,9 +586,10 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
 
     # Do some sanity checking on the group labels and region names within them
     s1 = set(hm.parameters['group_labels'])
-    for e in labels:
-        if e not in s1:
-            sys.exit("The computeMatrix output is missing the '{}' region group. It has [] but the specified regions have {}.\n".format(e, s1, labels.keys()))
+    if verbose:
+        for e in labels:
+            if e not in s1:
+                sys.exit("The computeMatrix output is missing the '{}' region group. It has {} but the specified regions have {}.\n".format(e, s1, labels.keys()))
 
     # Make a dictionary out of current labels and regions
     d = dict()
@@ -623,11 +624,12 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         sz = 0  # Track the number of enries actually matched
         for name in _:
             if name not in d[label]:
-                sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
+                if verbose:
+                    sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
             sz += 1
             order.append(d[label][name])
-        if sz == 0:
+        if sz == 0 and verbose:
             sys.exit("The region group {} had no matching entries!\n".format(label))
         boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
