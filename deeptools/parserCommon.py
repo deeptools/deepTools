@@ -591,7 +591,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         optional.add_argument(
             '--missingDataColor',
             default='black',
-            help='If --missingDataAsZero is not set, such cases '
+            help='If --missingDataAsZero was not set, such cases '
             'will be colored in black by default. Using this '
             'parameter, a different color can be set. A value '
             'between 0 and 1 will be used for a gray scale '
