@@ -325,7 +325,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             stretch = stretch[::-1]
 
         # Handle --centerReads
-        if self.center_reads:
+        if self.center_read:
             _ = (len(stretch) - blockLen) // 2
             stretch = stretch[_:_ + blockLen]
 
