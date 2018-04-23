@@ -1,3 +1,7 @@
+3.1.0
+
+ * The `--centerReads` option in `bamCoverage` is now compatible with `--Offset` (previously `--centerReads` was silently ignored if `--Offset` was specified). (issue #693)
+
 3.0.2
 
  * Fixed an issue regarding under sampling alignments in some cases with computing scaling factors. This was issue #690. The resolution isn't perfect, it's hard to know how many reads really need to be sampled for things like RNA-seq.
