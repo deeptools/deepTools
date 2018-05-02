@@ -183,7 +183,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
         optional.add_argument("--unscaled3prime",
                               default=0,
                               type=int,
-                              help='Like --unscaled3prime, but for the 3-prime '
+                              help='Like --unscaled5prime, but for the 3-prime '
                               'end.')
 
     elif case == 'reference-point':
