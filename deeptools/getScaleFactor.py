@@ -141,6 +141,8 @@ def fraction_kept(args, stats):
             num_needed_to_sample = 0.1 * bam_mapped
         else:
             num_needed_to_sample = 1000000
+    if args.exactScaling:
+        num_needed_to_sample = bam_mapped
     if num_needed_to_sample == bam_mapped:
         distanceBetweenBins = 55000
     if args.ignoreForNormalization:
