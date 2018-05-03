@@ -603,6 +603,18 @@ is vital to you, select Yes below.">
                  (default: False)" />
     </xml>
 
+    <xml name="exactScaling">
+        <param argument="--exactScaling" type="boolean" truevalue="--exactScaling" falsevalue="" checked="False"
+            label="Compute an exact scaling factor"
+            help="Compute an exact scaling factor rather than one based on
+                  sampled reads. This is only useful in cases where you are
+                  filtering some alignments out AND this are both rare and
+                  tend to clump together in the genome. In such cases the
+                  region-based sampling employed by deepTools would produce
+                  inaccurate scaling factors. Note that this option results
+                  in the process taking significantly more time to complete." />
+    </xml>
+
     <xml name="input_save_matrix_values">
         <param argument="--saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>

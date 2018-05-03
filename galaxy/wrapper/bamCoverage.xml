@@ -41,6 +41,7 @@
             #if str($region).strip() != '':
                 --region '$region'
             #end if
+            $exactScaling
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 #if str($advancedOpt.scaleFactor).strip() != '':
@@ -101,6 +102,7 @@
             <option value="bedgraph">bedgraph</option>
         </param>
 
+        <expand macro="exactScaling" />
         <expand macro="region_limit_operation" />
 
         <conditional name="advancedOpt">

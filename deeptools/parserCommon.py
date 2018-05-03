@@ -246,6 +246,15 @@ def normalization_options():
                        default=None,
                        required=False)
 
+    group.add_argument('--exactScaling',
+                       help='Instead of computing scaling factors based on a sampling of the reads, '
+                       'process all of the reads to determine the exact number that will be used in '
+                       'the output. This requires significantly more time to compute, but will '
+                       'produce more accurate scaling factors in cases where alignments that are '
+                       'being filtered are rare and lumped together. In other words, this is only '
+                       'needed when region-based sampling is expected to produce incorrect results.',
+                       action='store_true')
+
     group.add_argument('--ignoreForNormalization', '-ignore',
                        help='A list of space-delimited chromosome names '
                        'containing those chromosomes that should be excluded '
