@@ -133,9 +133,16 @@ def scatterplot_options():
     parser = argparse.ArgumentParser(add_help=False)
     scatter_opts = parser.add_argument_group('Scatter plot options')
 
-    scatter_opts.add_argument('--maxRange',
-                              help='Maximum (integer) value for the X and Y axes. The default scales these such that the full range of dots is displayed. If you specify --log1p, please ensure that this value is within the range it will produce.',
+    scatter_opts.add_argument('--xRange',
+                              help='The X axis range. The default scales these such that the full range of dots is displayed.',
                               type=int,
+                              nargs=2,
+                              default=None)
+
+    scatter_opts.add_argument('--yRange',
+                              help='The Y axis range. The default scales these such that the full range of dots is displayed.',
+                              type=int,
+                              nargs=2,
                               default=None)
 
     scatter_opts.add_argument('--log1p',
@@ -229,7 +236,8 @@ def main(args=None):
             corr.plot_scatter(args.plotFile,
                               plot_title=args.plotTitle,
                               image_format=args.plotFileFormat,
-                              maxRange=args.maxRange,
+                              xRange=args.xRange,
+                              yRange=args.yRange,
                               log1p=args.log1p)
         else:
             corr.plot_correlation(args.plotFile,
