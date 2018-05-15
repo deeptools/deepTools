@@ -370,7 +370,7 @@ class Correlation:
         fig.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plotly_scatter(self, plot_filename, corr_matrix, plot_title='', minVal=None, maxVal=None):
+    def plotly_scatter(self, plot_filename, corr_matrix, plot_title='', minXVal=None, maxXVal=None, minYVal=None, maxYVal=None):
         """Make the scatter plot of a matrix with plotly"""
         n = self.matrix.shape[1]
         self.matrix = self.matrix
@@ -393,13 +393,13 @@ class Correlation:
             domain = [base, base + domainWidth]
             if x > 0:
                 base = 1 - base
-                fig['layout']['xaxis{}'.format(x + 1)] = dict(domain=domain, range=[minVal, maxVal], anchor='free', position=base)
+                fig['layout']['xaxis{}'.format(x + 1)] = dict(domain=domain, range=[minXVal, maxXVal], anchor='free', position=base)
             for y in range(0, n):
                 yanchor = 'y{}'.format(y + 1)
                 if x == 1:
                     base = 1 - y * domainWidth
                     domain = [base - domainWidth, base]
-                    fig['layout']['yaxis{}'.format(y + 1)] = dict(domain=domain, range=[minVal, maxVal], side='right', anchor='free', position=1.0)
+                    fig['layout']['yaxis{}'.format(y + 1)] = dict(domain=domain, range=[minYVal, maxYVal], side='right', anchor='free', position=1.0)
 
                 if x > y:
                     vector1 = self.matrix[:, x]
@@ -425,7 +425,7 @@ class Correlation:
 
         offline.plot(fig, filename=plot_filename, auto_open=False)
 
-    def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, maxRange=None):
+    def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, xRange=None, yRange=None):
         """
         Plot the scatter plots of a matrix
         in which each row is a sample
@@ -440,18 +440,28 @@ class Correlation:
         plt.suptitle(plot_title)
         if log1p is True:
             self.matrix = np.log1p(self.matrix)
-        min_value = self.matrix.min()
-        max_value = self.matrix.max()
-        if maxRange is not None:
-            max_value = maxRange
-        if (min_value % 2 == 0 and max_value % 2 == 0) or \
-                (min_value % 1 == 0 and max_value % 2 == 1):
+        min_xvalue = self.matrix.min()
+        max_xvalue = self.matrix.max()
+        min_yvalue = min_xvalue
+        max_yvalue = max_xvalue
+        if xRange is not None:
+            min_xvalue = xRange[0]
+            max_xvalue = xRange[1]
+        if yRange is not None:
+            min_yvalue = yRange[0]
+            max_yvalue = yRange[1]
+        if (min_xvalue % 2 == 0 and max_xvalue % 2 == 0) or \
+                (min_xvalue % 1 == 0 and max_xvalue % 2 == 1):
             # make one value odd and the other even
-            max_value += 1
+            max_xvalue += 1
+        if (min_yvalue % 2 == 0 and max_yvalue % 2 == 0) or \
+                (min_yvalue % 1 == 0 and max_yvalue % 2 == 1):
+            # make one value odd and the other even
+            max_yvalue += 1
 
         # plotly output
         if image_format == 'plotly':
-            self.plotly_scatter(plot_filename, corr_matrix, plot_title=plot_title, minVal=min_value, maxVal=max_value)
+            self.plotly_scatter(plot_filename, corr_matrix, plot_title=plot_title, minXVal=min_xvalue, maxXVal=max_xvalue, minYVal=min_yvalue, maxYVal=max_yvalue)
             return
 
         rows, cols = np.triu_indices(num_samples)
@@ -518,12 +528,14 @@ class Correlation:
 
             ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
 
-            if maxRange is not None:
-                ax.set_xlim(min_value, min(maxRange, ax.get_xlim()[1]))
-                ax.set_ylim(min_value, min(maxRange, ax.get_ylim()[1]))
+            if xRange is not None:
+                ax.set_xlim(xRange)
             else:
-                ax.set_xlim(min_value, ax.get_xlim()[1])
-                ax.set_ylim(min_value, ax.get_ylim()[1])
+                ax.set_xlim(min_xvalue, ax.get_xlim()[1])
+            if yRange is not None:
+                ax.set_ylim(min_yvalue, min(yRange, ax.get_ylim()[1]))
+            else:
+                ax.set_ylim(min_yvalue, ax.get_ylim()[1])
 
         plt.savefig(plot_filename, format=image_format)
         plt.close()
