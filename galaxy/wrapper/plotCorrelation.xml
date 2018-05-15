@@ -50,10 +50,10 @@
             </when>
             <when value="scatterplot">
                 <expand macro="plotTitle" />
-                <param argument="--xRange" value="" optional="true"
+                <param argument="--xRange" type="text" value="" optional="true"
                     label="X axis range"
                     help="X axis range, the default scales these such that the full range of dots is displayed. The input should be two integers separated by a space." />
-                <param argument="--yRange" value="" optional="true"
+                <param argument="--yRange" type="text" value="" optional="true"
                     label="Y axis range"
                     help="Y axis range, the default scales these such that the full range of dots is displayed. The input should be two integers separated by a space." />
                 <param argument="--log1p" type="boolean" truevalue="--log1p" falsevalue=""
