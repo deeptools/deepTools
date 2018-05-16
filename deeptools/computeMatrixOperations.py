@@ -167,8 +167,6 @@ def relabelArgs():
     return parser
 
 
-
-
 def subsetArgs():
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
