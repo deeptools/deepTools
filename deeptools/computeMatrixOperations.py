@@ -21,6 +21,10 @@ detailed help:
 
 or
 
+  computeMatrixOperations relabel -h
+
+or
+
   computeMatrixOperations subset -h
 
 or
@@ -55,6 +59,14 @@ or
         parents=[infoArgs()],
         help="Print group and sample information",
         usage='An example usage is:\n  computeMatrixOperations info -m input.mat.gz\n\n')
+
+    # relabel
+    subparsers.add_parser(
+        'relabel',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs(), relabelArgs()],
+        help="Change sample and/or group label information",
+        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --samples "sample 1" "sample 2"\n\n')
 
     # subset
     subparsers.add_parser(
@@ -130,6 +142,27 @@ def infoArgs():
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
                           required=True)
+
+    return parser
+
+
+def relabelArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--groupLabels',
+                          nargs='+',
+                          help="Groups labels. If none are specified then the current labels will be kept.")
+
+    optional.add_argument('--sampleLabels',
+                          nargs='+',
+                          help="Sample labels. If none are specified then the current labels will be kept.")
 
     return parser
 
@@ -230,6 +263,20 @@ def printInfo(matrix):
     print("Samples:")
     for sample in matrix.matrix.sample_labels:
         print("\t{0}".format(sample))
+
+
+def relabelMatrix(matrix, args):
+    """
+    Relabel the samples and groups in a matrix
+    """
+    if args.groupLabels:
+        if len(args.groupLabels) != len(matrix.matrix.group_labels):
+            sys.exit("You specified {} group labels, but {} are required.\n".format(len(args.groupLabels), len(matrix.matrix.group_labels)))
+        matrix.matrix.group_labels = args.groupLabels
+    if args.sampleLabels:
+        if len(args.sampleLabels) != len(matrix.matrix.sample_labels):
+            sys.exit("You specified {} sample labels, but {} are required.\n".format(len(args.sampleLabels), len(matrix.matrix.sample_labels)))
+        matrix.matrix.sample_labels = args.sampleLabels
 
 
 def getGroupBounds(args, matrix):
@@ -695,6 +742,9 @@ def main(args=None):
         hm.save_matrix(args.outFileName)
     elif args.command == 'sort':
         sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
+        hm.save_matrix(args.outFileName)
+    elif args.command == 'relabel':
+        relabelMatrix(hm, args)
         hm.save_matrix(args.outFileName)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))
