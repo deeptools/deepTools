@@ -36,6 +36,16 @@
                 -m $submodule.matrixFile
                 --strand $submodule.strand
                 -o $outFileName
+            #else if $submodule.command == "filterValues":
+                filterStrand
+                -m $submodule.matrixFile
+                #if $submodule.minValue is not None and str($submodule.minValue) != '':
+                    --min $submodule.minValue
+                #end if
+                #if $submodule.maxValue is not None and str($submodule.maxValue) != '':
+                    --max $submodule.maxValue
+                #end if
+                -o $outFileName
             #else if $submodule.command == "rbind":
                 #set $files=[]
                 #for $f in $submodule.matrixFiles:
@@ -71,6 +81,7 @@
                 <option value="relabel">Relabel the samples and/or groups (relabel)</option>
                 <option value="subset">Subset by samples and/or groups of regions (subset)</option>
                 <option value="filterStrand">Filter by strand (filterStrand)</option>
+                <option value="filterValue">Filter by min/max value (filterValue)</option>
                 <option value="rbind">Bind matrices, top to bottom (rbind)</option>
                 <option value="cbind">Bind matrices, left to right (cbind)</option>
                 <option value="sort">Sort by region order in specified files (sort)</option>
@@ -101,12 +112,21 @@
             <when value="filterStrand">
                 <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
                        label="Matrix file from the computeMatrix tool" help=""/>
-                <param argument="strand" type="select" label="Only include regions on this strand."
+                <param argument="--strand" type="select" label="Only include regions on this strand."
                     help="Only regions on the desired strand will be included in the output. If you desire to instead remove regions on only one strand (or the . strand), separately run this on the other strand and then use the rbind operation.">
                     <option value="+">+</option>
                     <option value="-">-</option>
                     <option value=".">. (no annotated strand)</option>
                 </param>
+            </when>
+
+            <when value="filterValues">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="--min" type="float" optional="true" label="Minimum value"
+                       help="Exclude any row in the matrix with a value below this. By default there is no minimum value." />
+                <param argument="--max" type="float" optional="true" label="Maximum value"
+                       help="Exclude any row in the matrix with a value above this. By default there is no maximum value." />
             </when>
 
             <when value="rbind">
