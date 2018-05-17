@@ -907,7 +907,7 @@ def main(args=None):
     args.matrixFile.close()
     hm.read_matrix_file(matrix_file)
 
-    if hm.paramters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
+    if hm.parameters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
         hm = filterHeatmapValues(hm, hm.paramters['min threshold'], hm.parameters['max threshold'])
 
     if args.kmeans is not None:
