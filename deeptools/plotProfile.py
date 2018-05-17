@@ -22,6 +22,8 @@ import plotly.graph_objs as go
 from deeptools import parserCommon
 from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, plotly_single, getProfileTicks
+from deeptools.computeMatrixOperations import filterHeatmapValues
+
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -904,6 +906,10 @@ def main(args=None):
     matrix_file = args.matrixFile.name
     args.matrixFile.close()
     hm.read_matrix_file(matrix_file)
+
+    if hm.paramters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
+        hm = filterHeatmapValues(hm, hm.paramters['min threshold'], hm.parameters['max threshold'])
+
 
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
