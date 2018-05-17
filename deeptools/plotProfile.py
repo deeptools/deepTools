@@ -910,7 +910,6 @@ def main(args=None):
     if hm.paramters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
         hm = filterHeatmapValues(hm, hm.paramters['min threshold'], hm.parameters['max threshold'])
 
-
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     else:

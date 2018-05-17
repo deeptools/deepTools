@@ -766,7 +766,7 @@ def main(args=None):
     hm.read_matrix_file(matrix_file)
 
     if hm.paramters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
-        hm = filterHeatmapValues(hm, hm.paramters['min threshold'], hm.parameters['max threshold']) 
+        hm = filterHeatmapValues(hm, hm.paramters['min threshold'], hm.parameters['max threshold'])
 
     if args.sortRegions == 'keep':
         args.sortRegions = 'no'  # These are the same thing
