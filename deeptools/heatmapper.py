@@ -9,7 +9,7 @@ from deeptools import getScorePerBigWigBin
 from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes, smartLabels
 from deeptools.heatmapper_utilities import getProfileTicks
-from deeptools.computeMatrixOperations import filterHeatmapValues
+import deeptools.computeMatrixOperations as cmo
 
 
 old_settings = np.seterr(all='ignore')
@@ -812,7 +812,7 @@ class heatmapper(object):
 
         # Filter if there's a 'min threshold' or 'max threshold' parameter set
         if h['min threshold'] is not None or h['max threshold'] is not None:
-            self = filterHeatmapValues(self, h['min threshold'], h['max threshold'])
+            self = cmo.filterHeatmapValues(self, h['min threshold'], h['max threshold'])
 
         return
 
