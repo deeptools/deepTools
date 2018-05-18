@@ -37,7 +37,7 @@
                 --strand $submodule.strand
                 -o $outFileName
             #else if $submodule.command == "filterValues":
-                filterStrand
+                filterValues
                 -m $submodule.matrixFile
                 #if $submodule.minValue is not None and str($submodule.minValue) != '':
                     --min $submodule.minValue
@@ -81,7 +81,7 @@
                 <option value="relabel">Relabel the samples and/or groups (relabel)</option>
                 <option value="subset">Subset by samples and/or groups of regions (subset)</option>
                 <option value="filterStrand">Filter by strand (filterStrand)</option>
-                <option value="filterValue">Filter by min/max value (filterValue)</option>
+                <option value="filterValues">Filter by min/max value (filterValues)</option>
                 <option value="rbind">Bind matrices, top to bottom (rbind)</option>
                 <option value="cbind">Bind matrices, left to right (cbind)</option>
                 <option value="sort">Sort by region order in specified files (sort)</option>
