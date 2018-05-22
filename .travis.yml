@@ -50,7 +50,5 @@ script:
   - if [[ ${TESTGALAXY:-"0"} == "0" ]] ; then cd ${owd} ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" && ${TESTGALAXY:-"0"} == "1" ]] ; then /home/travis/miniconda/envs/planemo/bin/planemo lint galaxy/wrapper/ ; fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" && ${TESTGALAXY:-"0"} != "0" ]] ; then ./.planemo.sh ${TESTGALAXY}; fi
-after_success:
-  - coveralls
 
 sudo: false
