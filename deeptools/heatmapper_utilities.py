@@ -196,4 +196,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
         xticks = [(k / w) - tickPlotAdj for k in xticks_values]
 
+    
+    xticks = [max(x, 0.5) for x in xticks]
+
     return xticks, xtickslabel
