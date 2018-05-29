@@ -1,10 +1,10 @@
 language: c
-env:
-  - TRAVIS_PYTHON_VERSION=3.6
-  - TRAVIS_PYTHON_VERSION=2.7
-os:
-  - linux
-  - osx
+#env:
+#  - TRAVIS_PYTHON_VERSION=3.6
+#  - TRAVIS_PYTHON_VERSION=2.7
+#os:
+#  - linux
+#  - osx
 jobs:
   include:
     - stage: galaxy
