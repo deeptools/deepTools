@@ -5,6 +5,7 @@
  * `plotCorrelation --whatToPlot scatterplot` now has `--xRange` and `--yRange` options rather than just `--maxRange`. (issue #709)
  * `computeMatrixOperations` can now be used to change sample and group names.
  * `computeMatrixOperations` can now filter rows by minimum and/or maximum value.
+ * `--maxThreshold` and `--minThreshold` are now more consistently honoured. (#702)
 
 3.0.2
 
