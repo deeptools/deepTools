@@ -4,6 +4,8 @@
  * `bamCoverage` and `bamCompare` now have an `--exactScaling` option. Instead of using a random sample of alignment to compute the scaling factor, this causes all reads in the file to be used. This is significantly slower, but helpful in situations where reads that should be excluded clump together on the genome (i.e., when sampling based on location is likely to be inaccurate).
  * `plotCorrelation --whatToPlot scatterplot` now has `--xRange` and `--yRange` options rather than just `--maxRange`. (issue #709)
  * `computeMatrixOperations` can now be used to change sample and group names.
+ * `computeMatrixOperations` can now filter rows by minimum and/or maximum value.
+ * `--maxThreshold` and `--minThreshold` are now more consistently honoured. (#702)
 
 3.0.2
 

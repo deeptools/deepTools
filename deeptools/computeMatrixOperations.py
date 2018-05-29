@@ -33,6 +33,10 @@ or
 
 or
 
+  computeMatrixOperations filterValues -h
+
+or
+
   computeMatrixOperations rbind -h
 
 or
@@ -86,6 +90,15 @@ or
         help="Filter entries by strand.",
         usage='Example usage:\n  computeMatrixOperations filterStrand -m '
         'input.mat.gz -o output.mat.gz --strand +\n\n')
+
+    # filterValues
+    subparsers.add_parser(
+        'filterValues',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs(), filterValuesArgs()],
+        help="Filter entries by min/max value.",
+        usage='Example usage:\n  computeMatrixOperations filterValues -m '
+        'input.mat.gz -o output.mat.gz --min 10 --max 1000\n\n')
 
     # rbind
     subparsers.add_parser(
@@ -200,6 +213,28 @@ def filterStrandArgs():
                           help='Strand',
                           choices=['+', '-', '.'],
                           required=True)
+
+    return parser
+
+
+def filterValuesArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--min',
+                          help='Minimum value. Any row having a single entry less than this will be excluded. The default is no minimum.',
+                          type=float,
+                          default=None)
+
+    optional.add_argument('--max',
+                          help='Maximum value. Any row having a single entry more than this will be excluded. The default is no maximum.',
+                          type=float,
+                          default=None)
 
     return parser
 
@@ -341,6 +376,36 @@ def filterHeatmap(hm, args):
         if region[4] == args.strand:
             keep.append(True)
             regions.append(region)
+        else:
+            keep.append(False)
+    keep = np.array(keep)
+
+    # Get the new bounds
+    for idx in range(1, len(hm.matrix.group_boundaries)):
+        i = int(np.sum(keep[hm.matrix.group_boundaries[idx - 1]:hm.matrix.group_boundaries[idx]]))
+        bounds.append(bounds[idx - 1] + i)
+
+    hm.matrix.group_boundaries = bounds
+
+    # subset the matrix
+    hm.matrix.matrix = hm.matrix.matrix[keep, :]
+    hm.matrix.regions = regions
+
+
+def filterHeatmapValues(hm, minVal, maxVal):
+    bounds = [0]
+    regions = []
+    keep = []
+    if minVal is None:
+        minVal = -np.inf
+    if maxVal is None:
+        maxVal = np.inf
+    np.warnings.filterwarnings('ignore')
+    for i, (x, y) in enumerate(zip(np.nanmin(hm.matrix.matrix, axis=1), np.nanmax(hm.matrix.matrix, axis=1))):
+        # x/y will be nan iff a row is entirely nan. Don't filter.
+        if np.isnan(x) or (x >= minVal and y <= maxVal):
+            keep.append(True)
+            regions.append(hm.matrix.regions[i])
         else:
             keep.append(False)
     keep = np.array(keep)
@@ -733,6 +798,9 @@ def main(args=None):
         hm.save_matrix(args.outFileName)
     elif args.command == 'filterStrand':
         filterHeatmap(hm, args)
+        hm.save_matrix(args.outFileName)
+    elif args.command == 'filterValues':
+        filterHeatmapValues(hm, args.min, args.max)
         hm.save_matrix(args.outFileName)
     elif args.command == 'rbind':
         rbindMatrices(hm, args)
