@@ -95,8 +95,8 @@ def makeRegions(BED, args):
     o = []
     extend = 0
     # The before/after stuff is specific to computeMatrix
-    if "beforeRegionsStartLength" in args:
-        extend = max(args.beforeRegionsStartLength, args.afterRegionsStartLength)
+    if "beforeRegionStartLength" in args:
+        extend = max(args.beforeRegionStartLength, args.afterRegionStartLength)
     for chrom in itree.chroms:
         regs = itree.findOverlaps(chrom, 0, 4294967295)  # bigWig files use 32 bit coordinates
         for reg in regs:
