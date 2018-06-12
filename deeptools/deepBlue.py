@@ -278,7 +278,7 @@ class deepBlue(object):
                 interval = intervals.split("\t")
                 if interval[0] == '':
                     continue
-                bw.addEntries([k], [int(interval[0])], ends=[int(interval[1])], values=[float(interval[2])])
+                bw.addEntries([k], [int(interval[0]) - 1], ends=[int(interval[1]) - 1], values=[float(interval[2])])
         bw.close()
         sys.stderr.write("{} done (took {})\n".format(self.sample, datetime.datetime.now() - startTime))
         sys.stderr.flush()
