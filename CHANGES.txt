@@ -6,6 +6,7 @@
  * `computeMatrixOperations` can now be used to change sample and group names.
  * `computeMatrixOperations` can now filter rows by minimum and/or maximum value.
  * `--maxThreshold` and `--minThreshold` are now more consistently honoured. (#702)
+ * Fixed region handling when using files on deepBlue (#700)
 
 3.0.2
 
