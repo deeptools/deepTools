@@ -406,7 +406,7 @@ def test_bam_compare_filter_blacklist():
     """
     outfile = '/tmp/test_file_filter.bg'
     for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2), (CRAMFILE_FILTER1, CRAMFILE_FILTER2)]:
-        args = "-b1 {} -b2 {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+        args = "-b1 {} -b2 {} -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
                "--samFlagExclude 256 --minMappingQuality 5 --ignoreDuplicates " \
                "--blackListFileName {}".format(A, B, outfile, BEDFILE_FILTER)
         args = args.split()
