@@ -3,6 +3,7 @@
 
 import argparse  # to parse command line arguments
 import numpy as np
+import sys
 
 # my packages
 from deeptools import writeBedGraph
@@ -230,8 +231,7 @@ def main(args=None):
     args = process_args(args)
 
     if args.normalizeUsing == "RPGC":
-        print("Warning! RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare. Ignored..")
-        args.effectiveGenomeSize = None
+        sys.exit("RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare!")
 
     # Get mapping statistics
     bam1, mapped1, unmapped1, stats1 = bamHandler.openBam(args.bamfile1, returnStats=True, nThreads=args.numberOfProcessors)
