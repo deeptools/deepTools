@@ -106,7 +106,10 @@ def parse_arguments():
 
 
 def getFragSize(bam, args, idx, outRawFrags):
-    fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
+    return_lengths = False
+    if outRawFrags:
+        return_lengths = True
+    fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=return_lengths,
                                                                     blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose,
@@ -126,6 +129,12 @@ def getFragSize(bam, args, idx, outRawFrags):
         for idx, v in enumerate(cnts):
             if v > 0:
                 outRawFrags.write("{}\t{}\t{}\n".format(idx, v, label))
+
+    # Free up memory!
+    if fragment_len_dict and 'lengths' in fragment_len_dict:
+        del fragment_len_dict['lengths']
+    if read_len_dict and 'lengths' in read_len_dict:
+        del read_len_dict['lengths']
 
     if args.samplesLabel and idx < len(args.samplesLabel):
         print("\n\nSample label: {}".format(args.samplesLabel[idx]))
