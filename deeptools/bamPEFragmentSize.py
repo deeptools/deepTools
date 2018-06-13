@@ -331,7 +331,7 @@ def main(args=None):
                 data.append(trace)
             else:
                 plt.bar(d['lengths'][1][:-1], height=d['lengths'][0],
-                        width=d['lengths'][1][1:] - d['lengths'][1][:-1] - 1e-6,
+                        width=d['lengths'][1][1:] - d['lengths'][1][:-1],
                         align='edge', log=args.logScale,
                         alpha=0.5, label=labels[i])
             i += 1
