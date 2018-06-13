@@ -5,6 +5,12 @@ import argparse
 import sys
 import numpy as np
 
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['svg.fonttype'] = 'none'
+import matplotlib.pyplot as plt
+
 import plotly.offline as py
 import plotly.graph_objs as go
 
@@ -105,11 +111,18 @@ def parse_arguments():
     return parser
 
 
+def getDensity(lengths, minVal, maxVal):
+    """
+    This is essentially computing what hist() in matplotlib is doing and returning the results.
+    This then allows us to free up the memory consumed by each sample rather than returning it all back to main() for plotting.
+    """
+    n, bins, patches = plt.hist(lengths, bins=100, range=(minVal, maxVal), normed=True)
+    plt.clf()
+    return (n, bins)
+
+
 def getFragSize(bam, args, idx, outRawFrags):
-    return_lengths = False
-    if outRawFrags:
-        return_lengths = True
-    fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=return_lengths,
+    fragment_len_dict, read_len_dict = get_read_and_fragment_length(bam, return_lengths=True,
                                                                     blackListFileName=args.blackListFileName,
                                                                     numberOfProcessors=args.numberOfProcessors,
                                                                     verbose=args.verbose,
@@ -129,12 +142,6 @@ def getFragSize(bam, args, idx, outRawFrags):
         for idx, v in enumerate(cnts):
             if v > 0:
                 outRawFrags.write("{}\t{}\t{}\n".format(idx, v, label))
-
-    # Free up memory!
-    if fragment_len_dict and 'lengths' in fragment_len_dict:
-        del fragment_len_dict['lengths']
-    if read_len_dict and 'lengths' in read_len_dict:
-        del read_len_dict['lengths']
 
     if args.samplesLabel and idx < len(args.samplesLabel):
         print("\n\nSample label: {}".format(args.samplesLabel[idx]))
@@ -189,6 +196,28 @@ def getFragSize(bam, args, idx, outRawFrags):
                                                                                                                                                            read_len_dict['qtile80'],
                                                                                                                                                            read_len_dict['qtile90'],
                                                                                                                                                            read_len_dict['qtile99']))
+
+    # The read and fragment lists will just eat up memory if not removed!
+    if args.histogram:
+        if fragment_len_dict:
+            maxVal = fragment_len_dict['mean'] * 2
+            minVal = fragment_len_dict['min']
+        else:
+            maxVal = read_len_dict['mean'] * 2
+            minVal = read_len_dict['min']
+        if args.maxFragmentLength > 0:
+            maxVal = args.maxFragmentLength
+
+        if fragment_len_dict:
+            fragment_len_dict['lengths'] = getDensity(fragment_len_dict['lengths'], minVal, maxVal)
+        if read_len_dict:
+            read_len_dict['lengths'] = getDensity(read_len_dict['lengths'], minVal, maxVal)
+    else:
+        if fragment_len_dict:
+            del fragment_len_dict['lengths']
+        if read_len_dict:
+            del read_len_dict['lengths']
+
     return (fragment_len_dict, read_len_dict)
 
 
@@ -273,12 +302,6 @@ def main(args=None):
         printTable(args, fraglengths, readlengths)
 
     if args.histogram:
-        import matplotlib
-        matplotlib.use('Agg')
-        matplotlib.rcParams['pdf.fonttype'] = 42
-        matplotlib.rcParams['svg.fonttype'] = 'none'
-        import matplotlib.pyplot as plt
-
         if args.samplesLabel:
             if len(args.bamfiles) != len(args.samplesLabel):
                 sys.exit("The number of labels does not match the number of BAM files.")
@@ -307,10 +330,10 @@ def main(args=None):
                                      xbins=dict(start=d['min'], end=maxVal))
                 data.append(trace)
             else:
-                plt.hist(d['lengths'], 100,
-                         range=(d['min'], maxVal),
-                         alpha=0.5, label=labels[i],
-                         log=args.logScale, normed=True)
+                plt.bar(d['lengths'][1][:-1], height=d['lengths'][0],
+                        width=d['lengths'][1][1:] - d['lengths'][1][:-1] - 1e-6,
+                        align='edge', log=log.logScale,
+                        alpha=0.5, label=labels[i])
             i += 1
 
         if args.plotFileFormat == 'plotly':
