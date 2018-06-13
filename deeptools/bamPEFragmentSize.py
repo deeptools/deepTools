@@ -332,7 +332,7 @@ def main(args=None):
             else:
                 plt.bar(d['lengths'][1][:-1], height=d['lengths'][0],
                         width=d['lengths'][1][1:] - d['lengths'][1][:-1] - 1e-6,
-                        align='edge', log=log.logScale,
+                        align='edge', log=args.logScale,
                         alpha=0.5, label=labels[i])
             i += 1
 
