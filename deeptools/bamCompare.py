@@ -232,7 +232,7 @@ def main(args=None):
 
     if args.normalizeUsing == "RPGC":
         sys.exit("RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare!")
-    if args.scaleFactorMethod != 'None' and args.normalizeUsing:
+    if args.scaleFactorsMethod != 'None' and args.normalizeUsing:
         sys.exit("`--normalizeUsing {}` is only valid if you also use `--scaleFactorMethod None`! To prevent erroneous output, I will quit now.\n".format(args.normalizeUsing))
 
     # Get mapping statistics
