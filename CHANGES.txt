@@ -8,6 +8,7 @@
  * `--maxThreshold` and `--minThreshold` are now more consistently honoured. (#702)
  * Fixed region handling when using files on deepBlue (#700)
  * Using `--normalizeUsing RPGC` with `bamCompare` will now result in a fatal error, rather than a simple warning and the settings being changed under the hood. (#718)
+ * Related to the last point, setting `--normalizeUsing` to anything other than `None` will result in an error unless `--scaleFactorsMethod None` is also used. This is to prevent people from accidentally getting unintended normalization.
  * bamPEFragmentSize no longer exploids its memory use with multiple large BAM/CRAM files (#720). Many other tools will also benefit from this change.
 
 3.0.2

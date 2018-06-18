@@ -234,6 +234,7 @@ def normalization_options():
                        'sum of all reads per bin (in millions). '
                        'RPGC (per bin) = number of reads per bin / '
                        'scaling factor for 1x average coverage. '
+                       'None = the default and equivalent to not setting this option at all. '
                        'This scaling factor, in turn, is determined from the '
                        'sequencing depth: (total number of mapped reads * fragment length) / '
                        'effective genome size.\nThe scaling factor used '
@@ -242,7 +243,7 @@ def normalization_options():
                        'Each read is considered independently, '
                        'if you want to only count one mate from a pair in '
                        'paired-end data, then use the --samFlagInclude/--samFlagExclude options.',
-                       choices=['RPKM', 'CPM', 'BPM', 'RPGC'],
+                       choices=['RPKM', 'CPM', 'BPM', 'RPGC', 'None'],
                        default=None,
                        required=False)
 
