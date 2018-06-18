@@ -149,6 +149,9 @@ def main(args=None):
     else:
         debug = 0
 
+    if args.normalizeUsing == 'None':
+        args.normalizeUsing = None  # For the sake of sanity
+
     if args.normalizeUsing:
         # if a normalization is required then compute the scale factors
         bam, mapped, unmapped, stats = openBam(args.bam, returnStats=True, nThreads=args.numberOfProcessors)
