@@ -87,11 +87,11 @@
                 --refPointLabel '$advancedOpt.referencePointLabel'
 
                 #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel $advancedOpt.samplesLabel
+                    --samplesLabel '$advancedOpt.samplesLabel'
                 #end if
 
                 #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel $advancedOpt.regionsLabel
+                    --regionsLabel '$advancedOpt.regionsLabel'
                 #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
