@@ -93,7 +93,9 @@ def get_optional_args():
                           'offset of 0 is not permitted. If two values are specified, then they will be '
                           'used to specify a range of positions. Note that specifying something like '
                           '--Offset 5 -1 will result in the 5th through last position being used, which '
-                          'is equivalent to trimming 4 bases from the 5-prime end of alignments.',
+                          'is equivalent to trimming 4 bases from the 5-prime end of alignments. Note '
+                          'that if you specify --centerReads, the centering will be performed before the '
+                          'offset.',
                           metavar='INT',
                           type=int,
                           nargs='+',
@@ -146,6 +148,9 @@ def main(args=None):
         debug = 1
     else:
         debug = 0
+
+    if args.normalizeUsing == 'None':
+        args.normalizeUsing = None  # For the sake of sanity
 
     if args.normalizeUsing:
         # if a normalization is required then compute the scale factors
@@ -288,6 +293,7 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
         """
         rv = [(None, None)]
         blocks = read.get_blocks()
+        blockLen = sum([x[1] - x[0] for x in blocks])
 
         if self.defaultFragmentLength != 'read length':
             if self.is_proper_pair(read, self.maxPairedFragmentLength):
@@ -320,6 +326,13 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
             stretch.extend(range(block[0], block[1]))
         if read.is_reverse:
             stretch = stretch[::-1]
+
+        # Handle --centerReads
+        if self.center_read:
+            _ = (len(stretch) - blockLen) // 2
+            stretch = stretch[_:_ + blockLen]
+
+        # Subset by --Offset
         try:
             foo = stretch[offset[0]:offset[1]]
         except:

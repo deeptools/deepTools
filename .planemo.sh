@@ -1,6 +1,10 @@
 #!/bin/bash
 planemo=$HOME/miniconda/envs/planemo/bin/planemo
 
+# Some versions of planemo don't handle symlinks
+unlink galaxy/wrapper/test-data/test.bw
+cp deeptools/test/test_heatmapper/test.bw galaxy/wrapper/test-data/test.bw
+
 if [[ $1 == "1" ]] ; then
     wrappers="galaxy/wrapper/alignmentSieve.xml \
     galaxy/wrapper/bamCompare.xml \
@@ -25,5 +29,5 @@ else
     galaxy/wrapper/plotProfiler.xml"
 fi
 
-${planemo} test --no_dependency_resolution --galaxy_branch release_17.09 --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
+${planemo} test --no_dependency_resolution --galaxy_branch release_18.05 --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
 test ${PIPESTATUS[0]} -eq 0

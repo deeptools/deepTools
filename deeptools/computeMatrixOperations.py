@@ -21,11 +21,19 @@ detailed help:
 
 or
 
+  computeMatrixOperations relabel -h
+
+or
+
   computeMatrixOperations subset -h
 
 or
 
   computeMatrixOperations filterStrand -h
+
+or
+
+  computeMatrixOperations filterValues -h
 
 or
 
@@ -56,6 +64,14 @@ or
         help="Print group and sample information",
         usage='An example usage is:\n  computeMatrixOperations info -m input.mat.gz\n\n')
 
+    # relabel
+    subparsers.add_parser(
+        'relabel',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs(), relabelArgs()],
+        help="Change sample and/or group label information",
+        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --samples "sample 1" "sample 2"\n\n')
+
     # subset
     subparsers.add_parser(
         'subset',
@@ -74,6 +90,15 @@ or
         help="Filter entries by strand.",
         usage='Example usage:\n  computeMatrixOperations filterStrand -m '
         'input.mat.gz -o output.mat.gz --strand +\n\n')
+
+    # filterValues
+    subparsers.add_parser(
+        'filterValues',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs(), filterValuesArgs()],
+        help="Filter entries by min/max value.",
+        usage='Example usage:\n  computeMatrixOperations filterValues -m '
+        'input.mat.gz -o output.mat.gz --min 10 --max 1000\n\n')
 
     # rbind
     subparsers.add_parser(
@@ -134,6 +159,27 @@ def infoArgs():
     return parser
 
 
+def relabelArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--groupLabels',
+                          nargs='+',
+                          help="Groups labels. If none are specified then the current labels will be kept.")
+
+    optional.add_argument('--sampleLabels',
+                          nargs='+',
+                          help="Sample labels. If none are specified then the current labels will be kept.")
+
+    return parser
+
+
 def subsetArgs():
     parser = argparse.ArgumentParser(add_help=False)
     required = parser.add_argument_group('Required arguments')
@@ -167,6 +213,28 @@ def filterStrandArgs():
                           help='Strand',
                           choices=['+', '-', '.'],
                           required=True)
+
+    return parser
+
+
+def filterValuesArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--min',
+                          help='Minimum value. Any row having a single entry less than this will be excluded. The default is no minimum.',
+                          type=float,
+                          default=None)
+
+    optional.add_argument('--max',
+                          help='Maximum value. Any row having a single entry more than this will be excluded. The default is no maximum.',
+                          type=float,
+                          default=None)
 
     return parser
 
@@ -232,6 +300,20 @@ def printInfo(matrix):
         print("\t{0}".format(sample))
 
 
+def relabelMatrix(matrix, args):
+    """
+    Relabel the samples and groups in a matrix
+    """
+    if args.groupLabels:
+        if len(args.groupLabels) != len(matrix.matrix.group_labels):
+            sys.exit("You specified {} group labels, but {} are required.\n".format(len(args.groupLabels), len(matrix.matrix.group_labels)))
+        matrix.matrix.group_labels = args.groupLabels
+    if args.sampleLabels:
+        if len(args.sampleLabels) != len(matrix.matrix.sample_labels):
+            sys.exit("You specified {} sample labels, but {} are required.\n".format(len(args.sampleLabels), len(matrix.matrix.sample_labels)))
+        matrix.matrix.sample_labels = args.sampleLabels
+
+
 def getGroupBounds(args, matrix):
     """
     Given the group labels, return an indexing array and the resulting boundaries
@@ -294,6 +376,36 @@ def filterHeatmap(hm, args):
         if region[4] == args.strand:
             keep.append(True)
             regions.append(region)
+        else:
+            keep.append(False)
+    keep = np.array(keep)
+
+    # Get the new bounds
+    for idx in range(1, len(hm.matrix.group_boundaries)):
+        i = int(np.sum(keep[hm.matrix.group_boundaries[idx - 1]:hm.matrix.group_boundaries[idx]]))
+        bounds.append(bounds[idx - 1] + i)
+
+    hm.matrix.group_boundaries = bounds
+
+    # subset the matrix
+    hm.matrix.matrix = hm.matrix.matrix[keep, :]
+    hm.matrix.regions = regions
+
+
+def filterHeatmapValues(hm, minVal, maxVal):
+    bounds = [0]
+    regions = []
+    keep = []
+    if minVal is None:
+        minVal = -np.inf
+    if maxVal is None:
+        maxVal = np.inf
+    np.warnings.filterwarnings('ignore')
+    for i, (x, y) in enumerate(zip(np.nanmin(hm.matrix.matrix, axis=1), np.nanmax(hm.matrix.matrix, axis=1))):
+        # x/y will be nan iff a row is entirely nan. Don't filter.
+        if np.isnan(x) or (x >= minVal and y <= maxVal):
+            keep.append(True)
+            regions.append(hm.matrix.regions[i])
         else:
             keep.append(False)
     keep = np.array(keep)
@@ -687,6 +799,9 @@ def main(args=None):
     elif args.command == 'filterStrand':
         filterHeatmap(hm, args)
         hm.save_matrix(args.outFileName)
+    elif args.command == 'filterValues':
+        filterHeatmapValues(hm, args.min, args.max)
+        hm.save_matrix(args.outFileName)
     elif args.command == 'rbind':
         rbindMatrices(hm, args)
         hm.save_matrix(args.outFileName)
@@ -695,6 +810,9 @@ def main(args=None):
         hm.save_matrix(args.outFileName)
     elif args.command == 'sort':
         sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
+        hm.save_matrix(args.outFileName)
+    elif args.command == 'relabel':
+        relabelMatrix(hm, args)
         hm.save_matrix(args.outFileName)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))

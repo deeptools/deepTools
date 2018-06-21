@@ -67,7 +67,7 @@ A detailed sub-commands help is available by typing:
              "is often smaller. The output of this mode is commonly used to assess the "
              "overall similarity of different bigWig files.",
         add_help=False,
-        usage='multiBigwigSummary '
+        usage='multiBigwigSummary bins'
               '-b file1.bw file2.bw '
               '-o results.npz\n')
 
@@ -84,7 +84,7 @@ A detailed sub-commands help is available by typing:
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
              "different samples over a set of pre-defined peak regions.",
-        usage='multiBigwigSummary '
+        usage='multiBigwigSummary BED-file'
               '-b file1.bw file2.bw '
               '-o results.npz --BED selection.bed\n',
         add_help=False)

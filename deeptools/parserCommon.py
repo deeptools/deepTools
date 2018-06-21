@@ -234,6 +234,7 @@ def normalization_options():
                        'sum of all reads per bin (in millions). '
                        'RPGC (per bin) = number of reads per bin / '
                        'scaling factor for 1x average coverage. '
+                       'None = the default and equivalent to not setting this option at all. '
                        'This scaling factor, in turn, is determined from the '
                        'sequencing depth: (total number of mapped reads * fragment length) / '
                        'effective genome size.\nThe scaling factor used '
@@ -242,9 +243,18 @@ def normalization_options():
                        'Each read is considered independently, '
                        'if you want to only count one mate from a pair in '
                        'paired-end data, then use the --samFlagInclude/--samFlagExclude options.',
-                       choices=['RPKM', 'CPM', 'BPM', 'RPGC'],
+                       choices=['RPKM', 'CPM', 'BPM', 'RPGC', 'None'],
                        default=None,
                        required=False)
+
+    group.add_argument('--exactScaling',
+                       help='Instead of computing scaling factors based on a sampling of the reads, '
+                       'process all of the reads to determine the exact number that will be used in '
+                       'the output. This requires significantly more time to compute, but will '
+                       'produce more accurate scaling factors in cases where alignments that are '
+                       'being filtered are rare and lumped together. In other words, this is only '
+                       'needed when region-based sampling is expected to produce incorrect results.',
+                       action='store_true')
 
     group.add_argument('--ignoreForNormalization', '-ignore',
                        help='A list of space-delimited chromosome names '

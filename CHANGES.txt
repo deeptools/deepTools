@@ -1,3 +1,16 @@
+3.1.0
+
+ * The `--centerReads` option in `bamCoverage` is now compatible with `--Offset` (previously `--centerReads` was silently ignored if `--Offset` was specified). (issue #693)
+ * `bamCoverage` and `bamCompare` now have an `--exactScaling` option. Instead of using a random sample of alignment to compute the scaling factor, this causes all reads in the file to be used. This is significantly slower, but helpful in situations where reads that should be excluded clump together on the genome (i.e., when sampling based on location is likely to be inaccurate).
+ * `plotCorrelation --whatToPlot scatterplot` now has `--xRange` and `--yRange` options rather than just `--maxRange`. (issue #709)
+ * `computeMatrixOperations` can now be used to change sample and group names.
+ * `computeMatrixOperations` can now filter rows by minimum and/or maximum value.
+ * `--maxThreshold` and `--minThreshold` are now more consistently honoured. (#702)
+ * Fixed region handling when using files on deepBlue (#700)
+ * Using `--normalizeUsing RPGC` with `bamCompare` will now result in a fatal error, rather than a simple warning and the settings being changed under the hood. (#718)
+ * Related to the last point, setting `--normalizeUsing` to anything other than `None` will result in an error unless `--scaleFactorsMethod None` is also used. This is to prevent people from accidentally getting unintended normalization.
+ * bamPEFragmentSize no longer exploids its memory use with multiple large BAM/CRAM files (#720). Many other tools will also benefit from this change.
+
 3.0.2
 
  * Fixed an issue regarding under sampling alignments in some cases with computing scaling factors. This was issue #690. The resolution isn't perfect, it's hard to know how many reads really need to be sampled for things like RNA-seq.

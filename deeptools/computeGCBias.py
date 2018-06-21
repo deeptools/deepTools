@@ -685,6 +685,7 @@ def main(args=None):
     # chromSizes: list of tuples
     chromSizes = [(bam.references[i], bam.lengths[i])
                   for i in range(len(bam.references))]
+    chromSizes = [x for x in chromSizes if x[0] in tbit.chroms()]
 
     # use poisson distribution to identify peaks that should be discarted.
     # I multiply by 4, because the real distribution of reads

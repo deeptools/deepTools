@@ -42,6 +42,23 @@ class TestComputeMatrixOperations(object):
         assert(h == "edb3c8506c3f27ebb8c7ddf94d5ba594")
         os.remove(oname)
 
+    def testRelabel(self):
+        """
+        computeMatrixOperations relabel
+        """
+        dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["first", "sec ond", "3rd", "4th", "5th", "6th", "7th", "8th"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["foo bar"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
+        oname = "/tmp/relabeled.mat.gz"
+        args = "relabel -m {} -o {} --sampleLabels first sec_ond 3rd 4th 5th 6th 7th 8th --groupLabels foo_bar".format(self.matrix, oname)
+        args = args.split()
+        args[7] = 'sec ond'  # split mucks up spaces
+        args[-1] = 'foo bar'
+        cmo.main(args)
+        f = gzip.GzipFile(oname)
+        d = getHeader(f)
+        assert(d == dCorrect)
+        f.close()
+        os.remove(oname)
+
     def testfilterStrand(self):
         """
         computeMatrixOperations filterStrand

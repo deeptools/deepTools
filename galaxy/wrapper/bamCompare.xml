@@ -46,6 +46,7 @@
             #end if
 
             --operation $comparison.type
+            $exactScaling
 
             #if $comparison.type in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
@@ -145,6 +146,7 @@
             </when>
         </conditional>
 
+        <expand macro="exactScaling" />
         <param name="outFileFormat" type="select" label="Coverage file format">
             <option value="bigwig" selected="true">bigwig</option>
             <option value="bedgraph">bedgraph</option>
