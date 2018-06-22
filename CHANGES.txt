@@ -1,3 +1,7 @@
+3.1.1
+
+ * Fixed the `--outFileNameData` option in `plotHeatmap` and `plotProfile` when `computeMatrix reference-point --referencePoint center` was used. This caused an error previously. (issue #727)
+
 3.1.0
 
  * The `--centerReads` option in `bamCoverage` is now compatible with `--Offset` (previously `--centerReads` was silently ignored if `--Offset` was specified). (issue #693)

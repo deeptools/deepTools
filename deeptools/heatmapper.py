@@ -942,7 +942,7 @@ class heatmapper(object):
         x_axis = np.arange(xticks[-1]) + 1
         labs = []
         for x_value in x_axis:
-            if x_value in xticks:
+            if x_value in xticks and xtickslabel[xticks.index(x_value)]:
                 labs.append(xtickslabel[xticks.index(x_value)])
             else:
                 labs.append("")
