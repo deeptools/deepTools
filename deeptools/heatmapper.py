@@ -944,6 +944,8 @@ class heatmapper(object):
         for x_value in x_axis:
             if x_value in xticks and xtickslabel[xticks.index(x_value)]:
                 labs.append(xtickslabel[xticks.index(x_value)])
+            elif x_value in xticks:
+                labs.append("tick")
             else:
                 labs.append("")
 
