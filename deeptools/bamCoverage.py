@@ -126,8 +126,6 @@ def scaleFactor(string):
 def process_args(args=None):
     args = parseArguments().parse_args(args)
 
-    if args.scaleFactor != 1:
-        args.effectiveGenomeSize = None
     if args.smoothLength and args.smoothLength <= args.binSize:
         print("Warning: the smooth length given ({}) is smaller than the bin "
               "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
