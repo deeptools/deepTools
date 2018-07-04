@@ -647,6 +647,7 @@ class Correlation:
 
         if plot_filename is not None:
             n = len(self.labels)
+            n_ev = eigenvalues.size
             markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
             if cols is not None:
                 colors = itertools.cycle(cols)
@@ -676,13 +677,13 @@ class Correlation:
                                  prop={'size': 12}, markerscale=0.9)
 
                 # Scree plot
-                ind = np.arange(n)  # the x locations for the groups
+                ind = np.arange(n_ev)  # the x locations for the groups
                 width = 0.35        # the width of the bars
 
                 if mpl.__version__ >= "2.0.0":
-                    ax2.bar(2 * width + ind, eigenvalues[:n], width * 2)
+                    ax2.bar(2 * width + ind, eigenvalues[:n_ev], width * 2)
                 else:
-                    ax2.bar(width + ind, eigenvalues[:n], width * 2)
+                    ax2.bar(width + ind, eigenvalues[:n_ev], width * 2)
                 ax2.set_ylabel('Eigenvalue')
                 ax2.set_xlabel('Principal Component')
                 ax2.set_title('Scree plot')
