@@ -464,11 +464,11 @@ def countReadsPerGC(regionSize, chrNameBitToBam, stepSize,
     >>> arg = test.testCountReadsPerGC()
     >>> reads_per_gc = countReadsPerGC(*arg)
     >>> reads_per_gc[0:5,:]
-    array([[132.        ,    0.44      ],
-           [132.        ,    0.44      ],
-           [133.        ,    0.44      ],
-           [134.        ,    0.43666667],
-           [134.        ,    0.44      ]])
+    array([[132.        ,   0.44      ],
+           [132.        ,   0.44      ],
+           [133.        ,   0.44      ],
+           [134.        ,   0.43666667],
+           [134.        ,   0.44      ]])
     """
     global global_vars
 
