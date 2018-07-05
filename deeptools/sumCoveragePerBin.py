@@ -27,13 +27,13 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
 
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
         ... [(5000833, 5000834), (5000834, 5000835)])
-        array([ 4.,  5.])
+        array([4., 5.])
 
         In the following  case the reads length is 50. Reads are not extended.
 
         >>> c.extendReads=False
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', [(148, 150), (150, 152), (152, 154)])
-        array([ 2.,  4.,  4.])
+        array([2., 4., 4.])
 
 
         """

@@ -147,8 +147,8 @@ class CountReadsPerBin(object):
 
     >>> c = CountReadsPerBin([test.bamFile1, test.bamFile2], 50, 4)
     >>> np.transpose(c.run())
-    array([[ 0.,  0.,  1.,  1.],
-           [ 0.,  1.,  1.,  2.]])
+    array([[0., 0., 1., 1.],
+           [0., 1., 1., 2.]])
     """
 
     def __init__(self, bamFilesList, binLength=50, numberOfSamples=None, numberOfProcessors=1,
@@ -421,10 +421,10 @@ class CountReadsPerBin(object):
 
         >>> _array, __ = c.count_reads_in_region(test.chrom, 0, 200)
         >>> _array
-        array([[ 0.,  0.],
-               [ 0.,  1.],
-               [ 1.,  1.],
-               [ 1.,  2.]])
+        array([[0., 0.],
+               [0., 1.],
+               [1., 1.],
+               [1., 2.]])
 
         """
 
@@ -527,7 +527,7 @@ class CountReadsPerBin(object):
 
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
         ... [(5000833, 5000834), (5000834, 5000835)])
-        array([ 4.,  5.])
+        array([4., 5.])
 
         In the following example a paired read is extended to the fragment length which is 100
         The first mate starts at 5000000 and the second at 5000064. Each mate is
@@ -538,13 +538,13 @@ class CountReadsPerBin(object):
         >>> c.zerosToNans = True
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile_PE), 'chr2',
         ... [(5000090, 5000100), (5000100, 5000110)])
-        array([  1.,  nan])
+        array([ 1., nan])
 
         In the following  case the reads length is 50. Reads are not extended.
 
         >>> c.extendReads=False
         >>> c.get_coverage_of_region(pysam.AlignmentFile(test.bamFile2), '3R', [(148, 150), (150, 152), (152, 154)])
-        array([ 1.,  2.,  2.])
+        array([1., 2., 2.])
 
 
         """

@@ -71,9 +71,9 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     >>> num_samples = 4
     >>> _dict = estimateScaleFactor([test.bamFile1, test.bamFile2], bin_length, num_samples,  1)
     >>> _dict['size_factors']
-    array([ 1. ,  0.5])
+    array([1. , 0.5])
     >>> _dict['size_factors_based_on_mean']
-    array([ 1. ,  0.5])
+    array([1. , 0.5])
     """
 
     assert len(bamFilesList) == 2, "SES scale factors are only defined for 2 files"
