@@ -647,6 +647,8 @@ class Correlation:
 
         if plot_filename is not None:
             n = len(self.labels)
+            if eigenvalues.size < n:
+                n = eigenvalues.size
             markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
             if cols is not None:
                 colors = itertools.cycle(cols)
