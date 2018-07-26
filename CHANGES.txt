@@ -2,6 +2,7 @@
 
  * Fixed the `--outFileNameData` option in `plotProfile` when `computeMatrix reference-point --referencePoint center` was used. This caused an error previously. (issue #727)
  * RPGC normalization and the `--scaleFactor` option in `bamCoverage` are no longer mutually exclusive.
+ * Increased the default plot width in plotPCA (issue #738)
 
 3.1.0
 

@@ -81,7 +81,7 @@ def plotCorrelationArgs():
     optional.add_argument('--plotWidth',
                           help='Plot width in cm. The minimum value is 1 cm.',
                           type=float,
-                          default=5)
+                          default=10)
 
     optional.add_argument('--outFileNameData',
                           metavar='file.tab',
