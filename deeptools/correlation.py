@@ -526,7 +526,7 @@ class Correlation:
             else:
                 ax.set_xticklabels([])
 
-            ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
+            ax.hist2d(vector2, vector1, bins=200, cmin=0.1)
 
             if xRange is not None:
                 ax.set_xlim(xRange)
