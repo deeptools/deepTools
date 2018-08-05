@@ -216,7 +216,7 @@
             label="Use a metagene model"
             help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
         <param argument="--transcriptID" optional="True" value="transcript" type="text"
-            label="trascript designator"
+            label="transcript designator"
             help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as transcripts. Default: transcript" />
         <param argument="--exonID" optional="True" value="exon" type="text"
             label="exon designator"
