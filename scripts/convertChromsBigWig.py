@@ -11,63 +11,60 @@ import itertools
 
 def parse_arguments(defaults):
     
-   
+    
     parser = argparse.ArgumentParser(description='Convert chromosome names for bigwig files between ensembl, gencode and UCSC naming schemes\n' +
-                                     "Per default it writes to the same location as original file, however with a modified filename:\n" + 
-                                     "eg. test.bw --> test.[toFormat]_chroms.bw\n" + 
-                                     "Change this with the -o option!\n\n" + 
-                                     "Mapping tables are taken from https://github.com/dpryan79/ChromosomeMappings\n\n" + 
-                                     "Provided mapping options need to exactly match an existing file\n" + 
+                                     "Per default it writes to the same location as original file, however with a modified filename:\n" +
+                                     "eg. test.bw --> test.[toFormat]_chroms.bw\n" +
+                                     "Change this with the -o option!\n\n" +
+                                     "Mapping tables are taken from https://github.com/dpryan79/ChromosomeMappings\n\n" +
+                                     "Provided mapping options need to exactly match an existing file\n" +
                                      "[GENOME]_[FROM_FORMAT]2[TO_FORMAT].txt in this repo!",
                                      usage='$ convertChroms BIGWIG', formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('bw_in_filename',
                         metavar='BIGWIG',
-                        help='bigwig file that will be converted'
-                       )
-    
-    parser.add_argument('--genome','-g',
-                       action='store',
-                       dest='genome',
-                       help='Genome version of original bigwig \n'
-                             + '(GRCm37|GRCm38|GRCh37|GRCh38|BDGP6|dm3|GRCz10|GRCz11|\n'
-                             + 'JGI_4.2|MEDAKA1|R64-1-1|WBcel235|Zv9|galGal4|rn5|rn6)\n'
-                             + '(default: %(default)s)',
-                       default=defaults["genome"])
+                        help='bigwig file that will be converted')
 
-    
-    parser.add_argument('--fromFormat','-f',
-                       action='store',
-                       dest='from_format',
-                       help='Chr naming format of original bigwig (ensembl|gencode|UCSC) (default: %(default)s)',
-                       default=defaults["fromFormat"])
+    parser.add_argument('--genome', '-g',
+                        action='store',
+                        dest='genome',
+                        help='Genome version of original bigwig \n' +
+                        '(GRCm37|GRCm38|GRCh37|GRCh38|BDGP6|dm3|GRCz10|GRCz11|\n' + 
+                        'JGI_4.2|MEDAKA1|R64-1-1|WBcel235|Zv9|galGal4|rn5|rn6)\n' + 
+                        '(default: %(default)s)',
+                        default=defaults["genome"])
 
-    parser.add_argument('--toFormat','-t',
-                       action='store',
-                       dest='to_format',
-                       help='Chr naming format of converted bigwig (ensembl|gencode|UCSC) (default: %(default)s)',
-                       default=defaults["toFormat"])
-    
-    parser.add_argument('--outFileName','-o',
-                       action='store',
-                       dest='bw_out_filename',
-                       help='Chr naming format of converted bigwig (ensembl|gencode|UCSC) (default: %(default)s)',
-                       default=defaults["bw_out_filename"])
-    
-    parser.add_argument('--baseURL','-u',
-                       action='store',
-                       dest='base_url',
-                       help='base url where the mapping tables can be found (default: %(default)s)\n'
-                       + 'Local files can be given with \'file://[BASE_DIR]/\'',
-                       default=defaults["base_url"])
-    
-    
-    parser.add_argument('--verbose','-v',
-                       action='store_true',
-                       dest='verbose',
-                       help='Be more verbose where possible (default: %(default)s)',
-                       default=defaults["verbose"])
-    
+    parser.add_argument('--fromFormat', '-f',
+                        action='store',
+                        dest='from_format',
+                        help='Chr naming format of original bigwig (ensembl|gencode|UCSC) (default: %(default)s)',
+                        default=defaults["fromFormat"])
+
+    parser.add_argument('--toFormat', '-t',
+                        action='store',
+                        dest='to_format',
+                        help='Chr naming format of converted bigwig (ensembl|gencode|UCSC) (default: %(default)s)',
+                        default=defaults["toFormat"])
+
+    parser.add_argument('--outFileName', '-o',
+                        action='store',
+                        dest='bw_out_filename',
+                        help='Chr naming format of converted bigwig (ensembl|gencode|UCSC) (default: %(default)s)',
+                        default=defaults["bw_out_filename"])
+
+    parser.add_argument('--baseURL', '-u',
+                        action='store',
+                        dest='base_url',
+                        help='base url where the mapping tables can be found (default: %(default)s)\n' +
+                        'Local files can be given with \'file://[BASE_DIR]/\'',
+                        default=defaults["base_url"])
+
+    parser.add_argument('--verbose', '-v',
+                        action='store_true',
+                        dest='verbose',
+                        help='Be more verbose where possible (default: %(default)s)',
+                        default=defaults["verbose"])
+
     return parser
  
 
