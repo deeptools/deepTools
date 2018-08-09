@@ -103,18 +103,19 @@ def get_chromosome_mapping(genome="GRCm38", from_format="ensembl", to_format="UC
 
     mapping_table = {}
     for ent in tab.split("\n"):
-        if len(ent) == 0: continue
+        if len(ent) == 0:
+            continue
         pair = ent.split("\t")
         if (len(pair[1]) <= 0):
-            #if (verbose):
+            # if (verbose):
             #    print("skip chrom \'" + pair[0] + "\' - cannot be mapped to "+to_format)
             continue
-        mapping_table[pair[0]]=pair[1]
+        mapping_table[pair[0]] = pair[1]
 
     return mapping_table
 
 
-def convert_bigwig(mapping_table, bw_in_filename, bw_out_filename, verbose = False):
+def convert_bigwig(mapping_table, bw_in_filename, bw_out_filename, verbose=False):
     """
     convert chromosome names of a bigwig file according to given mapping_table
 
@@ -146,13 +147,14 @@ def convert_bigwig(mapping_table, bw_in_filename, bw_out_filename, verbose = Fal
         c_map = final_mapping_table[c]
         if verbose:
             print("convert chromosome: ", c, " --> ", c_map)
-        bw_out.addEntries(list(itertools.repeat(c_map, len(c_int))), [x[0] for x in c_int], ends = [x[1] for x in c_int], values = [x[2] for x in c_int])
+        bw_out.addEntries(list(itertools.repeat(c_map, len(c_int))), [x[0] for x in c_int], ends=[x[1] for x in c_int], values=[x[2] for x in c_int])
 
     bw_out.close()
     bw.close()
 
     if (verbose):
         print("\nbigwig conversion finished!\n")
+
 
 def main(args=None):
 
@@ -164,13 +166,13 @@ def main(args=None):
         'bw_out_filename': None,
         'base_url': 'https://raw.githubusercontent.com/dpryan79/ChromosomeMappings/master/'
     }
-    
+
     args = parse_arguments(defaults).parse_args(args)
 
     bw_out_filename = args.bw_out_filename
     if args.bw_out_filename is None:
-        bw_out_filename = re.sub("(.[^\.]+)$", ".%s\\1" % (args.to_format+"_chroms"), args.bw_in_filename)
-    print("\noutput_file: "+bw_out_filename)
+        bw_out_filename = re.sub("(.[^\.]+)$", ".%s\\1" % (args.to_format + "_chroms"), args.bw_in_filename)
+    print("\noutput_file: " + bw_out_filename)
 
     mapping_table = get_chromosome_mapping(genome=args.genome, from_format=args.from_format, to_format=args.to_format, verbose=args.verbose, base_url=args.base_url)
 
