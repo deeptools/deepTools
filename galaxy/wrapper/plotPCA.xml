@@ -22,8 +22,8 @@
                 #if $advancedOpt.colors:
                     --colors $advancedOpt.colors
                 #end if
-                #if $advancedOpt.marker:
-                    --markers $advancedOpt.marker
+                #if $advancedOpt.markers:
+                    --markers $advancedOpt.markers
                 #end if
             #end if
             #if $outFileNameData
