@@ -122,12 +122,12 @@ def plotCorrelationArgs():
                           metavar="COLORS",
                           nargs='+',
                           help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors red blue green. If not specified, the symbols will be given automatic colors.")
- 
+
     optional.add_argument('--markers',
                           metavar="MARKERS",
                           nargs='+',
                           help="A list of markers for the symbols. (e.g., '<','>','o') are accepted. The marker values should be space separated. For example, --markers 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes.")
-    
+
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(__version__))
 

@@ -654,9 +654,10 @@ class Correlation:
                 colors = itertools.cycle(cols)
             else:
                 colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
+
             if marks is not None:
                 markers = itertools.cycle(marks)
-                
+
             if image_format == 'plotly':
                 self.plotly_pca(plot_filename, Wt, pvar, PCs, eigenvalues, cols, plot_title)
             else:
