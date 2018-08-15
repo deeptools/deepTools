@@ -22,6 +22,9 @@
                 #if $advancedOpt.colors:
                     --colors $advancedOpt.colors
                 #end if
+                #if $advancedOpt.marker:
+                    --markers $advancedOpt.marker
+                #end if
             #end if
             #if $outFileNameData
                 --outFileNameData '$output_outFileNameData'
@@ -50,6 +53,8 @@
                 <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically. This option is not applicable if the PCA is performed on the transposed matrix." truevalue="--rowCenter" falsevalue="" />
                 <param argument="--colors" type="text" name="colors" label="Symbol colors" value="" optional="True"
                     help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors 'red blue green'. If not specified, the symbols will be given automatic colors." />
+                <param argument="--markers" type="text" name="markers" label="Custom markers" value="" optional="True"
+                    help="A list of markers for the symbols. (e.g., '<','>','o') are accepted. The marker values should be space separated. For example, 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes." />
             </when>
         </conditional>
     </inputs>

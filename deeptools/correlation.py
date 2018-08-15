@@ -598,7 +598,7 @@ class Correlation:
         fig['layout']['annotations'] = annos
         offline.plot(fig, filename=plotFile, auto_open=False)
 
-    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None):
+    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None, marks=None):
         """
         Plot the PCA of a matrix
 
@@ -654,6 +654,9 @@ class Correlation:
                 colors = itertools.cycle(cols)
             else:
                 colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
+
+            if marks is not None:
+                markers = itertools.cycle(marks)
 
             if image_format == 'plotly':
                 self.plotly_pca(plot_filename, Wt, pvar, PCs, eigenvalues, cols, plot_title)
