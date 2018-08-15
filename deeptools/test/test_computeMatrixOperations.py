@@ -112,7 +112,7 @@ class TestComputeMatrixOperations(object):
         """
         computeMatrixOperations rbind with different groups
         """
-        dCorrect = {"verbose": False, "scale":1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0], "body": [2], "sample_labels": ["signal"], "downstream": [1], "unscaled 3 prime": [0], "group_labels": ["somegenes", "othergenes"], "bin size": [1], "upstream": [1], "group_boundaries": [0, 3, 7], "sample_boundaries": [0, 4], "max threshold": None, "ref point": [None], "min threshold": None,"sort regions": "keep", "proc number": 1, "bin avg type": "mean", "missing data as zero": True}
+        dCorrect = {"verbose": False, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0], "body": [2], "sample_labels": ["signal"], "downstream": [1], "unscaled 3 prime": [0], "group_labels": ["somegenes", "othergenes"], "bin size": [1], "upstream": [1], "group_boundaries": [0, 3, 7], "sample_boundaries": [0, 4], "max threshold": None, "ref point": [None], "min threshold": None, "sort regions": "keep", "proc number": 1, "bin avg type": "mean", "missing data as zero": True}
         oname = "/tmp/rbind2.mat.gz"
         args = "rbind -m {0} {1} -o {2}".format(self.rbindMatrix1, self.rbindMatrix2, oname)
         args = args.split()
