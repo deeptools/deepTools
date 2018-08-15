@@ -470,7 +470,7 @@ def appendMatrix(hm, hm2, groupName):
 
 def rbindMatrices(hm, args):
     """
-    This only supports a single group at this point
+    Bind matrices, top to bottom while accounting for the groups.
 
     It's assumed that the same samples are present in both and in the exact same order
     """
@@ -483,6 +483,7 @@ def rbindMatrices(hm, args):
                 insertMatrix(hm, hm2, group)
             else:
                 appendMatrix(hm, hm2, group)
+                hm.parameters["group_labels"].append(group)
 
     # Update the group boundaries attribute
     hm.matrix.group_labels = hm.parameters['group_labels']
