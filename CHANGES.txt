@@ -2,6 +2,7 @@
 
  * Added a `--markers` option to `plotPCA`, courtesy of @sklasfeld.
  * `computeMatrixOperations rbind` now properly supports multiple region groups (issue #742)
+ * Fixed the usage of `--xRange` and `--yRange` with `plotCorrelation` (issue #709)
 
 3.1.1
 

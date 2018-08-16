@@ -338,22 +338,22 @@ class Correlation:
         axmatrix.set_yticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_yticklabels(np.array(self.labels).astype('str')[index])
 
-        axmatrix.xaxis.set_tick_params(labeltop='on')
-        axmatrix.xaxis.set_tick_params(labelbottom='off')
+        axmatrix.xaxis.set_tick_params(labeltop=True)
+        axmatrix.xaxis.set_tick_params(labelbottom=False)
         axmatrix.set_xticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_xticklabels(np.array(self.labels).astype('str')[index], rotation=45, ha='left')
 
         axmatrix.tick_params(
             axis='x',
             which='both',
-            bottom='off',
-            top='off')
+            bottom=False,
+            top=False)
 
         axmatrix.tick_params(
             axis='y',
             which='both',
-            left='off',
-            right='off')
+            left=False,
+            right=False)
 
         # Plot colorbar
         axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
@@ -492,14 +492,14 @@ class Correlation:
                     transform=ax.transAxes)
             ax.get_yaxis().set_tick_params(
                 which='both',
-                left='off',
-                right='off',
+                left=False,
+                right=False,
                 direction='out')
 
             ax.get_xaxis().set_tick_params(
                 which='both',
-                top='off',
-                bottom='off',
+                top=False,
+                bottom=False,
                 direction='out')
             for tick in ax.xaxis.get_major_ticks():
                 tick.label.set_rotation('45')
@@ -510,15 +510,15 @@ class Correlation:
                 ax.yaxis.tick_right()
                 ax.get_yaxis().set_tick_params(
                     which='both',
-                    left='off',
-                    right='on',
+                    left=False,
+                    right=True,
                     direction='out')
             if col - row == 1:
                 ax.xaxis.tick_bottom()
                 ax.get_xaxis().set_tick_params(
                     which='both',
-                    top='off',
-                    bottom='on',
+                    top=False,
+                    bottom=True,
                     direction='out')
                 for tick in ax.xaxis.get_major_ticks():
                     tick.label.set_rotation('45')
@@ -527,15 +527,8 @@ class Correlation:
                 ax.set_xticklabels([])
 
             ax.hist2d(vector2, vector1, bins=200, cmin=0.1)
-
-            if xRange is not None:
-                ax.set_xlim(xRange)
-            else:
-                ax.set_xlim(min_xvalue, ax.get_xlim()[1])
-            if yRange is not None:
-                ax.set_ylim(min_yvalue, min(yRange, ax.get_ylim()[1]))
-            else:
-                ax.set_ylim(min_yvalue, ax.get_ylim()[1])
+            ax.set_xlim(min_xvalue, max_xvalue)
+            ax.set_ylim(min_yvalue, max_yvalue)
 
         plt.savefig(plot_filename, format=image_format)
         plt.close()
