@@ -72,8 +72,8 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
     axmatrix.set_yticklabels(np.array(labels).astype('str')[index])
 
 #    axmatrix.xaxis.set_label_position('top')
-    axmatrix.xaxis.set_tick_params(labeltop='on')
-    axmatrix.xaxis.set_tick_params(labelbottom='off')
+    axmatrix.xaxis.set_tick_params(labeltop=True)
+    axmatrix.xaxis.set_tick_params(labelbottom=False)
     axmatrix.set_xticks(np.arange(corr_matrix.shape[0]) + 0.5)
     axmatrix.set_xticklabels(np.array(labels).astype('str')[index],
                              rotation=45,
@@ -82,14 +82,14 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
     axmatrix.tick_params(
         axis='x',
         which='both',
-        bottom='off',
-        top='off')
+        bottom=False,
+        top=False)
 
     axmatrix.tick_params(
         axis='y',
         which='both',
-        left='off',
-        right='off')
+        left=False,
+        right=False)
 
     #    axmatrix.set_xticks([])
     # Plot colorbar.
