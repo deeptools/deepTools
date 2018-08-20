@@ -1,4 +1,4 @@
-<tool id="deeptools_bam_pe_fragmentsize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_bam_pe_fragmentsize" name="bamPEFragmentSize" version="@WRAPPER_VERSION@.0" profile="18.01">
     <description>Estimate the predominant cDNA fragment length from paired-end sequenced BAM/CRAM files</description>
     <macros>
         <token name="@BINARY@">bamPEFragmentSize</token>
