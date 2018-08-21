@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import subprocess
 import re
 from distutils import sysconfig
 import glob
@@ -29,28 +27,6 @@ module1 = Extension('deeptoolsintervals.tree',
                     include_dirs=[sysconfig.get_config_var("INCLUDEPY")])
 
 
-def update_version_py():
-    if not os.path.isdir(".git"):
-        print("This does not appear to be a Git repository.")
-        return
-    try:
-        p = subprocess.Popen(["git", "describe",
-                              "--tags", "--always"],
-                             stdout=subprocess.PIPE)
-    except EnvironmentError:
-        print("unable to run git, leaving deeptools/_version.py alone")
-        return
-    stdout = p.communicate()[0]
-    if p.returncode != 0:
-        print("unable to run git, leaving deeptools/_version.py alone")
-        return
-    ver = stdout.decode().strip().replace("-g", "-")
-    f = open("deeptools/_version.py", "w")
-    f.write(VERSION_PY % ver)
-    f.close()
-    print("set deeptools/_version.py to '%s'" % ver)
-
-
 def get_version():
     try:
         f = open("deeptools/_version.py")
@@ -67,7 +43,6 @@ def get_version():
 class sdist(_sdist):
 
     def run(self):
-        update_version_py()
         self.distribution.metadata.version = get_version()
         return _sdist.run(self)
 
@@ -75,7 +50,6 @@ class sdist(_sdist):
 class install(_install):
 
     def run(self):
-        update_version_py()
         self.distribution.metadata.version = get_version()
         _install.run(self)
         return

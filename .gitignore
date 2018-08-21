@@ -47,9 +47,6 @@ _sources
 #ignore pycharm
 .idea
 
-#ignore _version
-deeptools/_version.py
-
 #os X
 .DS_Store
 ._.DS_Store
