@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import subprocess
 import re
 from distutils import sysconfig
 import glob
