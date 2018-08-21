@@ -1,10 +1,10 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">3.1.1</token>
+    <token name="@WRAPPER_VERSION@">3.1.2.0</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="3.1.1">deeptools</requirement>
+            <requirement type="package" version="3.1.2">deeptools</requirement>
             <requirement type="package" version="1.7">samtools</requirement>
         </requirements>
         <expand macro="stdio" />
@@ -216,7 +216,7 @@
             label="Use a metagene model"
             help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
         <param argument="--transcriptID" optional="True" value="transcript" type="text"
-            label="trascript designator"
+            label="transcript designator"
             help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as transcripts. Default: transcript" />
         <param argument="--exonID" optional="True" value="exon" type="text"
             label="exon designator"
@@ -654,7 +654,7 @@ is vital to you, select Yes below.">
     </xml>
 
     <xml name="output_image_file_format">
-        <data format="png" name="outFileName" label="${tool.name} image">
+        <data format="png" name="outFileName" label="${tool.name} on ${on_string}: Image">
             <change_format>
                 <when input="output.outFileFormat" value="pdf" format="pdf" />
                 <when input="output.outFileFormat" value="svg" format="svg" />
@@ -665,7 +665,7 @@ is vital to you, select Yes below.">
     </xml>
 
     <xml name="output_image_file_format_not_nested">
-        <data format="png" name="outFileName" label="${tool.name} image">
+        <data format="png" name="outFileName" label="${tool.name} on ${on_string}: Image">
             <change_format>
                 <when input="outFileFormat" value="pdf" format="pdf" />
                 <when input="outFileFormat" value="svg" format="svg" />

@@ -228,9 +228,9 @@ class Profile(object):
             ax.tick_params(
                 axis='y',
                 which='both',
-                left='off',
-                right='off',
-                labelleft='on')
+                left=False,
+                right=False,
+                labelleft=True)
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
@@ -496,9 +496,9 @@ class Profile(object):
             ax.tick_params(
                 axis='y',
                 which='both',
-                left='off',
-                right='off',
-                labelleft='on')
+                left=False,
+                right=False,
+                labelleft=True)
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
