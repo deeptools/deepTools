@@ -38,19 +38,19 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     Fragment coverage.
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200, [test.bwFile1, test.bwFile2], 50, 25, False)[0])
-    array([[ 1.,  1.,  2.,  2.],
-           [ 1.,  1.,  1.,  3.]])
+    array([[1., 1., 2., 2.],
+           [1., 1., 1., 3.]])
 
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200, [test.bwFile1, test.bwFile2], 200, 200, False)[0])
-    array([[ 1.5],
-           [ 1.5]])
+    array([[1.5],
+           [1.5]])
 
     BED regions:
     >>> bedRegions = [[test.chrom, [(45, 55)]], [test.chrom, [(95, 105)]], [test.chrom, [(145, 155)]]]
     >>> np.transpose(countFragmentsInRegions_worker(test.chrom, 0, 200,[test.bwFile1, test.bwFile2], 200, 200, False,
     ... bedRegions=bedRegions)[0])
-    array([[ 1. ,  1.5,  2. ],
-           [ 1. ,  1. ,  2. ]])
+    array([[1. , 1.5, 2. ],
+           [1. , 1. , 2. ]])
     """
     assert start < end, "start {} bigger that end {}".format(start, end)
 
@@ -59,9 +59,9 @@ def countFragmentsInRegions_worker(chrom, start, end,
 
     rows = 0
 
-    bigwig_handlers = []
+    bigwig_handles = []
     for foo in bigWigFiles:
-        bigwig_handlers.append(pyBigWig.open(foo))
+        bigwig_handles.append(pyBigWig.open(foo))
 
     regions_to_consider = []
     if bedRegions:
@@ -88,7 +88,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         avgReadsArray = []
         i += 1
 
-        for idx, bwh in enumerate(bigwig_handlers):
+        for idx, bwh in enumerate(bigwig_handles):
             if chrom not in bwh.chroms():
                 unmod_name = chrom
                 if chrom.startswith('chr'):
@@ -146,9 +146,6 @@ def getChromSizes(bigwigFilesList):
     Chromosome name(s) and size(s).
     >>> assert(getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([])))
     """
-    # check that the path to USCS bedGraphToBigWig as set in the config
-    # is installed and is executable.
-
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:
@@ -214,8 +211,8 @@ def getScorePerBin(bigWigFiles, binLength,
     Test dataset with two samples covering 200 bp.
     >>> test = Tester()
     >>> np.transpose(getScorePerBin([test.bwFile1, test.bwFile2], 50, 3))
-    array([[ 1.,  1.,  2.,  2.],
-           [ 1.,  1.,  1.,  3.]])
+    array([[1., 1., 2., 2.],
+           [1., 1., 1., 3.]])
 
     """
     # Try to determine an optimal fraction of the genome (chunkSize)

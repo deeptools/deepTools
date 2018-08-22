@@ -1,0 +1,116 @@
+<tool id="deeptools_estimatereadfiltering" name="estimateReadFiltering" version="@WRAPPER_VERSION@.0">
+    <description>estimates the number of reads that would be filtered given certain criteria</description>
+    <macros>
+        <token name="@BINARY@">estimateReadFiltering</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <command>
+<![CDATA[
+        @multiple_input_bams@
+        @BINARY@
+        @THREADS@
+
+        -o '$outFileName'
+
+        --bamfiles #echo " ".join($files)#
+        --sampleLabels #echo " ".join($labels)#
+
+        -bs '$binSize'
+        --distanceBetweenBins '$distanceBetweenBins'
+
+        #if str($filterRNAstrand) != 'no':
+            --filterRNAstrand '$filterRNAstrand'
+        #end if
+        $ignoreDuplicates
+        #if $minMappingQuality:
+            --minMappingQuality '$minMappingQuality'
+        #end if
+        #if $samFlagInclude:
+            --samFlagInclude $samFlagInclude
+        #end if
+        #if $samFlagExclude:
+            --samFlagExclude $samFlagExclude
+        #end if
+
+        #if ' '.join( map(str, $blackListFileName) ) != 'None':
+            #set blfiles=[]
+            #for $f in $blackListFileName:
+                #silent $blfiles.append("'%s'" % $f)
+            #end for
+            #if $blfiles != ["'None'"]:
+                --blackListFileName #echo ' '.join($blfiles)#
+            #end if
+        #end if
+]]>
+    </command>
+
+    <inputs>
+        <expand macro="multiple_input_bams" MIN="1"/>
+        <param name="binSize" type="integer" value="1000000" min="1"
+            label="Bin size in bp"
+            help="Length in bases of the window used to sample the genome. (--binSize)"/>
+        <param argument="--distanceBetweenBins" type="integer" value="10000" min="0"
+            label="Distance between bins"
+            help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased." />
+
+        <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
+            help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
+                  Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
+            <option value="no" selected="true">no</option>
+            <option value="forward">forward</option>
+            <option value="reverse">reverse</option>
+        </param>
+
+        <expand macro="ignoreDuplicates" />
+        <expand macro="minMappingQuality" />
+        <expand macro="samFlags" />
+        <expand macro="blacklist" />
+    </inputs>
+    <outputs>
+        <data format="tabular" name="outFileName" label="${tool.name} on ${on_string}: filtering estimates" />
+    </outputs>
+    <tests>
+        <test>
+            <param name="bamfiles" value="paired_chr2L.bam,paired_chr2L.bam" ftype="bam" />
+            <param name="minMappingQuality" value="10" />
+            <output name="outFileName" file="estimateReadFiltering.txt" ftype="tabular" />
+        </test>
+    </tests>
+
+    <help>
+<![CDATA[
+
+What it does
+-------------
+
+This tool estimates the number of alignments that would be excluded from one or more BAM files given a variety of filtering criteria. This is useful for estimating the duplication rate in an experiment or more generally seeing what the effect of various option choices will be in other deepTools tools without actually spending the time to run them.
+
+Output
+--------
+
+The output file is a simple text file with the following columns:
+
+ * Total reads (including unmapped)
+ * Mapped reads
+ * Reads in blacklisted regions (--blackListFileName)
+
+The following metrics are estimated according to the --binSize and --distanceBetweenBins parameters
+ * Estimated mapped reads filtered (the total number of mapped reads filtered for any reason)
+ * Alignments with a below threshold MAPQ (--minMappingQuality)
+ * Alignments with at least one missing flag (--samFlagInclude)
+ * Alignments with undesirable flags (--samFlagExclude)
+ * Duplicates determined by deepTools (--ignoreDuplicates)
+ * Duplicates marked externally (e.g., by picard)
+ * Singletons (paired-end reads with only one mate aligning)
+ * Wrong strand (due to --filterRNAstrand)
+
+The sum of these may be more than the total number of reads. Note that alignments are sampled from bins of size --binSize spaced --distanceBetweenBins apart.
+
+-----
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>

@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import deeptools.misc
+from deeptools.estimateReadFiltering import main
+import sys
+
+if __name__ == "__main__":
+    args = None
+    if len(sys.argv) == 1:
+        args = ["--help"]
+    main(args)

@@ -8,7 +8,6 @@ import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools._version import __version__
-import deeptools.config as cfg
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo
@@ -107,18 +106,11 @@ def computeMatrixRequiredArgs(args=None):
 def computeMatrixOutputArgs(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     output = parser.add_argument_group('Output options')
-    output.add_argument('--outFileName', '-out',
+    output.add_argument('--outFileName', '-out', '-o',
                         help='File name to save the gzipped matrix file '
                         'needed by the "plotHeatmap" and "plotProfile" tools.',
                         type=writableFile,
                         required=True)
-    # TODO This isn't implemented, see deeptools/heatmapper.py in the saveTabulatedValues() function
-    # output.add_argument('--outFileNameData',
-    #                    help='Name to save the averages per matrix '
-    #                    'column into a text file. This corresponds to '
-    #                    'the underlying data used to '
-    #                    'plot a summary profile. Example: myProfile.tab',
-    #                    type=argparse.FileType('w'))
 
     output.add_argument('--outFileNameMatrix',
                         help='If this option is given, then the matrix '
@@ -191,7 +183,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
         optional.add_argument("--unscaled3prime",
                               default=0,
                               type=int,
-                              help='Like --unscaled3prime, but for the 3-prime '
+                              help='Like --unscaled5prime, but for the 3-prime '
                               'end.')
 
     elif case == 'reference-point':
@@ -324,12 +316,22 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'bigWig and BED/GTF files, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
+
     # in contrast to other tools,
     # computeMatrix by default outputs
     # messages and the --quiet flag supresses them
     optional.add_argument('--quiet', '-q',
                           help='Set to remove any warning or processing '
                           'messages.',
+                          action='store_true')
+
+    optional.add_argument('--verbose',
+                          help='Being VERY verbose in the status messages. --quiet will disable this.',
                           action='store_true')
 
     optional.add_argument('--scale',
@@ -343,8 +345,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
-                          default=cfg.config.get('general',
-                                                 'default_proc_number'),
+                          default=1,
                           required=False)
     return parser
 
@@ -352,9 +353,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
-    if args.quiet is False:
-        args.verbose = True
-    else:
+    if args.quiet is True:
         args.verbose = False
 
     if args.command == 'scale-regions':
@@ -421,7 +420,6 @@ def main(args=None):
     scores_file_list = args.scoreFileName
     hm.computeMatrix(scores_file_list, args.regionsFileName, parameters, blackListFileName=args.blackListFileName, verbose=args.verbose, allArgs=args)
     if args.sortRegions not in ['no', 'keep']:
-
         sortUsingSamples = []
         if args.sortUsingSamples is not None:
             for i in args.sortUsingSamples:
@@ -435,7 +433,7 @@ def main(args=None):
     elif args.sortRegions == 'keep':
         hm.parameters['group_labels'] = hm.matrix.group_labels
         hm.parameters["group_boundaries"] = hm.matrix.group_boundaries
-        cmo.sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
+        cmo.sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator, verbose=not args.quiet)
 
     hm.save_matrix(args.outFileName)
 

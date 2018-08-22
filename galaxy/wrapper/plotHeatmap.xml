@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.0" profile="18.01">
     <description>creates a heatmap for score distributions across genomic regions</description>
     <macros>
         <token name="@BINARY@">plotHeatmap</token>
@@ -8,22 +8,22 @@
     <command>
 <![CDATA[
         @BINARY@
-            --matrixFile "$matrixFile"
-            --outFileName "$outFileName"
+            --matrixFile '$matrixFile'
+            --outFileName '$outFileName'
 
             #if $output.showOutputSettings == "yes"
-                --plotFileFormat "$output.outFileFormat"
+                --plotFileFormat '$output.outFileFormat'
 
                 #if $outFileNameMatrix:
-                    --outFileNameMatrix "$outFileNameMatrix"
+                    --outFileNameMatrix '$outFileNameMatrix'
                 #end if
 
                 #if $outFileSortedRegions:
-                    --outFileSortedRegions "$outFileSortedRegions"
+                    --outFileSortedRegions '$outFileSortedRegions'
                 #end if
 
                 #if $output.dpi:
-                    --dpi "$output.dpi"
+                    --dpi '$output.dpi'
                 #end if
             #else
                 --plotFileFormat 'png'
@@ -46,9 +46,14 @@
                     --missingDataColor '$advancedOpt.missingDataColor'
                 #end if
 
-                #if str($advancedOpt.colorMap).strip() != "":
-                    --colorMap #echo " ".join(str($advancedOpt.colorMap).strip().split(","))#
+                #set colorMap = []
+                #for $cmap in $advancedOpt.colorMapRepeat:
+                    #silent $colorMap.append(str($cmap.colorMap))
+                #end for
+                #if len($colorMap) > 0:
+                    --colorMap #echo " ".join($colorMap)#
                 #end if
+
                 --alpha '$advancedOpt.alpha'
                 #if str($advancedOpt.colorList).strip() != "":
                     --colorList $advancedOpt.colorList
@@ -82,16 +87,18 @@
                 --refPointLabel '$advancedOpt.referencePointLabel'
 
                 #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel $advancedOpt.samplesLabel
+                    --samplesLabel '$advancedOpt.samplesLabel'
                 #end if
 
                 #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel $advancedOpt.regionsLabel
+                    --regionsLabel '$advancedOpt.regionsLabel'
                 #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
+
+                --labelRotation '$advancedOpt.labelRotation'
 
                 $advancedOpt.perGroup
 
@@ -136,7 +143,10 @@
                     Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html.
                     Alternatively colors can be specified using the #rrggbb notation." />
 
-                <expand macro="colorMap" />
+                <repeat name="colorMapRepeat" title="Colormap to use for each sample"
+                    help="A different colormap can be applied to each column of the heatmap. If you select fewer colormaps than you have samples in your matrix, then the select colormap(s) will be repeated (e.g., if you select one colormap then it will be applied to all samples).">
+                    <expand macro="colorMap" />
+                </repeat>
                 <param argument="--alpha" type="float" value="1.0" min="0.0"
                     max="1.0" optional="True"
                     label="Alpha channel (transparency)"
@@ -196,6 +206,7 @@
                           For example, label_1 &quot;label 2&quot;" />
 
                 <expand macro="plotTitle" />
+                <expand macro="labelRotation" />
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Make one plot per group of regions"
                     help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions."/>

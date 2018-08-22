@@ -11,9 +11,12 @@ matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
+import plotly.offline as py
+import plotly.graph_objs as go
+
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen
+from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen, smartLabels
 from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
@@ -73,14 +76,14 @@ def plot_enrichment_args():
                           nargs='+',
                           required=True)
 
-    required.add_argument('--plotFile', '-o',
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--plotFile', '-o',
                           help='File to save the plot to. The file extension determines the format, '
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
                           metavar='FILE')
-
-    optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument('--labels', '-l',
                           metavar='sample1 sample2',
@@ -89,6 +92,14 @@ def plot_enrichment_args():
                           'Multiple labels have to be separated by spaces, e.g. '
                           '--labels sample1 sample2 sample3',
                           nargs='+')
+
+    optional.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying labels for the input '
+                          'BAM/BED/GTF files, this causes deepTools to use the file name '
+                          'after removing the path and extension. For BED/GTF files, the '
+                          'eventual region name will be overriden if specified inside '
+                          'the file.')
 
     optional.add_argument('--regionLabels',
                           metavar="region1 region2",
@@ -109,8 +120,8 @@ def plot_enrichment_args():
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
-                          'eps, pdf and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          'eps, pdf, plotly and svg.',
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument('--outRawCounts',
                           help='Save the counts per region to a tab-delimited file.',
@@ -276,7 +287,6 @@ def getEnrichment_worker(arglist):
     if args.verbose:
         sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
 
-    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
     olist = []
     total = [0] * len(args.bamfiles)
     for idx, f in enumerate(args.bamfiles):
@@ -287,7 +297,8 @@ def getEnrichment_worker(arglist):
 
         chrom = mungeChromosome(chrom, fh.references)
 
-        prev_start_pos = None  # to store the start positions
+        lpos = None
+        prev_pos = set()
         for read in fh.fetch(chrom, start, end):
             # Filter
             if read.pos < start:
@@ -306,10 +317,23 @@ def getEnrichment_worker(arglist):
                 continue
             if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
                 continue
-            if args.ignoreDuplicates and prev_start_pos \
-                    and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                continue
-            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+            if args.ignoreDuplicates:
+                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                if tLen >= 0:
+                    s = read.pos
+                    e = s + tLen
+                else:
+                    s = read.pnext
+                    e = s - tLen
+                if read.reference_id != read.next_reference_id:
+                    e = read.pnext
+                if lpos is not None and lpos == read.reference_start \
+                        and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+                    continue
+                if lpos != read.reference_start:
+                    prev_pos.clear()
+                lpos = read.reference_start
+                prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
             total[idx] += 1
 
             # Get blocks, possibly extending
@@ -337,15 +361,30 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
     if not args.colors:
         cmap_plot = plt.get_cmap('jet')
         args.colors = cmap_plot(np.arange(barsPerPlot, dtype=float) / float(barsPerPlot))
-    if len(args.colors) < barsPerPlot:
+        if args.plotFileFormat == 'plotly':
+            args.colors = range(barsPerPlot)
+    elif len(args.colors) < barsPerPlot:
         sys.exit("Error: {0} colors were requested, but {1} were needed!".format(len(args.colors), barsPerPlot))
 
-    grids = gridspec.GridSpec(rows, cols)
-    plt.rcParams['font.size'] = 10.0
+    data = []
+    if args.plotFileFormat == 'plotly':
+        fig = go.Figure()
+        fig['layout'].update(title=args.plotTitle)
+        domainWidth = .9 / cols
+        domainHeight = .9 / rows
+        bufferHeight = 0.0
+        if rows > 1:
+            bufferHeight = 0.1 / (rows - 1)
+        bufferWidth = 0.0
+        if cols > 1:
+            bufferWidth = 0.1 / (cols - 1)
+    else:
+        grids = gridspec.GridSpec(rows, cols)
+        plt.rcParams['font.size'] = 10.0
 
-    # convert cm values to inches
-    fig = plt.figure(figsize=(args.plotWidth / 2.54, args.plotHeight / 2.54))
-    fig.suptitle(args.plotTitle, y=(1 - (0.06 / args.plotHeight)))
+        # convert cm values to inches
+        fig = plt.figure(figsize=(args.plotWidth / 2.54, args.plotHeight / 2.54))
+        fig.suptitle(args.plotTitle, y=(1 - (0.06 / args.plotHeight)))
 
     for i in range(totalPlots):
         col = i % cols
@@ -361,18 +400,46 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
             ylabel = "% {0}".format(features[i])
             vals = [foo[features[i]] for foo in featureCounts]
             vals = 100 * np.array(vals, dtype='float64') / np.array(totalCounts, dtype='float64')
-        ax = plt.subplot(grids[row, col])
-        ax.bar(np.arange(vals.shape[0]), vals, width=1.0, bottom=0.0, align='center', color=args.colors, edgecolor=args.colors, alpha=args.alpha)
-        ax.set_ylabel(ylabel)
-        ax.set_xticks(np.arange(vals.shape[0]))
-        ax.set_xticklabels(xlabels, rotation='vertical')
-        if args.variableScales is False:
-            ax.set_ylim(0.0, 100.0)
 
-    plt.subplots_adjust(wspace=0.05, hspace=0.3, bottom=0.15, top=0.80)
-    plt.tight_layout()
-    plt.savefig(args.plotFile, dpi=200, format=args.plotFileFormat)
-    plt.close()
+        if args.plotFileFormat == 'plotly':
+            xanchor = 'x{}'.format(i + 1)
+            yanchor = 'y{}'.format(i + 1)
+            base = row * (domainHeight + bufferHeight)
+            domain = [base, base + domainHeight]
+            fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': yanchor}
+            base = col * (domainWidth + bufferWidth)
+            domain = [base, base + domainWidth]
+            fig['layout']['yaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': xanchor, 'title': ylabel}
+            if args.variableScales is False:
+                fig['layout']['yaxis{}'.format(i + 1)].update(range=[0, 100])
+            trace = go.Bar(x=xlabels,
+                           y=vals,
+                           opacity=args.alpha,
+                           orientation='v',
+                           showlegend=False,
+                           xaxis=xanchor,
+                           yaxis=yanchor,
+                           name=ylabel,
+                           marker={'color': args.colors, 'line': {'color': args.colors}})
+            data.append(trace)
+        else:
+            ax = plt.subplot(grids[row, col])
+            ax.bar(np.arange(vals.shape[0]), vals, width=1.0, bottom=0.0, align='center', color=args.colors, edgecolor=args.colors, alpha=args.alpha)
+            ax.set_ylabel(ylabel)
+            ax.set_xticks(np.arange(vals.shape[0]))
+            ax.set_xticklabels(xlabels, rotation='vertical')
+            if args.variableScales is False:
+                ax.set_ylim(0.0, 100.0)
+
+    if args.plotFileFormat == 'plotly':
+        fig['data'] = data
+        py.plot(fig, filename=args.plotFile, auto_open=False)
+        # colors
+    else:
+        plt.subplots_adjust(wspace=0.05, hspace=0.3, bottom=0.15, top=0.80)
+        plt.tight_layout()
+        plt.savefig(args.plotFile, dpi=200, format=args.plotFileFormat)
+        plt.close()
 
 
 def getChunkLength(args, chromSize):
@@ -421,8 +488,15 @@ def main(args=None):
 
     if args.labels is None:
         args.labels = args.bamfiles
+    if args.smartLabels:
+        args.labels = smartLabels(args.bamfiles)
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
+
+    global gtf
+    if not args.regionLabels and args.smartLabels:
+        args.regionLabels = smartLabels(args.BED)
+    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
 
     # Get fragment size and chromosome dict
     fhs = [openBam(x) for x in args.bamfiles]
@@ -493,8 +567,8 @@ def main(args=None):
     # Raw counts
     if args.outRawCounts:
         of = open(args.outRawCounts, "w")
-        of.write("file\tfeatureType\tpercent\n")
+        of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
         for i, x in enumerate(args.labels):
             for k, v in featureCounts[i].items():
-                of.write("{0}\t{1}\t{2:5.2f}\n".format(x, k, (100.0 * v) / totalCounts[i]))
+                of.write("{0}\t{1}\t{2:5.2f}\t{3}\t{4}\n".format(x, k, (100.0 * v) / totalCounts[i], v, totalCounts[i]))
         of.close()

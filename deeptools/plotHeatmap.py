@@ -15,11 +15,15 @@ import matplotlib.gridspec as gridspec
 from matplotlib import ticker
 
 import sys
+import plotly.offline as py
+import plotly.graph_objs as go
 
 # own modules
 from deeptools import parserCommon
 from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, getProfileTicks
+from deeptools.heatmapper_utilities import plot_single, plotly_single
+from deeptools.utilities import convertCmap
+from deeptools.computeMatrixOperations import filterHeatmapValues
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -53,64 +57,6 @@ def process_args(args=None):
     args.boxAroundHeatmaps = True if args.boxAroundHeatmaps == 'yes' else False
 
     return args
-
-
-def get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel):
-    """
-    returns the position and labelling of the xticks that
-    correspond to the heatmap
-    """
-    w = hm.parameters['bin size']
-    b = hm.parameters['upstream']
-    a = hm.parameters['downstream']
-    c = hm.parameters.get('unscaled 5 prime', 0)
-    d = hm.parameters.get('unscaled 3 prime', 0)
-    m = hm.parameters['body']
-
-    if b < 1e5:
-        quotient = 1000
-        symbol = 'Kb'
-    else:
-        quotient = 1e6
-        symbol = 'Mb'
-
-    if m == 0:
-        xticks = [(k / w) for k in [0, b, b + a]]
-        xticks_label = ['{0:.1f}'.format(-(float(b) / quotient)), reference_point_label,
-                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
-
-    else:
-        xticks_values = [0]
-        xticks_label = []
-
-        # only if upstream region is set, add a x tick
-        if b > 0:
-            xticks_values.append(b)
-            xticks_label.append('{0:.1f}'.format(-(float(b) / quotient)))
-
-        xticks_label.append(startLabel)
-
-        # 5 prime unscaled tick/label, if needed
-        if c > 0:
-            xticks_values.append(b + c)
-            xticks_label.append('')
-
-        # set the x tick for the body parameter, regardless if
-        # upstream is 0 (not set)
-        if d > 0:
-            xticks_values.append(b + c + m)
-            xticks_label.append('')
-
-        xticks_values.append(b + c + m + d)
-        xticks_label.append(endLabel)
-
-        if a > 0:
-            xticks_values.append(b + c + m + d + a)
-            xticks_label.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
-
-        xticks = [k / w for k in xticks_values]
-
-    return xticks, xticks_label
 
 
 def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGroup, colorbar_position):
@@ -169,7 +115,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     return grids
 
 
-def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position):
+def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position, label_rotation=0.0):
     """
     A function to add profile plots to the given figure, possibly in a custom grid subplot which mimics a tight layout (if wspace and hspace are not None)
     """
@@ -183,8 +129,10 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
     for sample_id in range(iterNum):
         if perGroup:
             title = hm.matrix.group_labels[sample_id]
+            tickIdx = sample_id % hm.matrix.get_num_samples()
         else:
             title = hm.matrix.sample_labels[sample_id]
+            tickIdx = sample_id
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
             ax_profile = fig.add_subplot(grids[0, sample_id], sharey=ax_list[0])
         else:
@@ -212,13 +160,14 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
 
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
+        xticks, xtickslabel = hm.getTicks(tickIdx)
         if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
             tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
             xticks_use = [x * tickscale for x in xticks]
             ax_profile.axes.set_xticks(xticks_use)
         else:
             ax_profile.axes.set_xticks(xticks)
-        ax_profile.axes.set_xticklabels(xtickslabel)
+        ax_profile.axes.set_xticklabels(xtickslabel, rotation=label_rotation)
         ax_list.append(ax_profile)
 
         # align the first and last label
@@ -245,6 +194,181 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
     return ax_list
 
 
+def plotlyMatrix(hm,
+                 outFilename,
+                 yMin=[None], yMax=[None],
+                 zMin=[None], zMax=[None],
+                 showSummaryPlot=False,
+                 cmap=None, colorList=None, colorBarPosition='side',
+                 perGroup=False,
+                 averageType='median', yAxisLabel='', xAxisLabel='',
+                 plotTitle='',
+                 showColorbar=False,
+                 label_rotation=0.0):
+    label_rotation *= -1.0
+    if colorBarPosition != 'side':
+        sys.error.write("Warning: It is not currently possible to have multiple colorbars with plotly!\n")
+
+    nRows = hm.matrix.get_num_groups()
+    nCols = hm.matrix.get_num_samples()
+    if perGroup:
+        nRows, nCols = nCols, nRows
+
+    profileHeight = 0.0
+    profileBottomBuffer = 0.0
+    if showSummaryPlot:
+        profileHeight = 0.2
+        profileBottomBuffer = 0.05
+        profileSideBuffer = 0.
+        profileWidth = 1. / nCols
+        if nCols > 1:
+            profileSideBuffer = 0.1 / (nCols - 1)
+            profileWidth = 0.9 / nCols
+
+    dataSummary = []
+    annos = []
+    fig = go.Figure()
+    fig['layout'].update(title=plotTitle)
+    xAxisN = 1
+    yAxisN = 1
+
+    # Summary plots at the top (if appropriate)
+    if showSummaryPlot:
+        yMinLocal = np.inf
+        yMaxLocal = -np.inf
+        for i in range(nCols):
+            xanchor = 'x{}'.format(xAxisN)
+            yanchor = 'y{}'.format(yAxisN)
+            xBase = i * (profileSideBuffer + profileWidth)
+            yBase = 1 - profileHeight
+            xDomain = [xBase, xBase + profileWidth]
+            yDomain = [yBase, 1.0]
+            for j in range(nRows):
+                if perGroup:
+                    mat = hm.matrix.get_matrix(i, j)
+                    xTicks, xTicksLabels = hm.getTicks(i)
+                    label = mat['sample']
+                else:
+                    mat = hm.matrix.get_matrix(j, i)
+                    xTicks, xTicksLabels = hm.getTicks(j)
+                    label = mat['group']
+                if j == 0:
+                    fig['layout']['xaxis{}'.format(xAxisN)] = dict(domain=xDomain, anchor=yanchor, range=[0, mat['matrix'].shape[1]], tickmode='array', tickvals=xTicks, ticktext=xTicksLabels, tickangle=label_rotation)
+                    fig['layout']['yaxis{}'.format(yAxisN)] = dict(anchor=xanchor, domain=yDomain)
+                trace = plotly_single(mat['matrix'], averageType, colorList[j], label)[0]
+                trace.update(xaxis=xanchor, yaxis=yanchor, legendgroup=label)
+                if min(trace['y']) < yMinLocal:
+                    yMinLocal = min(trace['y'])
+                if max(trace['y']) > yMaxLocal:
+                    yMaxLocal = max(trace['y'])
+                if i == 0:
+                    trace.update(showlegend=True)
+                dataSummary.append(trace)
+
+            # Add the column label
+            if perGroup:
+                title = hm.matrix.group_labels[i]
+            else:
+                title = hm.matrix.sample_labels[i]
+            titleX = xBase + 0.5 * profileWidth
+            annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': title, 'y': 1.0, 'x': titleX, 'font': {'size': 16}, 'showarrow': False})
+            xAxisN += 1
+            yAxisN += 1
+
+        # Adjust y-bounds as appropriate:
+        for i in range(1, yAxisN):
+            yMinUse = yMinLocal
+            if yMin[(i - 1) % len(yMin)] is not None:
+                yMinUse = yMin[(i - 1) % len(yMin)]
+            yMaxUse = yMaxLocal
+            if yMax[(i - 1) % len(yMax)] is not None:
+                yMaxUse = yMax[(i - 1) % len(yMax)]
+            fig['layout']['yaxis{}'.format(i)].update(range=[yMinUse, yMaxUse])
+        fig['layout']['yaxis1'].update(title=yAxisLabel)
+
+    # Add the heatmap
+    dataHeatmap = []
+    zMinLocal = np.inf
+    zMaxLocal = -np.inf
+    heatmapWidth = 1. / nCols
+    heatmapSideBuffer = 0.0
+    if nCols > 1:
+        heatmapWidth = .9 / nCols
+        heatmapSideBuffer = 0.1 / (nCols - 1)
+    heatmapHeight = 1.0 - profileHeight - profileBottomBuffer
+
+    for i in range(nCols):
+        xanchor = 'x{}'.format(xAxisN)
+        xBase = i * (heatmapSideBuffer + heatmapWidth)
+
+        # Determine the height of each heatmap, they have no buffer
+        lengths = [0.0]
+        for j in range(nRows):
+            if perGroup:
+                mat = hm.matrix.get_matrix(i, j)
+            else:
+                mat = hm.matrix.get_matrix(j, i)
+            lengths.append(mat['matrix'].shape[0])
+        fractionalHeights = heatmapHeight * np.cumsum(lengths).astype(float) / np.sum(lengths).astype(float)
+        xDomain = [xBase, xBase + heatmapWidth]
+        fig['layout']['xaxis{}'.format(xAxisN)] = dict(domain=xDomain, anchor='free', position=0.0, range=[0, mat['matrix'].shape[1]], tickmode='array', tickvals=xTicks, ticktext=xTicksLabels, title=xAxisLabel)
+
+        # Start adding the heatmaps
+        for j in range(nRows):
+            if perGroup:
+                mat = hm.matrix.get_matrix(i, j)
+                label = mat['sample']
+                start = hm.matrix.group_boundaries[i]
+                end = hm.matrix.group_boundaries[i + 1]
+            else:
+                mat = hm.matrix.get_matrix(j, i)
+                label = mat['group']
+                start = hm.matrix.group_boundaries[j]
+                end = hm.matrix.group_boundaries[j + 1]
+            regs = hm.matrix.regions[start:end]
+            regs = [x[2] for x in regs]
+            yanchor = 'y{}'.format(yAxisN)
+            yDomain = [heatmapHeight - fractionalHeights[j + 1], heatmapHeight - fractionalHeights[j]]
+            visible = False
+            if i == 0:
+                visible = True
+            fig['layout']['yaxis{}'.format(yAxisN)] = dict(domain=yDomain, anchor=xanchor, visible=visible, title=label, tickmode='array', tickvals=[], ticktext=[])
+            if np.min(mat['matrix']) < zMinLocal:
+                zMinLocal = np.min(mat['matrix'])
+            if np.max(mat['matrix']) < zMaxLocal:
+                zMaxLocal = np.max(mat['matrix'])
+
+            trace = go.Heatmap(z=np.flipud(mat['matrix']),
+                               y=regs[::-1],
+                               xaxis=xanchor,
+                               yaxis=yanchor,
+                               showlegend=False,
+                               name=label,
+                               showscale=False)
+
+            dataHeatmap.append(trace)
+            yAxisN += 1
+        xAxisN += 1
+    if showColorbar:
+        dataHeatmap[-1].update(showscale=True)
+        dataHeatmap[-1]['colorbar'].update(len=heatmapHeight, y=0, yanchor='bottom', ypad=0.0)
+
+    # Adjust z bounds and colorscale
+    for trace in dataHeatmap:
+        zMinUse = zMinLocal
+        zMaxUse = zMaxLocal
+        if zMin[0] is not None:
+            zMinUse = zMin[0]
+        if zMax[0] is not None:
+            zMaxUse = zMax[0]
+        trace.update(zmin=zMinUse, zmax=zMaxUse, colorscale=convertCmap(cmap[0], vmin=zMinUse, vmax=zMaxUse))
+
+    dataSummary.extend(dataHeatmap)
+    fig['data'] = dataSummary
+    fig['layout']['annotations'] = annos
+    py.plot(fig, filename=outFilename, auto_open=False)
+
+
 def plotMatrix(hm, outFileName,
                colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0},
                plotTitle='',
@@ -252,7 +376,7 @@ def plotMatrix(hm, outFileName,
                zMin=None, zMax=None,
                yMin=None, yMax=None,
                averageType='median',
-               reference_point_label='TSS',
+               reference_point_label=None,
                startLabel='TSS', endLabel="TES",
                heatmapHeight=25,
                heatmapWidth=7.5,
@@ -260,7 +384,15 @@ def plotMatrix(hm, outFileName,
                image_format=None,
                legend_location='upper-left',
                box_around_heatmaps=True,
-               dpi=200):
+               label_rotation=0.0,
+               dpi=200,
+               interpolation_method='auto'):
+
+    hm.reference_point_label = hm.parameters['ref point']
+    if reference_point_label is not None:
+        hm.reference_point_label = [reference_point_label] * hm.matrix.get_num_samples()
+    hm.startLabel = startLabel
+    hm.endLabel = endLabel
 
     matrix_flatten = None
     if zMin is None:
@@ -351,10 +483,6 @@ def plotMatrix(hm, outFileName,
             total_figwidth += 1 / 2.54
 
     fig = plt.figure(figsize=(total_figwidth, figheight))
-
-    xticks, xtickslabel = getProfileTicks(hm, reference_point_label, startLabel, endLabel)
-
-    xticks_heat, xtickslabel_heat = get_heatmap_ticks(hm, reference_point_label, startLabel, endLabel)
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
 
     # color map for the summary plot (profile) on top of the heatmap
@@ -366,15 +494,30 @@ def plotMatrix(hm, outFileName,
         color_list = cmap_plot(np.arange(numgroups) / numgroups)
     alpha = colorMapDict['alpha']
 
+    if image_format == 'plotly':
+        return plotlyMatrix(hm,
+                            outFileName,
+                            yMin=yMin, yMax=yMax,
+                            zMin=zMin, zMax=zMax,
+                            showSummaryPlot=showSummaryPlot, showColorbar=showColorbar,
+                            cmap=cmap, colorList=color_list, colorBarPosition=colorbar_position,
+                            perGroup=perGroup,
+                            averageType=averageType, plotTitle=plotTitle,
+                            xAxisLabel=xAxisLabel, yAxisLabel=yAxisLabel,
+                            label_rotation=label_rotation)
+
     # check if matrix is reference-point based using the upstream >0 value
     # and is sorted by region length. If this is
     # the case, prepare the data to plot a border at the regions end
-    if hm.parameters['upstream'] > 0 and \
-            hm.matrix.sort_using == 'region_length' and \
-            hm.matrix.sort_method != 'no':
+    regions_length_in_bins = [None] * len(hm.parameters['upstream'])
+    if hm.matrix.sort_using == 'region_length' and hm.matrix.sort_method != 'no':
+        for idx in range(len(hm.parameters['upstream'])):
+            if hm.parameters['ref point'][idx] is None:
+                regions_length_in_bins[idx] = None
+                continue
 
             _regions = hm.matrix.get_regions()
-            regions_length_in_bins = []
+            foo = []
             for _group in _regions:
                 _reg_len = []
                 for ind_reg in _group:
@@ -382,10 +525,15 @@ def plotMatrix(hm, outFileName,
                         _len = ind_reg['end'] - ind_reg['start']
                     else:
                         _len = sum([x[1] - x[0] for x in ind_reg[1]])
-                    _reg_len.append((hm.parameters['upstream'] + _len) / hm.parameters['bin size'])
-                regions_length_in_bins.append(_reg_len)
-    else:
-        regions_length_in_bins = None
+                    if hm.parameters['ref point'][idx] == 'TSS':
+                        _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
+                    elif hm.parameters['ref point'][idx] == 'center':
+                        _len *= 0.5
+                        _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
+                    elif hm.parameters['ref point'][idx] == 'TES':
+                        _reg_len.append((hm.parameters['downstream'][idx] - _len) / hm.parameters['bin size'][idx])
+                foo.append(_reg_len)
+            regions_length_in_bins[idx] = foo
 
     # plot the profiles on top of the heatmaps
     if showSummaryPlot:
@@ -395,7 +543,7 @@ def plotMatrix(hm, outFileName,
         else:
             iterNum = hm.matrix.get_num_samples()
             iterNum2 = numgroups
-        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position)
+        ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position, label_rotation)
         if len(yMin) > 1 or len(yMax) > 1:
             # replot with a tight layout
             import matplotlib.tight_layout as tl
@@ -406,12 +554,8 @@ def plotMatrix(hm, outFileName,
             for ax in ax_list:
                 fig.delaxes(ax)
 
-            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, xticks, xtickslabel, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position)
+            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position, label_rotation)
 
-        # reduce the number of yticks by half
-        num_ticks = len(ax_list[0].get_yticks())
-        yticks = [ax_list[0].get_yticks()[i] for i in range(1, num_ticks, 2)]
-        ax_list[0].set_yticks(yticks)
         if legend_location != 'none':
             ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
                                frameon=False, markerscale=0.5)
@@ -459,10 +603,22 @@ def plotMatrix(hm, outFileName,
                 ax.spines['bottom'].set_visible(False)
                 ax.spines['left'].set_visible(False)
             rows, cols = sub_matrix['matrix'].shape
-            interpolation_type = None if rows >= 1000 and cols >= 200 else 'nearest'
+            # if the number of rows is too large, then the 'nearest' method simply
+            # drops rows. A better solution is to relate the threshold to the DPI of the image
+            if interpolation_method == 'auto':
+                if rows >= 1000:
+                    interpolation_method = 'bilinear'
+                else:
+                    interpolation_method = 'nearest'
+
+            # if np.clip is not used, then values of the matrix that exceed the zmax limit are
+            # highlighted. Usually, a significant amount of pixels are equal or above the zmax and
+            # the default behaviour produces images full of large highlighted dots.
+            # If interpolation='nearest' is used, this has no effect
+            sub_matrix['matrix'] = np.clip(sub_matrix['matrix'], zMin[zmin_idx], zMax[zmax_idx])
             img = ax.imshow(sub_matrix['matrix'],
                             aspect='auto',
-                            interpolation=interpolation_type,
+                            interpolation=interpolation_method,
                             origin='upper',
                             vmin=zMin[zmin_idx],
                             vmax=zMax[zmax_idx],
@@ -472,12 +628,12 @@ def plotMatrix(hm, outFileName,
             img.set_rasterized(True)
             # plot border at the end of the regions
             # if ordered by length
-            if regions_length_in_bins is not None:
+            if regions_length_in_bins[sample] is not None:
                 x_lim = ax.get_xlim()
                 y_lim = ax.get_ylim()
 
-                ax.plot(regions_length_in_bins[group_idx],
-                        np.arange(len(regions_length_in_bins[group_idx])),
+                ax.plot(regions_length_in_bins[sample][group_idx],
+                        np.arange(len(regions_length_in_bins[sample][group_idx])),
                         '--', color='black', linewidth=0.5, dashes=(3, 2))
                 ax.set_xlim(x_lim)
                 ax.set_ylim(y_lim)
@@ -501,6 +657,7 @@ def plotMatrix(hm, outFileName,
 
                 # add xticks to the bottom heatmap (last group)
                 ax.axes.get_xaxis().set_visible(True)
+                xticks_heat, xtickslabel_heat = hm.getTicks(sample)
                 if np.ceil(max(xticks_heat)) != float(sub_matrix['matrix'].shape[1]):
                     tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks_heat)
                     xticks_heat_use = [x * tickscale for x in xticks_heat]
@@ -518,7 +675,7 @@ def plotMatrix(hm, outFileName,
 
                 ax.get_xaxis().set_tick_params(
                     which='both',
-                    top='off',
+                    top=False,
                     direction='out')
 
                 if showColorbar and colorbar_position == 'below':
@@ -608,6 +765,12 @@ def main(args=None):
     args.matrixFile.close()
     hm.read_matrix_file(matrix_file)
 
+    if hm.parameters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
+        filterHeatmapValues(hm, hm.parameters['min threshold'], hm.parameters['max threshold'])
+
+    if args.sortRegions == 'keep':
+        args.sortRegions = 'no'  # These are the same thing
+
     if args.kmeans is not None:
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     else:
@@ -672,4 +835,6 @@ def main(args=None):
                image_format=args.plotFileFormat,
                legend_location=args.legendLocation,
                box_around_heatmaps=args.boxAroundHeatmaps,
-               dpi=args.dpi)
+               label_rotation=args.label_rotation,
+               dpi=args.dpi,
+               interpolation_method=args.interpolationMethod)

@@ -12,6 +12,13 @@ import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
+import matplotlib.colors as pltcolors
+from deeptools.utilities import toString, convertCmap
+
+import plotly.offline as offline
+import plotly.graph_objs as go
+import plotly.figure_factory as ff
+
 
 old_settings = np.seterr(all='ignore')
 
@@ -43,6 +50,7 @@ class Correlation:
             # samples
 
             self.labels = labels
+        self.labels = [toString(x) for x in self.labels]
 
         if self.matrix.shape[1] == 1:
             # There's nothing that can be done with a single sample
@@ -83,7 +91,7 @@ class Correlation:
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
 
-        self.labels = _ma['labels']
+        self.labels = list(map(toString, _ma['labels']))
 
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"
@@ -165,6 +173,7 @@ class Correlation:
             self.corr_matrix = self.corr_matrix[:, self.column_order][self.column_order]
             self.labels = [self.labels[i] for i in self.column_order]
 
+        self.labels = [toString(x) for x in self.labels]
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
         i = 0
@@ -225,7 +234,30 @@ class Correlation:
 
         return self.corr_matrix
 
-    def plot_correlation(self, plot_fiilename, plot_title='', vmax=None,
+    def plotly_correlation(self, corr_matrix, plot_filename, labels, plot_title='',
+                           vmax=None, vmin=None, plot_numbers=True,
+                           colormap='jet'):
+        """plot_correlation, but using plotly"""
+        textElement = []
+        for row in range(corr_matrix.shape[0]):
+            trow = []
+            for col in range(corr_matrix.shape[0]):
+                if plot_numbers:
+                    trow.append("{:0.2f}".format(corr_matrix[row, col]))
+                else:
+                    trow.append('')
+            textElement.append(trow)
+
+        zauto = True
+        if vmax is not None or vmin is not None:
+            zauto = False
+
+        convertedCmap = convertCmap(colormap)
+        fig = ff.create_annotated_heatmap(corr_matrix, x=labels, y=labels, colorscale=convertedCmap, showscale=True, zauto=zauto, zmin=vmin, zmax=vmax, annotation_text=textElement)
+        fig.layout['title'] = plot_title
+        offline.plot(fig, filename=plot_filename, auto_open=False)
+
+    def plot_correlation(self, plot_filename, plot_title='', vmax=None,
                          vmin=None, colormap='jet', image_format=None,
                          plot_numbers=False, plotWidth=11, plotHeight=9.5):
         """
@@ -282,6 +314,18 @@ class Correlation:
             edge_color = 'none'
         else:
             edge_color = 'black'
+
+        if image_format == "plotly":
+            self.plotly_correlation(corr_matrix,
+                                    plot_filename,
+                                    self.labels,
+                                    plot_title=plot_title,
+                                    vmax=vmax,
+                                    vmin=vmin,
+                                    colormap=colormap,
+                                    plot_numbers=plot_numbers)
+            return
+
         img_mat = axmatrix.pcolormesh(corr_matrix,
                                       edgecolors=edge_color,
                                       cmap=cmap,
@@ -294,22 +338,22 @@ class Correlation:
         axmatrix.set_yticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_yticklabels(np.array(self.labels).astype('str')[index])
 
-        axmatrix.xaxis.set_tick_params(labeltop='on')
-        axmatrix.xaxis.set_tick_params(labelbottom='off')
+        axmatrix.xaxis.set_tick_params(labeltop=True)
+        axmatrix.xaxis.set_tick_params(labelbottom=False)
         axmatrix.set_xticks(np.arange(corr_matrix .shape[0]) + 0.5)
         axmatrix.set_xticklabels(np.array(self.labels).astype('str')[index], rotation=45, ha='left')
 
         axmatrix.tick_params(
             axis='x',
             which='both',
-            bottom='off',
-            top='off')
+            bottom=False,
+            top=False)
 
         axmatrix.tick_params(
             axis='y',
             which='both',
-            left='off',
-            right='off')
+            left=False,
+            right=False)
 
         # Plot colorbar
         axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
@@ -323,10 +367,65 @@ class Correlation:
                                   ha='center', va='center')
 
         self.column_order = index
-        fig.savefig(plot_fiilename, format=image_format)
+        fig.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_scatter(self, plot_fiilename, plot_title='', image_format=None, log1p=False):
+    def plotly_scatter(self, plot_filename, corr_matrix, plot_title='', minXVal=None, maxXVal=None, minYVal=None, maxYVal=None):
+        """Make the scatter plot of a matrix with plotly"""
+        n = self.matrix.shape[1]
+        self.matrix = self.matrix
+        fig = go.Figure()
+        domainWidth = 1. / n
+
+        annos = []
+        for i in range(n):
+            x = domainWidth * (i + 1)
+            y = 1 - (domainWidth * i + 0.5 * domainWidth)
+            anno = dict(text=self.labels[i], showarrow=False, xref='paper', yref='paper', x=x, y=y, xanchor='right', yanchor='middle')
+            annos.append(anno)
+
+        data = []
+        zMin = np.inf
+        zMax = -np.inf
+        for x in range(n):
+            xanchor = 'x{}'.format(x + 1)
+            base = x * domainWidth
+            domain = [base, base + domainWidth]
+            if x > 0:
+                base = 1 - base
+                fig['layout']['xaxis{}'.format(x + 1)] = dict(domain=domain, range=[minXVal, maxXVal], anchor='free', position=base)
+            for y in range(0, n):
+                yanchor = 'y{}'.format(y + 1)
+                if x == 1:
+                    base = 1 - y * domainWidth
+                    domain = [base - domainWidth, base]
+                    fig['layout']['yaxis{}'.format(y + 1)] = dict(domain=domain, range=[minYVal, maxYVal], side='right', anchor='free', position=1.0)
+
+                if x > y:
+                    vector1 = self.matrix[:, x]
+                    vector2 = self.matrix[:, y]
+                    Z, xEdges, yEdges = np.histogram2d(vector1, vector2, bins=50)
+                    Z = np.log10(Z)
+                    if np.min(Z) < zMin:
+                        zMin = np.min(Z)
+                    if np.max(Z) > zMax:
+                        zMax = np.max(Z)
+                    name = '{}={:.2f}'.format(self.corr_method, corr_matrix[x, y])
+                    trace = go.Heatmap(z=Z, x=xEdges, y=yEdges, showlegend=False, xaxis=xanchor, yaxis=yanchor, name=name, showscale=False)
+                    data.append(trace)
+
+        # Fix the colorbar bounds
+        for trace in data:
+            trace.update(zmin=zMin, zmax=zMax)
+        data[-1]['colorbar'].update(title="log10(instances per bin)", titleside="right")
+        data[-1].update(showscale=True)
+
+        fig['data'] = data
+        fig['layout'].update(title=plot_title, showlegend=False, annotations=annos)
+
+        offline.plot(fig, filename=plot_filename, auto_open=False)
+
+    def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, xRange=None, yRange=None):
         """
         Plot the scatter plots of a matrix
         in which each row is a sample
@@ -339,18 +438,34 @@ class Correlation:
         fig = plt.figure(figsize=(2 * num_samples, 2 * num_samples))
         plt.rcParams['font.size'] = 8.0
         plt.suptitle(plot_title)
-        min_value = self.matrix.min()
-        max_value = self.matrix.max()
-        if (min_value % 2 == 0 and max_value % 2 == 0) or \
-                (min_value % 1 == 0 and max_value % 2 == 1):
+        if log1p is True:
+            self.matrix = np.log1p(self.matrix)
+        min_xvalue = self.matrix.min()
+        max_xvalue = self.matrix.max()
+        min_yvalue = min_xvalue
+        max_yvalue = max_xvalue
+        if xRange is not None:
+            min_xvalue = xRange[0]
+            max_xvalue = xRange[1]
+        if yRange is not None:
+            min_yvalue = yRange[0]
+            max_yvalue = yRange[1]
+        if (min_xvalue % 2 == 0 and max_xvalue % 2 == 0) or \
+                (min_xvalue % 1 == 0 and max_xvalue % 2 == 1):
             # make one value odd and the other even
-            max_value += 1
+            max_xvalue += 1
+        if (min_yvalue % 2 == 0 and max_yvalue % 2 == 0) or \
+                (min_yvalue % 1 == 0 and max_yvalue % 2 == 1):
+            # make one value odd and the other even
+            max_yvalue += 1
 
-        if log1p:
-            major_locator = matplotlib.ticker.FixedLocator(list(range(min_value, max_value, 2)))
-            minor_locator = matplotlib.ticker.FixedLocator(list(range(min_value, max_value, 1)))
+        # plotly output
+        if image_format == 'plotly':
+            self.plotly_scatter(plot_filename, corr_matrix, plot_title=plot_title, minXVal=min_xvalue, maxXVal=max_xvalue, minYVal=min_yvalue, maxYVal=max_yvalue)
+            return
 
         rows, cols = np.triu_indices(num_samples)
+
         for index in range(len(rows)):
             row = rows[index]
             col = cols[index]
@@ -367,11 +482,6 @@ class Correlation:
                 continue
 
             ax = fig.add_subplot(grids[row, col])
-            if log1p:
-                ax.xaxis.set_major_locator(major_locator)
-                ax.xaxis.set_minor_locator(minor_locator)
-                ax.yaxis.set_major_locator(major_locator)
-                ax.yaxis.set_minor_locator(minor_locator)
 
             vector1 = self.matrix[:, row]
             vector2 = self.matrix[:, col]
@@ -382,14 +492,14 @@ class Correlation:
                     transform=ax.transAxes)
             ax.get_yaxis().set_tick_params(
                 which='both',
-                left='off',
-                right='off',
+                left=False,
+                right=False,
                 direction='out')
 
             ax.get_xaxis().set_tick_params(
                 which='both',
-                top='off',
-                bottom='off',
+                top=False,
+                bottom=False,
                 direction='out')
             for tick in ax.xaxis.get_major_ticks():
                 tick.label.set_rotation('45')
@@ -400,15 +510,15 @@ class Correlation:
                 ax.yaxis.tick_right()
                 ax.get_yaxis().set_tick_params(
                     which='both',
-                    left='off',
-                    right='on',
+                    left=False,
+                    right=True,
                     direction='out')
             if col - row == 1:
                 ax.xaxis.tick_bottom()
                 ax.get_xaxis().set_tick_params(
                     which='both',
-                    top='off',
-                    bottom='on',
+                    top=False,
+                    bottom=True,
                     direction='out')
                 for tick in ax.xaxis.get_major_ticks():
                     tick.label.set_rotation('45')
@@ -416,81 +526,177 @@ class Correlation:
             else:
                 ax.set_xticklabels([])
 
-            ax.hist2d(vector1, vector2, bins=200, cmin=0.1)
-            # downsample for plotting
-    #        choice_idx = np.random.randint(0, len(vector1),min(len(vector1), 500000))
-    #        ax.plot(vector1[choice_idx], vector2[choice_idx], '.', markersize=1,
-    #                    alpha=0.3, color='darkblue',
-    #                    markeredgecolor=None)
+            ax.hist2d(vector2, vector1, bins=200, cmin=0.1)
+            ax.set_xlim(min_xvalue, max_xvalue)
+            ax.set_ylim(min_yvalue, max_yvalue)
 
-    #        ax.set_ylim(min_value, max_value)
-    #        ax.set_xlim(min_value,max_value)
-            ax.set_ylim(min_value, ax.get_ylim()[1])
-            ax.set_xlim(min_value, ax.get_xlim()[1])
-
-        plt.savefig(plot_fiilename, format=image_format)
+        plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename, plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10):
+    def plotly_pca(self, plotFile, Wt, pvar, PCs, eigenvalues, cols, plotTitle):
         """
-        Plot the PCA of a matrix
+        A plotly version of plot_pca, that's called by it to do the actual plotting
         """
+        fig = go.Figure()
+        fig['layout']['xaxis1'] = {'domain': [0.0, 0.48], 'anchor': 'x1', 'title': 'PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1])}
+        fig['layout']['yaxis1'] = {'domain': [0.0, 1.0], 'anchor': 'x1', 'title': 'PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1])}
+        fig['layout']['xaxis2'] = {'domain': [0.52, 1.0], 'title': 'Principal Component'}
+        fig['layout']['yaxis2'] = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'Eigenvalue', 'rangemode': 'tozero', 'showgrid': False}
+        fig['layout']['yaxis3'] = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'Cumulative variability', 'rangemode': 'tozero', 'side': 'right', 'overlaying': 'y2'}
+        fig['layout'].update(title=plotTitle)
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight))
         # PCA
-        if self.rowCenter:
-            _ = self.matrix.mean(axis=1)
-            self.matrix -= _[:, None]
-        mlab_pca = matplotlib.mlab.PCA(self.matrix)
+        if cols is not None:
+            colors = itertools.cycle(cols)
         n = len(self.labels)
-        markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
-        colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
-
-        ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
-        ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
+        data = []
         for i in range(n):
-            ax1.scatter(mlab_pca.Wt[0, i], mlab_pca.Wt[1, i],
-                        marker=next(markers), color=next(colors), s=150, label=self.labels[i], zorder=i + 3)
-        if plot_title == '':
-            ax1.set_title('PCA')
-        else:
-            ax1.set_title(plot_title)
-        ax1.set_xlabel('PC1')
-        ax1.set_ylabel('PC2')
-        lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
-                         bbox_to_anchor=(1, 0.5),
-                         prop={'size': 12}, markerscale=0.9)
+            trace = go.Scatter(x=[Wt[PCs[0] - 1, i]],
+                               y=[Wt[PCs[1] - 1, i]],
+                               mode='marker',
+                               xaxis='x1',
+                               yaxis='y1',
+                               name=self.labels[i])
+            trace['marker'].update(size=20)
+            if cols is not None:
+                trace['marker'].update(color=next(colors))
+            data.append(trace)
 
         # Scree plot
-        eigenvalues = mlab_pca.s
+        trace = go.Bar(showlegend=False,
+                       name='Eigenvalues',
+                       x=range(1, n + 1),
+                       y=eigenvalues[:n],
+                       xaxis='x2',
+                       yaxis='y2')
+        data.append(trace)
 
-        cumulative = []
-        c = 0
-        for x in mlab_pca.fracs:
-            c += x
-            cumulative.append(c)
+        # Cumulative variability
+        trace = go.Scatter(showlegend=False,
+                           x=range(1, n + 1),
+                           y=pvar.cumsum()[:n],
+                           mode='lines+markers',
+                           name='Cumulative variability',
+                           xaxis='x2',
+                           yaxis='y3',
+                           line={'color': 'red'},
+                           marker={'symbol': 'circle-open-dot', 'color': 'black'})
+        data.append(trace)
 
-        ind = np.arange(n)  # the x locations for the groups
-        width = 0.35        # the width of the bars
+        annos = []
+        annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': 'PCA', 'y': 1.0, 'x': 0.25, 'font': {'size': 16}, 'showarrow': False})
+        annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': 'Scree plot', 'y': 1.0, 'x': 0.75, 'font': {'size': 16}, 'showarrow': False})
 
-        if mpl.__version__ >= "2.0.0":
-            ax2.bar(2 * width + ind, eigenvalues, width * 2)
-        else:
-            ax2.bar(width + ind, eigenvalues, width * 2)
-        ax2.set_ylabel('Eigenvalue')
-        ax2.set_xlabel('Factors')
-        ax2.set_title('Scree plot')
-        ax2.set_xticks(ind + width * 2)
-        ax2.set_xticklabels(ind + 1)
+        fig['data'] = data
+        fig['layout']['annotations'] = annos
+        offline.plot(fig, filename=plotFile, auto_open=False)
 
-        ax3 = ax2.twinx()
-        ax3.axhline(y=1, color="black", linestyle="dotted")
-        ax3.plot(width * 2 + ind, cumulative[0:], "r-")
-        ax3.plot(width * 2 + ind, cumulative[0:], "wo")
-        ax3.set_ylim([0, 1.05])
-        ax3.set_ylabel('Cumulative variability')
+    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None, marks=None):
+        """
+        Plot the PCA of a matrix
 
-        plt.subplots_adjust(top=3.85)
-        plt.tight_layout()
-        plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
-        plt.close()
+        Returns the matrix of plotted values.
+        """
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight))
+
+        # Filter
+        m = self.matrix
+        rvs = m.var(axis=1)
+        if self.transpose:
+            m = m[np.nonzero(rvs)[0], :]
+            rvs = rvs[np.nonzero(rvs)[0]]
+        if self.ntop > 0 and m.shape[0] > self.ntop:
+            m = m[np.argpartition(rvs, -self.ntop)[-self.ntop:], :]
+            rvs = rvs[np.argpartition(rvs, -self.ntop)[-self.ntop:]]
+
+        # log2 (if requested)
+        if self.log2:
+            self.matrix = np.log2(self.matrix + 0.01)
+
+        # Row center / transpose
+        if self.rowCenter and not self.transpose:
+            _ = self.matrix.mean(axis=1)
+            self.matrix -= _[:, None]
+        if self.transpose:
+            m = m.T
+
+        # Center and scale
+        m2 = (m - np.mean(m, axis=0))
+        m2 /= np.std(m2, axis=0, ddof=1)  # Use the unbiased std. dev.
+
+        # SVD
+        U, s, Vh = np.linalg.svd(m2, full_matrices=False, compute_uv=True)  # Is full_matrices ever needed?
+
+        # % variance, eigenvalues
+        eigenvalues = s**2
+        variance = eigenvalues / float(np.max([1, m2.shape[1] - 1]))
+        pvar = variance / variance.sum()
+
+        # Weights/projections
+        Wt = Vh
+        if self.transpose:
+            # Use the projected coordinates for the transposed matrix
+            Wt = np.dot(m2, Vh.T).T
+
+        if plot_filename is not None:
+            n = n_bars = len(self.labels)
+            if eigenvalues.size < n:
+                n_bars = eigenvalues.size
+            markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
+            if cols is not None:
+                colors = itertools.cycle(cols)
+            else:
+                colors = itertools.cycle(plt.cm.gist_rainbow(np.linspace(0, 1, n)))
+
+            if marks is not None:
+                markers = itertools.cycle(marks)
+
+            if image_format == 'plotly':
+                self.plotly_pca(plot_filename, Wt, pvar, PCs, eigenvalues, cols, plot_title)
+            else:
+                ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
+                ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
+                for i in range(n):
+                    color = next(colors)
+                    marker = next(markers)
+                    if isinstance(color, np.ndarray):
+                        color = pltcolors.to_hex(color, keep_alpha=True)
+                    ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
+                                marker=marker, color=color, s=150, label=self.labels[i], zorder=i + 3)
+                if plot_title == '':
+                    ax1.set_title('PCA')
+                else:
+                    ax1.set_title(plot_title)
+                ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
+                ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
+                lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
+                                 bbox_to_anchor=(1, 0.5),
+                                 prop={'size': 12}, markerscale=0.9)
+
+                # Scree plot
+                ind = np.arange(n_bars)  # the x locations for the groups
+                width = 0.35        # the width of the bars
+
+                if mpl.__version__ >= "2.0.0":
+                    ax2.bar(2 * width + ind, eigenvalues[:n_bars], width * 2)
+                else:
+                    ax2.bar(width + ind, eigenvalues[:n_bars], width * 2)
+                ax2.set_ylabel('Eigenvalue')
+                ax2.set_xlabel('Principal Component')
+                ax2.set_title('Scree plot')
+                ax2.set_xticks(ind + width * 2)
+                ax2.set_xticklabels(ind + 1)
+
+                ax3 = ax2.twinx()
+                ax3.axhline(y=1, color="black", linestyle="dotted")
+                ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "r-")
+                ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "wo", markeredgecolor="black")
+                ax3.set_ylim([0, 1.05])
+                ax3.set_ylabel('Cumulative variability')
+
+                plt.subplots_adjust(top=3.85)
+                plt.tight_layout()
+                plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+                plt.close()
+
+        return Wt, eigenvalues

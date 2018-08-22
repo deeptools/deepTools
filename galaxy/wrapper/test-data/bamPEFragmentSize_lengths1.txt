@@ -1,0 +1,5 @@
+#bamPEFragmentSize
+Size	Occurrences	Sample
+241	1	bowtie2 test1.bam
+242	1	bowtie2 test1.bam
+251	1	bowtie2 test1.bam

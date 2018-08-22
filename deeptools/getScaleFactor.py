@@ -23,10 +23,14 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
     end = min(end, start + 50000)
     tot = 0
     filtered = 0
-    prev_start_pos = None  # to store the start positions
+    prev_pos = set()
+    lpos = None
     if chrom in bam.references:
         for read in bam.fetch(chrom, start, end):
             tot += 1
+            if read.is_unmapped:
+                continue
+
             if args.minMappingQuality and read.mapq < args.minMappingQuality:
                 filtered += 1
                 continue
@@ -50,11 +54,24 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
 
             # get rid of duplicate reads that have same position on each of the
             # pairs
-            if args.ignoreDuplicates and prev_start_pos \
-                    and prev_start_pos == (read.reference_start, read.pnext, read.is_reverse):
-                filtered += 1
-                continue
-            prev_start_pos = (read.reference_start, read.pnext, read.is_reverse)
+            if args.ignoreDuplicates:
+                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+                if tLen >= 0:
+                    s = read.pos
+                    e = s + tLen
+                else:
+                    s = read.pnext
+                    e = s - tLen
+                if read.reference_id != read.next_reference_id:
+                    e = read.pnext
+                if lpos is not None and lpos == read.reference_start \
+                        and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+                    filtered += 1
+                    continue
+                if lpos != read.reference_start:
+                    prev_pos.clear()
+                lpos = read.reference_start
+                prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
 
             # If filterRNAstrand is in args, then filter accordingly
             # This is very similar to what's used in the get_fragment_from_read function in the filterRnaStrand class
@@ -79,7 +96,7 @@ def getFractionKept_worker(chrom, start, end, bamFile, args):
     return (filtered, tot)
 
 
-def fraction_kept(args):
+def fraction_kept(args, stats):
     """
     Count the following:
     (A) The total number of alignments sampled
@@ -100,12 +117,34 @@ def fraction_kept(args):
     first 50000 bases. If this doesn't yield sufficient alignments then the bin
     size is halved.
     """
+    # Do we even need to proceed?
+    if (not args.minMappingQuality or args.minMappingQuality == 0) and \
+       (not args.samFlagInclude or args.samFlagInclude == 0) and \
+       (not args.samFlagExclude or args.samFlagExclude == 0) and \
+       (not args.minFragmentLength or args.minFragmentLength == 0) and \
+       (not args.maxFragmentLength or args.maxFragmentLength == 0):
+        if hasattr(args, "filterRNAstrand"):
+            if args.filterRNAstrand not in ["forward", "reverse"]:
+                return 1.0
+        else:
+            return 1.0
+
     filtered = 0
     total = 0
     distanceBetweenBins = 2000000
     bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
-    num_needed_to_sample = max(bam_mapped if bam_mapped <= 100000 else 0, min(100000, 0.01 * bam_mapped))
+    bam_mapped = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization, stats)
+    if bam_mapped < 1000000:
+        num_needed_to_sample = bam_mapped
+    else:
+        if 0.1 * bam_mapped >= 1000000:
+            num_needed_to_sample = 0.1 * bam_mapped
+        else:
+            num_needed_to_sample = 1000000
+    if args.exactScaling:
+        num_needed_to_sample = bam_mapped
+    if num_needed_to_sample == bam_mapped:
+        distanceBetweenBins = 55000
     if args.ignoreForNormalization:
         chrom_sizes = [(chrom_name, bam_handle.lengths[idx]) for idx, chrom_name in enumerate(bam_handle.references)
                        if chrom_name not in args.ignoreForNormalization]
@@ -136,7 +175,7 @@ def fraction_kept(args):
     return 1.0 - float(filtered) / float(total)
 
 
-def get_num_kept_reads(args):
+def get_num_kept_reads(args, stats):
     """
     Substracts from the total number of mapped reads in a bamfile
     the proportion of reads that fall into blacklisted regions
@@ -144,8 +183,11 @@ def get_num_kept_reads(args):
 
     :return: integer
     """
-    bam_handle = bamHandler.openBam(args.bam)
-    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization)
+    if stats is None:
+        bam_handle, mapped, unmapped, stats = bamHandler.openBam(args.bam, returnStats=True, nThreads=args.numberOfProcessors)
+    else:
+        bam_handle = bamHandler.openBam(args.bam)
+    bam_mapped_total = utilities.bam_total_reads(bam_handle, args.ignoreForNormalization, stats)
     if args.blackListFileName:
         blacklisted = utilities.bam_blacklisted_reads(bam_handle, args.ignoreForNormalization,
                                                       args.blackListFileName, args.numberOfProcessors)
@@ -154,7 +196,7 @@ def get_num_kept_reads(args):
         num_kept_reads = bam_mapped_total - blacklisted
     else:
         num_kept_reads = bam_mapped_total
-    ftk = fraction_kept(args)
+    ftk = fraction_kept(args, stats)
     if ftk < 1:
         num_kept_reads *= ftk
         print("Due to filtering, {0}% of the aforementioned alignments "
@@ -163,12 +205,12 @@ def get_num_kept_reads(args):
     return num_kept_reads, bam_mapped_total
 
 
-def get_scale_factor(args):
+def get_scale_factor(args, stats):
     scale_factor = args.scaleFactor
-    bam_mapped, bam_mapped_total = get_num_kept_reads(args)
-    if args.normalizeTo1x:
+    bam_mapped, bam_mapped_total = get_num_kept_reads(args, stats)
+    if args.normalizeUsing == 'RPGC':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
-        sys.stderr.write("normalization: 1x (effective genome size {})\n".format(args.normalizeTo1x))
+        sys.stderr.write("normalization: 1x (effective genome size {})\n".format(args.effectiveGenomeSize))
 
         # try to guess fragment length if the bam file contains paired end reads
         from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -202,14 +244,14 @@ def get_scale_factor(args):
                 print("Estimated read length is {}".format(int(read_len_dict['median'])))
 
         current_coverage = \
-            float(bam_mapped * fragment_length) / args.normalizeTo1x
+            float(bam_mapped * fragment_length) / args.effectiveGenomeSize
         # the scaling sets the coverage to match 1x
         scale_factor *= 1.0 / current_coverage
         if debug:
             print("Estimated current coverage {}".format(current_coverage))
             print("Scaling factor {}".format(args.scaleFactor))
 
-    elif args.normalizeUsingRPKM:
+    elif args.normalizeUsing == 'RPKM':
         # Print output, since normalzation stuff isn't printed to stderr otherwise
         sys.stderr.write("normalization: RPKM\n")
 
@@ -222,9 +264,33 @@ def get_scale_factor(args):
 
         if debug:
             print("scale factor using RPKM is {0}".format(args.scaleFactor))
+
+    elif args.normalizeUsing == 'CPM':
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: CPM\n")
+
+        # the CPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
+        million_reads_mapped = float(bam_mapped) / 1e6
+        scale_factor *= 1.0 / (million_reads_mapped)
+
+        if debug:
+            print("scale factor using CPM is {0}".format(args.scaleFactor))
+
+    elif args.normalizeUsing == 'BPM':
+        # Print output, since normalzation stuff isn't printed to stderr otherwise
+        sys.stderr.write("normalization: BPM\n")
+        # the BPM (norm is based on post-filtering total counts of reads in BAM "bam_mapped")
+        # sampled_bins_sum = getSampledSum(args.bam)
+        tile_len_in_kb = float(args.binSize) / 1000
+        tpm_scaleFactor = (bam_mapped / tile_len_in_kb) / 1e6
+
+        scale_factor *= 1 / (tpm_scaleFactor * tile_len_in_kb)
+        if debug:
+            print("scale factor using BPM is {0}".format(args.scaleFactor))
+
     else:
         # Print output, since normalzation stuff isn't printed to stderr otherwise
-        sys.stderr.write("normalization: depth\n")
+        sys.stderr.write("normalization: none (signal scaled by the fraction of alignments kept after filtering)\n")
 
         scale_factor *= bam_mapped / float(bam_mapped_total)
 

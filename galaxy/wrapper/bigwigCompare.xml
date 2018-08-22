@@ -15,7 +15,7 @@
             --outFileName '$outFileName'
             --outFileFormat '$outFileFormat'
 
-            --ratio $comparison.comparison_select
+            --operation $comparison.comparison_select
 
             #if $comparison.comparison_select in ['ratio','log2']:
                 --pseudocount $comparison.pseudocount
@@ -90,7 +90,7 @@
             </param>
             <when value="no" />
             <when value="yes">
-                <param argument="--binSize" type="integer" value="50" min="1" 
+                <param argument="--binSize" type="integer" value="50" min="1"
                     label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
                     help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
 
@@ -117,7 +117,7 @@
             <param name="outFileFormat" value="bigwig" />
             <param name="binSize" value="5" />
             <param name="comparison_select" value="ratio" />
-            <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" />
+            <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" compare="sim_size" />
         </test>
         <test>
             <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
@@ -126,7 +126,7 @@
             <param name="outFileFormat" value="bedgraph" />
             <param name="binSize" value="10" />
             <param name="comparison_select" value="ratio" />
-            <output name="outFileName" file="bigwigCompare_result2.bg" ftype="bedgraph" />
+            <output name="outFileName" file="bigwigCompare_result2.bg" sort="true" ftype="bedgraph" />
         </test>
     </tests>
     <help>

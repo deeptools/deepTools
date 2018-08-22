@@ -21,11 +21,19 @@ detailed help:
 
 or
 
+  computeMatrixOperations relabel -h
+
+or
+
   computeMatrixOperations subset -h
 
 or
 
   computeMatrixOperations filterStrand -h
+
+or
+
+  computeMatrixOperations filterValues -h
 
 or
 
@@ -56,6 +64,14 @@ or
         help="Print group and sample information",
         usage='An example usage is:\n  computeMatrixOperations info -m input.mat.gz\n\n')
 
+    # relabel
+    subparsers.add_parser(
+        'relabel',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs(), relabelArgs()],
+        help="Change sample and/or group label information",
+        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --samples "sample 1" "sample 2"\n\n')
+
     # subset
     subparsers.add_parser(
         'subset',
@@ -75,6 +91,15 @@ or
         usage='Example usage:\n  computeMatrixOperations filterStrand -m '
         'input.mat.gz -o output.mat.gz --strand +\n\n')
 
+    # filterValues
+    subparsers.add_parser(
+        'filterValues',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs(), filterValuesArgs()],
+        help="Filter entries by min/max value.",
+        usage='Example usage:\n  computeMatrixOperations filterValues -m '
+        'input.mat.gz -o output.mat.gz --min 10 --max 1000\n\n')
+
     # rbind
     subparsers.add_parser(
         'rbind',
@@ -89,7 +114,7 @@ or
         'cbind',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[bindArgs()],
-        help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs. Note that if you cbind matrices where the samples have different widths, then the x-axis tick positions for the left-most samples will be correct and those on the right-most samples will be incorrect. The labels may also be incorrect for all but the left-most samples. This is due to ticks and labels being the same in all samples (the tick positions are scaled according to the number of data-points per row in a sample)",
+        help="merge multiple matrices by concatenating them left to right. No assumptions are made about the row order. Regions not present in the first file specified are ignored. Regions missing in subsequent files will result in NAs. Regions are matches based on the first 6 columns of the computeMatrix output (essentially the columns in a BED file).",
         usage='Example usage:\n  computeMatrixOperations cbind -m '
         'input1.mat.gz input2.mat.gz -o output.mat.gz\n\n')
 
@@ -98,7 +123,7 @@ or
         'sort',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[sortArgs()],
-        help='Sort a matrix file to correspond to the order if entries in the desired input files. The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first).',
+        help='Sort a matrix file to correspond to the order of entries in the desired input file(s). The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first). Note that this subcommand can also be used to remove unwanted regions, since regions not present in the input file(s) will be omitted from the output.',
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
@@ -130,6 +155,27 @@ def infoArgs():
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
                           required=True)
+
+    return parser
+
+
+def relabelArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--groupLabels',
+                          nargs='+',
+                          help="Groups labels. If none are specified then the current labels will be kept.")
+
+    optional.add_argument('--sampleLabels',
+                          nargs='+',
+                          help="Sample labels. If none are specified then the current labels will be kept.")
 
     return parser
 
@@ -167,6 +213,28 @@ def filterStrandArgs():
                           help='Strand',
                           choices=['+', '-', '.'],
                           required=True)
+
+    return parser
+
+
+def filterValuesArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--min',
+                          help='Minimum value. Any row having a single entry less than this will be excluded. The default is no minimum.',
+                          type=float,
+                          default=None)
+
+    optional.add_argument('--max',
+                          help='Maximum value. Any row having a single entry more than this will be excluded. The default is no maximum.',
+                          type=float,
+                          default=None)
 
     return parser
 
@@ -230,6 +298,20 @@ def printInfo(matrix):
     print("Samples:")
     for sample in matrix.matrix.sample_labels:
         print("\t{0}".format(sample))
+
+
+def relabelMatrix(matrix, args):
+    """
+    Relabel the samples and groups in a matrix
+    """
+    if args.groupLabels:
+        if len(args.groupLabels) != len(matrix.matrix.group_labels):
+            sys.exit("You specified {} group labels, but {} are required.\n".format(len(args.groupLabels), len(matrix.matrix.group_labels)))
+        matrix.matrix.group_labels = args.groupLabels
+    if args.sampleLabels:
+        if len(args.sampleLabels) != len(matrix.matrix.sample_labels):
+            sys.exit("You specified {} sample labels, but {} are required.\n".format(len(args.sampleLabels), len(matrix.matrix.sample_labels)))
+        matrix.matrix.sample_labels = args.sampleLabels
 
 
 def getGroupBounds(args, matrix):
@@ -310,9 +392,39 @@ def filterHeatmap(hm, args):
     hm.matrix.regions = regions
 
 
+def filterHeatmapValues(hm, minVal, maxVal):
+    bounds = [0]
+    regions = []
+    keep = []
+    if minVal is None:
+        minVal = -np.inf
+    if maxVal is None:
+        maxVal = np.inf
+    np.warnings.filterwarnings('ignore')
+    for i, (x, y) in enumerate(zip(np.nanmin(hm.matrix.matrix, axis=1), np.nanmax(hm.matrix.matrix, axis=1))):
+        # x/y will be nan iff a row is entirely nan. Don't filter.
+        if np.isnan(x) or (x >= minVal and y <= maxVal):
+            keep.append(True)
+            regions.append(hm.matrix.regions[i])
+        else:
+            keep.append(False)
+    keep = np.array(keep)
+
+    # Get the new bounds
+    for idx in range(1, len(hm.matrix.group_boundaries)):
+        i = int(np.sum(keep[hm.matrix.group_boundaries[idx - 1]:hm.matrix.group_boundaries[idx]]))
+        bounds.append(bounds[idx - 1] + i)
+
+    hm.matrix.group_boundaries = bounds
+
+    # subset the matrix
+    hm.matrix.matrix = hm.matrix.matrix[keep, :]
+    hm.matrix.regions = regions
+
+
 def insertMatrix(hm, hm2, groupName):
     """
-    Given two heatmapper object and a region group name, insert the regions and
+    Given two heatmapper objects and a region group name, insert the regions and
     values from hm2 for that group to the end of those for hm.
     """
     # get the bounds for hm
@@ -358,7 +470,7 @@ def appendMatrix(hm, hm2, groupName):
 
 def rbindMatrices(hm, args):
     """
-    This only supports a single group at this point
+    Bind matrices, top to bottom while accounting for the groups.
 
     It's assumed that the same samples are present in both and in the exact same order
     """
@@ -371,6 +483,7 @@ def rbindMatrices(hm, args):
                 insertMatrix(hm, hm2, group)
             else:
                 appendMatrix(hm, hm2, group)
+                hm.parameters["group_labels"].append(group)
 
     # Update the group boundaries attribute
     hm.matrix.group_labels = hm.parameters['group_labels']
@@ -418,6 +531,10 @@ def cbindMatrices(hm, args):
                 if reg[2] not in d[group]:
                     continue
                 hm.matrix.matrix[d[group][reg[2]], ncol:] = hm2.matrix.matrix[s + idx3, :]
+
+        # Append the special params
+        for s in hm.special_params:
+            hm.parameters[s].extend(hm2.parameters[s])
 
     # Update the sample parameters
     hm.matrix.sample_labels = hm.parameters['sample_labels']
@@ -544,7 +661,7 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                 regions[labelIdx][name] = len(regions[labelIdx])
 
 
-def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
+def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verbose=True):
     """
     Iterate through the files noted by regionsFileName and sort hm accordingly
     """
@@ -582,9 +699,10 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
 
     # Do some sanity checking on the group labels and region names within them
     s1 = set(hm.parameters['group_labels'])
-    for e in labels:
-        if e not in s1:
-            sys.exit("The computeMatrix output is missing the '{}' region group. It has [] but the specified regions have {}.\n".format(e, s1, labels.keys()))
+    if verbose:
+        for e in labels:
+            if e not in s1:
+                sys.exit("The computeMatrix output is missing the '{}' region group. It has {} but the specified regions have {}.\n".format(e, s1, labels.keys()))
 
     # Make a dictionary out of current labels and regions
     d = dict()
@@ -616,12 +734,17 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator):
         _ = [""] * len(regions[idx])
         for k, v in regions[idx].items():
             _[v] = k
+        sz = 0  # Track the number of enries actually matched
         for name in _:
             if name not in d[label]:
-                sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
+                if verbose:
+                    sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
                 continue
+            sz += 1
             order.append(d[label][name])
-        boundaries.append(groupSizes[label] + boundaries[-1])
+        if sz == 0 and verbose:
+            sys.exit("The region group {} had no matching entries!\n".format(label))
+        boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
     hm.matrix.matrix = hm.matrix.matrix[order, :]
@@ -660,6 +783,13 @@ def main(args=None):
             args.samples = hm.matrix.sample_labels
         hm.matrix.sample_boundaries = hm.matrix.sample_boundaries[0:len(args.samples) + 1]
         hm.matrix.group_boundaries = gBounds.tolist()
+        # special params
+        keepIdx = set()
+        for _, sample in enumerate(hm.matrix.sample_labels):
+            if sample in args.samples:
+                keepIdx.add(_)
+        for param in hm.special_params:
+            hm.parameters[param] = [v for k, v in enumerate(hm.parameters[param]) if k in keepIdx]
         # labels
         hm.matrix.sample_labels = args.samples
         if args.groups is None:
@@ -670,6 +800,9 @@ def main(args=None):
     elif args.command == 'filterStrand':
         filterHeatmap(hm, args)
         hm.save_matrix(args.outFileName)
+    elif args.command == 'filterValues':
+        filterHeatmapValues(hm, args.min, args.max)
+        hm.save_matrix(args.outFileName)
     elif args.command == 'rbind':
         rbindMatrices(hm, args)
         hm.save_matrix(args.outFileName)
@@ -678,6 +811,9 @@ def main(args=None):
         hm.save_matrix(args.outFileName)
     elif args.command == 'sort':
         sortMatrix(hm, args.regionsFileName, args.transcriptID, args.transcript_id_designator)
+        hm.save_matrix(args.outFileName)
+    elif args.command == 'relabel':
+        relabelMatrix(hm, args)
         hm.save_matrix(args.outFileName)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))

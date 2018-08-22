@@ -11,7 +11,6 @@ dist
 build
 eggs
 parts
-bin
 var
 sdist
 develop-eggs
@@ -47,9 +46,6 @@ _sources
 
 #ignore pycharm
 .idea
-
-#ignore _version
-deeptools/_version.py
 
 #os X
 .DS_Store

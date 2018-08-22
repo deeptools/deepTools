@@ -140,6 +140,8 @@ def mapReduce(staticArgs, func, chromSize,
         random.shuffle(TASKS)
         pool = multiprocessing.Pool(numberOfProcessors)
         res = pool.map_async(func, TASKS).get(9999999)
+        pool.close()
+        pool.join()
     else:
         res = list(map(func, TASKS))
 

@@ -1,0 +1,216 @@
+<tool id="deeptools_alignmentsieve" name="alignmentsieve" version="@WRAPPER_VERSION@.0">
+    <description>Filter BAM/CRAM files according to specified parameters</description>
+    <macros>
+        <token name="@BINARY@">alignmentSieve</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements" />
+    <command>
+<![CDATA[
+        #import re
+        #set label = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
+        ln -s '$bamfile' one.bam &&
+        #if $bamfile.ext == 'bam':
+            ln -s '${bamfile.metadata.bam_index}' one.bam.bai &&
+        #else:
+            ln -s '${bamfile.metadata.cram_index}' one.bam.crai &&
+        #end if
+
+        @BINARY@
+        @THREADS@
+        -b one.bam
+
+        --label '$label'
+
+        #if str($filterRNAstrand) != 'no':
+            --filterRNAstrand '$filterRNAstrand'
+        #end if
+
+        $ignoreDuplicates
+
+        #if $minMappingQuality:
+            --minMappingQuality '$minMappingQuality'
+        #end if
+
+        #if $samFlagInclude:
+            --samFlagInclude $samFlagInclude
+        #end if
+
+        #if $samFlagExclude:
+            --samFlagExclude $samFlagExclude
+        #end if
+
+        #if $minFragmentLength:
+            --minFragmentLength $minFragmentLength
+        #end if
+
+        #if $maxFragmentLength:
+            --maxFragmentLength $maxFragmentLength
+        #end if
+
+        #if ' '.join( map(str, $blackListFileName) ) != 'None':
+            #set blfiles=[]
+            #for $f in $blackListFileName:
+                #silent $blfiles.append("'%s'" % $f)
+            #end for
+            #if $blfiles != ["'None'"]:
+                --blackListFileName #echo ' '.join($blfiles)#
+            #end if
+        #end if
+
+        #if $filterMetrics:
+            --filterMetrics '$filterMetricsFile'
+        #end if
+
+        #if $filteredOutReads:
+            --filteredOutReads '$outFileFiltered'
+        #end if
+
+        #if str($shift) != "":
+            #set shifts = " ".join(["'{}'".format(x) for x in $shift.split(" ")])
+            --shift $shifts
+        #elif $ATACshift:
+            --ATACshift
+        #end if
+        #if $BED:
+            --BED
+            -o '$outFile'
+        #elif str($shift) != "" or $ATACshift:
+            -o foo.bam &&
+            samtools sort -o '$outFile' -T foo.tmp -@ "\${GALAXY_SLOTS:-4}" foo.bam &&
+            rm foo.bam
+        #else:
+            -o '$outFile'
+        #end if
+]]>
+    </command>
+
+    <inputs>
+        <param name="bamfile" format="bam,cram" type="data" label="BAM file" />
+        <param name="BED" argument="--BED" type="boolean" label="Output in BEDPE format?"
+            help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format." />
+        <param argument="--shift" type="text" label="Amount to shift fragments" value=""
+            help="Shift the left and right end of a fragment. A positive
+                  value shift an end to the right (on the + strand) and
+                  a negative value shifts a fragment to the left. Either
+                  2 or 4 integers can be provided. For example, '2 -3'
+                  will shift the left-most fragment end two bases to the
+                  right and the right-most end 3 bases to the left. If 4
+                  integers are provided, then the first and last two
+                  refer to fragments whose read 1 is on the left or
+                  right, respectively. Consequently, it is possible to
+                  take strand into consideration for strand-specific
+                  protocols. Note that only properly paired reads are considered."/>
+        <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq" />
+        <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
+            help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
+                  Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
+            <option value="no" selected="true">no</option>
+            <option value="forward">forward</option>
+            <option value="reverse">reverse</option>
+        </param>
+
+        <expand macro="ignoreDuplicates" />
+        <expand macro="minMappingQuality" />
+        <expand macro="samFlags" />
+        <expand macro="fragLength" />
+        <expand macro="blacklist" />
+        <param argument="--filterMetrics" type="boolean" label="Save the total number of reads seen and remaining after filtering to a text file?" help="" />
+        <param argument="--filteredOutReads" type="boolean" label="Save alignments NOT passing the filtering criteria?" help="" />
+    </inputs>
+    <outputs>
+        <data format="tabular" name="filterMetricsFile" label="${tool.name} on ${on_string}: filtering metrics">
+            <filter>filterMetrics is True</filter>
+        </data>
+        <data format="bam" name="outFileFiltered" label="${tool.name} on ${on_string}: Filtered Out Alignments">
+            <filter>filteredOutReads is True</filter>
+        </data>
+        <data format="bam" name="outFile" label="${tool.name} on ${on_string}">
+            <change_format>
+                <when input="BED" value='true' format='bed'/>
+            </change_format>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
+            <param name="minMappingQuality" value="10" />
+            <param name="filterMetrics" value="True" />
+            <output name="outFile" file="alignmentSieve.bam" ftype="bam" />
+            <output name="filterMetricsFile" file="alignmentSieve.txt" ftype="tabular" />
+        </test>
+        <test>
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
+            <param name="minMappingQuality" value="10" />
+            <param name="BED" value="yes" />
+            <param name="shift" value="1 -2 3 -4" />
+            <output name="outFile" file="alignmentSieve.bed" ftype="bed" />
+        </test>
+        <test>
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
+            <param name="minMappingQuality" value="10" />
+            <param name="shift" value="1 -2 3 -4" />
+            <output name="outFile" file="alignmentSieve2.bam" ftype="bam" />
+        </test>
+        <test>
+            <param name="bamfile" value="paired_chr2L.cram" ftype="cram" />
+            <param name="minMappingQuality" value="10" />
+            <param name="shift" value="1 -2 3 -4" />
+            <output name="outFile" file="alignmentSieve3.bam" ftype="bam" />
+        </test>
+    </tests>
+
+    <help>
+<![CDATA[
+
+What it does
+-------------
+
+This tool is very much the counterpart of estimateReadFiltering, in that it can filter alignments based on a variety of desired criterion. While much of this can be done with samtools, this tool can additionally filter by fragment strand and length (e.g., for RNA-seq and ATAC-seq experiments, respectively). Finally, this program can produce BEDPE files, which can be used as input into MACS2 for peak calling, where the fragment ends have been optionally shifted.
+
+Output
+--------
+
+The primary output is a BAM file with all alignments passing the desired criteria. Note that all unmapped reads are removed. Additionally, an optional text file can be produced with the following entries:
+
+ * Number of reads passing the filtering criteria
+ * Total number of initial reads
+
+Instead of producing a filtered BAM file, a BEDPE file appropriate for use with MACS2 can be used, optionally with fragment ends shifted. This is useful in cases like ATAC-seq.
+
+The ``--shift`` option can take either 2 or 4 integers. If two integers are given, then the first value shifts the left-most end of a fragment and the second the right-most end. Positive values shift to the right and negative values to the left. See below for how setting ``--shift`` to '-5 3' would shift a single fragment::
+
+         ----> read 1
+                     read 2 <----
+
+         ------------------------ fragment
+
+    -------------------------------- shifted fragment
+
+The same results will be produced if read 1 and read 2 are swapped. If, instead, the protocol is strand-specific, then the first set of integers in a pair would be applied to fragments where read 1 precedes read 2, and the second set to cases where read 2 precedes read 1. In this case, the first value in each pair is applied to the end of read 1 and the second to the end of read 2. For example, suppose "-5 3 -1 4" were given as the option to ``--shift``. The ``-5 3`` set would produce the following::
+
+         ----> read 1
+                     read 2 <----
+
+         ------------------------ fragment
+
+    -------------------------------- shifted fragment
+
+and the ``-1 4`` set would produce the following::
+
+         ----> read 2
+                     read 1 <----
+
+         ------------------------ fragment
+
+             --------------------- shifted fragment
+
+As can be seen, such fragments are considered to be on the ``-`` strand, so negative values then shift to the left on its frame of reference (thus, to the right relative to the ``+`` strand).
+
+-----
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>

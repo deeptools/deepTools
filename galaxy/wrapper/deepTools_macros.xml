@@ -1,11 +1,11 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">2.5.3.0</token>
+    <token name="@WRAPPER_VERSION@">3.1.2.0</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="2.5.3">deeptools</requirement>
-            <yield />
+            <requirement type="package" version="3.1.2">deeptools</requirement>
+            <requirement type="package" version="1.7">samtools</requirement>
         </requirements>
         <expand macro="stdio" />
         <version_command>@BINARY@ --version</version_command>
@@ -100,7 +100,7 @@
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
-            help="If set, then regions with zero counts for *all* BAM files are included. The default behavior is to ignore such regions." />
+            help="If set, then regions with zero counts for *all* BAM/CRAM files are included. The default behavior is to ignore such regions." />
     </xml>
 
     <xml name="zMin_zMax">
@@ -118,6 +118,7 @@
                 <valid initial="string.letters,string.digits">
                     <add value="|"/>
                     <add value=":"/>
+                    <add value="."/>
                  </valid>
             </sanitizer>
         </param>
@@ -215,7 +216,7 @@
             label="Use a metagene model"
             help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
         <param argument="--transcriptID" optional="True" value="transcript" type="text"
-            label="trascript designator"
+            label="transcript designator"
             help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as transcripts. Default: transcript" />
         <param argument="--exonID" optional="True" value="exon" type="text"
             label="exon designator"
@@ -238,7 +239,7 @@
     <xml name="extendReads">
         <conditional name="doExtendCustom">
             <param name="doExtend" type="select" label="Extend reads to the given average fragment size."
-                help="(1) Single-end reads and singletons are extended to match this length. (2) Paired-end reads are extended to match the fragment size, regardless of what is set here.
+                help="If selected : Single-end reads and singletons are extended to match the given length and Paired-end reads are extended to match the fragment size.
                      By default *each* read mate is extended.
                      This can be modified using the SAM flags (see --samFlagInclude and --samFlagExclude options) to keep only the first or the second mate.
                      Unmated reads, mate reads that map to different chromosomes or too far apart are extended to the given value.
@@ -312,7 +313,7 @@
     <xml name="sortRegions">
         <param argument="--sortRegions" type="select" label="Sort regions"
             help="Whether the heatmap should present the regions sorted. The default is to sort in descending order based on the mean value per region.">
-            <option value="no">no ordering</option>
+            <option value="no">maintain the same ordering as the input files</option>
             <option value="descend" selected="true">descending order</option>
             <option value="ascend">ascending order</option>
         </param>
@@ -321,19 +322,19 @@
     <xml name="minMappingQuality">
         <param argument="--minMappingQuality" type="integer" optional="true" value="1" min="0"
             label="Minimum mapping quality"
-            help= "If set, only reads with a mapping quality score higher than this value are considered."/>
+            help= "If set, only reads with a mapping quality score at least this high are considered."/>
     </xml>
 
     <xml name="skipZeros">
         <param argument="--skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
             label ="Skip zeros"
-            help ="If set, then zero counts that happen for *all* BAM files given are ignored. This may result in fewer considered regions." />
+            help ="If set, then zero counts that happen for *all* BAM/CRAM files given are ignored. This may result in fewer considered regions." />
     </xml>
 
     <xml name="fragmentLength">
-        <param argument="--fragmentLength" type="integer" value="300" min="1"
+        <param argument="--fragmentLength" type="integer" min="1" optional="true"
             label="Fragment length used for the sequencing"
-            help ="If paired-end reads are used, the fragment length is computed from the BAM file, so this is only needed for single-end data."/>
+            help ="If paired-end reads are used, the fragment length is computed from the BAM/CRAM file, so this is only needed for single-end data."/>
     </xml>
 
     <xml name="scaleFactor">
@@ -390,13 +391,13 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
             <option value="Yes">Yes</option>
         </param>
         <when value="No">
-            <param argument="--bamfiles" type="data" format="bam" min="@MIN@"
-                label="Bam file" multiple="true"
+            <param argument="--bamfiles" type="data" format="bam,cram" min="@MIN@"
+                label="BAM/CRAM file" multiple="true"
                 help=""/>
         </when>
         <when value="Yes">
-            <repeat name="multibam_repeats" min="@MIN@" title="BAM Files">
-                <param argument="--bamfiles" type="data" format="bam" label="BAM file" help="" />
+            <repeat name="multibam_repeats" min="@MIN@" title="BAM/CRAM Files">
+                <param argument="--bamfiles" type="data" format="bam,cram" label="BAM/CRAM file" help="" />
             </repeat>
         </when>
         </conditional>
@@ -404,7 +405,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
     <xml name="multiple_input_bigwigs" tokens="MIN,LABEL,TITLE">
         <conditional name="multibigwig_conditional">
-        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples 
+        <param name="orderMatters" type="select" label="Sample order matters" help="By default, the order of samples given to the program is dependent on their order in your history. If the order of the samples
 is vital to you, select Yes below.">
             <option value="No" selected="true">No</option>
             <option value="Yes">Yes</option>
@@ -412,11 +413,11 @@ is vital to you, select Yes below.">
         <when value="No">
             <param argument="--bigwigfiles" type="data" format="bigwig" multiple="True" min="@MIN@"
                 label="@LABEL@"
-                help="You can generate a bigWig file from a BAM file using the bamCoverage tool."/>
+                help="You can generate a bigWig file from a BAM/CRAM file using the bamCoverage tool."/>
         </when>
         <when value="Yes">
             <repeat name="multibigwig_repeats" min="@MIN@" title="@TITLE@">
-                <param argument="--bigwigfiles" type="data" format="bigwig" label="@LABEL@" help="You can generate a bigWig file from a BAM file using the bamCoverage tool."/>
+                <param argument="--bigwigfiles" type="data" format="bigwig" label="@LABEL@" help="You can generate a bigWig file from a BAM/CRAM file using the bamCoverage tool."/>
             </repeat>
         </when>
         </conditional>
@@ -428,6 +429,12 @@ is vital to you, select Yes below.">
             help="Title of the plot, to be printed on top of the generated image." />
     </xml>
 
+    <xml name="labelRotation">
+        <param argument="--labelRotation" type="integer" value="0"
+            label="Rotation of the X-axis labels (in degrees)"
+            help="The rotation of things like TSS or TES on the X-axis of profile plots in both plotHeatmap and plotProfile. The default is 0, positive values denome a counter-clockwise rotation." />
+    </xml>
+
 
     <token name="@multiple_input_bams@">
 <![CDATA[
@@ -437,17 +444,25 @@ is vital to you, select Yes below.">
         #if $multibam_conditional.orderMatters == "No":
             #for $counter, $bamfile in enumerate($multibam_conditional.bamfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bamfile.element_identifier))
-                ln -s "${bamfile}" "./${counter}.bam" &&
-                ln -s "${bamfile.metadata.bam_index}" "./${counter}.bam.bai" &&
-                #silent $files.append('%s.bam' % $counter)
+                ln -s '${bamfile}' './${counter}.bam' &&
+                #if $bamfile.ext == 'bam':
+                    ln -s '${bamfile.metadata.bam_index}' './${counter}.bam.bai' &&
+                #else:
+                    ln -s '${bamfile.metadata.cram_index}' './${counter}.bam.crai' &&
+                #end if
+                #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bamfiles.element_identifier))
-                ln -s "${f.bamfiles}" "./${counter}.bam" &&
-                ln -s "${f.bamfiles.metadata.bam_index}" "./${counter}.bam.bai" &&
-                #silent $files.append('%s.bam' % $counter)
+                ln -s '${f.bamfiles}' './${counter}.bam' &&
+                #if $f.bamfiles.ext == 'bam':
+                    ln -s '${f.bamfiles.metadata.bam_index}' './${counter}.bam.bai' &&
+                #else:
+                    ln -s '${f.bamfiles.metadata.cram_index}' './${counter}.bam.crai' &&
+                #end if
+                #silent $files.append("'%s.bam'" % $counter)
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
@@ -462,15 +477,15 @@ is vital to you, select Yes below.">
         #if $multibigwig_conditional.orderMatters == "No":
             #for $counter, $bigwig in enumerate($multibigwig_conditional.bigwigfiles):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($bigwig.element_identifier))
-                ln -f -s "${bigwig}" "${identifier}_${counter}.bw" &&
-                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
+                ln -f -s '${bigwig}' '${identifier}_${counter}.bw' &&
+                #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibigwig_conditional.multibigwig_repeats):
                 #set identifier = re.sub('[^\.\s\w\-]', '_', str($f.bigwigfiles.element_identifier))
-                ln -f -s "${f.bigwigfiles}" "${identifier}_${counter}.bw" &&
-                #silent $files.append('%s_%s.bw' % ($identifier, $counter))
+                ln -f -s '${f.bigwigfiles}' '${identifier}_${counter}.bw' &&
+                #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
@@ -494,7 +509,7 @@ is vital to you, select Yes below.">
                 --blackListFileName #echo ' '.join($blfiles)#
             #end if
         #end if
-]]> 
+]]>
     </token>
 
     <xml name="multiple_bed">
@@ -515,7 +530,7 @@ is vital to you, select Yes below.">
             --BED #echo ' '.join($files)#
             --regionLabels #echo ' '.join($labels)#
         #end if
-]]> 
+]]>
     </token>
 
     <xml name="reference_genome_source">
@@ -542,7 +557,7 @@ is vital to you, select Yes below.">
     #if $source.ref_source=="history":
         --genome $source.input1
     #else:
-        --genome "$source.input1_2bit.fields.path"
+        --genome '$source.input1_2bit.fields.path'
     #end if
     </token>
 
@@ -551,21 +566,27 @@ is vital to you, select Yes below.">
             <param name="effectiveGenomeSize_opt" type="select" label="Effective genome size"
                 help="The effective genome size is the portion of the genome that is mappable. Large fractions of the genome are stretches of NNNN that should be discarded.
                     Also, if repetitive regions were not included in the mapping of reads, the effective genome size needs to be adjusted accordingly.
-                    See Table 2 of http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0030377 or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html for several effective genome sizes.">
+                    We provide a table of useful sizes here: http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html">
                 <option value="93260000">ce10 (93260000)</option>
-                <option value="121400000">dm3 (121400000)</option>
-                <option value="2451960000" selected="true">hg19 (2451960000)</option>
-                <option value="2150570000">mm9 (2150570000)</option>
+                <option value="130428560">dm3 (130428560)</option>
+                <option value="125464728">dm6 (125464728)</option>
+                <option value="2685511504" selected="true">hg19/GRCh37 (2685511504)</option>
+                <option value="2701495761">GRCh38/hg38 (2701495761)</option>
+                <option value="2304947926">GRCm37/mm9 (2304947926)</option>
+                <option value="2308125349">GRCm38/mm10 (2308125349)</option>
                 <option value="specific">user specified</option>
             </param>
             <when value="specific">
                 <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size"
-                       help="e.g. ce10: 93260000, dm3: 121400000, hg19: 2451960000, mm9: 2150570000"/>
+                       help="e.g. ce10: 93260000, dm3: 130428560, hg19: 2685511504, mm9: 2304947926"/>
             </when>
-            <when value="2150570000" />
-            <when value="2451960000" />
-            <when value="121400000" />
             <when value="93260000" />
+            <when value="130428560" />
+            <when value="125464728" />
+            <when value="2685511504" />
+            <when value="2701495761" />
+            <when value="2304947926" />
+            <when value="2308125349" />
         </conditional>
     </xml>
 
@@ -582,6 +603,18 @@ is vital to you, select Yes below.">
                  (default: False)" />
     </xml>
 
+    <xml name="exactScaling">
+        <param argument="--exactScaling" type="boolean" truevalue="--exactScaling" falsevalue="" checked="False"
+            label="Compute an exact scaling factor"
+            help="Compute an exact scaling factor rather than one based on
+                  sampled reads. This is only useful in cases where you are
+                  filtering some alignments out AND this are both rare and
+                  tend to clump together in the genome. In such cases the
+                  region-based sampling employed by deepTools would produce
+                  inaccurate scaling factors. Note that this option results
+                  in the process taking significantly more time to complete." />
+    </xml>
+
     <xml name="input_save_matrix_values">
         <param argument="--saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>
@@ -596,6 +629,7 @@ is vital to you, select Yes below.">
             <when value="yes">
                 <yield />
                 <param name="saveSortedRegions" type="boolean"
+                       argument="--outFileSortedRegions"
                        label="Save the regions after skipping zeros or min/max threshold values"
                        help="The order of the regions in the file follows the sorting order selected. This is useful,
                        for example, to generate other heatmaps keeping the sorting of the first heatmap."/>
@@ -605,11 +639,12 @@ is vital to you, select Yes below.">
 
 
     <xml name="input_image_file_format">
-        <param argument="--outFileFormat" type="select" label="Image file format">
+        <param argument="--outFileFormat" type="select" label="Image file format" help="Note that the plotly output can be very large and not all options are supported.">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
+            <option value="plotly">plotly</option>
         </param>
     </xml>
 
@@ -619,21 +654,23 @@ is vital to you, select Yes below.">
     </xml>
 
     <xml name="output_image_file_format">
-        <data format="png" name="outFileName" label="${tool.name} image">
+        <data format="png" name="outFileName" label="${tool.name} on ${on_string}: Image">
             <change_format>
                 <when input="output.outFileFormat" value="pdf" format="pdf" />
                 <when input="output.outFileFormat" value="svg" format="svg" />
                 <when input="output.outFileFormat" value="eps" format="eps" />
+                <when input="output.outFileFormat" value="plotly" format="html" />
             </change_format>
         </data>
     </xml>
 
     <xml name="output_image_file_format_not_nested">
-        <data format="png" name="outFileName" label="${tool.name} image">
+        <data format="png" name="outFileName" label="${tool.name} on ${on_string}: Image">
             <change_format>
                 <when input="outFileFormat" value="pdf" format="pdf" />
                 <when input="outFileFormat" value="svg" format="svg" />
                 <when input="outFileFormat" value="eps" format="eps" />
+                <when input="outFileFormat" value="plotly" format="html" />
             </change_format>
         </data>
     </xml>
@@ -662,8 +699,7 @@ is vital to you, select Yes below.">
 
     <xml name="colorMap">
         <param name="colorMap" type="select" label="Color map to use for the heatmap"
-               help=" Available color map names can be found here: http://matplotlib.org/examples/color/colormaps_reference.html"
-               multiple="true">
+               help=" Available color map names can be found here: http://matplotlib.org/examples/color/colormaps_reference.html">
             <option value="RdYlBu" selected="true">RdYlBu</option>
             <option value="Accent">Accent</option>
             <option value="Spectral">Spectral</option>

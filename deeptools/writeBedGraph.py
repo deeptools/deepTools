@@ -6,11 +6,10 @@ import pyBigWig
 
 # own modules
 from deeptools import mapReduce
-from deeptools.utilities import getCommonChrNames, toBytes
+from deeptools.utilities import getCommonChrNames
 import deeptools.countReadsPerBin as cr
 from deeptools import bamHandler
 from deeptools import utilities
-from deeptools import config as cfg
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -118,17 +117,29 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         """
         self.__dict__["smoothLength"] = smoothLength
-        bam_handlers = [bamHandler.openBam(x) for x in self.bamFilesList]
-        genome_chunk_length = getGenomeChunkLength(bam_handlers, self.binLength)
+        getStats = len(self.mappedList) < len(self.bamFilesList)
+        bam_handles = []
+        for x in self.bamFilesList:
+            if getStats:
+                bam, mapped, unmapped, stats = bamHandler.openBam(x, returnStats=True, nThreads=self.numberOfProcessors)
+                self.mappedList.append(mapped)
+                self.statsList.append(stats)
+            else:
+                bam = bamHandler.openBam(x)
+            bam_handles.append(bam)
+
+        genome_chunk_length = getGenomeChunkLength(bam_handles, self.binLength, self.mappedList)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chrom_names_and_size, non_common = getCommonChrNames(bam_handlers, verbose=False)
+        chrom_names_and_size, non_common = getCommonChrNames(bam_handles, verbose=False)
 
         if self.region:
             # in case a region is used, append the tilesize
             self.region += ":{}".format(self.binLength)
 
         for x in list(self.__dict__.keys()):
+            if x in ["mappedList", "statsList"]:
+                continue
             sys.stderr.write("{}: {}\n".format(x, self.__getattribute__(x)))
 
         res = mapReduce.mapReduce([func_to_call, func_args],
@@ -140,31 +151,24 @@ class WriteBedGraph(cr.CountReadsPerBin):
                                   blackListFileName=blackListFileName,
                                   numberOfProcessors=self.numberOfProcessors)
 
-        # concatenate intermediary bedgraph files
-        out_file = open(out_file_name + ".bg", 'wb')
-        for tempfilename in res:
-            if tempfilename:
-                # concatenate all intermediate tempfiles into one
-                # bedgraph file
-                _foo = open(tempfilename, 'rb')
-                shutil.copyfileobj(_foo, out_file)
-                _foo.close()
-                os.remove(tempfilename)
+        # Determine the sorted order of the temp files
+        chrom_order = dict()
+        for i, _ in enumerate(chrom_names_and_size):
+            chrom_order[_[0]] = i
+        res = [[chrom_order[x[0]], x[1], x[2], x[3]] for x in res]
+        res.sort()
 
-        bedgraph_file = out_file.name
-        out_file.close()
         if format == 'bedgraph':
-            sort_cmd = cfg.config.get('external_tools', 'sort')
-            os.system("LC_ALL=C {} -k1,1 -k2,2n '{}' > '{}'".format(sort_cmd, bedgraph_file, out_file_name))
-            os.remove(bedgraph_file)
-            if self.verbose:
-                print("output file: {}".format(out_file_name))
+            out_file = open(out_file_name, 'wb')
+            for r in res:
+                if r[3]:
+                    _foo = open(r[3], 'rb')
+                    shutil.copyfileobj(_foo, out_file)
+                    _foo.close()
+                    os.remove(r[3])
+            out_file.close()
         else:
-            bedGraphToBigWig(
-                chrom_names_and_size, bedgraph_file, out_file_name, True)
-            if self.verbose:
-                print("output file: {}".format(out_file_name))
-            os.remove(bedgraph_file)
+            bedGraphToBigWig(chrom_names_and_size, [x[3] for x in res], out_file_name)
 
     def writeBedGraph_worker(self, chrom, start, end,
                              func_to_call, func_args,
@@ -199,7 +203,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         Returns
         -------
-        temporary file with the bedgraph results for the region queried.
+        A list of [chromosome, start, end, temporary file], where the temporary file contains the bedgraph results for the region queried.
 
         Examples
         --------
@@ -212,11 +216,11 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         >>> c = WriteBedGraph([bamFile1], bin_length, number_of_samples, stepSize=50)
         >>> tempFile = c.writeBedGraph_worker( '3R', 0, 200, func_to_call, funcArgs)
-        >>> f = open(tempFile, 'r')
+        >>> f = open(tempFile[3], 'r')
         >>> f.readlines()
         ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
         >>> f.close()
-        >>> os.remove(tempFile)
+        >>> os.remove(tempFile[3])
 
 
         """
@@ -244,10 +248,11 @@ class WriteBedGraph(cr.CountReadsPerBin):
             """
             # uncomment these lines if fixed step bedgraph is required
             if not np.isnan(value):
-                writeStart = start + tileIndex*self.binLength
-                writeEnd  =  min(writeStart+self.binLength, end)
+                writeStart = start + tileIndex * self.binLength
+                writeEnd  =  min(writeStart + self.binLength, end)
                 _file.write(line_string.format(chrom, writeStart,
-                                           end, previous_value))
+                                               writeEnd, value))
+            continue
             """
 
             if previous_value is None:
@@ -273,65 +278,46 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         tempfilename = _file.name
         _file.close()
-        return tempfilename
+        return chrom, start, end, tempfilename
 
 
-def bedGraphToBigWig(chromSizes, bedGraphPath, bigWigPath, sort=True):
+def bedGraphToBigWig(chromSizes, bedGraphFiles, bigWigPath):
     """
-    takes a bedgraph file, orders it and converts it to
-    a bigwig file using pyBigWig.
+    Takes a sorted list of bedgraph files and write them to a single bigWig file using pyBigWig.
+    The order of bedGraphFiles must match that of chromSizes!
     """
-
-    from tempfile import NamedTemporaryFile
-    from os import remove, system
-
-    # Make a list of tuples for the bigWig header, this MUST be sorted identically to the bedGraph file
-    sort_cmd = cfg.config.get('external_tools', 'sort')
-    _file = NamedTemporaryFile(delete=False)
-    for chrom, size in chromSizes:
-        _file.write(toBytes("{}\t{}\n".format(chrom, size)))
-    _file.close()
-    system("LC_ALL=C {} -k1,1 -k2,2n '{}' > '{}.sorted'".format(sort_cmd, _file.name, _file.name))
-    cl = []
-    f = open("{}.sorted".format(_file.name))
-    for line in f:
-        chrom, chromLen = line.split()
-        cl.append((chrom, int(chromLen)))
-    f.close()
-    remove(_file.name)
-    remove("{}.sorted".format(_file.name))
-
-    # check if the file is empty
-    if os.stat(bedGraphPath).st_size < 10:
-        import sys
-        sys.stderr.write(
-            "Error: The generated bedGraphFile was empty. Please adjust\n"
-            "your deepTools settings and check your input files.\n")
-        exit(1)
-
-    if sort:
-        # temporary file to store sorted bedgraph file
-        _file = NamedTemporaryFile(delete=False)
-        tempfilename1 = _file.name
-        system("LC_ALL=C {} -k1,1 -k2,2n '{}' > '{}'".format(sort_cmd, bedGraphPath, tempfilename1))
-        bedGraphPath = tempfilename1
-
     bw = pyBigWig.open(bigWigPath, "w")
     assert(bw is not None)
-    # The lack of maxZooms will change the results a bit, perhaps the defaults are better
-    bw.addHeader(cl, maxZooms=10)
-    f = open(bedGraphPath)
-    for line in f:
-        interval = line.split()
-        bw.addEntries([interval[0]], [int(interval[1])], ends=[int(interval[2])], values=[float(interval[3])])
-    f.close()
+    bw.addHeader(chromSizes, maxZooms=10)
+    lastChrom = None
+    starts = []
+    ends = []
+    vals = []
+    for bg in bedGraphFiles:
+        if bg is not None:
+            f = open(bg)
+            for line in f:
+                interval = line.split()
+                # Buffer up to a million entries
+                if interval[0] != lastChrom or len(starts) == 1000000:
+                    if lastChrom is not None:
+                        bw.addEntries([lastChrom] * len(starts), starts, ends=ends, values=vals)
+                    lastChrom = interval[0]
+                    starts = [int(interval[1])]
+                    ends = [int(interval[2])]
+                    vals = [float(interval[3])]
+                else:
+                    starts.append(int(interval[1]))
+                    ends.append(int(interval[2]))
+                    vals.append(float(interval[3]))
+            f.close()
+            os.remove(bg)
+    if len(starts) > 0:
+        bw.addEntries([lastChrom] * len(starts), starts, ends=ends, values=vals)
     bw.close()
 
-    if sort:
-        remove(tempfilename1)
 
-
-def getGenomeChunkLength(bamHandlers, tile_size):
+def getGenomeChunkLength(bamHandles, tile_size, mappedList):
     """
     Tries to estimate the length of the genome sent to the workers
     based on the density of reads per bam file and the number
@@ -341,14 +327,12 @@ def getGenomeChunkLength(bamHandlers, tile_size):
 
     """
 
-    genomeLength = sum(bamHandlers[0].lengths)
+    genomeLength = sum(bamHandles[0].lengths)
 
-    max_reads_per_bp = max(
-        [float(x.mapped) / genomeLength for x in bamHandlers])
+    max_reads_per_bp = max([float(x) / genomeLength for x in mappedList])
 
     # 2e6 is an empirical estimate
-    genomeChunkLength = int(
-        min(5e6, int(2e6 / (max_reads_per_bp * len(bamHandlers)))))
+    genomeChunkLength = int(min(5e6, int(2e6 / (max_reads_per_bp * len(bamHandles)))))
 
     genomeChunkLength -= genomeChunkLength % tile_size
     return genomeChunkLength

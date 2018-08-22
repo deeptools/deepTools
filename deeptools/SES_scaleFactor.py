@@ -15,7 +15,7 @@ debug = 0
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                         normalizationLength,
                         avg_method='median', blackListFileName=None, numberOfProcessors=1,
-                        verbose=False, chrsToSkip=[]):
+                        verbose=False, chrsToSkip=[], mappingStatsList=[]):
     r"""
     Subdivides the genome into chunks to be analyzed in parallel
     using several processors. The code handles the creation of
@@ -44,6 +44,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
         scale estimation. Usually the chrX is included.
     blackListFileName : str
         BED file containing blacklisted regions
+    mappingStatsList : list
+        List of the number of mapped reads per file
 
     Returns
     -------
@@ -69,15 +71,19 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     >>> num_samples = 4
     >>> _dict = estimateScaleFactor([test.bamFile1, test.bamFile2], bin_length, num_samples,  1)
     >>> _dict['size_factors']
-    array([ 1. ,  0.5])
+    array([1. , 0.5])
     >>> _dict['size_factors_based_on_mean']
-    array([ 1. ,  0.5])
+    array([1. , 0.5])
     """
 
     assert len(bamFilesList) == 2, "SES scale factors are only defined for 2 files"
 
-    bamFilesHandlers = [bamHandler.openBam(x) for x in bamFilesList]
-    mappedReads = [x.mapped for x in bamFilesHandlers]
+    if len(mappingStatsList) == len(bamFilesList):
+        mappedReads = mappingStatsList
+    else:
+        mappedReads = []
+        for fname in bamFilesList:
+            mappedReads.append(bamHandler.openBam(fname, returnStats=True, nThreads=numberOfProcessors)[1])
 
     sizeFactorBasedOnMappedReads = np.array(mappedReads, dtype='float64')
 

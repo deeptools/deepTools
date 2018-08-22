@@ -95,8 +95,8 @@ def makeRegions(BED, args):
     o = []
     extend = 0
     # The before/after stuff is specific to computeMatrix
-    if "beforeRegionsStartLength" in args:
-        extend = max(args.beforeRegionsStartLength, args.afterRegionsStartLength)
+    if "beforeRegionStartLength" in args:
+        extend = max(args.beforeRegionStartLength, args.afterRegionStartLength)
     for chrom in itree.chroms:
         regs = itree.findOverlaps(chrom, 0, 4294967295)  # bigWig files use 32 bit coordinates
         for reg in regs:
@@ -121,8 +121,8 @@ class deepBlue(object):
         Connect to the requested deepblue server with the given user key and request the specifed sample from it.
 
         >>> sample = "S002R5H1.ERX300721.H3K4me3.bwa.GRCh38.20150528.bedgraph"
-        >>> db = deepBlue(sample)
-        >>> assert(db.chroms("chr1") == 248956422)
+        >>> db = deepBlue(sample) # doctest: +SKIP
+        >>> assert(db.chroms("chr1") == 248956422) # doctest: +SKIP
         """
         self.sample = sample
         self.url = url
@@ -278,7 +278,7 @@ class deepBlue(object):
                 interval = intervals.split("\t")
                 if interval[0] == '':
                     continue
-                bw.addEntries([k], [int(interval[0])], ends=[int(interval[1])], values=[float(interval[2])])
+                bw.addEntries([k], [int(interval[0]) - 1], ends=[int(interval[1]) - 1], values=[float(interval[2])])
         bw.close()
         sys.stderr.write("{} done (took {})\n".format(self.sample, datetime.datetime.now() - startTime))
         sys.stderr.flush()

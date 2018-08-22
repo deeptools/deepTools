@@ -143,12 +143,12 @@ def writeBedGraph_worker(
 
     tempFileName = _file.name
     _file.close()
-    return(tempFileName)
+    return chrom, start, end, tempFileName
 
 
 def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
-        func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=None,
+        func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=1,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
         smoothLength=0, fixed_step=False, verbose=False):
     r"""
@@ -159,15 +159,19 @@ def writeBedGraph(
     and that is related to the coverage underlying the tile.
 
     """
+    bamHandles = []
+    mappedList = []
+    for indexedFile, fileFormat in bamOrBwFileList:
+        if fileFormat == 'bam':
+            bam, mapped, unmapped, stats = bamHandler.openBam(indexedFile, returnStats=True, nThreads=numberOfProcessors)
+            bamHandles.append(bam)
+            mappedList.append(mapped)
 
-    bamHandlers = [bamHandler.openBam(indexedFile) for
-                   indexedFile,
-                   fileFormat in bamOrBwFileList if fileFormat == 'bam']
-    if len(bamHandlers):
-        genomeChunkLength = getGenomeChunkLength(bamHandlers, tileSize)
+    if len(bamHandles):
+        genomeChunkLength = getGenomeChunkLength(bamHandles, tileSize, mappedList)
         # check if both bam files correspond to the same species
         # by comparing the chromosome names:
-        chromNamesAndSize, __ = getCommonChrNames(bamHandlers, verbose=verbose)
+        chromNamesAndSize, __ = getCommonChrNames(bamHandles, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
         cCommon = []
@@ -214,26 +218,21 @@ def writeBedGraph(
                               numberOfProcessors=numberOfProcessors,
                               verbose=verbose)
 
-    # concatenate intermediary bedgraph files
-    outFile = open(outputFileName + ".bg", 'wb')
-    for tempFileName in res:
-        if tempFileName:
-            # concatenate all intermediate tempfiles into one
-            # bedgraph file
-            _foo = open(tempFileName, 'rb')
-            shutil.copyfileobj(_foo, outFile)
-            _foo.close()
-            os.remove(tempFileName)
+    # Determine the sorted order of the temp files
+    chrom_order = dict()
+    for i, _ in enumerate(chromNamesAndSize):
+        chrom_order[_[0]] = i
+    res = [[chrom_order[x[0]], x[1], x[2], x[3]] for x in res]
+    res.sort()
 
-    bedGraphFile = outFile.name
-    outFile.close()
     if format == 'bedgraph':
-        os.rename(bedGraphFile, outputFileName)
-        if debug:
-            print("output file: %s" % (outputFileName))
+        of = open(outputFileName, 'wb')
+        for r in res:
+            if r is not None:
+                _ = open(r[3], 'rb')
+                shutil.copyfileobj(_, of)
+                _.close()
+                os.remove(r[3])
+        of.close()
     else:
-        bedGraphToBigWig(
-            chromNamesAndSize, bedGraphFile, outputFileName, True)
-        if debug:
-            print("output file: %s" % (outputFileName))
-        os.remove(bedGraphFile)
+        bedGraphToBigWig(chromNamesAndSize, [x[3] for x in res], outputFileName)

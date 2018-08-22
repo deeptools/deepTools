@@ -1,20 +1,60 @@
 import sys
 import os
-import pysam
 from deeptoolsintervals import GTF
 from deeptools.bamHandler import openBam
+import matplotlib as mpl
+mpl.use('Agg')
+import numpy as np
 
 
 debug = 0
 
 
-def getTLen(read):
+def smartLabel(label):
+    """
+    Given a file name, likely with a path, return the file name without the path
+    and with the file extension removed. Thus, something like /path/to/some.special.file
+    should return some.special, since only the first extension (if present)
+    should be stripped.
+    """
+    lab = os.path.splitext(os.path.basename(label))[0]
+    if lab == '':
+        # Maybe we have a dot file?
+        lab = os.path.basename(label)
+    return lab
+
+
+def smartLabels(labels):
+    return [smartLabel(x) for x in labels]
+
+
+def convertCmap(c, vmin=0, vmax=1):
+    cmap = mpl.cm.get_cmap(c)
+    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    cmap_rgb = []
+
+    for i in range(255):
+        k = mpl.colors.colorConverter.to_rgb(cmap(norm(i)))
+        cmap_rgb.append(k)
+
+    h = 1.0 / 254
+    colorScale = []
+    for k in range(255):
+        C = map(np.uint8, np.array(cmap(k * h)[:3]) * 255)
+        colorScale.append([k * h, 'rgb' + str((C[0], C[1], C[2]))])
+
+    return colorScale
+
+
+def getTLen(read, notAbs=False):
     """
     Get the observed template length of a read. For a paired-end read, this is
     normally just the TLEN field. For SE reads this is the observed coverage of
     the genome (excluding splicing).
     """
     if abs(read.template_length) > 0:
+        if notAbs:
+            return read.template_length
         return abs(read.template_length)
 
     tlen = 0
@@ -117,10 +157,10 @@ def tbitToBamChrName(tbitNames, bamNames):
     return chrNameBitToBam
 
 
-def getCommonChrNames(bamFileHandlers, verbose=True):
+def getCommonChrNames(bamFileHandles, verbose=True):
     r"""
-    Compares the names and lengths of a list of bam file handlers.
-    The input is list of pysam file handlers.
+    Compares the names and lengths of a list of bam file handles.
+    The input is list of pysam file handles.
 
     The function returns a duple containing the common chromosome names
     and the common chromome lengths.
@@ -136,8 +176,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         """
         try:
             # BAM file
-            return [(bam_handler.references[i], bam_handler.lengths[i])
-                    for i in range(0, len(bam_handler.references))]
+            return [(x, y) for x, y in zip(bam_handler.references, bam_handler.lengths)]
         except:
             return [(k, v) for k, v in bam_handler.chroms().items()]
 
@@ -146,11 +185,11 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
         for name, size in chr_set:
             sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
 
-    common_chr = set(get_chrom_and_size(bamFileHandlers[0]))
+    common_chr = set(get_chrom_and_size(bamFileHandles[0]))
     non_common_chr = set()
 
-    for j in range(1, len(bamFileHandlers)):
-        _names_and_size = set(get_chrom_and_size(bamFileHandlers[j]))
+    for j in range(1, len(bamFileHandles)):
+        _names_and_size = set(get_chrom_and_size(bamFileHandles[j]))
         if len(common_chr & _names_and_size) == 0:
             #  try to add remove 'chr' from the chromosome name
             _corr_names_size = set()
@@ -166,7 +205,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
                 print_chr_names_and_size(common_chr)
 
                 sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
-                                 "lengths from file\n{}\n".format(bamFileHandlers.name))
+                                 "lengths from file\n{}\n".format(bamFileHandles.name))
                 print_chr_names_and_size(_names_and_size)
                 exit(1)
             else:
@@ -182,7 +221,7 @@ def getCommonChrNames(bamFileHandlers, verbose=True):
     # the common chromosomes has to be sorted as in the original
     # bam files
     chr_sizes = []
-    for tuple in get_chrom_and_size(bamFileHandlers[0]):
+    for tuple in get_chrom_and_size(bamFileHandles[0]):
         if tuple in common_chr:
             chr_sizes.append(tuple)
 
@@ -209,60 +248,17 @@ def copyFileInMemory(filePath, suffix=''):
 
 def getTempFileName(suffix=''):
     """
-    returns a temporary file name.
-    If the special /dev/shm device is available,
-    the temporary file would be located in that folder.
-    /dv/shm is a folder that resides in memory and
-    which has much faster accession.
+    Return a temporary file name. The calling function is responsible for
+    deleting this upon completion.
     """
     import tempfile
-    from deeptools import config as cfg
-    # get temp dir from configuration file
-    tmp_dir = cfg.config.get('general', 'tmp_dir')
-    if tmp_dir == 'default':
-        _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                                suffix=suffix,
-                                                delete=False)
-
-    else:
-        try:
-            _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                                    suffix=suffix,
-                                                    dir=tmp_dir,
-                                                    delete=False)
-        # fall back to system tmp file
-        except OSError:
-            _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                                    suffix=suffix,
-                                                    delete=False)
+    _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                            suffix=suffix,
+                                            delete=False)
 
     memFileName = _tempFile.name
     _tempFile.close()
     return memFileName
-
-
-def which(program):
-    """ method to identify if a program
-    is on the user PATH variable.
-    From: http://stackoverflow.com/questions/377017/test-if-executable-exists-in-python
-    """
-    import os
-
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
 
 
 def gtfOptions(allArgs=None):
@@ -335,35 +331,15 @@ def mungeChromosome(chrom, chromList):
     return None
 
 
-def bam_total_reads(bam_handle, chroms_to_ignore):
-    """Count the total number of mapped reads in a BAM file, filtering
+def bam_total_reads(bam_handle, chroms_to_ignore, stats):
+    """
+    Count the total number of mapped reads in a BAM file, filtering
     the chromosome given in chroms_to_ignore list
     """
     if chroms_to_ignore:
-        import pysam
-
-        lines = pysam.idxstats(bam_handle.filename)
-        lines = toString(lines)
-        if type(lines) is str:
-            lines = lines.strip().split('\n')
-        if len(lines) == 0:
-            # check if this is a test running under nose
-            # in which case it will fail.
-            if len([val for val in sys.modules.keys() if val.find("nose") >= 0]):
-                sys.stderr.write("To run this code inside a test use disable "
-                                 "output buffering `nosetest -s`\n".format(bam_handle.filename))
-            else:
-                sys.stderr.write("Error running idxstats on {}\n".format(bam_handle.filename))
-        tot_mapped_reads = 0
-        for line in lines:
-            chrom, _len, nmapped, _nunmapped = line.split('\t')
-            if chrom not in chroms_to_ignore:
-                tot_mapped_reads += int(nmapped)
-
+        return sum([s[0] for k, s in stats.items() if k not in chroms_to_ignore])
     else:
-        tot_mapped_reads = bam_handle.mapped
-
-    return tot_mapped_reads
+        return sum([s[0] for s in stats.values()])
 
 
 def bam_blacklisted_worker(args):
@@ -371,6 +347,8 @@ def bam_blacklisted_worker(args):
     fh = openBam(bam)
     blacklisted = 0
     for r in fh.fetch(reference=chrom, start=start, end=end):
+        if r.is_unmapped:
+            continue
         if r.reference_start >= start and r.reference_start + r.infer_query_length(always=False) - 1 <= end:
             blacklisted += 1
     fh.close()
@@ -383,16 +361,15 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
         return blacklisted
 
     # Get the chromosome lengths
-    chromLens = {}
-    lines = pysam.idxstats(bam_handle.filename)
-    lines = toString(lines)
-    if type(lines) is str:
-        lines = lines.strip().split('\n')
-    for line in lines:
-        chrom, _len, nmapped, _nunmapped = line.split('\t')
-        chromLens[chrom] = int(_len)
+    chromLens = {x: y for x, y in zip(bam_handle.references, bam_handle.lengths)}
 
     bl = GTF(blackListFileName)
+    hasOverlaps, minOverlap = bl.hasOverlaps(returnDistance=True)
+    if hasOverlaps:
+        sys.exit("Your blacklist file(s) has (have) regions that overlap. Proceeding with such a file would result in deepTools incorrectly calculating scaling factors. As such, you MUST fix this issue before being able to proceed.\n")
+    if minOverlap < 1000:
+        sys.stderr.write("WARNING: The minimum distance between intervals in your blacklist is {}. It makes little biological sense to include small regions between two blacklisted regions. Instead, these should likely be blacklisted as well.\n".format(minOverlap))
+
     regions = []
     for chrom in bl.chroms:
         if (not chroms_to_ignore or chrom not in chroms_to_ignore) and chrom in chromLens:

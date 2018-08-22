@@ -55,14 +55,8 @@ def getRequiredArgs():
                           'discarded. Also, if repetitive regions were not '
                           'included in the mapping of reads, the effective '
                           'genome size needs to be adjusted accordingly. '
-                          'Common values are: mm9: 2150570000, '
-                          'hg19:2451960000, dm3:121400000 and ce10:93260000. '
-                          'See Table 2 of '
-                          'http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                          'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                          'for several effective genome sizes. This value is '
-                          'needed to detect enriched regions that, if not '
-                          'discarded can bias the results.',
+                          'A table of values is available here: '
+                          'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                           default=None,
                           type=int,
                           required=True)
@@ -78,15 +72,23 @@ def getRequiredArgs():
                           metavar='2bit FILE',
                           required=True)
 
-    required.add_argument('--fragmentLength', '-l',
-                          help='Fragment length used for the sequencing. If '
-                          'paired-end reads are used, the fragment length is '
-                          'computed based from the bam file',
-                          type=int,
+    required.add_argument('--GCbiasFrequenciesFile', '-freq', '-o',
+                          help='Path to save the file containing '
+                          'the observed and expected read frequencies per %%GC-'
+                          'content. This file is needed to run the '
+                          'correctGCBias tool. This is a text file.',
+                          type=argparse.FileType('w'),
+                          metavar='FILE',
                           required=True)
 
     # define the optional arguments
     optional = parser.add_argument_group('Optional arguments')
+    optional.add_argument('--fragmentLength', '-l',
+                          help='Fragment length used for the sequencing. If '
+                          'paired-end reads are used, the fragment length is '
+                          'computed based from the bam file',
+                          type=int)
+
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
 
@@ -102,23 +104,21 @@ def getRequiredArgs():
                           type=argparse.FileType('r'),
                           metavar='BED file')
 
-    group = parser.add_argument_group('Output options')
-
-    group.add_argument('--GCbiasFrequenciesFile', '-freq',
-                       help='Path to save the file containing '
-                       'the observed and expected read frequencies per %%GC-'
-                       'content. This file is needed to run the '
-                       'correctGCBias tool. This is a text file.',
-                       type=argparse.FileType('w'),
-                       metavar='FILE',
-                       required=True)
-
     plot = parser.add_argument_group('Diagnostic plot options')
 
     plot.add_argument('--biasPlot',
                       metavar='FILE NAME',
                       help='If given, a diagnostic image summarizing '
                       'the GC-bias will be saved.')
+
+    plot.add_argument('--plotFileFormat',
+                      metavar='',
+                      help='image format type. If given, this '
+                      'option overrides the '
+                      'image format based on the plotFile ending. '
+                      'The available options are: "png", '
+                      '"eps", "pdf", "plotly" and "svg"',
+                      choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     plot.add_argument('--regionSize',
                       metavar='INT',
@@ -131,15 +131,6 @@ def getRequiredArgs():
                       'if the depth of sequencing is low, a larger bin size '
                       'will be required, otherwise many bins will not '
                       'overlap with any read')
-
-    group.add_argument('--plotFileFormat',
-                       metavar='',
-                       help='image format type. If given, this '
-                       'option overrides the '
-                       'image format based on the plotFile ending. '
-                       'The available options are: "png", '
-                       '"eps", "pdf" and "svg"',
-                       choices=['png', 'pdf', 'svg', 'eps'])
 
     return parser
 
@@ -345,7 +336,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         counts = np.bincount([r.pos - start_pos
                               for r in bam.fetch(chromNameBam, start_pos,
                                                  end_pos + 1)
-                              if not r.is_reverse and r.pos >= start_pos],
+                              if not r.is_reverse and not r.is_unmapped and r.pos >= start_pos],
                              minlength=end_pos - start_pos + 2)
 
         read_counts = counts[positions_to_sample - min(positions_to_sample)]
@@ -416,17 +407,17 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
     >>> arg = test.testTabulateGCcontent()
     >>> res = tabulateGCcontent(*arg)
     >>> res
-    array([[   0.        ,   18.        ,    1.        ],
-           [   3.        ,   63.        ,    0.45815996],
-           [   7.        ,  159.        ,    0.42358185],
-           [  25.        ,  192.        ,    1.25278115],
-           [  28.        ,  215.        ,    1.25301422],
-           [  16.        ,  214.        ,    0.71935396],
-           [  12.        ,   95.        ,    1.21532959],
-           [   9.        ,   24.        ,    3.60800971],
-           [   3.        ,   11.        ,    2.62400706],
-           [   0.        ,    0.        ,    1.        ],
-           [   0.        ,    0.        ,    1.        ]])
+    array([[  0.        ,  18.        ,   1.        ],
+           [  3.        ,  63.        ,   0.45815996],
+           [  7.        , 159.        ,   0.42358185],
+           [ 25.        , 192.        ,   1.25278115],
+           [ 28.        , 215.        ,   1.25301422],
+           [ 16.        , 214.        ,   0.71935396],
+           [ 12.        ,  95.        ,   1.21532959],
+           [  9.        ,  24.        ,   3.60800971],
+           [  3.        ,  11.        ,   2.62400706],
+           [  0.        ,   0.        ,   1.        ],
+           [  0.        ,   0.        ,   1.        ]])
     """
     global global_vars
 
@@ -473,11 +464,11 @@ def countReadsPerGC(regionSize, chrNameBitToBam, stepSize,
     >>> arg = test.testCountReadsPerGC()
     >>> reads_per_gc = countReadsPerGC(*arg)
     >>> reads_per_gc[0:5,:]
-    array([[ 132.        ,    0.44      ],
-           [ 132.        ,    0.44      ],
-           [ 133.        ,    0.44      ],
-           [ 134.        ,    0.43666667],
-           [ 134.        ,    0.44      ]])
+    array([[132.        ,   0.44      ],
+           [132.        ,   0.44      ],
+           [133.        ,   0.44      ],
+           [134.        ,   0.43666667],
+           [134.        ,   0.44      ]])
     """
     global global_vars
 
@@ -543,6 +534,50 @@ def bin_by(x, y, nbins=10):
     return output, bins
 
 
+def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
+    import plotly.offline as py
+    import plotly.graph_objs as go
+    import matplotlib.cbook as cbook
+
+    fig = go.Figure()
+    fig['layout']['xaxis1'] = dict(domain=[0.0, 1.0], anchor="y1", title="GC fraction")
+    fig['layout']['yaxis1'] = dict(domain=[0.55, 1.0], anchor="x1", title="Number of reads")
+    fig['layout']['xaxis2'] = dict(domain=[0.0, 1.0], anchor="y2", title="GC fraction", range=[0.2, 0.7])
+    fig['layout']['yaxis2'] = dict(domain=[0.0, 0.45], anchor="x2", title="log2(observed/expected)")
+    text = "reads per {} base region".format(region_size)
+    annos = [{'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': text, 'y': 1.0, 'x': 0.5, 'font': {'size': 16}, 'showarrow': False}]
+    text = "normalized observed/expected read counts"
+    annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': text, 'y': 0.5, 'x': 0.5, 'font': {'size': 16}, 'showarrow': False})
+
+    # prepare data for boxplot
+    reads, GC = reads_per_gc.T
+    reads_per_gc, bin_labels = bin_by(reads, GC, nbins=100)
+    to_keep = [idx for idx, x in enumerate(bin_labels) if 0.2 <= x <= 0.7]
+    reads_per_gc = [reads_per_gc[x] for x in to_keep]
+    bin_labels = [bin_labels[x] for x in to_keep]
+
+    # produce the same boxplot as matplotlib as vastly reduce the output file size
+    bins = []
+    for b in reads_per_gc:
+        s = cbook.boxplot_stats(b)[0]
+        bins.append([s['whislo'], s['q1'], s['q1'], s['med'], s['med'], s['med'], s['q3'], s['q3'], s['whishi']])
+
+    data = []
+
+    # top plot
+    for x, y in zip(bin_labels, bins):
+        trace = go.Box(x=x, y=y, xaxis='x1', yaxis='y1', boxpoints='outliers', showlegend=False, name="{}".format(x), line=dict(color='rgb(107,174,214)'))
+        data.append(trace)
+
+    # bottom plot
+    x = np.linspace(0, 1, frequencies.shape[0])
+    trace = go.Scatter(x=x, y=np.log2(frequencies[:, 2]), xaxis='x2', yaxis='y2', showlegend=False, line=dict(color='rgb(107,174,214)'))
+    data.append(trace)
+    fig['data'] = data
+    fig['layout']['annotations'] = annos
+    py.plot(fig, filename=file_name, auto_open=False)
+
+
 def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=None):
     import matplotlib
     matplotlib.use('Agg')
@@ -582,10 +617,22 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     ax1.set_xticklabels(["{:.1f}".format(bin_labels[x]) for x in xticks])
 
     x = np.linspace(0, 1, frequencies.shape[0])
-    ax2.plot(x, np.log2(frequencies[:, 2]), color='#8c96f0')
+    y = np.log2(frequencies[:, 2])
+    ax2.plot(x, y, color='#8c96f0')
     ax2.set_xlabel('GC fraction')
     ax2.set_ylabel('log2ratio observed/expected')
     ax2.set_xlim(0.2, 0.7)
+    y_max = max(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    y_min = min(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    if y_max > 0:
+        y_max *= 1.1
+    else:
+        y_max *= 0.9
+    if y_min < 0:
+        y_min *= 1.1
+    else:
+        y_min *= 0.9
+    ax2.set_ylim(y_min, y_max)
     plt.tight_layout()
     plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
     plt.close()
@@ -608,7 +655,7 @@ def main(args=None):
     global_vars['extra_sampling_file'] = extra_sampling_file
 
     tbit = py2bit.open(global_vars['2bit'])
-    bam = bamHandler.openBam(global_vars['bam'])
+    bam, mapped, unmapped, stats = bamHandler.openBam(global_vars['bam'], returnStats=True, nThreads=args.numberOfProcessors)
 
     if args.fragmentLength:
         fragment_len_dict = \
@@ -629,7 +676,7 @@ def main(args=None):
     chrNameBitToBam = tbitToBamChrName(list(tbit.chroms().keys()), bam.references)
 
     global_vars['genome_size'] = sum(tbit.chroms().values())
-    global_vars['total_reads'] = bam.mapped
+    global_vars['total_reads'] = mapped
     global_vars['reads_per_bp'] = \
         float(global_vars['total_reads']) / args.effectiveGenomeSize
 
@@ -638,6 +685,7 @@ def main(args=None):
     # chromSizes: list of tuples
     chromSizes = [(bam.references[i], bam.lengths[i])
                   for i in range(len(bam.references))]
+    chromSizes = [x for x in chromSizes if x[0] in tbit.chroms()]
 
     # use poisson distribution to identify peaks that should be discarted.
     # I multiply by 4, because the real distribution of reads
@@ -678,7 +726,10 @@ def main(args=None):
                                        numberOfProcessors=args.numberOfProcessors,
                                        verbose=args.verbose,
                                        region=args.region)
-        plotGCbias(args.biasPlot, data, reads_per_gc, args.regionSize, image_format=args.plotFileFormat)
+        if args.plotFileFormat == "plotly":
+            plotlyGCbias(args.biasPlot, data, reads_per_gc, args.regionSize)
+        else:
+            plotGCbias(args.biasPlot, data, reads_per_gc, args.regionSize, image_format=args.plotFileFormat)
 
 
 class Tester():
@@ -690,7 +741,7 @@ class Tester():
         self.mappability = self.root + "mappability.bw"
         self.chrNameBam = '2L'
         self.chrNameBit = 'chr2L'
-        bam = bamHandler.openBam(self.bamFile)
+        bam, mapped, unmapped, stats = bamHandler.openBam(self.bamFile, returnStats=True)
         tbit = py2bit.open(self.tbitFile)
         global debug
         debug = 0
@@ -704,7 +755,7 @@ class Tester():
                        'min_reads': 0,
                        'min_reads': 0,
                        'reads_per_bp': 0.3,
-                       'total_reads': bam.mapped,
+                       'total_reads': mapped,
                        'genome_size': sum(tbit.chroms().values())
                        }
 

@@ -4,6 +4,7 @@ matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.colors as pltcolors
+import plotly.graph_objs as go
 
 old_settings = np.seterr(all='ignore')
 
@@ -64,6 +65,8 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     summary = np.ma.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     x = np.arange(len(summary))
+    if isinstance(color, np.ndarray):
+        color = pltcolors.to_hex(color, keep_alpha=True)
     ax.plot(x, summary, color=color, label=label, alpha=0.9)
     if plot_type == 'fill':
         pass
@@ -88,23 +91,66 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     return ax
 
 
-def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
+def plotly_single(ma, average_type, color, label, plot_type='simple'):
+    """A plotly version of plot_single. Returns a list of traces"""
+    summary = list(np.ma.__getattribute__(average_type)(ma, axis=0))
+    x = list(np.arange(len(summary)))
+    if isinstance(color, str):
+        color = list(matplotlib.colors.to_rgb(color))
+    traces = [go.Scatter(x=x, y=summary, name=label, line={'color': "rgba({},{},{},0.9)".format(color[0], color[1], color[2])}, showlegend=False)]
+    if plot_type == 'fill':
+        traces[0].update(fill='tozeroy', fillcolor=color)
+
+    if plot_type in ['se', 'std']:
+        if plot_type == 'se':  # standard error
+            std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
+        else:
+            std = np.std(ma, axis=0)
+
+        x_rev = x[::-1]
+        lower = summary - std
+        trace = go.Scatter(x=x + x_rev,
+                           y=np.concatenate([summary + std, lower[::-1]]),
+                           fill='tozerox',
+                           fillcolor="rgba({},{},{},0.2)".format(color[0], color[1], color[2]),
+                           line=go.Line(color='transparent'),
+                           showlegend=False,
+                           name=label)
+        traces.append(trace)
+
+    return traces
+
+
+def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     """
     returns the position and labelling of the xticks that
     correspond to the heatmap
+
+    As of deepTools 3, the various parameters can be lists, in which case we then need to index things (the idx parameter)
     """
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
     a = hm.parameters['downstream']
+    if idx is not None:
+        w = w[idx]
+        b = b[idx]
+        a = a[idx]
+
     try:
         c = hm.parameters['unscaled 5 prime']
+        if idx is not None:
+            c = c[idx]
     except:
         c = 0
     try:
         d = hm.parameters['unscaled 3 prime']
+        if idx is not None:
+            d = d[idx]
     except:
         d = 0
     m = hm.parameters['body']
+    if idx is not None:
+        m = m[idx]
     tickPlotAdj = 0.5
 
     if b < 1e5:
@@ -149,5 +195,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel):
             xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
         xticks = [(k / w) - tickPlotAdj for k in xticks_values]
+
+    xticks = [max(x, 0.5) for x in xticks]
 
     return xticks, xtickslabel

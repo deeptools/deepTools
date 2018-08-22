@@ -1,5 +1,4 @@
 import argparse
-import deeptools.config as cfg
 import os
 from deeptools._version import __version__
 
@@ -17,7 +16,8 @@ def check_list_of_comma_values(value):
     for foo in value:
         foo = value.split(",")
         if len(foo) < 2:
-            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. Only argument elements of the following form are accepted: 'foo,bar'" % foo)
+            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. "
+                                             "Only argument elements of the following form are accepted: 'foo,bar'" % foo)
     return value
 
 
@@ -205,42 +205,56 @@ def normalization_options():
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Read coverage normalization options')
 
-    group.add_argument('--normalizeTo1x',
-                       help='Report read coverage normalized to 1x '
-                       'sequencing depth (also known as Reads Per Genomic '
-                       'Content (RPGC)). Sequencing depth is defined as: '
-                       '(total number of mapped reads * fragment length) / '
-                       'effective genome size.\nThe scaling factor used '
-                       'is the inverse of the sequencing depth computed '
-                       'for the sample to match the 1x coverage. '
-                       'To use this option, the '
-                       'effective genome size has to be indicated after the '
-                       'option. The effective genome size is the portion '
+    group.add_argument('--effectiveGenomeSize',
+                       help='The effective genome size is the portion '
                        'of the genome that is mappable. Large fractions of '
                        'the genome are stretches of NNNN that should be '
                        'discarded. Also, if repetitive regions were not '
                        'included in the mapping of reads, the effective '
                        'genome size needs to be adjusted accordingly. '
-                       'Common values are: mm9: 2,150,570,000; '
-                       'hg19:2,451,960,000; dm3:121,400,000 and ce10:93,260,000. '
-                       'See Table 2 of http://www.plosone.org/article/info:doi/10.1371/journal.pone.0030377 '
-                       'or http://www.nature.com/nbt/journal/v27/n1/fig_tab/nbt.1518_T1.html '
-                       'for several effective genome sizes.',
-                       metavar='EFFECTIVE GENOME SIZE LENGTH',
+                       'A table of values is available here: '
+                       'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
                        default=None,
                        type=int,
                        required=False)
 
-    group.add_argument('--normalizeUsingRPKM',
-                       help='Use Reads Per Kilobase per Million reads to '
-                       'normalize the number of reads per bin. The formula '
-                       'is: RPKM (per bin) =  number of reads per bin / '
-                       '( number of mapped reads (in millions) * bin '
-                       'length (kb) ). Each read is considered independently,'
-                       'if you want to only count either of the mate pairs in'
-                       'paired-end data, use the --samFlag option.',
-                       action='store_true',
+    group.add_argument('--normalizeUsing',
+                       help='Use one of the entered methods to '
+                       'normalize the number of reads per bin. By default, no normalization is performed. '
+                       'RPKM = Reads Per Kilobase per Million mapped reads; '
+                       'CPM = Counts Per Million mapped reads, same as CPM in RNA-seq; '
+                       'BPM = Bins Per Million mapped reads, same as TPM in RNA-seq; '
+                       'RPGC = reads per genomic content (1x normalization); '
+                       'Mapped reads are considered after blacklist filtering (if applied). '
+                       'RPKM (per bin) =  number of reads per bin / '
+                       '(number of mapped reads (in millions) * bin length (kb)). '
+                       'CPM (per bin) =  number of reads per bin / '
+                       'number of mapped reads (in millions). '
+                       'BPM (per bin) =  number of reads per bin / '
+                       'sum of all reads per bin (in millions). '
+                       'RPGC (per bin) = number of reads per bin / '
+                       'scaling factor for 1x average coverage. '
+                       'None = the default and equivalent to not setting this option at all. '
+                       'This scaling factor, in turn, is determined from the '
+                       'sequencing depth: (total number of mapped reads * fragment length) / '
+                       'effective genome size.\nThe scaling factor used '
+                       'is the inverse of the sequencing depth computed '
+                       'for the sample to match the 1x coverage. This option requires --effectiveGenomeSize. '
+                       'Each read is considered independently, '
+                       'if you want to only count one mate from a pair in '
+                       'paired-end data, then use the --samFlagInclude/--samFlagExclude options.',
+                       choices=['RPKM', 'CPM', 'BPM', 'RPGC', 'None'],
+                       default=None,
                        required=False)
+
+    group.add_argument('--exactScaling',
+                       help='Instead of computing scaling factors based on a sampling of the reads, '
+                       'process all of the reads to determine the exact number that will be used in '
+                       'the output. This requires significantly more time to compute, but will '
+                       'produce more accurate scaling factors in cases where alignments that are '
+                       'being filtered are rare and lumped together. In other words, this is only '
+                       'needed when region-based sampling is expected to produce incorrect results.',
+                       action='store_true')
 
     group.add_argument('--ignoreForNormalization', '-ignore',
                        help='A list of space-delimited chromosome names '
@@ -316,8 +330,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
                           'to use all available processors.',
                           metavar="INT",
                           type=numberOfProcessors,
-                          default=cfg.config.get('general',
-                                                 'default_proc_number'),
+                          default=1,
                           required=False)
 
     optional.add_argument('--verbose', '-v',
@@ -370,7 +383,6 @@ def genomicRegion(string):
     except:
         region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
-        print("oh no!")
         raise argparse.ArgumentTypeError(
             "{} is not a valid region".format(string))
     return region
@@ -402,7 +414,7 @@ def heatmapperMatrixArgs(args=None):
                           type=argparse.FileType('r'),
                           )
 
-    required.add_argument('--outFileName', '-out',
+    required.add_argument('--outFileName', '-out', '-o',
                           help='File name to save the image to. The file '
                           'ending will be used to determine the image '
                           'format. The available options are: "png", '
@@ -435,6 +447,19 @@ def heatmapperOutputArgs(args=None,
                             'using this name, e.g. MyMatrix.tab.',
                             metavar='FILE',
                             type=writableFile)
+
+        output.add_argument('--interpolationMethod',
+                            help='If the heatmap image contains a large number of columns '
+                            'is usually better to use an interpolation method to produce '
+                            'better results (see '
+                            'https://matplotlib.org/examples/images_contours_and_fields/interpolation_methods.html). '
+                            'Be default, plotHeatmap uses the method `nearest` if the number of columns is 1000 or '
+                            'less. Otherwise it uses the bilinear method. This default behaviour can be changed by '
+                            'using any of the following options: "nearest", "bilinear", "bicubic", '
+                            '"gaussian"',
+                            choices=['auto', 'nearest', 'bilinear', 'bicubic', 'gaussian'],
+                            metavar='STR',
+                            default='auto')
     elif mode == 'profile':
         output.add_argument('--outFileNameData',
                             help='File name to save the data '
@@ -491,8 +516,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         optional.add_argument(
             '--averageType',
             default='mean',
-            choices=["mean", "median", "min",
-                     "max", "std", "sum"],
+            choices=["mean", "median", "min", "max", "std", "sum"],
             help='The type of statistic that should be used for the '
             'profile. The options are: "mean", "median", "min", "max", '
             '"sum" and "std".')
@@ -543,14 +567,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               help='Whether the heatmap should present '
                               'the regions sorted. The default is '
                               'to sort in descending order based on '
-                              'the mean value per region.',
-                              choices=["descend", "ascend", "no"],
+                              'the mean value per region. Note that "keep" and "no" are the same thing.',
+                              choices=["descend", "ascend", "no", "keep"],
                               default='descend')
 
         optional.add_argument('--sortUsing',
                               help='Indicate which method should be used for '
-                              'sorting. For each row the '
-                              'method is computed.',
+                              'sorting. For each row the method is computed. '
+                              'For region_length, a dashed line is drawn at '
+                              'the end of the region (reference point TSS and '
+                              'center) or the beginning of the region '
+                              '(reference point TES) as appropriate.',
                               choices=["mean", "median", "max", "min", "sum",
                                        "region_length"],
                               default='mean')
@@ -574,7 +601,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         optional.add_argument(
             '--missingDataColor',
             default='black',
-            help='If --missingDataAsZero is not set, such cases '
+            help='If --missingDataAsZero was not set, such cases '
             'will be colored in black by default. Using this '
             'parameter, a different color can be set. A value '
             'between 0 and 1 will be used for a gray scale '
@@ -700,7 +727,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'is the same as the reference point selected '
                           '(e.g. TSS), but could be anything, e.g. '
                           '"peak start".',
-                          default='TSS')
+                          default=None)
+
+    optional.add_argument('--labelRotation',
+                          dest='label_rotation',
+                          help='Rotation of the X-axis labels in degrees. The default is 0, positive values denote a counter-clockwise rotation.',
+                          type=float,
+                          default=0.0)
+
     optional.add_argument('--nanAfterEnd',
                           help=argparse.SUPPRESS,
                           default=False)
@@ -774,8 +808,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'option overrides the '
                           'image format based on the plotFile ending. '
                           'The available options are: "png", '
-                          '"eps", "pdf" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps'])
+                          '"eps", "pdf", "plotly" and "svg"',
+                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument('--verbose',
                           help='If set, warning messages and '

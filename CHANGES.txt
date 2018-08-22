@@ -1,3 +1,94 @@
+3.1.2
+
+ * Added a `--markers` option to `plotPCA`, courtesy of @sklasfeld.
+ * `computeMatrixOperations rbind` now properly supports multiple region groups (issue #742)
+ * Fixed the usage of `--xRange` and `--yRange` with `plotCorrelation` (issue #709)
+
+3.1.1
+
+ * Fixed the `--outFileNameData` option in `plotProfile` when `computeMatrix reference-point --referencePoint center` was used. This caused an error previously. (issue #727)
+ * RPGC normalization and the `--scaleFactor` option in `bamCoverage` are no longer mutually exclusive.
+ * Increased the default plot width in plotPCA (issue #738)
+
+3.1.0
+
+ * The `--centerReads` option in `bamCoverage` is now compatible with `--Offset` (previously `--centerReads` was silently ignored if `--Offset` was specified). (issue #693)
+ * `bamCoverage` and `bamCompare` now have an `--exactScaling` option. Instead of using a random sample of alignment to compute the scaling factor, this causes all reads in the file to be used. This is significantly slower, but helpful in situations where reads that should be excluded clump together on the genome (i.e., when sampling based on location is likely to be inaccurate).
+ * `plotCorrelation --whatToPlot scatterplot` now has `--xRange` and `--yRange` options rather than just `--maxRange`. (issue #709)
+ * `computeMatrixOperations` can now be used to change sample and group names.
+ * `computeMatrixOperations` can now filter rows by minimum and/or maximum value.
+ * `--maxThreshold` and `--minThreshold` are now more consistently honoured. (#702)
+ * Fixed region handling when using files on deepBlue (#700)
+ * Using `--normalizeUsing RPGC` with `bamCompare` will now result in a fatal error, rather than a simple warning and the settings being changed under the hood. (#718)
+ * Related to the last point, setting `--normalizeUsing` to anything other than `None` will result in an error unless `--scaleFactorsMethod None` is also used. This is to prevent people from accidentally getting unintended normalization.
+ * bamPEFragmentSize no longer exploids its memory use with multiple large BAM/CRAM files (#720). Many other tools will also benefit from this change.
+
+3.0.2
+
+ * Fixed an issue regarding under sampling alignments in some cases with computing scaling factors. This was issue #690. The resolution isn't perfect, it's hard to know how many reads really need to be sampled for things like RNA-seq.
+ * `computeMatrix` now has a `--verbose` option. Setting this will drastically increase the verbosity of the messages sent to the screen. Only do this for debugging. `--quiet` will disable this completely (as well as all other messages printed to screen).
+ * Fixed handling of `--sortUsing region_length` in `plotHeatmap`. This now works properly for `--referencePoint center` and `--referencePoint TES`, where in the latter case the dashed line is drawn at the region start. The documentation has been updated to mention this. (issue #671)
+ * The reference point label specified by `computeMatrix reference-point` is now respected by plotHeatmap and plotProfile. So if you used `computeMatrix reference-point --referencePointLabel center` then 'center' will now appear as the tick label in your heatmaps and profiles automatically. (issues #606 and #683)
+ * Enabled using regions with a `.` in the chromosome name in the Galaxy wrappers (issue #692)
+
+3.0.1
+
+ * Fixed the `--perGroup` option in plotProfile and plotHeatmap when multiple groups were being used. In version 3.0.0, this would typically cause an error and deepTools to crash. (issue #673)
+ * Fixed a few issues with the Galaxy wrappers. Thanks to Ralf Gilsbach, Claudia Keller, and @bgruening (e.g., issue #678)
+
+3.0.0
+
+ * plotCorrelation` now has `--log1p` and `--maxRange` options if a scatter plot is produced. `--log1p` plots the natural log of the values (plus 1). `--maxRange` sets the maximum X and Y axis ranges. If they would normally be below this value then they are left unchanged. (issue #536)
+ * The PCA plot now includes "% of var. explained" in the top axis labels. (issue #547)
+ * `plotProfile` and `plotHeatmap` now have a `--labelRotation` option that can rotate the X-axis labels. This is one of the more common requests for customization. For further customization, please modify your .matplotlibrc file or save as a PDF and modify further in Illustrator or a similar program. (issue #537)
+ * The `--ignoreDuplicates` algorithm has been updated to better handle paired-end reads. (issue #524)
+ * Added the `estimateReadFiltering` tool to estimate how many reads would be filtered from a BAM file or files if a variety of desired filtering criterion are applied (issue #518).
+ * Rewrote the bigWig creation functions so there are no longer steps involving creating a single large bedGraph and then sorting it. That was a hold-over from previous versions that used UCSC tools. This was issue #546. This also means that there are no longer any required external programs (previously, only `sort` was required).
+ * `plotPCA` can now be run on the transposed matrix, as is typically done with RNAseq data (e.g., with deepTools). Further, matplotlib is now no longer used for computing the PCA, but rather an SVD is performed and the results directly used. The options `--transpose` and `--ntop` were also added. The former computes the PCA of the transposed matrix and the latter specifies how many of the most variable rows in the matrix to use. By default, the 1000 most variable features are used. In the (now optional) plot, the `--PCs` option can now be used to specify which principal components to plot. Finally, the unbiased standard deviation is used in the out, as is done by `prcomp()` in R.  This was issue #496.
+ * Symbol colors for `plotPCA` can now be specified. (issue #560)
+ * `plotFingerprint` always returns the synthetic JSD, even if no `--JSDsample` is specified. (issue #564)
+ * `plotEnrichment` will only read in annotation files a single time rather than in each thread. This prevents terrible performance when using many tens of millions of BED/GTF regions at the expense of a slight memory increase. (issue #530)
+ * Fixed a small bug generally affecting `plotFingerprint` where BAM files without an index were processed as bigWig files, resulting in a confusing error message (issue #574). Thanks to Sitanshu Gakkhar for poiting this out!
+ * `bamPEFragmentSize` now has `--table` and `--outRawFragmentLengths` options. The former option will output the read/fragment metrics to a file in tabular format (in addition to the previous information written to the screen). The latter option will write the raw read/fragment counts to a tsv file. The format of the file is a line with "#bamPEFragmentSize", followed by a header line of "Size\tOccurences\tSample", which should facilitate processing in things like R. (issue #572)
+ * `bamPEFragmentSize` will now plot the read length distribution for single-end BAM files. Note that if you mix single and paired-end files that the resulting plots may be difficult to interpret.
+ * The various plot commands do not actually have to plot anything, instead they can optionally only print their raw metrics or other text output. This is mostly useful with large numbers of input files, since the resulting plots can become quickly crowded. (issue #5719
+ * Expanded the metrics output by `bamPEFragmentSize` such that it now fully replaces Picard CollectInsertSizeMetrics (issue #577).
+ * "plotly" is now available as an output image format for all tools. Note that this is not really an image format, but rather an interactive webpage that you can open in your browser. The resulting webpages can be VERY large (especially for `plotHeatmap`), so please keep that in mind. Further, plotly does not currently have the capabilities to support all of deepTools' features, so note that some options will be ignored. For privacy reasons, all plotly files are saved locally and not uploaded to the public plot.ly site. You can click on the "Export to plot.ly" link on the bottom right of plotly output if you would like to modify the resulting files.
+ * `bamCoverage` no longer prints `normalization: depth` be default, but rather a more accurate message indicating that the scaling is performed according to the percentage of alignments kept after filtering. This was originally added in #366 (issue #590).
+ * The output of `plotFingerprint --outRawCounts` now has a header line to facilitate identification by MultiQC.
+ * `plotPCA` now has a `--log2` option, which log2 transforms the data before computing the PCA. Note that 0.01 is added to all values to 0 doesn't become -infinity.
+ * `computeGCBias` no longer requires a fragment length for paired-end datasets. This was apparently always meant to be the case anyway. (issue #595)
+ * `computeMatrixOperations sort` can now properly perform filtering of individual regions, as was originally intended (issue #594)
+ * `plotCoverage --outRawCounts` now has another line it its header, which is meant to aid MultiQC.
+ * There is no longer a configuration file. The default number of threads for all tools is 1. See issue #613.
+ * `bamCoverage` and `bamCompare` have rewritten normalization functions. They have both added CPM and BPM normalization and, importantly, filtering is now done **before** computing scaling factors. A few of the options associated with this (e.g., `--normalizeUsingRPKM`) have been replaced with the `--normalizeUsing` option. This behavior represents a break from that seen in earlier versions but should be easier to follow and more in line with what users expect is happening. The syntax for normalization has been reworked multiple times (see #629).
+ * Fixed issue #631
+ * `computeMatrix` now repeats labels for each column in a plot. This is convenient if you later want to merge reference-point and scale-regions runs and still have correct tick marks and labels in plotHeatmap/plotProfile (issue #614). Note that the output of computeMatrix and computeMatrixOperations can not be used with older versions of deepTools (but output from previous versions can still be used).
+ * `plotHeatmap --sortRegions` now has a `keep` option. This is identical to `--sortRegions no`, but may be clearer (issue #621)
+ * `plotPCA --outFileNameData` and `plotCorrelation --outFileCorMatrix` now produce files with a single comment line (i.e., '#plotPCA --outFileNameData' and '#plotCorrelation --outFileCorMatrix'). These can then be more easily parsed by programs like MultiQC.
+ * All functions that accept file labels (e.g., via a `--samplesLabel` option) now also have a `--smartLabels` option. This will result in labels comprised of the file name, after stripping any path and the file extension. (issue #627)
+ * The `-o` option can now be universally used to indicate the file to save a tool's primary output. Previously, some tools use `-o`, some used `-out` and still others used things like `-hist` or `-freq`. This caused annoyance due to having to always remember the appropriate switch. Hopefully standardizing to `-o` will alleviate this. (issue #640)
+ * Using a --blackListFileName with overlapping regions will typically now cause the various deepTools programs to stop. This is to ensure that resulting scale factors are correct (issue #649)
+ * `bamCoverage` is a bit more efficient with small BAM files now due to underlying algorithmic changes. Relatedely, bamCoverage will skip some unnecessary estimation steps if you are not filtering reads, further speeding processing a bit. (issue #662)
+ * Added support for CRAM files. This requires pysam > 0.13.0 (issue #619).
+
+2.5.7
+
+ * Fixed a small bug that caused computation to stop. This was related to a change made for release 2.5.5.
+
+2.5.6
+
+ * Fixed a bug where deepTools in python3 can't handle npz file labels created under python 2.
+
+2.5.5
+
+ * Updated blacklist handling such that an error is thrown on overlapping regions.
+
+2.5.4
+
+ * Fixed issue #612, which only occurs when unaligned reads have a position assigned to them.
+ * Ticks in the profile plot at the top of the output of `plotHeatmap` should now always line up properly. (issue #616)
+
 2.5.3
 
  * Fixed a bug in `plotEnrichment`, the `--keepExons` option with a BED12 file would cause an error. (issue #559)

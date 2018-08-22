@@ -1,5 +1,5 @@
-file	featureType	percent
-bowtie2 test1.bam	down	100.00
-bowtie2 test1.bam	up	100.00
-bowtie2 test1.bam	down	100.00
-bowtie2 test1.bam	up	100.00
+file	featureType	percent	featureReadCount	totalReadCount
+bowtie2 test1.bam	up	100.00	47	47
+bowtie2 test1.bam	down	100.00	47	47
+bowtie2 test1.bam	up	100.00	47	47
+bowtie2 test1.bam	down	100.00	47	47

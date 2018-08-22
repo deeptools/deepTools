@@ -1,5 +1,5 @@
-<tool id="deeptools_plot_fingerprint" name="plotFingerprint" version="@WRAPPER_VERSION@.0">
-    <description>plots profiles of BAM files; useful for assesing ChIP signal strength</description>
+<tool id="deeptools_plot_fingerprint" name="plotFingerprint" version="@WRAPPER_VERSION@.0" profile="18.01">
+    <description>plots profiles of BAM files; useful for assessing ChIP signal strength</description>
     <macros>
         <token name="@BINARY@">plotFingerprint</token>
         <import>deepTools_macros.xml</import>
@@ -24,7 +24,7 @@
                     #if $output.JSDsample:
                         #if "'{}'".format($output.JSDsample.display_name) in $labels:
                             #set JSDidx = $labels.index("'{}'".format($output.JSDsample.display_name))
-                            --JSDsample "${JSDidx}.bam"
+                            --JSDsample '${JSDidx}.bam'
                         #end if
                     #end if
                 #end if
