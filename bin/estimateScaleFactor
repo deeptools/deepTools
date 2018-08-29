@@ -12,14 +12,6 @@ from deeptools._version import __version__
 debug = 0
 
 
-def fileType(string):
-    try:
-         open( string, 'r').close()
-    except IOError as detail:
-         print detail
-         exit()
-    return string
-
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
          formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -103,7 +95,7 @@ def main(args):
 
     """
     if len(args.bamfiles) > 2:
-        print "SES method to stimate scale factors only works for two samples"
+        print("SES method to stimate scale factors only works for two samples")
         exit(0)
 
     sys.stderr.write("{:,} number of samples will be computed.\n".format(args.numberOfSamples))
@@ -115,7 +107,7 @@ def main(args):
                                           verbose=args.verbose)
 
     for k, v in sizeFactorsDict.iteritems():
-         print "{}: {}".format(k, v)
+         print("{}: {}".format(k, v))
 
 
 if __name__ == "__main__":
