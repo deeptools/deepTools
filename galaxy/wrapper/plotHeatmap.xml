@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.0" profile="18.01">
+<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.1" profile="18.01">
     <description>creates a heatmap for score distributions across genomic regions</description>
     <macros>
         <token name="@BINARY@">plotHeatmap</token>
@@ -87,11 +87,11 @@
                 --refPointLabel '$advancedOpt.referencePointLabel'
 
                 #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel '$advancedOpt.samplesLabel'
+                    --samplesLabel $advancedOpt.samplesLabel
                 #end if
 
                 #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel '$advancedOpt.regionsLabel'
+                    --regionsLabel $advancedOpt.regionsLabel
                 #end if
 
                 #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
