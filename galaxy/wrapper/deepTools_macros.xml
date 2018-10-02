@@ -430,7 +430,7 @@ is vital to you, select Yes below.">
     </xml>
 
     <xml name="legendLocation">
-        <param argument="--legendLocation" type="select" label="Legend location" help="Location for the legend in the summary plot. Note that none cannot be used in plotProfile."/>
+        <param argument="--legendLocation" type="select" label="Legend location" help="Location for the legend in the summary plot. Note that none cannot be used in plotProfile.">
             <option value="best" selected="true">Best (automatic)</option>
             <option value="upper-right">upper-right</option>
             <option value="upper-left">upper-left</option>
