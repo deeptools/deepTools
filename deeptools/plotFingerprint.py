@@ -141,6 +141,7 @@ def get_optional_args():
                           'file and columns containing a number of metrics. '
                           'Please see the online documentation for a longer '
                           'explanation: http://deeptools.readthedocs.io/en/latest/content/feature/plotFingerprint_QC_metrics.html .',
+                          type=parserCommon.writableFile,
                           metavar='FILE.txt')
 
     optional.add_argument('--JSDsample',
@@ -166,10 +167,12 @@ def get_output_args():
                        'ending will be used to determine the image '
                        'format. The available options are typically: "png", '
                        '"eps", "pdf" and "svg", e.g. : fingerprint.png.',
+                       type=parserCommon.writableFile,
                        metavar='')
 
     group.add_argument('--outRawCounts',
                        help='Output file name to save the read counts per bin.',
+                       type=parserCommon.writableFile,
                        metavar='')
 
     return parser

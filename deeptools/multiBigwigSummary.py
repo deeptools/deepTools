@@ -125,6 +125,7 @@ def multiBigwigSummaryArgs(case='bins'):
     required.add_argument('--outFileName', '-out', '-o',
                           help='File name to save the compressed matrix file (npz format) '
                           'needed by the "plotPCA" and "plotCorrelation" tools.',
+                          type=parserCommon.writableFile,
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -194,6 +195,7 @@ def multiBigwigSummaryArgs(case='bins'):
 
     group.add_argument('--outRawCounts',
                        help='Save average scores per region for each bigWig file to a single tab-delimited file.',
+                       type=parserCommon.writableFile,
                        metavar='FILE')
 
     return parser
