@@ -51,7 +51,7 @@ def plotCorrelationArgs():
                           'pca.pdf will save the PCA plot in PDF format. '
                           'The available options are: .png, '
                           '.eps, .pdf and .svg. If this option is omitted, then you MUST specify --outFileNameData',
-                          type=parserCommon.writableFile,
+                          type=writableFile,
                           metavar='FILE')
 
     optional.add_argument('--labels', '-l',
@@ -87,7 +87,7 @@ def plotCorrelationArgs():
 
     optional.add_argument('--outFileNameData',
                           metavar='file.tab',
-                          type=parserCommon.writableFile,
+                          type=writableFile,
                           help='File name to which the data underlying the plot '
                           'should be saved, such as myPCA.tab. For untransposed '
                           'data, this is the loading per-sample and PC as well '
