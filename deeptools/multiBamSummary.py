@@ -105,6 +105,7 @@ def bamcorrelate_args(case='bins'):
                           help='File name to save the coverage matrix. This matrix '
                                'can be subsequently plotted using plotCorrelation or '
                                'or plotPCA.',
+                          type=parserCommon.writableFile,
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -168,6 +169,7 @@ def bamcorrelate_args(case='bins'):
 
     group.add_argument('--outRawCounts',
                        help='Save the counts per region to a tab-delimited file.',
+                       type=parserCommon.writableFile,
                        metavar='FILE')
 
     return parser

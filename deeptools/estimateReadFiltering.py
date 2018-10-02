@@ -43,6 +43,7 @@ The sum of these may be more than the total number of reads. Note that alignment
     general = parser.add_argument_group('General arguments')
 
     general.add_argument('--outFile', '-o',
+                         type=parserCommon.writableFile,
                          help='The file to write results to. By default, results are printed to the console')
 
     general.add_argument('--sampleLabels',

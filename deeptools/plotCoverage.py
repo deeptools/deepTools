@@ -83,6 +83,7 @@ def required_args():
                           help="show this help message and exit")
 
     optional.add_argument('--plotFile', '-o',
+                          type=parserCommon.writableFile,
                           help='File name to save the plot to.')
 
     optional.add_argument('--labels', '-l',
@@ -119,6 +120,7 @@ def required_args():
 
     optional.add_argument('--outRawCounts',
                           help='Save raw counts (coverages) to file.',
+                          type=parserCommon.writableFile,
                           metavar='FILE')
 
     optional.add_argument('--plotHeight',

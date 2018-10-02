@@ -6,6 +6,7 @@ import numpy as np
 
 # own packages
 from deeptools import bamHandler
+from deeptools.parserCommon import writableFile
 import deeptools.countReadsPerBin as countR
 
 old_settings = np.seterr(all='ignore')
