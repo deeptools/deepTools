@@ -429,6 +429,22 @@ is vital to you, select Yes below.">
             help="Title of the plot, to be printed on top of the generated image." />
     </xml>
 
+    <xml name="legendLocation">
+        <param argument="--legendLocation" type="select" label="Legend location" help="Location for the legend in the summary plot. Note that none cannot be used in plotProfile."/>
+            <option value="best" selected="true">Best (automatic)</option>
+            <option value="upper-right">upper-right</option>
+            <option value="upper-left">upper-left</option>
+            <option value="upper-center">upper-center</option>
+            <option value="lower-right">lower-right</option>
+            <option value="lower-left">lower-left</option>
+            <option value="lower-center">lower-center</option>
+            <option value="center-right">center-right</option>
+            <option value="center-left">center-left</option>
+            <option value="center">center</option>
+            <option value="none">none (only works for heatmaps</option>
+        </param>
+    </xml>
+
     <xml name="labelRotation">
         <param argument="--labelRotation" type="integer" value="0"
             label="Rotation of the X-axis labels (in degrees)"
