@@ -253,5 +253,7 @@ def main(args=None):
                                   plotHeight=args.plotHeight)
 
     if args.outFileCorMatrix:
-        args.outFileCorMatrix.write("#plotCorrelation --outFileCorMatrix\n")
-        corr.save_corr_matrix(args.outFileCorMatrix)
+        o = open(args.outFileCorMatrix, "w")
+        o.write("#plotCorrelation --outFileCorMatrix\n")
+        corr.save_corr_matrix(o)
+        o.close()
