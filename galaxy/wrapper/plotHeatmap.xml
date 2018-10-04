@@ -98,6 +98,8 @@
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
 
+                --legendLocation '$advancedOpt.legendLocation'
+
                 --labelRotation '$advancedOpt.labelRotation'
 
                 $advancedOpt.perGroup
@@ -206,6 +208,7 @@
                           For example, label_1 &quot;label 2&quot;" />
 
                 <expand macro="plotTitle" />
+                <expand macro="legendLocation" />
                 <expand macro="labelRotation" />
                 <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
                     label="Make one plot per group of regions"

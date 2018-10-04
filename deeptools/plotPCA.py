@@ -9,6 +9,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 
 from deeptools.correlation import Correlation
+from deeptools.parserCommon import writableFile
 from deeptools._version import __version__
 
 
@@ -50,6 +51,7 @@ def plotCorrelationArgs():
                           'pca.pdf will save the PCA plot in PDF format. '
                           'The available options are: .png, '
                           '.eps, .pdf and .svg. If this option is omitted, then you MUST specify --outFileNameData',
+                          type=writableFile,
                           metavar='FILE')
 
     optional.add_argument('--labels', '-l',
@@ -85,6 +87,7 @@ def plotCorrelationArgs():
 
     optional.add_argument('--outFileNameData',
                           metavar='file.tab',
+                          type=writableFile,
                           help='File name to which the data underlying the plot '
                           'should be saved, such as myPCA.tab. For untransposed '
                           'data, this is the loading per-sample and PC as well '

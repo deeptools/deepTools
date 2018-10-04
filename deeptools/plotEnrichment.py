@@ -83,6 +83,7 @@ def plot_enrichment_args():
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
+                          type=parserCommon.writableFile,
                           metavar='FILE')
 
     optional.add_argument('--labels', '-l',
@@ -125,6 +126,7 @@ def plot_enrichment_args():
 
     optional.add_argument('--outRawCounts',
                           help='Save the counts per region to a tab-delimited file.',
+                          type=parserCommon.writableFile,
                           metavar='FILE')
 
     optional.add_argument('--perSample',

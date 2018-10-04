@@ -15,6 +15,7 @@ import plotly.offline as py
 import plotly.graph_objs as go
 
 # own tools
+from deeptools.parserCommon import writableFile
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools._version import __version__
 
@@ -100,6 +101,7 @@ def parse_arguments():
     parser.add_argument('--outRawFragmentLengths',
                         metavar='FILE',
                         required=False,
+                        type=writableFile,
                         help='Save the fragment (or read if the input is single-end) length and their associated number of occurrences to a tab-separated file. Columns are length, number of occurrences, and the sample label.')
     parser.add_argument('--verbose',
                         help='Set if processing data messages are wanted.',

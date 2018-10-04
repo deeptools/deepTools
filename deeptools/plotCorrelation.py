@@ -11,6 +11,7 @@ matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
 
 from deeptools.correlation import Correlation
+from deeptools.parserCommon import writableFile
 from deeptools._version import __version__
 
 old_settings = np.seterr(all='ignore')
@@ -70,6 +71,7 @@ def plot_correlation_args():
                           'so heatmap.pdf will save the heatmap in PDF format. '
                           'The available formats are: .png, '
                           '.eps, .pdf and .svg.',
+                          type=writableFile,
                           metavar='FILE')
 
     optional.add_argument('--skipZeros',
@@ -121,7 +123,7 @@ def plot_correlation_args():
     group.add_argument('--outFileCorMatrix',
                        help='Save matrix with pairwise correlation values to a tab-separated file.',
                        metavar='FILE',
-                       type=argparse.FileType('w'))
+                       type=writableFile)
 
     return parser
 
@@ -251,5 +253,7 @@ def main(args=None):
                                   plotHeight=args.plotHeight)
 
     if args.outFileCorMatrix:
-        args.outFileCorMatrix.write("#plotCorrelation --outFileCorMatrix\n")
-        corr.save_corr_matrix(args.outFileCorMatrix)
+        o = open(args.outFileCorMatrix, "w")
+        o.write("#plotCorrelation --outFileCorMatrix\n")
+        corr.save_corr_matrix(o)
+        o.close()
