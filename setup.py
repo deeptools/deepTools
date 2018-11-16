@@ -2,7 +2,7 @@
 
 import re
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist as _sdist
 from setuptools.command.install import install as _install
 
@@ -12,6 +12,7 @@ VERSION_PY = """
 
 __version__ = '%s'
 """
+
 
 def get_version():
     try:
