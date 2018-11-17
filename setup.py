@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import re
-from distutils import sysconfig
-import glob
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist as _sdist
 from setuptools.command.install import install as _install
 
@@ -14,17 +12,6 @@ VERSION_PY = """
 
 __version__ = '%s'
 """
-
-srcs = [x for x in glob.glob("deeptoolsintervals/tree/*.c")]
-
-libs = ["z"]
-additional_libs = [sysconfig.get_config_var("LIBDIR"), sysconfig.get_config_var("LIBPL")]
-
-module1 = Extension('deeptoolsintervals.tree',
-                    sources=srcs,
-                    libraries=libs,
-                    library_dirs=additional_libs,
-                    include_dirs=[sysconfig.get_config_var("INCLUDEPY")])
 
 
 def get_version():
@@ -102,9 +89,9 @@ setup(
         "numpydoc >=0.5",
         "pyBigWig >=0.2.1",
         "py2bit >= 0.2.0",
-        "plotly >= 2.0.0"
+        "plotly >= 2.0.0",
+        "deeptoolsintervals >= 0.1.7"
     ],
     zip_safe=False,
-    ext_modules=[module1],
     cmdclass={'sdist': sdist, 'install': install}
 )
