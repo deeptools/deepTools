@@ -123,7 +123,7 @@ To get the file for transcripts that originated from the **forward strand**:
     $ samtools view -b -f 80 a.bam > a.fwd2.bam
 
     # combine the temporary files
-    $ samtools merge -f fwd.bam fwd1.bam fwd2.bam
+    $ samtools merge -f fwd.bam a.fwd1.bam a.fwd2.bam
 
     # index the filtered BAM file
     $ samtools index fwd.bam
@@ -147,7 +147,7 @@ To get the file for transcripts that originated from the **reverse strand**:
     $ samtools view -b -f 64 -F 16 a.bam > a.rev2.bam
 
     # merge the temporary files
-    $ samtools merge -f rev.bam rev1.bam rev2.bam
+    $ samtools merge -f rev.bam a.rev1.bam a.rev2.bam
 
     # index the merged, filtered BAM file
     $ samtools index rev.bam
