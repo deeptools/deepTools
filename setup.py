@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import re
-from distutils import sysconfig
-import glob
 
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, find_packages
 from setuptools.command.sdist import sdist as _sdist
 from setuptools.command.install import install as _install
 

@@ -7,7 +7,7 @@ pr:
   autoCancel: true
 
 jobs:
-- job: 'Test'
+- job: 'Linux'
   pool:
     vmImage: 'ubuntu-16.04'
   strategy:
@@ -21,7 +21,7 @@ jobs:
   steps:
   - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
     displayName: Add conda to PATH
-  - bash: conda create -n foo --yes -c conda-forge -c bioconda numpy scipy matplotlib==2.1.2 nose flake8 plotly==2.0.12 pysam pyBigWig py2bit deeptoolsintervals cython
+  - bash: conda create -n foo -q --yes -c conda-forge -c bioconda numpy scipy matplotlib==2.1.2 nose flake8 plotly==2.0.12 pysam pyBigWig py2bit deeptoolsintervals cython
     displayName: Installing dependencies
   - bash: |
       source activate foo
@@ -35,17 +35,31 @@ jobs:
       source activate foo
       nosetests --with-doctest -sv deeptools
     displayName: Test deepTools
+- job: 'OSX'
+  pool:
+    vmImage: 'macOS-10.13'
+  strategy:
+    matrix:
+      Python27:
+        python.version: '2.7'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 1
 
-#- job: 'Publish'
-#  dependsOn: 'Test'
-#  pool:
-#    vmImage: 'Ubuntu-16.04'
-
-#  steps:
-#  - task: UsePythonVersion@0
-#    inputs:
-#      versionSpec: '3.x'
-#      architecture: 'x64'
-
-#  - script: python setup.py sdist
-#    displayName: 'Build sdist'
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+  - bash: conda create -n foo -q --yes -c conda-forge -c bioconda numpy scipy matplotlib==2.1.2 nose flake8 plotly==2.0.12 pysam pyBigWig py2bit deeptoolsintervals cython
+    displayName: Installing dependencies
+  - bash: |
+      source activate foo
+      python setup.py install
+    displayName: Installing deeptools
+  - bash: |
+      source activate foo
+      flake8 . --exclude=.venv,.build,build --ignore=E501,F403,E402,F999,F405,E722,W504,W605
+    displayName: flake8
+  - bash: |
+      source activate foo
+      nosetests --with-doctest -sv deeptools
+    displayName: Test deepTools

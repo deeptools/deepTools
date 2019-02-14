@@ -76,7 +76,7 @@ def get_chromosome_mapping(genome="GRCm38", from_format="ensembl", to_format="UC
     mapping_file = genome + '_' + from_format + '2' + to_format + '.txt'
 
     if re.match('^file:[/]+.*', base_url):
-            base_url = re.sub("file:[/]*(/.*)", "\\1", base_url)
+        base_url = re.sub("file:[/]*(/.*)", "\\1", base_url)
 
     if verbose:
         print("load mapping table (" + mapping_file + ') from ' + base_url)
