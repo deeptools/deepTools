@@ -439,6 +439,7 @@ is vital to you, select Yes below.">
                 </sanitizer>
             </param>
 	</when>
+        </conditional>
     </xml>
 
     <xml name="plotTitle">
