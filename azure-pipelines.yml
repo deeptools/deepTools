@@ -1,0 +1,66 @@
+pr:
+  autoCancel: true
+
+jobs:
+
+- job: 'Linux'
+  pool:
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      Python27:
+        python.version: '2.7'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - bash: echo "##vso[task.prependpath]/usr/share/miniconda/bin"
+    displayName: Add conda to PATH
+  - template: .azure-pipelines/test-template.yml
+
+- job: 'OSX'
+  pool:
+    vmImage: 'macOS-10.13'
+  strategy:
+    matrix:
+      Python27:
+        python.version: '2.7'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 1
+
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+  - template: .azure-pipelines/test-template.yml
+
+- job: 'galaxy'
+  dependsOn: 'Linux'
+  pool:
+    vmImage: 'ubuntu-16.04'
+  strategy:
+    matrix:
+      batch1:
+        python.version: '3.7'
+        TESTGALAXY: '1'
+      batch2:
+        python.version: '3.7'
+        TESTGALAXY: '2'
+      batch3:
+        python.version: '3.7'
+        TESTGALAXY: '3'
+
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+  - bash: conda create -n foo -q --yes -c conda-forge -c bioconda numpy scipy matplotlib==2.1.2 nose flake8 plotly==2.0.12 pysam pyBigWig py2bit deeptoolsintervals cython planemo setuptools
+    displayName: Installing dependencies
+  - bash: |
+      source activate foo
+      python setup.py install
+    displayName: Installing deepTools
+  - script: |
+      source activate foo
+      ./.planemo.sh
+    displayName: Run planemo
