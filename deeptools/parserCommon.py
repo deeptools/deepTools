@@ -563,6 +563,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               default=8)
 
     elif mode == 'heatmap':
+        optional.add_argument(
+            '--plotType',
+            help='"lines" will plot the profile line based '
+            'on the average type selected. "fill" '
+            'fills the region between zero and the profile '
+            'curve. The fill in color is semi transparent to '
+            'distinguish different profiles. "se" and "std" '
+            'color the region between the profile and the '
+            'standard error or standard deviation of the data.',
+            choices=['lines', 'fill', 'se', 'std'],
+            default='lines')
         optional.add_argument('--sortRegions',
                               help='Whether the heatmap should present '
                               'the regions sorted. The default is '

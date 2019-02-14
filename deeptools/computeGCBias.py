@@ -186,9 +186,7 @@ def getPositionsToSample(chrom, start, end, stepSize):
         if len(out_match) > 0:
             for intval in out_match:
                 positions_to_sample = \
-                    positions_to_sample[
-                        (positions_to_sample < intval[0]) |
-                        (positions_to_sample >= intval[1])]
+                    positions_to_sample[(positions_to_sample < intval[0]) | (positions_to_sample >= intval[1])]
     return positions_to_sample
 
 
@@ -694,14 +692,10 @@ def main(args=None):
     # empirically, a value of at least 4 times as big as the
     # reads_per_bp was found.
     # Similarly for the min value, I divide by 4.
-    global_vars['max_reads'] = \
-        poisson(4 * global_vars['reads_per_bp'] *
-                fragment_len_dict['median']).isf(confidence_p_value)
+    global_vars['max_reads'] = poisson(4 * global_vars['reads_per_bp'] * fragment_len_dict['median']).isf(confidence_p_value)
     # this may be of not use, unless the depth of sequencing is really high
     # as this value is close to 0
-    global_vars['min_reads'] = \
-        poisson(0.25 * global_vars['reads_per_bp'] *
-                fragment_len_dict['median']).ppf(confidence_p_value)
+    global_vars['min_reads'] = poisson(0.25 * global_vars['reads_per_bp'] * fragment_len_dict['median']).ppf(confidence_p_value)
 
     for key in global_vars:
         print("{}: {}".format(key, global_vars[key]))

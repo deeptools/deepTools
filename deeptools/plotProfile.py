@@ -94,7 +94,7 @@ class Profile(object):
                  plot_height=7,
                  plot_width=11,
                  per_group=False,
-                 plot_type='simple',
+                 plot_type='lines',
                  image_format=None,
                  color_list=None,
                  legend_location='auto',

@@ -171,7 +171,7 @@ def main(args=None):
 
     bw_out_filename = args.bw_out_filename
     if args.bw_out_filename is None:
-        bw_out_filename = re.sub("(.[^\.]+)$", ".%s\\1" % (args.to_format + "_chroms"), args.bw_in_filename)
+        bw_out_filename = re.sub(r"(.[^\.]+)$", ".%s\\1" % (args.to_format + "_chroms"), args.bw_in_filename)
     print("\noutput_file: " + bw_out_filename)
 
     mapping_table = get_chromosome_mapping(genome=args.genome, from_format=args.from_format, to_format=args.to_format, verbose=args.verbose, base_url=args.base_url)

@@ -417,7 +417,7 @@ def main(args=None):
                 trace['line'].update(dash=plotly_line_styles[i % 36], color=plotly_colors[i % 6])
                 data.append(trace)
             else:
-                j = i % 35
+                j = i % len(pyplot_line_styles)
                 plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
                 plt.xlabel('rank')
                 plt.ylabel('fraction w.r.t. bin with highest coverage')
