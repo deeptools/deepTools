@@ -55,6 +55,7 @@ jobs:
         python.version: '3.7'
         TESTGALAXY: '3'
 
+  steps:
   - bash: conda create -n foo -q --yes -c conda-forge -c bioconda numpy scipy matplotlib==2.1.2 nose flake8 plotly==2.0.12 pysam pyBigWig py2bit deeptoolsintervals cython planemo
     displayName: Installing dependencies
   - bash: |
