@@ -51,7 +51,7 @@ jobs:
       batch2:
         python.version: '3.7'
         TESTGALAXY: '2'
-      batch2:
+      batch3:
         python.version: '3.7'
         TESTGALAXY: '3'
 
