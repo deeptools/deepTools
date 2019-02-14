@@ -4,12 +4,13 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
+- batch: true
 pr:
-- autoCancel: True
+- autoCancel: true
 
 jobs:
 - job: 'Test'
-    pool:
+  pool:
     vmImage: 'ubuntu-16.04'
   strategy:
     matrix:
