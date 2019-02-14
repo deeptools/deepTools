@@ -77,6 +77,7 @@
 
     <inputs>
         <expand macro="multiple_input_bams" MIN="1"/>
+        <expand macro="custom_sample_labels" />
         <expand macro="multiple_bed" />
 
         <expand macro="region_limit_operation" />
