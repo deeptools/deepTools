@@ -432,7 +432,7 @@ is vital to you, select Yes below.">
 	<when value="No">
 	</when>
 	<when value="Yes">
-	    <param argument="--labels" label="Sample Labels", help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &quot;sample 1&quot; &quot;sample 2&quot;)">
+	    <param argument="--labels" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &quot;sample 1&quot; &quot;sample 2&quot;)">
                 <sanitizer>
                     <valid initial="string.printable">
                     </valid>
