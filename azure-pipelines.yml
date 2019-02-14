@@ -4,9 +4,9 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- batch: true
+  batch: true
 pr:
-- autoCancel: true
+  autoCancel: true
 
 jobs:
 - job: 'Test'
