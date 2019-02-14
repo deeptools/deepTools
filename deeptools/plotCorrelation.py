@@ -217,8 +217,8 @@ def main(args=None):
         if len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0:
             if args.removeOutliers:
                 sys.stderr.write("\nOutliers were detected in the data. They "
-                                  "will be removed to avoid bias "
-                                  "in the pearson correlation.\n")
+                                 "will be removed to avoid bias "
+                                 "in the pearson correlation.\n")
 
             else:
                 sys.stderr.write("\nOutliers were detected in the data. Consider "
