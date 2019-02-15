@@ -126,6 +126,8 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             gridsSub = gridspec.GridSpecFromSubplotSpec(1, iterNum, subplot_spec=grids[0, :], wspace=wspace, hspace=hspace)
 
     ax_list = []
+    globalYmin = np.inf
+    globalYmax = -np.inf
     for sample_id in range(iterNum):
         if perGroup:
             title = hm.matrix.group_labels[sample_id]
@@ -134,7 +136,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             title = hm.matrix.sample_labels[sample_id]
             tickIdx = sample_id
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
-            ax_profile = fig.add_subplot(grids[0, sample_id], sharey=ax_list[0])
+            ax_profile = fig.add_subplot(grids[0, sample_id]) #, sharey=ax_list[0])
         else:
             if wspace is not None and hspace is not None:
                 ax_profile = fig.add_subplot(gridsSub[0, sample_id])
@@ -177,20 +179,24 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         ticks[0].label1.set_horizontalalignment('left')
         ticks[-1].label1.set_horizontalalignment('right')
 
-        # It turns out that set_ylim only takes np.float64s
+        globalYmin = min(np.float64(globalYmin), ax_profile.get_ylim()[0])
+        globalYmax = max(globalYmax, ax_profile.get_ylim()[1])
+
+    # It turns out that set_ylim only takes np.float64s
+    for sample_id, subplot in enumerate(ax_list):
         localYMin = yMin[sample_id % len(yMin)]
         localYMax = yMax[sample_id % len(yMax)]
-        lims = ax_list[0].get_ylim()
+        lims = [globalYmin, globalYmax]
         if localYMin:
-            lims = (np.float64(localYMin), lims[1])
-        if localYMax:
+            if localYMax:
+                lims = (np.float64(localYMin), np.float64(localYMax))
+            else:
+                lims = (np.float64(localYMin), lims[1])
+        elif localYMax:
             lims = (lims[0], np.float64(localYMax))
         if lims[0] >= lims[1]:
             lims = (lims[0], lims[0] + 1)
-        if len(yMin) == 1 and len(yMax) == 1:
-            ax_list[0].set_ylim(lims)
-        else:
-            ax_list[-1].set_ylim(lims)
+        ax_list[sample_id].set_ylim(lims)
     return ax_list
 
 
