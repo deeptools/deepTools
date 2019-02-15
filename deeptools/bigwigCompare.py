@@ -112,6 +112,9 @@ def main(args=None):
     else:
         scaleFactors = [1, 1]
 
+    if not isinstance(args.pseudocount, list):
+        args.pseudocount = [args.pseudocount]
+
     if len(args.pseudocount) == 1:
         args.pseudocount *= 2
 

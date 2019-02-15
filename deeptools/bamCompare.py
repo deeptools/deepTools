@@ -160,6 +160,9 @@ def process_args(args=None):
     if not args.ignoreForNormalization:
         args.ignoreForNormalization = []
 
+    if not isinstance(args.pseudocount, list):
+        args.pseudocount = [args.pseudocount]
+
     if len(args.pseudocount) == 1:
         args.pseudocount *= 2
 
