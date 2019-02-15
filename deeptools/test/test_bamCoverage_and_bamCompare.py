@@ -163,7 +163,6 @@ def test_bam_compare_pseudocounts():
     unlink(outfile)
 
 
-
 def test_get_num_kept_reads():
     """
     Test the scale factor functions
