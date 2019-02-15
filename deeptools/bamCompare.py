@@ -144,6 +144,12 @@ def getOptionalArgs():
                           action=parserCommon.requiredLength(1, 2),
                           required=False)
 
+    optional.add_argument('--skipZeroOverZero',
+                          help='Skip bins where BOTH BAM files lack coverage. '
+                          'This is determined BEFORE any applicable pseudocount '
+                          'is added.',
+                          action='store_true')
+
     return parser
 
 
@@ -291,6 +297,7 @@ def main(args=None):
                                      ignoreDuplicates=args.ignoreDuplicates,
                                      center_read=args.centerReads,
                                      zerosToNans=args.skipNonCoveredRegions,
+                                     skipZeroOverZero=args.skipZeroOverZero,
                                      samFlag_include=args.samFlagInclude,
                                      samFlag_exclude=args.samFlagExclude,
                                      minFragmentLength=args.minFragmentLength,

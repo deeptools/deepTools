@@ -243,8 +243,12 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 tileCoverage = np.mean(coverage[vector_start:vector_end, :], axis=0)
             else:
                 tileCoverage = coverage[tileIndex, :]
+            print("tileCoverage {}".format(tileCoverage))
+            if self.skipZeroOverZero and np.sum(tileCoverage) == 0:
+                continue
 
             value = func_to_call(tileCoverage, func_args)
+            print("value is {}".format(value))
             """
             # uncomment these lines if fixed step bedgraph is required
             if not np.isnan(value):
