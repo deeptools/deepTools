@@ -146,6 +146,23 @@ def test_bam_compare_diff_files():
         unlink(outfile)
 
 
+def test_bam_compare_pseudocounts():
+    """
+    Test with different pseudocounts
+    """
+    outfile = '/tmp/test_file.bg'
+    args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
+           "--pseudocount 1 0".format(BAMFILE_A, BAMFILE_B, outfile).split()
+    bam_comp.main(args)
+
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+    expected = ['3R\t0\t50\tinf\n', '3R\t50\t100\t0\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
+    assert_equal(resp, expected)
+    unlink(outfile)
+
+
 def test_get_num_kept_reads():
     """
     Test the scale factor functions

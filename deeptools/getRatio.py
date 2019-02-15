@@ -4,8 +4,8 @@ old_settings = np.seterr(all='ignore')
 
 
 def compute_ratio(value1, value2, args):
-    value1 = value1 + args['pseudocount']
-    value2 = value2 + args['pseudocount']
+    value1 = value1 + args['pseudocount'][0]
+    value2 = value2 + args['pseudocount'][1]
 
     ratio = float(value1) / value2
     if args['valueType'] == 'log2':
@@ -25,7 +25,7 @@ def getRatio(tileCoverage, args):
     for each tile. The parameters (args) are fixed
     in the main method.
 
-    >>> funcArgs= {'valueType': 'ratio', 'scaleFactors': (1,1), 'pseudocount': 1}
+    >>> funcArgs= {'valueType': 'ratio', 'scaleFactors': (1,1), 'pseudocount': [1, 1]}
     >>> getRatio([9, 19], funcArgs)
     0.5
     >>> getRatio([0, 0], funcArgs)
@@ -45,7 +45,7 @@ def getRatio(tileCoverage, args):
     is a/b if a/b > 1 else -1* b/a
     >>> funcArgs['valueType'] ='reciprocal_ratio'
     >>> funcArgs['scaleFactors'] = (1, 1)
-    >>> funcArgs['pseudocount'] = 0
+    >>> funcArgs['pseudocount'] = [0, 0]
     >>> getRatio([2, 1], funcArgs)
     2.0
     >>> getRatio([1, 2], funcArgs)

@@ -864,3 +864,20 @@ def deepBlueOptionalArgs():
         'if you wish to analyse the same sample with the same regions again.')
 
     return parser
+
+
+def requiredLength(minL, maxL):
+    """
+    This is an optional action that can be given to argparse.add_argument(..., nargs='+')
+    to allow a specified numeric range of arguments (e.g., "only 1 or 2 arguments").
+
+    minL and maxL are the minimum and maximum length
+    """
+    # https://stackoverflow.com/questions/4194948/python-argparse-is-there-a-way-to-specify-a-range-in-nargs
+    class RequiredLength(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            if not minL <= len(values) <= maxL:
+                msg = 'argument "{}" requires between {} and {} arguments'.format(self.dest, minL, maxL)
+                raise argparse.ArgumentTypeError(msg)
+            setattr(args, self.dest, values)
+    return RequiredLength
