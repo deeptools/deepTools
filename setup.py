@@ -92,6 +92,6 @@ setup(
         "plotly >= 2.0.0",
         "deeptoolsintervals >= 0.1.7"
     ],
-    zip_safe=False,
+    zip_safe=True,
     cmdclass={'sdist': sdist, 'install': install}
 )

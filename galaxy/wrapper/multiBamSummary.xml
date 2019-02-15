@@ -44,6 +44,7 @@
 
     <inputs>
         <expand macro="multiple_input_bams" MIN="2"/>
+        <expand macro="custom_sample_labels" />
 
         <conditional name="mode">
             <param name="modeOpt" type="select" label="Choose computation mode"

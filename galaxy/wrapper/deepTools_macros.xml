@@ -423,6 +423,25 @@ is vital to you, select Yes below.">
         </conditional>
     </xml>
 
+    <xml name="custom_sample_labels">
+	<conditional name="custom_sample_labels_conditional">
+        <param name="custom_labels_select" type="select" label="Would you like custom sample labels?" help="By default, the names of the samples in your history are used.">
+	    <option value="No" selected="true">No, use sample names in the history</option>
+	    <option value="Yes">Yes, I want to specify new labels</option>
+	</param>
+	<when value="No">
+	</when>
+	<when value="Yes">
+	    <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &quot;sample 1&quot; &quot;sample 2&quot;)">
+                <sanitizer>
+                    <valid initial="string.printable">
+                    </valid>
+                </sanitizer>
+            </param>
+	</when>
+        </conditional>
+    </xml>
+
     <xml name="plotTitle">
         <param argument="--plotTitle" type="text" value="" size="30" optional="True"
             label="Title of the plot"
@@ -454,6 +473,9 @@ is vital to you, select Yes below.">
 
     <token name="@multiple_input_bams@">
 <![CDATA[
+        #if $custom_sample_labels_conditional.custom_labels_select == "Yes":
+            #set custom_labels=labels
+        #end if
         #set files=[]
         #set labels=[]
         #import re
@@ -482,11 +504,17 @@ is vital to you, select Yes below.">
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
+        #if $custom_sample_labels_conditional.custom_labels_select == "Yes":
+            #set labels=custom_labels
+        #end if
 ]]>
     </token>
 
     <token name="@multiple_input_bigwigs@">
 <![CDATA[
+        #if $custom_labels_conditional.custom_labels_select == "Yes":
+            #set custom_labels=labels
+        #end if
         #set files=[]
         #set labels=[]
         #import re
@@ -504,6 +532,9 @@ is vital to you, select Yes below.">
                 #silent $files.append("'%s_%s.bw'" % ($identifier, $counter))
                 #silent $labels.append("'%s'" % $identifier)
             #end for
+        #end if
+        #if $custom_labels_conditional.custom_labels_select == "Yes":
+            #set labels=custom_labels
         #end if
 ]]>
     </token>

@@ -47,6 +47,7 @@
 
     <inputs>
         <expand macro="multiple_input_bams" MIN="1"/>
+        <expand macro="custom_sample_labels" />
         <param name="binSize" type="integer" value="1000000" min="1"
             label="Bin size in bp"
             help="Length in bases of the window used to sample the genome. (--binSize)"/>
