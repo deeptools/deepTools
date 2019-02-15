@@ -136,7 +136,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             title = hm.matrix.sample_labels[sample_id]
             tickIdx = sample_id
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
-            ax_profile = fig.add_subplot(grids[0, sample_id]) #, sharey=ax_list[0])
+            ax_profile = fig.add_subplot(grids[0, sample_id])
         else:
             if wspace is not None and hspace is not None:
                 ax_profile = fig.add_subplot(gridsSub[0, sample_id])
