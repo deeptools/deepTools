@@ -2,6 +2,7 @@
 
  * Added the `--legendLocation` option in the Galaxy wrappers for plotProfile and plotHeatmap
  * More thoroughly checked that output files can be written (issue #764).
+ * `bamCompare` and `bigwigCompare` can now take two pseudocounts, in case you want a different value for the numerator and the denominator (issue #784)
 
 3.1.2
 

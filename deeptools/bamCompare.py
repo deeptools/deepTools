@@ -132,10 +132,16 @@ def getOptionalArgs():
                           required=False)
 
     optional.add_argument('--pseudocount',
-                          help='small number to avoid x/0. Only useful '
-                          'together with --operation log2 or --operation ratio .',
-                          default=1,
+                          help='A small number to avoid x/0. Only useful '
+                          'together with --operation log2 or --operation ratio. '
+                          'You can specify different values as pseudocounts for '
+                          'the numerator and the denominator by providing two '
+                          'values (the first value is used as the numerator '
+                          'pseudocount and the second the denominator pseudocount).',
+                          default=[1],
                           type=float,
+                          nargs=+,
+                          action=parserCommon.requiredLength(1,2),
                           required=False)
 
     return parser
@@ -153,6 +159,10 @@ def process_args(args=None):
 
     if not args.ignoreForNormalization:
         args.ignoreForNormalization = []
+
+    if len(args.pseudocount) == 1:
+        args.pseudocount *= 2
+
     return args
 
 # get_scale_factors function is used for scaling in bamCompare

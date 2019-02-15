@@ -49,9 +49,15 @@ def parse_arguments(args=None):
                         required=False)
 
     parser.add_argument('--pseudocount',
-                        help='small number to avoid x/0. Only useful '
-                        'when ratio = log2 or ratio',
+                        help='A small number to avoid x/0. Only useful '
+                        'together with --operation log2 or --operation ratio. '
+                        'You can specify different values as pseudocounts for '
+                        'the numerator and the denominator by providing two '
+                        'values (the first value is used as the numerator '
+                        'pseudocount and the second the denominator pseudocount).',
                         default=1,
+                        nargs=+,
+                        action=parserCommon.requiredLength(1,2),
                         type=float,
                         required=False)
 
@@ -105,6 +111,9 @@ def main(args=None):
         scaleFactors = [float(x) for x in args.scaleFactors.split(":")]
     else:
         scaleFactors = [1, 1]
+
+    if len(args.pseudocount) == 1:
+        args.pseudocount *= 2
 
     # the getRatio function is called and receives
     # the function_args per each tile that is considered
