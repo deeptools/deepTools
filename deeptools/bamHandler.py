@@ -93,9 +93,9 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
 
     if bam.is_bam or (bam.is_cram and returnStats):
         if mapped == 0:
-            sys.exit("'{}' does not have any mapped reads. Please "
-                     "check that the file is properly indexed and "
-                     "that it contains mapped reads.".format(bamFile))
+            sys.stderr.write("WARNING! '{}' does not have any mapped reads. Please "
+                             "check that the file is properly indexed and "
+                             "that it contains mapped reads.\n".format(bamFile))
 
     if returnStats:
         return bam, mapped, unmapped, stats
