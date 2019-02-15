@@ -112,6 +112,9 @@ class CountReadsPerBin(object):
     zerosToNans : bool
         If true, zero values encountered are transformed to Nans. Default false.
 
+    skipZeroOverZero : bool
+        If true, skip bins where all input BAM files have no coverage (only applicable to bamCompare).
+
     minFragmentLength : int
         If greater than 0, fragments below this size are excluded.
 
@@ -163,6 +166,7 @@ class CountReadsPerBin(object):
                  samFlag_include=None,
                  samFlag_exclude=None,
                  zerosToNans=False,
+                 skipZeroOverZero=False,
                  smoothLength=0,
                  minFragmentLength=0,
                  maxFragmentLength=0,
@@ -176,6 +180,7 @@ class CountReadsPerBin(object):
         self.blackListFileName = blackListFileName
         self.statsList = statsList
         self.mappedList = mappedList
+        self.skipZeroOverZero = skipZeroOverZero
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length

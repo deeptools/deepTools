@@ -243,6 +243,8 @@ class WriteBedGraph(cr.CountReadsPerBin):
                 tileCoverage = np.mean(coverage[vector_start:vector_end, :], axis=0)
             else:
                 tileCoverage = coverage[tileIndex, :]
+            if self.skipZeroOverZero and np.sum(tileCoverage) == 0:
+                continue
 
             value = func_to_call(tileCoverage, func_args)
             """

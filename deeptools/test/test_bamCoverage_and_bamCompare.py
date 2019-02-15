@@ -163,6 +163,23 @@ def test_bam_compare_pseudocounts():
     unlink(outfile)
 
 
+def test_bam_compare_ZoverZ():
+    """
+    Ensure --skipZeroOverZero works in bamCompare
+    """
+    outfile = '/tmp/test_file.bg'
+    args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
+           "--skipZeroOverZero".format(BAMFILE_A, BAMFILE_B, outfile).split()
+    bam_comp.main(args)
+
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+    expected = ['3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-0.584963\n']
+    assert_equal(resp, expected)
+    unlink(outfile)
+
+
 def test_get_num_kept_reads():
     """
     Test the scale factor functions
