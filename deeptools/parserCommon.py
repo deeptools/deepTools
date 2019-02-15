@@ -877,7 +877,7 @@ def requiredLength(minL, maxL):
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if not minL <= len(values) <= maxL:
-                msg='argument "{}" requires between {} and {} arguments'.format(self.dest, minL, maxL)
+                msg = 'argument "{}" requires between {} and {} arguments'.format(self.dest, minL, maxL)
                 raise argparse.ArgumentTypeError(msg)
             setattr(args, self.dest, values)
     return RequiredLength

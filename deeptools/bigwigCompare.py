@@ -56,8 +56,8 @@ def parse_arguments(args=None):
                         'values (the first value is used as the numerator '
                         'pseudocount and the second the denominator pseudocount).',
                         default=1,
-                        nargs=+,
-                        action=parserCommon.requiredLength(1,2),
+                        nargs='+',
+                        action=parserCommon.requiredLength(1, 2),
                         type=float,
                         required=False)
 

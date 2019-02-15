@@ -140,8 +140,8 @@ def getOptionalArgs():
                           'pseudocount and the second the denominator pseudocount).',
                           default=[1],
                           type=float,
-                          nargs=+,
-                          action=parserCommon.requiredLength(1,2),
+                          nargs='+',
+                          action=parserCommon.requiredLength(1, 2),
                           required=False)
 
     return parser
