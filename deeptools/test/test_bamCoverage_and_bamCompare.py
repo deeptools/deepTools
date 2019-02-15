@@ -152,7 +152,7 @@ def test_bam_compare_pseudocounts():
     """
     outfile = '/tmp/test_file.bg'
     args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
-           "--pseudocount 1 0".format(BAMFILE_A, BAMFILE_B, outfile)
+           "--pseudocount 1 0".format(BAMFILE_A, BAMFILE_B, outfile).split()
     bam_comp.main(args)
 
     _foo = open(outfile, 'r')
