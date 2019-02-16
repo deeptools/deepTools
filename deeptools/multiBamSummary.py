@@ -172,6 +172,14 @@ def bamcorrelate_args(case='bins'):
                        type=parserCommon.writableFile,
                        metavar='FILE')
 
+    group.add_argument('--scalingFactors',
+                       help='Compute scaling factors (in the DESeq2 manner) '
+                       'compatible for use with bamCoverage and write them to a '
+                       'file. The file has tab-separated columns "sample" and '
+                       '"scalingFactor".',
+                       type=parserCommon.writableFile,
+                       metavar='FILE')
+
     return parser
 
 
@@ -205,9 +213,9 @@ def main(args=None):
     else:
         bed_regions = None
 
-    if len(args.bamfiles) == 1 and not args.outRawCounts:
+    if len(args.bamfiles) == 1 and not (args.outRawCounts or args.scalingFactors):
         sys.stderr.write("You've input a single BAM file and not specified "
-                         "--outRawCounts. The resulting output will NOT be "
+                         "--outRawCounts or --scalingFactors. The resulting output will NOT be "
                          "useful with any deepTools program!\n")
 
     stepsize = args.binSize + args.distanceBetweenBins
@@ -248,6 +256,14 @@ def main(args=None):
                         matrix=num_reads_per_bin,
                         labels=args.labels)
     f.close()
+
+    if args.scalingFactors:
+        f = open(args.scalingFactors, 'w')
+        f.write("sample\tscalingFactor\n")
+        scalingFactors = countR.estimateSizeFactors(num_reads_per_bin)
+        for sample, scalingFactor in zip(args.labels, scalingFactors):
+            f.write("{}\t{}\n".format(sample, scalingFactor))
+        f.close()
 
     if args.outRawCounts:
         # append to the generated file the

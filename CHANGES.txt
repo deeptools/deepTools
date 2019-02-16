@@ -4,6 +4,7 @@
  * Added the `std` plot type to plotProfile in Galaxy (issue #782)
  * `bamCompare` now has a `--skipZeroOverZero` option to allow skipping bins where both input files lack coverage (issue #785)
  * `bamCompare` and `bigwigCompare` can now take two pseudocounts, in case you want a different value for the numerator and the denominator (issue #784)
+ * `multiBamSummary` now has a `--scaleFactors` option, which computes scale factors in the same manner as DESeq2 to a file. Note that the produced scaling factors are meant to be used with `bamCoverage`. If you want to use them directly in DESeq2 (or a similar package) you will need to invert them (take 1/scale factor). (issue #800)
 
 3.1.3
 
