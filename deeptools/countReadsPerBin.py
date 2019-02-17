@@ -259,7 +259,7 @@ class CountReadsPerBin(object):
 
     def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
-        # workers for analysis. If too short, too much time is spend loading the files
+        # workers for analysis. If too short, too much time is spent loading the files
         # if too long, some processors end up free.
         # the following values are empirical
         if self.stepSize is None:
@@ -291,6 +291,10 @@ class CountReadsPerBin(object):
         # Ensure that chunkSize is always at least self.stepSize
         if chunkSize < self.stepSize:
             chunkSize = self.stepSize
+
+        # Ensure that chunkSize is always at least self.binLength
+        if self.binLength and chunkSize < self.binLength:
+            chunkSize = self.binLength
 
         return chunkSize
 
