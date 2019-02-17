@@ -105,8 +105,7 @@ def bamcorrelate_args(case='bins'):
                           help='File name to save the coverage matrix. This matrix '
                                'can be subsequently plotted using plotCorrelation or '
                                'or plotPCA.',
-                          type=parserCommon.writableFile,
-                          required=True)
+                          type=parserCommon.writableFile)
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -251,11 +250,12 @@ def main(args=None):
              "region is covered by reads.\n")
 
     # numpy will append .npz to the file name if we don't do this...
-    f = open(args.outFileName, "wb")
-    np.savez_compressed(f,
-                        matrix=num_reads_per_bin,
-                        labels=args.labels)
-    f.close()
+    if args.outFileName:
+        f = open(args.outFileName, "wb")
+        np.savez_compressed(f,
+                            matrix=num_reads_per_bin,
+                            labels=args.labels)
+        f.close()
 
     if args.scalingFactors:
         f = open(args.scalingFactors, 'w')
