@@ -52,5 +52,5 @@ def test_multiBamSummary_scalingFactors():
     args = 'bins --binSize 50 -b {} {} --scalingFactors {}'.format(BAMA, BAMB, outfile)
     mbs.main(args)
     resp = open(outfile).read().split('\n')
-    assert resp = ["sample\tscalingFactor", "testA.bam\t1.1892", "testB.bam\t0.8409"]
+    nt.assert_equals(resp, ["sample\tscalingFactor", "testA.bam\t1.1892", "testB.bam\t0.8409"])
     unlink(outfile)
