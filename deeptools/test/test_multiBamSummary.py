@@ -49,6 +49,8 @@ def test_multiBamSummary_metagene():
 
 def test_multiBamSummary_scalingFactors():
     outfile = '/tmp/test.scalingFactors.txt'
-    args = 'bins -bs 50 -b {} {} --scalingFactors {}'.format(BAMA, BAMB, outfile)
+    args = 'bins --binSize 50 -b {} {} --scalingFactors {}'.format(BAMA, BAMB, outfile)
     mbs.main(args)
-    # [1] 1.1892071 0.8408964
+    resp = open(outfile).read().split('\n')
+    assert resp = ["sample\tscalingFactor", "testA.bam\t1.1892", "testB.bam\t0.8409"]
+    unlink(outfile)

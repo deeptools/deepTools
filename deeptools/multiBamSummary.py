@@ -262,7 +262,7 @@ def main(args=None):
         f.write("sample\tscalingFactor\n")
         scalingFactors = countR.estimateSizeFactors(num_reads_per_bin)
         for sample, scalingFactor in zip(args.labels, scalingFactors):
-            f.write("{}\t{}\n".format(sample, scalingFactor))
+            f.write("{}\t{:6.4f}\n".format(sample, scalingFactor))
         f.close()
 
     if args.outRawCounts:
