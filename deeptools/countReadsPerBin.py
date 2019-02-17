@@ -957,10 +957,10 @@ def estimateSizeFactors(m):
     m : a numpy ndarray
 
     >>> m = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 10, 0], [10, 5, 100]])
-    >>> sf = computeRLE(m)
+    >>> sf = estimateSizeFactors(m)
     >>> assert(np.all(np.abs(sf - [1.305, 0.9932, 0.783]) < 1e-4))
     >>> m = np.array([[0, 0], [0, 1], [1, 1], [1, 2]])
-    >>> sf = computeRLE(m)
+    >>> sf = estimateSizeFactors(m)
     >>> assert(np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4))
     """
     loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
