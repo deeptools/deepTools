@@ -23,6 +23,10 @@
                 --outRawCounts '$outFileRawCounts'
             #end if
 
+            #if $scalingFactors:
+                --scalingFactors '$scalingFactorsFile'
+            #end if
+
             #if $mode.modeOpt == "bins":
                 --binSize '$mode.binSize'
                 --distanceBetweenBins '$mode.distanceBetweenBins'
@@ -80,12 +84,16 @@
         </expand>
 
         <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
+        <param argument="--scalingFactors" type="boolean" label="Save scaling factors" help="Scaling factors calculated as in DESeq2 and made directly compatible with bamCoverage."/>
 
     </inputs>
     <outputs>
         <data format="deeptools_coverage_matrix" name="outFile" label="${tool.name} on ${on_string}: correlation matrix" />
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>outRawCounts is True</filter>
+        </data>
+        <data format="tabular" name="scalingFactorsFile" label="${tool.name} on ${on_string}: scaling factors">
+            <filter>scalingFactors is True</filter>
         </data>
     </outputs>
     <tests>
