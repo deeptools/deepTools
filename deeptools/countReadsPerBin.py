@@ -949,6 +949,29 @@ def remove_row_of_zeros(matrix):
     return matrix[to_keep, :]
 
 
+def estimateSizeFactors(m):
+    """
+    Compute size factors in the same way as DESeq2.
+    The inverse of that is returned, as it's then compatible with bamCoverage.
+
+    m : a numpy ndarray
+
+    >>> m = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 10, 0], [10, 5, 100]])
+    >>> sf = estimateSizeFactors(m)
+    >>> assert(np.all(np.abs(sf - [1.305, 0.9932, 0.783]) < 1e-4))
+    >>> m = np.array([[0, 0], [0, 1], [1, 1], [1, 2]])
+    >>> sf = estimateSizeFactors(m)
+    >>> assert(np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4))
+    """
+    loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
+    # Mask after computing the geometric mean
+    m = np.ma.masked_where(m <= 0, m)
+    loggeomeans = np.ma.masked_where(np.isinf(loggeomeans), loggeomeans)
+    # DESeq2 ratio-based size factor
+    sf = np.exp(np.ma.median((np.log(m).T - loggeomeans).T, axis=0))
+    return 1. / sf
+
+
 class Tester(object):
 
     def __init__(self):

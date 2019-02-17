@@ -9,6 +9,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAM = ROOT + "test1.bam"
 CRAM = ROOT + "test1.cram"
 GTF = ROOT + "test.gtf"
+BAMA = ROOT + "testA.bam"
+BAMB = ROOT + "testB.bam"
 
 
 def test_multiBamSummary_gtf():
@@ -43,3 +45,12 @@ def test_multiBamSummary_metagene():
         nt.assert_allclose(matrix, np.array([[25.0, 25.0],
                                              [31.0, 31.0]]))
         unlink(outfile)
+
+
+def test_multiBamSummary_scalingFactors():
+    outfile = '/tmp/test.scalingFactors.txt'
+    args = 'bins --binSize 50 -b {} {} --scalingFactors {}'.format(BAMA, BAMB, outfile).split()
+    mbs.main(args)
+    resp = open(outfile).read().strip().split('\n')
+    nt.assert_equal(resp, ["sample\tscalingFactor", "testA.bam\t1.1892", "testB.bam\t0.8409"])
+    unlink(outfile)
