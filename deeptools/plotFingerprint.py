@@ -104,12 +104,12 @@ def get_optional_args():
 
     optional.add_argument('--binSize', '-bs',
                           help='Window size in base pairs to '
-                          'sample the genome.',
+                          'sample the genome. This times --numberOfSamples should be less than the genome size.',
                           default=500,
                           type=int)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of bins that sampled from the genome, '
+                          help='The number of bins that are sampled from the genome, '
                           'for which the overlapping number of reads is computed.',
                           default=5e5,
                           type=int)
@@ -393,6 +393,7 @@ def main(args=None):
             "\nNo reads were found in {} regions sampled. Check that the\n"
             "min mapping quality is not overly high and that the \n"
             "chromosome names between bam files are consistant.\n"
+            "For small genomes, decrease the --numberOfSamples.\n"
             "\n".format(num_reads_per_bin.shape[0]))
         exit(1)
 
@@ -417,7 +418,7 @@ def main(args=None):
                 trace['line'].update(dash=plotly_line_styles[i % 36], color=plotly_colors[i % 6])
                 data.append(trace)
             else:
-                j = i % 35
+                j = i % len(pyplot_line_styles)
                 plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
                 plt.xlabel('rank')
                 plt.ylabel('fraction w.r.t. bin with highest coverage')

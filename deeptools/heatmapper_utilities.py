@@ -9,7 +9,7 @@ import plotly.graph_objs as go
 old_settings = np.seterr(all='ignore')
 
 
-def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
+def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     """
     Adds a line to the plot in the given ax using the specified method
 
@@ -30,8 +30,8 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     plot_type: str
         type of plot. Either 'se' for standard error, 'std' for
         standard deviation, 'overlapped_lines' to plot each line of the matrix,
-        fill to plot the area between the x axis and the value or None, just to
-        plot the average line.
+        fill to plot the area between the x axis and the value or any other string to
+        just plot the average line.
 
     Returns
     -------
@@ -69,7 +69,6 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
         color = pltcolors.to_hex(color, keep_alpha=True)
     ax.plot(x, summary, color=color, label=label, alpha=0.9)
     if plot_type == 'fill':
-        pass
         ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
 
     if plot_type in ['se', 'std']:
@@ -91,7 +90,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='simple'):
     return ax
 
 
-def plotly_single(ma, average_type, color, label, plot_type='simple'):
+def plotly_single(ma, average_type, color, label, plot_type='line'):
     """A plotly version of plot_single. Returns a list of traces"""
     summary = list(np.ma.__getattribute__(average_type)(ma, axis=0))
     x = list(np.arange(len(summary)))

@@ -102,9 +102,6 @@ def writeBedGraph_worker(
                              "files. Remove this chromosome from the bigwig file "
                              "to continue".format(chrom))
 
-#        if  zerosToNans == True and sum(tileCoverage) == 0.0:
-#            continue
-
         value = func(tileCoverage, funcArgs)
 
         if fixed_step:

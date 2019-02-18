@@ -1,3 +1,4 @@
 numpydoc==0.6
 pysam>=0.8.3
 sphinx-argparse
+deeptoolsintervals

@@ -563,6 +563,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               default=8)
 
     elif mode == 'heatmap':
+        optional.add_argument(
+            '--plotType',
+            help='"lines" will plot the profile line based '
+            'on the average type selected. "fill" '
+            'fills the region between zero and the profile '
+            'curve. The fill in color is semi transparent to '
+            'distinguish different profiles. "se" and "std" '
+            'color the region between the profile and the '
+            'standard error or standard deviation of the data.',
+            choices=['lines', 'fill', 'se', 'std'],
+            default='lines')
         optional.add_argument('--sortRegions',
                               help='Whether the heatmap should present '
                               'the regions sorted. The default is '
@@ -853,3 +864,20 @@ def deepBlueOptionalArgs():
         'if you wish to analyse the same sample with the same regions again.')
 
     return parser
+
+
+def requiredLength(minL, maxL):
+    """
+    This is an optional action that can be given to argparse.add_argument(..., nargs='+')
+    to allow a specified numeric range of arguments (e.g., "only 1 or 2 arguments").
+
+    minL and maxL are the minimum and maximum length
+    """
+    # https://stackoverflow.com/questions/4194948/python-argparse-is-there-a-way-to-specify-a-range-in-nargs
+    class RequiredLength(argparse.Action):
+        def __call__(self, parser, args, values, option_string=None):
+            if not minL <= len(values) <= maxL:
+                msg = 'argument "{}" requires between {} and {} arguments'.format(self.dest, minL, maxL)
+                raise argparse.ArgumentTypeError(msg)
+            setattr(args, self.dest, values)
+    return RequiredLength

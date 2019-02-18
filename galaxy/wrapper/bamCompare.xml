@@ -63,6 +63,7 @@
 
                 @ADVANCED_OPTS_READ_PROCESSING@
                 $advancedOpt.skipNAs
+                $advancedOpt.skipZeroOverZero
 
                 #if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
@@ -163,6 +164,11 @@
                 <expand macro="read_processing_options" />
 
                 <expand macro="skipNAs" />
+                <param argument="--skipZeroOverZero" type="select" label="Skip bins of no coverage"
+                    help="Skip bins where BOTH files lack coverage.">
+                    <option value="no" selected="true">No</option>
+                    <option value="yes">Yes, skip them.</option>
+                </param>
 
                 <param argument="--ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"

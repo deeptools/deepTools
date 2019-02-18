@@ -112,6 +112,9 @@ class CountReadsPerBin(object):
     zerosToNans : bool
         If true, zero values encountered are transformed to Nans. Default false.
 
+    skipZeroOverZero : bool
+        If true, skip bins where all input BAM files have no coverage (only applicable to bamCompare).
+
     minFragmentLength : int
         If greater than 0, fragments below this size are excluded.
 
@@ -163,6 +166,7 @@ class CountReadsPerBin(object):
                  samFlag_include=None,
                  samFlag_exclude=None,
                  zerosToNans=False,
+                 skipZeroOverZero=False,
                  smoothLength=0,
                  minFragmentLength=0,
                  maxFragmentLength=0,
@@ -176,6 +180,7 @@ class CountReadsPerBin(object):
         self.blackListFileName = blackListFileName
         self.statsList = statsList
         self.mappedList = mappedList
+        self.skipZeroOverZero = skipZeroOverZero
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -254,7 +259,7 @@ class CountReadsPerBin(object):
 
     def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
-        # workers for analysis. If too short, too much time is spend loading the files
+        # workers for analysis. If too short, too much time is spent loading the files
         # if too long, some processors end up free.
         # the following values are empirical
         if self.stepSize is None:
@@ -286,6 +291,10 @@ class CountReadsPerBin(object):
         # Ensure that chunkSize is always at least self.stepSize
         if chunkSize < self.stepSize:
             chunkSize = self.stepSize
+
+        # Ensure that chunkSize is always at least self.binLength
+        if self.binLength and chunkSize < self.binLength:
+            chunkSize = self.binLength
 
         return chunkSize
 
@@ -938,6 +947,29 @@ def remove_row_of_zeros(matrix):
     _mat = np.nan_to_num(matrix)
     to_keep = _mat.sum(1) != 0
     return matrix[to_keep, :]
+
+
+def estimateSizeFactors(m):
+    """
+    Compute size factors in the same way as DESeq2.
+    The inverse of that is returned, as it's then compatible with bamCoverage.
+
+    m : a numpy ndarray
+
+    >>> m = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 10, 0], [10, 5, 100]])
+    >>> sf = estimateSizeFactors(m)
+    >>> assert(np.all(np.abs(sf - [1.305, 0.9932, 0.783]) < 1e-4))
+    >>> m = np.array([[0, 0], [0, 1], [1, 1], [1, 2]])
+    >>> sf = estimateSizeFactors(m)
+    >>> assert(np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4))
+    """
+    loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
+    # Mask after computing the geometric mean
+    m = np.ma.masked_where(m <= 0, m)
+    loggeomeans = np.ma.masked_where(np.isinf(loggeomeans), loggeomeans)
+    # DESeq2 ratio-based size factor
+    sf = np.exp(np.ma.median((np.log(m).T - loggeomeans).T, axis=0))
+    return 1. / sf
 
 
 class Tester(object):

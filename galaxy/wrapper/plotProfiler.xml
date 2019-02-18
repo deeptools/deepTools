@@ -137,6 +137,7 @@
                     <option value="lines" selected="true">lines</option>
                     <option value="fill">fill</option>
                     <option value="se">add standard error</option>
+                    <option value="std">add standard deviation</option>
                     <option value="overlapped_lines">overlapped lines</option>
                     <option value="heatmap">heatmap</option>
                 </param>
