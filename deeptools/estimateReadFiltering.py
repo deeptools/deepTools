@@ -329,7 +329,7 @@ def main(args=None):
         # nFiltered
         metric = 0.0
         if totals[idx] > 0:
-            metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * nFiltered[idx]
+            metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * mapped[idx]
         of.write("\t{}".format(round(metric, 1)))
         # MAPQ
         metric = 0.0
