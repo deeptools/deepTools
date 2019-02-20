@@ -62,5 +62,5 @@ jobs:
     displayName: Installing deepTools
   - script: |
       source activate foo
-      ./.planemo.sh
+      ./.planemo.sh $TESTGALAXY
     displayName: Run planemo

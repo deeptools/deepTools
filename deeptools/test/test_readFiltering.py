@@ -34,7 +34,7 @@ def test_estimate_read_filtering_minimal():
 
 def test_estimate_read_filtering_params():
     """
-    Minimal testing
+    --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl
     """
     outfile = '/tmp/test_params.txt'
     args = '-b {} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {} -o {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile).split()
@@ -48,7 +48,7 @@ def test_estimate_read_filtering_params():
     _[0] = os.path.basename(_[0])
     resp[1] = "\t".join(_)
     expected = ['Sample\tTotal Reads\tMapped Reads\tAlignments in blacklisted regions\tEstimated mapped reads filtered\tBelow MAPQ\tMissing Flags\tExcluded Flags\tInternally-determined Duplicates\tMarked Duplicates\tSingletons\tWrong strand\n',
-                'test_filtering.bam\t193\t193\t7\t176.1\t41.4\t0.0\t186.5\t31.6\t0.0\t0.0\t0.0\n']
+                'test_filtering.bam\t193\t193\t7\t193\t41.4\t0.0\t186.5\t31.6\t0.0\t0.0\t0.0\n']
     assert_equal(resp, expected)
     unlink(outfile)
 

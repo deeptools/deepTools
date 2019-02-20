@@ -512,7 +512,7 @@ is vital to you, select Yes below.">
 
     <token name="@multiple_input_bigwigs@">
 <![CDATA[
-        #if $custom_labels_conditional.custom_labels_select == "Yes":
+        #if $custom_sample_labels_conditional.custom_labels_select == "Yes":
             #set custom_labels=labels
         #end if
         #set files=[]
@@ -533,7 +533,7 @@ is vital to you, select Yes below.">
                 #silent $labels.append("'%s'" % $identifier)
             #end for
         #end if
-        #if $custom_labels_conditional.custom_labels_select == "Yes":
+        #if $custom_sample_labels_conditional.custom_labels_select == "Yes":
             #set labels=custom_labels
         #end if
 ]]>
