@@ -329,43 +329,43 @@ def main(args=None):
         # nFiltered
         metric = 0.0
         if totals[idx] > 0:
-            metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * nFiltered[idx]
-        of.write("\t{}".format(round(metric, 1)))
+            metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * mapped[idx]
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # MAPQ
         metric = 0.0
         if totals[idx] > 0:
             metric = float(MAPQs[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # samFlagInclude
         metric = 0.0
         if totals[idx] > 0:
             metric = float(flagIncludes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # samFlagExclude
         metric = 0.0
         if totals[idx] > 0:
             metric = float(flagExcludes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # Internally determined duplicates
         metric = 0.0
         if totals[idx] > 0:
             metric = float(internalDupes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # Externally marked duplicates
         metric = 0.0
         if totals[idx] > 0:
             metric = float(externalDupes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # Singletons
         metric = 0.0
         if totals[idx] > 0:
             metric = float(singletons[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         # filterRNAstrand
         metric = 0.0
         if totals[idx] > 0:
             metric = float(rnaStrand[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(round(metric, 1)))
+        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
         of.write("\n")
 
     if args.outFile is not None:

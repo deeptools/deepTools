@@ -1,3 +1,7 @@
+3.2.1
+
+ * Changed a bug in `estimateReadFiltering` where the estimated number of filtered reads was typically too low.
+
 3.2.0
 
  * Added access in the Galaxy wrapper to the `--labels` option in most tools (issue #738)
