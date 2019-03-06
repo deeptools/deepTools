@@ -1,6 +1,7 @@
 3.2.1
 
  * Changed a bug in `estimateReadFiltering` where the estimated number of filtered reads was typically too low.
+ * Made an internal change that should drastically reduce the memory requirements of many tools. This slightly increases run time, but as the resulting resource usage is much more attractive this is judged worthwhile.
 
 3.2.0
 
