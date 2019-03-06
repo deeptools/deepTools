@@ -24,6 +24,10 @@ def getFractionKept_worker(chrom, start, end, bamFile, args, offset):
     end = min(end, start + 50000)
     tot = 0
     filtered = 0
+
+    if end <= start:
+        return (filtered, tot)
+
     prev_pos = set()
     lpos = None
     if chrom in bam.references:
