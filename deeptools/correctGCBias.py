@@ -187,8 +187,17 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     removed_duplicated_reads = 0
     startTime = time.time()
 
+    # caching seems to be faster
+    # r.flag & 4 == 0 is to skip unmapped
+    # reads that nevertheless are asigned
+    # to a genomic position
+    reads = [r for r in bam.fetch(chrNameBam, start, end)
+             if r.flag & 4 == 0]
+
+    bam.close()
+
     r_index = -1
-    for read in bam.fetch(chrNameBam, start, end):
+    for read in reads:
         if read.is_unmapped:
             continue
         r_index += 1
@@ -226,7 +235,6 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
 
         cvg_corr[vectorStart:vectorEnd] += float(1) / R_gc[gc]
         i += 1
-    bam.close()
 
     try:
         if debug:
@@ -336,8 +344,14 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     read_repetitions = 0
     removed_duplicated_reads = 0
 
+    # cache data
+    # r.flag & 4 == 0 is to filter unmapped reads that
+    # have a genomic position
+    reads = [r for r in bam.fetch(chrNameBam, start, end)
+             if r.pos > start and r.flag & 4 == 0]
+
     r_index = -1
-    for read in bam.fetch(chrNameBam, start, end):
+    for read in reads:
         if read.pos <= start or read.is_unmapped:
             continue
         r_index += 1
