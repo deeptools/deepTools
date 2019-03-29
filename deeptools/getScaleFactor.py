@@ -14,15 +14,20 @@ def getFractionKept_wrapper(args):
     return getFractionKept_worker(*args)
 
 
-def getFractionKept_worker(chrom, start, end, bamFile, args):
+def getFractionKept_worker(chrom, start, end, bamFile, args, offset):
     """
     Queries the BAM file and counts the number of alignments kept/found in the
     first 50000 bases.
     """
     bam = bamHandler.openBam(bamFile)
+    start += offset * 50000
     end = min(end, start + 50000)
     tot = 0
     filtered = 0
+
+    if end <= start:
+        return (filtered, tot)
+
     prev_pos = set()
     lpos = None
     if chrom in bam.references:
@@ -151,13 +156,10 @@ def fraction_kept(args, stats):
     else:
         chrom_sizes = list(zip(bam_handle.references, bam_handle.lengths))
 
-    while total < num_needed_to_sample and distanceBetweenBins > 50000:
-        # If we've iterated, then halve distanceBetweenBins
-        distanceBetweenBins /= 2
-        if distanceBetweenBins < 50000:
-            distanceBetweenBins = 50000
-
-        res = mapReduce.mapReduce((bam_handle.filename, args),
+    offset = 0
+    # Iterate over bins at various non-overlapping offsets until we have enough data
+    while total < num_needed_to_sample and offset < np.ceil(distanceBetweenBins / 50000):
+        res = mapReduce.mapReduce((bam_handle.filename, args, offset),
                                   getFractionKept_wrapper,
                                   chrom_sizes,
                                   genomeChunkLength=distanceBetweenBins,
@@ -166,7 +168,10 @@ def fraction_kept(args, stats):
                                   verbose=args.verbose)
 
         if len(res):
-            filtered, total = np.sum(res, axis=0)
+            foo, bar = np.sum(res, axis=0)
+            filtered += foo
+            total += bar
+        offset += 1
 
     if total == 0:
         # This should never happen
