@@ -152,6 +152,8 @@ def main(args=None):
 
     if args.normalizeUsing == 'None':
         args.normalizeUsing = None  # For the sake of sanity
+    elif args.normalizeUsing == 'RPGC' and not args.effectiveGenomeSize:
+        sys.exit("RPGC normalization requires an --effectiveGenomeSize!\n")
 
     if args.normalizeUsing:
         # if a normalization is required then compute the scale factors
