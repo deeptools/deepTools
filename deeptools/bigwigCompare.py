@@ -61,6 +61,12 @@ def parse_arguments(args=None):
                         type=float,
                         required=False)
 
+    parser.add_argument('--skipZeroOverZero',
+                        help='Skip bins where BOTH BAM files lack coverage. '
+                        'This is determined BEFORE any applicable pseudocount '
+                        'is added.',
+                        action='store_true')
+
     parser.add_argument('--operation',
                         help='The default is to output the log2ratio of the '
                         'two samples. The reciprocal ratio returns the '
@@ -159,6 +165,7 @@ def main(args=None):
         blackListFileName=args.blackListFileName,
         verbose=args.verbose,
         numberOfProcessors=args.numberOfProcessors,
+        skipZeroOverZero=args.skipZeroOverZero,
         format=args.outFileFormat,
         smoothLength=False,
         missingDataAsZero=not args.skipNonCoveredRegions,

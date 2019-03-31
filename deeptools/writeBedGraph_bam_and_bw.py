@@ -45,7 +45,7 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        missingDataAsZero=False, fixed_step=False):
+        skipZeroOverZero=False, missingDataAsZero=False, fixed_step=False):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -101,6 +101,10 @@ def writeBedGraph_worker(
                     sys.exit("Chromosome {} probably not in one of the bigwig "
                              "files. Remove this chromosome from the bigwig file "
                              "to continue".format(chrom))
+
+        if skipZeroOverZero and np.sum(tileCoverage) == 0:
+            previousValue = None
+            continue
 
         value = func(tileCoverage, funcArgs)
 
