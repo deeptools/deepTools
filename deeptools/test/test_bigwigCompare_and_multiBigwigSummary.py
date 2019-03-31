@@ -64,7 +64,7 @@ def test_bigwigCompare_skipnas():
 
 def test_bigwigCompare_skipZeroOverZero():
     outfile = '/tmp/result.bg"'
-    args = "-b1 {} -b2 {} -o {] --skipZeroOverZero --pseudocount 1 3 --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_A, outfile).split()
+    args = "-b1 {} -b2 {} -o {} --skipZeroOverZero --pseudocount 1 3 --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_A, outfile).split()
     bwComp.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
