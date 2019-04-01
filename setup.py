@@ -86,8 +86,8 @@ setup(
         "scipy >= 0.17.0",
         "matplotlib >= 2.1.2",
         "pysam >= 0.14.0",
-        "numpydoc >=0.5",
-        "pyBigWig >=0.2.1",
+        "numpydoc >= 0.5",
+        "pyBigWig >= 0.2.1",
         "py2bit >= 0.2.0",
         "plotly >= 2.0.0",
         "deeptoolsintervals >= 0.1.7"
