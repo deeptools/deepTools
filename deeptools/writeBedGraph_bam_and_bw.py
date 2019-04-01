@@ -45,7 +45,7 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        missingDataAsZero=False, fixed_step=False):
+        skipZeroOverZero=False, missingDataAsZero=False, fixed_step=False):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -102,6 +102,10 @@ def writeBedGraph_worker(
                              "files. Remove this chromosome from the bigwig file "
                              "to continue".format(chrom))
 
+        if skipZeroOverZero and np.sum(tileCoverage) == 0:
+            previousValue = None
+            continue
+
         value = func(tileCoverage, funcArgs)
 
         if fixed_step:
@@ -147,7 +151,7 @@ def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=1,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
-        smoothLength=0, fixed_step=False, verbose=False):
+        skipZeroOverZero=False, smoothLength=0, fixed_step=False, verbose=False):
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -206,7 +210,7 @@ def writeBedGraph(
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,
-                               missingDataAsZero, fixed_step),
+                               skipZeroOverZero, missingDataAsZero, fixed_step),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,

@@ -28,6 +28,7 @@
             #if $advancedOpt.showAdvancedOpt == "yes":
 
               $advancedOpt.skipNAs
+              $advancedOpt.skipZeroOverZero
               --scaleFactors '$advancedOpt.scaleFactor1:$advancedOpt.scaleFactor2'
               --binSize $advancedOpt.binSize
 
@@ -95,6 +96,7 @@
                     help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
 
                 <expand macro="skipNAs" />
+                <expand macro="skipZeroOverZero" />
                 <expand macro="scaleFactors" />
                 <expand macro="plotTitle" />
                 <expand macro="blacklist" />

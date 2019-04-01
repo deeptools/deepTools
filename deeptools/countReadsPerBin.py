@@ -603,16 +603,15 @@ class CountReadsPerBin(object):
             start_time = time.time()
             # caching seems faster. TODO: profile the function
             c = 0
-            if chrom in bamHandle.references:
-                reads = [r for r in bamHandle.fetch(chrom, regStart, regEnd)
-                         if r.flag & 4 == 0]
-            else:
+            if chrom not in bamHandle.references:
                 raise NameError("chromosome {} not found in bam file".format(chrom))
 
             prev_pos = set()
             lpos = None
             # of previous processed read pair
-            for read in reads:
+            for read in bamHandle.fetch(chrom, regStart, regEnd):
+                if read.is_unmapped:
+                    continue
                 if self.minMappingQuality and read.mapq < self.minMappingQuality:
                     continue
 

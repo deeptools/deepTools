@@ -195,8 +195,11 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
              if r.flag & 4 == 0]
 
     bam.close()
+
     r_index = -1
     for read in reads:
+        if read.is_unmapped:
+            continue
         r_index += 1
         try:
             # calculate GC content of read fragment
@@ -340,6 +343,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
     matePairs = {}
     read_repetitions = 0
     removed_duplicated_reads = 0
+
     # cache data
     # r.flag & 4 == 0 is to filter unmapped reads that
     # have a genomic position
@@ -348,6 +352,8 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
 
     r_index = -1
     for read in reads:
+        if read.pos <= start or read.is_unmapped:
+            continue
         r_index += 1
         copies = None
         gc = None
