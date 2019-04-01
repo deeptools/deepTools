@@ -3,6 +3,7 @@
  * Changed a bug in `estimateReadFiltering` where the estimated number of filtered reads was typically too low.
  * Made an internal change that should drastically reduce the memory requirements of many tools. This slightly increases run time, but as the resulting resource usage is much more attractive this is judged worthwhile.
  * An informative error message is now produced with `bamCoverage` if RPGC normalization is requested but no effective genome size is provided (issue #815).
+ * Fixes some issues with y-axis scaling (issue #822)
 
 3.2.0
 

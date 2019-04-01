@@ -690,6 +690,8 @@ class Profile(object):
 
         first = True
         ax_list = []
+        globalYmin = np.inf
+        globalYmax = -np.inf
         for plot in range(self.numplots):
             localYMin = None
             localYMax = None
@@ -698,7 +700,7 @@ class Profile(object):
             if (row == 0 and col == 0) or len(self.y_min) > 1 or len(self.y_max) > 1:
                 ax = self.fig.add_subplot(self.grids[row, col])
             else:
-                ax = self.fig.add_subplot(self.grids[row, col], sharey=ax_list[0])
+                ax = self.fig.add_subplot(self.grids[row, col])
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
@@ -717,10 +719,10 @@ class Profile(object):
                     _row, _col = plot, data_idx
                 else:
                     _row, _col = data_idx, plot
-                if localYMin is None or self.y_min[_col % len(self.y_min)] < localYMin:
-                    localYMin = self.y_min[_col % len(self.y_min)]
-                if localYMax is None or self.y_max[_col % len(self.y_max)] > localYMax:
-                    localYMax = self.y_max[_col % len(self.y_max)]
+                if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
+                    localYMin = self.y_min[col % len(self.y_min)]
+                if localYMax is None or self.y_max[col % len(self.y_max)] > localYMax:
+                    localYMax = self.y_max[col % len(self.y_max)]
 
                 sub_matrix = self.hm.matrix.get_matrix(_row, _col)
 
@@ -738,6 +740,8 @@ class Profile(object):
                             self.color_list[coloridx],
                             label,
                             plot_type=self.plot_type)
+            globalYmin = min(np.float64(globalYmin), ax.get_ylim()[0])
+            globalYmax = max(globalYmax, ax.get_ylim()[1])
 
             # remove the numbers of the y axis for all plots
             plt.setp(ax.get_yticklabels(), visible=False)
@@ -747,12 +751,6 @@ class Profile(object):
                 # on each row and make the numbers and ticks visible
                 plt.setp(ax.get_yticklabels(), visible=True)
                 ax.axes.set_ylabel(self.y_axis_label)
-                """
-                # reduce the number of yticks by half
-                num_ticks = len(ax.get_yticks())
-                yticks = [ax.get_yticks()[i] for i in range(1, num_ticks, 2)]
-                ax.set_yticks(yticks)
-                """
 
             totalWidth = sub_matrix['matrix'].shape[1]
             xticks, xtickslabel = self.getTicks(tickIdx)
@@ -776,23 +774,23 @@ class Profile(object):
                           frameon=False, markerscale=0.5)
                 if len(self.y_min) == 1 and len(self.y_max) == 1:
                     first = False
+            ax_list.append(ax)
 
-            """
-            ax.legend(bbox_to_anchor=(-0.05, -1.13, 1., 1),
-                      loc='upper center',
-                      ncol=1, mode="expand", prop=font_p,
-                      frameon=False, markerscale=0.5)
-            """
-            lims = ax.get_ylim()
+        # It turns out that set_ylim only takes np.float64s
+        for sample_id, subplot in enumerate(ax_list):
+            localYMin = self.y_min[sample_id % len(self.y_min)]
+            localYMax = self.y_max[sample_id % len(self.y_max)]
+            lims = [globalYmin, globalYmax]
             if localYMin is not None:
-                lims = (localYMin, lims[1])
-            if localYMax is not None:
-                lims = (lims[0], localYMax)
+                if localYMax is not None:
+                    lims = (np.float64(localYMin), np.float64(localYMax))
+                else:
+                    lims = (np.float64(localYMin), lims[1])
+            elif localYMax is not None:
+                lims = (lims[0], np.float64(localYMax))
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
-            ax.set_ylim(lims)
-
-            ax_list.append(ax)
+            ax_list[sample_id].set_ylim(lims)
 
         plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.tight_layout()
