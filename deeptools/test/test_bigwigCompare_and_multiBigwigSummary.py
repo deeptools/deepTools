@@ -69,7 +69,7 @@ def test_bigwigCompare_skipZeroOverZero():
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
     _foo.close()
-    expected = ['3R\t100\t200\t0.25\n']
+    expected = ['3R\t100\t200\t-1\n']
     assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
