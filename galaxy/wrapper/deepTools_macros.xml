@@ -650,6 +650,14 @@ is vital to you, select Yes below.">
                  (default: False)" />
     </xml>
 
+    <xml name="skipZeroOverZero">
+        <param argument="--skipZeroOverZero" type="select" label="Skip bins of no coverage"
+            help="Skip bins where BOTH files lack coverage.">
+            <option value="" selected="true">No</option>
+            <option value="--skipZeroOverZero">Yes, skip them.</option>
+        </param>
+    </xml>
+
     <xml name="exactScaling">
         <param argument="--exactScaling" type="boolean" truevalue="--exactScaling" falsevalue="" checked="False"
             label="Compute an exact scaling factor"
