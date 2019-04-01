@@ -164,11 +164,7 @@
                 <expand macro="read_processing_options" />
 
                 <expand macro="skipNAs" />
-                <param argument="--skipZeroOverZero" type="select" label="Skip bins of no coverage"
-                    help="Skip bins where BOTH files lack coverage.">
-                    <option value="" selected="true">No</option>
-                    <option value="--skipZeroOverZero">Yes, skip them.</option>
-                </param>
+                <expand macro="skipZeroOverZero" />
 
                 <param argument="--ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"

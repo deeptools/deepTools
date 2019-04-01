@@ -62,6 +62,18 @@ def test_bigwigCompare_skipnas():
     unlink(outfile)
 
 
+def test_bigwigCompare_skipZeroOverZero():
+    outfile = '/tmp/result.bg"'
+    args = "-b1 {} -b2 {} -o {} --skipZeroOverZero --pseudocount 1 3 --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_A, outfile).split()
+    bwComp.main(args)
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+    expected = ['3R\t100\t200\t-1\n']
+    assert resp == expected, "{} != {}".format(resp, expected)
+    unlink(outfile)
+
+
 def test_multiBigwigSummary():
     outfile = '/tmp/result.bg'
     args = "bins -b {} {} --binSize 50 -o {}".format(BIGWIG_A, BIGWIG_B, outfile).split()
