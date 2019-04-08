@@ -25,6 +25,16 @@
                 --outRawCounts '$outFileRawCounts'
             #end if
 
+            #if ' '.join(map(str, $BED)) != 'None':
+                #set bedFileLList=[]
+                #for $f in $BED:
+                    #silent $bedFileList.append("'%s'" % $f)
+                #end for
+                #if $bedFileList != ["'None'"]:
+                    --BED #echo ' '.join($bedFileList)#
+                #end if
+            #end if
+
             #if $advancedOpt.showAdvancedOpt == "yes":
                 --numberOfSamples '$advancedOpt.numberOfSamples'
                 $advancedOpt.skipZeros
@@ -48,6 +58,9 @@
 
         <expand macro="multiple_input_bams" MIN="1"/>
         <expand macro="custom_sample_labels" />
+        <param argument="--BED" type="data" format="bed,gtf" multiple="true" optional="true" min="0"
+            label="Regions of interest"
+            help="Limits the coverage analysis to the regions specified in these files. This overrides --numberOfSamples." />
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >

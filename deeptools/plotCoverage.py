@@ -118,6 +118,12 @@ def required_args():
                           type=int,
                           default=1000000)
 
+    optional.add_argument('--BED',
+                          help='Limits the coverage analysis to '
+                          'the regions specified in these files.  This overrides --numberOfSamples.',
+                          metavar='FILE1.bed FILE2.bed',
+                          nargs='+')
+
     optional.add_argument('--outRawCounts',
                           help='Save raw counts (coverages) to file.',
                           type=parserCommon.writableFile,
@@ -151,8 +157,14 @@ def main(args=None):
     if args.outRawCounts is None and args.plotFile is None:
         sys.exit("At least one of --plotFile and --outRawCounts are required.\n")
 
+    if 'BED' in args:
+        bed_regions = args.BED
+    else:
+        bed_regions = None
+
     cr = countR.CountReadsPerBin(args.bamfiles,
                                  binLength=1,
+                                 bedFile=bed_regions,
                                  numberOfSamples=args.numberOfSamples,
                                  numberOfProcessors=args.numberOfProcessors,
                                  verbose=args.verbose,

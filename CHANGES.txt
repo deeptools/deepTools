@@ -1,3 +1,8 @@
+3.3.0
+
+ * `plotCoverage` now has a `--BED` option, to restrict plots and output to apply to a specific set of regions given by a BED or GTF file or files (issue #829).
+ * `plotCoverage` now has a `--DepthSummary` option, which produces a summary similar to GATK's DepthOfCoverage (issue #828).
+
 3.2.1
 
  * Changed a bug in `estimateReadFiltering` where the estimated number of filtered reads was typically too low.
