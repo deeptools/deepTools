@@ -168,8 +168,8 @@ def required_args():
 def main(args=None):
     args = process_args(args)
 
-    if args.outRawCounts is None and args.plotFile is None:
-        sys.exit("At least one of --plotFile and --outRawCounts are required.\n")
+    if args.outRawCounts is None and args.plotFile is None args.outCoverageMetrics is None:
+        sys.exit("At least one of --plotFile, --outRawCounts and --outCoverageMetrics are required.\n")
 
     if 'BED' in args:
         bed_regions = args.BED
