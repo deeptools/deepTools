@@ -129,6 +129,20 @@ def required_args():
                           type=parserCommon.writableFile,
                           metavar='FILE')
 
+    optional.add_argument('--outCoverageMetrics',
+                          help='Save percentage of bins/regions above the specified thresholds to '
+                          'the specified file. The coverage thresholds are specified by '
+                          '--coverageThresholds. If no coverage thresholds are specified, the file '
+                          'will be empty.',
+                          type=parserCommon.writableFile,
+                          metavar='FILE')
+
+    optional.add_argument('--coverageThresholds', '-ct',
+                          type=int,
+                          action="append",
+                          help='The percentage of reported bins/regions with signal at least as '
+                          'high as the given threshold. This can be specified multiple times.')
+
     optional.add_argument('--plotHeight',
                           help='Plot height in cm.',
                           type=float,
@@ -181,6 +195,16 @@ def main(args=None):
                                  out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
+
+    if args.outCoverageMetrics and args.coverageThresholds:
+        of = open(args.outCoverageMetrics, "w")
+        of.write("Sample\tThreshold\tPercent\n")
+        nbins = num_reads_per_bin.shape[0]
+        for thresh in args.coverageThresholds:
+            vals = np.sum(num_reads_per_bin >= thresh, axis=0)
+            for lab, val in zip(args.labels, vals):
+                of.write("{}\t{}\t{:6.3f}\n".format(lab, thresh, 100. * val / float(nbins)))
+        of.close()
 
     if args.outRawCounts:
         # append to the generated file the
