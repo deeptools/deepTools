@@ -120,7 +120,10 @@ def required_args():
 
     optional.add_argument('--BED',
                           help='Limits the coverage analysis to '
-                          'the regions specified in these files.  This overrides --numberOfSamples.',
+                          'the regions specified in these files. This overrides --numberOfSamples. '
+                          'Due to memory requirements, it is inadvised to combine this with '
+                          '--outRawCounts or many tens of thousands of regions, as per-base '
+                          'coverage is used!',
                           metavar='FILE1.bed FILE2.bed',
                           nargs='+')
 
@@ -168,7 +171,7 @@ def required_args():
 def main(args=None):
     args = process_args(args)
 
-    if args.outRawCounts is None and args.plotFile is None args.outCoverageMetrics is None:
+    if not args.outRawCounts and not args.plotFile and not args.outCoverageMetrics:
         sys.exit("At least one of --plotFile, --outRawCounts and --outCoverageMetrics are required.\n")
 
     if 'BED' in args:
@@ -192,6 +195,7 @@ def main(args=None):
                                  samFlag_exclude=args.samFlagExclude,
                                  minFragmentLength=args.minFragmentLength,
                                  maxFragmentLength=args.maxFragmentLength,
+                                 bed_and_bin=True,
                                  out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
@@ -199,11 +203,11 @@ def main(args=None):
     if args.outCoverageMetrics and args.coverageThresholds:
         of = open(args.outCoverageMetrics, "w")
         of.write("Sample\tThreshold\tPercent\n")
-        nbins = num_reads_per_bin.shape[0]
+        nbins = float(num_reads_per_bin.shape[0])
         for thresh in args.coverageThresholds:
             vals = np.sum(num_reads_per_bin >= thresh, axis=0)
             for lab, val in zip(args.labels, vals):
-                of.write("{}\t{}\t{:6.3f}\n".format(lab, thresh, 100. * val / float(nbins)))
+                of.write("{}\t{}\t{:6.3f}\n".format(lab, thresh, 100. * val / nbins))
         of.close()
 
     if args.outRawCounts:
