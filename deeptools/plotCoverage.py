@@ -201,6 +201,7 @@ def main(args=None):
     num_reads_per_bin = cr.run()
 
     if args.outCoverageMetrics and args.coverageThresholds:
+        args.coverageThresholds.sort()  # Galaxy in particular tends to give things in a weird order
         of = open(args.outCoverageMetrics, "w")
         of.write("Sample\tThreshold\tPercent\n")
         nbins = float(num_reads_per_bin.shape[0])

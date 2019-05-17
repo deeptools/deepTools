@@ -1,0 +1,9 @@
+Sample	Threshold	Percent
+bowtie2 test1.bam	0	100.000
+bowtie2 test1.bam	0	100.000
+bowtie2 test1.bam	5	 1.509
+bowtie2 test1.bam	5	 1.509
+bowtie2 test1.bam	10	 1.461
+bowtie2 test1.bam	10	 1.461
+bowtie2 test1.bam	20	 1.406
+bowtie2 test1.bam	20	 1.406

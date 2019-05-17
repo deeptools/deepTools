@@ -40,7 +40,7 @@
                 #for $t in $coverageOpt.thresholds:
                     -ct $t.coverageThreshold
                 #end for
-            #fi
+            #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 --numberOfSamples '$advancedOpt.numberOfSamples'
@@ -78,7 +78,7 @@
             <when value="yes">
                 <param argument="--outCoverageMetrics" type="boolean" label="Save per-threshold coverage metrics?"/>
                 <repeat name="thresholds" title="Coverage Thresholds">
-                    <param argument="--coverageThreshold" type="integer" min="0" label="Coverage Threshold"/>
+                    <param argument="--coverageThreshold" type="integer" min="0" label="Coverage Threshold" value="0"/>
                 </repeat>
             </when>
         </conditional>
@@ -112,7 +112,7 @@
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>outRawCounts is True</filter>
         </data>
-        <data format="tabular" name"outFileCoverageMetrics" label="${tool.name} on ${on_string}: Threshold Metrics">
+        <data format="tabular" name="outFileCoverageMetrics" label="${tool.name} on ${on_string}: Threshold Metrics">
             <filter>coverageOpt.outCoverageMetrics is True</filter>
         </data>
     </outputs>
@@ -130,8 +130,7 @@
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="plotTitle" value="Test Title from Galaxy" />
-            <param name="outRawCounts" value="True" />
-            <param name="showCoverageOpt" value="True" />
+            <param name="showCoverageOpt" value="yes" />
             <param name="coverageThreshold" value="0" />
             <param name="coverageThreshold" value="5" />
             <param name="coverageThreshold" value="10" />
