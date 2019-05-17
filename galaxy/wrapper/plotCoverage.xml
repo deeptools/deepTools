@@ -35,6 +35,13 @@
                 #end if
             #end if
 
+            #if $coverageOpt.showCoverageOpt == "yes":
+                --outCoverageMetrics '$outFileCoverageMetrics'
+                #for $t in $coverageOpt.thresholds:
+                    -ct $t.coverageThreshold
+                #end for
+            #fi
+
             #if $advancedOpt.showAdvancedOpt == "yes":
                 --numberOfSamples '$advancedOpt.numberOfSamples'
                 $advancedOpt.skipZeros
@@ -60,12 +67,26 @@
         <expand macro="custom_sample_labels" />
         <param argument="--BED" type="data" format="bed,gtf" multiple="true" optional="true" min="0"
             label="Regions of interest"
-            help="Limits the coverage analysis to the regions specified in these files. This overrides --numberOfSamples." />
+            help="Limits the coverage analysis to the regions specified in these files. This overrides --numberOfSamples. It is inadvisable to combine this with saving the raw counts." />
+
+        <conditional name="coverageOpt">
+            <param name="showCoverageOpt" type="select" label="Show coverage metrics options">
+                <option value="no" selected="true">No</option>
+                <option value="yes">Yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param argument="--outCoverageMetrics" type="boolean" label="Save per-threshold coverage metrics?"/>
+                <repeat name="thresholds" title="Coverage Thresholds">
+                    <param argument="--coverageThreshold" type="integer" min="0" label="Coverage Threshold"/>
+                </repeat>
+            </when>
+        </conditional>
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
+                <option value="no" selected="true">No</option>
+                <option value="yes">Yes</option>
             </param>
             <when value="no" />
             <when value="yes">
@@ -91,6 +112,9 @@
         <data format="tabular" name="outFileRawCounts" label="${tool.name} on ${on_string}: bin counts">
             <filter>outRawCounts is True</filter>
         </data>
+        <data format="tabular" name"outFileCoverageMetrics" label="${tool.name} on ${on_string}: Threshold Metrics">
+            <filter>coverageOpt.outCoverageMetrics is True</filter>
+        </data>
     </outputs>
     <tests>
         <test>
@@ -101,6 +125,19 @@
             <param name="outRawCounts" value="True" />
             <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
             <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="2400" />
+        </test>
+        <test>
+            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="plotTitle" value="Test Title from Galaxy" />
+            <param name="outRawCounts" value="True" />
+            <param name="showCoverageOpt" value="True" />
+            <param name="coverageThreshold" value="0" />
+            <param name="coverageThreshold" value="5" />
+            <param name="coverageThreshold" value="10" />
+            <param name="coverageThreshold" value="20" />
+            <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="2400" />
+            <output name="outFileCoverageMetrics" file="plotCoverage.metrics" ftype="tabular" />
         </test>
     </tests>
     <help>
