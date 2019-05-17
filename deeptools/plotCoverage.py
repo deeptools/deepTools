@@ -118,10 +118,33 @@ def required_args():
                           type=int,
                           default=1000000)
 
+    optional.add_argument('--BED',
+                          help='Limits the coverage analysis to '
+                          'the regions specified in these files. This overrides --numberOfSamples. '
+                          'Due to memory requirements, it is inadvised to combine this with '
+                          '--outRawCounts or many tens of thousands of regions, as per-base '
+                          'coverage is used!',
+                          metavar='FILE1.bed FILE2.bed',
+                          nargs='+')
+
     optional.add_argument('--outRawCounts',
                           help='Save raw counts (coverages) to file.',
                           type=parserCommon.writableFile,
                           metavar='FILE')
+
+    optional.add_argument('--outCoverageMetrics',
+                          help='Save percentage of bins/regions above the specified thresholds to '
+                          'the specified file. The coverage thresholds are specified by '
+                          '--coverageThresholds. If no coverage thresholds are specified, the file '
+                          'will be empty.',
+                          type=parserCommon.writableFile,
+                          metavar='FILE')
+
+    optional.add_argument('--coverageThresholds', '-ct',
+                          type=int,
+                          action="append",
+                          help='The percentage of reported bins/regions with signal at least as '
+                          'high as the given threshold. This can be specified multiple times.')
 
     optional.add_argument('--plotHeight',
                           help='Plot height in cm.',
@@ -148,11 +171,17 @@ def required_args():
 def main(args=None):
     args = process_args(args)
 
-    if args.outRawCounts is None and args.plotFile is None:
-        sys.exit("At least one of --plotFile and --outRawCounts are required.\n")
+    if not args.outRawCounts and not args.plotFile and not args.outCoverageMetrics:
+        sys.exit("At least one of --plotFile, --outRawCounts and --outCoverageMetrics are required.\n")
+
+    if 'BED' in args:
+        bed_regions = args.BED
+    else:
+        bed_regions = None
 
     cr = countR.CountReadsPerBin(args.bamfiles,
                                  binLength=1,
+                                 bedFile=bed_regions,
                                  numberOfSamples=args.numberOfSamples,
                                  numberOfProcessors=args.numberOfProcessors,
                                  verbose=args.verbose,
@@ -166,9 +195,21 @@ def main(args=None):
                                  samFlag_exclude=args.samFlagExclude,
                                  minFragmentLength=args.minFragmentLength,
                                  maxFragmentLength=args.maxFragmentLength,
+                                 bed_and_bin=True,
                                  out_file_for_raw_data=args.outRawCounts)
 
     num_reads_per_bin = cr.run()
+
+    if args.outCoverageMetrics and args.coverageThresholds:
+        args.coverageThresholds.sort()  # Galaxy in particular tends to give things in a weird order
+        of = open(args.outCoverageMetrics, "w")
+        of.write("Sample\tThreshold\tPercent\n")
+        nbins = float(num_reads_per_bin.shape[0])
+        for thresh in args.coverageThresholds:
+            vals = np.sum(num_reads_per_bin >= thresh, axis=0)
+            for lab, val in zip(args.labels, vals):
+                of.write("{}\t{}\t{:6.3f}\n".format(lab, thresh, 100. * val / nbins))
+        of.close()
 
     if args.outRawCounts:
         # append to the generated file the

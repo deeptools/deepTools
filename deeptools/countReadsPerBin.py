@@ -130,6 +130,9 @@ class CountReadsPerBin(object):
     mappedList : list
         For each BAM file in bamFilesList, the number of mapped reads in the file.
 
+    bed_and_bin : boolean
+        If true AND a bedFile is given, compute coverage of each bin of the given size in each region of bedFile
+
     Returns
     -------
     numpy array
@@ -171,6 +174,7 @@ class CountReadsPerBin(object):
                  minFragmentLength=0,
                  maxFragmentLength=0,
                  out_file_for_raw_data=None,
+                 bed_and_bin=False,
                  statsList=[],
                  mappedList=[]):
 
@@ -181,6 +185,7 @@ class CountReadsPerBin(object):
         self.statsList = statsList
         self.mappedList = mappedList
         self.skipZeroOverZero = skipZeroOverZero
+        self.bed_and_bin = bed_and_bin
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -463,7 +468,10 @@ class CountReadsPerBin(object):
         # A list of lists of tuples
         transcriptsToConsider = []
         if bed_regions_list is not None:
-            transcriptsToConsider = [x[1] for x in bed_regions_list]
+            if self.bed_and_bin:
+                transcriptsToConsider.append([(x[1][0][0], x[1][0][1], self.binLength) for x in bed_regions_list])
+            else:
+                transcriptsToConsider = [x[1] for x in bed_regions_list]
         else:
             if self.stepSize == self.binLength:
                 transcriptsToConsider.append([(start, end, self.binLength)])
@@ -484,7 +492,7 @@ class CountReadsPerBin(object):
         for bam in bam_handles:
             for trans in transcriptsToConsider:
                 tcov = self.get_coverage_of_region(bam, chrom, trans)
-                if bed_regions_list is not None:
+                if bed_regions_list is not None and not self.bed_and_bin:
                     subnum_reads_per_bin.append(np.sum(tcov))
                 else:
                     subnum_reads_per_bin.extend(tcov)
