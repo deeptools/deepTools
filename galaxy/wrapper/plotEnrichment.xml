@@ -29,7 +29,7 @@
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes"
-                #if $advancedOpt.attributeKey and str($advancedOpt.attributeKey).strip() != "":
+                #if $advancedOpt.attributeKey:
                     --attributeKey '$advancedOpt.attributeKey'
                 #end if
 
@@ -88,9 +88,9 @@
         <expand macro="input_image_file_format" />
 
         <expand macro="advancedOpt_scaffold">
-            <param argument="--attributeKey" type="text" size="20" label="Optional attribute key"
+            <param argument="--attributeKey" type="text" optional="true" size="20" label="Optional attribute key"
                 help="Instead of deriving the feature label from the feature column, use the value of the given
-                attribute key. For example, the gene_biotype. Note that &quot;None&quote; is used for BED files
+                attribute key. For example, the gene_biotype. Note that 'None' is used for BED files
                 or entries where the attributeKey is not found." />
 
             <param argument="--plotHeight" type="integer" value="20" min="3"
