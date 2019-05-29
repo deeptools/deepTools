@@ -86,6 +86,11 @@ def plot_enrichment_args():
                           type=parserCommon.writableFile,
                           metavar='FILE')
 
+    optional.add_argument('--attributeKey',
+                          help='Instead of deriving labels from the feature column in a GTF file, '
+                          'use the given attribute key, such as gene_biotype. For BED files or '
+                          'entries without the attribute key, None is used as the label.')
+
     optional.add_argument('--labels', '-l',
                           metavar='sample1 sample2',
                           help='User defined labels instead of default labels from '
@@ -495,10 +500,14 @@ def main(args=None):
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
+    # Ensure that if we're given an attributeKey that it's not empty
+    if args.attributeKey and args.attributeKey == "":
+        args.attributeKey = None
+
     global gtf
     if not args.regionLabels and args.smartLabels:
         args.regionLabels = smartLabels(args.BED)
-    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels)
+    gtf = Enrichment(args.BED, keepExons=args.keepExons, labels=args.regionLabels, attributeKey=args.attributeKey)
 
     # Get fragment size and chromosome dict
     fhs = [openBam(x) for x in args.bamfiles]
