@@ -299,8 +299,8 @@ class Correlation:
         # a good contrast between the correlation numbers that are
         # plotted on black.
         if plot_numbers:
-            cmap = cmap.from_list(colormap + "clipped",
-                                  cmap(np.linspace(0, 0.9, 10)))
+            cmap = plt_colors.LinearSegmentedColormap.from_list(colormap + "clipped",
+                                                                cmap(np.linspace(0, 0.9, 10)))
 
         cmap.set_under((0., 0., 1.))
         # Plot distance matrix.

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
+import matplotlib.colors as pltcolors
 
 rcParams['pdf.fonttype'] = 42
 rcParams['svg.fonttype'] = 'none'
@@ -50,8 +51,8 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
     # a good contrast between the correlation numbers that are
     # plotted on black.
     if plot_numbers:
-        cmap = cmap.from_list(colormap + "clipped",
-                              cmap(np.linspace(0, 0.9, 10)))
+        cmap = plt_colors.LinearSegmentedColormap.from_list(colormap + "clipped",
+                                                            cmap(np.linspace(0, 0.9, 10)))
 
     cmap.set_under((0., 0., 1.))
     # Plot distance matrix.
