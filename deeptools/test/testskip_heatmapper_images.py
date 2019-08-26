@@ -16,7 +16,8 @@ tolerance = 30
 
 skip = False
 if matplotlib.__version__ != "3.1.1":
-    skip=True
+    skip = True
+
 
 def test_plotHeatmap_simple_plot():
     """
