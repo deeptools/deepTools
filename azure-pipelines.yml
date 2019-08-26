@@ -53,10 +53,10 @@ jobs:
   - bash: conda create -n foo -q --yes -c conda-forge -c bioconda python=$(python.version) numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals planemo
     displayName: Installing dependencies
   - bash: |
-      conda activate foo
+      source activate foo
       python setup.py install
     displayName: Installing deepTools
   - script: |
-      conda activate foo
+      source activate foo
       ./.planemo.sh $TESTGALAXY
     displayName: Run planemo
