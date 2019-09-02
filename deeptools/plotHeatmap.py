@@ -163,7 +163,6 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
         xticks, xtickslabel = hm.getTicks(tickIdx)
-        print("[DEBUG] xticks {} xtickslable {} tickIdx {}".format(xticks, xtickslabel, tickIdx))
         if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
             tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
             xticks_use = [x * tickscale for x in xticks]

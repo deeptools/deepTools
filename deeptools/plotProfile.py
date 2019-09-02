@@ -559,6 +559,8 @@ class Profile(object):
                 ax.axes.set_yticklabels(labels[::-1])
             else:
                 ax.axes.set_yticklabels([])
+            # matplotlib 3.1.1 (and likely some earlier versions) will change the ylim if you change the tick locations!
+            ax.axes.set_ylim([ymin, ymax])
 
             ax_list.append(ax)
 
