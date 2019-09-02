@@ -12,7 +12,7 @@ import deeptools.utilities
 __author__ = 'Fidel'
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
-tolerance = 30
+tolerance = 20
 
 skip = False
 if matplotlib.__version__ != "3.1.1":

@@ -151,7 +151,6 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     if idx is not None:
         m = m[idx]
     tickPlotAdj = 0.5
-    tickPlotAdj = 0
 
     if b < 1e5:
         quotient = 1000
@@ -161,14 +160,12 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         symbol = 'Mb'
 
     if m == 0:
-        print("[DEBUG] m == 0 w {} tickPlotAdj {} a {} b {} quotient {}".format(w, tickPlotAdj, a, b, quotient))
         xticks = [(k / w) - tickPlotAdj for k in [0, b, b + a]]
         xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
 
     else:
-        print("[DEBUG] m == {}".format(m))
         xticks_values = [0]
         xtickslabel = []
 
@@ -198,6 +195,6 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
         xticks = [(k / w) - tickPlotAdj for k in xticks_values]
 
-    # xticks = [max(x, 0.5) for x in xticks]
+    xticks = [max(x, 0) for x in xticks]
 
     return xticks, xtickslabel
