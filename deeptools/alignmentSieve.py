@@ -30,7 +30,7 @@ def parseArguments():
     general.add_argument('--numberOfProcessors', '-p',
                          help='Number of processors to use. Type "max/2" to '
                          'use half the maximum number of processors or "max" '
-                         'to use all available processors.',
+                         'to use all available processors. (Default: %(default)s)',
                          metavar="INT",
                          type=parserCommon.numberOfProcessors,
                          default=1,
@@ -80,7 +80,7 @@ def parseArguments():
 
     filtering.add_argument('--filterRNAstrand',
                            help='Selects RNA-seq reads (single-end or paired-end) in '
-                                'the given strand.',
+                                'the given strand. (Default: %(default)s)',
                            choices=['forward', 'reverse'],
                            default=None)
 
@@ -129,7 +129,7 @@ def parseArguments():
                            help='The minimum fragment length needed for read/pair '
                            'inclusion. This option is primarily useful '
                            'in ATACseq experiments, for filtering mono- or '
-                           'di-nucleosome fragments.',
+                           'di-nucleosome fragments. (Default: %(default)s)',
                            metavar='INT',
                            default=0,
                            type=int,
@@ -137,7 +137,7 @@ def parseArguments():
 
     filtering.add_argument('--maxFragmentLength',
                            help='The maximum fragment length needed for read/pair '
-                           'inclusion.',
+                           'inclusion. A value of 0 indicates no limit. (Default: %(default)s)',
                            metavar='INT',
                            default=0,
                            type=int,

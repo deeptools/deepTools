@@ -104,13 +104,13 @@ def get_optional_args():
 
     optional.add_argument('--binSize', '-bs',
                           help='Window size in base pairs to '
-                          'sample the genome. This times --numberOfSamples should be less than the genome size.',
+                          'sample the genome. This times --numberOfSamples should be less than the genome size. (Default: %(default)s)',
                           default=500,
                           type=int)
 
     optional.add_argument('--numberOfSamples', '-n',
                           help='The number of bins that are sampled from the genome, '
-                          'for which the overlapping number of reads is computed.',
+                          'for which the overlapping number of reads is computed. (Default: %(default)s)',
                           default=5e5,
                           type=int)
 
@@ -125,7 +125,7 @@ def get_optional_args():
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
-                          'the generated image. Leave blank for no title.',
+                          'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
 
     optional.add_argument('--skipZeros',

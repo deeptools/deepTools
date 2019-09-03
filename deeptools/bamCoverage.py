@@ -67,7 +67,7 @@ def get_optional_args():
 
     optional.add_argument('--scaleFactor',
                           help='The computed scaling factor (or 1, if not applicable) will '
-                          'be multiplied by this.',
+                          'be multiplied by this. (Default: %(default)s)',
                           default=1.0,
                           type=float,
                           required=False)

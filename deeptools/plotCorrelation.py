@@ -28,7 +28,7 @@ Tool for the analysis and visualization of sample correlations based on the outp
 multiBigwigSummary. Pearson or Spearman methods are available to compute correlation
 coefficients. Results can be saved as multiple
 scatter plots depicting the pairwise correlations or as a clustered heatmap,
-where the colors represent the correlation coefficients and the clusters are joined using the Nearest Point Algorithm (also known as "single").
+where the colors represent the correlation coefficients and the clusters are constructed using complete linkage.
 Optionally, the values can be saved as tables, too.
 
 
@@ -91,7 +91,7 @@ def plot_correlation_args():
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
-                          'the generated image. Leave blank for no title.',
+                          'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
 
     optional.add_argument('--plotFileFormat',
@@ -162,12 +162,12 @@ def heatmap_options():
     heatmap = parser.add_argument_group('Heatmap options')
 
     heatmap.add_argument('--plotHeight',
-                         help='Plot height in cm.',
+                         help='Plot height in cm. (Default: %(default)s)',
                          type=float,
                          default=9.5)
 
     heatmap.add_argument('--plotWidth',
-                         help='Plot width in cm. The minimum value is 1 cm.',
+                         help='Plot width in cm. The minimum value is 1 cm. (Default: %(default)s)',
                          type=float,
                          default=11)
 

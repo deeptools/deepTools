@@ -94,7 +94,7 @@ def getRequiredArgs():
 
     optional.add_argument('--sampleSize',
                           default=5e7,
-                          help='Number of sampling points to be considered.',
+                          help='Number of sampling points to be considered. (Default: %(default)s)',
                           type=int)
 
     optional.add_argument('--extraSampling',
@@ -130,7 +130,7 @@ def getRequiredArgs():
                       'standard fragment size for Illumina machines. However, '
                       'if the depth of sequencing is low, a larger bin size '
                       'will be required, otherwise many bins will not '
-                      'overlap with any read')
+                      'overlap with any read (Default: %(default)s)')
 
     return parser
 
