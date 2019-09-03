@@ -665,6 +665,7 @@ def plotMatrix(hm, outFileName,
                 # add xticks to the bottom heatmap (last group)
                 ax.axes.get_xaxis().set_visible(True)
                 xticks_heat, xtickslabel_heat = hm.getTicks(sample)
+                xticks_heat = [x + 0.5 for x in xticks_heat]  # There's an offset of 0.5 compared to the profile plot
                 if np.ceil(max(xticks_heat)) != float(sub_matrix['matrix'].shape[1]):
                     tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks_heat)
                     xticks_heat_use = [x * tickscale for x in xticks_heat]

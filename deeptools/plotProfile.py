@@ -559,6 +559,8 @@ class Profile(object):
                 ax.axes.set_yticklabels(labels[::-1])
             else:
                 ax.axes.set_yticklabels([])
+            # matplotlib 3.1.1 (and likely some earlier versions) will change the ylim if you change the tick locations!
+            ax.axes.set_ylim([ymin, ymax])
 
             ax_list.append(ax)
 
@@ -743,14 +745,9 @@ class Profile(object):
             globalYmin = min(np.float64(globalYmin), ax.get_ylim()[0])
             globalYmax = max(globalYmax, ax.get_ylim()[1])
 
-            # remove the numbers of the y axis for all plots
-            plt.setp(ax.get_yticklabels(), visible=False)
-
-            if col == 0 or len(self.y_min) > 1 or len(self.y_max) > 1:
-                # add the y axis label for the first plot
-                # on each row and make the numbers and ticks visible
-                plt.setp(ax.get_yticklabels(), visible=True)
-                ax.axes.set_ylabel(self.y_axis_label)
+            # Exclude ticks from all but one subplot by default
+            if col > 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
+                plt.setp(ax.get_yticklabels(), visible=False)
 
             totalWidth = sub_matrix['matrix'].shape[1]
             xticks, xtickslabel = self.getTicks(tickIdx)
