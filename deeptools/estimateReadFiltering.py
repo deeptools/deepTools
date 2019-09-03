@@ -62,7 +62,7 @@ The sum of these may be more than the total number of reads. Note that alignment
 
     general.add_argument('--binSize', '-bs',
                          metavar='INT',
-                         help='Length in bases of the window used to sample the genome. (default 1000000)',
+                         help='Length in bases of the window used to sample the genome. (Default: %(default)s)',
                          default=1000000,
                          type=int)
 
@@ -74,14 +74,14 @@ The sum of these may be more than the total number of reads. Note that alignment
                          'for high coverage samples, while smaller values are useful for '
                          'lower coverage samples. Note that if you specify a value that '
                          'results in too few (<1000) reads sampled, the value will be '
-                         'decreased. (default 10000)',
+                         'decreased. (Default: %(default)s)',
                          default=10000,
                          type=int)
 
     general.add_argument('--numberOfProcessors', '-p',
                          help='Number of processors to use. Type "max/2" to '
                          'use half the maximum number of processors or "max" '
-                         'to use all available processors.',
+                         'to use all available processors. (Default: %(default)s)',
                          metavar="INT",
                          type=parserCommon.numberOfProcessors,
                          default=1,
@@ -98,7 +98,7 @@ The sum of these may be more than the total number of reads. Note that alignment
 
     filtering.add_argument('--filterRNAstrand',
                            help='Selects RNA-seq reads (single-end or paired-end) in '
-                                'the given strand.',
+                                'the given strand. (Default: %(default)s)',
                            choices=['forward', 'reverse'],
                            default=None)
 
@@ -121,7 +121,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                            'to get only reads that are the first mate, use a flag of 64. '
                            'This is useful to count properly paired reads only once, '
                            'as otherwise the second mate will be also considered for the '
-                           'coverage.',
+                           'coverage. (Default: %(default)s)',
                            metavar='INT',
                            default=None,
                            type=int,
@@ -131,7 +131,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                            help='Exclude reads based on the SAM flag. For example, '
                            'to get only reads that map to the forward strand, use '
                            '--samFlagExclude 16, where 16 is the SAM flag for reads '
-                           'that map to the reverse strand.',
+                           'that map to the reverse strand. (Default: %(default)s)',
                            metavar='INT',
                            default=None,
                            type=int,

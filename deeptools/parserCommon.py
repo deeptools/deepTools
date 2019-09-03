@@ -100,7 +100,7 @@ def read_options():
                        'to get only reads that are the first mate, use a flag of 64. '
                        'This is useful to count properly paired reads only once, '
                        'as otherwise the second mate will be also considered for the '
-                       'coverage.',
+                       'coverage. (Default: %(default)s)',
                        metavar='INT',
                        default=None,
                        type=int,
@@ -110,7 +110,7 @@ def read_options():
                        help='Exclude reads based on the SAM flag. For example, '
                        'to get only reads that map to the forward strand, use '
                        '--samFlagExclude 16, where 16 is the SAM flag for reads '
-                       'that map to the reverse strand.',
+                       'that map to the reverse strand. (Default: %(default)s)',
                        metavar='INT',
                        default=None,
                        type=int,
@@ -120,7 +120,7 @@ def read_options():
                        help='The minimum fragment length needed for read/pair '
                        'inclusion. This option is primarily useful '
                        'in ATACseq experiments, for filtering mono- or '
-                       'di-nucleosome fragments.',
+                       'di-nucleosome fragments. (Default: %(default)s)',
                        metavar='INT',
                        default=0,
                        type=int,
@@ -128,7 +128,7 @@ def read_options():
 
     group.add_argument('--maxFragmentLength',
                        help='The maximum fragment length needed for read/pair '
-                       'inclusion.',
+                       'inclusion. (Default: %(default)s)',
                        metavar='INT',
                        default=0,
                        type=int,
@@ -156,7 +156,7 @@ def gtf_options(suppress=False):
         rather than using the genomic interval defined by the \
         5-prime and 3-prime most transcript bound (i.e., columns \
         2 and 3 of a BED file). If a BED3 or BED6 file is used \
-        as input, then columns 2 and 3 are used as an exon.'
+        as input, then columns 2 and 3 are used as an exon. (Default: %(default)s)'
 
     group.add_argument('--metagene',
                        help=help,
@@ -166,7 +166,7 @@ def gtf_options(suppress=False):
     if suppress is False:
         help = 'When a GTF file is used to provide regions, only \
         entries with this value as their feature (column 2) \
-        will be processed as transcripts.'
+        will be processed as transcripts. (Default: %(default)s)'
 
     group.add_argument('--transcriptID',
                        help=help,
@@ -176,7 +176,7 @@ def gtf_options(suppress=False):
         help = 'When a GTF file is used to provide regions, only \
         entries with this value as their feature (column 2) \
         will be processed as exons. CDS would be another common \
-        value for this.'
+        value for this. (Default: %(default)s)'
 
     group.add_argument('--exonID',
                        help=help,
@@ -190,7 +190,7 @@ def gtf_options(suppress=False):
         \'transcript_id "ACTB"\', for a key of transcript_id \
         and a value of ACTB). In some cases it can be \
         convenient to use a different identifier. To do so, set \
-        this to the desired key.'
+        this to the desired key. (Default: %(default)s)'
 
     group.add_argument('--transcript_id_designator',
                        help=help,
@@ -242,7 +242,7 @@ def normalization_options():
                        'for the sample to match the 1x coverage. This option requires --effectiveGenomeSize. '
                        'Each read is considered independently, '
                        'if you want to only count one mate from a pair in '
-                       'paired-end data, then use the --samFlagInclude/--samFlagExclude options.',
+                       'paired-end data, then use the --samFlagInclude/--samFlagExclude options. (Default: %(default)s)',
                        choices=['RPKM', 'CPM', 'BPM', 'RPGC', 'None'],
                        default=None,
                        required=False)
@@ -302,7 +302,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
     if binSize:
         optional.add_argument('--binSize', '-bs',
                               help='Size of the bins, in bases, for the output '
-                              'of the bigwig/bedgraph file.',
+                              'of the bigwig/bedgraph file. (Default: %(default)s)',
                               metavar="INT bp",
                               type=int,
                               default=50)
@@ -327,7 +327,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
     optional.add_argument('--numberOfProcessors', '-p',
                           help='Number of processors to use. Type "max/2" to '
                           'use half the maximum number of processors or "max" '
-                          'to use all available processors.',
+                          'to use all available processors. (Default: %(default)s)',
                           metavar="INT",
                           type=numberOfProcessors,
                           default=1,

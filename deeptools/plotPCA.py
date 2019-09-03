@@ -64,7 +64,7 @@ def plotCorrelationArgs():
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
-                          'the generated image. Leave blank for no title.',
+                          'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
 
     optional.add_argument('--plotFileFormat',
@@ -76,12 +76,12 @@ def plotCorrelationArgs():
                           choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
 
     optional.add_argument('--plotHeight',
-                          help='Plot height in cm.',
+                          help='Plot height in cm. (Default: %(default)s)',
                           type=float,
                           default=10)
 
     optional.add_argument('--plotWidth',
-                          help='Plot width in cm. The minimum value is 1 cm.',
+                          help='Plot width in cm. The minimum value is 1 cm. (Default: %(default)s)',
                           type=float,
                           default=10)
 
@@ -101,14 +101,14 @@ def plotCorrelationArgs():
                           'original matrix. Specifying 0 will result in all '
                           'rows being used. If the matrix is to be transposed, '
                           'rows with 0 variance are always excluded, even if a '
-                          'values of 0 is specified. The default is 1000.',
+                          'values of 0 is specified. The default is 1000. (Default: %(default)s)',
                           type=int,
                           default=1000)
 
     optional.add_argument('--PCs',
                           help='The principal components to plot. If specified, '
                           'you must provide two different integers, greater '
-                          'than zero, separated by a space. An example (and the default) is "1 2".',
+                          'than zero, separated by a space. An example (and the default) is "1 2". (Default: %(default)s)',
                           type=int,
                           nargs=2,
                           default=[1, 2])

@@ -155,7 +155,7 @@ def multiBigwigSummaryArgs(case='bins'):
         optional.add_argument('--binSize', '-bs',
                               metavar='INT',
                               help='Size (in bases) of the windows sampled '
-                              'from the genome.',
+                              'from the genome. (Default: %(default)s)',
                               default=10000,
                               type=int)
 
@@ -165,7 +165,7 @@ def multiBigwigSummaryArgs(case='bins'):
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can be given. Larger distances '
-                              'results in fewer considered bins.',
+                              'results in fewer considered bins. (Default: %(default)s)',
                               default=0,
                               type=int)
 

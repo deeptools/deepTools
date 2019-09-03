@@ -144,7 +144,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               default=1000,
                               type=int,
                               help='Distance in bases to which all regions will '
-                              'be fit.')
+                              'be fit. (Default: %(default)s)')
         optional.add_argument('--startLabel',
                               default='TSS',
                               help='Label shown in the plot for the start of '
@@ -153,38 +153,38 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'e.g. "peak start". Note that this is only '
                               'useful if you plan to plot the results yourself '
                               'and not, for example, with plotHeatmap, which '
-                              'will override this.')
+                              'will override this. (Default: %(default)s)')
         optional.add_argument('--endLabel',
                               default='TES',
                               help='Label shown in the plot for the region '
                               'end. Default is TES (transcription end site). '
                               'See the --startLabel option for more '
-                              'information. ')
+                              'information. (Default: %(default)s) ')
         optional.add_argument('--beforeRegionStartLength', '-b', '--upstream',
                               default=0,
                               type=int,
                               help='Distance upstream of the start site of '
                               'the regions defined in the region file. If the '
                               'regions are genes, this would be the distance '
-                              'upstream of the transcription start site.')
+                              'upstream of the transcription start site. (Default: %(default)s)')
         optional.add_argument('--afterRegionStartLength', '-a', '--downstream',
                               default=0,
                               type=int,
                               help='Distance downstream of the end site '
                               'of the given regions. If the '
                               'regions are genes, this would be the distance '
-                              'downstream of the transcription end site.')
+                              'downstream of the transcription end site. (Default: %(default)s)')
         optional.add_argument("--unscaled5prime",
                               default=0,
                               type=int,
                               help='Number of bases at the 5-prime end of the '
                               'region to exclude from scaling. By default, '
-                              'each region is scaled to a given length (see the --regionBodyLength option). In some cases it is useful to look at unscaled signals around region boundaries, so this setting specifies the number of unscaled bases on the 5-prime end of each boundary.')
+                              'each region is scaled to a given length (see the --regionBodyLength option). In some cases it is useful to look at unscaled signals around region boundaries, so this setting specifies the number of unscaled bases on the 5-prime end of each boundary. (Default: %(default)s)')
         optional.add_argument("--unscaled3prime",
                               default=0,
                               type=int,
                               help='Like --unscaled5prime, but for the 3-prime '
-                              'end.')
+                              'end. (Default: %(default)s)')
 
     elif case == 'reference-point':
         optional.add_argument('--referencePoint',
@@ -195,7 +195,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               'region end (TES) or the center of the region. '
                               'Note that regardless of what you specify, '
                               'plotHeatmap/plotProfile will default to using "TSS" as the '
-                              'label.')
+                              'label. (Default: %(default)s)')
 
         # set region body length to zero for reference point mode
         optional.add_argument('--regionBodyLength', help=argparse.SUPPRESS,
@@ -207,13 +207,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                               type=int,
                               metavar='INT bp',
                               help='Distance upstream of the reference-point '
-                              'selected.')
+                              'selected. (Default: %(default)s)')
         optional.add_argument('--afterRegionStartLength', '-a', '--downstream',
                               default=1500,
                               metavar='INT bp',
                               type=int,
                               help='Distance downstream of the '
-                              'reference-point selected.')
+                              'reference-point selected. (Default: %(default)s)')
         optional.add_argument('--nanAfterEnd',
                               action='store_true',
                               help='If set, any values after the region end '
@@ -225,7 +225,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
     optional.add_argument('--binSize', '-bs',
                           help='Length, in bases, of the non-overlapping '
                           'bins for averaging the score over the '
-                          'regions length.',
+                          'regions length. (Default: %(default)s)',
                           type=int,
                           default=10)
 
@@ -240,7 +240,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'the input files. If you require the output order to '
                           'match that of the input regions, then either specify '
                           '"keep" or use computeMatrixOperations to resort the '
-                          'results file.',
+                          'results file. (Default: %(default)s)',
                           choices=["descend", "ascend", "no", "keep"],
                           default='keep')
 
@@ -249,7 +249,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'sorting. The value is computed for each row.'
                           'Note that the region_length option will lead '
                           'to a dotted line within the heatmap that indicates '
-                          'the end of the regions.',
+                          'the end of the regions. (Default: %(default)s)',
                           choices=["mean", "median", "max", "min", "sum",
                                    "region_length"],
                           default='mean')
@@ -268,7 +268,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           help='Define the type of statistic that should be '
                           'used over the bin size range. The '
                           'options are: "mean", "median", "min", "max", "sum" '
-                          'and "std". The default is "mean".')
+                          'and "std". The default is "mean". (Default: %(default)s)')
 
     optional.add_argument('--missingDataAsZero',
                           help='If set, missing data (NAs) will be treated as zeros. '
@@ -291,7 +291,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'will be skipped. This is useful to skip, '
                           'for example, genes where the read count is zero '
                           'for any of the bins. This could be the result of '
-                          'unmappable areas and can bias the overall results.')
+                          'unmappable areas and can bias the overall results. (Default: %(default)s)')
 
     optional.add_argument('--maxThreshold',
                           default=None,
@@ -301,7 +301,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'will be skipped. The maxThreshold is useful to '
                           'skip those few regions with very high read counts '
                           '(e.g. micro satellites) that may bias the average '
-                          'values.')
+                          'values. (Default: %(default)s)')
 
     optional.add_argument('--blackListFileName', '-bl',
                           help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
@@ -336,13 +336,13 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--scale',
                           help='If set, all values are multiplied by '
-                          'this number.',
+                          'this number. (Default: %(default)s)',
                           type=float,
                           default=1)
     optional.add_argument('--numberOfProcessors', '-p',
                           help='Number of processors to use. Type "max/2" to '
                           'use half the maximum number of processors or "max" '
-                          'to use all available processors.',
+                          'to use all available processors. (Default: %(default)s)',
                           metavar="INT",
                           type=numberOfProcessors,
                           default=1,

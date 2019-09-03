@@ -102,7 +102,7 @@ def required_args():
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
-                          'the generated image. Leave blank for no title.',
+                          'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
 
     optional.add_argument('--skipZeros',
@@ -113,7 +113,7 @@ def required_args():
                           required=False)
 
     optional.add_argument('--numberOfSamples', '-n',
-                          help='Number of 1 bp regions to sample. Default 1 million.',
+                          help='Number of 1 bp regions to sample. (Default: %(default)s)',
                           required=False,
                           type=int,
                           default=1000000)
@@ -147,12 +147,12 @@ def required_args():
                           'high as the given threshold. This can be specified multiple times.')
 
     optional.add_argument('--plotHeight',
-                          help='Plot height in cm.',
+                          help='Plot height in cm. (Default: %(default)s)',
                           type=float,
                           default=5.0)
 
     optional.add_argument('--plotWidth',
-                          help='Plot width in cm. The minimum value is 1 cm.',
+                          help='Plot width in cm. The minimum value is 1 cm. (Default: %(default)s)',
                           type=float,
                           default=15.0)
 
