@@ -73,8 +73,7 @@ def parse_arguments(args=None):
                         'the negative of the inverse of the ratio '
                         'if the ratio is less than 0. The resulting '
                         'values are interpreted as negative fold changes. '
-                        '*NOTE*: Only with --operation subtract can --normalizeUsing RPGC or '
-                        '--normalizeUsing RPKM be used. Instead of performing a '
+                        'Instead of performing a '
                         'computation using both files, the scaled signal can '
                         'alternatively be output for the first or second file using '
                         'the \'--operation first\' or \'--operation second\'',
