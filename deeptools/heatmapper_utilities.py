@@ -126,6 +126,8 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     correspond to the heatmap
 
     As of deepTools 3, the various parameters can be lists, in which case we then need to index things (the idx parameter)
+
+    As of matplotlib 3 the ticks in the heatmap need to have 0.5 added to them.
     """
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
@@ -164,7 +166,6 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
-
     else:
         xticks_values = [0]
         xtickslabel = []
@@ -194,7 +195,6 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
             xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
         xticks = [(k / w) - tickPlotAdj for k in xticks_values]
-
-    xticks = [max(x, 0.5) for x in xticks]
+        xticks = [max(x, 0) for x in xticks]
 
     return xticks, xtickslabel

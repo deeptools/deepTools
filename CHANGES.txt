@@ -1,6 +1,9 @@
 3.3.1
 
  * Fixed `--plotNumbers` not working in `plotCorrelation`. This was issue #838
+ * Fixed compatibility with matplotlib 3
+ * The Y-axis labels should once again appear in both plotHeatmap and plotProfile (issue #844). This was related to the previous point.
+ * Testing is no longer performed with python 2.7, which will reach end of life in a couple months
 
 3.3.0
 

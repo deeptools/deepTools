@@ -19,6 +19,7 @@ dm3      162367812
 dm6      142573017
 GRCz10   1369631918
 WBcel235 100286401
+TAIR10   119481543 
 ======== ==============
 
 These values only appropriate if multimapping reads are included. If they are excluded (or there's any MAPQ filter applied), then values derived from option 2 are more appropriate. These are then based on the read length. We can approximate these values for various read lengths using the `khmer program <http://khmer.readthedocs.io/en/v2.1.1/>`__ program and ``unique-kmers.py`` in particular. A table of effective genome sizes given a read length using this method is provided below:
