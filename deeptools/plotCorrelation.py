@@ -28,7 +28,7 @@ Tool for the analysis and visualization of sample correlations based on the outp
 multiBigwigSummary. Pearson or Spearman methods are available to compute correlation
 coefficients. Results can be saved as multiple
 scatter plots depicting the pairwise correlations or as a clustered heatmap,
-where the colors represent the correlation coefficients and the clusters are joined using the Nearest Point Algorithm (also known as "single").
+where the colors represent the correlation coefficients and the clusters are constructed using complete linkage.
 Optionally, the values can be saved as tables, too.
 
 
