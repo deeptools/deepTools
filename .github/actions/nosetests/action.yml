@@ -1,3 +1,0 @@
-export PATH=$HOME/miniconda/bin:$PATH
-source activate foo
-nosetests --with-doctest -sv deeptools

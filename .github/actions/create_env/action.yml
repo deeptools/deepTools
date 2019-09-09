@@ -1,2 +1,0 @@
-export PATH=$HOME/miniconda/bin:$PATH
-conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals
