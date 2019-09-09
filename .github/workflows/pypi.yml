@@ -24,6 +24,7 @@ jobs:
       run: |
         export PATH=$HOME/miniconda/bin:$PATH
         source activate foo
+        rm -f dist/*
         python setup.py sdist
     - name: upload
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
