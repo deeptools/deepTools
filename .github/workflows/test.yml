@@ -7,18 +7,18 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Setup conda
-      use: ./.github/actions/setup_conda
+      uses: ./.github/actions/setup_conda
     - name: create env
-      use: ./.github/actions/create_env
+      uses: ./.github/actions/create_env
     - name: install deeptools
-      use: ./.github/actions/install_deeptools
+      uses: ./.github/actions/install_deeptools
     - name: PEP8
       run: |
         export PATH=$HOME/miniconda/bin:$PATH
         source activate foo
         flake8 . --exclude=.venv,.build,build --ignore=E501,F403,E402,F999,F405,E722,W504,W605
     - name: Test deepTools
-      use: ./.github/actions/nosetests
+      uses: ./.github/actions/nosetests
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
