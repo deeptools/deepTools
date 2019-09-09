@@ -1,8 +1,8 @@
 name: Setup conda
 description: Sets up conda
 runs: |
-    curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
-    bash miniconda.sh -b -p $HOME/miniconda
-    export PATH="$HOME/miniconda/bin:$PATH"
-    hash -r
-    conda config --set always_yes yes --set changeps1 no
+  curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+  bash miniconda.sh -b -p $HOME/miniconda
+  export PATH="$HOME/miniconda/bin:$PATH"
+  hash -r
+  conda config --set always_yes yes --set changeps1 no
