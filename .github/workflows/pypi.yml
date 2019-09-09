@@ -28,7 +28,7 @@ jobs:
         python setup.py sdist
     - name: upload
       if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
-      with:
+      env:
         TWINE_USERNAME: "__token__"
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
