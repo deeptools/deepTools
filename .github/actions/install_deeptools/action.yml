@@ -1,6 +1,0 @@
-name: install deepTools
-description: "Install deepTools"
-runs: |
-    export PATH=$HOME/miniconda/bin:$PATH
-    source activate foo
-    python -m pip install . --no-deps --ignore-installed -vvv
