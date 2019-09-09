@@ -5,6 +5,7 @@
  * The Y-axis labels should once again appear in both plotHeatmap and plotProfile (issue #844). This was related to the previous point.
  * Testing is no longer performed with python 2.7, which will reach end of life in a couple months.
  * Various documentation updates (issues #868, #867 and #851).
+ * Increased support for BED files with track header lines (issue #866).
 
 3.3.0
 

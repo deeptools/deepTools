@@ -679,6 +679,8 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
             if not labelColumn:
                 labelColumn = dti.getLabel(line)
             line = dti.getNext(fp)
+        while line.startswith("track "):
+            line = dti.getNext(fp)
 
         # Find the label column
         subtract = 0
