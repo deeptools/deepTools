@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions@master"
+    - uses: "dpryan79/github-actions/@master"
       with:
         os: "linux"
     - name: PEP8
