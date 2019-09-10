@@ -1,0 +1,90 @@
+name: Test
+on: [push]
+jobs:
+  build-linux:
+    name: Test on Linux
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup conda
+      run: |
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        export PATH="$HOME/miniconda/bin:$PATH"
+        hash -r
+        conda config --set always_yes yes --set changeps1 no
+    - name: create env
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals
+    - name: install deeptools
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        python -m pip install . --no-deps --ignore-installed -vvv
+    - name: PEP8
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        flake8 . --exclude=.venv,.build,build --ignore=E501,F403,E402,F999,F405,E722,W504,W605
+    - name: Test deepTools
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        nosetests --with-doctest -sv deeptools
+  build-osx:
+    name: Test on OSX
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup conda
+      run: |
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        export PATH="$HOME/miniconda/bin:$PATH"
+        hash -r
+        conda config --set always_yes yes --set changeps1 no
+    - name: create env
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals
+    - name: install deeptools
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        python -m pip install . --no-deps --ignore-installed -vvv
+    - name: Test deepTools
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        nosetests --with-doctest -sv deeptools
+  planemo:
+    name: First planemo chunk
+    runs-on: ubuntu-latest
+    needs: build-linux
+    strategy:
+      matrix:
+        chunk: [1, 2, 3]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup conda
+      run: |
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        export PATH="$HOME/miniconda/bin:$PATH"
+        hash -r
+        conda config --set always_yes yes --set changeps1 no
+    - name: create env
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals planemo samtools
+    - name: install deeptools
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        python -m pip install . --no-deps --ignore-installed -vvv
+    - name: planemo
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        ./.planemo.sh ${{ matrix.chunk }}
