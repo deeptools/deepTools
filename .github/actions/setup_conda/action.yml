@@ -1,5 +1,0 @@
-name: "Setup Conda"
-description: "Setup Conda"
-runs:
-  using: "node12"
-  main: "setup_conda.js"
