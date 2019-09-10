@@ -270,7 +270,7 @@ def sortArgs():
                           default='transcript',
                           help='When a GTF file is used to provide regions, only '
                           'entries with this value as their feature (column 2) '
-                          'will be processed as transcripts.')
+                          'will be processed as transcripts. (Default: %(default)s)')
 
     optional.add_argument('--transcript_id_designator',
                           default='transcript_id',
@@ -281,7 +281,7 @@ def sortArgs():
                           '\'transcript_id "ACTB"\', for a key of transcript_id '
                           'and a value of ACTB). In some cases it can be '
                           'convenient to use a different identifier. To do so, set '
-                          'this to the desired key.')
+                          'this to the desired key. (Default: %(default)s)')
 
     return parser
 
@@ -678,6 +678,8 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
         while line.startswith("#"):
             if not labelColumn:
                 labelColumn = dti.getLabel(line)
+            line = dti.getNext(fp)
+        while line.startswith("track "):
             line = dti.getNext(fp)
 
         # Find the label column

@@ -51,7 +51,7 @@ def parse_arguments():
 
     parser.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. The default is '
-                        'to use 1.',
+                        'to use 1. (Default: %(default)s)',
                         metavar="INT",
                         type=int,
                         default=1,
@@ -65,10 +65,10 @@ def parse_arguments():
                         nargs='+')
     parser.add_argument('--plotTitle', '-T',
                         help='Title of the plot, to be printed on top of '
-                        'the generated image. Leave blank for no title.',
+                        'the generated image. Leave blank for no title. (Default: %(default)s)',
                         default='')
     parser.add_argument('--maxFragmentLength',
-                        help='The maximum fragment length in the histogram. A value of 0 (the default) indicates to use twice the mean fragment length',
+                        help='The maximum fragment length in the histogram. A value of 0 (the default) indicates to use twice the mean fragment length. (Default: %(default)s)',
                         default=0,
                         type=int)
     parser.add_argument('--logScale',
@@ -76,7 +76,7 @@ def parse_arguments():
                         action='store_true')
     parser.add_argument('--binSize', '-bs',
                         metavar='INT',
-                        help='Length in bases of the window used to sample the genome. (default 1000)',
+                        help='Length in bases of the window used to sample the genome. (Default: %(default)s)',
                         default=1000,
                         type=int)
     parser.add_argument('--distanceBetweenBins', '-n',
@@ -87,7 +87,7 @@ def parse_arguments():
                         'for high coverage samples, while smaller values are useful for '
                         'lower coverage samples. Note that if you specify a value that '
                         'results in too few (<1000) reads sampled, the value will be '
-                        'decreased. (default 1000000)',
+                        'decreased. (Default: %(default)s)',
                         default=1000000,
                         type=int)
     parser.add_argument('--blackListFileName', '-bl',

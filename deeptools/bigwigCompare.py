@@ -54,7 +54,7 @@ def parse_arguments(args=None):
                         'You can specify different values as pseudocounts for '
                         'the numerator and the denominator by providing two '
                         'values (the first value is used as the numerator '
-                        'pseudocount and the second the denominator pseudocount).',
+                        'pseudocount and the second the denominator pseudocount). (Default: %(default)s)',
                         default=1,
                         nargs='+',
                         action=parserCommon.requiredLength(1, 2),
@@ -73,11 +73,10 @@ def parse_arguments(args=None):
                         'the negative of the inverse of the ratio '
                         'if the ratio is less than 0. The resulting '
                         'values are interpreted as negative fold changes. '
-                        '*NOTE*: Only with --operation subtract can --normalizeUsing RPGC or '
-                        '--normalizeUsing RPKM be used. Instead of performing a '
+                        'Instead of performing a '
                         'computation using both files, the scaled signal can '
                         'alternatively be output for the first or second file using '
-                        'the \'--operation first\' or \'--operation second\'',
+                        'the \'--operation first\' or \'--operation second\' (Default: %(default)s)',
                         default='log2',
                         choices=['log2', 'ratio', 'subtract', 'add', 'mean',
                                  'reciprocal_ratio', 'first', 'second'],

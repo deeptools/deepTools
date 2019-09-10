@@ -85,7 +85,7 @@ def getOptionalArgs():
                           'If a method is specified, then it will be used to compensate '
                           'for sequencing depth differences between the samples. '
                           'As an alternative, this can be set to None and an option from '
-                          '--normalizeUsing <method> can be used.',
+                          '--normalizeUsing <method> can be used. (Default: %(default)s)',
                           choices=['readCount', 'SES', 'None'],
                           default='readCount')
 
@@ -97,14 +97,14 @@ def getOptionalArgs():
                           'If you do not have a good sequencing depth for '
                           'your samples consider increasing the sampling '
                           'regions\' size to minimize the probability '
-                          'that zero-coverage regions are used.',
+                          'that zero-coverage regions are used. (Default: %(default)s)',
                           default=1000,
                           type=int)
 
     optional.add_argument('--numberOfSamples', '-n',
                           help='*Only relevant when SES is chosen for the '
                           'scaleFactorsMethod.* Number of samplings taken '
-                          'from the genome to compute the scaling factors.',
+                          'from the genome to compute the scaling factors. (Default: %(default)s)',
                           default=1e5,
                           type=int)
 
@@ -125,7 +125,7 @@ def getOptionalArgs():
                           'values are interpreted as negative fold changes. '
                           'Instead of performing a computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
-                          'the \'--operation first\' or \'--operation second\'',
+                          'the \'--operation first\' or \'--operation second\'. (Default: %(default)s)',
                           default='log2',
                           choices=['log2', 'ratio', 'subtract', 'add', 'mean',
                                    'reciprocal_ratio', 'first', 'second'],
@@ -137,7 +137,7 @@ def getOptionalArgs():
                           'You can specify different values as pseudocounts for '
                           'the numerator and the denominator by providing two '
                           'values (the first value is used as the numerator '
-                          'pseudocount and the second the denominator pseudocount).',
+                          'pseudocount and the second the denominator pseudocount). (Default: %(default)s)',
                           default=[1],
                           type=float,
                           nargs='+',

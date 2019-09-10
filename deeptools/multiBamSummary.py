@@ -128,7 +128,7 @@ def bamcorrelate_args(case='bins'):
         optional.add_argument('--binSize', '-bs',
                               metavar='INT',
                               help='Length in bases of the window used '
-                                   'to sample the genome.',
+                                   'to sample the genome. (Default: %(default)s)',
                               default=10000,
                               type=int)
 
@@ -138,7 +138,7 @@ def bamcorrelate_args(case='bins'):
                               'bins of the specified --binSize. However, to '
                               'reduce the computation time, a larger distance '
                               'between bins can by given. Larger distances '
-                              'result in fewer bins considered.',
+                              'result in fewer bins considered. (Default: %(default)s)',
                               default=0,
                               type=int)
 

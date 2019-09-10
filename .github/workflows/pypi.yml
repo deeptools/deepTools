@@ -1,0 +1,37 @@
+name: pypi
+on: [push]
+jobs:
+  pypi:
+    name: upload to pypi
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Setup conda
+      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+      run: |
+        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        export PATH="$HOME/miniconda/bin:$PATH"
+        hash -r
+        conda config --set always_yes yes --set changeps1 no
+    - name: create env
+      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 twine
+    - name: sdist
+      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        rm -f dist/*
+        python setup.py sdist
+    - name: upload
+      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+      env:
+        TWINE_USERNAME: "__token__"
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: |
+        export PATH=$HOME/miniconda/bin:$PATH
+        source activate foo
+        twine upload dist/*
