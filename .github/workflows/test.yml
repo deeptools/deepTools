@@ -7,8 +7,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: "dpryan79/github-actions/@master"
-      with:
-        os: "linux"
     - name: PEP8
       run: |
         export PATH=$HOME/miniconda/bin:$PATH
@@ -24,22 +22,7 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Setup conda
-      run: |
-        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -o miniconda.sh
-        bash miniconda.sh -b -p $HOME/miniconda
-        export PATH="$HOME/miniconda/bin:$PATH"
-        hash -r
-        conda config --set always_yes yes --set changeps1 no
-    - name: create env
-      run: |
-        export PATH=$HOME/miniconda/bin:$PATH
-        conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals
-    - name: install deeptools
-      run: |
-        export PATH=$HOME/miniconda/bin:$PATH
-        source activate foo
-        python -m pip install . --no-deps --ignore-installed -vvv
+    - uses: "dpryan79/github-actions/@master"
     - name: Test deepTools
       run: |
         export PATH=$HOME/miniconda/bin:$PATH
@@ -54,22 +37,7 @@ jobs:
         chunk: [1, 2, 3]
     steps:
     - uses: actions/checkout@v1
-    - name: Setup conda
-      run: |
-        curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
-        bash miniconda.sh -b -p $HOME/miniconda
-        export PATH="$HOME/miniconda/bin:$PATH"
-        hash -r
-        conda config --set always_yes yes --set changeps1 no
-    - name: create env
-      run: |
-        export PATH=$HOME/miniconda/bin:$PATH
-        conda create -n foo -q --yes -c conda-forge -c bioconda python=3.7 numpy scipy matplotlib==3.1.1 nose flake8 plotly pysam pyBigWig py2bit deeptoolsintervals planemo samtools
-    - name: install deeptools
-      run: |
-        export PATH=$HOME/miniconda/bin:$PATH
-        source activate foo
-        python -m pip install . --no-deps --ignore-installed -vvv
+    - uses: "dpryan79/github-actions/@master"
     - name: planemo
       run: |
         export PATH=$HOME/miniconda/bin:$PATH
