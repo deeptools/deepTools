@@ -991,7 +991,7 @@ class heatmapper(object):
     def save_BED(self, file_handle):
         boundaries = np.array(self.matrix.group_boundaries)
         # Add a header
-        file_handle.write("#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStart\tdeepTools_group\n")
+        file_handle.write("#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStart\tdeepTools_group\tsilhouette\n")
         for idx, region in enumerate(self.matrix.regions):
             # the label id corresponds to the last boundary
             # that is smaller than the region index.
@@ -1013,11 +1013,12 @@ class heatmapper(object):
                     region[5],
                     region[4]))
             file_handle.write(
-                '\t{0}\t{1}\t{2}\t{3}\n'.format(
+                '\t{0}\t{1}\t{2}\t{3}\t{4}\n'.format(
                     len(region[1]),
                     ",".join([str(int(y) - int(x)) for x, y in region[1]]),
                     ",".join([str(int(x) - int(starts[0])) for x, y in region[1]]),
-                    self.matrix.group_labels[label_idx]))
+                    self.matrix.group_labels[label_idx],
+                    self.matrix.silhouette[idx]))
         file_handle.close()
 
     @staticmethod
@@ -1082,6 +1083,7 @@ class _matrix(object):
         self.sample_boundaries = sample_boundaries
         self.sort_method = None
         self.sort_using = None
+        self.silhouette = np.repeat(np.nan, matrix.shape[0])
 
         if group_labels is None:
             self.group_labels = ['group {}'.format(x)
@@ -1225,7 +1227,7 @@ class _matrix(object):
         self.regions = _sorted_regions
         self.set_sorting_method(sort_method, sort_using)
 
-    def hmcluster(self, k, method='kmeans'):
+    def hmcluster(self, k, evaluate_silhouette=True, method='kmeans'):
 
         matrix = np.asarray(self.matrix)
         if np.any(np.isnan(matrix)):
@@ -1251,6 +1253,14 @@ class _matrix(object):
             # Thus, for consistency, we subtract 1
             cluster_labels -= 1
 
+        if evaluate_silhouette:
+            if k > 1:
+                from sklearn.metrics import silhouette_samples
+                silhouette = silhouette_samples(matrix, cluster_labels)
+            else:
+                silhouette = np.repeat(0, len(cluster_labels))
+            sys.stderr.write("The average silhouette score is:{} \n".format(np.mean(silhouette)))
+
         # sort clusters
         _clustered_mean = []
         _cluster_ids_list = []
@@ -1266,6 +1276,7 @@ class _matrix(object):
         self.group_labels = []
         self.group_boundaries = [0]
         _clustered_regions = []
+        _clustered_silhouette = []
         _clustered_matrix = []
         cluster_number = 1
         for cluster in cluster_order:
@@ -1277,9 +1288,13 @@ class _matrix(object):
             _clustered_matrix.append(self.matrix[cluster_ids, :])
             for idx in cluster_ids:
                 _clustered_regions.append(self.regions[idx])
+                if evaluate_silhouette:
+                    _clustered_silhouette.append(silhouette[idx])
 
         self.regions = _clustered_regions
         self.matrix = np.vstack(_clustered_matrix)
+        if evaluate_silhouette:
+            self.silhouette = _clustered_silhouette
         return idx
 
     def removeempty(self):

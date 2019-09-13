@@ -505,6 +505,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         'fail with an error if a cluster has very few members compared to the '
         'total number of regions.',
         type=int)
+    cluster.add_argument(
+        '--silhouette',
+        help='Compute the silhouette values. The silhouette value'
+        ' is a measure of how similar is a region from its cluster'
+        ' compare to the closest other cluster. It will be reported'
+        ' in the final column of the BED file with regions. The '
+        'silhouette evaluation can be very slow when you have more'
+        'than 100 000 regions.',
+        action='store_true'
+    )
 
     optional = parser.add_argument_group('Optional arguments')
 

@@ -780,12 +780,12 @@ def main(args=None):
         args.sortRegions = 'no'  # These are the same thing
 
     if args.kmeans is not None:
-        hm.matrix.hmcluster(args.kmeans, method='kmeans')
+        hm.matrix.hmcluster(args.kmeans, args.silhouette, method='kmeans')
     else:
         if args.hclust is not None:
             print("Performing hierarchical clustering."
                   "Please note that it might be very slow for large datasets.\n")
-            hm.matrix.hmcluster(args.hclust, method='hierarchical')
+            hm.matrix.hmcluster(args.hclust, args.silhouette, method='hierarchical')
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
