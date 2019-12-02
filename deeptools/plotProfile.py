@@ -765,6 +765,8 @@ class Profile(object):
             ticks[0].label1.set_horizontalalignment('left')
             ticks[-1].label1.set_horizontalalignment('right')
 
+            if first and self.y_axis_label != '':
+                ax.set_ylabel(self.y_axis_label)
             if first and self.plot_type not in ['heatmap', 'overlapped_lines']:
                 ax.legend(loc=self.legend_location.replace('-', ' '),
                           ncol=1, prop=self.font_p,
