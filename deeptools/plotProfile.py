@@ -308,8 +308,8 @@ class Profile(object):
                 ax.set_ylim(lims)
 
             xticks, xtickslabel = self.getTicks(plot)
-            if np.ceil(max(xticks)) != float(ma.shape[1]):
-                tickscale = float(sub_matrix['matrix'].shape[1]) / max(self.xticks)
+            if np.ceil(max(xticks)) != float(ma.shape[1] - 1):
+                tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax_list[0].axes.set_xticks(xticks_use)
             else:
@@ -532,7 +532,7 @@ class Profile(object):
 
             totalWidth = np.vstack(mat).shape[1]
             xticks, xtickslabel = self.getTicks(plot)
-            if np.ceil(max(xticks)) != float(totalWidth):
+            if np.ceil(max(xticks)) != float(totalWidth - 1):
                 tickscale = float(totalWidth) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax.axes.set_xticks(xticks_use)
