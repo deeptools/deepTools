@@ -751,7 +751,7 @@ class Profile(object):
 
             totalWidth = sub_matrix['matrix'].shape[1]
             xticks, xtickslabel = self.getTicks(tickIdx)
-            if np.ceil(max(xticks)) != float(totalWidth):
+            if np.ceil(max(xticks)) != float(totalWidth - 1):
                 tickscale = float(totalWidth) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax.axes.set_xticks(xticks_use)
