@@ -8,7 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm
+from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
