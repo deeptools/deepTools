@@ -2,6 +2,7 @@
 
  * Fixed --yAxisLabel in plotProfile (issue #889)
  * Fixed a small X-axis tick offset issue. This caused the location of tick marks in profile plots to be shifted to the left by 0.5 to 1 bin. This was generally not notable, only really appearing when very few bins (e.g., 4) were used. The issue was mostly that the end tick would appear after the end of the plot, since its coordinate was the end of the bin. (issue #888)
+ * multiBamSummary and multiBigwigSummary no longer exclude small bins at the end of genomic chunks. multiBamSummary now has a `--genomicChunkSize` option in case users need to control the size of the genome used for multiprocessing for consistency. (issue #887)
 
 3.3.1
 
