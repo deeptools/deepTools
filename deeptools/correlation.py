@@ -7,6 +7,7 @@ import matplotlib as mpl
 mpl.use('Agg')
 mpl.rcParams['pdf.fonttype'] = 42
 mpl.rcParams['svg.fonttype'] = 'none'
+	from deeptools import cm
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker

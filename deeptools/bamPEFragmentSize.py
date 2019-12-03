@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import cm
 import matplotlib.pyplot as plt
 
 import plotly.offline as py

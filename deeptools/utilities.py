@@ -4,6 +4,7 @@ from deeptoolsintervals import GTF
 from deeptools.bamHandler import openBam
 import matplotlib as mpl
 mpl.use('Agg')
+from deeptools import cm
 import numpy as np
 
 
