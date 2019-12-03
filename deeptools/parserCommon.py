@@ -622,9 +622,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'Other colors can be specified using the #rrggbb '
             'notation.')
 
-        from matplotlib import cm
-        color_options = "', '".join([m for m in cm.datad
-                                     if not m.endswith('_r')])
+        import matplotlib.pyplot as plt
+        color_options = "', '".join([x for x in plt.colormaps() if not x.endswith('_r')])
 
         optional.add_argument(
             '--colorMap',
