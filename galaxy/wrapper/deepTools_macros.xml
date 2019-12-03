@@ -824,6 +824,23 @@ is vital to you, select Yes below.">
             <option value="brg">brg</option>
             <option value="jet">jet</option>
             <option value="afmhot">afmhot</option>
+            <option value="Wistia">Wistia</option>
+            <option value="cividis">cividis</option>
+            <option value="icefire">icefire</option>
+            <option value="inferno">inferno</option>
+            <option value="magma">magma</option>
+            <option value="mako">mako</option>
+            <option value="nipy_spectral">nipy_spectral</option>
+            <option value="plasma">plasma</option>
+            <option value="rocket">rocket</option>
+            <option value="tab10">tab10</option>
+            <option value="tab20">tab20</option>
+            <option value="tab20b">tab20b</option>
+            <option value="tab20c">tab20c</option>
+            <option value="twilight">twilight</option>
+            <option value="twilight_shifted">twilight_shifted</option>
+            <option value="viridis">viridis</option>
+            <option value="vlag">vlag</option>
             <option value="Accent_r">Accent reversed</option>
             <option value="Spectral_r">Spectral reversed</option>
             <option value="Set1_r">Set1 reversed</option>
@@ -893,6 +910,23 @@ is vital to you, select Yes below.">
             <option value="brg_r">brg reversed</option>
             <option value="jet_r">jet reversed</option>
             <option value="afmhot_r">afmhot reversed</option>
+            <option value="Wistia_r">Wistia reversed</option>
+            <option value="cividis_r">cividis reversed</option>
+            <option value="icefire_r">icefire reversed</option>
+            <option value="inferno_r">inferno reversed</option>
+            <option value="magma_r">magma reversed</option>
+            <option value="mako_r">mako reversed</option>
+            <option value="nipy_spectral_r">nipy_spectral reversed</option>
+            <option value="plasma_r">plasma reversed</option>
+            <option value="rocket_r">rocket reversed</option>
+            <option value="tab10_r">tab10 reversed</option>
+            <option value="tab20_r">tab20 reversed</option>
+            <option value="tab20b_r">tab20b reversed</option>
+            <option value="tab20c_r">tab20c reversed</option>
+            <option value="twilight_r">twilight reversed</option>
+            <option value="twilight_shifted_r">twilight_shifted reversed</option>
+            <option value="viridis_r">viridis reversed</option>
+            <option value="vlag_r">vlag reversed</option>
         </param>
 
     </xml>
