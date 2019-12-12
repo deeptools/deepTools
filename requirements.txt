@@ -7,4 +7,3 @@ numpydoc>=0.5
 pyBigWig>=0.2.1
 plotly>=2.0.0
 deeptoolsintervals>=0.1.8
-sklearn
