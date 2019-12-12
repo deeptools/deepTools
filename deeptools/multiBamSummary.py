@@ -124,6 +124,13 @@ def bamcorrelate_args(case='bins'):
                           'BAM files, this causes deepTools to use the file name '
                           'after removing the path and extension.')
 
+    optional.add_argument('--genomeChunkSize',
+                          type=int,
+                          default=None,
+                          help='Manually specify the size of the genome provided to each processor. '
+                          'The default value of None specifies that this is determined by read '
+                          'density of the BAM file.')
+
     if case == 'bins':
         optional.add_argument('--binSize', '-bs',
                               metavar='INT',
@@ -222,6 +229,7 @@ def main(args=None):
         args.bamfiles,
         args.binSize,
         numberOfSamples=None,
+        genomeChunkSize=args.genomeChunkSize,
         numberOfProcessors=args.numberOfProcessors,
         verbose=args.verbose,
         region=args.region,
