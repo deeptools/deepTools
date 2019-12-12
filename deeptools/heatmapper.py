@@ -1054,6 +1054,22 @@ class heatmapper(object):
         return matrixCols
 
 
+def computeSilouetteScore(d, idx, labels):
+    """
+    Given a square distance matrix with NaN diagonals, compute the silhouette score
+    of a given row (idx). Each row should have an associated label (labels).
+    """
+    keep = ~np.isnan(d[idx,])
+    foo = np.bincount(labels[keep], weights=d2[idx,][keep])
+    groupSizes = np.bincount(labels[keep])
+    if groupSizes[idx] == 1:
+        return 0
+    intra = foo[labels[idx]] / groupSizes[idx]
+    interMask = np.arange(len(foo))[np.arange(len(foo)) != labels[idx]]
+    inter = np.min(foo[interMask]/groupSizes[interMask])
+    return (inter - intra) / max(inter, intra)
+
+
 class _matrix(object):
     """
     class to hold heatmapper matrices
@@ -1254,11 +1270,18 @@ class _matrix(object):
             cluster_labels -= 1
 
         if evaluate_silhouette:
+            silhouette = np.repeat(0, len(cluster_labels))
             if k > 1:
-                from sklearn.metrics import silhouette_samples
-                silhouette = silhouette_samples(matrix, cluster_labels)
-            else:
-                silhouette = np.repeat(0, len(cluster_labels))
+                from scipy.spatial.distance import pdist, squareform
+
+                groupSizes = np.subtract(self.group_boundaries[1:], self.group_boundaries[:-1])
+                labels = np.repeat(np.arange(k), groupSizes)
+
+                d = pdist(matrix)
+                d2 = squareform(d)
+                np.fill_diagonal(d2, np.nan)  # This excludes the diagonal
+                for idx in range(len(cluster_labels)):
+                    silhouette[idx] = computeSilouetteScore(d2, idx, labels, groupSizes)
             sys.stderr.write("The average silhouette score is:{} \n".format(np.mean(silhouette)))
 
         # sort clusters

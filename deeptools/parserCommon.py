@@ -507,9 +507,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         type=int)
     cluster.add_argument(
         '--silhouette',
-        help='Compute the silhouette values. The silhouette value'
-        ' is a measure of how similar is a region from its cluster'
-        ' compare to the closest other cluster. It will be reported'
+        help='Compute the silhouette score for regions. This is only'
+        '  applicable if clustering has been performed. The silhouette score'
+        ' is a measure of how similar a region is to other regions in the'
+        ' same cluster as opposed to those in other clusters. It will be reported'
         ' in the final column of the BED file with regions. The '
         'silhouette evaluation can be very slow when you have more'
         'than 100 000 regions.',
