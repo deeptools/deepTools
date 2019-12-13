@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
@@ -163,8 +164,8 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
         xticks, xtickslabel = hm.getTicks(tickIdx)
-        if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
-            tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
+        if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1] - 1):
+            tickscale = float(sub_matrix['matrix'].shape[1] - 1) / max(xticks)
             xticks_use = [x * tickscale for x in xticks]
             ax_profile.axes.set_xticks(xticks_use)
         else:

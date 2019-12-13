@@ -133,6 +133,9 @@ class CountReadsPerBin(object):
     bed_and_bin : boolean
         If true AND a bedFile is given, compute coverage of each bin of the given size in each region of bedFile
 
+    genomeChunkSize : int
+        If not None, the length of the genome used for multiprocessing.
+
     Returns
     -------
     numpy array
@@ -160,6 +163,7 @@ class CountReadsPerBin(object):
     def __init__(self, bamFilesList, binLength=50, numberOfSamples=None, numberOfProcessors=1,
                  verbose=False, region=None,
                  bedFile=None, extendReads=False,
+                 genomeChunkSize=None,
                  blackListFileName=None,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
@@ -186,6 +190,7 @@ class CountReadsPerBin(object):
         self.mappedList = mappedList
         self.skipZeroOverZero = skipZeroOverZero
         self.bed_and_bin = bed_and_bin
+        self.genomeChunkSize = genomeChunkSize
 
         if extendReads and len(bamFilesList):
             from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -328,10 +333,12 @@ class CountReadsPerBin(object):
 
         genomeSize = sum(chrLengths)
 
+        chunkSize = None
         if self.bedFile is None:
-            chunkSize = self.get_chunk_length(bamFilesHandles, genomeSize, chromsizes, chrLengths)
-        else:
-            chunkSize = None
+            if self.genomeChunkSize is None:
+                chunkSize = self.get_chunk_length(bamFilesHandles, genomeSize, chromsizes, chrLengths)
+            else:
+                chunkSize = self.genomeChunkSize
 
         [bam_h.close() for bam_h in bamFilesHandles]
 
@@ -514,7 +521,7 @@ class CountReadsPerBin(object):
                                 # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
                                 # Counts there are added to the bin before them, but range() will still try to include them.
                                 break
-                            _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, startPos + exon[2]))
+                            _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, min(startPos + exon[2], exon[1])))
                             _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[idx, :]]) + "\n")
                             idx += 1
             _file.close()
@@ -572,6 +579,8 @@ class CountReadsPerBin(object):
             nbins = 0
             for reg in regions:
                 nbins += (reg[1] - reg[0]) // reg[2]
+                if (reg[1] - reg[0]) % reg[2] > 0:
+                    nbins += 1
         coverages = np.zeros(nbins, dtype='float64')
 
         if self.defaultFragmentLength == 'read length':
@@ -588,6 +597,9 @@ class CountReadsPerBin(object):
             if len(reg) == 3:
                 tileSize = int(reg[2])
                 nRegBins = (reg[1] - reg[0]) // tileSize
+                if (reg[1] - reg[0]) % tileSize > 0:
+                    # Don't eliminate small bins! Issue 887
+                    nRegBins += 1
             else:
                 nRegBins = 1
                 tileSize = int(reg[1] - reg[0])

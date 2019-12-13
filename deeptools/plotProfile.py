@@ -10,6 +10,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
+import deeptools.cm  # noqa: F401
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib import colors as pltcolors
@@ -308,8 +309,8 @@ class Profile(object):
                 ax.set_ylim(lims)
 
             xticks, xtickslabel = self.getTicks(plot)
-            if np.ceil(max(xticks)) != float(ma.shape[1]):
-                tickscale = float(sub_matrix['matrix'].shape[1]) / max(self.xticks)
+            if np.ceil(max(xticks)) != float(ma.shape[1] - 1):
+                tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax_list[0].axes.set_xticks(xticks_use)
             else:
@@ -532,7 +533,7 @@ class Profile(object):
 
             totalWidth = np.vstack(mat).shape[1]
             xticks, xtickslabel = self.getTicks(plot)
-            if np.ceil(max(xticks)) != float(totalWidth):
+            if np.ceil(max(xticks)) != float(totalWidth - 1):
                 tickscale = float(totalWidth) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax.axes.set_xticks(xticks_use)
@@ -751,7 +752,7 @@ class Profile(object):
 
             totalWidth = sub_matrix['matrix'].shape[1]
             xticks, xtickslabel = self.getTicks(tickIdx)
-            if np.ceil(max(xticks)) != float(totalWidth):
+            if np.ceil(max(xticks)) != float(totalWidth - 1):
                 tickscale = float(totalWidth) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
                 ax.axes.set_xticks(xticks_use)
@@ -765,6 +766,8 @@ class Profile(object):
             ticks[0].label1.set_horizontalalignment('left')
             ticks[-1].label1.set_horizontalalignment('right')
 
+            if first and self.y_axis_label != '':
+                ax.set_ylabel(self.y_axis_label)
             if first and self.plot_type not in ['heatmap', 'overlapped_lines']:
                 ax.legend(loc=self.legend_location.replace('-', ' '),
                           ncol=1, prop=self.font_p,

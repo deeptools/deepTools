@@ -3,6 +3,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import cm  # noqa: F401
 import matplotlib.colors as pltcolors
 import plotly.graph_objs as go
 
@@ -128,6 +129,9 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     As of deepTools 3, the various parameters can be lists, in which case we then need to index things (the idx parameter)
 
     As of matplotlib 3 the ticks in the heatmap need to have 0.5 added to them.
+
+    As of matplotlib 3.1 there is no longer padding added to all ticks. Reference point ticks will be adjusted by width/2
+    or width for spacing and the last half of scaled ticks will be shifed by 1 bin so the ticks are at the beginning of bins.
     """
     w = hm.parameters['bin size']
     b = hm.parameters['upstream']
@@ -152,7 +156,6 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     m = hm.parameters['body']
     if idx is not None:
         m = m[idx]
-    tickPlotAdj = 0.5
 
     if b < 1e5:
         quotient = 1000
@@ -162,7 +165,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         symbol = 'Mb'
 
     if m == 0:
-        xticks = [(k / w) - tickPlotAdj for k in [0, b, b + a]]
+        xticks = [(k / w) for k in [0, b - 0.5 * w, b + a - w]]
         xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
                        referencePointLabel,
                        '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
@@ -187,14 +190,15 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
             xticks_values.append(b + c + m)
             xtickslabel.append("")
 
-        xticks_values.append(b + c + m + d)
+        # We need to subtract the bin size from the last 2 point so they're placed at the beginning of the bin
+        xticks_values.append(b + c + m + d - w)
         xtickslabel.append(endLabel)
 
         if a > 0:
-            xticks_values.append(b + c + m + d + a)
+            xticks_values.append(b + c + m + d + a - w)
             xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
 
-        xticks = [(k / w) - tickPlotAdj for k in xticks_values]
+        xticks = [(k / w) for k in xticks_values]
         xticks = [max(x, 0) for x in xticks]
 
     return xticks, xtickslabel
