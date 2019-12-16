@@ -1260,7 +1260,6 @@ class _matrix(object):
         if method == 'kmeans':
             from scipy.cluster.vq import vq, kmeans
 
-            np.random.seed(123456)
             centroids, _ = kmeans(matrix, k)
             # order the centroids in an attempt to
             # get the same cluster order

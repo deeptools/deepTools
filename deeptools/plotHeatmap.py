@@ -781,7 +781,6 @@ def main(args=None):
         args.sortRegions = 'no'  # These are the same thing
 
     if args.kmeans is not None:
-        np.random.seed(123456)
         hm.matrix.hmcluster(args.kmeans, method='kmeans')
     elif args.hclust is not None:
         print("Performing hierarchical clustering."
