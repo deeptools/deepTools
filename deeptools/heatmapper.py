@@ -1059,7 +1059,7 @@ class heatmapper(object):
         return matrixCols
 
 
-def computeSilouetteScore(d, idx, labels):
+def computeSilhouetteScore(d, idx, labels):
     """
     Given a square distance matrix with NaN diagonals, compute the silhouette score
     of a given row (idx). Each row should have an associated label (labels).
@@ -1260,6 +1260,7 @@ class _matrix(object):
         if method == 'kmeans':
             from scipy.cluster.vq import vq, kmeans
 
+            np.random.seed(123456)
             centroids, _ = kmeans(matrix, k)
             # order the centroids in an attempt to
             # get the same cluster order
@@ -1305,23 +1306,23 @@ class _matrix(object):
         self.regions = _clustered_regions
         self.matrix = np.vstack(_clustered_matrix)
 
-        if evaluate_silhouette:
-            silhouette = np.repeat(0, len(cluster_labels))
-            if k > 1:
-                from scipy.spatial.distance import pdist, squareform
+        return idx
 
-                groupSizes = np.subtract(self.group_boundaries[1:], self.group_boundaries[:-1])
-                labels = np.repeat(np.arange(k), groupSizes)
+    def computeSilhouette(self, k):
+        if k > 1:
+            from scipy.spatial.distance import pdist, squareform
 
-                d = pdist(matrix)
-                d2 = squareform(d)
-                np.fill_diagonal(d2, np.nan)  # This excludes the diagonal
-                for idx in range(len(cluster_labels)):
-                    silhouette[idx] = computeSilouetteScore(d2, idx, labels)
+            silhouette = np.repeat(0.0, self.group_boundaries[-1])
+            groupSizes = np.subtract(self.group_boundaries[1:], self.group_boundaries[:-1])
+            labels = np.repeat(np.arange(k), groupSizes)
+
+            d = pdist(self.matrix)
+            d2 = squareform(d)
+            np.fill_diagonal(d2, np.nan)  # This excludes the diagonal
+            for idx in range(len(labels)):
+                silhouette[idx] = computeSilhouetteScore(d2, idx, labels)
             sys.stderr.write("The average silhouette score is: {}\n".format(np.mean(silhouette)))
             self.silhouette = silhouette
-
-        return idx
 
     def removeempty(self):
         """

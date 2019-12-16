@@ -781,12 +781,12 @@ def main(args=None):
         args.sortRegions = 'no'  # These are the same thing
 
     if args.kmeans is not None:
-        hm.matrix.hmcluster(args.kmeans, args.silhouette, method='kmeans')
-    else:
-        if args.hclust is not None:
-            print("Performing hierarchical clustering."
-                  "Please note that it might be very slow for large datasets.\n")
-            hm.matrix.hmcluster(args.hclust, args.silhouette, method='hierarchical')
+        np.random.seed(123456)
+        hm.matrix.hmcluster(args.kmeans, method='kmeans')
+    elif args.hclust is not None:
+        print("Performing hierarchical clustering."
+              "Please note that it might be very slow for large datasets.\n")
+        hm.matrix.hmcluster(args.hclust, method='hierarchical')
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
@@ -814,6 +814,12 @@ def main(args=None):
         hm.matrix.sort_groups(sort_using=args.sortUsing,
                               sort_method=args.sortRegions,
                               sample_list=sortUsingSamples)
+
+    if args.silhouette:
+        if args.kmeans is not None:
+            hm.matrix.computeSilhouette(args.kmeans)
+        elif args.hclust is not None:
+            hm.matrix.computeSilhouette(args.args.hclust)
 
     if args.outFileNameMatrix:
         hm.save_matrix_values(args.outFileNameMatrix)
