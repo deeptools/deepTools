@@ -1229,6 +1229,13 @@ class _matrix(object):
         matrix = np.asarray(self.matrix)
         matrix_to_cluster = matrix
         if clustering_samples is not None:
+            assert all(i > 0 for i in clustering_samples),\
+                "all indices should be bigger than or equal to 1."
+            assert all(i <= len(self.sample_labels) for i in
+                       clustering_samples),\
+                "each index should be smaller than or equal to {}(total "\
+                "number of samples.)".format(len(self.sample_labels))
+
             clustering_samples = np.asarray(clustering_samples) - 1
 
             samples_cols = []
