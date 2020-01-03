@@ -19,10 +19,10 @@
             #else:
                 --plotTitle '$plotting_type.plotTitle'
                 #if str($plotting_type.xRange) != '':
-                    --xRange '$plotting_type.xRange'
+                    --xRange $plotting_type.xRange
                 #end if
                 #if str($plotting_type.yRange) != '':
-                    --yRange '$plotting_type.yRange'
+                    --yRange $plotting_type.yRange
                 #end if
                 $plotting_type.log1p
             #end if
