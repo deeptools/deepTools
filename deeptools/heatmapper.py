@@ -1249,7 +1249,7 @@ class _matrix(object):
         self.regions = _sorted_regions
         self.set_sorting_method(sort_method, sort_using)
 
-    def hmcluster(self, k, evaluate_silhouette=True, method='kmeans, clustering_samples=None'):
+    def hmcluster(self, k, evaluate_silhouette=True, method='kmeans', clustering_samples=None):
         matrix = np.asarray(self.matrix)
         matrix_to_cluster = matrix
         if clustering_samples is not None:
