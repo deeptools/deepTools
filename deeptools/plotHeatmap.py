@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
@@ -163,8 +164,8 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
         xticks, xtickslabel = hm.getTicks(tickIdx)
-        if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1]):
-            tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks)
+        if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1] - 1):
+            tickscale = float(sub_matrix['matrix'].shape[1] - 1) / max(xticks)
             xticks_use = [x * tickscale for x in xticks]
             ax_profile.axes.set_xticks(xticks_use)
         else:
@@ -778,14 +779,15 @@ def main(args=None):
 
     if args.sortRegions == 'keep':
         args.sortRegions = 'no'  # These are the same thing
-
     if args.kmeans is not None:
-        hm.matrix.hmcluster(args.kmeans, method='kmeans')
+        hm.matrix.hmcluster(args.kmeans, method='kmeans',
+                            clustering_samples=args.clusterUsingSamples)
     else:
         if args.hclust is not None:
             print("Performing hierarchical clustering."
                   "Please note that it might be very slow for large datasets.\n")
-            hm.matrix.hmcluster(args.hclust, method='hierarchical')
+            hm.matrix.hmcluster(args.hclust, method='hierarchical',
+                                clustering_samples=args.clusterUsingSamples)
 
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):

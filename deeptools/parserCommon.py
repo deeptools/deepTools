@@ -600,6 +600,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'example: --sortUsingSamples 1 3',
                               type=int, nargs='+')
 
+        optional.add_argument('--clusterUsingSamples',
+                              help='List of sample numbers (order as in '
+                              'matrix), that are used for clustering by '
+                              '--kmeans or --hclust if not given, all samples '
+                              'are taken into account for clustering. '
+                              'Example: --ClusterUsingSamples 1 3',
+                              type=int, nargs='+')
+
         optional.add_argument(
             '--averageTypeSummaryPlot',
             default='mean',
@@ -622,9 +630,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'Other colors can be specified using the #rrggbb '
             'notation.')
 
-        from matplotlib import cm
-        color_options = "', '".join([m for m in cm.datad
-                                     if not m.endswith('_r')])
+        import matplotlib.pyplot as plt
+        color_options = "', '".join([x for x in plt.colormaps() if not x.endswith('_r')])
 
         optional.add_argument(
             '--colorMap',

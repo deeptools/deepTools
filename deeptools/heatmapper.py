@@ -1225,26 +1225,42 @@ class _matrix(object):
         self.regions = _sorted_regions
         self.set_sorting_method(sort_method, sort_using)
 
-    def hmcluster(self, k, method='kmeans'):
-
+    def hmcluster(self, k, method='kmeans', clustering_samples=None):
         matrix = np.asarray(self.matrix)
-        if np.any(np.isnan(matrix)):
+        matrix_to_cluster = matrix
+        if clustering_samples is not None:
+            assert all(i > 0 for i in clustering_samples),\
+                "all indices should be bigger than or equal to 1."
+            assert all(i <= len(self.sample_labels) for i in
+                       clustering_samples),\
+                "each index should be smaller than or equal to {}(total "\
+                "number of samples.)".format(len(self.sample_labels))
+
+            clustering_samples = np.asarray(clustering_samples) - 1
+
+            samples_cols = []
+            for idx in clustering_samples:
+                samples_cols += range(self.sample_boundaries[idx],
+                                      self.sample_boundaries[idx + 1])
+
+            matrix_to_cluster = matrix_to_cluster[:, samples_cols]
+        if np.any(np.isnan(matrix_to_cluster)):
             # replace nans for 0 otherwise kmeans produces a weird behaviour
             sys.stderr.write("*Warning* For clustering nan values have to be replaced by zeros \n")
-            matrix[np.isnan(matrix)] = 0
+            matrix_to_cluster[np.isnan(matrix_to_cluster)] = 0
 
         if method == 'kmeans':
             from scipy.cluster.vq import vq, kmeans
 
-            centroids, _ = kmeans(matrix, k)
+            centroids, _ = kmeans(matrix_to_cluster, k)
             # order the centroids in an attempt to
             # get the same cluster order
-            cluster_labels, _ = vq(matrix, centroids)
+            cluster_labels, _ = vq(matrix_to_cluster, centroids)
 
         if method == 'hierarchical':
             # normally too slow for large data sets
             from scipy.cluster.hierarchy import fcluster, linkage
-            Z = linkage(matrix, method='ward', metric='euclidean')
+            Z = linkage(matrix_to_cluster, method='ward', metric='euclidean')
             cluster_labels = fcluster(Z, k, criterion='maxclust')
             # hierarchical clustering labels from 1 .. k
             # while k-means labels 0 .. k -1
@@ -1257,11 +1273,10 @@ class _matrix(object):
         for cluster in range(k):
             cluster_ids = np.flatnonzero(cluster_labels == cluster)
             _cluster_ids_list.append(cluster_ids)
-            _clustered_mean.append(self.matrix[cluster_ids, :].mean())
+            _clustered_mean.append(matrix_to_cluster[cluster_ids, :].mean())
 
         # reorder clusters based on mean
         cluster_order = np.argsort(_clustered_mean)[::-1]
-
         # create groups using the clustering
         self.group_labels = []
         self.group_boundaries = [0]
