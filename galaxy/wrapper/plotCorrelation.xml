@@ -18,11 +18,11 @@
                 --plotHeight $plotting_type.plotHeight
             #else:
                 --plotTitle '$plotting_type.plotTitle'
-                #if str($xrange_conditional.xrange_select) == 'yes':
-                    --xRange $xrange_conditional.xRange_min $xrange_conditional.xRange_max
+                #if str($plotting_type.xrange_conditional.xrange_select) == 'yes':
+                    --xRange $plotting_type.xrange_conditional.xRange_min $plotting_type.xrange_conditional.xRange_max
                 #end if
-                #if str($xrange_conditional.yrange_select) == 'yes':
-                    --yRange $yrange_conditional.yRange_min $yrange_conditional.yRange_max
+                #if str($plotting_type.yrange_conditional.yrange_select) == 'yes':
+                    --yRange $plotting_type.yrange_conditional.yRange_min $plotting_type.yrange_conditional.yRange_max
                 #end if
                 $plotting_type.log1p
             #end if
