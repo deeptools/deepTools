@@ -56,9 +56,9 @@
                         <option value="yes">Yes</option>
                     </param>
                     <when value="yes">
-                        <param name="xRange_min" type="int" value=0 label="X axis minimum value"
+                        <param name="xRange_min" type="integer" value="0" label="X axis minimum value"
                             help="X axis minimum value. Not specifying this scales these such that the full range of dots is displayed." />
-                        <param name="xRange_max" type="int" value=1000 label="X axis maximum value"
+                        <param name="xRange_max" type="integer" value="1000" label="X axis maximum value"
                             help="X axis maximum value. Not specifying this scales these such that the full range of dots is displayed." />
                     </when>
                     <when value="no" />
@@ -69,9 +69,9 @@
                         <option value="yes">Yes</option>
                     </param>
                     <when value="yes">
-                        <param name="yRange_min" type="int" value=0 label="Y axis minimum value"
+                        <param name="yRange_min" type="integer" value="0" label="Y axis minimum value"
                             help="Y axis minimum value. Not specifying this scales these such that the full range of dots is displayed." />
-                        <param name="yRange_max" type="int" value=1000 label="Y axis maximum value"
+                        <param name="yRange_max" type="integer" value="1000" label="Y axis maximum value"
                             help="Y axis maximum value. Not specifying this scales these such that the full range of dots is displayed." />
                     </when>
                     <when value="no" />
