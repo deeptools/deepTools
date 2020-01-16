@@ -18,11 +18,11 @@
                 --plotHeight $plotting_type.plotHeight
             #else:
                 --plotTitle '$plotting_type.plotTitle'
-                #if str($plotting_type.xRange) != '':
-                    --xRange '$plotting_type.xRange'
+                #if str($plotting_type.xrange_conditional.xrange_select) == 'yes':
+                    --xRange $plotting_type.xrange_conditional.xRange_min $plotting_type.xrange_conditional.xRange_max
                 #end if
-                #if str($plotting_type.yRange) != '':
-                    --yRange '$plotting_type.yRange'
+                #if str($plotting_type.yrange_conditional.yrange_select) == 'yes':
+                    --yRange $plotting_type.yrange_conditional.yRange_min $plotting_type.yrange_conditional.yRange_max
                 #end if
                 $plotting_type.log1p
             #end if
@@ -50,12 +50,32 @@
             </when>
             <when value="scatterplot">
                 <expand macro="plotTitle" />
-                <param argument="--xRange" type="text" value="" optional="true"
-                    label="X axis range"
-                    help="X axis range, the default scales these such that the full range of dots is displayed. The input should be two integers separated by a space." />
-                <param argument="--yRange" type="text" value="" optional="true"
-                    label="Y axis range"
-                    help="Y axis range, the default scales these such that the full range of dots is displayed. The input should be two integers separated by a space." />
+                <conditional name="xrange_conditional">
+                    <param type="select" name="xrange_select" label="Manually set X axis range?">
+                        <option value="no" selected="True">No</option>
+                        <option value="yes">Yes</option>
+                    </param>
+                    <when value="yes">
+                        <param name="xRange_min" type="integer" value="0" label="X axis minimum value"
+                            help="X axis minimum value. Not specifying this scales these such that the full range of dots is displayed." />
+                        <param name="xRange_max" type="integer" value="1000" label="X axis maximum value"
+                            help="X axis maximum value. Not specifying this scales these such that the full range of dots is displayed." />
+                    </when>
+                    <when value="no" />
+                </conditional>
+                <conditional name="yrange_conditional">
+                    <param type="select" name="yrange_select" label="Manually set Y axis range?">
+                        <option value="no" selected="True">No</option>
+                        <option value="yes">Yes</option>
+                    </param>
+                    <when value="yes">
+                        <param name="yRange_min" type="integer" value="0" label="Y axis minimum value"
+                            help="Y axis minimum value. Not specifying this scales these such that the full range of dots is displayed." />
+                        <param name="yRange_max" type="integer" value="1000" label="Y axis maximum value"
+                            help="Y axis maximum value. Not specifying this scales these such that the full range of dots is displayed." />
+                    </when>
+                    <when value="no" />
+                </conditional>
                 <param argument="--log1p" type="boolean" truevalue="--log1p" falsevalue=""
                     label="Log transform"
                     help="Plot the natural log of the scatter plot after adding 1. Note that this is ONLY for plotting, the correlation is unaffected." />
