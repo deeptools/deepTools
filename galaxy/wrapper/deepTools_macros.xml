@@ -217,10 +217,10 @@
             help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
         <param argument="--transcriptID" optional="True" value="transcript" type="text"
             label="transcript designator"
-            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as transcripts. Default: transcript" />
+            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as transcripts. Default: transcript" />
         <param argument="--exonID" optional="True" value="exon" type="text"
             label="exon designator"
-            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 2) will be processed as exons. CDS would be another common value for this. Default: exon" />
+            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as exons. CDS would be another common value for this. Default: exon" />
         <param argument="--transcript_id_designator" optional="True" value="transcript_id" type="text"
             label="transcriptID key designator"
             help="Each region has an ID (e.g., ACTB) assigned to it, which for BED files is either column 4 (if it exists)
