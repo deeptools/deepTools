@@ -376,7 +376,10 @@ class OffsetFragment(writeBedGraph.WriteBedGraph):
                 offset[0] -= 1
                 offset = [offset[0], offset[0] + 1]
             else:
-                offset = [offset[0], None]
+                if offset[0] < -1:
+                    offset = [offset[0], offset[0] + 1]
+                else:
+                    offset = [offset[0], None]
         if offset[1] == 0:
             # -1 gets switched to 0, which screws things up
             offset = (offset[0], None)
