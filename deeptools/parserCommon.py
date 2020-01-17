@@ -165,7 +165,7 @@ def gtf_options(suppress=False):
 
     if suppress is False:
         help = 'When a GTF file is used to provide regions, only \
-        entries with this value as their feature (column 2) \
+        entries with this value as their feature (column 3) \
         will be processed as transcripts. (Default: %(default)s)'
 
     group.add_argument('--transcriptID',
@@ -174,7 +174,7 @@ def gtf_options(suppress=False):
 
     if suppress is False:
         help = 'When a GTF file is used to provide regions, only \
-        entries with this value as their feature (column 2) \
+        entries with this value as their feature (column 3) \
         will be processed as exons. CDS would be another common \
         value for this. (Default: %(default)s)'
 
