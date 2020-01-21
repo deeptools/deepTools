@@ -991,7 +991,10 @@ class heatmapper(object):
     def save_BED(self, file_handle):
         boundaries = np.array(self.matrix.group_boundaries)
         # Add a header
-        file_handle.write("#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStart\tdeepTools_group\n")
+        file_handle.write("#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStart\tdeepTools_group")
+        if self.matrix.silhouette is not None:
+            file_handle.write("\tsilhouette")
+        file_handle.write("\n")
         for idx, region in enumerate(self.matrix.regions):
             # the label id corresponds to the last boundary
             # that is smaller than the region index.
@@ -1013,11 +1016,14 @@ class heatmapper(object):
                     region[5],
                     region[4]))
             file_handle.write(
-                '\t{0}\t{1}\t{2}\t{3}\n'.format(
+                '\t{0}\t{1}\t{2}\t{3}'.format(
                     len(region[1]),
                     ",".join([str(int(y) - int(x)) for x, y in region[1]]),
                     ",".join([str(int(x) - int(starts[0])) for x, y in region[1]]),
                     self.matrix.group_labels[label_idx]))
+            if self.matrix.silhouette is not None:
+                file_handle.write("\t{}".format(self.matrix.silhouette[idx]))
+            file_handle.write("\n")
         file_handle.close()
 
     @staticmethod
@@ -1053,6 +1059,23 @@ class heatmapper(object):
         return matrixCols
 
 
+def computeSilhouetteScore(d, idx, labels):
+    """
+    Given a square distance matrix with NaN diagonals, compute the silhouette score
+    of a given row (idx). Each row should have an associated label (labels).
+    """
+    keep = ~np.isnan(d[idx, ])
+    foo = np.bincount(labels[keep], weights=d[idx, ][keep])
+    groupSizes = np.bincount(labels[keep])
+    intraIdx = labels[idx]
+    if groupSizes[intraIdx] == 1:
+        return 0
+    intra = foo[labels[idx]] / groupSizes[intraIdx]
+    interMask = np.arange(len(foo))[np.arange(len(foo)) != labels[idx]]
+    inter = np.min(foo[interMask] / groupSizes[interMask])
+    return (inter - intra) / max(inter, intra)
+
+
 class _matrix(object):
     """
     class to hold heatmapper matrices
@@ -1082,6 +1105,7 @@ class _matrix(object):
         self.sample_boundaries = sample_boundaries
         self.sort_method = None
         self.sort_using = None
+        self.silhouette = None
 
         if group_labels is None:
             self.group_labels = ['group {}'.format(x)
@@ -1225,7 +1249,7 @@ class _matrix(object):
         self.regions = _sorted_regions
         self.set_sorting_method(sort_method, sort_using)
 
-    def hmcluster(self, k, method='kmeans', clustering_samples=None):
+    def hmcluster(self, k, evaluate_silhouette=True, method='kmeans', clustering_samples=None):
         matrix = np.asarray(self.matrix)
         matrix_to_cluster = matrix
         if clustering_samples is not None:
@@ -1295,7 +1319,24 @@ class _matrix(object):
 
         self.regions = _clustered_regions
         self.matrix = np.vstack(_clustered_matrix)
+
         return idx
+
+    def computeSilhouette(self, k):
+        if k > 1:
+            from scipy.spatial.distance import pdist, squareform
+
+            silhouette = np.repeat(0.0, self.group_boundaries[-1])
+            groupSizes = np.subtract(self.group_boundaries[1:], self.group_boundaries[:-1])
+            labels = np.repeat(np.arange(k), groupSizes)
+
+            d = pdist(self.matrix)
+            d2 = squareform(d)
+            np.fill_diagonal(d2, np.nan)  # This excludes the diagonal
+            for idx in range(len(labels)):
+                silhouette[idx] = computeSilhouetteScore(d2, idx, labels)
+            sys.stderr.write("The average silhouette score is: {}\n".format(np.mean(silhouette)))
+            self.silhouette = silhouette
 
     def removeempty(self):
         """

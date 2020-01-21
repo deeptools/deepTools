@@ -164,6 +164,12 @@
                     </when>
                     <when value="none" />
                 </conditional>
+                <param argument="--silhouette" type="boolean" truevalue="--silhouette" falsevalue=""
+                    label="Compute the silhouette score for each region"
+                    help="Compute the silhouette score for regions. This is only applicable if clustering has been performed.
+                    The silhouette score is a measure of how similar a region is to other regions in the same cluster as
+                    opposed to those in other clusters. It will be reported in the final column of the BED file with regions.
+                    The silhouette evaluation can be very slow when you have more than 100 000 regions." />
             </when>
             <when value="yes" />
         </conditional>
@@ -181,6 +187,7 @@
                     --hclust $advancedOpt.used_multiple_regions.clustering.n_hclust
                 #end if
             #end if
+            $advancedOpt.used_multiple_regions.silhouette
         #end if
     </token>
 
