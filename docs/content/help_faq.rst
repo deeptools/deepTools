@@ -1,7 +1,7 @@
 General FAQ
 ===========
 
-Feel free to contribute your questions via deeptools@googlegroups.com
+.. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
 
 .. Note:: We also have a :doc:`help_faq_galaxy` with questions that are more specific to Galaxy rather than deepTools usage.
 

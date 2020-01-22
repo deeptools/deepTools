@@ -4,7 +4,8 @@ Step-by-step protocols
 This section should give you an overview of how to do many common tasks. We're using **screenshots from Galaxy** here.
 If you're using the command-line version you can easily follow the given examples since the vast majority of parameters is either indicated in Galaxy, too. Otherwise, just type the program name and the help option (e.g. ``/deepTools/bin/bamCoverage --help``), which will show you all the parameters and options available. Alternatively, you can follow the respective link to the tool documentation here on readthedocs.
 
-.. note:: Do let us know if you spot things that are missing or should be explained better! Just send an email to deeptools@googlegroups.com.
+.. note:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
+
 
 All protocols assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_. If you need help to get started with Galaxy in general, e.g. to upload your data, see :doc:`help_galaxy_intro` and :doc:`help_galaxy_dataup`.
 

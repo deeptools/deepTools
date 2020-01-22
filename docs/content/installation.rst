@@ -117,5 +117,4 @@ The deepTools Galaxy instance is also available as a docker container, for those
 
 To start and otherwise modify this container, please see the instructions on `the docker-galaxy-stable github repository <https://github.com/bgruening/docker-galaxy-stable>`__. Note that you must use `bgruening/galaxy-deeptools` in place of `bgruening/galaxy-stable` in the examples, as the deepTools Galaxy container is built on top of the galaxy-stable container.
 
-.. tip:: For support, questions, or feature requests contact:
-    deeptools@googlegroups.com
+.. tip:: For support or questions please make a post on `Biostars <http://biostars.org>`__. For feature requests or bug reports please open an issue `on github <http://github.com/deeptools/deeptools>`__.

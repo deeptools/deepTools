@@ -56,7 +56,7 @@ that fulfills the following criteria:
    we can add more and more modules and make use of established methods)
 
 
-.. tip:: For support, questions, or feature requests contact: deeptools@googlegroups.com
+.. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
 
 
 Please cite deepTools2 as follows:

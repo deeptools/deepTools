@@ -3,7 +3,7 @@ Glossary of NGS terms
 
 Like most specialized fields, next-generation sequencing has inspired many an acronyms.
 We are trying to keep track of those :ref:`abbreviations` that we heavily use.
-Do make us aware if something is unclear: deeptools@googlegroups.com
+Do make us aware if something is unclear by opening an issue on `github <http://github.com/deeptools/deeptools>`__
 
 
 .. contents:: 

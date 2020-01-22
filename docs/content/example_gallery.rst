@@ -1,10 +1,6 @@
 Gallery of deepTools plots
 ===========================
 
-.. note:: If you have a nice deepTools plot that you'd like to share, we'll be
-    happy to add it to our Gallery! Just send us an email:
-    deeptools@googlegroups.com
-
 .. contents:: Published example plots
     :local:
 	

@@ -22,7 +22,7 @@ deeptools is developed under here:
 
     https://github.com/deeptools/deepTools
 
-For support, questions, or feature requests contact: deeptools@googlegroups.com
+For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
 
 
 ============

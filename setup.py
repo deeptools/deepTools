@@ -64,7 +64,7 @@ setup(
     version=get_version(),
     author='Fidel Ramirez,  Devon P Ryan, Björn Grüning, Friederike Dündar, Sarah Diehl,'
     ' Vivek Bhardwaj, Fabian Kilpert, Andreas S Richter, Steffen Heyne, Thomas Manke',
-    author_email='deeptools@googlegroups.com',
+    author_email='dpryan79@gmail.com',
     packages=find_packages(),
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/multiBamSummary',
              'bin/plotHeatmap', 'bin/plotFingerprint', 'bin/estimateScaleFactor',
