@@ -88,7 +88,6 @@
         <expand macro="input_image_file_format" />
 
         <expand macro="advancedOpt_scaffold">
-
             <param argument="--attributeKey" type="text" optional="true" size="20" label="Optional attribute key"
                 help="Instead of deriving the feature label from the feature column, use the value of the given
                 attribute key. For example, the gene_biotype. Note that 'None' is used for BED files

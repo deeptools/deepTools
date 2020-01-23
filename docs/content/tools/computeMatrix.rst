@@ -10,7 +10,7 @@ computeMatrix
    :nodefault:
 
 Details
-^^^^^^^^^^^^^^^
+^^^^^^^
 
 ``computeMatrix`` has two main modes of use:
 
@@ -43,6 +43,9 @@ The following tables summarizes the kinds of optional outputs that are available
 
 .. attention::
    As of version 3.0, computeMatrix produces output with labels present for each sample. Matrices produced with that or later versions can not be used with older versions of ``plotHeatmap`` or any other deepTools program.
+
+.. note::
+   ``computeMatrix`` will properly handle strand information if your BED file includes that column (GTF files always include strand). For the ``--metagene`` option to work, you will need either a BED12 (including columns 11 and 12) or a GTF file as input. GFF is NOT the same as GTF format!
 
 Examples
 ^^^^^^^^

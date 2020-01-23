@@ -269,7 +269,7 @@ def sortArgs():
     optional.add_argument('--transcriptID',
                           default='transcript',
                           help='When a GTF file is used to provide regions, only '
-                          'entries with this value as their feature (column 2) '
+                          'entries with this value as their feature (column 3) '
                           'will be processed as transcripts. (Default: %(default)s)')
 
     optional.add_argument('--transcript_id_designator',

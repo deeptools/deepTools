@@ -165,7 +165,7 @@ def gtf_options(suppress=False):
 
     if suppress is False:
         help = 'When a GTF file is used to provide regions, only \
-        entries with this value as their feature (column 2) \
+        entries with this value as their feature (column 3) \
         will be processed as transcripts. (Default: %(default)s)'
 
     group.add_argument('--transcriptID',
@@ -174,7 +174,7 @@ def gtf_options(suppress=False):
 
     if suppress is False:
         help = 'When a GTF file is used to provide regions, only \
-        entries with this value as their feature (column 2) \
+        entries with this value as their feature (column 3) \
         will be processed as exons. CDS would be another common \
         value for this. (Default: %(default)s)'
 
@@ -505,6 +505,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
         'fail with an error if a cluster has very few members compared to the '
         'total number of regions.',
         type=int)
+    cluster.add_argument(
+        '--silhouette',
+        help='Compute the silhouette score for regions. This is only'
+        '  applicable if clustering has been performed. The silhouette score'
+        ' is a measure of how similar a region is to other regions in the'
+        ' same cluster as opposed to those in other clusters. It will be reported'
+        ' in the final column of the BED file with regions. The '
+        'silhouette evaluation can be very slow when you have more'
+        'than 100 000 regions.',
+        action='store_true'
+    )
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -600,6 +611,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               'example: --sortUsingSamples 1 3',
                               type=int, nargs='+')
 
+        optional.add_argument('--clusterUsingSamples',
+                              help='List of sample numbers (order as in '
+                              'matrix), that are used for clustering by '
+                              '--kmeans or --hclust if not given, all samples '
+                              'are taken into account for clustering. '
+                              'Example: --ClusterUsingSamples 1 3',
+                              type=int, nargs='+')
+
         optional.add_argument(
             '--averageTypeSummaryPlot',
             default='mean',
@@ -622,9 +641,8 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'Other colors can be specified using the #rrggbb '
             'notation.')
 
-        from matplotlib import cm
-        color_options = "', '".join([m for m in cm.datad
-                                     if not m.endswith('_r')])
+        import matplotlib.pyplot as plt
+        color_options = "', '".join([x for x in plt.colormaps() if not x.endswith('_r')])
 
         optional.add_argument(
             '--colorMap',

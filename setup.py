@@ -64,7 +64,7 @@ setup(
     version=get_version(),
     author='Fidel Ramirez,  Devon P Ryan, Björn Grüning, Friederike Dündar, Sarah Diehl,'
     ' Vivek Bhardwaj, Fabian Kilpert, Andreas S Richter, Steffen Heyne, Thomas Manke',
-    author_email='deeptools@googlegroups.com',
+    author_email='dpryan79@gmail.com',
     packages=find_packages(),
     scripts=['bin/bamCompare', 'bin/bamCoverage', 'bin/multiBamSummary',
              'bin/plotHeatmap', 'bin/plotFingerprint', 'bin/estimateScaleFactor',
@@ -84,7 +84,7 @@ setup(
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 0.17.0",
-        "matplotlib >= 3.0.0",
+        "matplotlib >= 3.1.0",
         "pysam >= 0.14.0",
         "numpydoc >= 0.5",
         "pyBigWig >= 0.2.1",

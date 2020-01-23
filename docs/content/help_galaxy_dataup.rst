@@ -104,5 +104,5 @@ Copying can easily be done via the History panel's ``option`` button ⟶ "Copy d
 +--------------------------------------------------------------------------------+-----------------------------------------------------------------+
 | `deepTools Galaxy FAQs <Galaxy-related-FAQs>`__                                | Frequently encountered issues with our specific Galaxy instance |
 +--------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| deeptools@googlegroups.com                                                     | For issues not addressed in the FAQs                            |
+| `Biostars <http://biostars.org>`__                                             | For issues not addressed in the FAQs                            |
 +--------------------------------------------------------------------------------+-----------------------------------------------------------------+

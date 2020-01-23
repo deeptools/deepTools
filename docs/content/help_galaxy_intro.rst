@@ -108,5 +108,5 @@ This is the graphical representation of a Galaxy workflow that can easily be mod
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
 | `deepTools Galaxy FAQs <Galaxy-related-FAQs>`_                                | Frequently encountered issues with our specific Galaxy instance |
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| deeptools@googlegroups.com                                                    | For issues not addressed in the FAQs                            |
+| `Biostars <http://biostars.org>`__                                            | For issues not addressed in the FAQs                            |
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+

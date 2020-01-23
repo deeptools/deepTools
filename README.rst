@@ -15,8 +15,7 @@ such normalized and standardized files, deepTools can create many
 publication-ready **visualizations** to identify enrichments and for
 functional annotations of the genome.
 
-For support, questions, or feature requests contact:
-deeptools@googlegroups.com
+For support or questions please make a post on `Biostars <http://biostars.org>`__. For feature requests, please open an issue on `github <http://github.com/deeptools/deeptools>`__.
 
 For further documentation, please see our `read the docs page <http://deeptools.readthedocs.org/>`__.
 
