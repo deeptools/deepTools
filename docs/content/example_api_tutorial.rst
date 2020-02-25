@@ -261,7 +261,7 @@ a tuple with the parameters: chromosome name, start position, end position, and 
         f_lens_list = []
         for fetch_start in range(start, end, 1000000):
             # simply get the reads over a region of 10000 bases
-            fetch_end = min(end, start + 10000)
+            fetch_end = min(end, fetch_start + 10000)
 
             f_lens_list.append(np.array([abs(read.template_length)
                                   for read in bam.fetch(chrom, fetch_start, fetch_end)
@@ -290,7 +290,7 @@ to the function, the BAM file name. The next two positional arguments are the na
 
     result = mapReduce.mapReduce([bam_file_name],
                                  get_fragment_length,
-                                 chrom_sizes,
+                                 chroms_sizes,
                                  genomeChunkLength=10000000,
                                  numberOfProcessors=20,
                                  verbose=True)
