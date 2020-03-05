@@ -1,3 +1,8 @@
+3.4.0
+
+ * Fixed a bug in one of the Galaxy wrappers.
+ * Added the `--lineAtTickMarks` option to `plotHeatmap` so that there are dashed vertical lines for each tick mark in the plot. (issue #924)
+
 3.3.2
 
  * Fixed --yAxisLabel in plotProfile (issue #889)

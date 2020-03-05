@@ -511,7 +511,6 @@ def plotMatrix(hm, outFileName,
                             showSummaryPlot=showSummaryPlot, showColorbar=showColorbar,
                             cmap=cmap, colorList=color_list, colorBarPosition=colorbar_position,
                             perGroup=perGroup,
-                            linesAtTickMarks=linesAtTickMarks,
                             averageType=averageType, plotTitle=plotTitle,
                             xAxisLabel=xAxisLabel, yAxisLabel=yAxisLabel,
                             label_rotation=label_rotation)
