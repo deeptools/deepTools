@@ -539,7 +539,7 @@ def plotMatrix(hm, outFileName,
                         _len *= 0.5
                         _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
                     elif hm.parameters['ref point'][idx] == 'TES':
-                        _reg_len.append((hm.parameters['downstream'][idx] - _len) / hm.parameters['bin size'][idx])
+                        _reg_len.append((hm.parameters['upstream'][idx] - _len) / hm.parameters['bin size'][idx])
                 foo.append(_reg_len)
             regions_length_in_bins[idx] = foo
 
