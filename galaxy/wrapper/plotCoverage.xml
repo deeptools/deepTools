@@ -26,7 +26,7 @@
             #end if
 
             #if ' '.join(map(str, $BED)) != 'None':
-                #set bedFileLList=[]
+                #set bedFileList=[]
                 #for $f in $BED:
                     #silent $bedFileList.append("'%s'" % $f)
                 #end for
@@ -101,11 +101,8 @@
                 <expand macro="blacklist" />
             </when>
         </conditional>
-
         <expand macro="input_image_file_format" />
         <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to a file" help=""/>
-
-
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
