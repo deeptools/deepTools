@@ -389,6 +389,7 @@ def plotMatrix(hm, outFileName,
                heatmapWidth=7.5,
                perGroup=False, whatToShow='plot, heatmap and colorbar',
                plot_type='lines',
+               linesAtTickMarks=False,
                image_format=None,
                legend_location='upper-left',
                box_around_heatmaps=True,
@@ -539,7 +540,7 @@ def plotMatrix(hm, outFileName,
                         _len *= 0.5
                         _reg_len.append((hm.parameters['upstream'][idx] + _len) / hm.parameters['bin size'][idx])
                     elif hm.parameters['ref point'][idx] == 'TES':
-                        _reg_len.append((hm.parameters['downstream'][idx] - _len) / hm.parameters['bin size'][idx])
+                        _reg_len.append((hm.parameters['upstream'][idx] - _len) / hm.parameters['bin size'][idx])
                 foo.append(_reg_len)
             regions_length_in_bins[idx] = foo
 
@@ -658,6 +659,18 @@ def plotMatrix(hm, outFileName,
                 ax.axes.set_ylabel(sub_matrix['sample'])
             elif not perGroup and sample == 0:
                 ax.axes.set_ylabel(sub_matrix['group'])
+
+            # Plot vertical lines at tick marks if desired
+            if linesAtTickMarks:
+                xticks_heat, xtickslabel_heat = hm.getTicks(sample)
+                xticks_heat = [x + 0.5 for x in xticks_heat]  # There's an offset of 0.5 compared to the profile plot
+                if np.ceil(max(xticks_heat)) != float(sub_matrix['matrix'].shape[1]):
+                    tickscale = float(sub_matrix['matrix'].shape[1]) / max(xticks_heat)
+                    xticks_heat_use = [x * tickscale for x in xticks_heat]
+                else:
+                    xticks_heat_use = xticks_heat
+                for x in xticks_heat_use:
+                    ax.axvline(x=x, color='black', linewidth=0.5, dashes=(3, 2))
 
             # add labels to last block in a column
             if (perGroup and sample == numsamples - 1) or \
@@ -845,6 +858,7 @@ def main(args=None):
                args.heatmapWidth,
                args.perGroup,
                args.whatToShow,
+               linesAtTickMarks=args.linesAtTickMarks,
                plot_type=args.plotType,
                image_format=args.plotFileFormat,
                legend_location=args.legendLocation,
