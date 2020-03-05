@@ -34,6 +34,10 @@
                     --sortRegions '$advancedOpt.sortRegions'
                 #end if
 
+                #if $advancedOpt.linesAtTickMarks:
+                    --linesAtTickMarks
+                #end if
+
                 #if $advancedOpt.sortUsing:
                     --sortUsing '$advancedOpt.sortUsing'
                 #end if
@@ -130,6 +134,8 @@
             <when value="yes">
                 <expand macro="sortRegions" />
                 <expand macro="sortUsing" />
+                <param argument="--linesAtTickmarks" type="boolean" truevalue="--linesAtTickMarks" falsevalue=""
+                    label="Draw dashed lines in heatmap above all tick marks?" />
                 <param argument="--averageTypeSummaryPlot" type="select"
                     label="Type of statistic that should be plotted in the summary image above the heatmap"
                     help="">
