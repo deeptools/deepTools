@@ -26,7 +26,7 @@
             #end if
 
             #if ' '.join(map(str, $BED)) != 'None':
-                #set bedFileLList=[]
+                #set bedFileList=[]
                 #for $f in $BED:
                     #silent $bedFileList.append("'%s'" % $f)
                 #end for
