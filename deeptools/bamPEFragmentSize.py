@@ -119,7 +119,7 @@ def getDensity(lengths, minVal, maxVal):
     This is essentially computing what hist() in matplotlib is doing and returning the results.
     This then allows us to free up the memory consumed by each sample rather than returning it all back to main() for plotting.
     """
-    n, bins, patches = plt.hist(lengths, bins=100, range=(minVal, maxVal), normed=True)
+    n, bins, patches = plt.hist(lengths, bins=100, range=(minVal, maxVal), density=True)
     plt.clf()
     return (n, bins)
 
