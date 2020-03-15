@@ -1,3 +1,8 @@
+3.4.1
+
+ * Prevented temporary bedGraph files from being written to (possibly small) shared-memory drives even when TMPDIR is set to somewhere else. Now shared memory is only used if requested by setting TMPDIR (or other appropriate environment variables) to `/dev/shm`.
+ * Fixed a bug in bamPEFragmentSize that caused incompatibility with newer matplotlib releases. (issue #928)
+
 3.4.0
 
  * Fixed a bug in one of the Galaxy wrappers.

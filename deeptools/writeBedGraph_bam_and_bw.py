@@ -76,12 +76,7 @@ def writeBedGraph_worker(
                     tileSize, missingDataAsZero))
             bigwigHandle.close()
 
-    # is /dev/shm available?
-    # working in this directory speeds the process
-    try:
-        _file = tempfile.NamedTemporaryFile(dir="/dev/shm", delete=False)
-    except OSError:
-        _file = tempfile.NamedTemporaryFile(delete=False)
+    _file = tempfile.NamedTemporaryFile(delete=False)
 
     previousValue = None
     lengthCoverage = len(coverage[0])
