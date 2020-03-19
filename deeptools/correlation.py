@@ -433,7 +433,6 @@ class Correlation:
         """
 
         num_samples = self.matrix.shape[1]
-        corr_matrix = self.compute_correlation()
         grids = gridspec.GridSpec(num_samples, num_samples)
         grids.update(wspace=0, hspace=0)
         fig = plt.figure(figsize=(2 * num_samples, 2 * num_samples))
@@ -441,6 +440,7 @@ class Correlation:
         plt.suptitle(plot_title)
         if log1p is True:
             self.matrix = np.log1p(self.matrix)
+        corr_matrix = self.compute_correlation()
         min_xvalue = self.matrix.min()
         max_xvalue = self.matrix.max()
         min_yvalue = min_xvalue
