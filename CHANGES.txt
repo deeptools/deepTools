@@ -1,3 +1,7 @@
+3.4.2
+
+ * Programmed around a bug in matplotlib that prevented the plotCorrelation scatter plot from working. See https://bioinformatics.stackexchange.com/questions/12830/plot-correlation-between-several-bam-files/12831
+
 3.4.1
 
  * Prevented temporary bedGraph files from being written to (possibly small) shared-memory drives even when TMPDIR is set to somewhere else. Now shared memory is only used if requested by setting TMPDIR (or other appropriate environment variables) to `/dev/shm`.
