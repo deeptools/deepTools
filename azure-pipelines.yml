@@ -17,19 +17,20 @@ jobs:
     displayName: Add conda to PATH
   - template: .azure-pipelines/test-template.yml
 
-- job: 'OSX'
-  pool:
-    vmImage: 'macOS-10.14'
-  strategy:
-    matrix:
-      Python37:
-        python.version: '3.7'
-    maxParallel: 1
-
-  steps:
-  - bash: echo "##vso[task.prependpath]$CONDA/bin"
-    displayName: Add conda to PATH
-  - template: .azure-pipelines/test-template.yml
+#Fails frequently due to CI issues
+#- job: 'OSX'
+#  pool:
+#    vmImage: 'macOS-10.14'
+#  strategy:
+#    matrix:
+#      Python37:
+#        python.version: '3.7'
+#    maxParallel: 1
+#
+#  steps:
+#  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+#    displayName: Add conda to PATH
+#  - template: .azure-pipelines/test-template.yml
 
 - job: 'galaxy'
   dependsOn: 'Linux'
