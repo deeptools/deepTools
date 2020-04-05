@@ -527,9 +527,9 @@ class Correlation:
             else:
                 ax.set_xticklabels([])
 
-            ax.hist2d(vector2, vector1, bins=200, cmin=0.1)
             ax.set_xlim(min_xvalue, max_xvalue)
             ax.set_ylim(min_yvalue, max_yvalue)
+            ax.hist2d(vector2, vector1, bins=200, cmin=0.1)
 
         plt.savefig(plot_filename, format=image_format)
         plt.close()
