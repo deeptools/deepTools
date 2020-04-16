@@ -89,9 +89,9 @@ def parseArguments(args=None):
 
 def main(args):
     """
-    The algorithm samples the genome a number of times as specified 
+    The algorithm samples the genome a number of times as specified
     by the --numberOfSamples parameter to estimate scaling factors of
-    betweeen to samples  
+    betweeen to samples
 
     """
     if len(args.bamfiles) > 2:
@@ -99,14 +99,14 @@ def main(args):
         exit(0)
 
     sys.stderr.write("{:,} number of samples will be computed.\n".format(args.numberOfSamples))
-    sizeFactorsDict = estimateScaleFactor(args.bamfiles, args.sampleWindowLength, 
+    sizeFactorsDict = estimateScaleFactor(args.bamfiles, args.sampleWindowLength,
                                           args.numberOfSamples,
                                           args.normalizationLength,
                                           numberOfProcessors=args.numberOfProcessors,
                                           chrsToSkip=args.ignoreForNormalization,
                                           verbose=args.verbose)
 
-    for k, v in sizeFactorsDict.iteritems():
+    for k, v in sizeFactorsDict.items():
          print("{}: {}".format(k, v))
 
 
