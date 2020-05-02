@@ -573,6 +573,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               type=int,
                               default=8)
 
+        optional.add_argument('--clusterUsingSamples',
+                              help='List of sample numbers (order as in '
+                              'matrix), that are used for clustering by '
+                              '--kmeans or --hclust if not given, all samples '
+                              'are taken into account for clustering. '
+                              'Example: --ClusterUsingSamples 1 3',
+                              type=int, nargs='+')
+
     elif mode == 'heatmap':
         optional.add_argument(
             '--plotType',

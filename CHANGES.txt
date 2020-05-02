@@ -1,3 +1,8 @@
+3.4.3
+
+ * Changed iteritems() in estimateEscaleFactor to its python3 compatible items().
+ * Added the missing argument (--clusterUsingSamples) to plotProfile.
+
 3.4.2
 
  * Programmed around a bug in matplotlib that prevented the plotCorrelation scatter plot from working. See https://bioinformatics.stackexchange.com/questions/12830/plot-correlation-between-several-bam-files/12831
@@ -325,7 +330,7 @@
  * bamPEFragmentSize now has -bs and -n options to allow adjusting the number of alignments sampled. Note that the default value is auto-adjusted if the sampling is too sparse.
  * bamPEFragmentSize now accepts single-end files.
  * The --hclust option to plotProfile and plotHeatmap continues even if one of the groups is too small for plotting (matplotlib will produce a warning that you can ignore). This was issue #280.
- 
+
 2.0.1
 
  * A critical bug that prevented plotPCA from running was fixed.
