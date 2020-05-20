@@ -323,8 +323,8 @@ def printDataRange(matrix):
         print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(sample, np.amin(sample_matrix),
                                                     np.amax(sample_matrix),
                                                     np.ma.median(sample_matrix),
-                                                    np.percentile(sample_matrix,10),
-                                                    np.percentile(sample_matrix,90)))
+                                                    np.percentile(sample_matrix, 10),
+                                                    np.percentile(sample_matrix, 90)))
 
 
 def relabelMatrix(matrix, args):
