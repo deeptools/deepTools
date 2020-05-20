@@ -318,15 +318,13 @@ def printDataRange(matrix):
     print("Samples\tMin\tMax\tMedian\t10th\t90th")
     for i, sample in enumerate(matrix.matrix.sample_labels):
         start = matrix.matrix.sample_boundaries[i]
-        end = matrix.matrix.sample_boundaries[i+1]
+        end = matrix.matrix.sample_boundaries[i + 1]
         sample_matrix = matrix.matrix.matrix[..., start:end]
         print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(sample, np.amin(sample_matrix),
                                                     np.amax(sample_matrix),
                                                     np.ma.median(sample_matrix),
                                                     np.percentile(sample_matrix,10),
                                                     np.percentile(sample_matrix,90)))
-
-
 
 
 def relabelMatrix(matrix, args):
