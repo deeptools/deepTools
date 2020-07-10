@@ -1,3 +1,7 @@
+3.4.4
+
+ * Fixed a small issue in computeGCBias (issue #969)
+
 3.4.3
 
  * Changed iteritems() in estimateEscaleFactor to its python3 compatible items().
