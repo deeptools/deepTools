@@ -361,8 +361,7 @@ def numberOfProcessors(string):
             raise argparse.ArgumentTypeError("the value given is not valid. "
                                              "Error message: {}\nThe number of "
                                              "available processors in your "
-                                             "computer is {}.".format(string, e,
-                                                                      availProc))
+                                             "computer is {}.".format(e, availProc))
 
         if numberOfProcessors > availProc:
             numberOfProcessors = availProc
