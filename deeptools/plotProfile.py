@@ -6,6 +6,7 @@ import sys
 
 import argparse
 import numpy as np
+from math import ceil
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
@@ -458,6 +459,13 @@ class Profile(object):
         py.plot(fig, filename=self.out_file_name, auto_open=False)
 
     def plot_heatmap(self):
+        cmap = ['RdYlBu_r']
+        if self.color_list is not None: # check the length equal to the numebr of plots otherwise multiply it!
+            cmap = self.color_list
+        if len(cmap) < self.numplots:
+            all_colors = cmap
+            for i in range(ceil(self.numplots/len(cmap))):
+                cmap.extend(all_colors)
         matrix_flatten = None
         if self.y_min == [None]:
             matrix_flatten = self.hm.matrix.flatten()
@@ -479,7 +487,6 @@ class Profile(object):
 
         ax_list = []
         # turn off y ticks
-
         for plot in range(self.numplots):
             labels = []
             col = plot % self.plots_per_row
@@ -503,9 +510,10 @@ class Profile(object):
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
+                tickIdx = plot % self.hm.matrix.get_num_samples()
             else:
                 title = self.hm.matrix.sample_labels[plot]
-
+                tickIdx = plot
             ax.set_title(title)
             mat = []  # when drawing a heatmap (in contrast to drawing lines)
             for data_idx in range(self.numlines):
@@ -526,13 +534,12 @@ class Profile(object):
                     label = sub_matrix['group']
                 labels.append(label)
                 mat.append(np.ma.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
-
             img = ax.imshow(np.vstack(mat), interpolation='nearest',
-                            cmap='RdYlBu_r', aspect='auto', vmin=localYMin, vmax=localYMax)
+                            cmap=cmap[plot], aspect='auto', vmin=localYMin, vmax=localYMax)
             self.fig.colorbar(img, cax=cax)
 
             totalWidth = np.vstack(mat).shape[1]
-            xticks, xtickslabel = self.getTicks(plot)
+            xticks, xtickslabel = self.getTicks(tickIdx)
             if np.ceil(max(xticks)) != float(totalWidth - 1):
                 tickscale = float(totalWidth) / max(xticks)
                 xticks_use = [x * tickscale for x in xticks]
