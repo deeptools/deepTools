@@ -460,7 +460,7 @@ class Profile(object):
 
     def plot_heatmap(self):
         cmap = ['RdYlBu_r']
-        if self.color_list is not None: # check the length equal to the numebr of plots otherwise multiply it!
+        if self.color_list is not None: # check the length to be equal to the numebr of plots otherwise multiply it!
             cmap = self.color_list
         if len(cmap) < self.numplots:
             all_colors = cmap
