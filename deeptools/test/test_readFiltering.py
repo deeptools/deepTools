@@ -72,12 +72,12 @@ def test_sieve():
                 'test_filtering\t5\t193\n']
     assert_equal(resp, expected)
     unlink(outlog)
-    h = hashlib.md5(open(outfile, "rb").read()).hexdigest()
-    assert(h == "977bdab227a4dbfa3fc9f27c23a3e0b7")
+    h = hashlib.md5(pysam.view(outfile).encode('utf-8')).hexdigest()
+    assert(h == "15c1a89230d6805c1b42f3f58b99bff9")
     unlink(outfile)
 
     h = hashlib.md5(open(outfiltered, "rb").read()).hexdigest()
-    assert(h == "762e79b7a2245ff6b2cea4139a1455de")
+    assert(h == "b896d07beb6d293b68c5ca63f596e8c1")
     unlink(outfiltered)
 
 
