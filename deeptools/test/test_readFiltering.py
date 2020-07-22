@@ -4,6 +4,8 @@ import deeptools.alignmentSieve as sieve
 import os.path
 from os import unlink
 import hashlib
+import pysam
+
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_FILTER = ROOT + "test_filtering.bam"
