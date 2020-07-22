@@ -76,7 +76,7 @@ def test_sieve():
     assert(h == "15c1a89230d6805c1b42f3f58b99bff9")
     unlink(outfile)
 
-    h = hashlib.md5(open(outfiltered, "rb").read()).hexdigest()
+    h = hashlib.md5(pysam.view(outfiltered).encode('utf-8')).hexdigest()
     assert(h == "b896d07beb6d293b68c5ca63f596e8c1")
     unlink(outfiltered)
 
