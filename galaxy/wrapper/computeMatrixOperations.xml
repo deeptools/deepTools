@@ -71,6 +71,9 @@
                 -m $submodule.matrixFile
                 -R '#echo "' '".join($files)#'
                 -o $outFileName
+            #else if $submodule.command == "dataRange":
+                dataRange
+                -m $submodule.matrixFile
             #end if
 ]]>
     </command>
