@@ -833,7 +833,7 @@ def main(args=None):
             hm.matrix.computeSilhouette(args.args.hclust)
 
     if args.outFileNameMatrix:
-        hm.save_matrix_values(args.outFileNameMatrix)
+        hm.save_matrix(args.outFileNameMatrix)
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)

@@ -239,7 +239,10 @@ def writeCorrected_worker(chrNameBam, chrNameBit, start, end, step):
     try:
         if debug:
             endTime = time.time()
-            print("{}, processing {} ({:.1f} per sec) reads @ {}:{}-{}".format(multiprocessing.current_process().name, i, i / (endTime - startTime), chrNameBit, start, end))
+            print("{}, processing {} ({:.1f} per sec) "
+                  "reads @ {}:{}-{}".format(multiprocessing.current_process().name,
+                                            i, i / (endTime - startTime),
+                                            chrNameBit, start, end))
     except NameError:
         pass
 

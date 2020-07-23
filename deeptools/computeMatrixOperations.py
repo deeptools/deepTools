@@ -46,6 +46,9 @@ or
 or
   computeMatrixOperations sort -h
 
+or
+  computeMatrixOperations dataRange -h
+
 """,
         epilog='example usages:\n'
                'computeMatrixOperations subset -m input.mat.gz -o output.mat.gz --group "group 1" "group 2" --samples "sample 3" "sample 10"\n\n'
@@ -125,6 +128,14 @@ or
         parents=[sortArgs()],
         help='Sort a matrix file to correspond to the order of entries in the desired input file(s). The groups of regions designated by the files must be present in the order found in the output of computeMatrix (otherwise, use the subset command first). Note that this subcommand can also be used to remove unwanted regions, since regions not present in the input file(s) will be omitted from the output.',
         usage='Example usage:\n  computeMatrixOperations sort -m input.mat.gz -R regions1.bed regions2.bed regions3.gtf -o input.sorted.mat.gz\n\n')
+
+    # dataRange
+    subparsers.add_parser(
+        'dataRange',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[infoArgs()],
+        help='Returns the min, max, median, 10th and 90th percentile of the matrix values per sample.',
+        usage='Example usage:\n  computeMatrixOperations dataRange -m input.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(__version__))
@@ -298,6 +309,22 @@ def printInfo(matrix):
     print("Samples:")
     for sample in matrix.matrix.sample_labels:
         print("\t{0}".format(sample))
+
+
+def printDataRange(matrix):
+    """
+    Prints the min, max, median, 10th and 90th percentile of the matrix values per sample.
+    """
+    print("Samples\tMin\tMax\tMedian\t10th\t90th")
+    for i, sample in enumerate(matrix.matrix.sample_labels):
+        start = matrix.matrix.sample_boundaries[i]
+        end = matrix.matrix.sample_boundaries[i + 1]
+        sample_matrix = matrix.matrix.matrix[..., start:end]
+        print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(sample, np.amin(sample_matrix),
+                                                    np.amax(sample_matrix),
+                                                    np.ma.median(sample_matrix),
+                                                    np.percentile(sample_matrix, 10),
+                                                    np.percentile(sample_matrix, 90)))
 
 
 def relabelMatrix(matrix, args):
@@ -771,6 +798,8 @@ def main(args=None):
 
     if args.command == 'info':
         printInfo(hm)
+    if args.command == 'dataRange':
+        printDataRange(hm)
     elif args.command == 'subset':
         sIdx = getSampleBounds(args, hm)
         gIdx, gBounds = getGroupBounds(args, hm)
