@@ -71,6 +71,9 @@
                 -m $submodule.matrixFile
                 -R '#echo "' '".join($files)#'
                 -o $outFileName
+            #else if $submodule.command == "dataRange":
+                dataRange
+                -m $submodule.matrixFile
             #end if
 ]]>
     </command>
@@ -85,6 +88,7 @@
                 <option value="rbind">Bind matrices, top to bottom (rbind)</option>
                 <option value="cbind">Bind matrices, left to right (cbind)</option>
                 <option value="sort">Sort by region order in specified files (sort)</option>
+                <option value="dataRange">Returns the min, max, median, 10th and 90th percentile of the matrix values per sample (dataRange)</option>
             </param>
             <when value="info">
                 <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
@@ -151,6 +155,12 @@
                         help="File, in BED format, containing the regions to plot."/>
                 </repeat>
             </when>
+
+            <when value="dataRange">
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
+                       label="Matrix file from the computeMatrix tool" help=""/>
+                </param>
+            </when>
         </conditional>
     </inputs>
     <outputs>
@@ -205,7 +215,8 @@ What it does
 +----------------+--------------------------------------------------------------------------------------------------------------------------+
 + sort           | Sorts the given file so regions are in the order of occurence in the input BED/GTF file(s).                              |
 +----------------+--------------------------------------------------------------------------------------------------------------------------+
-
++ dataRange      | Returns the min, max, median, 10th and 90th percentile of the matrix values per sample.                                  |
++----------------+--------------------------------------------------------------------------------------------------------------------------+
 
 These operations are useful when you want to run computeMatrix on multiple files (thereby keeping all of the values together) and later exclude regions/samples or add new ones. Another common use would be if you require the output of computeMatrix to be sorted to match the order of regions in the input file.
 
