@@ -1,6 +1,10 @@
 3.4.4
 
  * Fixed a small issue in computeGCBias (issue #969)
+ * Added dataRange to computeMatricOperation to return min,max,median and 10th and 90th percentile.
+ * Fixed a small typo in bamCompare. (issue #966)
+ * Save the output matrix of the plotheatmap in a format to be compatible with running plotheatmap on it again.(issue #953)
+ * Different colors can now be set by user for plotProfile --plotType heatmap (issue #956)
 
 3.4.3
 
