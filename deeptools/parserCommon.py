@@ -358,7 +358,7 @@ def numberOfProcessors(string):
                 "{} is not a valid number of processors".format(string))
 
         except Exception as e:
-            raise argparse.ArgumentTypeError("the value given is not valid. "
+            raise argparse.ArgumentTypeError("the given value {} is not valid. "
                                              "Error message: {}\nThe number of "
                                              "available processors in your "
                                              "computer is {}.".format(string, e,
