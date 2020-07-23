@@ -460,11 +460,11 @@ class Profile(object):
 
     def plot_heatmap(self):
         cmap = ['RdYlBu_r']
-        if self.color_list is not None: # check the length to be equal to the numebr of plots otherwise multiply it!
+        if self.color_list is not None:  # check the length to be equal to the numebr of plots otherwise multiply it!
             cmap = self.color_list
         if len(cmap) < self.numplots:
             all_colors = cmap
-            for i in range(ceil(self.numplots/len(cmap))):
+            for i in range(ceil(self.numplots / len(cmap))):
                 cmap.extend(all_colors)
         matrix_flatten = None
         if self.y_min == [None]:
