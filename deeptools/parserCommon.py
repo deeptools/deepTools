@@ -705,14 +705,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               help='Minimum value for the heatmap intensities. Multiple values, separated by '
                                    'spaces can be set for each heatmap. If the number of zMin values is smaller than'
                                    'the number of heatmaps the values are recycled.',
-                              type=float,
+                              type=str,
                               nargs='+')
         optional.add_argument('--zMax', '-max',
                               default=None,
                               help='Maximum value for the heatmap intensities. Multiple values, separated by '
                                    'spaces can be set for each heatmap. If the number of zMax values is smaller than'
                                    'the number of heatmaps the values are recycled.',
-                              type=float,
+                              type=str,
                               nargs='+')
         optional.add_argument('--heatmapHeight',
                               help='Plot height in cm. The default for the heatmap '

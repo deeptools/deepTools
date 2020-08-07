@@ -412,6 +412,14 @@ def plotMatrix(hm, outFileName,
             zMin = [None]
         else:
             zMin = [zMin]  # convert to list to support multiple entries
+    elif 'auto' in zMin:
+        matrix_flatten = hm.matrix.flatten()
+        auto_min = np.percentile(matrix_flatten, 1.0)
+        new_mins = [float(x) if x!='auto' else auto_min for x in zMin]
+        zMin = new_mins
+    else:
+        new_mins = [float(x) for x in zMin]
+        zMin = new_mins
 
     if zMax is None:
         if matrix_flatten is None:
@@ -422,7 +430,15 @@ def plotMatrix(hm, outFileName,
             zMax = [None]
         else:
             zMax = [zMax]
-
+    elif 'auto' in zMax:
+        matrix_flatten = hm.matrix.flatten()
+        auto_max = np.percentile(matrix_flatten, 98.0)
+        new_maxs = [float(x) if x!='auto' else auto_max for x in zMax]
+        zMax = new_maxs
+    else:
+        new_maxs = [float(x) for x in zMax]
+        zMax = new_maxs
+#TODO check zMin < zMax if len(Min) >1 & len(zMax) > 1
     if yMin is None:
         yMin = [None]
     if yMax is None:
