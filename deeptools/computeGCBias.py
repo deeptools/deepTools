@@ -604,7 +604,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     plt.setp(bp['whiskers'], color='black', linestyle='dashed')
     plt.setp(bp['fliers'], marker='None')
     # get the whisker that spands the most
-    y_max = max([x.get_data()[1][1] for x in bp['whiskers']])
+    y_max = np.nanmax([x.get_data()[1][1] for x in bp['whiskers']])
     ax1.set_ylim(0 - (y_max * 0.05), y_max * 1.05)
     ax1.set_ylabel('Number of reads')
     ax1.set_xlabel('GC fraction')
