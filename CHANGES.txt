@@ -6,6 +6,7 @@
  * Save the output matrix of the plotheatmap in a format to be compatible with running plotheatmap on it again.(issue #953)
  * Different colors can now be set by user for plotProfile --plotType heatmap (issue #956)
  * `auto` option now has been added to the zMin and zMax of plotHeatmap. (issue #908)
+ * Added `--sortUsingSamples` and `--clusterUsingSamples` to the plotHeatmap galaxy wrapper. (issue #976)
 
 3.4.3
 
