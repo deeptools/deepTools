@@ -704,14 +704,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               default=None,
                               help='Minimum value for the heatmap intensities. Multiple values, separated by '
                                    'spaces can be set for each heatmap. If the number of zMin values is smaller than'
-                                   'the number of heatmaps the values are recycled.',
+                                   'the number of heatmaps the values are recycled. If a value is set to "auto", it will be set '
+                                   ' to the first percentile of the matrix values.',
                               type=str,
                               nargs='+')
         optional.add_argument('--zMax', '-max',
                               default=None,
                               help='Maximum value for the heatmap intensities. Multiple values, separated by '
                                    'spaces can be set for each heatmap. If the number of zMax values is smaller than'
-                                   'the number of heatmaps the values are recycled.',
+                                   'the number of heatmaps the values are recycled. If a value is set to "auto", it will be set '
+                                   ' to the 98th percentile of the matrix values.',
                               type=str,
                               nargs='+')
         optional.add_argument('--heatmapHeight',
