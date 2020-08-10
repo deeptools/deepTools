@@ -445,7 +445,7 @@ def plotMatrix(hm, outFileName,
     if (len(zMin) > 1) & (len(zMax) > 1):
         for index, value in enumerate(zMax):
             if value <= zMin[index]:
-                sys.stderr.write("Warnirng: in bigwig {}, the given zmin ({}) is larger than "
+                sys.stderr.write("Warnirng: In bigwig {}, the given zmin ({}) is larger than "
                                  "or equal to the given zmax ({}). Thus, it has been set "
                                  "to None. \n".format(index + 1, zMin[index], value))
                 zMin[index] = None
