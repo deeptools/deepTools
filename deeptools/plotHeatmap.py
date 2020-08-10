@@ -412,6 +412,16 @@ def plotMatrix(hm, outFileName,
             zMin = [None]
         else:
             zMin = [zMin]  # convert to list to support multiple entries
+    elif 'auto' in zMin:
+        matrix_flatten = hm.matrix.flatten()
+        auto_min = np.percentile(matrix_flatten, 1.0)
+        if np.isnan(auto_min):
+            auto_min = None
+        new_mins = [float(x) if x != 'auto' else auto_min for x in zMin]
+        zMin = new_mins
+    else:
+        new_mins = [float(x) for x in zMin]
+        zMin = new_mins
 
     if zMax is None:
         if matrix_flatten is None:
@@ -422,6 +432,23 @@ def plotMatrix(hm, outFileName,
             zMax = [None]
         else:
             zMax = [zMax]
+    elif 'auto' in zMax:
+        matrix_flatten = hm.matrix.flatten()
+        auto_max = np.percentile(matrix_flatten, 98.0)
+        if np.isnan(auto_max):
+            auto_max = None
+        new_maxs = [float(x) if x != 'auto' else auto_max for x in zMax]
+        zMax = new_maxs
+    else:
+        new_maxs = [float(x) for x in zMax]
+        zMax = new_maxs
+    if (len(zMin) > 1) & (len(zMax) > 1):
+        for index, value in enumerate(zMax):
+            if value <= zMin[index]:
+                sys.stderr.write("Warnirng: In bigwig {}, the given zmin ({}) is larger than "
+                                 "or equal to the given zmax ({}). Thus, it has been set "
+                                 "to None. \n".format(index + 1, zMin[index], value))
+                zMin[index] = None
 
     if yMin is None:
         yMin = [None]
