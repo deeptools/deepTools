@@ -78,7 +78,7 @@
             <param name="outFileFormat" value="png" />
             <param name="outFileNameData" value="True" />
             <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="sim_size" delta="12000" />
-            <output name="output_outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" compare="sim_size" delta="400000" />
+            <output name="output_outFileNameData" file="plotPCA_result2.tabular" ftype="tabular" compare="sim_size" delta="12000" />
         </test>
     </tests>
     <help>
