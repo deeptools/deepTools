@@ -358,11 +358,10 @@ def numberOfProcessors(string):
                 "{} is not a valid number of processors".format(string))
 
         except Exception as e:
-            raise argparse.ArgumentTypeError("the value given is not valid. "
+            raise argparse.ArgumentTypeError("the given value {} is not valid. "
                                              "Error message: {}\nThe number of "
                                              "available processors in your "
-                                             "computer is {}.".format(string, e,
-                                                                      availProc))
+                                             "computer is {}.".format(string, e, availProc))
 
         if numberOfProcessors > availProc:
             numberOfProcessors = availProc
@@ -444,7 +443,7 @@ def heatmapperOutputArgs(args=None,
         output.add_argument('--outFileNameMatrix',
                             help='If this option is given, then the matrix '
                             'of values underlying the heatmap will be saved '
-                            'using this name, e.g. MyMatrix.tab.',
+                            'using this name, e.g. MyMatrix.gz.',
                             metavar='FILE',
                             type=writableFile)
 
@@ -614,9 +613,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--sortUsingSamples',
                               help='List of sample numbers (order as in matrix), '
-                              'that are used for sorting by --sortUsing, '
-                              'no value uses all samples, '
-                              'example: --sortUsingSamples 1 3',
+                              'which are used by --sortUsing for sorting. '
+                              'If no value is set, it uses all samples. '
+                              'Example: --sortUsingSamples 1 3',
                               type=int, nargs='+')
 
         optional.add_argument('--linesAtTickMarks',
@@ -704,15 +703,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                               default=None,
                               help='Minimum value for the heatmap intensities. Multiple values, separated by '
                                    'spaces can be set for each heatmap. If the number of zMin values is smaller than'
-                                   'the number of heatmaps the values are recycled.',
-                              type=float,
+                                   'the number of heatmaps the values are recycled. If a value is set to "auto", it will be set '
+                                   ' to the first percentile of the matrix values.',
+                              type=str,
                               nargs='+')
         optional.add_argument('--zMax', '-max',
                               default=None,
                               help='Maximum value for the heatmap intensities. Multiple values, separated by '
                                    'spaces can be set for each heatmap. If the number of zMax values is smaller than'
-                                   'the number of heatmaps the values are recycled.',
-                              type=float,
+                                   'the number of heatmaps the values are recycled. If a value is set to "auto", it will be set '
+                                   ' to the 98th percentile of the matrix values.',
+                              type=str,
                               nargs='+')
         optional.add_argument('--heatmapHeight',
                               help='Plot height in cm. The default for the heatmap '

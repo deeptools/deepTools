@@ -4,6 +4,8 @@ import deeptools.alignmentSieve as sieve
 import os.path
 from os import unlink
 import hashlib
+import pysam
+
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_FILTER = ROOT + "test_filtering.bam"
@@ -72,12 +74,12 @@ def test_sieve():
                 'test_filtering\t5\t193\n']
     assert_equal(resp, expected)
     unlink(outlog)
-    h = hashlib.md5(open(outfile, "rb").read()).hexdigest()
-    assert(h == "977bdab227a4dbfa3fc9f27c23a3e0b7")
+    h = hashlib.md5(pysam.view(outfile).encode('utf-8')).hexdigest()
+    assert(h == "acbc4443fb0387bfd6c412af9d4fc414")
     unlink(outfile)
 
-    h = hashlib.md5(open(outfiltered, "rb").read()).hexdigest()
-    assert(h == "762e79b7a2245ff6b2cea4139a1455de")
+    h1 = hashlib.md5(pysam.view(outfiltered).encode('utf-8')).hexdigest()
+    assert(h1 == "b90befdd5f073f14acb9a38661f301ad")
     unlink(outfiltered)
 
 
