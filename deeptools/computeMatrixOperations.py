@@ -797,7 +797,7 @@ def main(args=None):
         hm.read_matrix_file(args.matrixFile)
     if args.command == 'info':
         printInfo(hm)
-    elif args.command == 'dataRange':
+    if args.command == 'dataRange':
         printDataRange(hm)
     elif args.command == 'subset':
         sIdx = getSampleBounds(args, hm)
