@@ -75,8 +75,14 @@
                 #if str($advancedOpt.yMin).strip() != "":
                     --yMin $advancedOpt.yMin
                 #end if
-                #if $advancedOpt.yMax:
+                #if str($advancedOpt.yMax).strip() != "":
                     --yMax $advancedOpt.yMax
+                #end if
+                #if str($advancedOpt.sortUsingSamples).strip() != "":
+                    --sortUsingSamples $advancedOpt.sortUsingSamples
+                #end if
+                #if str($advancedOpt.clusterUsingSamples).strip() != "":
+                    --clusterUsingSamples $advancedOpt.clusterUsingSamples
                 #end if
 
                 --xAxisLabel '$advancedOpt.xAxisLabel'
@@ -134,6 +140,15 @@
             <when value="yes">
                 <expand macro="sortRegions" />
                 <expand macro="sortUsing" />
+                <param argument="--sortUsingSamples" type="text"
+                    label="List of samples to be used for sorting"
+                    help="List of sample numbers (order as in matrix), which are used by --sortUsing for sorting.
+                    If no value is set, it uses all samples. Example: 1 3 (space separated!)" />
+                    <sanitizer>
+                        <valid initial="string.printable">
+                            <add value=" "/>
+                        </valid>
+                    </sanitizer>
                 <param argument="--linesAtTickMarks" type="boolean" truevalue="--linesAtTickMarks" falsevalue=""
                     label="Draw dashed lines in heatmap above all tick marks?" />
                 <param argument="--averageTypeSummaryPlot" type="select"
@@ -168,19 +183,19 @@
                     help="The alpha channel (transparency) to use for the heatmaps. The default is 1.0 and values must
                     be between 0 and 1. A value of 0.0 would be fully transparent." />
 
-                <param argument="--colorList" type="text" value="" size="50" optional="True"
+                <param argument="--colorList" type="text" value="" optional="True"
                     label="List of colors for each heatmap. Separate lists by spaces and the colors in the list by comas"
                     help="The color of the heatmaps can be specified as a list of colors separated by comas with
                     not space in between. For example: white,blue white,green will set a color map from white
                     to blue for the first heatmap and for white to green for the next heatmap."/>
                 <expand macro="zMin_zMax" />
-                <param argument="--yMin" type="float" value="" size="3" optional="True"
+                <param argument="--yMin" type="float" value="" optional="True"
                     label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help=""/>
-                <param argument="--yMax" type="float" value="" size="3" optional="True"
+                <param argument="--yMax" type="float" value="" optional="True"
                     label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help=""/>
-                <param argument="--xAxisLabel" type="text" value="distance from TSS (bp)" size="200"
+                <param argument="--xAxisLabel" type="text" value="distance from TSS (bp)"
                     label="The x-axis label" help="" />
-                <param argument="--yAxisLabel" type="text" value="genes" size="30"
+                <param argument="--yAxisLabel" type="text" value="genes"
                     label="The y-axis label for the top panel" help="" />
 
                 <param argument="--heatmapWidth" type="float" value="7.5" min="1" max="100"
@@ -195,17 +210,17 @@
                     <option value="heatmap and colorbar">heatmap and colorbar</option>
                 </param>
 
-                <param argument="--startLabel" type="text" value="TSS" size="10"
+                <param argument="--startLabel" type="text" value="TSS"
                     label="Label for the region start"
                     help ="Only for scale-regions mode. Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
-                <param argument="--endLabel" type="text" value="TES" size="10"
+                <param argument="--endLabel" type="text" value="TES"
                     label="Label for the region end"
                     help="Only for scale-regions mode. Label shown in the plot for the region end. Default is TES (transcription end site)."/>
 
-                <param argument="--referencePointLabel" type="text" value="TSS" size="10"
+                <param argument="--referencePointLabel" type="text" value="TSS"
                     label="Reference point label"
                     help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
-                <param argument="--samplesLabel" type="text" size="30"
+                <param argument="--samplesLabel" type="text"
                     label="Labels for the samples (each bigwig) plotted"
                     help="The default is to use the file name of the sample. The sample labels should be separated by
                     spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;">
@@ -214,7 +229,7 @@
                         </valid>
                     </sanitizer>
                 </param>
-                <param argument="--regionsLabel" type="text" size="30"
+                <param argument="--regionsLabel" type="text"
                     label="Labels for the regions plotted in the heatmap"
                     help="If more than one region is being plotted a list of labels separated by space is required.
                           If a label itself contains a space, then quotes are needed.
@@ -228,6 +243,15 @@
                     help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions."/>
 
                 <expand macro="kmeans_clustering" />
+                <param argument="--clusterUsingSamples" type="text"
+                    label="List of samples to be used for clustering"
+                    help="List of sample numbers (order as in matrix), which are used by --kmeans or --hclust for clustering.
+                    If no value is set, it uses all samples. Example: 1 3 (space separated!)"/>
+                    <sanitizer>
+                        <valid initial="string.printable">
+                            <add value=" "/>
+                        </valid>
+                    </sanitizer>
             </when>
         </conditional>
     </inputs>

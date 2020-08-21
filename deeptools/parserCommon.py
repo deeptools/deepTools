@@ -613,9 +613,9 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
 
         optional.add_argument('--sortUsingSamples',
                               help='List of sample numbers (order as in matrix), '
-                              'that are used for sorting by --sortUsing, '
-                              'no value uses all samples, '
-                              'example: --sortUsingSamples 1 3',
+                              'which are used by --sortUsing for sorting. '
+                              'If no value is set, it uses all samples. '
+                              'Example: --sortUsingSamples 1 3',
                               type=int, nargs='+')
 
         optional.add_argument('--linesAtTickMarks',
