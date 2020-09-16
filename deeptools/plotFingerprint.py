@@ -202,10 +202,10 @@ def getCHANCE(args, idx, mat):
     """
     # Get the index of the reference sample
     if args.JSDsample not in args.bamfiles:
-        return ["NA", "NA", "NA"]
+        return [np.NAN, np.NAN, np.NAN]
     refIdx = args.bamfiles.index(args.JSDsample)
     if refIdx == idx:
-        return ["NA", "NA", "NA"]
+        return [np.NAN, np.NAN, np.NAN]
 
     subMatrix = np.copy(mat[:, [idx, refIdx]])
     subMatrix[np.isnan(subMatrix)] = 0
@@ -271,10 +271,10 @@ def getJSD(args, idx, mat):
 
     # Get the index of the reference sample
     if args.JSDsample not in args.bamfiles:
-        return "NA"
+        return np.NAN
     refIdx = args.bamfiles.index(args.JSDsample)
     if refIdx == idx:
-        return "NA"
+        return np.NAN
 
     # These will hold the coverage histograms
     chip = np.zeros(MAXLEN, dtype=np.int)
@@ -338,7 +338,7 @@ def getJSDcommon(chip, input):
 
     if abs(sum(PMFinput) - 1) > 0.01 or abs(sum(PMFchip) - 1) > 0.01:
         sys.stderr.write("Warning: At least one PMF integral is significantly different from 1! The JSD will not be returned")
-        return "NA"
+        return np.NAN
 
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
