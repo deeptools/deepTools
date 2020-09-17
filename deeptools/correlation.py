@@ -1,5 +1,6 @@
 import sys
 import itertools
+import copy
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.stats
@@ -291,7 +292,7 @@ class Correlation:
                                link_color_func=lambda k: 'darkred')
         axdendro.set_xticks([])
         axdendro.set_yticks([])
-        cmap = plt.get_cmap(colormap)
+        cmap = copy.copy(plt.get_cmap(colormap))
 
         # this line simply makes a new cmap, based on the original
         # colormap that goes from 0.0 to 0.9
