@@ -73,7 +73,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[infoArgs(), relabelArgs()],
         help="Change sample and/or group label information",
-        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --samples "sample 1" "sample 2"\n\n')
+        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --sampleLabels "sample 1" "sample 2"\n\n')
 
     # subset
     subparsers.add_parser(
