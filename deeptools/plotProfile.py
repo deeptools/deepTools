@@ -829,7 +829,7 @@ class Profile(object):
         yMax = None
         for i in range(self.numplots):
             row = np.floor(i / self.plots_per_row)
-            #row = rows - i / self.plots_per_row - 1
+            # row = rows - i / self.plots_per_row - 1
             col = i % self.plots_per_row
             xanchor = 'x{}'.format(i + 1)
             yanchor = 'y{}'.format(i + 1)
