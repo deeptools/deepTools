@@ -430,7 +430,7 @@ def main(args=None):
 
         if args.plotFileFormat == 'plotly':
             fig = go.Figure()
-            fig['data'] = data
+            fig.add_traces(data)
             fig['layout'].update(title=args.plotTitle)
             fig['layout']['xaxis1'].update(title="rank")
             fig['layout']['yaxis1'].update(title="fraction w.r.t bin with highest coverage")

@@ -571,7 +571,7 @@ def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
     x = np.linspace(0, 1, frequencies.shape[0])
     trace = go.Scatter(x=x, y=np.log2(frequencies[:, 2]), xaxis='x2', yaxis='y2', showlegend=False, line=dict(color='rgb(107,174,214)'))
     data.append(trace)
-    fig['data'] = data
+    fig.add_traces(data)
     fig['layout']['annotations'] = annos
     py.plot(fig, filename=file_name, auto_open=False)
 

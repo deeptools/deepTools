@@ -371,7 +371,7 @@ def plotlyMatrix(hm,
         trace.update(zmin=zMinUse, zmax=zMaxUse, colorscale=convertCmap(cmap[0], vmin=zMinUse, vmax=zMaxUse))
 
     dataSummary.extend(dataHeatmap)
-    fig['data'] = dataSummary
+    fig.add_traces(dataSummary)
     fig['layout']['annotations'] = annos
     py.plot(fig, filename=outFilename, auto_open=False)
 

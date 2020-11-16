@@ -422,7 +422,8 @@ class Correlation:
         data[-1]['colorbar'].update(title="log10(instances per bin)", titleside="right")
         data[-1].update(showscale=True)
 
-        fig['data'] = data
+        #fig['data'] = data
+        fig.add_traces(data)
         fig['layout'].update(title=plot_title, showlegend=False, annotations=annos)
 
         offline.plot(fig, filename=plot_filename, auto_open=False)
@@ -590,6 +591,7 @@ class Correlation:
         annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': 'Scree plot', 'y': 1.0, 'x': 0.75, 'font': {'size': 16}, 'showarrow': False})
 
         fig['data'] = data
+        fig.add_traces(data)
         fig['layout']['annotations'] = annos
         offline.plot(fig, filename=plotFile, auto_open=False)
 
