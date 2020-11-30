@@ -80,7 +80,7 @@
     <inputs>
         <conditional name="submodule">
             <param name="command" type="select" label="Operation type">
-                <option value="info" selected="true">Print information (info)</option>
+                <option value="info">Print information (info)</option>
                 <option value="relabel">Relabel the samples and/or groups (relabel)</option>
                 <option value="subset">Subset by samples and/or groups of regions (subset)</option>
                 <option value="filterStrand">Filter by strand (filterStrand)</option>
