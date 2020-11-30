@@ -159,7 +159,6 @@
             <when value="dataRange">
                 <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
                        label="Matrix file from the computeMatrix tool" help=""/>
-                </param>
             </when>
         </conditional>
     </inputs>

@@ -28,5 +28,5 @@ else
 fi
 
 planemo lint ${wrappers}
-planemo test --no_dependency_resolution --galaxy_branch release_18.05 --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
+planemo test --no_dependency_resolution --galaxy_branch release_20.09 --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
 test ${PIPESTATUS[0]} -eq 0
