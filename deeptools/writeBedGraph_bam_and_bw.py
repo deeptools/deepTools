@@ -45,7 +45,7 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        skipZeroOverZero=False, missingDataAsZero=False, fixed_step=False):
+        skipZeroOverZero=False, missingDataAsZero=False, fixedStep=False):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -103,12 +103,12 @@ def writeBedGraph_worker(
 
         value = func(tileCoverage, funcArgs)
 
-        if fixed_step:
+        if fixedStep:
             writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
-                _file.write(toBytes("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
-                                                            writeEnd, value)))
+                _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
+                                                                    writeEnd, value)))
             except TypeError:
                 _file.write(toBytes("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
                                                               writeEnd, value)))
@@ -130,7 +130,7 @@ def writeBedGraph_worker(
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
 
-    if not fixed_step:
+    if not fixedStep:
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
@@ -146,7 +146,7 @@ def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=1,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
-        skipZeroOverZero=False, smoothLength=0, fixed_step=False, verbose=False):
+        skipZeroOverZero=False, smoothLength=0, fixedStep=False, verbose=False):
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -208,7 +208,7 @@ def writeBedGraph(
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,
-                               skipZeroOverZero, missingDataAsZero, fixed_step),
+                               skipZeroOverZero, missingDataAsZero, fixedStep),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,
