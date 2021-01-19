@@ -798,7 +798,7 @@ def main(args=None):
 
     if args.command == 'info':
         printInfo(hm)
-    if args.command == 'dataRange':
+    elif args.command == 'dataRange':
         printDataRange(hm)
     elif args.command == 'subset':
         sIdx = getSampleBounds(args, hm)
