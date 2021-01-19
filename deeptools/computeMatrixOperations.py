@@ -501,7 +501,6 @@ def rbindMatrices(hm, args):
 
     It's assumed that the same samples are present in both and in the exact same order
     """
-    print("B")
     hm2 = heatmapper.heatmapper()
     hm.read_matrix_file(args.matrixFile[0])
     for idx in range(1, len(args.matrixFile)):
@@ -513,7 +512,6 @@ def rbindMatrices(hm, args):
                 appendMatrix(hm, hm2, group)
                 hm.parameters["group_labels"].append(group)
 
-    print("C")
     # Update the group boundaries attribute
     hm.matrix.group_labels = hm.parameters['group_labels']
     hm.matrix.group_boundaries = hm.parameters['group_boundaries']
@@ -797,8 +795,6 @@ def main(args=None):
     hm = heatmapper.heatmapper()
     if not isinstance(args.matrixFile, list):
         hm.read_matrix_file(args.matrixFile)
-    print("A")
-
     if args.command == 'info':
         printInfo(hm)
     elif args.command == 'dataRange':
