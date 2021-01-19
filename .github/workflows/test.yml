@@ -7,8 +7,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - uses: "dpryan79/github-actions/@master"
-      env:
-        ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
     - name: PEP8
       run: |
         source activate foo
