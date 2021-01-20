@@ -89,7 +89,7 @@ setup(
         "numpydoc >= 0.5",
         "pyBigWig >= 0.2.1",
         "py2bit >= 0.2.0",
-        "plotly >= 2.0.0",
+        "plotly >= 4.9",
         "deeptoolsintervals >= 0.1.8"
     ],
     zip_safe=True,

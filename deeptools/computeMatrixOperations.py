@@ -73,7 +73,7 @@ or
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[infoArgs(), relabelArgs()],
         help="Change sample and/or group label information",
-        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --samples "sample 1" "sample 2"\n\n')
+        usage='An example usage is:\n  computeMatrixOperations relabel -m input.mat.gz -o output.mat.gz --sampleLabels "sample 1" "sample 2"\n\n')
 
     # subset
     subparsers.add_parser(
@@ -795,10 +795,9 @@ def main(args=None):
     hm = heatmapper.heatmapper()
     if not isinstance(args.matrixFile, list):
         hm.read_matrix_file(args.matrixFile)
-
     if args.command == 'info':
         printInfo(hm)
-    if args.command == 'dataRange':
+    elif args.command == 'dataRange':
         printDataRange(hm)
     elif args.command == 'subset':
         sIdx = getSampleBounds(args, hm)

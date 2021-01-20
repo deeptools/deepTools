@@ -41,7 +41,7 @@ def convertCmap(c, vmin=0, vmax=1):
     h = 1.0 / 254
     colorScale = []
     for k in range(255):
-        C = map(np.uint8, np.array(cmap(k * h)[:3]) * 255)
+        C = list(map(np.uint8, np.array(cmap(k * h)[:3]) * 255))
         colorScale.append([k * h, 'rgb' + str((C[0], C[1], C[2]))])
 
     return colorScale

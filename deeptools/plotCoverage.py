@@ -320,7 +320,7 @@ def main(args=None):
         # Don't clip plots
         y_max = max(y_max)
         if args.plotFileFormat == "plotly":
-            fig['data'] = data
+            fig.add_traces(data)
             fig['layout']['yaxis1'].update(range=[0.0, min(1, y_max + (y_max * 0.10))])
             fig['layout']['yaxis2'].update(range=[0.0, 1.0])
             py.plot(fig, filename=args.plotFile, auto_open=False)
