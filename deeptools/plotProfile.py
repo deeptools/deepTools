@@ -99,7 +99,7 @@ class Profile(object):
                  plot_type='lines',
                  image_format=None,
                  color_list=None,
-                 legend_location='auto',
+                 legend_location='best',
                  plots_per_row=8,
                  label_rotation=0,
                  dpi=200):
