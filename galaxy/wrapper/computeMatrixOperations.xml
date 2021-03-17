@@ -217,10 +217,6 @@ What it does
 +----------------+--------------------------------------------------------------------------------------------------------------------------+
 + dataRange      | Returns the min, max, median, 10th and 90th percentile of the matrix values per sample.                                  |
 +----------------+--------------------------------------------------------------------------------------------------------------------------+
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 
 These operations are useful when you want to run computeMatrix on multiple files (thereby keeping all of the values together) and later exclude regions/samples or add new ones. Another common use would be if you require the output of computeMatrix to be sorted to match the order of regions in the input file.
 
