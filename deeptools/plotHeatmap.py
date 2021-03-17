@@ -9,17 +9,17 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
 from matplotlib import ticker
-
+import copy
 import sys
 import plotly.offline as py
 import plotly.graph_objs as go
 
 # own modules
+from deeptools import cm  # noqa: F401
 from deeptools import parserCommon
 from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, plotly_single
@@ -371,7 +371,7 @@ def plotlyMatrix(hm,
         trace.update(zmin=zMinUse, zmax=zMaxUse, colorscale=convertCmap(cmap[0], vmin=zMinUse, vmax=zMaxUse))
 
     dataSummary.extend(dataHeatmap)
-    fig['data'] = dataSummary
+    fig.add_traces(dataSummary)
     fig['layout']['annotations'] = annos
     py.plot(fig, filename=outFilename, auto_open=False)
 
@@ -477,7 +477,8 @@ def plotMatrix(hm, outFileName,
     if colorMapDict['colorMap']:
         cmap = []
         for color_map in colorMapDict['colorMap']:
-            cmap.append(plt.get_cmap(color_map))
+            copy_cmp = copy.copy(plt.get_cmap(color_map))
+            cmap.append(copy_cmp)
             cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
 
     if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
@@ -529,7 +530,6 @@ def plotMatrix(hm, outFileName,
     else:
         color_list = cmap_plot(np.arange(numgroups) / numgroups)
     alpha = colorMapDict['alpha']
-
     if image_format == 'plotly':
         return plotlyMatrix(hm,
                             outFileName,
@@ -735,7 +735,7 @@ def plotMatrix(hm, outFileName,
                         col = sample
                     ax = fig.add_subplot(grids[-1, col])
                     tick_locator = ticker.MaxNLocator(nbins=3)
-                    cbar = fig.colorbar(img, cax=ax, alpha=alpha, orientation='horizontal', ticks=tick_locator)
+                    cbar = fig.colorbar(img, cax=ax, orientation='horizontal', ticks=tick_locator)
                     labels = cbar.ax.get_xticklabels()
                     ticks = cbar.ax.get_xticks()
                     if ticks[0] == 0:
@@ -759,7 +759,7 @@ def plotMatrix(hm, outFileName,
             grid_start = 0
 
         ax = fig.add_subplot(grids[grid_start:, -1])
-        fig.colorbar(img, cax=ax, alpha=alpha)
+        fig.colorbar(img, cax=ax)
 
     if box_around_heatmaps:
         plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
@@ -767,7 +767,7 @@ def plotMatrix(hm, outFileName,
         #  When no box is plotted the space between heatmaps is reduced
         plt.subplots_adjust(wspace=0.05, hspace=0.01, top=0.85, bottom=0, left=0.04, right=0.96)
 
-    plt.savefig(outFileName, bbox_inches='tight', pdd_inches=0, dpi=dpi, format=image_format)
+    plt.savefig(outFileName, bbox_inches='tight', pad_inches=0.1, dpi=dpi, format=image_format)
     plt.close()
 
 

@@ -440,7 +440,7 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
                 ax.set_ylim(0.0, 100.0)
 
     if args.plotFileFormat == 'plotly':
-        fig['data'] = data
+        fig.add_traces(data)
         py.plot(fig, filename=args.plotFile, auto_open=False)
         # colors
     else:

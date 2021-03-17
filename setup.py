@@ -84,12 +84,12 @@ setup(
     install_requires=[
         "numpy >= 1.9.0",
         "scipy >= 0.17.0",
-        "matplotlib >= 3.1.0",
+        "matplotlib >= 3.3.0",
         "pysam >= 0.14.0",
         "numpydoc >= 0.5",
         "pyBigWig >= 0.2.1",
         "py2bit >= 0.2.0",
-        "plotly >= 2.0.0",
+        "plotly >= 4.9",
         "deeptoolsintervals >= 0.1.8"
     ],
     zip_safe=True,

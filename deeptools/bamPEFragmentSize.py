@@ -341,7 +341,7 @@ def main(args=None):
 
         if args.plotFileFormat == 'plotly':
             fig = go.Figure()
-            fig['data'] = data
+            fig.add_traces(data)
             fig['layout']['yaxis1'].update(title='Frequency')
             fig['layout']['xaxis1'].update(title='Fragment Length')
             fig['layout'].update(title=args.plotTitle)
