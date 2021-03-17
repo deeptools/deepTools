@@ -9,8 +9,6 @@
 * A bug is taken care of in computeMatrixOperations.py / dataRange
 * in plotProfile.py legen location is changed from auto to best (issue #1042)
 
-
-
 3.5.0
 
  * Fixed a small issue in computeGCBias (issue #969)
