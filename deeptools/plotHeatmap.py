@@ -161,6 +161,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
             plt.setp(ax_profile.get_yticklabels(), visible=False)
 
+        ax_profile.get_yaxis().set_tick_params(direction='in',pad=-22) # beisi
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
         xticks, xtickslabel = hm.getTicks(tickIdx)
@@ -593,8 +594,13 @@ def plotMatrix(hm, outFileName,
             ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position, label_rotation)
 
         if legend_location != 'none':
-            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
-                               frameon=False, markerscale=0.5)
+            ax = ax_list[-1] # beisi
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0 - box.height * 0.1, box.width, box.height * 0.9])
+            legend = ax.legend(loc='lower right', shadow=False, fontsize='x-large', bbox_to_anchor=(0, 1.3, 1, .22), ncol=10, frameon=False, prop=fontP) # beisi, legend line
+            ax.add_artist(legend)
+            #            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
+            #                   frameon=False, markerscale=0.5)
 
     first_group = 0  # helper variable to place the title per sample/group
     for sample in range(hm.matrix.get_num_samples()):
