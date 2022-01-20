@@ -1150,6 +1150,14 @@ class _matrix(object):
     def get_num_groups(self):
         return len(self.group_labels)
 
+    def get_percentile_by_samples(self,percentile):
+        percentile_per_samples = []
+        for sample in range(self.get_num_samples()):
+            sample_start = self.sample_boundaries[sample]
+            sample_end = self.sample_boundaries[sample + 1]
+            percentile_per_samples.append(np.percentile(np.ma.masked_invalid(self.matrix[:,sample_start:sample_end]),percentile))
+        return percentile_per_samples
+
     def set_group_labels(self, new_labels):
         """ sets new labels for groups
         """
