@@ -1,4 +1,4 @@
-<tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.1">
     <description>calculates average scores for a list of two or more bigwig files</description>
     <macros>
         <token name="@BINARY@">multiBigwigSummary</token>
@@ -11,7 +11,6 @@
         #set labels=[]
 
         @multiple_input_bigwigs@
-
         @BINARY@
             $mode.modeOpt
 
@@ -20,8 +19,10 @@
             --outFileName $outFile
 
             --bwfiles #echo ' '.join($files)#
-            --labels #echo ' '.join($labels)#
-
+            
+            #if $custom_sample_labels_conditional.custom_labels_select == 'Yes'
+                --labels #echo ' '.join($custom_sample_labels_conditional.labels)#
+            #end if
             #if $outRawCounts:
                 --outRawCounts '$outFileRawCounts'
             #end if
@@ -70,7 +71,6 @@
                     help="Correlation is computed for the number of reads that overlap such regions."/>
             </when>
         </conditional>
-
         <expand macro="region_limit_operation" />
         <param argument="--outRawCounts" type="boolean" label="Save raw counts (scores) to file" help=""/>
 
@@ -91,18 +91,20 @@
             <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
-            <param name="corMethod" value="spearman" />
             <output name="outFile" file="multiBigwigSummary_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
-        <!--test>
+        <test>
             <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
-            <param name="modeOpt" value="BED-file" />
-            <param name="region_file" value="multiBamSummary_regions.bed" />
-            <param name="corMethod" value="pearson" />
+            <param name="modeOpt" value="bins" />
+            <param name="binSize" value="10" />
             <param name="outRawCounts" value="True" />
+            <conditional name="custom_sample_labels_conditional">
+                <param name="custom_labels_select" value="Yes"/>
+                <param name="labels" value="sample1 sample2"/>
+            </conditional>
             <output name="outFileRawCounts" file="multiBigwigSummary_result2.tabular" ftype="tabular" />
-            <output name="outFileName" file="multiBigwigSummary_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
-        </test-->
+            <output name="outFile" file="multiBigwigSummary_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+        </test>
     </tests>
     <help>
 <![CDATA[
