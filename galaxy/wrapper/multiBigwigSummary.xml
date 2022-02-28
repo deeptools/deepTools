@@ -4,7 +4,7 @@
         <token name="@BINARY@">multiBigwigSummary</token>
         <import>deepTools_macros.xml</import>
     </macros>
-   <expand macro="requirements" />
+    <expand macro="requirements" />
     <command>
 <![CDATA[
         #set files=[]
@@ -44,7 +44,6 @@
             #end if
 ]]>
     </command>
-
     <inputs>
         <expand macro="multiple_input_bigwigs" MIN="2" LABEL="Bigwig files" TITLE="BigWig files"/>
         <expand macro="custom_sample_labels" />
