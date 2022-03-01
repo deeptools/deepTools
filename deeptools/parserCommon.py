@@ -914,3 +914,20 @@ def requiredLength(minL, maxL):
                 raise argparse.ArgumentTypeError(msg)
             setattr(args, self.dest, values)
     return RequiredLength
+
+
+def stranded_bigwig_file_pair():
+    """Common arguments related to pairs of stranded bigWig files.
+    """
+    parser = argparse.ArgumentParser(add_help=False)
+    group = parser.add_argument_group('Options for stranded pairs of bigWig files')
+
+    group.add_argument('--strandedBigWigSuffix',
+                       help='If specified, then files ending with the '
+                       'first suffix will be treated as the + strand '
+                       'of a pair of bigWig files, and the second '
+                       'suffix will be used for the - strand.',
+                       default='.fwd.bw,.rev.bw',
+                       type=str,
+                       required=False)
+    return parser
