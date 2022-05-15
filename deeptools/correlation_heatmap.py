@@ -6,6 +6,7 @@ import numpy as np
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
 import matplotlib.colors as pltcolors
+import copy
 
 rcParams['pdf.fonttype'] = 42
 rcParams['svg.fonttype'] = 'none'
@@ -43,7 +44,7 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
                            link_color_func=lambda k: 'darkred')
     axdendro.set_xticks([])
     axdendro.set_yticks([])
-    cmap = plt.get_cmap(colormap)
+    cmap = copy.copy(plt.get_cmap(colormap))
 
     # this line simply makes a new cmap, based on the original
     # colormap that goes from 0.0 to 0.9

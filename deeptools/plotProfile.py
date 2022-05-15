@@ -99,7 +99,7 @@ class Profile(object):
                  plot_type='lines',
                  image_format=None,
                  color_list=None,
-                 legend_location='auto',
+                 legend_location='best',
                  plots_per_row=8,
                  label_rotation=0,
                  dpi=200):
@@ -454,7 +454,7 @@ class Profile(object):
         for trace in data:
             trace.update(zmin=vmin, zmax=vmax)
 
-        fig['data'] = data
+        fig.add_traces(data)
         fig['layout']['annotations'] = annos
         py.plot(fig, filename=self.out_file_name, auto_open=False)
 
@@ -668,7 +668,7 @@ class Profile(object):
                 zmaxUse = self.y_max[i % len(self.y_max)]
             trace.update(zmin=zminUse, zmax=zmaxUse)
 
-        fig['data'] = data
+        fig.add_traces(data)
         fig['layout']['annotations'] = annos
         py.plot(fig, filename=self.out_file_name, auto_open=False)
 
@@ -828,15 +828,16 @@ class Profile(object):
         yMin = None
         yMax = None
         for i in range(self.numplots):
-            row = rows - i / self.plots_per_row - 1
+            row = np.floor(i / self.plots_per_row)
+            # row = rows - i / self.plots_per_row - 1
             col = i % self.plots_per_row
             xanchor = 'x{}'.format(i + 1)
             yanchor = 'y{}'.format(i + 1)
             base = row * (domainHeight + bufferHeight)
             domain = [base, base + domainHeight]
             titleY = base + domainHeight
-            base = col * (domainWidth + bufferWidth)
             fig['layout']['yaxis{}'.format(i + 1)] = {'domain': domain, 'title': self.y_axis_label, 'anchor': xanchor, 'autorange': False}
+            base = col * (domainWidth + bufferWidth)
             domain = [base, base + domainWidth]
             titleX = base + 0.5 * domainWidth
             fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': yanchor}
@@ -900,7 +901,7 @@ class Profile(object):
                 yRange[1] = self.y_max[i % len(self.y_max)]
             fig['layout'][yaxis].update(range=yRange)
 
-        fig['data'] = data
+        fig.add_traces(data)
         fig['layout']['annotations'] = annos
         py.plot(fig, filename=self.out_file_name, auto_open=False)
 

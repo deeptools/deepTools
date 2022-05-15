@@ -1,3 +1,14 @@
+3.5.1
+* cmp usage is updated to fit the recent mpl updates.
+* The requirements.txt is updated.
+* "NA" occurences in plotFingerprint.py have been replaced by numpy.NAN (PR #1002)
+* computeMatrixOperations.xml is fixed (brought up in #1003)
+* plotly error is fixed. (issue #1013)
+* relase version is updated in planemo.sh
+* fixed galaxy tests
+* A bug is taken care of in computeMatrixOperations.py / dataRange
+* in plotProfile.py legen location is changed from auto to best (issue #1042)
+
 3.5.0
 
  * Fixed a small issue in computeGCBias (issue #969)
