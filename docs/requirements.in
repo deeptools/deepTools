@@ -1,0 +1,4 @@
+numpydoc==0.6
+pysam
+sphinx-argparse
+deeptoolsintervals
