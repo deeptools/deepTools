@@ -25,7 +25,7 @@ follow the directions for its installation. All of the requirements for deepTool
 
 .. code:: bash
 
-    $ conda install -c bioconda deeptools
+    $ conda install -c bioconda -c conda-forge deeptools
 
 Command line installation using ``pip``
 -----------------------------------------
