@@ -10,14 +10,15 @@ Remember -- deepTools are available for **command line usage** as well as for
 Requirements
 -------------
 
-* numpy
-* scipy
-* py2bit
-* pyBigWig
-* pysam
-* matplotlib
+* Python 2.7 or Python 3.x
+* numpy >= 1.8.0
+* scipy >= 0.17.0
+* py2bit >= 0.1.0
+* pyBigWig >= 0.2.1
+* pysam >= 0.8
+* matplotlib >= 1.4.0
 
-The fastest way to obtain **Python together with numpy and scipy** is
+The fastest way to obtain **Python 2.7 or Python 3.x together with numpy and scipy** is
 via the `Anaconda Scientific Python
 Distribution <https://store.continuum.io/cshop/anaconda/>`_.
 Just download the version that's suitable for your operating system and
@@ -25,7 +26,7 @@ follow the directions for its installation. All of the requirements for deepTool
 
 .. code:: bash
 
-    $ conda install -c bioconda -c conda-forge deeptools
+    $ conda install -c bioconda deeptools
 
 Command line installation using ``pip``
 -----------------------------------------
