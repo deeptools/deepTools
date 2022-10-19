@@ -77,7 +77,7 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
         sys.exit("The file '{}' does not have BAM or CRAM format ".format(bamFile))
 
     try:
-        assert(bam.check_index() is not False)
+        assert bam.check_index() is not False
     except:
         sys.exit("'{}' does not appear to have an index. You MUST index the file first!".format(bamFile))
 

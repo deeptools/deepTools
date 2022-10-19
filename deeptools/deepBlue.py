@@ -122,7 +122,7 @@ class deepBlue(object):
 
         >>> sample = "S002R5H1.ERX300721.H3K4me3.bwa.GRCh38.20150528.bedgraph"
         >>> db = deepBlue(sample) # doctest: +SKIP
-        >>> assert(db.chroms("chr1") == 248956422) # doctest: +SKIP
+        >>> assert db.chroms("chr1") == 248956422 # doctest: +SKIP
         """
         self.sample = sample
         self.url = url

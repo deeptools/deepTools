@@ -1,6 +1,4 @@
 import deeptools.bigwigAverage as bwAve
-import numpy as np
-import numpy.testing as nt
 
 import os.path
 from os import unlink

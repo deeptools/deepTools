@@ -86,7 +86,7 @@ def average(tileCoverage, args):
     >>> average([1, 2, 3, np.nan], funcArgs)
     nan
     """
-    
+
     norm_values = [args['scaleFactors'][i] * cov for i, cov in enumerate(tileCoverage)]
 
     return np.mean(norm_values)
@@ -94,9 +94,9 @@ def average(tileCoverage, args):
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
-    
+
     print("HELLO")
-    
+
     nFiles = len(args.bigwigs)
 
     if args.scaleFactors:
@@ -112,7 +112,7 @@ def main(args=None):
         scaleFactors = [1] * nFiles
 
     print(scaleFactors)
-    
+
     # the average function is called and receives
     # the function_args per each tile that is considered
     FUNC = average
