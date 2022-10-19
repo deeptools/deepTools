@@ -35,6 +35,8 @@ Tools for BAM and bigWig file processing
 +------------------------+--------------------------------------------------------------------------------+
 | ``bigwigCompare``      | normalize the scores of two bigWig files to each other (e.g., ratios)          |
 +------------------------+--------------------------------------------------------------------------------+
+| ``bigwigAverage``      | average the scores of multiple bigWig files                                    |
++------------------------+--------------------------------------------------------------------------------+
 | ``computeMatrix``      | compute the values needed for heatmaps and summary plots                       |
 +------------------------+--------------------------------------------------------------------------------+
 

@@ -72,7 +72,7 @@ setup(
              'bin/computeGCBias', 'bin/correctGCBias', 'bin/multiBigwigSummary',
              'bin/bigwigCompare', 'bin/plotCoverage', 'bin/plotPCA', 'bin/plotCorrelation',
              'bin/plotEnrichment', 'bin/deeptools', 'bin/computeMatrixOperations',
-             'bin/estimateReadFiltering', 'bin/alignmentSieve'],
+             'bin/estimateReadFiltering', 'bin/alignmentSieve', 'bin/bigwigAverage'],
     include_package_data=True,
     url='http://pypi.python.org/pypi/deepTools/',
     license='LICENSE.txt',
