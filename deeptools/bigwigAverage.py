@@ -95,8 +95,6 @@ def average(tileCoverage, args):
 def main(args=None):
     args = parse_arguments().parse_args(args)
 
-    print("HELLO")
-
     nFiles = len(args.bigwigs)
 
     if args.scaleFactors:
@@ -110,8 +108,6 @@ def main(args=None):
                 "The value given ( {} ) is not valid".format(nFiles, len(scaleFactors), args.scaleFactors))
     else:
         scaleFactors = [1] * nFiles
-
-    print(scaleFactors)
 
     # the average function is called and receives
     # the function_args per each tile that is considered
