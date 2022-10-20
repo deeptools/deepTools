@@ -50,3 +50,6 @@ _sources
 #os X
 .DS_Store
 ._.DS_Store
+
+# Planemo
+tool_test*
