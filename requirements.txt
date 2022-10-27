@@ -34,8 +34,8 @@ kiwisolver==1.4.2
     # via matplotlib
 markupsafe==2.1.1
     # via jinja2
-matplotlib==3.5.2
-    # via -r requirements.in
+matplotlib>=3.5<3.6
+    # We're manually setting matplitlib <3.6 to avoide issue #1172
 numpy==1.22.3
     # via
     #   -r requirements.in
