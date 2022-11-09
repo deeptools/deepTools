@@ -11,14 +11,17 @@
         #set labels=[]
 
         @multiple_input_bams@
-
         @BINARY@
 
             @THREADS@
 
             --plotFile '$outFileName'
             --bamfiles #echo " ".join($files)#
-            --labels #echo " ".join($labels)#
+
+            #if $custom_sample_labels_conditional.custom_sample_labels == "Yes":
+                --labels #echo " ".join($custom_sample_labels_conditional.labels)#
+            #end if
+
             --plotFileFormat '$outFileFormat'
 
             #if $outRawCounts:
