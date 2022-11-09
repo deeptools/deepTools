@@ -43,7 +43,6 @@
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
-                --numberOfSamples '$advancedOpt.numberOfSamples'
                 $advancedOpt.skipZeros
 
                 #if str($advancedOpt.region).strip() != '':
