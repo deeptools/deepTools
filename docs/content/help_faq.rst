@@ -216,6 +216,10 @@ If your genome isn't included in our standard dataset then you'll need the follo
 
 .. _effgenomesize:
 
+How can I use a temp directory other than /tmp
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+You can set your `$TMPDIR` environmental variable to a different directory.
+
 How do I calculate the effective genome size for an organism that's not in your list?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 At the moment we do not provide a tool for this purpose, so you'll have to find a solution outside of deepTools for the time being.
