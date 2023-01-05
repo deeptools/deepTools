@@ -9,6 +9,7 @@ if [[ $1 == "1" ]] ; then
     galaxy/wrapper/bamCoverage.xml \
     galaxy/wrapper/bamPEFragmentSize.xml \
     galaxy/wrapper/bigwigCompare.xml \
+    galaxy/wrapper/bigwigAverage.xml \
     galaxy/wrapper/computeGCBias.xml"
 elif [[ $1 == "2" ]] ; then
     wrappers="galaxy/wrapper/computeMatrix.xml \

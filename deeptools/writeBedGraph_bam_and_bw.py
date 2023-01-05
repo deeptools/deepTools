@@ -196,8 +196,11 @@ def writeBedGraph(
             fh.close()
 
         # get the list of common chromosome names and sizes
-        chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
-                             if k in cCommon]
+        if len(bamOrBwFileList) == 1:
+            chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()]
+        else:
+            chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
+                                 if k in cCommon]
 
     if region:
         # in case a region is used, append the tilesize

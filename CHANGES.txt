@@ -1,3 +1,6 @@
+3.6.0
+* Add bigwigAverage
+
 3.5.1
 * cmp usage is updated to fit the recent mpl updates.
 * The requirements.txt is updated.

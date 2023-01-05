@@ -75,11 +75,11 @@ def test_sieve():
     assert_equal(resp, expected)
     unlink(outlog)
     h = hashlib.md5(pysam.view(outfile).encode('utf-8')).hexdigest()
-    assert(h == "acbc4443fb0387bfd6c412af9d4fc414")
+    assert h == "acbc4443fb0387bfd6c412af9d4fc414"
     unlink(outfile)
 
     h1 = hashlib.md5(pysam.view(outfiltered).encode('utf-8')).hexdigest()
-    assert(h1 == "b90befdd5f073f14acb9a38661f301ad")
+    assert h1 == "b90befdd5f073f14acb9a38661f301ad"
     unlink(outfiltered)
 
 

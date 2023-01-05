@@ -390,7 +390,7 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         print("%s total time %.1f @ %s:%s-%s %s" % (multiprocessing.current_process().name,
                                                     (endTime - startTime), chromNameBit, start, end, stepSize))
 
-    return(subN_gc, subF_gc)
+    return subN_gc, subF_gc
 
 
 def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
