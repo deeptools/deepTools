@@ -50,6 +50,7 @@ jobs:
     - name: planemo
       run: |
         source activate foo
+        conda update samtools
         ./.planemo.sh ${{ matrix.chunk }} ${{ env.GALAXY_BRANCH }}
     - uses: actions/upload-artifact@v3
       with:
