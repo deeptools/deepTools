@@ -504,7 +504,7 @@ class Correlation:
                 bottom=False,
                 direction='out')
             for tick in ax.xaxis.get_major_ticks():
-                tick.label.set_rotation('45')
+                tick.label.set_rotation(45)
 
             if col != num_samples - 1:
                 ax.set_yticklabels([])
@@ -523,7 +523,7 @@ class Correlation:
                     bottom=True,
                     direction='out')
                 for tick in ax.xaxis.get_major_ticks():
-                    tick.label.set_rotation('45')
+                    tick.label.set_rotation(45)
 
             else:
                 ax.set_xticklabels([])
