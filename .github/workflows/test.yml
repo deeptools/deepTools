@@ -49,3 +49,7 @@ jobs:
       run: |
         source activate foo
         ./.planemo.sh ${{ matrix.chunk }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: 'Tool test output ${{ matrix.chunk }}'
+        path: tool_test_output.html
