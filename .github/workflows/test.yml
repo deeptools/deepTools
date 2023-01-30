@@ -1,5 +1,7 @@
 name: Test
 on: [push, pull_request]
+env:
+  GALAXY_BRANCH: release_22.05
 jobs:
   build-linux:
     name: Test on Linux
@@ -35,8 +37,8 @@ jobs:
 
         source activate foo
         nosetests --with-doctest -sv deeptools
-  planemo:
-    name: First planemo chunk
+  planemo_test:
+    name: Planemo test
     runs-on: ubuntu-latest
     needs: build-linux
     strategy:
@@ -48,4 +50,45 @@ jobs:
     - name: planemo
       run: |
         source activate foo
-        ./.planemo.sh ${{ matrix.chunk }}
+        conda update -c conda-forge -c bioconda samtools
+        ./.planemo.sh ${{ matrix.chunk }} ${{ env.GALAXY_BRANCH }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: 'Tool test output ${{ matrix.chunk }}'
+        path: upload
+
+  planemo_combine_outputs:
+    name: Combine chunked test results
+    needs: [build-linux, planemo_test]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7']
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Cache .cache/pip
+      uses: actions/cache@v3
+      id: cache-pip
+      with:
+        path: ~/.cache/pip
+        key: pip_cache_py_${{ matrix.python-version }}_gxy_${{ env.GALAXY_BRANCH }}
+    - name: Combine outputs
+      uses: galaxyproject/planemo-ci-action@v1
+      id: combine
+      with:
+        mode: combine
+        html-report: true
+    - uses: actions/upload-artifact@v3
+      with:
+        name: 'All tool test results'
+        path: upload
+    - name: Check outputs
+      uses: galaxyproject/planemo-ci-action@v1
+      id: check
+      with:
+        mode: check

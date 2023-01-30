@@ -29,5 +29,6 @@ else
 fi
 
 planemo lint ${wrappers}
-planemo test --no_dependency_resolution --galaxy_branch release_20.09 --install_galaxy ${wrappers} 2>&1 | grep -v -e "^galaxy" | grep -v -e "^requests"
-test ${PIPESTATUS[0]} -eq 0
+planemo test --no_dependency_resolution --galaxy_branch $2 --install_galaxy ${wrappers} 2>&1
+mkdir upload
+mv tool_test_output* upload/
