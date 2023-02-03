@@ -366,7 +366,7 @@ def process_args(args=None):
                      "set to 0. Nothing to output. Maybe you want to "
                      "use the scale-regions mode?\n")
 
-    return(args)
+    return args
 
 
 def main(args=None):

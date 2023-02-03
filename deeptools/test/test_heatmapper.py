@@ -142,107 +142,107 @@ def test_computeMatrix_metagene():
 def test_chopRegions_body():
     region = [(0, 200), (300, 400), (800, 900)]
     lbins, bodybins, rbins, padLeft, padRight = deeptools.heatmapper.chopRegions(region, left=0, right=0)
-    assert(lbins == [])
-    assert(rbins == [])
-    assert(bodybins == region)
-    assert(padLeft == 0)
-    assert(padRight == 0)
+    assert lbins == []
+    assert rbins == []
+    assert bodybins == region
+    assert padLeft == 0
+    assert padRight == 0
     # Unscaled 5', 3'
     lbins, bodybins, rbins, padLeft, padRight = deeptools.heatmapper.chopRegions(region, left=150, right=150)
-    assert(lbins == [(0, 150)])
-    assert(rbins == [(350, 400), (800, 900)])
-    assert(bodybins == [(150, 200), (300, 350)])
-    assert(padLeft == 0)
-    assert(padRight == 0)
+    assert lbins == [(0, 150)]
+    assert rbins == [(350, 400), (800, 900)]
+    assert bodybins == [(150, 200), (300, 350)]
+    assert padLeft == 0
+    assert padRight == 0
 
 
 def test_chopRegions_TSS():
     region = [(0, 200), (300, 400), (800, 900)]
     # + strand, 250 downstream
     downstream, body, unscaled3prime, padRight, _ = deeptools.heatmapper.chopRegions(region, left=250)
-    assert(downstream == [(0, 200), (300, 350)])
-    assert(body == [(350, 400), (800, 900)])
-    assert(unscaled3prime == [])
-    assert(padRight == 0)
-    assert(_ == 0)
+    assert downstream == [(0, 200), (300, 350)]
+    assert body == [(350, 400), (800, 900)]
+    assert unscaled3prime == []
+    assert padRight == 0
+    assert _ == 0
     # + strand, 500 downstream
     downstream, body, unscaled3prime, padRight, _ = deeptools.heatmapper.chopRegions(region, left=500)
-    assert(downstream == region)
-    assert(body == [])
-    assert(unscaled3prime == [])
-    assert(padRight == 100)
-    assert(_ == 0)
+    assert downstream == region
+    assert body == []
+    assert unscaled3prime == []
+    assert padRight == 100
+    assert _ == 0
     # - strand, 250 downstream (labeled "upstream" due to being on the - strand)
     unscaled5prime, body, upstream, _, padLeft = deeptools.heatmapper.chopRegions(region, right=250)
-    assert(upstream == [(150, 200), (300, 400), (800, 900)])
-    assert(body == [(0, 150)])
-    assert(unscaled5prime == [])
-    assert(padLeft == 0)
-    assert(_ == 0)
+    assert upstream == [(150, 200), (300, 400), (800, 900)]
+    assert body == [(0, 150)]
+    assert unscaled5prime == []
+    assert padLeft == 0
+    assert _ == 0
     # - strand, 500 downstream (labeled "upstream" due to being on the - strand)
     unscaled5prime, body, upstream, _, padLeft = deeptools.heatmapper.chopRegions(region, right=500)
-    assert(upstream == region)
-    assert(body == [])
-    assert(unscaled5prime == [])
-    assert(padLeft == 100)
-    assert(_ == 0)
+    assert upstream == region
+    assert body == []
+    assert unscaled5prime == []
+    assert padLeft == 100
+    assert _ == 0
 
 
 def test_chopRegions_TES():
     region = [(0, 200), (300, 400), (800, 900)]
     # + strand, 250 upstream
     unscaled5prime, body, upstream, _, padLeft = deeptools.heatmapper.chopRegions(region, right=250)
-    assert(unscaled5prime == [])
-    assert(body == [(0, 150)])
-    assert(upstream == [(150, 200), (300, 400), (800, 900)])
-    assert(_ == 0)
-    assert(padLeft == 0)
+    assert unscaled5prime == []
+    assert body == [(0, 150)]
+    assert upstream == [(150, 200), (300, 400), (800, 900)]
+    assert _ == 0
+    assert padLeft == 0
     # + strand, 500 upstream
     unscaled5prime, body, upstream, _, padLeft = deeptools.heatmapper.chopRegions(region, right=500)
-    assert(unscaled5prime == [])
-    assert(body == [])
-    assert(upstream == region)
-    assert(_ == 0)
-    assert(padLeft == 100)
+    assert unscaled5prime == []
+    assert body == []
+    assert upstream == region
+    assert _ == 0
+    assert padLeft == 100
     # + strand, 250 downstream (labeled "upstream" due to being on the - strand)
     downstream, body, unscaled3prime, padRight, _ = deeptools.heatmapper.chopRegions(region, left=250)
-    assert(downstream == [(0, 200), (300, 350)])
-    assert(body == [(350, 400), (800, 900)])
-    assert(unscaled3prime == [])
-    assert(padRight == 0)
-    assert(_ == 0)
+    assert downstream == [(0, 200), (300, 350)]
+    assert body == [(350, 400), (800, 900)]
+    assert unscaled3prime == []
+    assert padRight == 0
+    assert _ == 0
     # + strand, 500 downstream (labeled "upstream" due to being on the - strand)
     downstream, body, unscaled3prime, padRight, _ = deeptools.heatmapper.chopRegions(region, left=500)
-    assert(downstream == region)
-    assert(body == [])
-    assert(unscaled3prime == [])
-    assert(padRight == 100)
-    assert(_ == 0)
+    assert downstream == region
+    assert body == []
+    assert unscaled3prime == []
+    assert padRight == 100
+    assert _ == 0
 
 
 def test_chopRegionsFromMiddle():
     region = [(0, 200), (300, 400), (800, 900)]
     # + strand, 100 upstream/200 downstream
     upstream, downstream, padLeft, padRight = deeptools.heatmapper.chopRegionsFromMiddle(region, left=100, right=200)
-    assert(upstream == [(100, 200)])
-    assert(downstream == [(300, 400), (800, 900)])
-    assert(padLeft == 0)
-    assert(padRight == 0)
+    assert upstream == [(100, 200)]
+    assert downstream == [(300, 400), (800, 900)]
+    assert padLeft == 0
+    assert padRight == 0
     # + strand, 250 upstream/300 downstream
     upstream, downstream, padLeft, padRight = deeptools.heatmapper.chopRegionsFromMiddle(region, left=250, right=300)
-    assert(upstream == [(0, 200)])
-    assert(downstream == [(300, 400), (800, 900)])
-    assert(padLeft == 50)
-    assert(padRight == 100)
+    assert upstream == [(0, 200)]
+    assert downstream == [(300, 400), (800, 900)]
+    assert padLeft == 50
+    assert padRight == 100
     # - strand, 100 upstream/200 downstream
     upstream, downstream, padLeft, padRight = deeptools.heatmapper.chopRegionsFromMiddle(region, left=200, right=100)
-    assert(upstream == [(0, 200)])
-    assert(downstream == [(300, 400)])
-    assert(padLeft == 0)
-    assert(padRight == 0)
+    assert upstream == [(0, 200)]
+    assert downstream == [(300, 400)]
+    assert padLeft == 0
+    assert padRight == 0
     # - strand, 250 upstream/300 downstream
     upstream, downstream, padLeft, padRight = deeptools.heatmapper.chopRegionsFromMiddle(region, left=300, right=250)
-    assert(upstream == [(0, 200)])
-    assert(downstream == [(300, 400), (800, 900)])
-    assert(padLeft == 100)
-    assert(padRight == 50)
+    assert upstream == [(0, 200)]
+    assert downstream == [(300, 400), (800, 900)]
+    assert padLeft == 100
+    assert padRight == 50

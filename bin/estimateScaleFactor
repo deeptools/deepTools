@@ -85,7 +85,7 @@ def parseArguments(args=None):
          args.ignoreForNormalization=[x.strip() for x in args.ignoreForNormalization.split(',')]
     else:
          args.ignoreForNormalization = []
-    return(args)
+    return args
 
 def main(args):
     """

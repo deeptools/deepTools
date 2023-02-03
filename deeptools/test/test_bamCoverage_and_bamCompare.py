@@ -376,7 +376,7 @@ def test_bam_coverage_offset1():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset1.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset1.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -394,7 +394,7 @@ def test_bam_coverage_offset1_10():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset1_10.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset1_10.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -412,7 +412,7 @@ def test_bam_coverage_offset_minus1():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset-1.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset-1.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -430,7 +430,7 @@ def test_bam_coverage_offset20_minus4():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset20_-4.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset20_-4.bw".format(ROOT)) is True
         unlink(outfile)
 
 

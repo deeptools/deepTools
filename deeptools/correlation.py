@@ -285,9 +285,9 @@ class Correlation:
         fig = plt.figure(figsize=(plotWidth, plotHeight))
         plt.suptitle(plot_title)
 
-        axdendro = fig.add_axes([0.02, 0.12, 0.1, 0.66])
+        axdendro = fig.add_axes([0.015, 0.1, 0.1, 0.7])
         axdendro.set_axis_off()
-        y_var = sch.linkage(corr_matrix, method='complete')
+        y_var = sch.linkage(corr_matrix, method='centroid')
         z_var = sch.dendrogram(y_var, orientation='left',
                                link_color_func=lambda k: 'darkred')
         axdendro.set_xticks([])
@@ -306,7 +306,7 @@ class Correlation:
 
         cmap.set_under((0., 0., 1.))
         # Plot distance matrix.
-        axmatrix = fig.add_axes([0.13, 0.1, 0.6, 0.7])
+        axmatrix = fig.add_axes([0.12, 0.1, 0.6, 0.7])
         index = z_var['leaves']
         corr_matrix = corr_matrix[index, :]
         corr_matrix = corr_matrix[:, index]
@@ -358,7 +358,7 @@ class Correlation:
             right=False)
 
         # Plot colorbar
-        axcolor = fig.add_axes([0.13, 0.065, 0.6, 0.02])
+        axcolor = fig.add_axes([0.12, 0.065, 0.6, 0.02])
         cobar = plt.colorbar(img_mat, cax=axcolor, orientation='horizontal')
         cobar.solids.set_edgecolor("face")
         if plot_numbers:
@@ -504,7 +504,7 @@ class Correlation:
                 bottom=False,
                 direction='out')
             for tick in ax.xaxis.get_major_ticks():
-                tick.label.set_rotation('45')
+                tick.label.set_rotation(45)
 
             if col != num_samples - 1:
                 ax.set_yticklabels([])
@@ -523,7 +523,7 @@ class Correlation:
                     bottom=True,
                     direction='out')
                 for tick in ax.xaxis.get_major_ticks():
-                    tick.label.set_rotation('45')
+                    tick.label.set_rotation(45)
 
             else:
                 ax.set_xticklabels([])
