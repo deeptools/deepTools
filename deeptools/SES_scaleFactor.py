@@ -127,7 +127,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     # Take a lower rank to move to a region with probably
     # less peaks and more background.
     maxIndex = int(maxIndex * 0.8)
-    while(maxIndex < len(p)):
+    while maxIndex < len(p):
         # in rare cases the maxIndex maps to a zero value.
         # In such cases, the next index is used until
         # a non zero value appears.
