@@ -1,4 +1,4 @@
-<tool id="deeptools_multi_bam_summary" name="multiBamSummary" version="@WRAPPER_VERSION@.0">
+<tool id="deeptools_multi_bam_summary" name="multiBamSummary" version="@WRAPPER_VERSION@.1">
     <description>calculates average read coverages for a list of two or more BAM/CRAM files</description>
     <macros>
         <token name="@BINARY@">multiBamSummary</token>
@@ -17,7 +17,10 @@
 
             --outFileName '$outFile'
             --bamfiles #echo " ".join($files)#
-            --labels #echo " ".join($labels)#
+
+            #if $custom_sample_labels_conditional.custom_labels_select == 'Yes'
+                --labels #echo ' '.join($custom_sample_labels_conditional.labels)#
+            #end if
 
             #if $outRawCounts:
                 --outRawCounts '$outFileRawCounts'
