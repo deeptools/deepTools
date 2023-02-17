@@ -112,8 +112,17 @@
             <param name="region_file" value="multiBamSummary_regions.bed" />
             <output name="outFile" file="multiBamSummary_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
-
-
+        <!-- Test labels -->
+        <test>
+            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="modeOpt" value="bins" />
+            <param name="binSize" value="10" />
+            <conditional name="custom_sample_labels_conditional">
+                <param name="custom_labels_select" value="Yes"/>
+                <param name="labels" value="label1, label2"/>
+            </conditional>
+            <output name="outFile" file="multiBamSummary_result3.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
+        </test>
     </tests>
     <help>
 <![CDATA[
