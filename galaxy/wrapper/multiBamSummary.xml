@@ -19,7 +19,7 @@
             --bamfiles #echo " ".join($files)#
 
             #if $custom_sample_labels_conditional.custom_labels_select == 'Yes'
-                --labels #echo ' '.join($custom_sample_labels_conditional.labels)#
+                --labels #echo ' '.join($labels)#
             #end if
 
             #if $outRawCounts:
