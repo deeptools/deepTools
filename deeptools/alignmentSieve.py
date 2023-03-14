@@ -71,6 +71,11 @@ def parseArguments():
                          action='store_true',
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
 
+    general.add_argument('--genomeChunkLength',
+                         type=int,
+                         default=int(1e6),
+                         help='Size of the genome (in bps) to be processed per thread. (Default: %(default)s)')
+
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
                         action='store_true',
@@ -205,7 +210,7 @@ def filterWorker(arglist):
     chrom, start, end, args, chromDict = arglist
     fh = openBam(args.bam)
 
-    mode = 'wbu'
+    mode = 'wb'
     oname = getTempFileName(suffix='.bam')
     if args.filteredOutReads:
         onameFiltered = getTempFileName(suffix='.bam')
@@ -387,6 +392,7 @@ def main(args=None):
                     chrom_sizes,
                     blackListFileName=args.blackListFileName,
                     numberOfProcessors=args.numberOfProcessors,
+                    genomeChunkLength=args.genomeChunkLength,
                     verbose=args.verbose)
 
     res = sorted(res)  # The temp files are now in order for concatenation
