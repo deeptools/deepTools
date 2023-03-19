@@ -1,8 +1,5 @@
 name: Test
 on: [push, pull_request]
-defaults:
-  run:
-    shell: bash -l {0}
 env:
   GALAXY_BRANCH: release_22.05
 jobs:
