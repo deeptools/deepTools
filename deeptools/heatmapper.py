@@ -1150,7 +1150,7 @@ class _matrix(object):
     def get_num_groups(self):
         return len(self.group_labels)
 
-    def get_percentile_by_samples(self,percentile):
+    def get_percentile_by_samples(self, percentile):
         percentile_per_samples = []
         for sample in range(self.get_num_samples()):
             sample_start = self.sample_boundaries[sample]
