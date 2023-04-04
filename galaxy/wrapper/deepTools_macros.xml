@@ -368,7 +368,6 @@
     <xml name="pseudocount">
         <param argument="--pseudocount" type="text" value="1 1" label="Pseudocount" help="Small number to avoid dividing by zero. You can specify separate values for the pseudocount added to the numerator and denominator by providing two values separated by a space."/>
     </xml>
-
     <token name="@REFERENCES@">
 
 .. class:: infomark
