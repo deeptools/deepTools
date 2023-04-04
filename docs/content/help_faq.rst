@@ -212,13 +212,15 @@ If your genome isn't included in our standard dataset then you'll need the follo
 1. **Effective genome size** - this is mostly needed for :doc:`bamCoverage <tools/bamCoverage>` and :doc:`bamCompare <tools/bamCompare>`, see :ref:`below <effgenomesize>` for details
 2. **Reference genome sequence in 2bit format** - this is needed for :doc:`computeGCBias <tools/computeGCBias>`, see :ref:`2bit <2bit>` for details
 
--------------------------------------------------------------------------------
-
 .. _effgenomesize:
 
-How can I use a temp directory other than /tmp
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------------------------------------------------------------
+
+How can I use a temp directory other than /tmp?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 You can set your `$TMPDIR` environmental variable to a different directory.
+
+-------------------------------------------------------------------------------
 
 How do I calculate the effective genome size for an organism that's not in your list?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
