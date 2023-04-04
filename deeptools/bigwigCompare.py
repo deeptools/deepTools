@@ -97,7 +97,6 @@ def parse_arguments(args=None):
                         help='Output in fixed step of bin size (as specified by --binSize), not merging '
                         'neighboring bins with same values in the output file',
                         action='store_true')
-
     return parser
 
 
