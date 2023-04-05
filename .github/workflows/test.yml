@@ -34,7 +34,6 @@ jobs:
     - uses: "dpryan79/github-actions/@master"
     - name: Test deepTools
       run: |
-
         source activate foo
         nosetests --with-doctest -sv deeptools
   planemo_test:

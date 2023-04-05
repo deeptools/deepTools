@@ -368,7 +368,6 @@
     <xml name="pseudocount">
         <param argument="--pseudocount" type="text" value="1 1" label="Pseudocount" help="Small number to avoid dividing by zero. You can specify separate values for the pseudocount added to the numerator and denominator by providing two values separated by a space."/>
     </xml>
-
     <token name="@REFERENCES@">
 
 .. class:: infomark
@@ -483,7 +482,7 @@ is vital to you, select Yes below.">
     <token name="@multiple_input_bams@">
 <![CDATA[
         #if $custom_sample_labels_conditional.custom_labels_select == "Yes":
-            #set custom_labels=labels
+            #set custom_labels=$custom_sample_labels_conditional.labels
         #end if
         #set files=[]
         #set labels=[]
@@ -498,7 +497,7 @@ is vital to you, select Yes below.">
                     ln -s '${bamfile.metadata.cram_index}' './${counter}.bam.crai' &&
                 #end if
                 #silent $files.append("'%s.bam'" % $counter)
-                #silent $labels.append("'%s'" % identifier)
+                #silent $labels.append("'%s'" % $identifier)
             #end for
         #else:
             #for $counter, $f in enumerate($multibam_conditional.multibam_repeats):
@@ -522,7 +521,7 @@ is vital to you, select Yes below.">
     <token name="@multiple_input_bigwigs@">
 <![CDATA[
         #if $custom_sample_labels_conditional.custom_labels_select == "Yes":
-            #set custom_labels=labels
+            #set custom_labels=$custom_sample_labels_conditional.labels
         #end if
         #set files=[]
         #set labels=[]
