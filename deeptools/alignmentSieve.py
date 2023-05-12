@@ -209,7 +209,6 @@ def shiftRead(b, chromDict, args):
 def filterWorker(arglist):
     chrom, start, end, args, chromDict = arglist
     fh = openBam(args.bam)
-
     mode = 'wb'
     oname = getTempFileName(suffix='.bam')
     if args.filteredOutReads:
@@ -354,8 +353,11 @@ def convertBED(oname, tmpFiles, chromDict):
     """
     ofile = open(oname, "w")
     for tmpFile in tmpFiles:
+        # Setting verbosity to avoid lack of index error/warning
+        pysam.set_verbosity(0)
         fh = pysam.AlignmentFile(tmpFile)
-
+        # Reset verbosity
+        pysam.set_verbosity(3)
         for b in fh.fetch(until_eof=True):
             tLen = getTLen(b, notAbs=True)
             if tLen > 0:
