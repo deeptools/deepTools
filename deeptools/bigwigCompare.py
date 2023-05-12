@@ -94,7 +94,8 @@ def parse_arguments(args=None):
                         action='store_true')
 
     parser.add_argument('--fixedStep',
-                        help = 'Write out all bins (of size --binSize) instead of merging neighbouring bins with equal values.'
+                        help='Write out all bins (of size --binSize) '
+                        'instead of merging neighbouring bins with equal values.',
                         action='store_true')
     return parser
 
