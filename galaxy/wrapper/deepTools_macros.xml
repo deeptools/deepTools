@@ -1,10 +1,10 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@WRAPPER_VERSION@">3.5.1.0</token>
+    <token name="@TOOL_VERSION@">3.5.2</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="3.5.1">deeptools</requirement>
+            <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement>
             <requirement type="package" version="1.9">samtools</requirement>
         </requirements>
         <expand macro="stdio" />

@@ -1,4 +1,4 @@
-<tool id="deeptools_compute_gc_bias" name="computeGCBias" version="@WRAPPER_VERSION@.0" profile="18.01">
+<tool id="deeptools_compute_gc_bias" name="computeGCBias" version="@TOOL_VERSION@+galaxy0" profile="18.01">
     <description>Determine the GC bias of your sequenced reads</description>
     <macros>
         <token name="@BINARY@">computeGCBias</token>
