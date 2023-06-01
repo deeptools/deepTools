@@ -1,4 +1,4 @@
-<tool id="deeptools_bam_coverage" name="bamCoverage" version="@TOOL_VERSION@+galaxy0">
+<tool id="deeptools_bam_coverage" name="bamCoverage" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>generates a coverage bigWig file from a given BAM or CRAM file</description>
     <macros>
         <token name="@BINARY@">bamCoverage</token>

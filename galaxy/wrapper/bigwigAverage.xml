@@ -1,4 +1,4 @@
-<tool id="deeptools_bigwig_average" name="bigwigAverage" version="@TOOL_VERSION@+galaxy0">
+<tool id="deeptools_bigwig_average" name="bigwigAverage" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>normalizes and average multiple bigWig files</description>
     <macros>
         <token name="@BINARY@">bigwigAverage</token>

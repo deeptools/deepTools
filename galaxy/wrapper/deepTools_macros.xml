@@ -2,6 +2,7 @@
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <token name="@TOOL_VERSION@">3.5.2</token>
+    <token name="@GALAXY_VERSION@">20.01</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement>

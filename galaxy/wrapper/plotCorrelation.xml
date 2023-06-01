@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_correlation" name="plotCorrelation" version="@TOOL_VERSION@+galaxy0" profile="18.01">
+<tool id="deeptools_plot_correlation" name="plotCorrelation" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>Create a heatmap or scatterplot of correlation scores between different samples </description>
     <macros>
         <token name="@BINARY@">plotCorrelation</token>

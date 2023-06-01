@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_fingerprint" name="plotFingerprint" version="@TOOL_VERSION@+galaxy0" profile="18.01">
+<tool id="deeptools_plot_fingerprint" name="plotFingerprint" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>plots profiles of BAM files; useful for assessing ChIP signal strength</description>
     <macros>
         <token name="@BINARY@">plotFingerprint</token>
