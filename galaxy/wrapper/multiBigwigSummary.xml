@@ -1,4 +1,4 @@
-<tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@WRAPPER_VERSION@.1">
+<tool id="deeptools_multi_bigwig_summary" name="multiBigwigSummary" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>calculates average scores for a list of two or more bigwig files</description>
     <macros>
         <token name="@BINARY@">multiBigwigSummary</token>

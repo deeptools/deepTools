@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@WRAPPER_VERSION@.1" profile="18.01">
+<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>creates a heatmap for score distributions across genomic regions</description>
     <macros>
         <token name="@BINARY@">plotHeatmap</token>
