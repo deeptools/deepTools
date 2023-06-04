@@ -860,9 +860,9 @@ class CountReadsPerBin(object):
 
         >>> c = CountReadsPerBin([], 1, 1, 200, extendReads=True, center_read=True)
         >>> c.defaultFragmentLength = 100
-        >>> assert(c.get_fragment_from_read(test.getRead("paired-forward")) == [(5000032, 5000068)])
+        >>> assert c.get_fragment_from_read(test.getRead("paired-forward")) == [(5000032, 5000068)]
         >>> c.defaultFragmentLength = 200
-        >>> assert(c.get_fragment_from_read(test.getRead("single-reverse")) == [(5001618, 5001654)])
+        >>> assert c.get_fragment_from_read(test.getRead("single-reverse")) == [(5001618, 5001654)]
         """
         # if no extension is needed, use pysam get_blocks
         # to identify start and end reference positions.
@@ -977,10 +977,10 @@ def estimateSizeFactors(m):
 
     >>> m = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 10, 0], [10, 5, 100]])
     >>> sf = estimateSizeFactors(m)
-    >>> assert(np.all(np.abs(sf - [1.305, 0.9932, 0.783]) < 1e-4))
+    >>> assert np.all(np.abs(sf - [1.305, 0.9932, 0.783]) < 1e-4)
     >>> m = np.array([[0, 0], [0, 1], [1, 1], [1, 2]])
     >>> sf = estimateSizeFactors(m)
-    >>> assert(np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4))
+    >>> assert np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4)
     """
     loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
     # Mask after computing the geometric mean

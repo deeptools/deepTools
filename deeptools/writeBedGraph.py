@@ -289,7 +289,7 @@ def bedGraphToBigWig(chromSizes, bedGraphFiles, bigWigPath):
     The order of bedGraphFiles must match that of chromSizes!
     """
     bw = pyBigWig.open(bigWigPath, "w")
-    assert(bw is not None)
+    assert bw is not None
     bw.addHeader(chromSizes, maxZooms=10)
     lastChrom = None
     starts = []

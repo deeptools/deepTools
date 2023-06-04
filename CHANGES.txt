@@ -1,3 +1,17 @@
+3.5.2
+* new subcommand: Bigwig average #1169
+* dendogram of plotCorrelation now matches each cell correctly
+* Fix label options
+* add pool
+* several other bugs fixed: #1159, #1185, #1172, #1181, #1183
+* Fix galaxy tests
+* upload artifact
+* allow 1 or 2 lines diff for bowtie2 program
+* change github action to get artifacts
+* fix plotPCA
+* try to fix old samtools installed
+* add forgotten channels
+
 3.5.1
 * cmp usage is updated to fit the recent mpl updates.
 * The requirements.txt is updated.

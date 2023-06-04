@@ -55,11 +55,11 @@ def process_args(args=None):
 
     # Ensure that yMin/yMax are there and a list
     try:
-        assert(args.yMin is not None)
+        assert args.yMin is not None
     except:
         args.yMin = [None]
     try:
-        assert(args.yMax is not None)
+        assert args.yMax is not None
     except:
         args.yMax = [None]
 

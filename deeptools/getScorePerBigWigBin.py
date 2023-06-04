@@ -144,7 +144,7 @@ def getChromSizes(bigwigFilesList):
     >>> test = Tester()
 
     Chromosome name(s) and size(s).
-    >>> assert(getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([])))
+    >>> assert getChromSizes([test.bwFile1, test.bwFile2]) == ([('3R', 200)], set([]))
     """
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")

@@ -363,7 +363,7 @@ def writeCorrectedSam_worker(chrNameBam, chrNameBit, start, end,
         try:
             copies = matePairs[read.qname]['copies']
             gc = matePairs[read.qname]['gc']
-            del(matePairs[read.qname])
+            del matePairs[read.qname]
         except:
             # this exception happens when a mate is
             # not present. This could
