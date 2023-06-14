@@ -71,6 +71,11 @@ def parseArguments():
                          action='store_true',
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
 
+    general.add_argument('--genomeChunkLength',
+                         type=int,
+                         default=int(1e6),
+                         help='Size of the genome (in bps) to be processed per thread. (Default: %(default)s)')
+
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
                         action='store_true',
@@ -204,8 +209,7 @@ def shiftRead(b, chromDict, args):
 def filterWorker(arglist):
     chrom, start, end, args, chromDict = arglist
     fh = openBam(args.bam)
-
-    mode = 'wbu'
+    mode = 'wb'
     oname = getTempFileName(suffix='.bam')
     if args.filteredOutReads:
         onameFiltered = getTempFileName(suffix='.bam')
@@ -349,8 +353,11 @@ def convertBED(oname, tmpFiles, chromDict):
     """
     ofile = open(oname, "w")
     for tmpFile in tmpFiles:
+        # Setting verbosity to avoid lack of index error/warning
+        pysam.set_verbosity(0)
         fh = pysam.AlignmentFile(tmpFile)
-
+        # Reset verbosity
+        pysam.set_verbosity(3)
         for b in fh.fetch(until_eof=True):
             tLen = getTLen(b, notAbs=True)
             if tLen > 0:
@@ -387,6 +394,7 @@ def main(args=None):
                     chrom_sizes,
                     blackListFileName=args.blackListFileName,
                     numberOfProcessors=args.numberOfProcessors,
+                    genomeChunkLength=args.genomeChunkLength,
                     verbose=args.verbose)
 
     res = sorted(res)  # The temp files are now in order for concatenation

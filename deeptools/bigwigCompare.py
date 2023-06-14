@@ -93,6 +93,10 @@ def parse_arguments(args=None):
                         'zeros may be wrong and this option should be used ',
                         action='store_true')
 
+    parser.add_argument('--fixedStep',
+                        help='Write out all bins (of size --binSize) '
+                        'instead of merging neighbouring bins with equal values.',
+                        action='store_true')
     return parser
 
 
@@ -168,7 +172,8 @@ def main(args=None):
         format=args.outFileFormat,
         smoothLength=False,
         missingDataAsZero=not args.skipNonCoveredRegions,
-        extendPairedEnds=False)
+        extendPairedEnds=False,
+        fixedStep=args.fixedStep)
 
     # Clean up temporary bigWig files, if applicable
     if not args.deepBlueKeepTemp:
