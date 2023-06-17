@@ -122,7 +122,6 @@
                     <add value="."/>
                  </valid>
             </sanitizer>
-            <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
         </param>
     </xml>
 
@@ -449,6 +448,7 @@ is vital to you, select Yes below.">
                     <add value="_" />
                 </valid>
             </sanitizer>
+            <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
         </param>
 	</when>
         </conditional>
