@@ -122,6 +122,7 @@
                     <add value="."/>
                  </valid>
             </sanitizer>
+            <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
         </param>
     </xml>
 
