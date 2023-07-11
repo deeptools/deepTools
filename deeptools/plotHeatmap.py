@@ -645,7 +645,7 @@ def plotMatrix(hm, outFileName,
 
             if group == first_group and not showSummaryPlot and not perGroup:
                 title = hm.matrix.sample_labels[sample]
-                ax_profile.set_title(autobreaklinetitle(title))
+                ax.set_title(autobreaklinetitle(title))
 
             if box_around_heatmaps is False:
                 # Turn off the boxes around the individual heatmaps
