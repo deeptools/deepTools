@@ -49,6 +49,15 @@ def parse_arguments(args=None):
 
     return parser
 
+def autobreaklinetitle(title,sep="[-_,.]",lmax=15):
+    sss = [ rr for rr in re.split(sep,title) if len(rr) ]
+    newtitle, tmp = "", ""
+    for ss in sss:
+        tmp += ss
+        if len(tmp) > lmax:
+            newtitle += tmp + "\n"
+            tmp = ""
+    return newtitle
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
@@ -269,7 +278,7 @@ class Profile(object):
             for data_idx in range(self.numlines)[::-1]:
                 ax = self.fig.add_subplot(sub_grid[data_idx, 0])
                 if data_idx == 0:
-                    ax.set_title(title)
+                    ax.set_title(autobreaklinetitle(title))
                 if data_idx != self.numlines - 1:
                     plt.setp(ax.get_xticklabels(), visible=False)
 
@@ -514,7 +523,7 @@ class Profile(object):
             else:
                 title = self.hm.matrix.sample_labels[plot]
                 tickIdx = plot
-            ax.set_title(title)
+            ax.set_title(autobreaklinetitle(title))
             mat = []  # when drawing a heatmap (in contrast to drawing lines)
             for data_idx in range(self.numlines):
                 if self.per_group:
@@ -723,7 +732,7 @@ class Profile(object):
                     plt.setp(ax.get_yticklabels(), visible=False)
                 tickIdx = plot
 
-            ax.set_title(title)
+            ax.set_title(autobreaklinetitle(title))
             for data_idx in range(self.numlines):
                 if self.per_group:
                     _row, _col = plot, data_idx
