@@ -57,6 +57,8 @@ def autobreaklinetitle(title,sep="[-_,.]",lmax=15):
         if len(tmp) > lmax:
             newtitle += tmp + "\n"
             tmp = ""
+        else:
+            tmp += "-"
     return newtitle
 
 def process_args(args=None):
