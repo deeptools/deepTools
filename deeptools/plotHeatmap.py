@@ -125,7 +125,8 @@ def autobreaklinetitle(title,sep="[-_,.]",lmax=15):
             tmp = ""
         else:
             tmp += "-"
-    newtitle += tmp.strip("-") + "\n"
+    newtitle += tmp.strip("-")
+    newtitle = "\n" + newtitle
     return newtitle
 
 def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position, label_rotation=0.0):

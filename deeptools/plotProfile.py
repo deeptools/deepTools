@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import sys
+import sys, re
 
 import argparse
 import numpy as np
@@ -59,7 +59,8 @@ def autobreaklinetitle(title,sep="[-_,.]",lmax=15):
             tmp = ""
         else:
             tmp += "-"
-    newtitle += tmp.strip("-") + "\n"
+    newtitle += tmp.strip("-")
+    newtitle = "\n" + newtitle
     return newtitle
 
 def process_args(args=None):
