@@ -55,7 +55,7 @@ py2bit==0.3.0
     # via -r requirements.in
 pybigwig==0.3.18
     # via -r requirements.in
-pygments==2.12.0
+pygments==2.15.0
     # via sphinx
 pyparsing==3.0.8
     # via
