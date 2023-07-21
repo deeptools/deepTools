@@ -750,7 +750,7 @@ class Profile(object):
                             self.color_list[coloridx],
                             label,
                             plot_type=self.plot_type)
-            globalYmin = min(np.float64(globalYmin), ax.get_ylim()[0])
+            globalYmin = min(float64(globalYmin), ax.get_ylim()[0])
             globalYmax = max(globalYmax, ax.get_ylim()[1])
 
             # Exclude ticks from all but one subplot by default
@@ -783,18 +783,18 @@ class Profile(object):
                     first = False
             ax_list.append(ax)
 
-        # It turns out that set_ylim only takes np.float64s
+        # It turns out that set_ylim only takes float64s
         for sample_id, subplot in enumerate(ax_list):
             localYMin = self.y_min[sample_id % len(self.y_min)]
             localYMax = self.y_max[sample_id % len(self.y_max)]
             lims = [globalYmin, globalYmax]
             if localYMin is not None:
                 if localYMax is not None:
-                    lims = (np.float64(localYMin), np.float64(localYMax))
+                    lims = (float64(localYMin), float64(localYMax))
                 else:
-                    lims = (np.float64(localYMin), lims[1])
+                    lims = (float64(localYMin), lims[1])
             elif localYMax is not None:
-                lims = (lims[0], np.float64(localYMax))
+                lims = (lims[0], float64(localYMax))
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
             ax_list[sample_id].set_ylim(lims)
