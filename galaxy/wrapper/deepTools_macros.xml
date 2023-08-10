@@ -441,12 +441,15 @@ is vital to you, select Yes below.">
 	<when value="No">
 	</when>
 	<when value="Yes">
-	    <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &quot;sample 1&quot; &quot;sample 2&quot;)">
-                <sanitizer>
-                    <valid initial="string.printable">
-                    </valid>
-                </sanitizer>
-            </param>
+	    <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &apos;sample 1&apos;; &apos;sample 2&apos;)">
+            <sanitizer>
+                <valid initial="string.letters,string.digits,string.whitespace">
+                    <add value="&apos;" />
+                    <add value="_" />
+                </valid>
+            </sanitizer>
+            <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
+        </param>
 	</when>
         </conditional>
     </xml>
