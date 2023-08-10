@@ -240,7 +240,7 @@ def getSyntheticJSD(vec):
     lamb = np.mean(vec)  # Average coverage
     coverage = np.sum(vec)
 
-    chip = np.zeros(MAXLEN, dtype=np.int)
+    chip = np.zeros(MAXLEN, dtype=int)
     for val in vec:
         # N.B., we need to clip past the end of the array
         if val >= MAXLEN:
@@ -277,8 +277,8 @@ def getJSD(args, idx, mat):
         return np.NAN
 
     # These will hold the coverage histograms
-    chip = np.zeros(MAXLEN, dtype=np.int)
-    input = np.zeros(MAXLEN, dtype=np.int)
+    chip = np.zeros(MAXLEN, dtype=int)
+    input = np.zeros(MAXLEN, dtype=int)
     for row in mat:
         # ChIP
         val = row[idx]

@@ -90,7 +90,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
             except:
                 # bigWig input, as used by plotFingerprint
                 if bamHandle.chroms(chrom):
-                    _ = np.array(bamHandle.stats(chrom, regStart, regEnd, type="mean", nBins=nRegBins), dtype=np.float64)
+                    _ = np.array(bamHandle.stats(chrom, regStart, regEnd, type="mean", nBins=nRegBins), dtype=float)
                     _[np.isnan(_)] = 0.0
                     _ = _ * tileSize
                     coverages += _
