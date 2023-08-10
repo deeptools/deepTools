@@ -180,7 +180,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         ticks[0].label1.set_horizontalalignment('left')
         ticks[-1].label1.set_horizontalalignment('right')
 
-        globalYmin = min(float64(globalYmin), ax_profile.get_ylim()[0])
+        globalYmin = min(float(globalYmin), ax_profile.get_ylim()[0])
         globalYmax = max(globalYmax, ax_profile.get_ylim()[1])
 
     # It turns out that set_ylim only takes float64s
@@ -190,11 +190,11 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         lims = [globalYmin, globalYmax]
         if localYMin:
             if localYMax:
-                lims = (float64(localYMin), float64(localYMax))
+                lims = (float(localYMin), float(localYMax))
             else:
-                lims = (float64(localYMin), lims[1])
+                lims = (float(localYMin), lims[1])
         elif localYMax:
-            lims = (lims[0], float64(localYMax))
+            lims = (lims[0], float(localYMax))
         if lims[0] >= lims[1]:
             lims = (lims[0], lims[0] + 1)
         ax_list[sample_id].set_ylim(lims)

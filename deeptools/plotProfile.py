@@ -750,7 +750,7 @@ class Profile(object):
                             self.color_list[coloridx],
                             label,
                             plot_type=self.plot_type)
-            globalYmin = min(float64(globalYmin), ax.get_ylim()[0])
+            globalYmin = min(float(globalYmin), ax.get_ylim()[0])
             globalYmax = max(globalYmax, ax.get_ylim()[1])
 
             # Exclude ticks from all but one subplot by default
@@ -790,11 +790,11 @@ class Profile(object):
             lims = [globalYmin, globalYmax]
             if localYMin is not None:
                 if localYMax is not None:
-                    lims = (float64(localYMin), float64(localYMax))
+                    lims = (float(localYMin), float(localYMax))
                 else:
-                    lims = (float64(localYMin), lims[1])
+                    lims = (float(localYMin), lims[1])
             elif localYMax is not None:
-                lims = (lims[0], float64(localYMax))
+                lims = (lims[0], float(localYMax))
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
             ax_list[sample_id].set_ylim(lims)
