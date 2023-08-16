@@ -1,8 +1,8 @@
-from unittest import TestCase
 import os
 import pytest
 import deeptools.writeBedGraph as wr
 from deeptools.writeBedGraph import scaleCoverage
+
 
 @pytest.mark.parametrize("bc", ["bam", 'cram'])
 class TestWriteBedGraph():
@@ -15,9 +15,11 @@ class TestWriteBedGraph():
         step_size = 50
         bin_length = 50
         func_args = {'scaleFactor': 1.0}
-        c = wr.WriteBedGraph([bamFile1],
-                                  binLength=bin_length,
-                                  stepSize=step_size)
+        c = wr.WriteBedGraph(
+            [bamFile1],
+            binLength=bin_length,
+            stepSize=step_size
+        )
         return c, bamFile1, bamFile2, bamFile_PE, chrom, step_size, bin_length, func_args
 
     def test_writeBedGraph_worker(self, bc):
@@ -55,9 +57,12 @@ class TestWriteBedGraph():
 
     def test_writeBedGraph_worker_ignore_duplicates(self, bc):
         c, bamFile1, bamFile2, bamFile_PE, chrom, step_size, bin_length, func_args = self.ifiles(bc)
-        c = wr.WriteBedGraph([bamFile2],
-                                  binLength=bin_length,
-                                  stepSize=step_size, ignoreDuplicates=True)
+        c = wr.WriteBedGraph(
+            [bamFile2],
+            binLength=bin_length,
+            stepSize=step_size,
+            ignoreDuplicates=True
+        )
         c.zerosToNans = True
 
         tempFile = c.writeBedGraph_worker(chrom, 0, 200, scaleCoverage, func_args)
@@ -96,9 +101,11 @@ class TestWriteBedGraph():
         _foo.close()
 
         # the sigle read is split into bin 10-30, and then 40-50
-        assert res == ['chr_cigar\t0\t10\t0\n',
-                           'chr_cigar\t10\t30\t1\n',
-                           'chr_cigar\t30\t40\t0\n',
-                           'chr_cigar\t40\t50\t1\n',
-                           'chr_cigar\t50\t100\t0\n']
+        assert res == [
+            'chr_cigar\t0\t10\t0\n',
+            'chr_cigar\t10\t30\t1\n',
+            'chr_cigar\t30\t40\t0\n',
+            'chr_cigar\t40\t50\t1\n',
+            'chr_cigar\t50\t100\t0\n'
+        ]
         os.remove(tempFile[3])

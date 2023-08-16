@@ -13,6 +13,7 @@ from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
 from importlib.metadata import version
 
+
 def parse_arguments(args=None):
     basic_args = plotCorrelationArgs()
     parser = argparse.ArgumentParser(

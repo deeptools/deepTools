@@ -8,6 +8,7 @@ import pytest
 
 __author__ = 'Fidel'
 
+
 @pytest.mark.parametrize("bc", ["bam", 'cram'])
 class TestCountReadsPerBin():
 
@@ -19,9 +20,11 @@ class TestCountReadsPerBin():
         chrom = '3R'
         step_size = 50
         bin_length = 25
-        c = cr.CountReadsPerBin([bamFile1, bamFile2],
-                                    binLength=bin_length,
-                                    stepSize=step_size)
+        c = cr.CountReadsPerBin(
+            [bamFile1, bamFile2],
+            binLength=bin_length,
+            stepSize=step_size
+        )
         return c, bamFile1, bamFile2, bamFile_PE, chrom, step_size, bin_length
     """
     The distribution of reads between the two bam files is as follows.
@@ -38,7 +41,7 @@ class TestCountReadsPerBin():
                                             ==============>
                                                         ==============>
     """
-    
+
     def test_count_reads_in_region(self, bc):
         c, bamFile1, bamFile2, bamFile_PE, chrom, step_size, bin_length = self.ifiles(bc)
         c.skipZeros = False
@@ -55,10 +58,12 @@ class TestCountReadsPerBin():
         extension is turned off and a warning is printed.
         """
         c, bamFile1, bamFile2, bamFile_PE, chrom, step_size, bin_length = self.ifiles(bc)
-        c = cr.CountReadsPerBin([bamFile1, bamFile2],
-                                     binLength=1,
-                                     stepSize=50,
-                                     extendReads=25)
+        c = cr.CountReadsPerBin(
+            [bamFile1, bamFile2],
+            binLength=1,
+            stepSize=50,
+            extendReads=25
+        )
 
         resp, _ = c.count_reads_in_region(chrom, 0, 200)
 
@@ -190,8 +195,10 @@ class TestCountReadsPerBin():
         bed_file.write(bed)
         bed_file.close()
 
-        c = cr.CountReadsPerBin([bamFile2],
-                                     bedFile=[bed_file.name])
+        c = cr.CountReadsPerBin(
+            [bamFile2],
+            bedFile=[bed_file.name]
+        )
 
         resp = c.run()
         nt.assert_equal(resp, np.array([[0.],

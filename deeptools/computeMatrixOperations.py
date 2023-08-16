@@ -787,7 +787,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
 
 def main(args=None):
     # if args none is need since otherwise pytest passes 'pytest' as sys.argv
-    if args == None:
+    if args is None:
         if len(sys.argv) == 1:
             args = ["-h"]
         if len(sys.argv) == 2:

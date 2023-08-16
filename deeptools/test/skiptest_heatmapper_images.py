@@ -14,6 +14,7 @@ __author__ = 'Fidel'
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
 tolerance = 30
 
+
 def test_plotHeatmap_simple_plot():
     """
     Test a simple plot generated using a matrix from

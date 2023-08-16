@@ -8,6 +8,7 @@ import json
 
 __author__ = 'Devon'
 
+
 def getHeader(fp):
     s = fp.readline()
     if isinstance(s, bytes):
