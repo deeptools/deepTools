@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
-from deeptools._version import __version__
+from importlib.metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -117,7 +117,7 @@ def plot_correlation_args():
         action='store_true')
 
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     group = parser.add_argument_group('Output optional options')
 

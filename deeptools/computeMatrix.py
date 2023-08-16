@@ -7,7 +7,7 @@ import os
 import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
-from deeptools._version import __version__
+from importlib.metadata import version
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo
@@ -37,7 +37,7 @@ $ computeMatrix scale-regions --help
             '<bigwig file(s)> -R <bed file(s)> -b 1000\n \n')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     subparsers = parser.add_subparsers(
         title='Commands',
@@ -137,7 +137,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     if case == 'scale-regions':
         optional.add_argument('--regionBodyLength', '-m',

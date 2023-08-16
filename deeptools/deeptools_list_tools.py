@@ -3,7 +3,7 @@
 
 import argparse
 import sys
-from deeptools._version import __version__
+from importlib.metadata import version
 
 
 def parse_arguments(args=None):
@@ -61,7 +61,7 @@ For more information visit: http://deeptools.readthedocs.org
 """)
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     return parser
 

@@ -11,8 +11,7 @@ from deeptools import cm  # noqa: F401
 
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
-from deeptools._version import __version__
-
+from importlib.metadata import version
 
 def parse_arguments(args=None):
     basic_args = plotCorrelationArgs()
@@ -133,7 +132,7 @@ def plotCorrelationArgs():
                           help="A list of markers for the symbols. (e.g., '<','>','o') are accepted. The marker values should be space separated. For example, --markers 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes.")
 
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     optionalEx = optional.add_mutually_exclusive_group()
     optionalEx.add_argument('--transpose',

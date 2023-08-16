@@ -9,7 +9,7 @@ import numpy as np
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-from deeptools._version import __version__
+from importlib.metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -44,7 +44,7 @@ A detailed sub-commands help is available by typing:
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',

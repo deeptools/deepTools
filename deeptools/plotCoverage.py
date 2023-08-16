@@ -18,7 +18,7 @@ import plotly.graph_objs as go
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-from deeptools._version import __version__
+from importlib.metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -49,7 +49,7 @@ detailed usage help:
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='plotCoverage {}'.format(__version__))
+                        version='plotCoverage {}'.format(version('deeptools')))
 
     return parser
 

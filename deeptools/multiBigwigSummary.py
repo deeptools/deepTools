@@ -7,7 +7,7 @@ import os.path
 import numpy as np
 import multiprocessing
 from deeptools import parserCommon
-from deeptools._version import __version__
+from importlib.metadata import version
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
 import deeptools.deepBlue as db
@@ -43,7 +43,7 @@ A detailed sub-commands help is available by typing:
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='multiBigwigSummary {}'.format(__version__))
+                        version='multiBigwigSummary {}'.format(version('deeptools')))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',

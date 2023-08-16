@@ -18,7 +18,7 @@ import plotly.graph_objs as go
 # own tools
 from deeptools.parserCommon import writableFile
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools._version import __version__
+from importlib.metadata import version
 
 
 def parse_arguments():
@@ -109,7 +109,7 @@ def parse_arguments():
                         action='store_true',
                         required=False)
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     return parser
 

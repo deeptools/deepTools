@@ -5,7 +5,7 @@ import sys
 from deeptools import parserCommon, bamHandler, utilities
 from deeptools.mapReduce import mapReduce
 from deeptools.utilities import smartLabels
-from deeptools._version import __version__
+from importlib.metadata import version
 
 
 def parseArguments():
@@ -92,7 +92,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                          action='store_true')
 
     general.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(__version__))
+                         version='%(prog)s {}'.format(version('deeptools')))
 
     filtering = parser.add_argument_group('Optional arguments')
 

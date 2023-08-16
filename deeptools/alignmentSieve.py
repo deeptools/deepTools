@@ -7,7 +7,7 @@ import sys
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
-from deeptools._version import __version__
+from importlib.metadata import version
 from deeptools.utilities import getTLen, smartLabels, getTempFileName
 
 
@@ -60,7 +60,7 @@ def parseArguments():
                          action='store_true')
 
     general.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(__version__))
+                         version='%(prog)s {}'.format(version('deeptools')))
 
     general.add_argument('--shift',
                          nargs='+',
