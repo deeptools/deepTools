@@ -8,9 +8,6 @@ import json
 
 __author__ = 'Devon'
 
-ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
-
-
 def getHeader(fp):
     s = fp.readline()
     if isinstance(s, bytes):
@@ -20,20 +17,21 @@ def getHeader(fp):
 
 
 class TestComputeMatrixOperations(object):
-    def setUp(self):
-        self.root = ROOT
-        self.matrix = self.root + "computeMatrixOperations.mat.gz"
-        self.bed = self.root + "computeMatrixOperations.bed"
-        self.rbindMatrix1 = self.root + "somegenes.txt.gz"
-        self.rbindMatrix2 = self.root + "othergenes.txt.gz"
+    root = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
+    matrix = root + "computeMatrixOperations.mat.gz"
+    bed = root + "computeMatrixOperations.bed"
+    rbindMatrix1 = root + "somegenes.txt.gz"
+    rbindMatrix2 = root + "othergenes.txt.gz"
 
     def testSubset(self):
         """
         computeMatrixOperations subset
         """
+
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0], "body": [1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward"], "downstream": [0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10], "upstream": [0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400], "max threshold": None, "ref point": [None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         oname = "/tmp/subset.mat.gz"
         args = "subset -m {} --sample SRR648667.forward SRR648668.forward SRR648669.forward SRR648670.forward -o {}".format(self.matrix, oname)
+        print(args)
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -68,7 +66,7 @@ class TestComputeMatrixOperations(object):
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward", "SRR648667.reverse", "SRR648668.reverse", "SRR648669.reverse", "SRR648670.reverse"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 107], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         oname = "/tmp/filterStrand1.mat.gz"
         args = "filterStrand -m {} -o {} --strand +".format(self.matrix, oname)
-        args = args.split()
+        args = args.split(' ')
         cmo.main(args)
         f = gzip.GzipFile(oname)
         d = getHeader(f)  # Skip the header, which can be in a different order

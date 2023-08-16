@@ -14,11 +14,6 @@ __author__ = 'Fidel'
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
 tolerance = 30
 
-skip = False
-if matplotlib.__version__ != "3.1.1":
-    skip = True
-
-
 def test_plotHeatmap_simple_plot():
     """
     Test a simple plot generated using a matrix from
