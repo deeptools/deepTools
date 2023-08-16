@@ -8,9 +8,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Check path
-      run: find /home/runner/work/deepTools/deepTools -name "_version.py"
+      run: find /home/runner/work/deepTools/deepTools -name "pyproject.toml"
     - name: Get Version of Deeptools
-      run: echo "deeptools_version=$(grep "__version__" /home/runner/work/deepTools/deepTools/deeptools/_version.py | awk '{print substr($NF, 2, length($NF) - 2)}')" >> $GITHUB_ENV
+      run: echo "deeptools_version=$(grep "version" /home/runner/work/deepTools/deepTools/pyproject.toml | awk '{print substr($NF, 2, length($NF) - 2)}')" >> $GITHUB_ENV
     - name: Get Version of Galaxy tools
       run: echo "galaxy_deeptools_version=$(grep "token.*TOOL_VERSION" /home/runner/work/deepTools/deepTools/galaxy/wrapper/deepTools_macros.xml | awk -F '>|<' '{print $3}')" >> $GITHUB_ENV
     - name: Versions
