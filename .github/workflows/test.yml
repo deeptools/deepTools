@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions/@master"
+    - uses: "deeptools/github-actions/@master"
     - name: PEP8
       run: |
         source activate foo
@@ -44,7 +44,7 @@ jobs:
     - name: Test deepTools
       run: |
         source activate foo
-        nosetests --with-doctest -sv deeptools
+        pytest
     - name: make an artifact
       run: |
         source activate foo
@@ -59,8 +59,8 @@ jobs:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions/@master"
+    - uses: "deeptools/github-actions/@master"
     - name: Test deepTools
       run: |
         source activate foo
-        nosetests --with-doctest -sv deeptools
+        pytest
