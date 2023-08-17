@@ -22,6 +22,10 @@ jobs:
         environment-file: .github/env.yml
         cache-downloads: true
         environment-name: foo
+        condarc: |
+          channels:
+            - conda-forge
+            - bioconda
     - name: planemo
       run: |
         micromamba activate foo
