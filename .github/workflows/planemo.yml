@@ -1,7 +1,13 @@
 name: Planemo
 on: [push, pull_request]
+
 env:
   GALAXY_BRANCH: release_22.05
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
   planemo_test:
     name: Planemo test
