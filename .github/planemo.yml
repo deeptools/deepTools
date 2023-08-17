@@ -7,7 +7,7 @@ dependencies:
   - scipy
   - flake8
   - pysam
-  - piBigWig
+  - pyBigWig
   - py2bit
   - deeptoolsintervals
   - pytest
