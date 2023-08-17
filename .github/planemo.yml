@@ -2,11 +2,15 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python = 3.9
+  - python = 3.7
+  - numpy
+  - scipy
   - flake8
+  - pysam
+  - piBigWig
+  - py2bit
+  - deeptoolsintervals
   - pytest
   - planemo
   - samtools
-  - allure-python-commons==2.12.0 # pinned for planemo
-  - pycryptodome # pinned for galaxy-util
-  - rich # pinned for ephemeris
+  - allure-python-commons==2.12.0
