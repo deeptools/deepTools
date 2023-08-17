@@ -7,10 +7,12 @@ dependencies:
   - scipy
   - flake8
   - pysam
-  - pyBigWig
-  - py2bit
   - deeptoolsintervals
   - pytest
   - planemo
   - samtools
   - allure-python-commons==2.12.0
+  - pip
+  - pip:
+    - py2bit
+    - pyBigWig
