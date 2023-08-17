@@ -29,6 +29,6 @@ else
 fi
 
 planemo lint ${wrappers}
-planemo test --no_dependency_resolution --galaxy_python_version 3.10 --galaxy_branch $2 --install_galaxy ${wrappers} 2>&1
+planemo test --no_dependency_resolution --galaxy_python_version 3.11 --galaxy_branch $2 --install_galaxy ${wrappers} 2>&1
 mkdir upload
 mv tool_test_output* upload/
