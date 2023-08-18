@@ -2,7 +2,7 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - python = 3.11
+  - python = 3.10
   - numpy
   - scipy
   - flake8
@@ -12,7 +12,5 @@ dependencies:
   - planemo
   - samtools
   - allure-python-commons==2.12.0
-  - pip
-  - pip:
-    - py2bit
-    - pyBigWig
+  - py2bit
+  - pyBigWig
