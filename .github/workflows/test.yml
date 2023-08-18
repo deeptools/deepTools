@@ -39,9 +39,6 @@ jobs:
   build-linux:
     name: Test on Linux
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ['3.7','3.8','3.9','3.10']
     steps:
     - uses: actions/checkout@v3
     - uses: mamba-org/setup-micromamba@main
@@ -70,14 +67,24 @@ jobs:
       with:
         name: "Dist files"
         path: "dist"
-    - uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    - name: test wheel
-      run: |
-        pip install dist/*whl
-        deeptools --version
+  test-wheels:
+    name: test wheel
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7','3.8','3.9','3.10']
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: "Dist files"
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: install wheel
+        run: |
+          pip install dist/*whl
+          deeptools --version
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
