@@ -84,10 +84,8 @@ jobs:
           cache: 'pip'
       - name: install wheel
         run: |
-          ls -al
+          ls
           ls dist
-          pip install dist/*whl
-          deeptools --version
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
