@@ -68,7 +68,6 @@ jobs:
         name: "Dist files"
         path: "dist"
   test-wheel:
-    name: test wheel
     needs: build-linux
     runs-on: ubuntu-latest
     strategy:
@@ -80,6 +79,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
+      - name: test wheel
         run: |
           pip install dist/*whl
           deeptools --version
