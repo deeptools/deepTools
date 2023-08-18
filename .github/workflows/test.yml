@@ -68,6 +68,7 @@ jobs:
         name: "Dist files"
         path: "dist"
   test-wheel:
+    name: test wheel
     needs: build-linux
     runs-on: ubuntu-latest
     strategy:
