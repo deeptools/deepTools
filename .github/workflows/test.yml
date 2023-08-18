@@ -58,15 +58,30 @@ jobs:
       run: |
         mamba activate foo
         pytest
-    #- name: make an artifact
-    #  run: |
-    #    source activate foo
-    #    rm -f dist/*
-    #    python setup.py sdist
-    #- uses: actions/upload-artifact@master
-    #  with:
-    #    name: "Dist files"
-    #    path: "dist"
+    - name: make an artifact
+      run: |
+        micromamba activate foo
+        rm -f dist/*
+        python -m build
+    - uses: actions/upload-artifact@master
+      with:
+        name: "Dist files"
+        path: "dist"
+  test-wheel:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7','3.8','3.9','3.10']
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+        run: |
+          pip install dist/*whl
+          deeptools --version
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
