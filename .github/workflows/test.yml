@@ -79,14 +79,15 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: "Dist files"
+          path: ~/dist/
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
       - name: install wheel
         run: |
-          ls
-          ls dist
+          pip install dist/*whl
+          deeptools -h
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
