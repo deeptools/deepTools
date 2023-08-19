@@ -1,8 +1,8 @@
 name: pypi
-on: [push, pull_request]
-#on:
-#  create:
-#    tags:
+
+on:
+  create:
+    tags:
 
 defaults:
   run:
@@ -24,12 +24,10 @@ jobs:
         micromamba activate foo
         rm -f dist/*
         python -m build
-        which twine
-    #- name: upload
-    #  env:
-    #    TWINE_USERNAME: "__token__"
-    #    TWINE_PASSWORD: ${{ secrets.pypi_password }}
-    #  run: |
-    #    export PATH=$HOME/miniconda/bin:$PATH
-    #    source activate foo
-    #    twine upload dist/*
+    - name: upload
+      env:
+        TWINE_USERNAME: "__token__"
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: |
+        micromamba activate foo
+        twine upload dist/*
