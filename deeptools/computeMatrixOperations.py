@@ -6,7 +6,10 @@ import argparse
 import sys
 import os
 import csv
-from importlib.metadata import version
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parse_arguments():

@@ -7,7 +7,10 @@ import sys
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
-from importlib.metadata import version
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 from deeptools.utilities import getTLen, smartLabels, getTempFileName
 
 

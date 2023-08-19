@@ -5,7 +5,10 @@ import sys
 from deeptools import parserCommon, bamHandler, utilities
 from deeptools.mapReduce import mapReduce
 from deeptools.utilities import smartLabels
-from importlib.metadata import version
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parseArguments():

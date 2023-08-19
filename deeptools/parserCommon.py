@@ -1,6 +1,9 @@
 import argparse
 import os
-from importlib.metadata import version
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def check_float_0_1(value):

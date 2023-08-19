@@ -13,7 +13,10 @@ import matplotlib.pyplot as plt
 
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
-from importlib.metadata import version
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 

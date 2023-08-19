@@ -7,7 +7,10 @@ import os
 import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
-from importlib.metadata import version
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo

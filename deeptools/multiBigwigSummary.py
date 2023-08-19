@@ -7,10 +7,13 @@ import os.path
 import numpy as np
 import multiprocessing
 from deeptools import parserCommon
-from importlib.metadata import version
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
 import deeptools.deepBlue as db
+try: # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 
