@@ -6,7 +6,7 @@ import argparse
 import sys
 import os
 import csv
-try: # keep python 3.7 support.
+try:  # keep python 3.7 support.
     from importlib.metadata import version
 except ModuleNotFoundError:
     from importlib_metadata import version

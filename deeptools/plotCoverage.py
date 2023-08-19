@@ -18,7 +18,7 @@ import plotly.graph_objs as go
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-try: # keep python 3.7 support.
+try:  # keep python 3.7 support.
     from importlib.metadata import version
 except ModuleNotFoundError:
     from importlib_metadata import version

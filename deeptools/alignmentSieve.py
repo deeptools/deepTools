@@ -7,7 +7,7 @@ import sys
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
-try: # keep python 3.7 support.
+try:  # keep python 3.7 support.
     from importlib.metadata import version
 except ModuleNotFoundError:
     from importlib_metadata import version
