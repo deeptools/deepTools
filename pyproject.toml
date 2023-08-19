@@ -29,7 +29,8 @@ dependencies = [
     "pyBigWig >= 0.2.1",
     "py2bit >= 0.2.0",
     "plotly >= 4.9",
-    "deeptoolsintervals >= 0.1.8"
+    "deeptoolsintervals >= 0.1.8",
+    "importlib-metadata" # python 3.7 support
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
