@@ -88,6 +88,10 @@ jobs:
         run: |
           pip install ~/dist/*whl
           deeptools -h
+      - name: pytest
+        run: |
+          pip install pytest
+          pytest
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
