@@ -44,7 +44,9 @@ detailed help:
         epilog='example usages:\n'
                'plotCorrelation -in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
                ' \n\n',
-        parents=[basic_args, heatmap_parser, scatter_parser])
+        parents=[basic_args, heatmap_parser, scatter_parser],
+        usage='plotCorrelation -in matrix.gz -c spearman -p heatmap -o plot.png\n'
+        'help: plotCorrelation -h / plotCorrelation --help\n')
 
     return parser
 

@@ -33,7 +33,10 @@ def parse_arguments():
         'Properly paired reads are preferred for computation, i.e., '
         'it will only use discordant pairs if no concordant alignments '
         'overlap with a given region. '
-        'The default setting simply prints the summary statistics to the screen.')
+        'The default setting simply prints the summary statistics to the screen.',
+        usage='bamPEFragmentSize -b sample1.bam sample2.bam -o hist.png\n'
+        'help: bamPEFragmentSize -h / bamPEFragmentSize --help'
+        )
     parser.add_argument('--bamfiles', '-b',
                         help='List of BAM files to process',
                         nargs='+',
@@ -292,6 +295,10 @@ def printTable(args, fragDict, readDict):
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
+
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
 
     fraglengths = {}
     readlengths = {}

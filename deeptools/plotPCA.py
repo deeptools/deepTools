@@ -33,7 +33,9 @@ Detailed help:
         epilog='example usages:\n'
                'plotPCA -in coverages.npz -o pca.png\n\n'
                ' \n\n',
-        parents=[basic_args, ])
+        parents=[basic_args, ],
+        usage='plotPCA -in coverage.npz -o pca.png\n',
+        'help: plotPCA -h / plotPCA --help\n')
     return parser
 
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
@@ -38,10 +38,10 @@ def parse_arguments(args=None):
         '(typically AT-rich regions). '
         'The tool ``computeGCBias`` needs to be run first to generate the '
         'frequency table needed here.',
-        usage='An example usage is:\n correctGCBias '
+        usage='correctGCBias '
         '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit '
-        '--GCbiasFrequenciesFile freq.txt -o gc_corrected.bam '
-        '[options]',
+        '--GCbiasFrequenciesFile freq.txt -o gc_corrected.bam\n'
+        'help: correctGCBias -h / correctGCBias --help',
         conflict_handler='resolve',
         add_help=False)
     return parser

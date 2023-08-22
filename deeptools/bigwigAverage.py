@@ -23,7 +23,9 @@ def parse_arguments(args=None):
         'of mapped reads. To average the bigWig files, the genome is '
         'partitioned into bins of equal size, then the scores '
         'in each bigwig file are computed per bin.'
-        'These scores are averaged and scaleFactors can be applied before the average.')
+        'These scores are averaged and scaleFactors can be applied before the average.',
+        usage='bigwigAverage -b sample1.bw sample2.bw -o outfile.bw\n'
+        'help: bigwigAverage -h / bigwigAverage --help')
 
     # define the arguments
     parser.add_argument('--bigwigs', '-b',
@@ -94,6 +96,9 @@ def average(tileCoverage, args):
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
 
     nFiles = len(args.bigwigs)
 

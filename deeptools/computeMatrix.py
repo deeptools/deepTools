@@ -356,6 +356,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
+
     if args.quiet is True:
         args.verbose = False
 

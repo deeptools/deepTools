@@ -44,8 +44,10 @@ def parse_arguments(args=None):
         'any other regions defined in BED '
         ' will work. A matrix generated '
         'by computeMatrix is required.',
-        epilog='An example usage is: plotProfile -m <matrix file>',
-        add_help=False)
+        epilog='An example usage is: plotProfile -m matrix.gz',
+        add_help=False,
+        usage='plotProfile -m matrix.gz\n'
+        'help: plotProfile -h / plotProfile --help')
 
     return parser
 

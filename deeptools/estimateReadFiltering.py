@@ -34,7 +34,9 @@ The following metrics are estimated according to the --binSize and --distanceBet
 
 The sum of these may be more than the total number of reads. Note that alignments are sampled from bins of size --binSize spaced --distanceBetweenBins apart.
 """,
-        usage='Example usage: estimateReadFiltering.py -b sample1.bam sample2.bam > log.txt')
+        usage='estimateReadFiltering -b sample1.bam sample2.bam\n'
+        'help: estimateReadFiltering -h / estimateReadFiltering --help'
+        )
 
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--bamfiles', '-b',

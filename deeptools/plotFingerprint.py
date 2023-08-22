@@ -42,8 +42,10 @@ def parse_arguments(args=None):
         'these counts are sorted '
         'and the cumulative sum is finally plotted. ',
         conflict_handler='resolve',
-        usage='An example usage is: plotFingerprint -b treatment.bam control.bam '
-        '-plot fingerprint.png',
+        usage='plotFingerprint -b treatment.bam control.bam '
+        '-plot fingerprint.png\n'
+        'help: plotFingerprint -h / plotFingerprint --help'
+        ,
         add_help=False)
 
     return parser
