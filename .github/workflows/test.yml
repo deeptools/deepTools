@@ -57,7 +57,7 @@ jobs:
     - name: Test deepTools
       run: |
         micromamba activate foo
-        pytest
+        pytest -v
     - name: make an artifact
       run: |
         micromamba activate foo
