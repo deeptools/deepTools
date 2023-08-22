@@ -36,7 +36,7 @@ def parse_arguments():
         'The default setting simply prints the summary statistics to the screen.',
         usage='bamPEFragmentSize -b sample1.bam sample2.bam -o hist.png\n'
         'help: bamPEFragmentSize -h / bamPEFragmentSize --help'
-        )
+    )
     parser.add_argument('--bamfiles', '-b',
                         help='List of BAM files to process',
                         nargs='+',

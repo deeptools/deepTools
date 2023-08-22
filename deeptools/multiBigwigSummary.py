@@ -99,7 +99,7 @@ A detailed sub-commands help is available by typing:
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
-    
+
     if len(sys.argv) == 1:
         parse_arguments().print_help()
         sys.exit()

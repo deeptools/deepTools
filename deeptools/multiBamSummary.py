@@ -196,11 +196,11 @@ def bamcorrelate_args(case='bins'):
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
-    
+
     if len(sys.argv) == 1:
         parse_arguments().print_help()
         sys.exit()
-    
+
     if args.labels and len(args.bamfiles) != len(args.labels):
         print("The number of labels does not match the number of bam files.")
         exit(0)

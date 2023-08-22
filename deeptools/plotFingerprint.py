@@ -44,8 +44,7 @@ def parse_arguments(args=None):
         conflict_handler='resolve',
         usage='plotFingerprint -b treatment.bam control.bam '
         '-plot fingerprint.png\n'
-        'help: plotFingerprint -h / plotFingerprint --help'
-        ,
+        'help: plotFingerprint -h / plotFingerprint --help',
         add_help=False)
 
     return parser

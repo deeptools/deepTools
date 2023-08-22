@@ -51,7 +51,7 @@ detailed usage help:
                    ' \n\n',
             conflict_handler='resolve',
             usage='plotCoverage -b sample1.bam sample2.bam -o coverage.png \n'
-        'help: plotCoverage -h / plotCoverage --help\n')
+                  'help: plotCoverage -h / plotCoverage --help\n')
 
     parser.add_argument('--version', action='version',
                         version='plotCoverage {}'.format(version('deeptools')))

@@ -1,7 +1,6 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-import deeptools.misc
 import argparse
 import sys
 
@@ -17,12 +16,12 @@ debug = 0
 
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
-         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-         description='Given two BAM files, this estimates scaling factors '
-         '(bigger to smaller).',
-         usage='estimateScaleFactor -b sample1.bam sample2.bam\n'
-         'help: estimateScaleFactor -h / estimateScaleFactor --help'
-         )
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Given two BAM files, this estimates scaling factors '
+        '(bigger to smaller).',
+        usage='estimateScaleFactor -b sample1.bam sample2.bam\n'
+        'help: estimateScaleFactor -h / estimateScaleFactor --help'
+    )
 
     # define the arguments
     parser.add_argument('--bamfiles', '-b',
@@ -30,7 +29,6 @@ def parseArguments(args=None):
                         help='List of indexed BAM files, space delineated',
                         nargs='+',
                         required=True)
-
 
     parser.add_argument('--ignoreForNormalization', '-ignore',
                         help='A comma-separated list of chromosome names, '
@@ -80,18 +78,22 @@ def parseArguments(args=None):
                         required=False)
 
     parser.add_argument('--verbose', '-v',
-                         help='Set to see processing messages.',
-                         action='store_true')
+                        help='Set to see processing messages.',
+                        action='store_true')
 
-    parser.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(version('deeptools')))
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s {}'.format(version('deeptools')))
 
-    args=parser.parse_args(args)
+    args = parser.parse_args(args)
     if args.ignoreForNormalization:
-         args.ignoreForNormalization=[x.strip() for x in args.ignoreForNormalization.split(',')]
+        args.ignoreForNormalization = [
+            x.strip() for x in args.ignoreForNormalization.split(',')
+        ]
     else:
-         args.ignoreForNormalization = []
+        args.ignoreForNormalization = []
     return args
+
 
 def main(args=None):
     """
@@ -114,4 +116,4 @@ def main(args=None):
                                           verbose=args.verbose)
 
     for k, v in sizeFactorsDict.items():
-         print("{}: {}".format(k, v))
+        print("{}: {}".format(k, v))

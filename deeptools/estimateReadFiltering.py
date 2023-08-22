@@ -36,7 +36,7 @@ The sum of these may be more than the total number of reads. Note that alignment
 """,
         usage='estimateReadFiltering -b sample1.bam sample2.bam\n'
         'help: estimateReadFiltering -h / estimateReadFiltering --help'
-        )
+    )
 
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--bamfiles', '-b',
