@@ -91,7 +91,7 @@ jobs:
       - name: pytest
         run: |
           pip install pytest
-          pytest
+          pytest -v
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
@@ -113,4 +113,4 @@ jobs:
     - name: Test deepTools
       run: |
         micromamba activate foo
-        pytest
+        pytest -v
