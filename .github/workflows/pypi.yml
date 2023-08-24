@@ -16,12 +16,12 @@ jobs:
     - uses: actions/checkout@v3
     - uses: mamba-org/setup-micromamba@main
       with:
-        environment-file: .github/env.yml
+        environment-file: .github/test_and_build.yml
         cache-downloads: true
-        environment-name: foo
+        environment-name: test_and_build
     - name: build
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         rm -f dist/*
         python -m build
     - name: upload
@@ -29,5 +29,5 @@ jobs:
         TWINE_USERNAME: "__token__"
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         twine upload dist/*

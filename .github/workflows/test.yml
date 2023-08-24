@@ -43,24 +43,24 @@ jobs:
     - uses: actions/checkout@v3
     - uses: mamba-org/setup-micromamba@main
       with:
-        environment-file: .github/env.yml
+        environment-file: .github/test_and_build.yml
         cache-downloads: true
-        environment-name: foo
+        environment-name: test_and_build
     - name: pip install
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         pip install .
     - name: PEP8
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         flake8 . --exclude=.venv,.build,build --ignore=E501,F403,E402,F999,F405,E722,W504,W605
     - name: Test deepTools
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         pytest -v
     - name: make an artifact
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         rm -f dist/*
         python -m build
     - uses: actions/upload-artifact@master
@@ -99,18 +99,14 @@ jobs:
     - uses: actions/checkout@v3
     - uses: mamba-org/setup-micromamba@main
       with:
-        environment-file: .github/env.yml
+        environment-file: .github/test_and_build.yml
         cache-downloads: true
-        environment-name: foo
-        condarc: |
-          channels:
-            - conda-forge
-            - bioconda
+        environment-name: test_and_build
     - name: pip install
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         pip install .
     - name: Test deepTools
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         pytest -v

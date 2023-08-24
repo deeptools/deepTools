@@ -19,16 +19,16 @@ jobs:
     - uses: actions/checkout@v3
     - uses: mamba-org/setup-micromamba@main
       with:
-        environment-file: .github/planemo.yml
+        environment-file: .github/test_and_build.yml
         cache-downloads: true
-        environment-name: foo
+        environment-name: test_and_build
     - name: pip install
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         pip install .
     - name: planemo
       run: |
-        micromamba activate foo
+        micromamba activate test_and_build
         ./.planemo.sh ${{ matrix.chunk }} ${{ env.GALAXY_BRANCH }}
     - uses: actions/upload-artifact@v3
       with:
@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10']
+        python-version: ['3.7', '3.11']
     steps:
     - uses: actions/download-artifact@v3
       with:
