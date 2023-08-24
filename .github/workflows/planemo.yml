@@ -2,7 +2,7 @@ name: Planemo
 on: [push, pull_request]
 
 env:
-  GALAXY_BRANCH: release_22.05
+  GALAXY_BRANCH: release_23.1
 
 defaults:
   run:
