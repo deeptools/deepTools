@@ -1,17 +1,28 @@
-import subprocess
+from subprocess import PIPE, run
 import os
+try:
+    import tomllib
+except ModuleNotFoundError:
+    import tomli as tomllib
 
-ROOT = os.path.dirname(os.path.abspath(__file__)) + "/../../bin"
+TOMLFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../pyproject.toml"
 
 
 def test_tools():
     """
-    Checks everything that is in /bin/
-    and tries to run it
-
+    Check every script in 'pyproject.toml'
+    makes sure the version of all tools == version set in toml file
+    makes sure exitcodes are all 0
     """
-    if os.path.isdir(ROOT):
-        for _file in os.listdir(ROOT):
-            print(_file)
-            if os.path.isfile(os.path.join(ROOT, _file)):
-                subprocess.check_call("{}/{} --version".format(ROOT, _file).split())
+    with open(TOMLFILE, 'rb') as f:
+        _toml = tomllib.load(f)
+    for _p in _toml['project']['scripts'].keys():
+        _res = run(
+            [_p, f"--version"],
+            stdout=PIPE,
+            stderr=PIPE
+        )
+        _version = _res.stdout.decode().splitlines()[0]
+        assert f"{_version}" == f"{_p} {_toml['project']['version']}"
+        assert f"{_res.returncode}" == f"0"
+
