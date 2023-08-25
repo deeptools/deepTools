@@ -9,12 +9,12 @@ dependencies:
   - pysam
   - deeptoolsintervals
   - pytest
-  - planemo
   - samtools
-  #- allure-python-commons==2.12.0
   - py2bit
   - pyBigWig
   - twine
   - pip
+  - tomli  # remove dependency when lowest supported version is py 3.11
   - pip:
     - build
+    - planemo
