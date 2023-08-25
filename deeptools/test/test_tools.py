@@ -18,11 +18,12 @@ def test_tools():
         _toml = tomllib.load(f)
     for _p in _toml['project']['scripts'].keys():
         _res = run(
-            [_p, f"--version"],
+            [_p, "--version"],
             stdout=PIPE,
             stderr=PIPE
         )
         _version = _res.stdout.decode().splitlines()[0]
-        assert f"{_version}" == f"{_p} {_toml['project']['version']}"
-        assert f"{_res.returncode}" == f"0"
-
+        e_ver = _p + " " + _toml['project']['version']
+        assert f"{_version}" == f"{e_ver}"
+        e_retc = 0
+        assert f"{_res.returncode}" == f"{e_retc}"

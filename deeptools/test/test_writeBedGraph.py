@@ -31,7 +31,7 @@ class TestWriteBedGraph():
         _foo = open(tempFile[3], 'r')
         res = _foo.readlines()
         _foo.close()
-        expected =  ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
+        expected = ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
         assert f"{res}" == f"{expected}"
         os.remove(tempFile[3])
 
