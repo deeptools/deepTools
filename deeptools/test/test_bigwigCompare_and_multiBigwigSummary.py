@@ -45,7 +45,7 @@ def test_bigwigCompare():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -58,7 +58,7 @@ def test_bigwigCompare_skipnas():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t100\t150\t2\n', '3R\t150\t200\t3\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -70,7 +70,7 @@ def test_bigwigCompare_skipZeroOverZero():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t100\t200\t-1\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -105,7 +105,7 @@ def test_multiBigwigSummary_outrawcounts():
 3R	100	150	1.0	1.0
 3R	150	200	1.0	2.0
 """
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
     unlink("/tmp/null")
 

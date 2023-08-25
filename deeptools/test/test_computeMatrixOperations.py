@@ -32,7 +32,6 @@ class TestComputeMatrixOperations(object):
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0], "body": [1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward"], "downstream": [0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10], "upstream": [0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400], "max threshold": None, "ref point": [None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         oname = "/tmp/subset.mat.gz"
         args = "subset -m {} --sample SRR648667.forward SRR648668.forward SRR648669.forward SRR648670.forward -o {}".format(self.matrix, oname)
-        print(args)
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -40,7 +39,7 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "edb3c8506c3f27ebb8c7ddf94d5ba594"
+        assert f"{h}" == f"edb3c8506c3f27ebb8c7ddf94d5ba594"
         os.remove(oname)
 
     def testRelabel(self):
@@ -74,7 +73,7 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "300f8000be5b5f51e803b57ef08f1c9e"
+        assert f"{h}" == f"300f8000be5b5f51e803b57ef08f1c9e"
         os.remove(oname)
 
         dCorrect = {u'verbose': True, u'scale': 1, u'skip zeros': False, u'nan after end': False, u'sort using': u'mean', u'unscaled 5 prime': [0, 0, 0, 0, 0, 0, 0, 0], u'body': [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], u'sample_labels': [u'SRR648667.forward', u'SRR648668.forward', u'SRR648669.forward', u'SRR648670.forward', u'SRR648667.reverse', u'SRR648668.reverse', u'SRR648669.reverse', u'SRR648670.reverse'], u'downstream': [0, 0, 0, 0, 0, 0, 0, 0], u'unscaled 3 prime': [0, 0, 0, 0, 0, 0, 0, 0], u'group_labels': [u'genes'], u'bin size': [10, 10, 10, 10, 10, 10, 10, 10], u'upstream': [0, 0, 0, 0, 0, 0, 0, 0], u'group_boundaries': [0, 89], u'sample_boundaries': [0, 100, 200, 300, 400, 500, 600, 700, 800], u'missing data as zero': False, u'ref point': [None, None, None, None, None, None, None, None], u'min threshold': None, u'sort regions': u'no', u'proc number': 20, u'bin avg type': u'mean', u'max threshold': None}
@@ -87,7 +86,7 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "0a6ca070a5ba4564f1ab950ac3b7c8f1"
+        assert f"{h}" == f"0a6ca070a5ba4564f1ab950ac3b7c8f1"
         os.remove(oname)
 
     def testrbind(self):
@@ -104,7 +103,7 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "3dd96c7b05e0ca5ada21212defe57fba"
+        assert f"{h}" == f"3dd96c7b05e0ca5ada21212defe57fba"
         os.remove(oname)
 
     def testrbind2(self):
@@ -121,7 +120,7 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "5d8b1517fc4c63d000b6b37f70ee163b"
+        assert f"{h}" == f"5d8b1517fc4c63d000b6b37f70ee163b"
         os.remove(oname)
 
     def testcbind(self):
@@ -138,7 +137,7 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "e55d89704bb16a11f366663a8fd90a47"
+        assert f"{h}" == f"e55d89704bb16a11f366663a8fd90a47"
         os.remove(oname)
 
     def testsort(self):
@@ -155,5 +154,5 @@ class TestComputeMatrixOperations(object):
         h = hashlib.md5(f.read()).hexdigest()
         f.close()
         assert d == dCorrect
-        assert h == "10ea07d1aa58f44625abe2142ef76094"
+        assert f"{h}" == f"10ea07d1aa58f44625abe2142ef76094"
         os.remove(oname)

@@ -45,7 +45,7 @@ def test_bam_coverage_arguments():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -58,7 +58,7 @@ def test_bam_coverage_extend():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t150\t1\n', '3R\t150\t200\t3\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -75,7 +75,7 @@ def test_bam_coverage_extend_and_normalizeUsingRPGC():
         # the scale factor should be 0.5, thus the result is similar to
         # that of the previous test divided by 0.5
         expected = ['3R\t0\t150\t0.5\n', '3R\t150\t200\t1.5\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -89,7 +89,7 @@ def test_bam_coverage_skipnas():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -175,7 +175,7 @@ def test_bam_compare_ZoverZ():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-0.584963\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -227,7 +227,7 @@ def test_bam_compare_diff_files_skipnas():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -245,7 +245,7 @@ def test_bam_compare_extend():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t100\t-1\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -285,7 +285,7 @@ def test_bam_compare_scale_factors_ratio():
         """
 
         expected = ['3R\t0\t50\t1\n', '3R\t50\t100\t0.666667\n', '3R\t100\t150\t1.33333\n', '3R\t150\t200\t1\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -327,7 +327,7 @@ def test_bam_compare_scale_factors_subtract():
         """
 
         expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-250000\n', '3R\t100\t150\t250000\n', '3R\t150\t200\t0\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -357,7 +357,7 @@ def test_bam_coverage_filter_blacklist():
                     '3R\t950\t1000\t1.62672\n', '3R\t1000\t1050\t0.813362\n',
                     '3R\t1050\t1500\t0\n']
 
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -458,5 +458,5 @@ def test_bam_compare_filter_blacklist():
                     '3R\t750\t800\t-0.123451\n', '3R\t900\t950\t0.212545\n',
                     '3R\t950\t1000\t0.199309\n', '3R\t1000\t1050\t0.167945\n',
                     '3R\t1050\t1500\t0\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)

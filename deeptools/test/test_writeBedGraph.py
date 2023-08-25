@@ -31,7 +31,8 @@ class TestWriteBedGraph():
         _foo = open(tempFile[3], 'r')
         res = _foo.readlines()
         _foo.close()
-        assert res == ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
+        expected =  ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n']
+        assert f"{res}" == f"{expected}"
         os.remove(tempFile[3])
 
     def test_writeBedGraph_worker_zerotonan(self, bc):
@@ -42,7 +43,8 @@ class TestWriteBedGraph():
         _foo = open(tempFile2[3], 'r')
         res = _foo.readlines()
         _foo.close()
-        assert res == ['3R\t100\t200\t1\n']
+        expected = ['3R\t100\t200\t1\n']
+        assert f"{res}" == f"{expected}"
         os.remove(tempFile2[3])
 
     def test_writeBedGraph_worker_scaling(self, bc):
@@ -52,7 +54,8 @@ class TestWriteBedGraph():
         _foo = open(tempFile[3], 'r')
         res = _foo.readlines()
         _foo.close()
-        assert res == ['3R\t0\t100\t0\n', '3R\t100\t200\t3\n']
+        expected = ['3R\t0\t100\t0\n', '3R\t100\t200\t3\n']
+        assert f"{res}" == f"{expected}"
         os.remove(tempFile[3])
 
     def test_writeBedGraph_worker_ignore_duplicates(self, bc):
@@ -69,7 +72,8 @@ class TestWriteBedGraph():
         _foo = open(tempFile[3], 'r')
         res = _foo.readlines()
         _foo.close()
-        assert res == ['3R\t50\t200\t1\n']
+        expected = ['3R\t50\t200\t1\n']
+        assert f"{res}" == f"{expected}"
         os.remove(tempFile[3])
 
     def test_writeBedGraph_worker_smoothing(self, bc):
@@ -81,7 +85,8 @@ class TestWriteBedGraph():
         _foo = open(tempFile[3], 'r')
         res = _foo.readlines()
         _foo.close()
-        assert res == ['3R\t100\t120\t1\n', '3R\t120\t180\t1.33333\n', '3R\t180\t200\t1\n']
+        expected = ['3R\t100\t120\t1\n', '3R\t120\t180\t1.33333\n', '3R\t180\t200\t1\n']
+        assert f"{res}" == f"{expected}"
         os.remove(tempFile[3])
 
     def test_writeBedGraph_cigar(self, bc):
@@ -100,12 +105,13 @@ class TestWriteBedGraph():
         res = _foo.readlines()
         _foo.close()
 
-        # the sigle read is split into bin 10-30, and then 40-50
-        assert res == [
+        # the single read is split into bin 10-30, and then 40-50
+        expected = [
             'chr_cigar\t0\t10\t0\n',
             'chr_cigar\t10\t30\t1\n',
             'chr_cigar\t30\t40\t0\n',
             'chr_cigar\t40\t50\t1\n',
             'chr_cigar\t50\t100\t0\n'
         ]
+        assert f"{res}" == f"{expected}"
         os.remove(tempFile[3])
