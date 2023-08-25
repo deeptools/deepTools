@@ -25,7 +25,6 @@ jobs:
       with:
         miniconda-version: "latest"
         auto-activate-base: true
-        channels-priority: strict
     - name: setup env
       run: |
         conda env list
