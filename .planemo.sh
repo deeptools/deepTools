@@ -28,7 +28,8 @@ else
     galaxy/wrapper/plotProfiler.xml"
 fi
 
+planemo --version
 planemo lint ${wrappers}
-planemo test --no_dependency_resolution --conda_prefix /home/runner/micromamba/envs --galaxy_branch $2 --install_galaxy ${wrappers} 2>&1
+planemo test --no_dependency_resolution --galaxy_branch $2 --install_galaxy ${wrappers} 2>&1
 mkdir upload
 mv tool_test_output* upload/
