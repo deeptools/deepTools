@@ -344,8 +344,8 @@ def getJSDcommon(chip, input):
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
     JSD = 0.5 * (np.nansum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.nansum(PMFchip * np.log2(PMFchip / M)))
-
-    return np.sqrt(JSD)
+    # Round sqrt of JSD to 16 decimals, as planemo test has issue with rounding ?
+    return round(np.sqrt(JSD), 16)
 
 
 def getExpected(mu):
