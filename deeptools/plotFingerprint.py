@@ -42,8 +42,9 @@ def parse_arguments(args=None):
         'these counts are sorted '
         'and the cumulative sum is finally plotted. ',
         conflict_handler='resolve',
-        usage='An example usage is: plotFingerprint -b treatment.bam control.bam '
-        '-plot fingerprint.png',
+        usage='plotFingerprint -b treatment.bam control.bam '
+        '-plot fingerprint.png\n'
+        'help: plotFingerprint -h / plotFingerprint --help',
         add_help=False)
 
     return parser
@@ -393,7 +394,7 @@ def main(args=None):
         sys.stderr.write(
             "\nNo reads were found in {} regions sampled. Check that the\n"
             "min mapping quality is not overly high and that the \n"
-            "chromosome names between bam files are consistant.\n"
+            "chromosome names between bam files are consistent.\n"
             "For small genomes, decrease the --numberOfSamples.\n"
             "\n".format(num_reads_per_bin.shape[0]))
         exit(1)

@@ -1,7 +1,17 @@
 name: Planemo
 on: [push, pull_request]
+
 env:
-  GALAXY_BRANCH: release_22.05
+  GALAXY_BRANCH: release_23.1
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+# setup micromamba doesn't work as galaxy setup by planemo requires conda.
+# installing conda over into micromamba built env screws up the PATH
+# setup-miniconda + changing over to libmamba to solve is the easiest workaround
+
 jobs:
   planemo_test:
     name: Planemo test
@@ -10,12 +20,24 @@ jobs:
       matrix:
         chunk: [1, 2, 3]
     steps:
-    - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions/@master"
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        auto-activate-base: true
+    - name: setup env
+      run: |
+        conda env list
+        conda install -n base conda-libmamba-solver
+        conda config --set solver libmamba
+        conda env create -f .github/test_and_build.yml -n test_and_build
+    - name: pip install
+      run: |
+        conda activate test_and_build
+        pip install .
     - name: planemo
       run: |
-        source activate foo
-        conda update -c conda-forge -c bioconda samtools
+        conda activate test_and_build
         ./.planemo.sh ${{ matrix.chunk }} ${{ env.GALAXY_BRANCH }}
     - uses: actions/upload-artifact@v3
       with:
@@ -27,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.7']
+        python-version: ['3.7', '3.11']
     steps:
     - uses: actions/download-artifact@v3
       with:

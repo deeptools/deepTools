@@ -24,7 +24,9 @@ def parse_arguments(args=None):
         'partitioned into bins of equal size, then the number of reads found '
         'in each BAM file are counted per bin and finally a summary '
         'value is reported. This value can be the ratio of the number of reads'
-        'per bin, the log2 of the ratio, the sum or the difference.')
+        'per bin, the log2 of the ratio, the sum or the difference.',
+        usage='bigwigCompare -b1 sample1.bw -b2 sample2.bw -o log2.bw\n'
+        'help: bigwigCompare -h / bigwigCompare --help')
 
     # define the arguments
     parser.add_argument('--bigwig1', '-b1',

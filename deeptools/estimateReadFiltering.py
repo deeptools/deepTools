@@ -5,7 +5,10 @@ import sys
 from deeptools import parserCommon, bamHandler, utilities
 from deeptools.mapReduce import mapReduce
 from deeptools.utilities import smartLabels
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parseArguments():
@@ -31,7 +34,9 @@ The following metrics are estimated according to the --binSize and --distanceBet
 
 The sum of these may be more than the total number of reads. Note that alignments are sampled from bins of size --binSize spaced --distanceBetweenBins apart.
 """,
-        usage='Example usage: estimateReadFiltering.py -b sample1.bam sample2.bam > log.txt')
+        usage='estimateReadFiltering -b sample1.bam sample2.bam\n'
+        'help: estimateReadFiltering -h / estimateReadFiltering --help'
+    )
 
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--bamfiles', '-b',
@@ -92,7 +97,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                          action='store_true')
 
     general.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(__version__))
+                         version='%(prog)s {}'.format(version('deeptools')))
 
     filtering = parser.add_argument_group('Optional arguments')
 

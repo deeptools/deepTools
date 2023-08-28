@@ -13,7 +13,10 @@ import matplotlib.pyplot as plt
 
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -41,7 +44,9 @@ detailed help:
         epilog='example usages:\n'
                'plotCorrelation -in results_file --whatToPlot heatmap --corMethod pearson -o heatmap.png\n\n'
                ' \n\n',
-        parents=[basic_args, heatmap_parser, scatter_parser])
+        parents=[basic_args, heatmap_parser, scatter_parser],
+        usage='plotCorrelation -in matrix.gz -c spearman -p heatmap -o plot.png\n'
+        'help: plotCorrelation -h / plotCorrelation --help\n')
 
     return parser
 
@@ -117,7 +122,7 @@ def plot_correlation_args():
         action='store_true')
 
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     group = parser.add_argument_group('Output optional options')
 

@@ -1,0 +1,20 @@
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python >= 3.7
+  - numpy
+  - scipy
+  - flake8
+  - pysam
+  - deeptoolsintervals
+  - pytest
+  - samtools
+  - py2bit
+  - pyBigWig
+  - twine
+  - pip
+  - tomli  # remove dependency when lowest supported version is py 3.11
+  - pip:
+    - build
+    - planemo
