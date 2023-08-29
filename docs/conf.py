@@ -14,6 +14,7 @@
 
 import sys
 import os
+import tomllib
 
 # to allow readthedocs to compile without installing some dependencies
 import mock
@@ -81,17 +82,12 @@ author = u'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke, De
 
 
 def get_version():
-    import re
+    with open('../pyproject.toml', 'rb') as f:
+        d = tomllib.load(f)
     try:
-        f = open("../deeptools/_version.py")
-    except EnvironmentError:
+        return d['project']['version']
+    except:
         return None
-    for line in f.readlines():
-        mo = re.match("__version__ = '([^']+)'", line)
-        if mo:
-            ver = mo.group(1)
-            return ver
-    return None
 
 
 version = get_version()

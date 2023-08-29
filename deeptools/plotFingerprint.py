@@ -42,8 +42,9 @@ def parse_arguments(args=None):
         'these counts are sorted '
         'and the cumulative sum is finally plotted. ',
         conflict_handler='resolve',
-        usage='An example usage is: plotFingerprint -b treatment.bam control.bam '
-        '-plot fingerprint.png',
+        usage='plotFingerprint -b treatment.bam control.bam '
+        '-plot fingerprint.png\n'
+        'help: plotFingerprint -h / plotFingerprint --help',
         add_help=False)
 
     return parser
@@ -240,7 +241,7 @@ def getSyntheticJSD(vec):
     lamb = np.mean(vec)  # Average coverage
     coverage = np.sum(vec)
 
-    chip = np.zeros(MAXLEN, dtype=np.int)
+    chip = np.zeros(MAXLEN, dtype=int)
     for val in vec:
         # N.B., we need to clip past the end of the array
         if val >= MAXLEN:
@@ -277,8 +278,8 @@ def getJSD(args, idx, mat):
         return np.NAN
 
     # These will hold the coverage histograms
-    chip = np.zeros(MAXLEN, dtype=np.int)
-    input = np.zeros(MAXLEN, dtype=np.int)
+    chip = np.zeros(MAXLEN, dtype=int)
+    input = np.zeros(MAXLEN, dtype=int)
     for row in mat:
         # ChIP
         val = row[idx]
@@ -343,8 +344,8 @@ def getJSDcommon(chip, input):
     # Compute the JSD from the PMFs
     M = (PMFinput + PMFchip) / 2.0
     JSD = 0.5 * (np.nansum(PMFinput * np.log2(PMFinput / M))) + 0.5 * (np.nansum(PMFchip * np.log2(PMFchip / M)))
-
-    return np.sqrt(JSD)
+    # Round sqrt of JSD to 15 decimals, as planemo test has issue with rounding ?
+    return round(np.sqrt(JSD), 15)
 
 
 def getExpected(mu):
@@ -393,7 +394,7 @@ def main(args=None):
         sys.stderr.write(
             "\nNo reads were found in {} regions sampled. Check that the\n"
             "min mapping quality is not overly high and that the \n"
-            "chromosome names between bam files are consistant.\n"
+            "chromosome names between bam files are consistent.\n"
             "For small genomes, decrease the --numberOfSamples.\n"
             "\n".format(num_reads_per_bin.shape[0]))
         exit(1)

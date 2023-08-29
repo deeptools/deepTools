@@ -30,8 +30,9 @@ def parse_arguments(args=None):
         '[Benjamini & Speed (2012). Nucleic Acids Research, 40(10). doi: 10.1093/nar/gks001]. '
         'The GC-bias is visualized and the resulting table can be used to'
         'correct the bias with `correctGCBias`.',
-        usage='\n computeGCBias '
-        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt [options]',
+        usage='computeGCBias '
+        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt\n'
+        'help: computeGCBias -h / computeGCBias --help',
         conflict_handler='resolve',
         add_help=False)
 

@@ -18,7 +18,10 @@ import plotly.graph_objs as go
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -46,10 +49,12 @@ detailed usage help:
             epilog='example usages:\nplotCoverage '
                    '--bamfiles file1.bam file2.bam -o results.png\n\n'
                    ' \n\n',
-            conflict_handler='resolve')
+            conflict_handler='resolve',
+            usage='plotCoverage -b sample1.bam sample2.bam -o coverage.png \n'
+                  'help: plotCoverage -h / plotCoverage --help\n')
 
     parser.add_argument('--version', action='version',
-                        version='plotCoverage {}'.format(__version__))
+                        version='plotCoverage {}'.format(version('deeptools')))
 
     return parser
 

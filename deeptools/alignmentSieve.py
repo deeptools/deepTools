@@ -7,7 +7,10 @@ import sys
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 from deeptools.utilities import getTLen, smartLabels, getTempFileName
 
 
@@ -15,7 +18,8 @@ def parseArguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="This tool filters alignments in a BAM/CRAM file according the the specified parameters. It can optionally output to BEDPE format.",
-        usage='Example usage: alignmentSieve.py -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt')
+        usage='alignmentSieve -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt\n'
+        'help: alignmentSieve -h / alignmentSieve --help')
 
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--bam', '-b',
@@ -60,7 +64,7 @@ def parseArguments():
                          action='store_true')
 
     general.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(__version__))
+                         version='%(prog)s {}'.format(version('deeptools')))
 
     general.add_argument('--shift',
                          nargs='+',

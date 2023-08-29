@@ -1,4 +1,3 @@
-from nose.tools import assert_equal
 import deeptools.estimateReadFiltering as est
 import deeptools.alignmentSieve as sieve
 import os.path
@@ -30,7 +29,7 @@ def test_estimate_read_filtering_minimal():
     _ = resp[1].split("\t")
     _[0] = os.path.basename(_[0])
     resp[1] = "\t".join(_)
-    assert_equal(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -51,7 +50,7 @@ def test_estimate_read_filtering_params():
     resp[1] = "\t".join(_)
     expected = ['Sample\tTotal Reads\tMapped Reads\tAlignments in blacklisted regions\tEstimated mapped reads filtered\tBelow MAPQ\tMissing Flags\tExcluded Flags\tInternally-determined Duplicates\tMarked Duplicates\tSingletons\tWrong strand\n',
                 'test_filtering.bam\t193\t193\t7\t193\t41.4\t0.0\t186.5\t31.6\t0.0\t0.0\t0.0\n']
-    assert_equal(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -72,14 +71,16 @@ def test_sieve():
     expected = ['#bamFilterReads --filterMetrics\n',
                 '#File\tReads Remaining\tTotal Initial Reads\n',
                 'test_filtering\t5\t193\n']
-    assert_equal(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outlog)
     h = hashlib.md5(pysam.view(outfile).encode('utf-8')).hexdigest()
-    assert h == "acbc4443fb0387bfd6c412af9d4fc414"
+    expectedh = 'acbc4443fb0387bfd6c412af9d4fc414'
+    assert f'{h}' == f'{expectedh}'
     unlink(outfile)
 
     h1 = hashlib.md5(pysam.view(outfiltered).encode('utf-8')).hexdigest()
-    assert h1 == "b90befdd5f073f14acb9a38661f301ad"
+    expectedh = 'b90befdd5f073f14acb9a38661f301ad'
+    assert f"{h1}" == f"{expectedh}"
     unlink(outfiltered)
 
 
@@ -121,7 +122,7 @@ def test_sieve_BED():
                 'chr2\t5001491\t5001527\n',
                 'chr2\t5001700\t5001736\n']
 
-    assert_equal(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -161,5 +162,5 @@ def test_sieve_BED_shift():
                 'chr2\t5001119\t5001266\n',
                 'chr2\t5001230\t5001600\n']
 
-    assert_equal(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)

@@ -6,7 +6,10 @@ import argparse
 import sys
 import os
 import csv
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parse_arguments():
@@ -138,7 +141,7 @@ or
         usage='Example usage:\n  computeMatrixOperations dataRange -m input.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     return parser
 
@@ -786,10 +789,13 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
 
 
 def main(args=None):
-    if len(sys.argv) == 1:
-        args = ["-h"]
-    if len(sys.argv) == 2:
-        args = [sys.argv[1], "-h"]
+    # if args none is need since otherwise pytest passes 'pytest' as sys.argv
+    if args is None:
+        if len(sys.argv) == 1:
+            args = ["-h"]
+        if len(sys.argv) == 2:
+            args = [sys.argv[1], "-h"]
+
     args = parse_arguments().parse_args(args)
 
     hm = heatmapper.heatmapper()

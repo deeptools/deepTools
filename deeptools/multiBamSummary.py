@@ -9,7 +9,10 @@ import numpy as np
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -44,7 +47,7 @@ A detailed sub-commands help is available by typing:
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',
@@ -70,7 +73,8 @@ A detailed sub-commands help is available by typing:
         add_help=False,
         usage='%(prog)s '
               '--bamfiles file1.bam file2.bam '
-              '-o results.npz \n')
+              '-o results.npz \n'
+              'help: multiBamSummary bins -h / multiBamSummary bins --help\n')
 
     # BED file arguments
     subparsers.add_parser(
@@ -84,7 +88,8 @@ A detailed sub-commands help is available by typing:
              "that should be considered for the coverage analysis. A "
              "common use is to compare ChIP-seq coverages between two "
              "different samples for a set of peak regions.",
-        usage='%(prog)s --BED selection.bed --bamfiles file1.bam file2.bam -o results.npz\n',
+        usage='%(prog)s --BED selection.bed --bamfiles file1.bam file2.bam -o results.npz\n'
+        'help: multiBamSummary BED-file -h / multiBamSummary bins --help\n',
         add_help=False)
 
     return parser
@@ -191,6 +196,10 @@ def bamcorrelate_args(case='bins'):
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
+
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
 
     if args.labels and len(args.bamfiles) != len(args.labels):
         print("The number of labels does not match the number of bam files.")

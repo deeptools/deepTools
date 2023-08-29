@@ -1,22 +1,27 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
-import deeptools.misc
 import argparse
 import sys
 
 from deeptools.SES_scaleFactor import estimateScaleFactor
 from deeptools.parserCommon import numberOfProcessors
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 debug = 0
 
 
 def parseArguments(args=None):
     parser = argparse.ArgumentParser(
-         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-         description='Given two BAM files, this estimates scaling factors '
-         '(bigger to smaller).')
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='Given two BAM files, this estimates scaling factors '
+        '(bigger to smaller).',
+        usage='estimateScaleFactor -b sample1.bam sample2.bam\n'
+        'help: estimateScaleFactor -h / estimateScaleFactor --help'
+    )
 
     # define the arguments
     parser.add_argument('--bamfiles', '-b',
@@ -24,7 +29,6 @@ def parseArguments(args=None):
                         help='List of indexed BAM files, space delineated',
                         nargs='+',
                         required=True)
-
 
     parser.add_argument('--ignoreForNormalization', '-ignore',
                         help='A comma-separated list of chromosome names, '
@@ -74,28 +78,33 @@ def parseArguments(args=None):
                         required=False)
 
     parser.add_argument('--verbose', '-v',
-                         help='Set to see processing messages.',
-                         action='store_true')
+                        help='Set to see processing messages.',
+                        action='store_true')
 
-    parser.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(__version__))
+    parser.add_argument('--version',
+                        action='version',
+                        version='%(prog)s {}'.format(version('deeptools')))
 
-    args=parser.parse_args(args)
+    args = parser.parse_args(args)
     if args.ignoreForNormalization:
-         args.ignoreForNormalization=[x.strip() for x in args.ignoreForNormalization.split(',')]
+        args.ignoreForNormalization = [
+            x.strip() for x in args.ignoreForNormalization.split(',')
+        ]
     else:
-         args.ignoreForNormalization = []
+        args.ignoreForNormalization = []
     return args
 
-def main(args):
+
+def main(args=None):
     """
     The algorithm samples the genome a number of times as specified
     by the --numberOfSamples parameter to estimate scaling factors of
-    betweeen to samples
+    between to samples
 
     """
+    args = parseArguments().parse_args(args)
     if len(args.bamfiles) > 2:
-        print("SES method to stimate scale factors only works for two samples")
+        print("SES method to estimate scale factors only works for two samples")
         exit(0)
 
     sys.stderr.write("{:,} number of samples will be computed.\n".format(args.numberOfSamples))
@@ -107,9 +116,4 @@ def main(args):
                                           verbose=args.verbose)
 
     for k, v in sizeFactorsDict.items():
-         print("{}: {}".format(k, v))
-
-
-if __name__ == "__main__":
-    args = parseArguments()
-    main(args)
+        print("{}: {}".format(k, v))

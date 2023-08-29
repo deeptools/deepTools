@@ -42,7 +42,7 @@ def test_bigwigAverage():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.5\n', '3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -55,7 +55,7 @@ def test_bigwigAverage_skipnas():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -67,5 +67,5 @@ def test_bigwigAverageWithScale():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.25\n', '3R\t100\t150\t0.75\n', '3R\t150\t200\t1\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)

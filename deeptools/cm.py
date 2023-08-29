@@ -30,7 +30,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from matplotlib import colors, cm as mpl_cm
+from matplotlib import colors, colormaps as mpl_cm
 
 
 _rocket_lut = [
@@ -1084,5 +1084,5 @@ for _lut, _name in zip(_luts, _names):
     _cmap_r = colors.ListedColormap(_lut[::-1], _name + "_r")
     locals()[_name + "_r"] = _cmap_r
 
-    mpl_cm.register_cmap(_name, _cmap)
-    mpl_cm.register_cmap(_name + "_r", _cmap_r)
+    mpl_cm.register(_cmap, name=_name)
+    mpl_cm.register(_cmap_r, name=_name + "_r")

@@ -11,7 +11,10 @@ from deeptools import cm  # noqa: F401
 
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parse_arguments(args=None):
@@ -30,7 +33,9 @@ Detailed help:
         epilog='example usages:\n'
                'plotPCA -in coverages.npz -o pca.png\n\n'
                ' \n\n',
-        parents=[basic_args, ])
+        parents=[basic_args, ],
+        usage='plotPCA -in coverage.npz -o pca.png\n'
+        'help: plotPCA -h / plotPCA --help\n')
     return parser
 
 
@@ -133,7 +138,7 @@ def plotCorrelationArgs():
                           help="A list of markers for the symbols. (e.g., '<','>','o') are accepted. The marker values should be space separated. For example, --markers 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes.")
 
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     optionalEx = optional.add_mutually_exclusive_group()
     optionalEx.add_argument('--transpose',

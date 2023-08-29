@@ -36,8 +36,8 @@ def parseArguments():
             'Million mapped reads (RPKM), counts per million (CPM), bins per '
             'million mapped reads (BPM) and 1x depth (reads per genome '
             'coverage, RPGC).\n',
-            usage='An example usage is:'
-            '$ bamCoverage -b reads.bam -o coverage.bw',
+            usage='bamCoverage -b reads.bam -o coverage.bw\n'
+            'help: bamCoverage -h / bamCoverage --help',
             add_help=False)
 
     return parser
