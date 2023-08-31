@@ -3,6 +3,7 @@ name: pypi
 on:
   create:
     tags:
+    - '*'
 
 defaults:
   run:
