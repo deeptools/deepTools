@@ -1,4 +1,4 @@
-numpydoc==0.6
-pysam>=0.8.3
+sphinx
+mock
+sphinx_rtd_theme
 sphinx-argparse
-deeptoolsintervals
