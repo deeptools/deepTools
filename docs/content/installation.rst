@@ -7,20 +7,8 @@ Remember -- deepTools are available for **command line usage** as well as for
 .. contents:: 
     :local:
 
-Requirements
--------------
-
-* Python >= 3.7
-* numpy >= 1.9.0
-* scipy >= 0.17.0
-* matplotlib >= 3.3.0
-* pysam >= 0.14.0
-* numpydoc >= 0.5
-* pyBigWig >= 0.2.1
-* py2bit >= 0.2.0
-* plotly >= 4.9
-* deeptoolsintervals >= 0.1.8
-* importlib-metadata (when running python 3.7)
+Command line installation using ``conda``
+-----------------------------------------
 
 DeepTools (including the requirements) can be installed with conda:
 
@@ -50,9 +38,7 @@ Command line installation using ``pip`` from source
 
 You are highly recommended to use the 'pypi installation' rather than these more complicated steps.
 
-1. Install the requirements listed above in the "requirements" section. This is done automatically by `pip`.
-
-2. Download source code
+1. Download source code
 ::
 
 	$ git clone https://github.com/deeptools/deepTools.git
