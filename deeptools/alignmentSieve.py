@@ -84,6 +84,9 @@ def parseArguments():
     output.add_argument('--BED',
                         action='store_true',
                         help='Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format.')
+    output.add_argument('--keepTags',
+                        action='store_true',
+                        help='If set, the original BAM tags will be kept in the output file.')
 
     filtering = parser.add_argument_group('Optional arguments')
 
@@ -195,6 +198,10 @@ def shiftRead(b, chromDict, args):
     b2.reference_start = start
     b2.mapping_quality = b.mapping_quality
     b2.cigar = ((0, end - start),)  # Returned cigar is only matches
+    
+    if args.keepTags:
+        b2.set_tags(b.get_tags(with_value_type = True))
+
     if tLen < 0:
         b2.template_length = tLen - deltaTLen
     else:
