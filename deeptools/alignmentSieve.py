@@ -198,9 +198,9 @@ def shiftRead(b, chromDict, args):
     b2.reference_start = start
     b2.mapping_quality = b.mapping_quality
     b2.cigar = ((0, end - start),)  # Returned cigar is only matches
-    
+
     if args.keepTags:
-        b2.set_tags(b.get_tags(with_value_type = True))
+        b2.set_tags(b.get_tags(with_value_type=True))
 
     if tLen < 0:
         b2.template_length = tLen - deltaTLen
