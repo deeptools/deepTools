@@ -23,7 +23,7 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
         coverage = np.asarray(bigwigHandle.values(chrom, start, end))
-    except TypeError:
+    except RuntimeError:
         # this error happens when chromosome
         # is not into the bigwig file
         return []
