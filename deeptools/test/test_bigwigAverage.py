@@ -69,3 +69,15 @@ def test_bigwigAverageWithScale():
     expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.25\n', '3R\t100\t150\t0.75\n', '3R\t150\t200\t1\n']
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
+
+
+def test_bigwigAverageThree():
+    outfile = '/tmp/result.bg'
+    args = "--bigwigs {} {} {} -o {} --outFileFormat bedgraph --scaleFactors 0.75:0.75:.75".format(BIGWIG_A, BIGWIG_A, BIGWIG_B, outfile).split()
+    bwAve.main(args)
+    _foo = open(outfile, 'r')
+    resp = _foo.readlines()
+    _foo.close()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.25\n', '3R\t100\t150\t0.75\n', '3R\t150\t200\t1\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
