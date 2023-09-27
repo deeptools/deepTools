@@ -11,6 +11,7 @@ defaults:
 
 jobs:
   pypi:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
     name: upload to pypi
     runs-on: ubuntu-latest
     steps:
