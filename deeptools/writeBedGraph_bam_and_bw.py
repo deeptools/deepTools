@@ -23,7 +23,7 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
         coverage = np.asarray(bigwigHandle.values(chrom, start, end))
-    except TypeError:
+    except RuntimeError:
         # this error happens when chromosome
         # is not into the bigwig file
         return []
@@ -170,7 +170,7 @@ def writeBedGraph(
         chromNamesAndSize, __ = getCommonChrNames(bamHandles, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
-        cCommon = []
+        cCommon_number = {}
         chromNamesAndSize = {}
         for fileName, fileFormat in bamOrBwFileList:
             if fileFormat == 'bigwig':
@@ -180,7 +180,7 @@ def writeBedGraph(
 
             for chromName, size in list(fh.chroms().items()):
                 if chromName in chromNamesAndSize:
-                    cCommon.append(chromName)
+                    cCommon_number[chromName] += 1
                     if chromNamesAndSize[chromName] != size:
                         print("\nWARNING\n"
                               "Chromosome {} length reported in the "
@@ -193,6 +193,7 @@ def writeBedGraph(
                             chromNamesAndSize[chromName], size)
                 else:
                     chromNamesAndSize[chromName] = size
+                    cCommon_number[chromName] = 1
             fh.close()
 
         # get the list of common chromosome names and sizes
@@ -200,7 +201,8 @@ def writeBedGraph(
             chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()]
         else:
             chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
-                                 if k in cCommon]
+                                 if k in cCommon_number and
+                                 cCommon_number[k] == len(bamOrBwFileList)]
 
     if region:
         # in case a region is used, append the tilesize
