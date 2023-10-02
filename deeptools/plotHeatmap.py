@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
 from matplotlib import ticker
-import copy, re
-import sys
+
+import sys, re, os, copy
 import plotly.offline as py
 import plotly.graph_objs as go
 
@@ -115,17 +115,19 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
     return grids
 
-def autobreaklinetitle(title,sep="[-_,.]",lmax=15):
+def autobreaklinetitle(title,sep="[-_,.:]",lmax=15):
+    outsep = "-"
     sss = [ rr for rr in re.split(sep,title) if len(rr) ]
     newtitle, tmp = "", ""
     for ss in sss:
+        tmp0 = tmp
         tmp += ss
         if len(tmp) > lmax:
-            newtitle += tmp + "\n"
-            tmp = ""
+            newtitle += tmp0.strip(outsep) + "\n"
+            tmp = ss
         else:
-            tmp += "-"
-    newtitle += tmp.strip("-")
+            tmp += outsep
+    newtitle += tmp.strip(outsep)
     newtitle = "\n" + newtitle
     return newtitle
 

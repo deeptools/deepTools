@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-import sys, re
+import sys, os, re
 
 import argparse
 import numpy as np
@@ -49,17 +49,19 @@ def parse_arguments(args=None):
 
     return parser
 
-def autobreaklinetitle(title,sep="[-_,.]",lmax=15):
+def autobreaklinetitle(title,sep="[-_,.:]",lmax=15):
+    outsep = "-"
     sss = [ rr for rr in re.split(sep,title) if len(rr) ]
     newtitle, tmp = "", ""
     for ss in sss:
+        tmp0 = tmp
         tmp += ss
         if len(tmp) > lmax:
-            newtitle += tmp + "\n"
-            tmp = ""
+            newtitle += tmp0.strip(outsep) + "\n"
+            tmp = ss
         else:
-            tmp += "-"
-    newtitle += tmp.strip("-")
+            tmp += outsep
+    newtitle += tmp.strip(outsep)
     newtitle = "\n" + newtitle
     return newtitle
 
