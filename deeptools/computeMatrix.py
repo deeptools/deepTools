@@ -22,6 +22,7 @@ def parse_arguments(args=None):
         argparse.ArgumentParser(
             formatter_class=argparse.RawDescriptionHelpFormatter,
             description="""
+(This version should work for stranded bigWig files.)
 
 This tool calculates scores per genome regions and prepares an intermediate file that can be used with ``plotHeatmap`` and ``plotProfiles``.
 Typically, the genome regions are genes, but any other regions defined in a BED file can be used.
