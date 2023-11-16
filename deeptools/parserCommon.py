@@ -2,6 +2,7 @@ import argparse
 import os
 from importlib.metadata import version
 
+
 def check_float_0_1(value):
     v = float(value)
     if v < 0.0 or v > 1.0:

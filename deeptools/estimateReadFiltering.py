@@ -7,6 +7,7 @@ from deeptools.mapReduce import mapReduce
 from deeptools.utilities import smartLabels
 from importlib.metadata import version
 
+
 def parseArguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,

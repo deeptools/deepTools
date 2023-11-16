@@ -5,6 +5,7 @@ import argparse
 import sys
 from importlib.metadata import version
 
+
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,

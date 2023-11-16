@@ -13,6 +13,7 @@ import deeptools.computeMatrixOperations as cmo
 import deeptools.deepBlue as db
 from importlib.metadata import version
 
+
 def parse_arguments(args=None):
     parser = \
         argparse.ArgumentParser(

@@ -10,6 +10,7 @@ from deeptools.mapReduce import mapReduce
 from deeptools.utilities import getTLen, smartLabels, getTempFileName
 from importlib.metadata import version
 
+
 def parseArguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
