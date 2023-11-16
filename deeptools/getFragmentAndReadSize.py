@@ -76,7 +76,8 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
     -------
     d : dict
         tuple of two dictionaries, one for the fragment length and the other
-        for the read length. The dictionaries summarise the mean, median etc. values
+for the read length. The dictionaries summarise the mean, median etc. values
+
     """
 
     bam_handle = bamHandler.openBam(bamFile)

@@ -10,10 +10,7 @@ from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
 import deeptools.deepBlue as db
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
+from importlib.metadata import version
 
 old_settings = np.seterr(all='ignore')
 

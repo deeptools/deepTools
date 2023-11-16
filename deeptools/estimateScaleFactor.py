@@ -6,11 +6,7 @@ import sys
 
 from deeptools.SES_scaleFactor import estimateScaleFactor
 from deeptools.parserCommon import numberOfProcessors
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
-
+from importlib.metadata import version
 debug = 0
 
 

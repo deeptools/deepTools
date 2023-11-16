@@ -7,12 +7,8 @@ import sys
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
 from deeptools.utilities import getTLen, smartLabels, getTempFileName
-
+from importlib.metadata import version
 
 def parseArguments():
     parser = argparse.ArgumentParser(
