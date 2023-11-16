@@ -56,7 +56,7 @@ that fulfills the following criteria:
    we can add more and more modules and make use of established methods)
 
 
-.. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
+.. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `on github <https://github.com/deeptools/deepTools/issues>`__.
 
 
 Please cite deepTools2 as follows:
@@ -67,6 +67,6 @@ Steffen Heyne, Friederike Dündar, and Thomas Manke.
 
 .. image:: images/logo_mpi-ie.jpg
 
-This tool suite is developed by the `Bioinformatics Facility <http://www1.ie-freiburg.mpg.de/bioinformaticsfac>`_ at the
+This tool suite is developed by the `Bioinformatics Facility <https://www.ie-freiburg.mpg.de/bioinformatics>`_ at the
 `Max Planck Institute for Immunobiology and Epigenetics,
-Freiburg <http://www1.ie-freiburg.mpg.de/>`_.
+Freiburg <https://www.ie-freiburg.mpg.de/>`_.
