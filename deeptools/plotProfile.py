@@ -766,14 +766,14 @@ class Profile(object):
                     except:
                         repgrp_samp_dict[thisrepgrp] = [ data_idx ]
                 
+                if debug:
+                    set_trace()
                 for irepgrp, repgrp in enumerate(repgrplistuniq):
                     sub_matrix_list = []
                     for data_idx in repgrp_samp_dict[repgrp]:
                         _row, _col = plot, data_idx
                         sub_matrix = self.hm.matrix.get_matrix(_row, _col)
                         sub_matrix_list.append(sub_matrix['matrix'])
-                    if debug:
-                        set_trace()
     
                     label = f"{repgrp}(n={len(repgrp_samp_dict[repgrp])})"
     
