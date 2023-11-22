@@ -26,11 +26,11 @@ from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, plotly_single, getProfileTicks
 from deeptools.computeMatrixOperations import filterHeatmapValues
 
-
 debug = 0
+if debug:
+    from ipdb import set_trace
 old_settings = np.seterr(all='ignore')
 plt.ioff()
-
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
@@ -111,6 +111,7 @@ class Profile(object):
                  plot_height=7,
                  plot_width=11,
                  per_group=False,
+                 repgrplist=None,
                  plot_type='lines',
                  image_format=None,
                  color_list=None,
@@ -137,6 +138,7 @@ class Profile(object):
             plot_height: in cm
             plot_width: in cm
             per_group: bool
+            repgrplist: list
             plot_type: string
             image_format: string
             color_list: list
@@ -160,6 +162,7 @@ class Profile(object):
         self.plot_height = plot_height
         self.plot_width = plot_width
         self.per_group = per_group
+        self.repgrplist = repgrplist
         self.plot_type = plot_type
         self.image_format = image_format
         self.color_list = color_list
@@ -171,11 +174,13 @@ class Profile(object):
         # Honor reference point labels from computeMatrix
         if reference_point_label is None:
             self.reference_point_label = hm.parameters['ref point']
-
         # decide how many plots are needed
         if self.per_group:
             self.numplots = self.hm.matrix.get_num_groups()
-            self.numlines = self.hm.matrix.get_num_samples()
+            if self.repgrplist:
+                self.numlines = len(set(self.repgrplist))
+            else:
+                self.numlines = self.hm.matrix.get_num_samples()
         else:
             self.numplots = self.hm.matrix.get_num_samples()
             self.numlines = self.hm.matrix.get_num_groups()
@@ -525,7 +530,7 @@ class Profile(object):
 
             if self.per_group:
                 title = self.hm.matrix.group_labels[plot]
-                tickIdx = plot % self.hm.matrix.get_num_samples()
+                tickIdx = plot % self.numlines
             else:
                 title = self.hm.matrix.sample_labels[plot]
                 tickIdx = plot
@@ -731,7 +736,7 @@ class Profile(object):
                 title = self.hm.matrix.group_labels[plot]
                 if row != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
-                tickIdx = plot % self.hm.matrix.get_num_samples()
+                tickIdx = plot % self.numlines
             else:
                 title = self.hm.matrix.sample_labels[plot]
                 if col != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
@@ -739,32 +744,71 @@ class Profile(object):
                 tickIdx = plot
 
             ax.set_title(autobreaklinetitle(title))
-            for data_idx in range(self.numlines):
-                if self.per_group:
-                    _row, _col = plot, data_idx
-                else:
-                    _row, _col = data_idx, plot
-                if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
-                    localYMin = self.y_min[col % len(self.y_min)]
-                if localYMax is None or self.y_max[col % len(self.y_max)] > localYMax:
-                    localYMax = self.y_max[col % len(self.y_max)]
-
-                sub_matrix = self.hm.matrix.get_matrix(_row, _col)
-
-                if self.per_group:
-                    label = sub_matrix['sample']
-                else:
-                    label = sub_matrix['group']
-
-                if self.numlines > 1:
-                    coloridx = data_idx
-                else:
-                    coloridx = plot
-                plot_single(ax, sub_matrix['matrix'],
-                            self.averagetype,
-                            self.color_list[coloridx],
-                            label,
-                            plot_type=self.plot_type)
+            if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
+                localYMin = self.y_min[col % len(self.y_min)]
+            if localYMax is None or self.y_max[col % len(self.y_max)] > localYMax:
+                localYMax = self.y_max[col % len(self.y_max)]
+            if self.per_group and self.repgrplist:
+                nsamptmp = self.hm.matrix.get_num_samples()
+                repgrplistuniq = []
+                repgrp_samp_dict = {}
+                for tmp in self.repgrplist:
+                    if not tmp in repgrplistuniq:
+                        repgrplistuniq.append(tmp)
+                for data_idx in range(nsamptmp):
+                    thisrepgrp = repgrplistuniq[int(data_idx / (nsamptmp/self.numlines))]
+                    try:
+                        repgrp_samp_dict[thisrepgrp].append(data_idx)
+                    except:
+                        repgrp_samp_dict[thisrepgrp] = [ data_idx ]
+                
+                for irepgrp, repgrp in enumerate(repgrplistuniq):
+                    sub_matrix_list = []
+                    for data_idx in repgrp_samp_dict[repgrp]:
+                        _row, _col = plot, data_idx
+                        sub_matrix = self.hm.matrix.get_matrix(_row, _col)
+                        sub_matrix_list.append(sub_matrix['matrix'])
+                    if debug:
+                        set_trace()
+    
+                    label = f"{repgrp}(n={len(repgrp_samp_dict[repgrp])})"
+    
+                    if self.numlines > 1:
+                        coloridx = irepgrp
+                    else:
+                        coloridx = plot
+                    plot_single(ax, sub_matrix_list,
+                                self.averagetype,
+                                self.color_list[coloridx],
+                                label,
+                                plot_type=self.plot_type)
+            else:
+                for data_idx in range(self.numlines):
+                    if self.per_group:
+                        _row, _col = plot, data_idx
+                    else:
+                        _row, _col = data_idx, plot
+                    if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
+                        localYMin = self.y_min[col % len(self.y_min)]
+                    if localYMax is None or self.y_max[col % len(self.y_max)] > localYMax:
+                        localYMax = self.y_max[col % len(self.y_max)]
+    
+                    sub_matrix = self.hm.matrix.get_matrix(_row, _col)
+    
+                    if self.per_group:
+                        label = sub_matrix['sample']
+                    else:
+                        label = sub_matrix['group']
+    
+                    if self.numlines > 1:
+                        coloridx = data_idx
+                    else:
+                        coloridx = plot
+                    plot_single(ax, sub_matrix['matrix'],
+                                self.averagetype,
+                                self.color_list[coloridx],
+                                label,
+                                plot_type=self.plot_type)
             globalYmin = min(np.float64(globalYmin), ax.get_ylim()[0])
             globalYmax = max(globalYmax, ax.get_ylim()[1])
 
@@ -970,6 +1014,7 @@ def main(args=None):
                    plot_height=args.plotHeight,
                    plot_width=args.plotWidth,
                    per_group=args.perGroup,
+                   repgrplist=args.repgrplist,
                    plot_type=args.plotType,
                    image_format=args.plotFileFormat,
                    color_list=args.colors,
