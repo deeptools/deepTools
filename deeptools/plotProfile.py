@@ -750,17 +750,25 @@ class Profile(object):
                 localYMax = self.y_max[col % len(self.y_max)]
             if self.per_group and self.repgrplist:
                 nsamptmp = self.hm.matrix.get_num_samples()
-                repgrplistuniq = []
                 repgrp_samp_dict = {}
-                for tmp in self.repgrplist:
-                    if not tmp in repgrplistuniq:
-                        repgrplistuniq.append(tmp)
-                for data_idx in range(nsamptmp):
-                    thisrepgrp = repgrplistuniq[int(data_idx / (nsamptmp/self.numlines))]
-                    try:
-                        repgrp_samp_dict[thisrepgrp].append(data_idx)
-                    except:
-                        repgrp_samp_dict[thisrepgrp] = [ data_idx ]
+                if len(self.repgrplist) == nsamptmp:
+                    for data_idx in range(nsamptmp):
+                        thisrepgrp = self.repgrplist[data_idx]
+                        try:
+                            repgrp_samp_dict[thisrepgrp].append(data_idx)
+                        except:
+                            repgrp_samp_dict[thisrepgrp] = [ data_idx ]
+                else:
+                    repgrplistuniq = []
+                    for tmp in self.repgrplist:
+                        if not tmp in repgrplistuniq:
+                            repgrplistuniq.append(tmp)
+                    for data_idx in range(nsamptmp):
+                        thisrepgrp = repgrplistuniq[int(data_idx / (nsamptmp/self.numlines))]
+                        try:
+                            repgrp_samp_dict[thisrepgrp].append(data_idx)
+                        except:
+                            repgrp_samp_dict[thisrepgrp] = [ data_idx ]
                 
                 for irepgrp, repgrp in enumerate(repgrplistuniq):
                     sub_matrix_list = []

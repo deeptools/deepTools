@@ -852,7 +852,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           help='Group profiles by genotype'
                                'assign each profile to a group(as replicates) to plot average +/- se/std.'
                                'If the number of group values is smaller than'
-                               'the number of plots, the values are recycled.')
+                               'the number of samples, the values will be equally divide into groups.')
 
     optional.add_argument('--plotFileFormat',
                           metavar='',
