@@ -7,29 +7,17 @@ Remember -- deepTools are available for **command line usage** as well as for
 .. contents:: 
     :local:
 
-Requirements
--------------
+Command line installation using ``conda``
+-----------------------------------------
 
-* Python 2.7 or Python 3.x
-* numpy >= 1.8.0
-* scipy >= 0.17.0
-* py2bit >= 0.1.0
-* pyBigWig >= 0.2.1
-* pysam >= 0.8
-* matplotlib >= 1.4.0
-
-The fastest way to obtain **Python 2.7 or Python 3.x together with numpy and scipy** is
-via the `Anaconda Scientific Python
-Distribution <https://store.continuum.io/cshop/anaconda/>`_.
-Just download the version that's suitable for your operating system and
-follow the directions for its installation. All of the requirements for deepTools can be installed in Anaconda with:
+DeepTools (including the requirements) can be installed with conda:
 
 .. code:: bash
 
     $ conda install -c bioconda deeptools
 
-Command line installation using ``pip``
------------------------------------------
+Command line installation using ``pip`` from pypi
+--------------------------------------------------
 
 Install deepTools using the following command:
 ::
@@ -45,14 +33,12 @@ If you need to specify a specific path for the installation of the tools, make u
     $ pip install --install-option="--prefix=/MyPath/Tools/deepTools2.0" git+https://github.com/deeptools/deepTools.git
 
 
-Command line installation without ``pip``
--------------------------------------------
+Command line installation using ``pip`` from source
+---------------------------------------------------
 
-You are highly recommended to use `pip` rather than these more complicated steps.
+You are highly recommended to use the 'pypi installation' rather than these more complicated steps.
 
-1. Install the requirements listed above in the "requirements" section. This is done automatically by `pip`.
-
-2. Download source code
+1. Download source code
 ::
 
 	$ git clone https://github.com/deeptools/deepTools.git
@@ -63,11 +49,11 @@ or if you want a particular release, choose one from https://github.com/deeptool
 	$ wget https://github.com/deeptools/deepTools/archive/1.5.12.tar.gz
 	$ tar -xzvf
 
-3. install the source code (if you don't have root permission, you can set
-a specific folder using the ``--prefix`` option)
+3. install the source code
 ::
 
-	$ python setup.py install --prefix /User/Tools/deepTools2.0
+	$ python -m build
+	$ pip install dist/*whl
 
 Galaxy installation
 --------------------

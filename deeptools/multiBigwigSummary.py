@@ -7,10 +7,13 @@ import os.path
 import numpy as np
 import multiprocessing
 from deeptools import parserCommon
-from deeptools._version import __version__
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
 import deeptools.deepBlue as db
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -43,7 +46,7 @@ A detailed sub-commands help is available by typing:
             conflict_handler='resolve')
 
     parser.add_argument('--version', action='version',
-                        version='multiBigwigSummary {}'.format(__version__))
+                        version='multiBigwigSummary {}'.format(version('deeptools')))
     subparsers = parser.add_subparsers(
         title="commands",
         dest='command',
@@ -69,7 +72,8 @@ A detailed sub-commands help is available by typing:
         add_help=False,
         usage='multiBigwigSummary bins '
               '-b file1.bw file2.bw '
-              '-o results.npz\n')
+              '-o results.npz\n'
+              'help: multiBigwigSummary bins -h / multiBigwigSummary bins --help\n')
 
     # BED file arguments
     subparsers.add_parser(
@@ -86,7 +90,8 @@ A detailed sub-commands help is available by typing:
              "different samples over a set of pre-defined peak regions.",
         usage='multiBigwigSummary BED-file '
               '-b file1.bw file2.bw '
-              '-o results.npz --BED selection.bed\n',
+              '-o results.npz --BED selection.bed\n'
+              'help: multiBigwigSummary BED-file -h / multiBigwigSummary BED-file --help\n',
         add_help=False)
 
     return parser
@@ -94,6 +99,10 @@ A detailed sub-commands help is available by typing:
 
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
+
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
 
     if not args.labels and args.smartLabels:
         args.labels = smartLabels(args.bwfiles)

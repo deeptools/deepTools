@@ -126,6 +126,8 @@ Tools for BAM and bigWig file processing
 """""""""""""""""""""""
 :doc:`tools/bigwigCompare`
 """"""""""""""""""""""""""
+:doc:`tools/bigwigAverage`
+""""""""""""""""""""""""""
 :doc:`tools/computeMatrix`
 """"""""""""""""""""""""""
 :doc:`tools/alignmentSieve`

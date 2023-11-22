@@ -1,0 +1,122 @@
+<tool id="deeptools_bigwig_average" name="bigwigAverage" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
+    <description>normalizes and average multiple bigWig files</description>
+    <macros>
+        <token name="@BINARY@">bigwigAverage</token>
+        <import>deepTools_macros.xml</import>
+    </macros>
+    <expand macro="requirements"/>
+    <command>
+<![CDATA[
+        @BINARY@
+            @THREADS@
+            --bigwigs
+            #for $b in $bigwigs:
+                $b
+            #end for
+            --outFileName '$outFileName'
+            --outFileFormat '$outFileFormat'
+
+            #if str($region).strip() != '':
+                --region '$region'
+            #end if
+
+            #if $advancedOpt.showAdvancedOpt == "yes":
+
+              $advancedOpt.skipNAs
+              --scaleFactors '$advancedOpt.scaleFactors'
+              --binSize $advancedOpt.binSize
+
+                @blacklist@
+
+            #end if
+]]>
+    </command>
+    <inputs>
+        <param name="bigwigs" format="bigwig" type="data" label="Treatment bigwig file" multiple="true" />
+
+        <param name="outFileFormat" type="select" label="Coverage file format">
+            <option value="bigwig" selected="true">bigwig</option>
+            <option value="bedgraph">bedgraph</option>
+        </param>
+
+        <expand macro="region_limit_operation" />
+
+        <conditional name="advancedOpt">
+            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+                <option value="no" selected="true">no</option>
+                <option value="yes">yes</option>
+            </param>
+            <when value="no" />
+            <when value="yes">
+                <param argument="--binSize" type="integer" value="50" min="1"
+                    label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
+                    help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
+
+                <expand macro="skipNAs" />
+                <param name="scaleFactors" type="text" value="1" label="Scale factors (one per bigwig separated by ':')" />
+                <expand macro="blacklist" />
+            </when>
+        </conditional>
+    </inputs>
+    <outputs>
+        <data format="bigwig" name="outFileName">
+            <change_format>
+                <when input="outFileFormat" value="bigwig" format="bigwig" />
+                <when input="outFileFormat" value="bedgraph" format="bedgraph" />
+            </change_format>
+        </data>
+    </outputs>
+    <tests>
+        <test>
+            <param name="bigwigs" value="test.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="5" />
+            <output name="outFileName" file="test_compated.bw" ftype="bigwig"
+            compare="sim_size" delta="500" />
+        </test>
+        <test>
+            <param name="bigwigs" value="test.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="5" />
+            <param name="scaleFactors" value="0.5"/>
+            <output name="outFileName" file="test_half.bw" ftype="bigwig"
+                    compare="sim_size" delta="500" />
+        </test>
+        <test>
+            <param name="bigwigs" value="test.bw,test_half.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="5" />
+            <param name="scaleFactors" value="0.5"/>
+            <output name="outFileName" file="bigwigAverage2.bw" ftype="bigwig"
+            compare="sim_size" delta="500" />
+        </test>
+        <test>
+            <param name="bigwigs" value="test.bw,test_half.bw" ftype="bigwig" />
+            <param name="showAdvancedOpt" value="yes" />
+            <param name="outFileFormat" value="bigwig" />
+            <param name="binSize" value="5" />
+            <param name="scaleFactors" value="1:2"/>
+            <output name="outFileName" file="test_compated.bw" ftype="bigwig"
+            compare="sim_size" delta="500" />
+        </test>
+    </tests>
+    <help>
+<![CDATA[
+
+What it does
+--------------
+
+This tool compute average of multiple bigWig files based on the number of mapped reads. To
+average the bigwig files, the genome is partitioned into bins of equal size,
+then the scores (e.g., number of reads) found in each bigWig file are counted for such bins and, finally, an average value is reported.
+
+Note that you can actually produce a human-readable bedGraph format instead of the compressed bigWig format if you're interested in having a look at the values yourself.
+
+@REFERENCES@
+]]>
+    </help>
+    <expand macro="citations" />
+</tool>

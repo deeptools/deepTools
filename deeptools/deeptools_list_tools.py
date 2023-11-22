@@ -3,7 +3,10 @@
 
 import argparse
 import sys
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parse_arguments(args=None):
@@ -33,6 +36,7 @@ Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
     bamCoverage             computes read coverage per bins or regions
     bamCompare              computes log2 ratio and other operations of read coverage of two samples per bins or regions
     bigwigCompare           computes log2 ratio and other operations from bigwig scores of two samples per bins or regions
+    bigwigAverage           computes average from bigwig scores of multiple samples per bins or regions
     computeMatrix           prepares the data from bigwig scores for plotting with plotHeatmap or plotProfile
     alignmentSieve          filters BAM alignments according to specified parameters, optionally producing a BEDPE file
 
@@ -60,7 +64,7 @@ For more information visit: http://deeptools.readthedocs.org
 """)
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     return parser
 

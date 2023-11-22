@@ -51,7 +51,9 @@ detailed help:
         epilog='example usages:\n'
                'plotEnrichment -b file1.bam file2.bam --BED peaks.bed -o enrichment.png\n\n'
                ' \n\n',
-        parents=[basic_args, parent_parser, read_options])
+        parents=[basic_args, parent_parser, read_options],
+        usage='plotEnrichment -b sample1.bam sample2.bam --BED peaks.bed -o enrichment.png\n'
+        'help: plotEnrichment -h / plotEnrichment --help\n')
 
     return parser
 

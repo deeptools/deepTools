@@ -7,7 +7,10 @@ import sys
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 from deeptools.utilities import getTLen, smartLabels, getTempFileName
 
 
@@ -15,7 +18,8 @@ def parseArguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="This tool filters alignments in a BAM/CRAM file according the the specified parameters. It can optionally output to BEDPE format.",
-        usage='Example usage: alignmentSieve.py -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt')
+        usage='alignmentSieve -b sample1.bam -o sample1.filtered.bam --minMappingQuality 10 --filterMetrics log.txt\n'
+        'help: alignmentSieve -h / alignmentSieve --help')
 
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--bam', '-b',
@@ -60,7 +64,7 @@ def parseArguments():
                          action='store_true')
 
     general.add_argument('--version', action='version',
-                         version='%(prog)s {}'.format(__version__))
+                         version='%(prog)s {}'.format(version('deeptools')))
 
     general.add_argument('--shift',
                          nargs='+',
@@ -70,6 +74,11 @@ def parseArguments():
     general.add_argument('--ATACshift',
                          action='store_true',
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
+
+    general.add_argument('--genomeChunkLength',
+                         type=int,
+                         default=int(1e6),
+                         help='Size of the genome (in bps) to be processed per thread. (Default: %(default)s)')
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
@@ -204,8 +213,7 @@ def shiftRead(b, chromDict, args):
 def filterWorker(arglist):
     chrom, start, end, args, chromDict = arglist
     fh = openBam(args.bam)
-
-    mode = 'wbu'
+    mode = 'wb'
     oname = getTempFileName(suffix='.bam')
     if args.filteredOutReads:
         onameFiltered = getTempFileName(suffix='.bam')
@@ -349,8 +357,11 @@ def convertBED(oname, tmpFiles, chromDict):
     """
     ofile = open(oname, "w")
     for tmpFile in tmpFiles:
+        # Setting verbosity to avoid lack of index error/warning
+        pysam.set_verbosity(0)
         fh = pysam.AlignmentFile(tmpFile)
-
+        # Reset verbosity
+        pysam.set_verbosity(3)
         for b in fh.fetch(until_eof=True):
             tLen = getTLen(b, notAbs=True)
             if tLen > 0:
@@ -387,6 +398,7 @@ def main(args=None):
                     chrom_sizes,
                     blackListFileName=args.blackListFileName,
                     numberOfProcessors=args.numberOfProcessors,
+                    genomeChunkLength=args.genomeChunkLength,
                     verbose=args.verbose)
 
     res = sorted(res)  # The temp files are now in order for concatenation

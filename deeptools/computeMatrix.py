@@ -7,7 +7,10 @@ import os
 import multiprocessing
 
 from deeptools.parserCommon import writableFile, numberOfProcessors
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 from deeptools import parserCommon
 from deeptools import heatmapper
 import deeptools.computeMatrixOperations as cmo
@@ -37,7 +40,7 @@ $ computeMatrix scale-regions --help
             '<bigwig file(s)> -R <bed file(s)> -b 1000\n \n')
 
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     subparsers = parser.add_subparsers(
         title='Commands',
@@ -137,7 +140,7 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
     parser = argparse.ArgumentParser(add_help=False)
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     if case == 'scale-regions':
         optional.add_argument('--regionBodyLength', '-m',
@@ -353,6 +356,10 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 def process_args(args=None):
     args = parse_arguments().parse_args(args)
 
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
+
     if args.quiet is True:
         args.verbose = False
 
@@ -366,7 +373,7 @@ def process_args(args=None):
                      "set to 0. Nothing to output. Maybe you want to "
                      "use the scale-regions mode?\n")
 
-    return(args)
+    return args
 
 
 def main(args=None):

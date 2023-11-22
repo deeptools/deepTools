@@ -14,6 +14,7 @@
 
 import sys
 import os
+import tomllib
 
 # to allow readthedocs to compile without installing some dependencies
 import mock
@@ -81,17 +82,12 @@ author = u'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke, De
 
 
 def get_version():
-    import re
+    with open('../pyproject.toml', 'rb') as f:
+        d = tomllib.load(f)
     try:
-        f = open("../deeptools/_version.py")
-    except EnvironmentError:
+        return d['project']['version']
+    except:
         return None
-    for line in f.readlines():
-        mo = re.match("__version__ = '([^']+)'", line)
-        if mo:
-            ver = mo.group(1)
-            return ver
-    return None
 
 
 version = get_version()
@@ -110,7 +106,7 @@ rst_epilog = """
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -154,13 +150,13 @@ todo_include_todos = False
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-# html_theme = 'classic'
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
+html_theme = 'sphinx_rtd_theme'
+# on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
 
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    import sphinx_rtd_theme
-    html_theme = 'sphinx_rtd_theme'
-    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+# if not on_rtd:  # only import and set the theme if we're building docs locally
+#     import sphinx_rtd_theme
+#     html_theme = 'sphinx_rtd_theme'
+#     html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 
 # Theme options are theme-specific and customize the look and feel of a theme

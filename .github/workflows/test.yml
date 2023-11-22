@@ -1,51 +1,112 @@
 name: Test
-on: [push]
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash -l {0}
+
 jobs:
+  check_versions_matches:
+    name: Check deeptools version matches galaxy tools
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'master'
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check path
+      run: find /home/runner/work/deepTools/deepTools -name "pyproject.toml"
+    - name: Get Version of Deeptools
+      run: echo "deeptools_version=$(grep "version" /home/runner/work/deepTools/deepTools/pyproject.toml | awk '{print substr($NF, 2, length($NF) - 2)}')" >> $GITHUB_ENV
+    - name: Get Version of Galaxy tools
+      run: echo "galaxy_deeptools_version=$(grep "token.*TOOL_VERSION" /home/runner/work/deepTools/deepTools/galaxy/wrapper/deepTools_macros.xml | awk -F '>|<' '{print $3}')" >> $GITHUB_ENV
+    - name: Versions
+      run: | 
+        echo deeptools version=${deeptools_version}
+        echo deeptools version in galaxy=${galaxy_deeptools_version}
+    - name: Fail PR if versions not matching
+      run: |
+        if [ -z $galaxy_deeptools_version ]; then
+          echo "galaxy_deeptools_version not defined change the github action"
+          exit 1
+        fi
+        if [ -z $deeptools_version ]; then
+          echo "deeptools_version not defined change the github action"
+          exit 1
+        fi
+        if [ "$galaxy_deeptools_version" != "$deeptools_version" ]; then
+          echo "versions do not match"
+          exit 1
+        fi
   build-linux:
     name: Test on Linux
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions/@master"
+    - uses: actions/checkout@v3
+    - uses: mamba-org/setup-micromamba@main
+      with:
+        environment-file: .github/test_and_build.yml
+        cache-downloads: true
+        environment-name: test_and_build
+    - name: pip install
+      run: |
+        micromamba activate test_and_build
+        pip install .
     - name: PEP8
       run: |
-        source activate foo
+        micromamba activate test_and_build
         flake8 . --exclude=.venv,.build,build --ignore=E501,F403,E402,F999,F405,E722,W504,W605
     - name: Test deepTools
       run: |
-        source activate foo
-        nosetests --with-doctest -sv deeptools
+        micromamba activate test_and_build
+        pytest -v
     - name: make an artifact
       run: |
-        source activate foo
+        micromamba activate test_and_build
         rm -f dist/*
-        python setup.py sdist
+        python -m build
     - uses: actions/upload-artifact@master
       with:
         name: "Dist files"
         path: "dist"
-  build-osx:
-    name: Test on OSX
-    runs-on: macOS-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions/@master"
-    - name: Test deepTools
-      run: |
-
-        source activate foo
-        nosetests --with-doctest -sv deeptools
-  planemo:
-    name: First planemo chunk
+  test-wheels:
+    name: test wheel
     runs-on: ubuntu-latest
     needs: build-linux
     strategy:
       matrix:
-        chunk: [1, 2, 3]
+        python-version: ['3.7','3.8','3.9','3.10', '3.11']
     steps:
-    - uses: actions/checkout@v1
-    - uses: "dpryan79/github-actions/@master"
-    - name: planemo
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: "Dist files"
+          path: ~/dist/
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: install wheel
+        run: |
+          pip install ~/dist/*whl
+          deeptools -h
+      - name: pytest
+        run: |
+          pip install pytest
+          pytest -v
+  build-osx:
+    name: Test on OSX
+    runs-on: macOS-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: mamba-org/setup-micromamba@main
+      with:
+        environment-file: .github/test_and_build.yml
+        cache-downloads: true
+        environment-name: test_and_build
+    - name: pip install
       run: |
-        source activate foo
-        ./.planemo.sh ${{ matrix.chunk }}
+        micromamba activate test_and_build
+        pip install .
+    - name: Test deepTools
+      run: |
+        micromamba activate test_and_build
+        pytest -v

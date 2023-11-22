@@ -44,7 +44,8 @@ def parseArguments():
         'independently. If this is undesirable, then use the --samFlagInclude '
         'or --samFlagExclude options.',
 
-        usage=' bamCompare -b1 treatment.bam -b2 control.bam -o log2ratio.bw',
+        usage='bamCompare -b1 treatment.bam -b2 control.bam -o log2ratio.bw\n'
+        'help: bamCompare -h / bamCompare --help',
 
         add_help=False)
 

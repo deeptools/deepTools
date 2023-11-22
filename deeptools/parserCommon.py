@@ -1,6 +1,9 @@
 import argparse
 import os
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def check_float_0_1(value):
@@ -297,7 +300,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
     optional = parser.add_argument_group('Optional arguments')
 
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
 
     if binSize:
         optional.add_argument('--binSize', '-bs',
@@ -521,7 +524,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
     optional.add_argument("--help", "-h", action="help",
                           help="show this help message and exit")
     optional.add_argument('--version', action='version',
-                          version='%(prog)s {}'.format(__version__))
+                          version='%(prog)s {}'.format(version('deeptools')))
     if mode == 'profile':
         optional.add_argument(
             '--averageType',

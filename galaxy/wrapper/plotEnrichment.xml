@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_enrichment" name="plotEnrichment" version="@WRAPPER_VERSION@.0" profile="18.01">
+<tool id="deeptools_plot_enrichment" name="plotEnrichment" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
     <description>plots read/fragment coverage over sets of regions</description>
     <macros>
         <token name="@BINARY@">plotEnrichment</token>

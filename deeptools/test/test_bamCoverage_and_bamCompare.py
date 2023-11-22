@@ -1,4 +1,3 @@
-from nose.tools import assert_equal
 import deeptools.bamCoverage as bam_cov
 import deeptools.bamCompare as bam_comp
 import deeptools.getScaleFactor as gs
@@ -46,7 +45,7 @@ def test_bam_coverage_arguments():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -59,7 +58,7 @@ def test_bam_coverage_extend():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t150\t1\n', '3R\t150\t200\t3\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -76,7 +75,7 @@ def test_bam_coverage_extend_and_normalizeUsingRPGC():
         # the scale factor should be 0.5, thus the result is similar to
         # that of the previous test divided by 0.5
         expected = ['3R\t0\t150\t0.5\n', '3R\t150\t200\t1.5\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -90,7 +89,7 @@ def test_bam_coverage_skipnas():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -104,7 +103,7 @@ def test_bam_coverage_filtering():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t200\t1\n']
-        assert_equal(resp, expected)
+        assert resp == expected, "{} != {}".format(resp, expected)
         unlink(outfile)
 
 
@@ -124,7 +123,7 @@ def test_bam_compare_arguments():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t200\t1\n']
-        assert_equal(resp, expected)
+        assert resp == expected, "{} != {}".format(resp, expected)
         unlink(outfile)
 
 
@@ -142,7 +141,7 @@ def test_bam_compare_diff_files():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
-        assert_equal(resp, expected)
+        assert resp == expected, "{} != {}".format(resp, expected)
         unlink(outfile)
 
 
@@ -159,7 +158,7 @@ def test_bam_compare_pseudocounts():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t0\t50\tinf\n', '3R\t50\t100\t0\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
-    assert_equal(resp, expected)
+    assert resp == expected, "{} != {}".format(resp, expected)
     unlink(outfile)
 
 
@@ -176,7 +175,7 @@ def test_bam_compare_ZoverZ():
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-0.584963\n']
-    assert_equal(resp, expected)
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -228,7 +227,7 @@ def test_bam_compare_diff_files_skipnas():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -246,7 +245,7 @@ def test_bam_compare_extend():
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t100\t-1\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -286,7 +285,7 @@ def test_bam_compare_scale_factors_ratio():
         """
 
         expected = ['3R\t0\t50\t1\n', '3R\t50\t100\t0.666667\n', '3R\t100\t150\t1.33333\n', '3R\t150\t200\t1\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -328,7 +327,7 @@ def test_bam_compare_scale_factors_subtract():
         """
 
         expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-250000\n', '3R\t100\t150\t250000\n', '3R\t150\t200\t0\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -358,7 +357,7 @@ def test_bam_coverage_filter_blacklist():
                     '3R\t950\t1000\t1.62672\n', '3R\t1000\t1050\t0.813362\n',
                     '3R\t1050\t1500\t0\n']
 
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -376,7 +375,7 @@ def test_bam_coverage_offset1():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset1.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset1.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -394,7 +393,7 @@ def test_bam_coverage_offset1_10():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset1_10.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset1_10.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -412,7 +411,7 @@ def test_bam_coverage_offset_minus1():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset-1.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset-1.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -430,7 +429,7 @@ def test_bam_coverage_offset20_minus4():
             filecmp.clear_cache()
         except:
             pass
-        assert(filecmp.cmp(outfile, "{}testA_offset20_-4.bw".format(ROOT)) is True)
+        assert filecmp.cmp(outfile, "{}testA_offset20_-4.bw".format(ROOT)) is True
         unlink(outfile)
 
 
@@ -459,5 +458,5 @@ def test_bam_compare_filter_blacklist():
                     '3R\t750\t800\t-0.123451\n', '3R\t900\t950\t0.212545\n',
                     '3R\t950\t1000\t0.199309\n', '3R\t1000\t1050\t0.167945\n',
                     '3R\t1050\t1500\t0\n']
-        assert_equal(resp, expected)
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)

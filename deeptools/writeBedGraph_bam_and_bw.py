@@ -23,7 +23,7 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
         coverage = np.asarray(bigwigHandle.values(chrom, start, end))
-    except TypeError:
+    except RuntimeError:
         # this error happens when chromosome
         # is not into the bigwig file
         return []
@@ -45,7 +45,7 @@ def writeBedGraph_wrapper(args):
 def writeBedGraph_worker(
         chrom, start, end, tileSize, defaultFragmentLength,
         bamOrBwFileList, func, funcArgs, extendPairedEnds=True, smoothLength=0,
-        skipZeroOverZero=False, missingDataAsZero=False, fixed_step=False):
+        skipZeroOverZero=False, missingDataAsZero=False, fixedStep=False):
     r"""
     Writes a bedgraph having as base a number of bam files.
 
@@ -103,12 +103,12 @@ def writeBedGraph_worker(
 
         value = func(tileCoverage, funcArgs)
 
-        if fixed_step:
+        if fixedStep:
             writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
-                _file.write(toBytes("%s\t%d\t%d\t%.2f\n" % (chrom, writeStart,
-                                                            writeEnd, value)))
+                _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
+                                                                    writeEnd, value)))
             except TypeError:
                 _file.write(toBytes("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
                                                               writeEnd, value)))
@@ -130,7 +130,7 @@ def writeBedGraph_worker(
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
 
-    if not fixed_step:
+    if not fixedStep:
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
@@ -146,7 +146,7 @@ def writeBedGraph(
         bamOrBwFileList, outputFileName, fragmentLength,
         func, funcArgs, tileSize=25, region=None, blackListFileName=None, numberOfProcessors=1,
         format="bedgraph", extendPairedEnds=True, missingDataAsZero=False,
-        skipZeroOverZero=False, smoothLength=0, fixed_step=False, verbose=False):
+        skipZeroOverZero=False, smoothLength=0, fixedStep=False, verbose=False):
     r"""
     Given a list of bamfiles, a function and a function arguments,
     this method writes a bedgraph file (or bigwig) file
@@ -170,7 +170,7 @@ def writeBedGraph(
         chromNamesAndSize, __ = getCommonChrNames(bamHandles, verbose=verbose)
     else:
         genomeChunkLength = int(10e6)
-        cCommon = []
+        cCommon_number = {}
         chromNamesAndSize = {}
         for fileName, fileFormat in bamOrBwFileList:
             if fileFormat == 'bigwig':
@@ -180,7 +180,7 @@ def writeBedGraph(
 
             for chromName, size in list(fh.chroms().items()):
                 if chromName in chromNamesAndSize:
-                    cCommon.append(chromName)
+                    cCommon_number[chromName] += 1
                     if chromNamesAndSize[chromName] != size:
                         print("\nWARNING\n"
                               "Chromosome {} length reported in the "
@@ -193,11 +193,16 @@ def writeBedGraph(
                             chromNamesAndSize[chromName], size)
                 else:
                     chromNamesAndSize[chromName] = size
+                    cCommon_number[chromName] = 1
             fh.close()
 
         # get the list of common chromosome names and sizes
-        chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
-                             if k in cCommon]
+        if len(bamOrBwFileList) == 1:
+            chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()]
+        else:
+            chromNamesAndSize = [(k, v) for k, v in chromNamesAndSize.items()
+                                 if k in cCommon_number and
+                                 cCommon_number[k] == len(bamOrBwFileList)]
 
     if region:
         # in case a region is used, append the tilesize
@@ -205,7 +210,7 @@ def writeBedGraph(
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,
-                               skipZeroOverZero, missingDataAsZero, fixed_step),
+                               skipZeroOverZero, missingDataAsZero, fixedStep),
                               writeBedGraph_wrapper,
                               chromNamesAndSize,
                               genomeChunkLength=genomeChunkLength,

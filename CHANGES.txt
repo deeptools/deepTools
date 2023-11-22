@@ -1,3 +1,31 @@
+3.5.3
+* requirement cap for matplotlib lifted (changes in plotting can occur)
+* nose has been deprecated in favor of pytests
+* pytests run with python 3.7 - 3.11
+* toml file for installation, requirements, versioning and executables
+* planemo tests updated to galaxy 23.1
+* custom github action runner deprecated
+* deprecation of np types for builtin types
+* stricter label checks and validator in galaxy
+
+3.5.2
+* new subcommand: Bigwig average #1169
+* dendogram of plotCorrelation now matches each cell correctly
+* Fix label options
+* add pool
+* several other bugs fixed: #1159, #1185, #1172, #1181, #1183
+* Fix galaxy tests, separate planemo and update pypi push only on tag releases
+* upload artifact
+* allow 1 or 2 lines diff for bowtie2 program
+* change github action to get artifacts
+* fix plotPCA
+* try to fix old samtools installed
+* add forgotten channels
+* default chunklength increased for alignmentSieve
+* chunklength in alignmentSieve is a CLI argument now
+* suppress lack of index warnings from pysam
+* fixedStep in bedGraph output to avoid merging bins with equal values
+
 3.5.1
 * cmp usage is updated to fit the recent mpl updates.
 * The requirements.txt is updated.

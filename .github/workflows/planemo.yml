@@ -1,0 +1,80 @@
+name: Planemo
+on: [push, pull_request]
+
+env:
+  GALAXY_BRANCH: release_23.1
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+# setup micromamba doesn't work as galaxy setup by planemo requires conda.
+# installing conda over into micromamba built env screws up the PATH
+# setup-miniconda + changing over to libmamba to solve is the easiest workaround
+
+jobs:
+  planemo_test:
+    name: Planemo test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        chunk: [1, 2, 3]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        auto-activate-base: true
+    - name: setup env
+      run: |
+        conda env list
+        conda install -n base conda-libmamba-solver
+        conda config --set solver libmamba
+        conda env create -f .github/test_and_build.yml -n test_and_build
+    - name: pip install
+      run: |
+        conda activate test_and_build
+        pip install .
+    - name: planemo
+      run: |
+        conda activate test_and_build
+        ./.planemo.sh ${{ matrix.chunk }} ${{ env.GALAXY_BRANCH }}
+    - uses: actions/upload-artifact@v3
+      with:
+        name: 'Tool test output ${{ matrix.chunk }}'
+        path: upload
+  planemo_combine_outputs:
+    name: Combine chunked test results
+    needs: planemo_test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.7', '3.11']
+    steps:
+    - uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Cache .cache/pip
+      uses: actions/cache@v3
+      id: cache-pip
+      with:
+        path: ~/.cache/pip
+        key: pip_cache_py_${{ matrix.python-version }}_gxy_${{ env.GALAXY_BRANCH }}
+    - name: Combine outputs
+      uses: galaxyproject/planemo-ci-action@v1
+      id: combine
+      with:
+        mode: combine
+        html-report: true
+    - uses: actions/upload-artifact@v3
+      with:
+        name: 'All tool test results'
+        path: upload
+    - name: Check outputs
+      uses: galaxyproject/planemo-ci-action@v1
+      id: check
+      with:
+        mode: check

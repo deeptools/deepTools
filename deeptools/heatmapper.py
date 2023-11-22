@@ -777,7 +777,7 @@ class heatmapper(object):
             # split the line into bed interval and matrix values
             region = line.split('\t')
             chrom, start, end, name, score, strand = region[0:6]
-            matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], np.float))
+            matrix_row = np.ma.masked_invalid(np.fromiter(region[6:], float))
             matrix_rows.append(matrix_row)
             starts = start.split(",")
             ends = end.split(",")
@@ -852,7 +852,7 @@ class heatmapper(object):
             # join np_array values
             # keeping nans while converting them to strings
             if not np.ma.is_masked(score_list[idx]):
-                np.float(score_list[idx])
+                float(score_list[idx])
             matrix_values = "\t".join(
                 np.char.mod('%f', self.matrix.matrix[idx, :]))
             starts = ["{0}".format(x[0]) for x in region[1]]
@@ -1253,10 +1253,10 @@ class _matrix(object):
         matrix = np.asarray(self.matrix)
         matrix_to_cluster = matrix
         if clustering_samples is not None:
-            assert all(i > 0 for i in clustering_samples),\
+            assert all(i > 0 for i in clustering_samples), \
                 "all indices should be bigger than or equal to 1."
             assert all(i <= len(self.sample_labels) for i in
-                       clustering_samples),\
+                       clustering_samples), \
                 "each index should be smaller than or equal to {}(total "\
                 "number of samples.)".format(len(self.sample_labels))
 
@@ -1345,7 +1345,7 @@ class _matrix(object):
         to_keep = []
         score_list = np.ma.masked_invalid(np.mean(self.matrix, axis=1))
         for idx, region in enumerate(self.regions):
-            if np.ma.is_masked(score_list[idx]) or np.float(score_list[idx]) == 0:
+            if np.ma.is_masked(score_list[idx]) or float(score_list[idx]) == 0:
                 continue
             else:
                 to_keep.append(idx)

@@ -18,7 +18,10 @@ import plotly.graph_objs as go
 # own tools
 from deeptools.parserCommon import writableFile
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools._version import __version__
+try:  # keep python 3.7 support.
+    from importlib.metadata import version
+except ModuleNotFoundError:
+    from importlib_metadata import version
 
 
 def parse_arguments():
@@ -30,7 +33,10 @@ def parse_arguments():
         'Properly paired reads are preferred for computation, i.e., '
         'it will only use discordant pairs if no concordant alignments '
         'overlap with a given region. '
-        'The default setting simply prints the summary statistics to the screen.')
+        'The default setting simply prints the summary statistics to the screen.',
+        usage='bamPEFragmentSize -b sample1.bam sample2.bam -o hist.png\n'
+        'help: bamPEFragmentSize -h / bamPEFragmentSize --help'
+    )
     parser.add_argument('--bamfiles', '-b',
                         help='List of BAM files to process',
                         nargs='+',
@@ -109,7 +115,7 @@ def parse_arguments():
                         action='store_true',
                         required=False)
     parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(__version__))
+                        version='%(prog)s {}'.format(version('deeptools')))
 
     return parser
 
@@ -289,6 +295,10 @@ def printTable(args, fragDict, readDict):
 
 def main(args=None):
     args = parse_arguments().parse_args(args)
+
+    if len(sys.argv) == 1:
+        parse_arguments().print_help()
+        sys.exit()
 
     fraglengths = {}
     readlengths = {}

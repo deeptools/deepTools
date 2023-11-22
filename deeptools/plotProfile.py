@@ -44,8 +44,10 @@ def parse_arguments(args=None):
         'any other regions defined in BED '
         ' will work. A matrix generated '
         'by computeMatrix is required.',
-        epilog='An example usage is: plotProfile -m <matrix file>',
-        add_help=False)
+        epilog='An example usage is: plotProfile -m matrix.gz',
+        add_help=False,
+        usage='plotProfile -m matrix.gz\n'
+        'help: plotProfile -h / plotProfile --help')
 
     return parser
 
@@ -70,11 +72,11 @@ def process_args(args=None):
 
     # Ensure that yMin/yMax are there and a list
     try:
-        assert(args.yMin is not None)
+        assert args.yMin is not None
     except:
         args.yMin = [None]
     try:
-        assert(args.yMax is not None)
+        assert args.yMax is not None
     except:
         args.yMax = [None]
 
@@ -846,18 +848,18 @@ class Profile(object):
                     first = False
             ax_list.append(ax)
 
-        # It turns out that set_ylim only takes np.float64s
+        # It turns out that set_ylim only takes float64s
         for sample_id, subplot in enumerate(ax_list):
             localYMin = self.y_min[sample_id % len(self.y_min)]
             localYMax = self.y_max[sample_id % len(self.y_max)]
             lims = [globalYmin, globalYmax]
             if localYMin is not None:
                 if localYMax is not None:
-                    lims = (np.float64(localYMin), np.float64(localYMax))
+                    lims = (float(localYMin), float(localYMax))
                 else:
-                    lims = (np.float64(localYMin), lims[1])
+                    lims = (float(localYMin), lims[1])
             elif localYMax is not None:
-                lims = (lims[0], np.float64(localYMax))
+                lims = (lims[0], float(localYMax))
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
             ax_list[sample_id].set_ylim(lims)
