@@ -5,7 +5,7 @@ requires = [
 
 [project]
 name = "deepTools"
-version = "3.5.4"
+version = "3.5.5"
 authors = [
     {name="Fidel Ramirez"},
     {name="Devon P Ryan"},
@@ -19,7 +19,7 @@ authors = [
     {name="Thomas Manke"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
     "numpy >= 1.9.0",
     "scipy >= 0.17.0",
@@ -29,8 +29,7 @@ dependencies = [
     "pyBigWig >= 0.2.1",
     "py2bit >= 0.2.0",
     "plotly >= 4.9",
-    "deeptoolsintervals >= 0.1.8",
-    "importlib-metadata" # python 3.7 support
+    "deeptoolsintervals >= 0.1.8"
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
