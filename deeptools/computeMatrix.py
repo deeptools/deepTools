@@ -3,9 +3,6 @@
 
 import argparse
 import sys
-import os
-import multiprocessing
-
 from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools import parserCommon
 from deeptools import heatmapper
@@ -47,11 +44,12 @@ $ computeMatrix scale-regions --help
     subparsers.add_parser(
         'scale-regions',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[computeMatrixRequiredArgs(),
-                 computeMatrixOutputArgs(),
-                 computeMatrixOptArgs(case='scale-regions'),
-                 parserCommon.gtf_options()
-                ],
+        parents=[
+            computeMatrixRequiredArgs(),
+            computeMatrixOutputArgs(),
+            computeMatrixOptArgs(case='scale-regions'),
+            parserCommon.gtf_options()
+        ],
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix scale-regions -S '
@@ -421,4 +419,3 @@ def main(args=None):
 
     if args.outFileSortedRegions:
         hm.save_BED(args.outFileSortedRegions)
-

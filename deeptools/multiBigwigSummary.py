@@ -5,7 +5,6 @@ import sys
 import argparse
 import os.path
 import numpy as np
-import multiprocessing
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
@@ -54,10 +53,11 @@ A detailed sub-commands help is available by typing:
     subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[multiBigwigSummaryArgs(case='bins'),
-                 parent_parser,
-                 parserCommon.gtf_options(suppress=True)
-                ],
+        parents=[
+            multiBigwigSummaryArgs(case='bins'),
+            parent_parser,
+            parserCommon.gtf_options(suppress=True)
+        ],
         help="The average score is based on equally sized bins "
              "(10 kilobases by default), which consecutively cover the "
              "entire genome. The only exception is the last bin of a chromosome, which "
@@ -73,10 +73,11 @@ A detailed sub-commands help is available by typing:
     subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[multiBigwigSummaryArgs(case='BED-file'),
-                 parent_parser,
-                 parserCommon.gtf_options()
-                ],
+        parents=[
+            multiBigwigSummaryArgs(case='BED-file'),
+            parent_parser,
+            parserCommon.gtf_options()
+        ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
@@ -278,4 +279,3 @@ def main(args=None):
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
         f.close()
-

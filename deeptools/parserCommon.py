@@ -861,6 +861,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           action='store_true')
     return parser
 
+
 def requiredLength(minL, maxL):
     """
     This is an optional action that can be given to argparse.add_argument(..., nargs='+')

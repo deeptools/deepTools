@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import argparse  # to parse command line arguments
+import argparse
 import sys
-import multiprocessing
-import os
 import numpy as np
 from deeptools import parserCommon
 from deeptools import writeBedGraph_bam_and_bw
