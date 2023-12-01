@@ -62,7 +62,7 @@ def process_args(args=None):
     return args
 
 
-def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGroup, colorbar_position):
+def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGroup, colorbar_position, fig):
     """
     prepare the plot layout
     as a grid having as many rows
@@ -113,7 +113,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # numbers to heatmapheigt fractions
         height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio])
 
-    grids = gridspec.GridSpec(numrows, numcols, height_ratios=height_ratio, width_ratios=width_ratio)
+    grids = gridspec.GridSpec(numrows, numcols, height_ratios=height_ratio, width_ratios=width_ratio, figure=fig)
 
     return grids
 
@@ -498,9 +498,6 @@ def plotMatrix(hm, outFileName,
     else:
         colorbar_position = 'side'
 
-    grids = prepare_layout(hm.matrix, (heatmapWidth, heatmapHeight),
-                           showSummaryPlot, showColorbar, perGroup, colorbar_position)
-
     # figsize: w,h tuple in inches
     figwidth = heatmapWidth / 2.54
     figheight = heatmapHeight / 2.54
@@ -521,8 +518,18 @@ def plotMatrix(hm, outFileName,
         else:
             total_figwidth += 1 / 2.54
 
-    fig = plt.figure(figsize=(total_figwidth, figheight))
+    fig = plt.figure(figsize=(total_figwidth, figheight), constrained_layout=True)
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
+
+    grids = prepare_layout(
+        hm.matrix,
+        (heatmapWidth, heatmapHeight),
+        showSummaryPlot,
+        showColorbar,
+        perGroup,
+        colorbar_position,
+        fig
+    )
 
     # color map for the summary plot (profile) on top of the heatmap
     cmap_plot = plt.get_cmap('jet')
@@ -582,17 +589,6 @@ def plotMatrix(hm, outFileName,
             iterNum = hm.matrix.get_num_samples()
             iterNum2 = numgroups
         ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position, label_rotation)
-        if len(yMin) > 1 or len(yMax) > 1:
-            # replot with a tight layout
-            import matplotlib.tight_layout as tl
-            specList = tl.get_subplotspec_list(fig.axes, grid_spec=grids)
-            renderer = tl.get_renderer(fig)
-            kwargs = tl.get_tight_layout_figure(fig, fig.axes, specList, renderer, pad=1.08)
-
-            for ax in ax_list:
-                fig.delaxes(ax)
-
-            ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, kwargs['wspace'], kwargs['hspace'], colorbar_position, label_rotation)
 
         if legend_location != 'none':
             ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
@@ -764,10 +760,10 @@ def plotMatrix(hm, outFileName,
         fig.colorbar(img, cax=ax)
 
     if box_around_heatmaps:
-        plt.subplots_adjust(wspace=0.10, hspace=0.025, top=0.85, bottom=0, left=0.04, right=0.96)
+        fig.get_layout_engine().set(wspace=0.10, hspace=0.025, rect=(0.04, 0, 0.96, 0.85))
     else:
         #  When no box is plotted the space between heatmaps is reduced
-        plt.subplots_adjust(wspace=0.05, hspace=0.01, top=0.85, bottom=0, left=0.04, right=0.96)
+        fig.get_layout_engine().set(wspace=0.05, hspace=0.01, rect=(0.04, 0, 0.96, 0.85))
 
     plt.savefig(outFileName, bbox_inches='tight', pad_inches=0.1, dpi=dpi, format=image_format)
     plt.close()
