@@ -3,6 +3,7 @@
 * doc fixes (argparse properly displayed, minor changes in installation instructions)
 * deepblue support stops
 * initiate deprecation of tight_layout in plotheatmap, in favor of constrained_layout. Minor changes in paddings, etc can occur (but for the better).
+* documentation changes to improve ESS tab, table constraints have been lifted & sphinx_rtd_theme to v2.0.0
 
 3.5.4
 * error handling and cases for bwAverage with >2 samples
