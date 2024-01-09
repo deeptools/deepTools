@@ -1,3 +1,15 @@
+3.5.5
+* drop support for python 3.7
+* doc fixes (argparse properly displayed, minor changes in installation instructions)
+* deepblue support stops
+* initiate deprecation of tight_layout in plotheatmap, in favor of constrained_layout. Minor changes in paddings, etc can occur (but for the better).
+
+3.5.4
+* error handling and cases for bwAverage with >2 samples
+* Tick.label deprecation for mpl 3.8
+* minimal mpl version is 3.5
+* cicd update for pypi push
+
 3.5.3
 * requirement cap for matplotlib lifted (changes in plotting can occur)
 * nose has been deprecated in favor of pytests
