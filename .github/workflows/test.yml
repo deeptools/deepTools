@@ -63,9 +63,9 @@ jobs:
         micromamba activate test_and_build
         rm -f dist/*
         python -m build
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v3
       with:
-        name: "Dist files"
+        name: "distfiles"
         path: "dist"
   test-wheels:
     name: test wheel
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: "Dist files"
+          name: "distfiles"
           path: ~/dist/
       - uses: actions/setup-python@v4
         with:
