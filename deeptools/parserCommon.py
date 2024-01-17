@@ -1,6 +1,7 @@
 import argparse
 import os
 from importlib.metadata import version
+import multiprocessing
 
 
 def check_float_0_1(value):
@@ -341,8 +342,12 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
 
 
 def numberOfProcessors(string):
-    import multiprocessing
-    availProc = multiprocessing.cpu_count()
+    try:
+        # won't work on macOS or windows
+        # limit threads to what is available (e.g. grid submissions, issue #1199)
+        availProc = len(os.sched_getaffinity(0))
+    except AttributeError:
+        availProc = multiprocessing.cpu_count()
 
     if string == "max/2":  # default case
         # by default half of the available processors are used
