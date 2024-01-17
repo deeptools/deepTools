@@ -5,6 +5,7 @@
 * initiate deprecation of tight_layout in plotheatmap, in favor of constrained_layout. Minor changes in paddings, etc can occur (but for the better).
 * documentation changes to improve ESS tab, table constraints have been lifted & sphinx_rtd_theme to v2.0.0
 * upload artifact in gh test runner pinned to 3
+* Try to get the number of processors from sched_getaffinity, to avoid using to many in job submissions for example. #1199
 
 3.5.4
 * error handling and cases for bwAverage with >2 samples
