@@ -17,4 +17,4 @@ for contributing to the repository :**
 
 ## Testing
 
-* Please make sure that travis tests are passing
+* Please make sure that github actions are passing
