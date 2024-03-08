@@ -14,14 +14,10 @@ from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 import plotly.offline as py
 import plotly.graph_objs as go
-
+from importlib.metadata import version
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
 
 old_settings = np.seterr(all='ignore')
 

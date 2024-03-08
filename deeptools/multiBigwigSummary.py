@@ -5,15 +5,10 @@ import sys
 import argparse
 import os.path
 import numpy as np
-import multiprocessing
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw
-import deeptools.deepBlue as db
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
+from importlib.metadata import version
 
 old_settings = np.seterr(all='ignore')
 
@@ -53,17 +48,16 @@ A detailed sub-commands help is available by typing:
         metavar='')
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
-    dbParser = parserCommon.deepBlueOptionalArgs()
 
     # bins mode options
     subparsers.add_parser(
         'bins',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[multiBigwigSummaryArgs(case='bins'),
-                 parent_parser,
-                 parserCommon.gtf_options(suppress=True),
-                 dbParser
-                 ],
+        parents=[
+            multiBigwigSummaryArgs(case='bins'),
+            parent_parser,
+            parserCommon.gtf_options(suppress=True)
+        ],
         help="The average score is based on equally sized bins "
              "(10 kilobases by default), which consecutively cover the "
              "entire genome. The only exception is the last bin of a chromosome, which "
@@ -79,11 +73,11 @@ A detailed sub-commands help is available by typing:
     subparsers.add_parser(
         'BED-file',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        parents=[multiBigwigSummaryArgs(case='BED-file'),
-                 parent_parser,
-                 parserCommon.gtf_options(),
-                 dbParser
-                 ],
+        parents=[
+            multiBigwigSummaryArgs(case='BED-file'),
+            parent_parser,
+            parserCommon.gtf_options()
+        ],
         help="The user provides a BED file that contains all regions "
              "that should be considered for the analysis. A "
              "common use is to compare scores (e.g. ChIP-seq scores) between "
@@ -230,33 +224,6 @@ def main(args=None):
                          "--outRawCounts. The resulting output will NOT be "
                          "useful with any deepTools program!\n")
 
-    # Preload deepBlue files, which need to then be deleted
-    deepBlueFiles = []
-    for idx, fname in enumerate(args.bwfiles):
-        if db.isDeepBlue(fname):
-            deepBlueFiles.append([fname, idx])
-    if len(deepBlueFiles) > 0:
-        sys.stderr.write("Preloading the following deepBlue files: {}\n".format(",".join([x[0] for x in deepBlueFiles])))
-        if 'BED' in args:
-            regs = db.makeRegions(args.BED, args)
-        else:
-            foo = db.deepBlue(deepBlueFiles[0][0], url=args.deepBlueURL, userKey=args.userKey)
-            regs = db.makeTiles(foo, args)
-            del foo
-        for x in deepBlueFiles:
-            x.extend([args, regs])
-        if len(deepBlueFiles) > 1 and args.numberOfProcessors > 1:
-            pool = multiprocessing.Pool(args.numberOfProcessors)
-            res = pool.map_async(db.preloadWrapper, deepBlueFiles).get(9999999)
-        else:
-            res = list(map(db.preloadWrapper, deepBlueFiles))
-
-        # substitute the file names with the temp files
-        for (ftuple, r) in zip(deepBlueFiles, res):
-            args.bwfiles[ftuple[1]] = r
-        deepBlueFiles = [[x[0], x[1]] for x in deepBlueFiles]
-        del regs
-
     num_reads_per_bin = score_bw.getScorePerBin(
         args.bwfiles,
         args.binSize,
@@ -312,11 +279,3 @@ def main(args=None):
                 args.outRawCounts.write(fmt.format(*tuple(row)))
         """
         f.close()
-
-    # Clean up temporary bigWig files, if applicable
-    if not args.deepBlueKeepTemp:
-        for k, v in deepBlueFiles:
-            os.remove(args.bwfiles[v])
-    else:
-        for k, v in deepBlueFiles:
-            print("{} is stored in {}".format(k, args.bwfiles[v]))

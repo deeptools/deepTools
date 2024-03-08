@@ -1,9 +1,7 @@
 import argparse
 import os
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
+from importlib.metadata import version
+import multiprocessing
 
 
 def check_float_0_1(value):
@@ -344,8 +342,12 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
 
 
 def numberOfProcessors(string):
-    import multiprocessing
-    availProc = multiprocessing.cpu_count()
+    try:
+        # won't work on macOS or windows
+        # limit threads to what is available (e.g. grid submissions, issue #1199)
+        availProc = len(os.sched_getaffinity(0))
+    except AttributeError:
+        availProc = multiprocessing.cpu_count()
 
     if string == "max/2":  # default case
         # by default half of the available processors are used
@@ -862,43 +864,6 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           help='If set, warning messages and '
                           'additional information are given.',
                           action='store_true')
-    return parser
-
-
-def deepBlueOptionalArgs():
-
-    parser = argparse.ArgumentParser(add_help=False)
-    dbo = parser.add_argument_group('deepBlue arguments', 'Options used only for remote bedgraph/wig files hosted on deepBlue')
-    dbo.add_argument(
-        '--deepBlueURL',
-        help='For remote files bedgraph/wiggle files hosted on deepBlue, this '
-             'specifies the server URL. The default is '
-             '"http://deepblue.mpi-inf.mpg.de/xmlrpc", which should not be '
-             'changed without good reason.',
-        default='http://deepblue.mpi-inf.mpg.de/xmlrpc')
-    dbo.add_argument(
-        '--userKey',
-        help='For remote files bedgraph/wiggle files hosted on deepBlue, this '
-             'specifies the user key to use for access. The default is '
-             '"anonymous_key", which suffices for public datasets. If you need '
-             'access to a restricted access/private dataset, then request a '
-             'key from deepBlue and specify it here.',
-        default='anonymous_key')
-    dbo.add_argument(
-        '--deepBlueTempDir',
-        help='If specified, temporary files from preloading datasets from '
-        'deepBlue will be written here (note, this directory must exist). '
-        'If not specified, where ever temporary files would normally be written '
-        'on your system is used.',
-        default=None)
-    dbo.add_argument(
-        '--deepBlueKeepTemp',
-        action='store_true',
-        help='If specified, temporary bigWig files from preloading deepBlue '
-        'datasets are not deleted. A message will be printed noting where these '
-        'files are and what sample they correspond to. These can then be used '
-        'if you wish to analyse the same sample with the same regions again.')
-
     return parser
 
 

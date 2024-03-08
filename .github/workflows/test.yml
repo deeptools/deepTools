@@ -63,9 +63,9 @@ jobs:
         micromamba activate test_and_build
         rm -f dist/*
         python -m build
-    - uses: actions/upload-artifact@master
+    - uses: actions/upload-artifact@v3
       with:
-        name: "Dist files"
+        name: "distfiles"
         path: "dist"
   test-wheels:
     name: test wheel
@@ -73,12 +73,12 @@ jobs:
     needs: build-linux
     strategy:
       matrix:
-        python-version: ['3.7','3.8','3.9','3.10', '3.11']
+        python-version: ['3.8','3.9','3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v3
       - uses: actions/download-artifact@v3
         with:
-          name: "Dist files"
+          name: "distfiles"
           path: ~/dist/
       - uses: actions/setup-python@v4
         with:

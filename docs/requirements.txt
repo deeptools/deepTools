@@ -1,4 +1,4 @@
-sphinx
-mock
-sphinx_rtd_theme
-sphinx-argparse
+sphinx==7.2.6
+mock==5.1.0
+sphinx_rtd_theme==2.0.0
+sphinx-argparse==0.4.0

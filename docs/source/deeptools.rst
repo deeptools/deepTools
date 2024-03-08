@@ -44,14 +44,6 @@ deeptools.countReadsPerBin module
     :undoc-members:
     :show-inheritance:
 
-deeptools.deepBlue
-------------------
-
-.. automodule:: deeptools.deepBlue
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 deeptools.getFragmentAndReadSize module
 ---------------------------------------
 

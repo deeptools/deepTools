@@ -18,10 +18,7 @@ import plotly.graph_objs as go
 # own tools
 from deeptools.parserCommon import writableFile
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
+from importlib.metadata import version
 
 
 def parse_arguments():

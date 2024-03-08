@@ -6,11 +6,7 @@ import sys
 
 from deeptools.SES_scaleFactor import estimateScaleFactor
 from deeptools.parserCommon import numberOfProcessors
-try:  # keep python 3.7 support.
-    from importlib.metadata import version
-except ModuleNotFoundError:
-    from importlib_metadata import version
-
+from importlib.metadata import version
 debug = 0
 
 
@@ -102,7 +98,7 @@ def main(args=None):
     between to samples
 
     """
-    args = parseArguments().parse_args(args)
+    args = parseArguments(args)
     if len(args.bamfiles) > 2:
         print("SES method to estimate scale factors only works for two samples")
         exit(0)

@@ -1,16 +1,6 @@
 The tools
 =========
 
-.. note:: With the release of deepTools 2.0, we renamed a couple of tools:
-
-    * **heatmapper** to :doc:`tools/plotHeatmap`
-    * **profiler** to :doc:`tools/plotProfile`
-    * **bamCorrelate** to :doc:`tools/multiBamSummary`
-    * **bigwigCorrelate** to :doc:`tools/multiBigwigSummary`
-    * **bamFingerprint** to :doc:`tools/plotFingerprint`.
-
- For more, see :doc:`changelog`.
-
 .. contents:: 
     :local:
 
@@ -68,11 +58,18 @@ A typical deepTools command could look like this:
     --ignoreDuplicates \
     --scaleFactor 0.5
 
-You can always see all available command-line options via --help:
+You can always see all available command-line options via --help or -h:
 
 .. code:: bash
 
     $ bamCoverage --help
+    $ bamCoverage -h
+
+And a minimal usage example can be shown by running a command without any arguments:
+
+.. code:: bash
+
+    $ bamCoverage
 
 - Output format of plots should be indicated by the file ending, e.g. ``MyPlot.pdf`` will return a pdf file, ``MyPlot.png`` a png-file
 - All tools that produce plots can also output the underlying data - this can be useful in cases where you don't like the deepTools visualization, as you can then use the data matrices produced by deepTools with your favorite plotting tool, such as R
@@ -82,14 +79,15 @@ Parameters to decrease the run time
 """""""""""""""""""""""""""""""""""
 
 -  ``numberOfProcessors`` - Number of processors to be used
-    For example, setting ``--numberOfProcessors 10`` will split up the
-                        workload internally into 10 chunks, which will be
-                        processed in parallel.
--  ``region`` - Process only a single genomic region.
-                        This is particularly useful when you're still trying    to figure out the best parameter setting. You can focus on a certain genomic region by setting, e.g., ``--region chr2`` or 
-                        ``--region chr2:100000-200000``
 
-These parameters are optional and available throughout almost all deepTools.
+For example, setting ``--numberOfProcessors 10`` will split up the workload internally into 10 chunks, which will be processed in parallel.
+Note that for highly fragmented assemblies (> 1000 contigs) the runtime increases drastically. Consider to include only canonical chromosomes in cases like this.
+
+-  ``region`` - Process only a single genomic region.
+
+This is particularly useful when you're still trying to figure out the best parameter setting. You can focus on a certain genomic region by setting, e.g., ``--region chr2`` or ``--region chr2:100000-200000``
+
+Both parameters are optional and available throughout almost all deepTools.
 
 Filtering BAMs while processing
 """""""""""""""""""""""""""""""
@@ -103,7 +101,7 @@ We offer several ways to filter those BAM files on the fly so that you don't nee
      Only reads with a mapping quality score of at least this are considered
 -  ``samFlagInclude``
     Include reads based on the SAM flag, e.g. ``--samFlagInclude 64`` gets reads that are first in a pair. For translating SAM flags into English, go to: `https://broadinstitute.github.io/picard/explain-flags.html <https://broadinstitute.github.io/picard/explain-flags.html>`_
--  ``samFlagExclude``
+-  `        `samFlagExclude``
     Exclude reads based on the SAM flags - see previous explanation.
 
 These parameters are optional and available throughout deepTools.
