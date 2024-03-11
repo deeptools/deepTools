@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
 from matplotlib import ticker
-import copy
-import sys
+
+import sys, re, os, copy
 import plotly.offline as py
 import plotly.graph_objs as go
 
@@ -117,6 +117,21 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
     return grids
 
+def autobreaklinetitle(title,sep="[-_,.:]",lmax=15):
+    outsep = "-"
+    sss = [ rr for rr in re.split(sep,title) if len(rr) ]
+    newtitle, tmp = "", ""
+    for ss in sss:
+        tmp0 = tmp
+        tmp += ss
+        if len(tmp) > lmax:
+            newtitle += tmp0.strip(outsep) + "\n"
+            tmp = ss
+        else:
+            tmp += outsep
+    newtitle += tmp.strip(outsep)
+    newtitle = "\n" + newtitle
+    return newtitle
 
 def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position, label_rotation=0.0):
     """
@@ -146,7 +161,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             else:
                 ax_profile = fig.add_subplot(grids[0, sample_id])
 
-        ax_profile.set_title(title)
+        ax_profile.set_title(autobreaklinetitle(title))
         for group in range(iterNum2):
             if perGroup:
                 sub_matrix = hm.matrix.get_matrix(sample_id, group)
@@ -163,6 +178,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
             plt.setp(ax_profile.get_yticklabels(), visible=False)
 
+        ax_profile.get_yaxis().set_tick_params(direction='in',pad=-22) # beisi
         if sample_id == 0 and yAxisLabel != '':
             ax_profile.set_ylabel(yAxisLabel)
         xticks, xtickslabel = hm.getTicks(tickIdx)
@@ -591,8 +607,13 @@ def plotMatrix(hm, outFileName,
         ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position, label_rotation)
 
         if legend_location != 'none':
-            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
-                               frameon=False, markerscale=0.5)
+            ax = ax_list[-1] # beisi
+            box = ax.get_position()
+            ax.set_position([box.x0, box.y0 - box.height * 0.1, box.width, box.height * 0.9])
+            legend = ax.legend(loc='lower right', shadow=False, fontsize='x-large', bbox_to_anchor=(0, 1.3, 1, .22), ncol=10, frameon=False, prop=fontP) # beisi, legend line
+            ax.add_artist(legend)
+            #            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
+            #                   frameon=False, markerscale=0.5)
 
     first_group = 0  # helper variable to place the title per sample/group
     for sample in range(hm.matrix.get_num_samples()):
@@ -628,7 +649,7 @@ def plotMatrix(hm, outFileName,
 
             if group == first_group and not showSummaryPlot and not perGroup:
                 title = hm.matrix.sample_labels[sample]
-                ax.set_title(title)
+                ax.set_title(autobreaklinetitle(title))
 
             if box_around_heatmaps is False:
                 # Turn off the boxes around the individual heatmaps
@@ -681,9 +702,9 @@ def plotMatrix(hm, outFileName,
                 ax.axes.set_xlabel(xAxisLabel)
             ax.axes.set_yticks([])
             if perGroup and group == 0:
-                ax.axes.set_ylabel(sub_matrix['sample'])
+                ax.axes.set_ylabel(sub_matrix['sample'],rotation=75,labelpad=0,fontsize=15)
             elif not perGroup and sample == 0:
-                ax.axes.set_ylabel(sub_matrix['group'])
+                ax.axes.set_ylabel(sub_matrix['group'],rotation=75,labelpad=0,horizontalalignment='right',fontsize=15)
 
             # Plot vertical lines at tick marks if desired
             if linesAtTickMarks:

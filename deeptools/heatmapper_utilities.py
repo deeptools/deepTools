@@ -9,6 +9,9 @@ import plotly.graph_objs as go
 
 old_settings = np.seterr(all='ignore')
 
+debug = 0
+if debug:
+    from ipdb import set_trace
 
 def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     """
@@ -18,7 +21,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     ----------
     ax : matplotlib axis
         matplotlib axis
-    ma : numpy array
+    ma : numpy array or list of numpy array(for plot with --repgrplist, take average between replicates )
         numpy array The data on this matrix is summarized according
         to the `average_type` argument.
     average_type : str
@@ -32,7 +35,9 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
         type of plot. Either 'se' for standard error, 'std' for
         standard deviation, 'overlapped_lines' to plot each line of the matrix,
         fill to plot the area between the x axis and the value or any other string to
-        just plot the average line.
+        just plot the average line. When assign samples to replicates group such as
+        '--repgrplist WT WT KO KO' : 'std' would be the standard deviation between replicates groups.
+        'se' for standard error between replicates groups.
 
     Returns
     -------
@@ -63,7 +68,15 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
 
 
     """
-    summary = np.ma.__getattribute__(average_type)(ma, axis=0)
+    if isinstance(ma,list):
+        summary_list = []
+        for ma_each in ma:
+            tmp = np.ma.__getattribute__(average_type)(ma_each, axis=0)
+            summary_list.append(tmp)
+        ma = np.array(summary_list)
+        summary = np.ma.__getattribute__("average")(ma, axis=0)
+    else:
+        summary = np.ma.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     x = np.arange(len(summary))
     if isinstance(color, np.ndarray):
@@ -72,6 +85,8 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     if plot_type == 'fill':
         ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
 
+    if debug:
+        set_trace()
     if plot_type in ['se', 'std']:
         if plot_type == 'se':  # standard error
             std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
