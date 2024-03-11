@@ -5,7 +5,7 @@ requires = [
 
 [project]
 name = "deepTools"
-version = "3.5.5"
+version = "3.5.6"
 authors = [
     {name="Fidel Ramirez"},
     {name="Devon P Ryan"},
