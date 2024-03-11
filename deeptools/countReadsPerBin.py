@@ -899,7 +899,7 @@ class CountReadsPerBin(object):
             fragmentStart = int(fragmentCenter - read.infer_query_length(always=False) / 2)
             fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
-        assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
+        assert fragmentStart <= fragmentEnd, "fragment start greater than fragment" \
                                             "end for read {}".format(read.query_name)
         return [(fragmentStart, fragmentEnd)]
 
