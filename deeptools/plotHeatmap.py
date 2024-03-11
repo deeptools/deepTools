@@ -188,7 +188,11 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
     # It turns out that set_ylim only takes float64s
     for sample_id, subplot in enumerate(ax_list):
         localYMin = yMin[sample_id % len(yMin)]
+        if localYMin == "independent":
+            localYMin = ax_list[sample_id].get_ylim()[0]
         localYMax = yMax[sample_id % len(yMax)]
+        if localYMax == "independent":
+            localYMax = ax_list[sample_id].get_ylim()[1]
         lims = [globalYmin, globalYmax]
         if localYMin:
             if localYMax:
@@ -414,6 +418,8 @@ def plotMatrix(hm, outFileName,
             zMin = [None]
         else:
             zMin = [zMin]  # convert to list to support multiple entries
+    elif zMin == ["independent"]:
+        zMin = hm.matrix.get_percentile_by_samples(1.0)
     elif 'auto' in zMin:
         matrix_flatten = hm.matrix.flatten()
         auto_min = np.percentile(matrix_flatten, 1.0)
@@ -434,6 +440,8 @@ def plotMatrix(hm, outFileName,
             zMax = [None]
         else:
             zMax = [zMax]
+    elif zMax == ["independent"]:
+        zMax = hm.matrix.get_percentile_by_samples(98.0)
     elif 'auto' in zMax:
         matrix_flatten = hm.matrix.flatten()
         auto_max = np.percentile(matrix_flatten, 98.0)
@@ -454,8 +462,13 @@ def plotMatrix(hm, outFileName,
 
     if yMin is None:
         yMin = [None]
+    elif yMin == ["independent"]:
+        yMin = ["independent"] * hm.matrix.get_num_samples()
+
     if yMax is None:
         yMax = [None]
+    elif yMax == ["independent"]:
+        yMax = ["independent"] * hm.matrix.get_num_samples()
     if not isinstance(yMin, list):
         yMin = [yMin]
     if not isinstance(yMax, list):
