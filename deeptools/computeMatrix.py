@@ -354,7 +354,7 @@ def process_args(args=None):
 
     if args.quiet is True:
         args.verbose = False
-    
+
     # Ensure before and after region length is positive
     if args.beforeRegionStartLength < 0:
         print(f"beforeRegionStartLength changed from {args.beforeRegionStartLength} into {abs(args.beforeRegionStartLength)}")
