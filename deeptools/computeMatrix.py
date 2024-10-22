@@ -53,7 +53,7 @@ $ computeMatrix scale-regions --help
         help="In the scale-regions mode, all regions in the BED file are "
         "stretched or shrunken to the length (in bases) indicated by the user.",
         usage='An example usage is:\n  computeMatrix scale-regions -S '
-        '<biwig file(s)> -R <bed file> -b 1000\n\n')
+        '<bigwig file(s)> -R <bed file> -b 1000\n\n')
 
     # reference point arguments
     subparsers.add_parser(
@@ -69,7 +69,7 @@ $ computeMatrix scale-regions --help
         "positions before (upstream) and/or after (downstream) of the "
         "reference point will be plotted.",
         usage='An example usage is:\n  computeMatrix reference-point -S '
-        '<biwig file(s)> -R <bed file> -a 3000 -b 3000\n\n')
+        '<bigwig file(s)> -R <bed file> -a 3000 -b 3000\n\n')
 
     return parser
 
