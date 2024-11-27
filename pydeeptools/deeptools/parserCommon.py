@@ -660,7 +660,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'notation.')
 
         import matplotlib.pyplot as plt
-        color_options = "', '".join([x for x in plt.colormaps() if not x.endswith('_r')])
+        color_options = "', '".join([x for x in plt.colormaps()])
 
         optional.add_argument(
             '--colorMap',
