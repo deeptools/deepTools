@@ -6,9 +6,10 @@ use itertools::{multizip, multiunzip, izip};
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
-use ndarray::Array2;
-use ndarray::Array1;
+use ndarray::{Array1, Array2, stack};
 use std::io;
+use ndarray_npy::NpzWriter;
+use std::borrow::Cow;
 use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters};
 use crate::filehandler::{bam_ispaired};
 use crate::calc::{median, calc_ratio};
@@ -51,6 +52,11 @@ pub fn r_mbams(
     Python::with_gil(|py| {
         bamfiles = bam_files.extract(py).expect("Failed to retrieve bam files.");
         bamlabels = labels.extract(py).expect("Failed to retrieve labels.");
+    });
+
+    let max_len = bamlabels.iter().map(|s| s.len()).max().unwrap_or(0);
+    let bamlabels_arr: Array2<u8> = Array2::from_shape_fn((bamlabels.len(), max_len), |(i, j)| {
+        bamlabels[i].as_bytes().get(j).copied().unwrap_or(0)
     });
 
     // Get paired-end information
@@ -112,8 +118,13 @@ pub fn r_mbams(
     // create output file to write to
 
     // create output file to write lines into
-    let mut file = File::create(out_raw_counts).unwrap();
-
+    let mut cfile = None;
+    if out_raw_counts != "None" {
+        cfile = Some(File::create(out_raw_counts).unwrap());
+    }
+    
+    let mut matvec: Vec<Array1<f32>> = Vec::new();
+    
     let its: Vec<_> = covcalcs.iter().map(|x| x.iter()).collect();
     let zips = TempZip { iterators: its };
     for c in zips {
@@ -128,21 +139,30 @@ pub fn r_mbams(
                 .map(|x| x.split('\t').collect())
                 .map(|x: Vec<&str> | ( x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap() ) )
                 .collect();
-            // collect all fields 3 together
-            let mut line: Vec<Countline> = Vec::new();
-            line.push(Countline::Text(lines[0].0.clone()));
-            line.push(Countline::Int(lines[0].1));
-            line.push(Countline::Int(lines[0].2));
-            for _line in lines {
-                line.push(Countline::Float(_line.3));
+            let arrline = Array1::from(lines.iter().map(|x| x.3).collect::<Vec<_>>());
+            matvec.push(arrline);
+            // Write to countsfile if cfile is not None
+            if let Some(ref mut cfile) = cfile {
+                let mut line: Vec<Countline> = Vec::new();
+                line.push(Countline::Text(lines[0].0.clone()));
+                line.push(Countline::Int(lines[0].1));
+                line.push(Countline::Int(lines[0].2));
+                for _line in lines {
+                    line.push(Countline::Float(_line.3));
+                }
+                let fline = line.iter().map(|x| x.to_string()).collect::<Vec<_>>().join("\t");
+                writeln!(cfile, "{}", fline).unwrap();
             }
-            println!("{:?}", line);
-            let fline = line.iter().map(|x| x.to_string()).collect::<Vec<_>>().join("\t");
-            writeln!(file, "{}", fline).unwrap();
         }
     }
-
-
+    let array2: Array2<f32> = Array2::from_shape_vec(
+        (matvec.len(), matvec[0].len()),
+        matvec.into_iter().flat_map(|x| x.into_iter()).collect()
+    ).unwrap();
+    let mut npz = NpzWriter::new(File::create(ofile).unwrap());
+    npz.add_array("matrix", &array2).unwrap();
+    npz.add_array("labels", &bamlabels_arr).unwrap();
+    npz.finish().unwrap();
 
     Ok(())
 }
