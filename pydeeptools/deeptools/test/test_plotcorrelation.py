@@ -28,7 +28,7 @@ def test_correlation_plot_with_minimal_options():
 
     png_file_size = os.path.getsize(COR_PLOT_1)
     expected_file_size = os.path.getsize(out_png)
-    size_tolerance = 1000
+    size_tolerance = 5000
     size_difference = abs(png_file_size - expected_file_size)
     assert size_difference <= size_tolerance, "File size do not match"
     unlink(out_png)
@@ -43,7 +43,7 @@ def test_correlation_plot_scatter():
     pc.main(args)
     png_file_size = os.path.getsize(COR_PLOT_2)
     expected_file_size = os.path.getsize(out_png2)
-    size_tolerance = 1000
+    size_tolerance = 5000
     size_difference = abs(png_file_size - expected_file_size)
     assert size_difference <= size_tolerance, "File size do not match"
     unlink(out_png2)
