@@ -136,6 +136,8 @@ pub fn r_mbams(
 
     // Divide up the regions into regionBlocks
     let regionblocks = region_divider(&regions);
+    
+    assert!(regionblocks.len() > 0, "No regions to process. Exiting.");
     if verbose {
         println!("Regions divided into {} parallel blocks", regionblocks.len());
         println!("Start coverage calculation");

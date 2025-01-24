@@ -1323,6 +1323,9 @@ pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
             bplen = 0;
         }
     }
+    if tempregionvec.len() > 0 {
+        blocks.push(tempregionvec.clone());
+    }
     blocks
 }
 
