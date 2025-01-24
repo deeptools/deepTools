@@ -6,7 +6,7 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
 use bigtools::Value;
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters};
+use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider};
 use crate::filehandler::{bam_ispaired, write_covfile};
 use crate::normalization::scale_factor;
 use crate::calc::median;
@@ -71,9 +71,10 @@ pub fn r_bamcoverage(
 
     // Parse regions & calculate coverage
     let (regions, chromsizes)  = parse_regions(&regions, bamifile);
+    let regionblocks = region_divider(&regions);
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
-        regions.par_iter()
+        regionblocks.par_iter()
             .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true))
             .reduce(
                 || (vec![], 0, 0, vec![], vec![]),

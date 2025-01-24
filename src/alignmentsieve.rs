@@ -8,7 +8,7 @@ use rust_htslib::bam::{self, record, Header, IndexedReader, Read, Reader, Writer
 use tempfile::{Builder, TempPath, NamedTempFile};
 use std::fs::File;
 use std::io::Write;
-use crate::covcalc::{parse_regions, Alignmentfilters};
+use crate::covcalc::{parse_regions, Alignmentfilters, Region};
 
 #[pyfunction]
 pub fn r_alignmentsieve(
@@ -113,7 +113,8 @@ pub fn r_alignmentsieve(
 }
 
 
-fn sieve_bamregion(ibam: &str, region: &(String, u32, u32), alfilters: &Alignmentfilters, filter_rna_strand: &str, shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
+fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters, filter_rna_strand: &str, shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
+    let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
     let mut total_reads: u64 = 0;
     let mut filtered_reads: u64 = 0;
     let mut bam = IndexedReader::from_path(ibam).unwrap();

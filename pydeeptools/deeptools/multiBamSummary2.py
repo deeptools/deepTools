@@ -208,7 +208,7 @@ def process_args(args=None):
             args.labels = [os.path.basename(x) for x in args.bamfiles]
 
     if not args.BED:
-        args.BED = "None"
+        args.BED = []
     if not args.region:
         args.region = []
     if not args.blackListFileName:
