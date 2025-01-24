@@ -47,7 +47,7 @@ pub fn r_alignmentsieve(
     // shift is of length 0, 2, or 4.
 
     // Define regions 
-    let (regions, chromsizes) = parse_regions(&Vec::new(), bamifile);
+    let (regions, chromsizes) = parse_regions(&Vec::new(), vec![bamifile]);
 
     let filters = Alignmentfilters{
         minmappingquality: min_mapping_quality,

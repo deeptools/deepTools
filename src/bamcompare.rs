@@ -60,7 +60,7 @@ pub fn r_bamcompare(
     };
 
     // Parse regions & calculate coverage. Note that 
-    let (regions, chromsizes)  = parse_regions(&regions, bamifile1);
+    let (regions, chromsizes)  = parse_regions(&regions, vec![bamifile1, bamifile2]);
     let regionblocks = region_divider(&regions);
 
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();

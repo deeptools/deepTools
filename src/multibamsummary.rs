@@ -32,7 +32,7 @@ pub fn r_mbams(
     // optional parameters
     labels: Py<PyList>,
     mut binsize: u32,
-    distance_between_bins: u32,
+    mut distance_between_bins: u32,
     nproc: usize,
     bed_file: Py<PyList>,
     sup_regions: Vec<(String, u32, u32)>,
@@ -101,6 +101,8 @@ pub fn r_mbams(
         let chromsizes = chrombounds_from_bam(bamfiles.get(0).unwrap());
 
         binsize = 1;
+        distance_between_bins = 0;
+
         // Parse regions from bed files. Note that we retain the name of the bed file (in case there are more then 1)
         // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
         let mut regionsizes: HashMap<String, u32> = HashMap::new();
@@ -120,9 +122,9 @@ pub fn r_mbams(
             });
     } else {
         if verbose {
-            println!("BINS mode. with binsize: {}", binsize);
+            println!("BINS mode. with binsize: {}, distance between bins: {}", binsize, distance_between_bins);
         }
-        let (parsedregions, chromsizes) = parse_regions(&sup_regions, bamfiles.get(0).unwrap());
+        let (parsedregions, chromsizes) = parse_regions(&sup_regions, bamfiles.iter().map(|x| x.as_str()).collect());
         regions = parsedregions;
     }
 

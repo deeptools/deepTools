@@ -6,13 +6,39 @@ use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
 
-pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: &str) -> (Vec<Region>, HashMap<String, u32>) {
+pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
     // returns a vector of regions, with all chromosomes and full lengths if original regions was empty
     // Else it validates the regions against the information from the bam header
     // Finally, a Vec with chromsizes is returned as well.
-
-    let bam = IndexedReader::from_path(bam_ifile).unwrap();
+    let mut found_chroms: HashMap<String, usize> = HashMap::new();
+    for bam in bam_ifile.iter() {
+        let bam = IndexedReader::from_path(bam).unwrap();
+        let chroms: Vec<String> = bam.header().target_names().iter().map(|x| String::from_utf8(x.to_vec()).unwrap()).collect();
+        for chrom in chroms.iter() {
+            // if it's not in the hashmap, add it, else increment count
+            if !found_chroms.contains_key(chrom) {
+                found_chroms.insert(chrom.clone(), 1);
+            } else {
+                let count = found_chroms.get_mut(chrom).unwrap();
+                *count += 1;
+            }
+        }
+    }
+    let mut validchroms: Vec<String> = Vec::new();
+    // loop over all chroms in the hashmap, if the count is expected, include them
+    for (chrom, count) in found_chroms.iter() {
+        if *count == bam_ifile.len() {
+            validchroms.push(chrom.clone());
+        } else {
+            println!("Chromosome {} is missing in at least one bam file, and thus ignored!", chrom);
+        }
+    }
+    // Crash if validchroms is empty.
+    assert!(!validchroms.is_empty(), "No chromosomes found that are present in all bam files. Did you mix references ?");
+    println!("Valid chromosomes are: {:?}", validchroms);
+    // Read header from first bam file
+    let bam = IndexedReader::from_path(bam_ifile[0]).unwrap();
     let header = bam.header().clone();
     let mut chromregions: Vec<Region> = Vec::new();
     let mut chromsizes = HashMap::new();
@@ -23,6 +49,10 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: &str) -> (Vec
                 .expect("Invalid UTF-8 in chromosome name");
             let chromlen = header.target_len(tid)
                 .expect("Error retrieving length for chromosome");
+            // If chromname is not in validchroms, skip it.
+            if !validchroms.contains(&chromname) {
+                continue;
+            }
             let _reg = Region {
                 chrom: chromname.clone(),
                 start: Revalue::U(0),
@@ -42,18 +72,18 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: &str) -> (Vec
                 .expect("Invalid UTF-8 in chromosome name");
             let chromlen = header.target_len(tid)
                 .expect("Error retrieving length for chromosome");
-            chromsizes.insert(chromname, chromlen as u32);
+            if validchroms.contains(&chromname) {
+                chromsizes.insert(chromname, chromlen as u32);
+            }
         }
-        let validchroms: Vec<String> = header
-            .target_names()
-            .iter()
-            .map(|x| String::from_utf8(x.to_vec()).unwrap())
-            .collect();
         
         for region in regions {
             let chromname = &region.0;
             assert!(region.1 < region.2, "Region start must be strictly less than region end.");
-            assert!(validchroms.contains(chromname), "Chromosome {} not found in bam header", chromname);
+            // Check if chromname is in validchroms
+            if !validchroms.contains(chromname) {
+                continue;
+            }
             let _reg = Region {
                 chrom: chromname.clone(),
                 start: Revalue::U(region.1),

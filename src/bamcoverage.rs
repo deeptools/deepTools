@@ -70,7 +70,7 @@ pub fn r_bamcoverage(
     }
 
     // Parse regions & calculate coverage
-    let (regions, chromsizes)  = parse_regions(&regions, bamifile);
+    let (regions, chromsizes)  = parse_regions(&regions, vec![bamifile]);
     let regionblocks = region_divider(&regions);
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
