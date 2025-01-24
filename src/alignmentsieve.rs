@@ -74,7 +74,7 @@ pub fn r_alignmentsieve(
 
     // write output
     let mut obam = Writer::from_path(ofile, &header, bam::Format::Bam).unwrap();
-    obam.set_threads(nproc);
+    let _ = obam.set_threads(nproc);
     for sb in sieve.into_iter() {
         if let Some(sb) = sb {
             let mut bam = Reader::from_path(&sb).unwrap();
@@ -87,7 +87,7 @@ pub fn r_alignmentsieve(
     // write filtered reads if necessary
     if write_filters {
         let mut ofilterbam = Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
-        ofilterbam.set_threads(nproc);
+        let _ = ofilterbam.set_threads(nproc);
         for sb in filtersieve.into_iter() {
             if let Some(sb) = sb {
                 let mut bam = Reader::from_path(&sb).unwrap();
@@ -148,8 +148,8 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
     if nproc > 4 {
         let readthreads = 2;
         let writethreads = nproc - 2;
-        bam.set_threads(readthreads);
-        sievebamout.set_threads(writethreads);
+        let _ = bam.set_threads(readthreads);
+        let _ = sievebamout.set_threads(writethreads);
         if verbose {
             println!("Reading = {}, Writing = {}", readthreads, writethreads);
         }

@@ -47,6 +47,25 @@ where
     }
 }
 
+pub fn is_bed_or_gtf(fp: &str) -> String {
+    // Check if file is a bed or gtf file.
+    let file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
+    let reader = BufReader::new(file);
+    // Get the first line that doesn't start with #
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if !line.starts_with('#') {
+            let fields: Vec<&str> = line.split('\t').collect();
+            if fields.len() == 9 {
+                return "gtf".to_string();
+            } else {
+                return "bed".to_string();
+            }
+        }
+    }
+    "Unknown".to_string()
+}
+
 pub fn read_gtffile(gtf_file: &String, gtfparse: &Gtfparse, chroms: Vec<&String>) -> (Vec<Region>, (String, u32)) {
     // At some point this zoo of String clones should be refactored. Not now though, We have a deadline.
     let mut regions: Vec<Region> = Vec::new();

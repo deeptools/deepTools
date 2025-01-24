@@ -14,7 +14,7 @@ use std::collections::HashMap;
 use std::path::Path; 
 use std::sync::{Arc, Mutex};
 use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider};
-use crate::filehandler::{bam_ispaired, read_bedfile, read_gtffile, chrombounds_from_bam};
+use crate::filehandler::{bam_ispaired, read_bedfile, read_gtffile, chrombounds_from_bam, is_bed_or_gtf};
 use crate::calc::{median, calc_ratio, deseq_scalefactors};
 use crate::bamcompare::ParsedBamFile;
 use crate::normalization::scale_factor_bamcompare;
@@ -106,15 +106,12 @@ pub fn r_mbams(
         let mut regionsizes: HashMap<String, u32> = HashMap::new();
         bedfiles.iter()
             .map(|r| {
-                let ext = Path::new(r)
-                    .extension()
-                    .and_then(|e| e.to_str())
-                    .map(|e| e.to_ascii_lowercase());
-    
-                match ext {
-                    Some(v) if v == "gtf".to_string() => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
-                    Some(v) if v == "bed".to_string() => read_bedfile(r, metagene, chromsizes.keys().collect()),
-                    _ => panic!("Only .bed and .gtf files are allowed as regions. File = {}, Extension = {:?}", r, ext),
+                let ftype = is_bed_or_gtf(r);
+                    
+                match ftype.as_str() {
+                    "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
+                    "bed" => read_bedfile(r, metagene, chromsizes.keys().collect()),
+                    _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
                 }
             })
             .for_each(|(reg, regsize)| {
@@ -146,7 +143,7 @@ pub fn r_mbams(
     let covcalcs: Vec<_> = pool.install(|| {
         bampfiles.par_iter()
             .map(|(bamfile, ispe)| {
-                let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
+                let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
                     .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
@@ -239,23 +236,6 @@ pub fn r_mbams(
         println!("Counts written.");
     }
     Ok(())
-}
-
-#[derive(Debug)]
-enum Countline {
-    Int(u32),
-    Float(f32),
-    Text(String),
-}
-
-impl Countline {
-    fn to_string(&self) -> String {
-        match self {
-            Countline::Int(i) => i.to_string(),
-            Countline::Float(f) => f.to_string(),
-            Countline::Text(t) => t.clone(),
-        }
-    }
 }
 
 struct TempZip<I>

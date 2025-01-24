@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use crate::filehandler::{read_bedfile, read_gtffile, chrombounds_from_bw, bwintervals, header_matrix, write_matrix};
+use crate::filehandler::{read_bedfile, read_gtffile, chrombounds_from_bw, bwintervals, header_matrix, write_matrix, is_bed_or_gtf};
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
 use std::collections::HashMap;
@@ -128,15 +128,12 @@ pub fn r_computematrix(
     let mut regionsizes: HashMap<String, u32> = HashMap::new();
     region_files.iter()
         .map(|r| {
-            let ext = Path::new(r)
-                .extension()
-                .and_then(|e| e.to_str())
-                .map(|e| e.to_ascii_lowercase());
-
-            match ext {
-                Some(v) if v == "gtf".to_string() => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
-                Some(v) if v == "bed".to_string() => read_bedfile(r, metagene, chromsizes.keys().collect()),
-                _ => panic!("Only .bed and .gtf files are allowed as regions. File = {}, Extension = {:?}", r, ext),
+            let ftype = is_bed_or_gtf(r);
+            
+            match ftype.as_str() {
+                "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
+                "bed" => read_bedfile(r, metagene, chromsizes.keys().collect()),
+                _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
             }
         })
         .for_each(|(reg, regsize)| {
