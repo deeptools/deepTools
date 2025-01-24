@@ -2,6 +2,7 @@ import deeptools.plotCorrelation as pc
 
 import os.path
 from os import unlink
+from matplotlib.testing.compare import compare_images
 
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
@@ -26,11 +27,8 @@ def test_correlation_plot_with_minimal_options():
     expected = "'bowtie2 test1.bam'\t1.0000\t1.0000\n"
     assert expected in resp, f"'{expected}' not found in '{resp}'"
 
-    png_file_size = os.path.getsize(COR_PLOT_1)
-    expected_file_size = os.path.getsize(out_png)
-    size_tolerance = 5000
-    size_difference = abs(png_file_size - expected_file_size)
-    assert size_difference <= size_tolerance, "File size do not match"
+    res = compare_images(COR_PLOT_1, out_png, 50)
+    assert res is None, "Plots do not match"
     unlink(out_png)
 
 
@@ -41,9 +39,7 @@ def test_correlation_plot_scatter():
     out_png2 = '/tmp/correlation_plot2.png'
     args = "--corData {} -p scatterplot -c pearson  -o {}".format(COR_DATA_IN1, out_png2).split()
     pc.main(args)
-    png_file_size = os.path.getsize(COR_PLOT_2)
-    expected_file_size = os.path.getsize(out_png2)
-    size_tolerance = 5000
-    size_difference = abs(png_file_size - expected_file_size)
-    assert size_difference <= size_tolerance, "File size do not match"
+
+    res = compare_images(COR_PLOT_2, out_png2, 50)
+    assert res is None, "Plots do not match"
     unlink(out_png2)
