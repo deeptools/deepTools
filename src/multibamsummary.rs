@@ -98,7 +98,7 @@ pub fn r_mbams(
             txniddesignator: txniddesignator.to_string(),
         };
         // From the first bamfile, get the chromosome sizes. Only the chromosome names are needed, to make sure no invalid regions are included later on.
-        let chromsizes = chrombounds_from_bam(bamfiles.get(0).unwrap());
+        let chromsizes = chrombounds_from_bam(bamfiles.iter().map(|x| x.as_str()).collect());
 
         binsize = 1;
         distance_between_bins = 0;

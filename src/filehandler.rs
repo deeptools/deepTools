@@ -371,8 +371,31 @@ pub fn chrombounds_from_bw(bwfile: &str) -> HashMap<String, u32> {
     chromsizes
 }
 
-pub fn chrombounds_from_bam(bamfile: &str) -> HashMap<String, u32> {
-    let bam = IndexedReader::from_path(bamfile).unwrap();
+pub fn chrombounds_from_bam(bamfiles: Vec<&str>) -> HashMap<String, u32> {
+    let mut found_chroms: HashMap<String, usize> = HashMap::new();
+    for bam in bamfiles.iter() {
+        let bam = IndexedReader::from_path(bam).unwrap();
+        let chroms: Vec<String> = bam.header().target_names().iter().map(|x| String::from_utf8(x.to_vec()).unwrap()).collect();
+        for chrom in chroms.iter() {
+            // if it's not in the hashmap, add it, else increment count
+            if !found_chroms.contains_key(chrom) {
+                found_chroms.insert(chrom.clone(), 1);
+            } else {
+                let count = found_chroms.get_mut(chrom).unwrap();
+                *count += 1;
+            }
+        }
+    }
+    let mut validchroms: Vec<String> = Vec::new();
+    // loop over all chroms in the hashmap, if the count is expected, include them
+    for (chrom, count) in found_chroms.iter() {
+        if *count == bamfiles.len() {
+            validchroms.push(chrom.clone());
+        } else {
+            println!("Chromosome {} is missing in at least one bam file, and thus ignored!", chrom);
+        }
+    }
+    let bam = IndexedReader::from_path(bamfiles[0]).unwrap();
     let header = bam.header().clone();
     let mut chromsizes = HashMap::new();
     for tid in 0..header.target_count() {
@@ -380,7 +403,9 @@ pub fn chrombounds_from_bam(bamfile: &str) -> HashMap<String, u32> {
             .expect("Invalid UTF-8 in chromosome name");
         let chromlen = header.target_len(tid)
             .expect("Error retrieving length for chromosome");
-        chromsizes.insert(chromname.to_string(), chromlen as u32);
+        if validchroms.contains(&chromname) {
+            chromsizes.insert(chromname, chromlen as u32);
+        }
     }
     chromsizes
 }
