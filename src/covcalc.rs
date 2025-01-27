@@ -175,8 +175,8 @@ pub fn bam_pileup<'a>(
                         readlens.push(record.seq_len() as u32);
                     }
                 }
-                let indices: HashSet<usize> = record.aligned_blocks()
-                    .par_bridge()
+                let indices: HashSet<usize> = record
+                    .aligned_blocks()
                     .filter(|x| (x[1] as u32) < region.2)
                     .flat_map(|x| x[0] as u32..x[1] as u32)
                     .map(|x| (x / binsize) as usize)
