@@ -1,10 +1,13 @@
 use rust_htslib::bam::{self, Read, IndexedReader, record::Cigar};
+use rust_htslib::bam::ext::BamRecordExtensions;
 use std::collections::HashMap;
 use tempfile::{Builder, TempPath};
 use std::io::{BufWriter, Write};
 use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
+use rayon::prelude::*;
+use std::collections::HashSet;
 
 pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
@@ -172,41 +175,14 @@ pub fn bam_pileup<'a>(
                         readlens.push(record.seq_len() as u32);
                     }
                 }
-
-                let blocks = bam_blocks(record);
-                // keep a record of bin indices that have been updated already
-                let mut changedbins: Vec<u32> = Vec::new();
-                for block in blocks.into_iter() {
-                    // Don't count blocks that exceed the chromosome
-                    if block.0 >= region.2 {
-                        continue;
-                    }
-                    binix = block.0 / binsize;
-                    if !changedbins.contains(&binix) {
-                        counts[binix as usize] += 1.0;
-                        changedbins.push(binix);
-                    }
-                    // Don't count blocks that exceed the chromosome
-                    if block.1 >= region.2 {
-                        continue;
-                    }
-                    // Note that our blocks are strictly less then region ends, hence no problem with bin spewing at end:
-                    // binix = [a,b) where b == region.2 would divide into binix+1 (doesn't exist).
-                    binix = block.1 / binsize;
-                    if !changedbins.contains(&binix) {
-                        counts[binix as usize] += 1.0;
-                        changedbins.push(binix);
-                    }
-                }
-                // if changedbins contains non-continuous blocks (perhaps read length spans multiple bins), update the inbetweens
-                if let (Some(&min), Some(&max)) = (changedbins.iter().min(), changedbins.iter().max()) {
-                    for ix in min..=max {
-                        if !changedbins.contains(&ix) {
-                            counts[ix as usize] += 1.0;
-                            changedbins.push(ix);
-                        }
-                    }
-                }
+                let indices: HashSet<usize> = record.aligned_blocks()
+                    .par_bridge()
+                    .filter(|x| (x[1] as u32) < region.2)
+                    .flat_map(|x| x[0] as u32..x[1] as u32)
+                    .map(|x| (x / binsize) as usize)
+                    .collect();
+                indices.into_iter()
+                    .for_each(|ix| counts[ix] += 1.0);
             }
             let mut writer = BufWriter::new(&bg);
             // There are two scenarios: 
@@ -370,32 +346,6 @@ pub fn bam_pileup<'a>(
     let bgpath = bg.into_temp_path();
     let tmpvec   = vec![bgpath];
     return (tmpvec, mapped_reads, unmapped_reads, readlens, fraglens);
-}
-
-/// Extract contigious blocks from a bam record
-/// Blocks are split per insertion, padding, deletion and ref skip
-fn bam_blocks(rec: bam::Record) -> Vec<(u32, u32)> {
-    let mut blocks: Vec<(u32, u32)> = Vec::new();
-    let mut pos = rec.pos();
-
-    for c in rec.cigar().iter() {
-        match c {
-            Cigar::Match(len) | Cigar::Equal(len) | Cigar::Diff(len) => {
-                let start = pos;
-                let end = pos + *len as i64 -1;
-                blocks.push((start as u32, end as u32));
-                pos = end;
-            }
-            Cigar::Ins(len) | Cigar::Pad(len) => {
-                pos += *len as i64;
-            }
-            Cigar::Del(len) | Cigar::RefSkip(len) => {
-                pos += *len as i64;
-            }
-            _ => (),
-        }
-    }
-    return blocks;
 }
 
 pub struct Alignmentfilters {

@@ -4,7 +4,7 @@ use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
 use itertools::{multizip, multiunzip, izip};
 use std::io::prelude::*;
-use std::io::BufReader;
+use std::io::{BufReader, BufWriter};
 use std::fs::File;
 use ndarray::{Array1, Array2, stack, Axis};
 use std::io;
@@ -167,6 +167,18 @@ pub fn r_mbams(
         println!("Define output file");
     }
     
+    let mut cfile: Option<BufWriter<File>> = None;
+    if out_raw_counts != "None" {
+        cfile = Some(BufWriter::new(File::create(out_raw_counts).unwrap()));
+        // Write the header to the file.
+        let mut headstr = String::new();
+        headstr.push_str("#\'chr\'\t\'start\'\t\'end\'");
+        for label in bamlabels.iter() {
+            headstr.push_str(&format!("\t\'{}\'", label));
+        }
+        writeln!(cfile.as_mut().unwrap(), "{}", headstr).unwrap();
+    }
+
     // Collate the coverage files into a matrix.       
     let its: Vec<_> = covcalcs.iter().map(|x| x.into_iter()).collect();
     let zips = TempZip { iterators: its };
@@ -176,10 +188,11 @@ pub fn r_mbams(
     let zips_vec: Vec<_> = zips.collect();  
     let matvec: Array2<f32> = pool.install(|| {
         let matvecs: Vec<Array1<f32>> = zips_vec
-            .par_iter()
+            .iter()
             .flat_map(|c| {
-                let readers: Vec<_> = c.iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
+                let readers: Vec<_> = c.par_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
                 let mut _matvec: Vec<Array1<f32>> = Vec::new();
+                let mut _regions: Vec<(String, u32, u32)> = Vec::new();
                 for mut _l in (TempZip { iterators: readers }) {
                     // unwrap all lines in _l
                     let lines: Vec<_> = _l
@@ -189,6 +202,16 @@ pub fn r_mbams(
                         .map(|x: Vec<&str> | ( x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap() ) )
                         .collect();
                     let arrline = Array1::from(lines.iter().map(|x| x.3).collect::<Vec<_>>());
+                    // If cfile is define, write the raw counts to file.
+                    if let Some(ref mut file) = cfile {
+                        let mut regstr = String::new();
+                        regstr.push_str(&format!("{}\t{}\t{}",lines[0].0, lines[0].1, lines[0].2));
+                        // push values from array
+                        for val in arrline.iter() {
+                            regstr.push_str(&format!("\t{}", val));
+                        }
+                        writeln!(file, "{}", regstr).unwrap();
+                    }
                     _matvec.push(arrline);
                 }
                 _matvec
@@ -207,7 +230,7 @@ pub fn r_mbams(
             writeln!(sf_file, "{}\t{}", label, sf).unwrap();
         }
     }
-    let mut npz = NpzWriter::new(File::create(ofile).unwrap());
+    let mut npz = NpzWriter::new_compressed(File::create(ofile).unwrap());
     npz.add_array("matrix", &matvec).unwrap();
     npz.add_array("labels", &bamlabels_arr).unwrap();
     npz.finish().unwrap();
@@ -215,28 +238,6 @@ pub fn r_mbams(
         println!("Matrix written.");
     }
 
-    // If raw counts are required, write them to file.
-    if out_raw_counts != "None" {
-        let mut cfile = File::create(out_raw_counts).unwrap();
-        // Create the header
-        let mut headstr = String::new();
-        headstr.push_str("#\'chr\'\t\'start\'\t\'end\'");
-        for label in bamlabels.iter() {
-            headstr.push_str(&format!("\t\'{}\'", label));
-        }
-        writeln!(cfile, "{}", headstr).unwrap();
-        for (i, region) in regions.iter().enumerate() {
-            let mut line = String::new();
-            line.push_str(&format!("{}\t{}\t{}", region.chrom, region.get_startu(), region.get_endu()));
-            for j in 0..bamlabels.len() {
-                line.push_str(&format!("\t{}", matvec[[i, j]]));
-            }
-            writeln!(cfile, "{}", line).unwrap();
-        }
-    }
-    if verbose {
-        println!("Counts written.");
-    }
     Ok(())
 }
 
