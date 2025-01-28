@@ -10,6 +10,7 @@ from deeptools import mapReduce
 from deeptools.utilities import toString, toBytes, smartLabels
 from deeptools.heatmapper_utilities import getProfileTicks
 
+from deeptools.pyBigWigStranded import openBigWigGuessingStrandedness
 
 old_settings = np.seterr(all='ignore')
 
@@ -364,8 +365,8 @@ class heatmapper(object):
         # read BAM or scores file
         score_file_handles = []
         for sc_file in score_file_list:
-            score_file_handles.append(pyBigWig.open(sc_file))
-
+            score_file_handles.append(
+                openBigWigGuessingStrandedness(sc_file))
         # determine the number of matrix columns based on the lengths
         # given by the user, times the number of score files
         matrix_cols = len(score_file_list) * \
@@ -531,7 +532,7 @@ class heatmapper(object):
                 for sc_handler in score_file_handles:
                     # We're only supporting bigWig files at this point
                     cov = heatmapper.coverage_from_big_wig(
-                        sc_handler, feature_chrom, zones,
+                        sc_handler, feature_chrom, feature_strand, zones,
                         parameters['bin size'],
                         parameters['bin avg type'],
                         parameters['missing data as zero'],
@@ -652,7 +653,7 @@ class heatmapper(object):
         return chrom
 
     @staticmethod
-    def coverage_from_big_wig(bigwig, chrom, zones, binSize, avgType, nansAsZeros=False, verbose=True):
+    def coverage_from_big_wig(bigwig, chrom, strand, zones, binSize, avgType, nansAsZeros=False, verbose=True):
 
         """
         uses pyBigWig
@@ -716,7 +717,8 @@ class heatmapper(object):
                 endIdx += end - start
                 if start < end:
                     # This won't be the case if we extend off the front of a chromosome, such as (-100, 0)
-                    values_array[startIdx:endIdx] = bigwig.values(chrom, start, end)
+                    # jtb: also adding in strand
+                    values_array[startIdx:endIdx] = bigwig.values(chrom, start, end, strand)
                 if end < region[1]:
                     startIdx = endIdx
                     endIdx += region[1] - end
