@@ -39,7 +39,6 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
     }
     // Crash if validchroms is empty.
     assert!(!validchroms.is_empty(), "No chromosomes found that are present in all bam files. Did you mix references ?");
-    println!("Valid chromosomes are: {:?}", validchroms);
     // Read header from first bam file
     let bam = IndexedReader::from_path(bam_ifile[0]).unwrap();
     let header = bam.header().clone();
@@ -101,7 +100,7 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
     }
     // Sort regions to make our live easier down the line
     // Sort Vec of Regions per chromosome, and then by start.
-    // chromregions.sort_by(|a, b| a.chrom.cmp(&b.chrom).then(a.start.cmp(&b.start)));
+    chromregions.sort_by(|a, b| a.chrom.cmp(&b.chrom).then(a.get_startu().cmp(&b.get_startu())));
     return (chromregions, chromsizes);
 }
 
