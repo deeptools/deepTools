@@ -110,11 +110,12 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
 pub fn bam_pileup<'a>(
     bam_ifile: &str,
     regionvec: &'a Vec<Region>,
-    binsize: &u32,
+    provbs: &u32,
     ispe: &bool,
     ignorechr: &Vec<String>,
     _filters: &Alignmentfilters,
     collapse: bool,
+    gene_mode: bool
 ) -> (
     Vec<TempPath>, // temp bedgraph file.
     u32, // mapped reads
@@ -122,7 +123,8 @@ pub fn bam_pileup<'a>(
     Vec<u32>, // read lengths
     Vec<u32>, // fragment lengths
 )  {
-
+    let mut bs = *provbs;
+    let mut binsize = &bs;
     // constant to check if read is first in pair (relevant later)
     const FREAD: u16 = 0x40;
 
@@ -149,39 +151,76 @@ pub fn bam_pileup<'a>(
 
     // Convert region to tuple to ease computations.
     for regstruct  in regionvec.iter() {
-        let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
+        // There are two options here:
+        // either we are supposed to calculate coverage over regions (variable binsize required) gene_mode = true
+        // or we have a regular bin setting, gene_mode = false
+        let mut region: (String, u32, u32);
+        if gene_mode {
+            region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
+            bs = region.2 - region.1;
+            binsize = &bs;
+        } else {
+            region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
+        }
+        //let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
         bam.fetch((region.0.as_str(), region.1, region.2))
             .expect(&format!("Error fetching region: {:?}", region));
     
         if binsize > &1 {
-            // populate the bg vector with 0 counts over all bins
-            let mut counts: Vec<f32> = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
-            // let mut binstart = region.1;
-            let mut binix: u32 = 0;
-            
-            for record in bam.records() {
-                let record = record.expect("Error parsing record.");
-                if !ignorechr.contains(&region.0) {
-                    if record.is_unmapped() {
-                        unmapped_reads += 1;
-                    } else {
-                        mapped_reads += 1;
-                        if *ispe {
-                            if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                fraglens.push(record.insert_size().abs() as u32);
+            let mut counts: Vec<f32>;
+
+            if gene_mode {
+                counts = vec![0.0; 1];
+                for record in bam.records() {
+                    let record = record.expect("Error parsing record.");
+                    if !ignorechr.contains(&region.0) {
+                        if record.is_unmapped() {
+                            unmapped_reads += 1;
+                        } else {
+                            mapped_reads += 1;
+                            if *ispe {
+                                if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                                    fraglens.push(record.insert_size().abs() as u32);
+                                }
                             }
+                            readlens.push(record.seq_len() as u32);
                         }
-                        readlens.push(record.seq_len() as u32);
                     }
+                    counts[0] += 1.0;
                 }
-                let indices: HashSet<usize> = record
-                    .aligned_blocks()
-                    .filter(|x| (x[1] as u32) < region.2)
-                    .flat_map(|x| x[0] as u32..x[1] as u32)
-                    .map(|x| (x / binsize) as usize)
-                    .collect();
-                indices.into_iter()
-                    .for_each(|ix| counts[ix] += 1.0);
+            } else {
+                // populate the bg vector with 0 counts over all bins
+                counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
+                println!("LENGTH OF THE VECO BRO {:?}", counts.len());
+                // let mut binstart = region.1;
+                let mut binix: u32 = 0;
+                
+                for record in bam.records() {
+                    let record = record.expect("Error parsing record.");
+                    if !ignorechr.contains(&region.0) {
+                        if record.is_unmapped() {
+                            unmapped_reads += 1;
+                        } else {
+                            mapped_reads += 1;
+                            if *ispe {
+                                if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                                    fraglens.push(record.insert_size().abs() as u32);
+                                }
+                            }
+                            readlens.push(record.seq_len() as u32);
+                        }
+                    }
+
+                    let indices: HashSet<usize> = record
+                        .aligned_blocks()
+                        .filter(|x| (x[1] as u32) < region.2)
+                        .flat_map(|x| x[0] as u32..x[1] as u32)
+                        .map(|x| (x / binsize) as usize)
+                        .collect();
+                    println!("INDICES = {:?}", indices);
+                    indices.into_iter()
+                        .for_each(|ix| counts[ix] += 1.0);
+                }
             }
             let mut writer = BufWriter::new(&bg);
             // There are two scenarios: 

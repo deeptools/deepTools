@@ -75,7 +75,7 @@ pub fn r_bamcoverage(
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
         regionblocks.par_iter()
-            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true))
+            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true, false))
             .reduce(
                 || (vec![], 0, 0, vec![], vec![]),
                 |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

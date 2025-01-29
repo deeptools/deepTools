@@ -86,7 +86,7 @@ pub fn r_mbams(
     };
     
     let mut regions: Vec<Region> = Vec::new();
-
+    let mut gene_mode = false;
     if mode == "BED-file" {
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
@@ -120,6 +120,7 @@ pub fn r_mbams(
                 regions.extend(reg);
                 regionsizes.insert(regsize.0, regsize.1);
             });
+        gene_mode = true;
     } else {
         if verbose {
             println!("BINS mode. with binsize: {}, distance between bins: {}", binsize, distance_between_bins);
@@ -146,7 +147,7 @@ pub fn r_mbams(
         bampfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
@@ -167,62 +168,87 @@ pub fn r_mbams(
         println!("Define output file");
     }
     
-    let mut cfile: Option<BufWriter<File>> = None;
-    if out_raw_counts != "None" {
-        cfile = Some(BufWriter::new(File::create(out_raw_counts).unwrap()));
-        // Write the header to the file.
-        let mut headstr = String::new();
-        headstr.push_str("#\'chr\'\t\'start\'\t\'end\'");
-        for label in bamlabels.iter() {
-            headstr.push_str(&format!("\t\'{}\'", label));
-        }
-        writeln!(cfile.as_mut().unwrap(), "{}", headstr).unwrap();
-    }
-
     // Collate the coverage files into a matrix.       
     let its: Vec<_> = covcalcs.iter().map(|x| x.into_iter()).collect();
     let zips = TempZip { iterators: its };
     if verbose {
         println!("Start iterating through temp coverage files and create output npy.");
     }
-    let zips_vec: Vec<_> = zips.collect();  
-    let matvec: Array2<f32> = pool.install(|| {
-        let matvecs: Vec<Array1<f32>> = zips_vec
-            .iter()
+    let zips_vec: Vec<_> = zips.collect();
+    println!(" Length of ziperators = {}", zips_vec.len());
+
+    let mut matvec: Vec<Vec<f32>> = Vec::new();
+    let matvec: Vec<_> = pool.install(|| {
+        let _m: Vec<_> = zips_vec
+            .par_iter()
             .flat_map(|c| {
                 let readers: Vec<_> = c.par_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
-                let mut _matvec: Vec<Array1<f32>> = Vec::new();
+                let mut _matvec: Vec<Vec<f32>> = Vec::new();
                 let mut _regions: Vec<(String, u32, u32)> = Vec::new();
                 for mut _l in (TempZip { iterators: readers }) {
                     // unwrap all lines in _l
                     let lines: Vec<_> = _l
-                        .iter_mut()
+                        .par_iter_mut()
                         .map(|x| x.as_mut().unwrap())
                         .map(|x| x.split('\t').collect())
                         .map(|x: Vec<&str> | ( x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap() ) )
                         .collect();
-                    let arrline = Array1::from(lines.iter().map(|x| x.3).collect::<Vec<_>>());
-                    // If cfile is define, write the raw counts to file.
-                    if let Some(ref mut file) = cfile {
-                        let mut regstr = String::new();
-                        regstr.push_str(&format!("{}\t{}\t{}",lines[0].0, lines[0].1, lines[0].2));
-                        // push values from array
-                        for val in arrline.iter() {
-                            regstr.push_str(&format!("\t{}", val));
-                        }
-                        writeln!(file, "{}", regstr).unwrap();
-                    }
-                    _matvec.push(arrline);
+                    let counts = lines.par_iter().map(|x| x.3).collect::<Vec<_>>();
+                    let regions: (String, u32, u32) = (lines[0].0.clone(), lines[0].1, lines[0].2);
+                    _matvec.push(counts);
+                    _regions.push(regions);
                 }
-                _matvec
+                (_matvec, _regions)
             })
             .collect();
-        stack(Axis(0), &matvecs.iter().map(|x| x.view()).collect::<Vec<_>>()).unwrap()
+        _m
     });
 
+    // Seperate the matrices and regions
+    let (matvec, regions): (Vec<_>, Vec<_>) = multiunzip(matvec);
+
+    // Write out the count files, if appropriate
+
+    if out_raw_counts != "None" {
+        if verbose {
+            println!("Writing raw counts to disk.");
+        }
+        let mut cfile = BufWriter::new(File::create(out_raw_counts).unwrap());
+        // Write the header to the file.
+        let mut headstr = String::new();
+        headstr.push_str("#\'chr\'\t\'start\'\t\'end\'");
+        for label in bamlabels.iter() {
+            headstr.push_str(&format!("\t\'{}\'", label));
+        }
+        writeln!(cfile, "{}", headstr).unwrap();
+        let outlines: Vec<String> = pool.install(|| {
+            regions.par_iter().zip(matvec.par_iter())
+                .map(|(region, counts)| {
+                    let mut outstr = String::new();
+                    outstr.push_str(&format!("{}\t{}\t{}", region.0, region.1, region.2));
+                    for count in counts.iter() {
+                        outstr.push_str(&format!("\t{}", count));
+                    }
+                    outstr
+                })
+                .collect()
+        });
+        for line in outlines {
+            writeln!(cfile, "{}", line).unwrap();
+        }
+    }
+
+    // Create 2darray from matvec
+    let matarr: Array2<f32> = Array2::from_shape_vec(
+        (matvec.len(), matvec[0].len()), matvec.into_iter().flatten().collect()
+    ).unwrap();
+    
     // If scalefactors are required, calc and save them now.
     if scaling_factors != "None" {
-        let sf = deseq_scalefactors(&matvec);
+        if verbose {
+            println!("Calculating scale factors.");
+        }
+        let sf = deseq_scalefactors(&matarr);
         // save scalefactors to file
         let mut sf_file = File::create(scaling_factors).unwrap();
         writeln!(sf_file, "Sample\tscalingFactor").unwrap();
@@ -230,8 +256,12 @@ pub fn r_mbams(
             writeln!(sf_file, "{}\t{}", label, sf).unwrap();
         }
     }
+
+    if verbose {
+        println!("Writing matrix to disk.");
+    }
     let mut npz = NpzWriter::new_compressed(File::create(ofile).unwrap());
-    npz.add_array("matrix", &matvec).unwrap();
+    npz.add_array("matrix", &matarr).unwrap();
     npz.add_array("labels", &bamlabels_arr).unwrap();
     npz.finish().unwrap();
     if verbose {
