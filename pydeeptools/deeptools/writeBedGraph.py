@@ -150,8 +150,6 @@ class WriteBedGraph(cr.CountReadsPerBin):
                                   region=self.region,
                                   blackListFileName=blackListFileName,
                                   numberOfProcessors=self.numberOfProcessors)
-        print("Result after mapReduce")
-        print(res)
         # Determine the sorted order of the temp files
         chrom_order = dict()
         for i, _ in enumerate(chrom_names_and_size):

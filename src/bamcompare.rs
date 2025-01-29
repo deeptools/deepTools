@@ -8,7 +8,7 @@ use std::fs::File;
 use itertools::Itertools;
 use bigtools::{Value};
 use crate::filehandler::{bam_ispaired, write_covfile};
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters};
+use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider};
 use crate::normalization::scale_factor_bamcompare;
 use crate::calc::{median, calc_ratio};
 use tempfile::{TempPath};
@@ -60,7 +60,9 @@ pub fn r_bamcompare(
     };
 
     // Parse regions & calculate coverage. Note that 
-    let (regions, chromsizes)  = parse_regions(&regions, bamifile1);
+    let (regions, chromsizes)  = parse_regions(&regions, vec![bamifile1, bamifile2]);
+    let regionblocks = region_divider(&regions);
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     
     // Set up the bam files in a Vec.
@@ -69,8 +71,8 @@ pub fn r_bamcompare(
     let covcalcs: Vec<ParsedBamFile> = pool.install(|| {
         bamfiles.par_iter()
             .map(|(bamfile, ispe)| {
-                let (bg, mapped, unmapped, readlen, fraglen) = regions.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false))
+                let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
