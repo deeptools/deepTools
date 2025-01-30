@@ -184,17 +184,17 @@ pub fn r_mbams(
             .flat_map(|c| {
                 let readers: Vec<_> = c.par_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
                 let mut _matvec: Vec<Vec<f32>> = Vec::new();
-                let mut _regions: Vec<(String, u32, u32)> = Vec::new();
+                let mut _regions: Vec<(String, String, String)> = Vec::new();
                 for mut _l in (TempZip { iterators: readers }) {
                     // unwrap all lines in _l
                     let lines: Vec<_> = _l
                         .par_iter_mut()
                         .map(|x| x.as_mut().unwrap())
                         .map(|x| x.split('\t').collect())
-                        .map(|x: Vec<&str> | ( x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap() ) )
+                        .map(|x: Vec<&str> | ( x[0].to_string(), x[1].to_string(), x[2].to_string(), x[3].parse::<f32>().unwrap() ) )
                         .collect();
                     let counts = lines.par_iter().map(|x| x.3).collect::<Vec<_>>();
-                    let regions: (String, u32, u32) = (lines[0].0.clone(), lines[0].1, lines[0].2);
+                    let regions: (String, String, String) = (lines[0].0.clone(), lines[0].1.clone(), lines[0].2.clone());
                     _matvec.push(counts);
                     _regions.push(regions);
                 }
@@ -267,7 +267,6 @@ pub fn r_mbams(
     if verbose {
         println!("Matrix written.");
     }
-
     Ok(())
 }
 

@@ -168,30 +168,69 @@ pub fn bam_pileup<'a>(
     
         if binsize > &1 {
             let mut counts: Vec<f32>;
+            let mut startstr: String = region.1.to_string();
+            let mut endstr: String = region.2.to_string();
 
             if gene_mode {
-                counts = vec![0.0; 1];
-                for record in bam.records() {
-                    let record = record.expect("Error parsing record.");
-                    if !ignorechr.contains(&region.0) {
-                        if record.is_unmapped() {
-                            unmapped_reads += 1;
-                        } else {
-                            mapped_reads += 1;
-                            if *ispe {
-                                if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                    fraglens.push(record.insert_size().abs() as u32);
+                // It could be that we are in metagene mode, i.e. we only  want counts over exons
+                // In this we need another iter - fetch per regstruct
+                match (regstruct.start.clone(), regstruct.end.clone()) {
+                    (Revalue::U(start), Revalue::U(end)) => {
+                        counts = vec![0.0; 1];
+                        for record in bam.records() {
+                            let record = record.expect("Error parsing record.");
+                            if !ignorechr.contains(&region.0) {
+                                if record.is_unmapped() {
+                                    unmapped_reads += 1;
+                                } else {
+                                    mapped_reads += 1;
+                                    if *ispe {
+                                        if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                                            fraglens.push(record.insert_size().abs() as u32);
+                                        }
+                                    }
+                                    readlens.push(record.seq_len() as u32);
                                 }
                             }
-                            readlens.push(record.seq_len() as u32);
+                            counts[0] += 1.0;
                         }
-                    }
-                    counts[0] += 1.0;
+                    },
+                    (Revalue::V(starts), Revalue::V(ends)) => {
+                        // Make a string with the start values comma separated
+                        startstr = starts.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+                        endstr = ends.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+
+                        counts = vec![0.0; 1];
+                        let exons: Vec<(u32, u32)> = starts.iter().zip(ends.iter())
+                            .map(|(&s, &e)| (s, e)) 
+                            .collect();
+                        for exon in exons {
+                            bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
+                                .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
+                            for record in bam.records() {
+                                let record = record.expect("Error parsing record.");
+                                if !ignorechr.contains(&region.0) {
+                                    if record.is_unmapped() {
+                                        unmapped_reads += 1;
+                                    } else {
+                                        mapped_reads += 1;
+                                        if *ispe {
+                                            if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                                                fraglens.push(record.insert_size().abs() as u32);
+                                            }
+                                        }
+                                        readlens.push(record.seq_len() as u32);
+                                    }
+                                }
+                                counts[0] += 1.0;
+                            }
+                        }
+                    },
+                    _ => panic!("Start and End are not either both u32, or Vecs. This means your regions file is ill-defined. Fix {}.",regstruct.name),
                 }
             } else {
                 // populate the bg vector with 0 counts over all bins
                 counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
-                println!("LENGTH OF THE VECO BRO {:?}", counts.len());
                 // let mut binstart = region.1;
                 let mut binix: u32 = 0;
                 
@@ -217,7 +256,6 @@ pub fn bam_pileup<'a>(
                         .flat_map(|x| x[0] as u32..x[1] as u32)
                         .map(|x| (x / binsize) as usize)
                         .collect();
-                    println!("INDICES = {:?}", indices);
                     indices.into_iter()
                         .for_each(|ix| counts[ix] += 1.0);
                 }
@@ -227,7 +265,7 @@ pub fn bam_pileup<'a>(
             // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
             // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
             if counts.len() == 1 {
-                writeln!(writer, "{}\t{}\t{}\t{}", region.0, region.1, region.2, counts[0]).unwrap();
+                writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
             } else {
                 if collapse {
                     let mut lcov = counts[0];
