@@ -379,7 +379,6 @@ def process_args(args=None):
 def main(args=None):
 
     args = process_args(args)
-
     parameters = {'upstream': args.beforeRegionStartLength,
                   'downstream': args.afterRegionStartLength,
                   'body': args.regionBodyLength,

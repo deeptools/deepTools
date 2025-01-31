@@ -39,55 +39,27 @@ jobs:
   build-linux:
     name: Test on Linux
     runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-    - name: pip install
-      run: |
-        pip install .[actions]
-    - name: PEP8
-      run: |
-        micromamba activate test_and_build
-        flake8 . --exclude=.venv,.build,build --ignore=E501,F403,E402,F999,F405,E722,W504,W605
-    - name: Test deepTools
-      run: |
-        pytest -v
-    - name: make an artifact
-      run: |
-        rm -f dist/*
-        python -m build
-    - uses: actions/upload-artifact@v4
-      with:
-        name: "distfiles"
-        path: "dist"
-  test-wheels:
-    name: test wheel
-    runs-on: ubuntu-latest
-    needs: build-linux
     strategy:
       matrix:
         python-version: ['3.9','3.10', '3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: "distfiles"
-          path: ~/dist/
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      - name: install wheel
+      - name: pip install
         run: |
-          pip install ~/dist/*whl
-          deeptools -h
-      - name: pytest
+          pip install .[actions]
+      - name: Test deepTools
         run: |
-          pip install pytest
           pytest -v
+      - name: Build wheel
+        run: |
+          python -m build
+      - name: Test wheel
+        run: |
+          pip install dist/*whl
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest

@@ -117,11 +117,12 @@ def scaleFactor(string):
 
 def process_args(args=None):
     args = parseArguments().parse_args(args)
-
+    if not args.smoothLength:
+        args.smoothLength = 0
     if args.smoothLength and args.smoothLength <= args.binSize:
         print("Warning: the smooth length given ({}) is smaller than the bin "
               "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
-        args.smoothLength = None
+        args.smoothLength = 0
 
     if not args.ignoreForNormalization:
         args.ignoreForNormalization = []
@@ -130,24 +131,55 @@ def process_args(args=None):
 
 def main(args=None):
     args = process_args(args)
-    print(args)
-    # Fail if user tries RPGC without setting the effective genome size
-    if args.normalizeUsing == 'RPGC' and args.effectiveGenomeSize is None:
-        print("Error: You must specify the effective genome size when using "
-              "RPGC normalization. Use --effectiveGenomeSize to set this value.")
-        sys.exit()
     if not args.effectiveGenomeSize:
         args.effectiveGenomeSize = 0
     if not args.normalizeUsing:
         args.normalizeUsing = 'None'
+    if not args.Offset:
+        args.Offset = [1, -1]
+    if not args.extendReads:
+        args.extendReads = 0
+    if not args.filterRNAstrand:
+        args.filterRNAstrand = 'None'
+    if not args.blackListFileName:
+        args.blackListFileName = 'None'
+    if not args.minMappingQuality:
+        args.minMappingQuality = 0
+    if not args.samFlagInclude:
+        args.samFlagInclude = 0
+    if not args.samFlagExclude:
+        args.samFlagExclude = 0
+
+    print(args)
+
     r_bamcoverage(
-       args.bam, # bam file
-       args.outFileName, # output file
-       args.outFileFormat, # output format
-       args.normalizeUsing, # normalization
-       args.effectiveGenomeSize, # effective genome size
-       args.numberOfProcessors, # threads
-       args.binSize, # bin size
-       [], # regions
-       args.verbose # verbose
+        args.bam, # bam file
+        args.outFileName, # output file
+        args.outFileFormat, # output format
+        ## Normalization options
+        args.normalizeUsing, # normalization
+        args.effectiveGenomeSize, # effective genome size
+        args.scaleFactor,
+        # processing options
+        args.MNase,
+        args.Offset,
+        args.extendReads,
+        args.centerReads,
+        args.filterRNAstrand,
+        args.blackListFileName,
+        args.ignoreForNormalization,
+        args.skipNonCoveredRegions,
+        args.smoothLength,
+        args.binSize, # bin size
+        # Filtering options
+        args.ignoreDuplicates,
+        args.minMappingQuality,
+        args.samFlagInclude,
+        args.samFlagExclude,
+        args.minFragmentLength,
+        args.maxFragmentLength,
+        # running options
+        args.numberOfProcessors, # threads
+        [], # regions
+        args.verbose # verbose
     )

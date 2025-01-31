@@ -4,7 +4,7 @@
         <token name="@BINARY@">computeMatrix</token>
         <import>deepTools_macros.xml</import>
     </macros>
-    <expand macro="requirements" />
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         @multiple_input_bigwigs@
@@ -89,7 +89,7 @@
         </repeat>
 
         <expand macro="multiple_input_bigwigs" MIN="1" LABEL="Score file" TITLE="Score files"/>
-        <expand macro="custom_sample_labels" />
+        <expand macro="custom_sample_labels"/>
 
         <conditional name="mode" >
             <param name="mode_select" type="select"
@@ -112,7 +112,7 @@
                         <option value="no" selected="true">no</option>
                         <option value="yes">yes</option>
                     </param>
-                    <when value="no" />
+                    <when value="no"/>
                     <when value="yes">
                         <param argument="--beforeRegionStartLength" type="integer" value="1000" min="1"
                             label="Distance upstream of the region start position"
@@ -126,10 +126,10 @@
                             label="Number of bases within the gene body at the 5-prime end to exclude from scaling."
                             help="By default, each region is scaled to a given length (see the --regionBodyLength
                              option). In some cases it is useful to look at unscaled signals around region boundaries, so this
-                             setting specifies the number of unscaled bases on the 5-prime end of each boundary." />
+                             setting specifies the number of unscaled bases on the 5-prime end of each boundary."/>
                         <param argument="--unscaled3prime" type="integer" min="0" value="0"
                             label="Number of bases within the gene body at the 3-prime end to exclude from scaling."
-                            help="As with --unscaled5prime, but for the 3-prime end." />
+                            help="As with --unscaled5prime, but for the 3-prime end."/>
                     </when>
                 </conditional>
             </when>
@@ -153,7 +153,7 @@
         </conditional>
 
         <expand macro="input_graphic_output_settings">
-            <expand macro="input_save_matrix_values" />
+            <expand macro="input_save_matrix_values"/>
         </expand>
 
         <conditional name="advancedOpt" >
@@ -161,14 +161,14 @@
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
-            <when value="no" />
+            <when value="no"/>
             <when value="yes">
                 <param name="binSize" type="integer" value="50" min="1"
                     label="Length, in bases, of non-overlapping bins used for averaging the score over the regions length"
                     help="(--binSize)"/>
 
-                <expand macro="sortRegionsComputeMatrix" />
-                <expand macro="sortUsing" />
+                <expand macro="sortRegionsComputeMatrix"/>
+                <expand macro="sortUsing"/>
 
                 <param name="averageTypeBins" type="select"
                     label="Define the type of statistic that should be displayed."
@@ -188,9 +188,9 @@
                      or plotProfile, set this to 'yes'.
                           The default is to ignore missing values, which will be
                           depicted as black areas once a heatmap is created.
-                           (--missingDataAsZero)" />
+                           (--missingDataAsZero)"/>
 
-                <expand macro="skipZeros" />
+                <expand macro="skipZeros"/>
 
                 <param name="minThreshold" type="float" optional="True"
                     label="Minimum threshold"
@@ -207,48 +207,46 @@
                 <param name="scale" type="float" optional="True" label="Scaling factor"
                     help="If set, all values are multiplied by this number. (--scale)"/>
 
-                <expand macro="gtf_options" />
+                <expand macro="gtf_options"/>
 
-                <expand macro="blacklist" />
+                <expand macro="blacklist"/>
             </when>
         </conditional>
     </inputs>
     <outputs>
-        <data format="deeptools_compute_matrix_archive" name="outFileName" label="${tool.name} on ${on_string}: Matrix" />
-        <expand macro="output_graphic_outputs" />
-        <expand macro="output_save_matrix_values" />
+        <data format="deeptools_compute_matrix_archive" name="outFileName" label="${tool.name} on ${on_string}: Matrix"/>
+        <expand macro="output_graphic_outputs"/>
+        <expand macro="output_save_matrix_values"/>
     </outputs>
     <tests>
-        <test>
-            <param name="regionsFile" value="computeMatrix1.bed" ftype="bed" />
-            <param name="bigwigfiles" value="bamCoverage_result4.bw" ftype="bigwig" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="mode_select" value="reference-point" />
-            <param name="binSize" value="10" />
-            <param name="sortUsing" value="sum" />
-            <param name="averageTypeBins" value="sum" />
-            <param name="beforeRegionStartLength" value="10" />
-            <param name="afterRegionStartLength" value="10" />
-            <output name="outFileName" file="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
+        <test expect_num_outputs="1">
+            <param name="regionsFile" value="computeMatrix1.bed" ftype="bed"/>
+            <param name="bigwigfiles" value="bamCoverage_result4.bw" ftype="bigwig"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="mode_select" value="reference-point"/>
+            <param name="binSize" value="10"/>
+            <param name="sortUsing" value="sum"/>
+            <param name="averageTypeBins" value="sum"/>
+            <param name="beforeRegionStartLength" value="10"/>
+            <param name="afterRegionStartLength" value="10"/>
+            <output name="outFileName" file="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size"/>
         </test>
-        <test>
-            <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
-            <param name="bigwigfiles" value="computeMatrix2.bw" ftype="bigwig" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="mode_select" value="reference-point" />
-            <param name="binSize" value="10" />
-            <param name="beforeRegionStartLength" value="10" />
-            <param name="afterRegionStartLength" value="10" />
-            <output name="outFileName" file="computeMatrix_result2.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
+        <test expect_num_outputs="1">
+            <param name="regionsFile" value="computeMatrix2.bed" ftype="bed"/>
+            <param name="bigwigfiles" value="computeMatrix2.bw" ftype="bigwig"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="mode_select" value="reference-point"/>
+            <param name="binSize" value="10"/>
+            <param name="beforeRegionStartLength" value="10"/>
+            <param name="afterRegionStartLength" value="10"/>
+            <output name="outFileName" file="computeMatrix_result2.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size"/>
         </test>
-        <test>
-            <param name="regionsFile" value="computeMatrix2.bed" ftype="bed" />
-            <param name="bigwigfiles" value="computeMatrix2.bw" ftype="bigwig" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="mode_select" value="scale-regions" />
-            <param name="endLabel" value="END" />
-            <param name="regionStartLength" value="yes" />
-            <output name="outFileName" file="computeMatrix_result3.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" />
+        <test expect_num_outputs="1">
+            <param name="regionsFile" value="computeMatrix2.bed" ftype="bed"/>
+            <param name="bigwigfiles" value="computeMatrix2.bw" ftype="bigwig"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="mode_select" value="scale-regions"/>
+            <output name="outFileName" file="computeMatrix_result3.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size"/>
         </test>
     </tests>
   <help>
@@ -333,5 +331,5 @@ See the following table for the optional output options:
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>

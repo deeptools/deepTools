@@ -5,7 +5,7 @@ try:
 except ModuleNotFoundError:
     import tomli as tomllib
 
-TOMLFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../pyproject.toml"
+TOMLFILE = os.path.dirname(os.path.abspath(__file__)) + "/../../../pyproject.toml"
 
 
 def test_tools():

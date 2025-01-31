@@ -1,4 +1,5 @@
 *.tar.gz
+*.npz
 *.py[cod]
 
 # C extensions
@@ -60,3 +61,12 @@ env.yml
 # Rust stuff
 Cargo.lock
 target*
+
+# snakemake
+.snakemake
+*.smk
+
+# jupyter notebooks
+.ipynb_checkpoints
+*.ipynb_checkpoints
+*.ipynb

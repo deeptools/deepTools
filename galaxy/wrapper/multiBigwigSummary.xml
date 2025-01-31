@@ -19,7 +19,7 @@
             --outFileName $outFile
 
             --bwfiles #echo ' '.join($files)#
-            
+
             #if $custom_sample_labels_conditional.custom_labels_select == 'Yes'
                 --labels #echo ' '.join($custom_sample_labels_conditional.labels)#
             #end if
@@ -86,13 +86,13 @@
         </data>
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="1">
             <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
             <output name="outFile" file="multiBigwigSummary_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
-        <test>
+        <test expect_num_outputs="2">
             <param name="bigwigfiles" value="test.bw,test.bw" ftype="bigwig" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />

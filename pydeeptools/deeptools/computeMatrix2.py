@@ -77,8 +77,7 @@ def computeMatrixRequiredArgs(args=None):
                           metavar='File',
                           help='File name or names, in BED or GTF format, containing '
                                'the regions to plot. If multiple bed files are given, each one is considered a '
-                               'group that can be plotted separately. Also, adding a "#" symbol in the bed file '
-                               'causes all the regions until the previous "#" to be considered one group.',
+                               'group that can be plotted separately.',
                           nargs='+',
                           required=True)
     required.add_argument('--scoreFileName', '-S',
@@ -222,17 +221,11 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
 
     optional.add_argument('--sortRegions',
                           help='Whether the output file should present the '
-                          'regions sorted. The default is to not sort the regions. '
+                          'regions sorted. The default (keep) retains order as in -R.'
                           'Note that this is only useful if you plan to plot '
                           'the results yourself and not, for example, with '
-                          'plotHeatmap, which will override this. Note also that '
-                          'unsorted output will be in whatever order the regions '
-                          'happen to be processed in and not match the order in '
-                          'the input files. If you require the output order to '
-                          'match that of the input regions, then either specify '
-                          '"keep" or use computeMatrixOperations to resort the '
-                          'results file. (Default: %(default)s)',
-                          choices=["descend", "ascend", "no", "keep"],
+                          'plotHeatmap, which will override this. (Default: %(default)s)',
+                          choices=["descend", "ascend", "keep"],
                           default='keep')
 
     optional.add_argument('--sortUsing',
@@ -307,20 +300,6 @@ def computeMatrixOptArgs(case=['scale-regions', 'reference-point'][0]):
                           'contains a space E.g. --samplesLabel label-1 "label 2"  ',
                           nargs='+')
 
-    optional.add_argument('--smartLabels',
-                          action='store_true',
-                          help='Instead of manually specifying labels for the input '
-                          'bigWig and BED/GTF files, this causes deepTools to use the file name '
-                          'after removing the path and extension.')
-
-    # in contrast to other tools,
-    # computeMatrix by default outputs
-    # messages and the --quiet flag supresses them
-    optional.add_argument('--quiet', '-q',
-                          help='Set to remove any warning or processing '
-                          'messages.',
-                          action='store_true')
-
     optional.add_argument('--verbose',
                           help='Being VERY verbose in the status messages. --quiet will disable this.',
                           action='store_true')
@@ -348,9 +327,6 @@ def process_args(args=None):
         parse_arguments().print_help()
         sys.exit()
 
-    if args.quiet is True:
-        args.verbose = False
-
     # Ensure before and after region length is positive
     if args.beforeRegionStartLength < 0:
         print(f"beforeRegionStartLength changed from {args.beforeRegionStartLength} into {abs(args.beforeRegionStartLength)}")
@@ -361,14 +337,25 @@ def process_args(args=None):
 
     if args.command == 'scale-regions':
         args.nanAfterEnd = False
-        args.referencePoint = None
+        args.referencePoint = ""
     elif args.command == 'reference-point':
         if args.beforeRegionStartLength == 0 and \
                 args.afterRegionStartLength == 0:
             sys.exit("\nUpstrean and downstream regions are both "
                      "set to 0. Nothing to output. Maybe you want to "
                      "use the scale-regions mode?\n")
-
+    if args.beforeRegionStartLength % args.binSize != 0:
+        sys.exit("\nThe --beforeRegionStartLength value must be a multiple of the --binSize value.")
+    if args.afterRegionStartLength % args.binSize != 0:
+        sys.exit("\nThe --afterRegionStartLength value must be a multiple of the --binSize value.")
+    if not args.samplesLabel:
+        args.samplesLabel = []
+    if not args.sortUsingSamples:
+        args.sortUsingSamples = []
+    if not args.minThreshold:
+        args.minThreshold = 0.0
+    if not args.maxThreshold:
+        args.maxThreshold = 0.0
     return args
 
 
@@ -396,12 +383,11 @@ def main(args=None):
                   'unscaled 3 prime': args.unscaled3prime
                   }
     # Assert all  regions and scores exist
-    print(parameters)
-    print(args)
     r_computematrix(
         args.command,
         args.regionsFileName,
         args.scoreFileName,
+        args.samplesLabel,
         args.beforeRegionStartLength,
         args.afterRegionStartLength,
         args.unscaled5prime,
@@ -409,6 +395,19 @@ def main(args=None):
         args.regionBodyLength,
         args.binSize,
         args.missingDataAsZero,
+        args.keepExons, # --metagene or not.
+        args.transcriptID,
+        args.exonID,
+        args.transcript_id_designator,
+        args.scale,
+        args.nanAfterEnd,
+        args.skipZeros,
+        args.minThreshold,
+        args.maxThreshold,
+        args.averageTypeBins,
+        args.sortRegions,
+        args.sortUsing,
+        args.sortUsingSamples,
         args.referencePoint,
         args.numberOfProcessors,
         args.verbose,

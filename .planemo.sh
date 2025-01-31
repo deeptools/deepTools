@@ -1,7 +1,7 @@
 #!/bin/bash
 # Some versions of planemo don't handle symlinks
 unlink galaxy/wrapper/test-data/test.bw
-cp deeptools/test/test_heatmapper/test.bw galaxy/wrapper/test-data/test.bw
+cp pydeeptools/deeptools/test/test_heatmapper/test.bw galaxy/wrapper/test-data/test.bw
 
 if [[ $1 == "1" ]] ; then
     wrappers="galaxy/wrapper/alignmentSieve.xml \

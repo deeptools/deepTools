@@ -4,7 +4,7 @@
         <token name="@BINARY@">bamPEFragmentSize</token>
         <import>deepTools_macros.xml</import>
     </macros>
-    <expand macro="requirements" />
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         @multiple_input_bams@
@@ -38,12 +38,11 @@
 ]]>
     </command>
     <inputs>
-        <expand macro="multiple_input_bams" MIN="1" />
-        <expand macro="custom_sample_labels" />
+        <expand macro="multiple_input_bams" MIN="1"/>
+        <expand macro="custom_sample_labels"/>
         <param argument="--histogram" type="boolean" truevalue="--histogram" falsevalue=""
-            label="Get the distribution of read/fragment lengths as a histogram"
-            help=""/>
-        <expand macro="input_image_file_format" />
+            label="Get the distribution of read/fragment lengths as a histogram"/>
+        <expand macro="input_image_file_format"/>
         <param argument="--samplesLabel" type="text" size="30"
             label="Labels for the samples (each BAM file) plotted"
             help="The default is to use the file name of the sample. The sample labels should be separated by
@@ -53,13 +52,13 @@
                </valid>
             </sanitizer>
         </param>
-        <expand macro="plotTitle" />
+        <expand macro="plotTitle"/>
         <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+            <param name="showAdvancedOpt" type="select" label="Show advanced options">
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
-            <when value="no" />
+            <when value="no"/>
             <when value="yes">
                 <param argument="--binSize" type="integer" value="1000" min="1" optional="true"
                     label="bin size, in bases" help="Length in bases of the window used to sample the genome. (--binSize)"/>
@@ -68,18 +67,17 @@
                     help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased. (--distanceBetweenBins)"/>
                 <param argument="--table" type="boolean" truevalue="--table" falsevalue=""
                     label="Write metrics to a tab-separated file?"
-                    help="Write the read/fragment metrics to a tab-separated file, which is primarily useful for more automated downstream processing." />
+                    help="Write the read/fragment metrics to a tab-separated file, which is primarily useful for more automated downstream processing."/>
                 <param argument="--outRawFragmentLengths" type="boolean" truevalue="--outRawFragmentLengths" falsevalue=""
                     label="Write a file containing the read/fragment length information?"
-                    help="Write the read/fragment length distribution underlying the (optional) plot to a file. This can then be processed in R or other downstream applications." />
+                    help="Write the read/fragment length distribution underlying the (optional) plot to a file. This can then be processed in R or other downstream applications."/>
                 <param argument="--logScale" type="boolean" truevalue="--logScale" falsevalue=""
                     label="Plot log frequencies"
-                    help="Plot the frequencies on the log10 scale" />
-
+                    help="Plot the frequencies on the log10 scale"/>
                 <param argument="--maxFragmentLength" type="integer" min="0" value="0"
                     label="Maximum fragment length"
-                    help="Maximum fragment length included in the histogram. A value of 0 (the default) denotes twice the mean fragment length" />
-                <expand macro="blacklist" />
+                    help="Maximum fragment length included in the histogram. A value of 0 (the default) denotes twice the mean fragment length"/>
+                <expand macro="blacklist"/>
             </when>
         </conditional>
 
@@ -89,10 +87,10 @@
         <data name="histogram_outfile" format="png" label="${tool.name} on ${on_string}: Read/Fragment histogram">
             <filter>histogram is True</filter>
             <change_format>
-                <when input="outFileFormat" value="pdf" format="pdf" />
-                <when input="outFileFormat" value="svg" format="svg" />
-                <when input="outFileFormat" value="eps" format="eps" />
-                <when input="outFileFormat" value="plotly" format="html" />
+                <when input="outFileFormat" value="pdf" format="pdf"/>
+                <when input="outFileFormat" value="svg" format="svg"/>
+                <when input="outFileFormat" value="eps" format="eps"/>
+                <when input="outFileFormat" value="plotly" format="html"/>
             </change_format>
         </data>
         <data name="table" format="tabular" label="${tool.name} on ${on_string}: Read/Fragment metrics in tabular format">
@@ -103,20 +101,20 @@
         </data>
     </outputs>
     <tests>
-        <test>
-            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam" />
-            <param name="histogram" value="True" />
-            <param name="plotTitle" value="Test Plot" />
-            <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt" />
-            <output name="histogram_outfile" file="bamPEFragmentSize_histogram_result1.png" ftype="png" compare="sim_size" />
+        <test expect_num_outputs="4">
+            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <param name="histogram" value="True"/>
+            <param name="plotTitle" value="Test Plot"/>
+            <output name="outfile" file="bamPEFragmentSize_result1.txt" ftype="txt"/>
+            <output name="histogram_outfile" file="bamPEFragmentSize_histogram_result1.png" ftype="png" compare="sim_size"/>
         </test>
-        <test>
-            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="table" value="True" />
-            <param name="outRawFragmentLengths" value="yes" />
-            <output name="table" file="bamPEFragmentSize_table1.txt" ftype="tabular" />
-            <output name="fragLengths" file="bamPEFragmentSize_lengths1.txt" ftype="tabular" />
+        <test expect_num_outputs="3">
+            <param name="bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="table" value="True"/>
+            <param name="outRawFragmentLengths" value="yes"/>
+            <output name="table" file="bamPEFragmentSize_table1.txt" ftype="tabular"/>
+            <output name="fragLengths" file="bamPEFragmentSize_lengths1.txt" ftype="tabular"/>
         </test>
     </tests>
     <help>
@@ -160,5 +158,5 @@ The "Size" is the fragment (or read, for single-end datasets) size and "Occurren
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>

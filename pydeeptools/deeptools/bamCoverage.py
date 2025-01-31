@@ -211,7 +211,7 @@ def main(args=None):
             if args.Offset[0] == 0:
                 sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")
             if args.Offset[1] > 0 and args.Offset[1] < args.Offset[0]:
-                sys.exir("'Error*: The right side bound is less than the left-side bound. This is inappropriate.")
+                sys.exit("'Error*: The right side bound is less than the left-side bound. This is inappropriate.")
         else:
             if args.Offset[0] == 0:
                 sys.exit("*Error*: An offset of 0 isn't allowed, since offsets are 1-based positions inside each alignment.")

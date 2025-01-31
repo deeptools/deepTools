@@ -21,6 +21,17 @@ currently available.
 If the file names in the figure mean nothing to you,
 please make sure to check our :doc:`content/help_glossary`.
 
+deepTools 4.0.0
+---------------
+As of deepTools 4.0.0, quite big changes have been made to the computation backend (which is now written in `rust <https://www.rust-lang.org/>`_).
+The main idea behind this change is to make some tools faster and more robust. 
+Useability of the tools are not affected. But note that the output (read precision) might be slightly different than before.
+
+ - :doc:`content/tools/bamCoverage`
+ - :doc:`content/tools/bamCompare`
+ - :doc:`content/tools/computeMatrix`
+ - :doc:`content/tools/multiBamSummary`
+
 
 Contents:
 ---------

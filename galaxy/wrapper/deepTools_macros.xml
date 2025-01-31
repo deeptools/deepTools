@@ -1,14 +1,14 @@
 <macros>
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
-    <token name="@TOOL_VERSION@">3.5.6</token>
-    <token name="@GALAXY_VERSION@">22.05</token>
+    <token name="@TOOL_VERSION@">4.0.0</token>
+    <token name="@GALAXY_VERSION@">23.2</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement>
-            <requirement type="package" version="1.9">samtools</requirement>
+            <!-- <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement> -->
+            <requirement type="package" version="1.21">samtools</requirement>
         </requirements>
-        <expand macro="stdio" />
+        <expand macro="stdio"/>
         <version_command>@BINARY@ --version</version_command>
     </xml>
 
@@ -18,7 +18,7 @@
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
-            <when value="no" />
+            <when value="no"/>
             <when value="yes">
                 <yield/>
             </when>
@@ -33,11 +33,11 @@
     <xml name="plotWidthHeight" tokens="PLOTWIDTH,PLOTHEIGHT">
         <param argument="--plotHeight" type="float" value="@PLOTHEIGHT@" min="1.0"
             label="Plot height"
-            help="Height in cm. The default for the plot height is @PLOTHEIGHT@ centimeters. The minimum value is 1 cm." />
+            help="Height in cm. The default for the plot height is @PLOTHEIGHT@ centimeters. The minimum value is 1 cm."/>
 
         <param argument="--plotWidth" type="float" value="@PLOTWIDTH@" min="1.0"
             label="Plot width"
-            help="Width in cm. The default value is @PLOTWIDTH@ centimeters. The minimum value is 1 cm." />
+            help="Width in cm. The default value is @PLOTWIDTH@ centimeters. The minimum value is 1 cm."/>
     </xml>
 
     <token name="@ADVANCED_OPTS_READ_PROCESSING@">
@@ -49,7 +49,7 @@
         $advancedOpt.ignoreDuplicates
         $advancedOpt.centerReads
         #if $advancedOpt.minMappingQuality:
-            --minMappingQuality '$advancedOpt.minMappingQuality'
+            --minMappingQuality $advancedOpt.minMappingQuality
         #end if
         #if $advancedOpt.samFlagInclude:
             --samFlagInclude $advancedOpt.samFlagInclude
@@ -79,10 +79,10 @@
     </token>
 
     <xml name="heatmap_options">
-        <expand macro="zMin_zMax" />
-        <expand macro="colorMap" />
-        <expand macro="plotTitle" />
-        <expand macro="plotNumbers" />
+        <expand macro="zMin_zMax"/>
+        <expand macro="colorMap"/>
+        <expand macro="plotTitle"/>
+        <expand macro="plotNumbers"/>
     </xml>
 
     <token name="@HEATMAP_OPTIONS@">
@@ -101,7 +101,7 @@
     <xml name="includeZeros">
         <param argument="--includeZeros" type="boolean" truevalue="--includeZeros" falsevalue=""
             label="Include zeros"
-            help="If set, then regions with zero counts for *all* BAM/CRAM files are included. The default behavior is to ignore such regions." />
+            help="If set, then regions with zero counts for *all* BAM/CRAM files are included. The default behavior is to ignore such regions."/>
     </xml>
 
     <xml name="zMin_zMax">
@@ -163,16 +163,16 @@
                             If more specific clustering methods are required it is advisable to save the underlying matrix and
                             run the clustering using other software."/>
                     </when>
-                    <when value="none" />
+                    <when value="none"/>
                 </conditional>
                 <param argument="--silhouette" type="boolean" truevalue="--silhouette" falsevalue=""
                     label="Compute the silhouette score for each region"
                     help="Compute the silhouette score for regions. This is only applicable if clustering has been performed.
                     The silhouette score is a measure of how similar a region is to other regions in the same cluster as
                     opposed to those in other clusters. It will be reported in the final column of the BED file with regions.
-                    The silhouette evaluation can be very slow when you have more than 100 000 regions." />
+                    The silhouette evaluation can be very slow when you have more than 100 000 regions."/>
             </when>
-            <when value="yes" />
+            <when value="yes"/>
         </conditional>
     </xml>
 
@@ -204,37 +204,37 @@
     <xml name="fragLength">
         <param argument="--minFragmentLength" type="integer" optional="True" value="0" min="0"
             label="Minimum fragment length for inclusion."
-            help="This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments." />
+            help="This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments."/>
         <param argument="--maxFragmentLength" type="integer" optional="True" value="0" min="0"
             label="Maximum fragment length for inclusion."
-            help="A value of 0 (the default) is equivalent to no maximum." />
+            help="A value of 0 (the default) is equivalent to no maximum."/>
     </xml>
 
     <xml name="read_processing_options">
-        <expand macro="extendReads" />
-        <expand macro="ignoreDuplicates" />
-        <expand macro="centerReads" />
-        <expand macro="minMappingQuality" />
-        <expand macro="samFlags" />
-        <expand macro="fragLength" />
+        <expand macro="extendReads"/>
+        <expand macro="ignoreDuplicates"/>
+        <expand macro="centerReads"/>
+        <expand macro="minMappingQuality"/>
+        <expand macro="samFlags"/>
+        <expand macro="fragLength"/>
     </xml>
 
     <xml name="gtf_options">
         <param argument="--metagene" type="boolean" truevalue="--metagene" falsevalue=""
             label="Use a metagene model"
-            help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored." />
+            help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored."/>
         <param argument="--transcriptID" optional="True" value="transcript" type="text"
             label="transcript designator"
-            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as transcripts. Default: transcript" />
+            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as transcripts. Default: transcript"/>
         <param argument="--exonID" optional="True" value="exon" type="text"
             label="exon designator"
-            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as exons. CDS would be another common value for this. Default: exon" />
+            help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as exons. CDS would be another common value for this. Default: exon"/>
         <param argument="--transcript_id_designator" optional="True" value="transcript_id" type="text"
             label="transcriptID key designator"
             help="Each region has an ID (e.g., ACTB) assigned to it, which for BED files is either column 4 (if it exists)
                   or the interval bounds. For GTF files this is instead stored in the last column as a key:value pair (e.g.,
                   as 'transcript_id ACTB', for a key of transcript_id and a value of ACTB). In some cases it can be
-                  convenient to use a different identifier. To do so, set this to the desired key. Default: transcript_id" />
+                  convenient to use a different identifier. To do so, set this to the desired key. Default: transcript_id"/>
     </xml>
 
 
@@ -257,12 +257,12 @@
                 <option value="yes">Paired-end extension. Suitable only for paired-end datasets.</option>
                 <option value="custom">A custom length, which will be applied to ALL reads.</option>
             </param>
-            <when value="no" />
-            <when value="yes" />
+            <when value="no"/>
+            <when value="yes"/>
             <when value="custom">
                 <param name="extendReadsValue" type="integer" value="300" min="1"
                     label="Extend reads to the given average fragment size"
-                    help="Extend all reads to this length" />
+                    help="Extend all reads to this length"/>
             </when>
         </conditional>
     </xml>
@@ -293,7 +293,7 @@
     <xml name="ignoreDuplicates">
         <param argument="--ignoreDuplicates" type="boolean" truevalue="--ignoreDuplicates" falsevalue=""
             label="Ignore duplicates"
-            help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read." />
+            help="If set, reads that have the same orientation and start position will be considered only once. If reads are paired, the mate position also has to coincide to ignore a read."/>
     </xml>
 
     <xml name="sortUsing">
@@ -336,7 +336,7 @@
     <xml name="skipZeros">
         <param argument="--skipZeros" type="boolean" truevalue="--skipZeros" falsevalue=""
             label ="Skip zeros"
-            help ="If set, then zero counts that happen for *all* BAM/CRAM files given are ignored. This may result in fewer considered regions." />
+            help ="If set, then zero counts that happen for *all* BAM/CRAM files given are ignored. This may result in fewer considered regions."/>
     </xml>
 
     <xml name="fragmentLength">
@@ -347,7 +347,7 @@
 
     <xml name="scaleFactor">
         <param argument="--scaleFactor" type="float" value="1" label="Scaling factor"
-            help="The computed scaling factor will be multiplied by this (default 1)." />
+            help="The computed scaling factor will be multiplied by this (default 1)."/>
     </xml>
 
     <xml name="scaleFactors">
@@ -357,12 +357,12 @@
 
     <xml name="stdio">
         <stdio>
-            <exit_code range="1:" />
-            <exit_code range=":-1" />
-            <regex match="Error:" />
-            <regex match="Exception:" />
-            <regex match="EXception:" />
-            <regex match="Traceback" />
+            <exit_code range="1:"/>
+            <exit_code range=":-1"/>
+            <regex match="Error:"/>
+            <regex match="Exception:"/>
+            <regex match="EXception:"/>
+            <regex match="Traceback"/>
         </stdio>
     </xml>
 
@@ -389,7 +389,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
     <xml name="citations">
         <citations>
             <citation type="doi">10.1093/nar/gkw257</citation>
-            <yield />
+            <yield/>
         </citations>
     </xml>
 
@@ -406,7 +406,7 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
         </when>
         <when value="Yes">
             <repeat name="multibam_repeats" min="@MIN@" title="BAM/CRAM Files">
-                <param argument="--bamfiles" type="data" format="bam,cram" label="BAM/CRAM file" help="" />
+                <param argument="--bamfiles" type="data" format="bam,cram" label="BAM/CRAM file" help=""/>
             </repeat>
         </when>
         </conditional>
@@ -444,8 +444,8 @@ is vital to you, select Yes below.">
 	    <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &apos;sample 1&apos;; &apos;sample 2&apos;)">
             <sanitizer>
                 <valid initial="string.letters,string.digits,string.whitespace">
-                    <add value="&apos;" />
-                    <add value="_" />
+                    <add value="&apos;"/>
+                    <add value="_"/>
                 </valid>
             </sanitizer>
             <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
@@ -457,7 +457,7 @@ is vital to you, select Yes below.">
     <xml name="plotTitle">
         <param argument="--plotTitle" type="text" value="" size="30" optional="True"
             label="Title of the plot"
-            help="Title of the plot, to be printed on top of the generated image." />
+            help="Title of the plot, to be printed on top of the generated image."/>
     </xml>
 
     <xml name="legendLocation">
@@ -479,7 +479,7 @@ is vital to you, select Yes below.">
     <xml name="labelRotation">
         <param argument="--labelRotation" type="integer" value="0"
             label="Rotation of the X-axis labels (in degrees)"
-            help="The rotation of things like TSS or TES on the X-axis of profile plots in both plotHeatmap and plotProfile. The default is 0, positive values denome a counter-clockwise rotation." />
+            help="The rotation of things like TSS or TES on the X-axis of profile plots in both plotHeatmap and plotProfile. The default is 0, positive values denome a counter-clockwise rotation."/>
     </xml>
 
 
@@ -554,7 +554,7 @@ is vital to you, select Yes below.">
     <xml name="blacklist">
         <param argument="--blackListFileName" type="data" format="bed,gtf" multiple="true" optional="true" min="0"
             label="Blacklisted regions in BED/GTF format"
-            help="One or more files containing regions to exclude from the analysis" />
+            help="One or more files containing regions to exclude from the analysis"/>
     </xml>
 
     <token name="@blacklist@">
@@ -574,7 +574,7 @@ is vital to you, select Yes below.">
     <xml name="multiple_bed">
         <param argument="--BED" type="data" format="bed,gtf" min="1" multiple="true"
             label="Regions in BED/GTF format"
-            help="One or more files containing regions to include in the analysis" />
+            help="One or more files containing regions to include in the analysis"/>
     </xml>
 
     <token name="@multiple_bed@">
@@ -601,13 +601,13 @@ is vital to you, select Yes below.">
             <when value="cached">
                 <param name="input1_2bit" type="select" label="Using reference genome" help="If your genome of interest is not listed, contact the Galaxy team">
                     <options from_data_table="lastz_seqs">
-                        <filter type="sort_by" column="1" />
-                        <validator type="no_options" message="No indexes are available." />
+                        <filter type="sort_by" column="1"/>
+                        <validator type="no_options" message="No indexes are available."/>
                     </options>
                 </param>
             </when>
             <when value="history">
-                <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format" />
+                <param name="input1" type="data" format="twobit" label="Select a reference dataset in 2bit format"/>
             </when>
         </conditional>
     </xml>
@@ -639,13 +639,13 @@ is vital to you, select Yes below.">
                 <param argument="--effectiveGenomeSize" type="integer" value="" label="Effective genome size"
                        help="e.g. ce10: 93260000, dm3: 130428560, hg19: 2685511504, mm9: 2304947926"/>
             </when>
-            <when value="93260000" />
-            <when value="130428560" />
-            <when value="125464728" />
-            <when value="2685511504" />
-            <when value="2701495761" />
-            <when value="2304947926" />
-            <when value="2308125349" />
+            <when value="93260000"/>
+            <when value="130428560"/>
+            <when value="125464728"/>
+            <when value="2685511504"/>
+            <when value="2701495761"/>
+            <when value="2304947926"/>
+            <when value="2308125349"/>
         </conditional>
     </xml>
 
@@ -659,7 +659,7 @@ is vital to you, select Yes below.">
                  skip non-covered regions depends on the interpretation
                  of the data. Non-covered regions may represent, for
                  example, repetitive regions that should be ignored.
-                 (default: False)" />
+                 (default: False)"/>
     </xml>
 
     <xml name="skipZeroOverZero">
@@ -679,7 +679,7 @@ is vital to you, select Yes below.">
                   tend to clump together in the genome. In such cases the
                   region-based sampling employed by deepTools would produce
                   inaccurate scaling factors. Note that this option results
-                  in the process taking significantly more time to complete." />
+                  in the process taking significantly more time to complete."/>
     </xml>
 
     <xml name="input_save_matrix_values">
@@ -692,9 +692,9 @@ is vital to you, select Yes below.">
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
-            <when value="no" />
+            <when value="no"/>
             <when value="yes">
-                <yield />
+                <yield/>
                 <param name="saveSortedRegions" type="boolean"
                        argument="--outFileSortedRegions"
                        label="Save the regions after skipping zeros or min/max threshold values"
@@ -716,17 +716,17 @@ is vital to you, select Yes below.">
     </xml>
 
     <xml name="output_dpi">
-        <param argument="--dpi" name="dpi" type="integer" value="200" size="3" optional="True"
+        <param argument="--dpi" type="integer" value="200" size="3" optional="True"
             label="Image dpi" help=""/>
     </xml>
 
     <xml name="output_image_file_format">
         <data format="png" name="outFileName" label="${tool.name} on ${on_string}: Image">
             <change_format>
-                <when input="output.outFileFormat" value="pdf" format="pdf" />
-                <when input="output.outFileFormat" value="svg" format="svg" />
-                <when input="output.outFileFormat" value="eps" format="eps" />
-                <when input="output.outFileFormat" value="plotly" format="html" />
+                <when input="output.outFileFormat" value="pdf" format="pdf"/>
+                <when input="output.outFileFormat" value="svg" format="svg"/>
+                <when input="output.outFileFormat" value="eps" format="eps"/>
+                <when input="output.outFileFormat" value="plotly" format="html"/>
             </change_format>
         </data>
     </xml>
@@ -734,10 +734,10 @@ is vital to you, select Yes below.">
     <xml name="output_image_file_format_not_nested">
         <data format="png" name="outFileName" label="${tool.name} on ${on_string}: Image">
             <change_format>
-                <when input="outFileFormat" value="pdf" format="pdf" />
-                <when input="outFileFormat" value="svg" format="svg" />
-                <when input="outFileFormat" value="eps" format="eps" />
-                <when input="outFileFormat" value="plotly" format="html" />
+                <when input="outFileFormat" value="pdf" format="pdf"/>
+                <when input="outFileFormat" value="svg" format="svg"/>
+                <when input="outFileFormat" value="eps" format="eps"/>
+                <when input="outFileFormat" value="plotly" format="html"/>
             </change_format>
         </data>
     </xml>

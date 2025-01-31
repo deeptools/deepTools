@@ -1,49 +1,87 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use crate::filehandler::{read_bedfiles, chrombounds_from_bw, bwintervals, header_matrix, write_matrix};
+use crate::filehandler::{read_bedfile, read_gtffile, chrombounds_from_bw, bwintervals, header_matrix, write_matrix, is_bed_or_gtf};
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
 use std::collections::HashMap;
 use std::path::Path;
+use itertools::Itertools;
+use crate::calc::{mean_float, median_float, max_float, min_float, sum_float};
+use crate::covcalc::{Region, Gtfparse, Scalingregions, Bin};
 
 #[pyfunction]
 pub fn r_computematrix(
-    mode: &str,
-    bedlis: Py<PyList>,
-    bwlis: Py<PyList>,
-    upstream: u64,
-    downstream: u64,
-    unscaled5prime: u64,
-    unscaled3prime: u64,
-    regionbodylength: u64,
-    binsize: u64,
-    missingdatazero: bool,
-    referencepoint: &str,
-    nproc: usize,
-    verbose: bool,
-    ofile: &str
+    mode: &str, // reference-point or scale-regions
+    regionlis: Py<PyList>, // python list of region files (bed or gtf)
+    bwlis: Py<PyList>, // python list of bigwig files
+    sampleslabel: Py<PyList>, // python list of sample labels, if empty, use bigwig file names.
+    upstream: u32, // upstream region to consider
+    downstream: u32, // downstream region to consider
+    unscaled5prime: u32, // unscaled region 5' of the anchorpoint, only used in scale-regions mode.
+    unscaled3prime: u32, // unscaled region 3' of the anchorpoint, only used in scale-regions mode.
+    regionbodylength: u32, // length of the region body (after scaling), only used in scale-regions mode.
+    binsize: u32, // binsize to use for the matrix
+    missingdatazero: bool, // Encode missing data as 0. Default is false (and will be encoded as NA).
+    metagene: bool, // If set, 'exons' are stitched together to form a metagene
+    txnid: &str, // transcript id to use when parsing GTF file
+    exonid: &str, // exon id to use when parsing GTF file
+    txniddesignator: &str, // designator to use when parsing GTF file
+    scale: f32, // scaling factor for writing out values. default is 1.0 (no scaling)
+    nanafterend: bool, // end regions will treated as nans. Default is false.
+    skipzeros: bool, // skip regions with all zeros. Default is false.
+    minthresh: f32, // minimum threshold to keep a region. If not set it will equal 0.0
+    maxthresh: f32, // maximum threshold to keep a region. if not set it will equal 0.0
+    averagetypebins: &str, // operation to summarize values over bins. Default is mean.
+    sortregions: &str, // either ascend, descend or keep. Default is keep (and ignores sortusing).
+    sortusing: &str, // metric to sort on. Either mean median max min sum region_length. Default is mean.
+    sortusingsamples: Py<PyList>, // list of samples to sort on. If empty, use all samples.
+    referencepoint: &str, // reference point to use. Either TSS, TES or center. Default is TSS. Only used in reference-point mode.
+    nproc: usize, // number of threads.
+    verbose: bool, // verbose output.
+    ofile: &str // npz file to write to.
 ) -> PyResult<()> {
-
     // Extract the bed and bigwig files from pyList to Vec.
-    let mut bed_files: Vec<String> = Vec::new();
+    let mut region_files: Vec<String> = Vec::new();
     let mut bw_files: Vec<String> = Vec::new();
+    let mut samples_label: Vec<String> = Vec::new();
+    let mut sort_using_samples: Vec<u32> = Vec::new();
     Python::with_gil(|py| {
-        bed_files = bedlis.extract(py).expect("Failed to retrieve bed file strings.");
-        bw_files = bwlis.extract(py).expect("Failed to retrieve bed file strings.");
+        region_files = regionlis.extract(py).expect("Failed to retrieve bed files.");
+        bw_files = bwlis.extract(py).expect("Failed to retrieve bigwig filess.");
+        samples_label = sampleslabel.extract(py).expect("Failed to retrieve samples label.");
+        sort_using_samples = sortusingsamples.extract(py).expect("Failed to retrieve the samples to sort on.");
     });
+    // Assert that samples_label equals bw_files, if samples_label is not empty.
+    if !samples_label.is_empty() {
+        assert_eq!(samples_label.len(), bw_files.len(), "Number of samplelabels do not match number of bigwig files.");
+    }
+    // Assert that sort_using_samples is smaller or equal to bw_files.
+    assert!(sort_using_samples.len() <= bw_files.len(), "Number of samples to sort on is larger than number of bigwig files provided.");
+    // Assert that no value in sort_using_samples is larger than bw_files.
     // Get chromosome boundaries from first bigwig file.
     let chromsizes = chrombounds_from_bw(&bw_files.get(0).unwrap());
     // compute number of columns
     let bpsum = &upstream + &downstream + &unscaled5prime + &unscaled3prime + &regionbodylength;
     // Get the 'basepaths' of the bed files to use as labels later on.
-    let mut bedlabels: Vec<String> = Vec::new();
-    for bed in bed_files.iter() {
+    let mut regionlabels: Vec<String> = Vec::new();
+    for bed in region_files.iter() {
         let entryname = Path::new(bed)
             .file_stem()
             .unwrap()
             .to_string_lossy()
             .into_owned();
-        bedlabels.push(entryname);
+        regionlabels.push(entryname);
+    }
+    if samples_label.is_empty() {
+        // no samples labels provided via CLI, retrieve them from bigwig names.
+        for bw in bw_files.iter() {
+            let entryname = Path::new(bw)
+                .file_stem()
+                .unwrap()
+                .to_string_lossy()
+                .into_owned();
+            samples_label.push(entryname);
+        }
     }
     // Define the scaling regions in a struct
     let scale_regions = Scalingregions {
@@ -53,26 +91,65 @@ pub fn r_computematrix(
         unscaled3prime: unscaled3prime,
         regionbodylength: regionbodylength,
         binsize: binsize,
-        cols_expected: ((bw_files.len() as u64 * bpsum) / binsize) as usize,
+        cols_expected: ((bw_files.len() * bpsum as usize) / binsize as usize),
+        bpsum: bpsum,
         missingdata_as_zero: missingdatazero,
+        scale: scale,
+        nan_after_end: nanafterend,
+        skipzero: skipzeros,
+        minthresh: minthresh,
+        maxthresh: maxthresh,
         referencepoint: referencepoint.to_string(),
         mode: mode.to_string(),
         bwfiles: bw_files.len(),
-        avgtype: "mean".to_string(),
+        avgtype: averagetypebins.to_string(),
         verbose: verbose,
         proc_number: nproc,
-        bedlabels: bedlabels
+        regionlabels: regionlabels,
+        bwlabels: samples_label
     };
+    let gtfparse = Gtfparse {
+        metagene: metagene,
+        txnid: txnid.to_string(),
+        exonid: exonid.to_string(),
+        txniddesignator: txniddesignator.to_string(),
+    };
+    if verbose {
+        println!("Region files: {:?}", &region_files);
+        println!("Bigwig files: {:?}", &bw_files);
+        println!("Samples labels: {:?}", scale_regions.bwlabels);
+        println!("Sort using samples: {:?}", &sort_using_samples);
+    }
+    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+    
     // Parse regions from bed files. Note that we retain the name of the bed file (in case there are more then 1)
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
-    let (regions, regionsizes) = read_bedfiles(&bed_files);
-    let slopregions = slop_regions(
-        &regions,
-        &scale_regions,
-        &chromsizes
-    );
-    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
-    let matrix: Vec<Vec<f64>> = pool.install(|| {
+    let mut regions: Vec<Region> = Vec::new();
+    let mut regionsizes: HashMap<String, u32> = HashMap::new();
+    region_files.iter()
+        .map(|r| {
+            let ftype = is_bed_or_gtf(r);
+            
+            match ftype.as_str() {
+                "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
+                "bed" => read_bedfile(r, metagene, chromsizes.keys().collect()),
+                _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
+            }
+        })
+        .for_each(|(reg, regsize)| {
+            regions.extend(reg);
+            regionsizes.insert(regsize.0, regsize.1);
+        });
+    // Define slop regions, which contain the actual 'bins' to query the bigwig files.
+    let slopregions = pool.install(|| {
+        regions.par_iter()
+            .map(|region| slop_region(&region, &scale_regions, &chromsizes))
+            .collect::<Vec<_>>()
+    });
+
+    // Discriminate between reference-point and scale-regions mode.
+
+    let mut matrix: Vec<Vec<f32>> = pool.install(|| {
         bw_files.par_iter()
             .map(|i| bwintervals(&i, &regions, &slopregions, &scale_regions))
             .reduce(
@@ -85,81 +162,184 @@ pub fn r_computematrix(
                 },
             )
     });
-    write_matrix(
-        header_matrix(&scale_regions, regionsizes),
-        matrix,
+    matrix_dump(
+        sortregions,
+        sortusing,
+        sort_using_samples,
+        regions,
+        matrix, 
+        scale_regions,
+        regionsizes,
         ofile,
-        regions
+        verbose
     );
+
     Ok(())
 }
 
-fn slop_regions(
-    regions: &Vec<(String, u64, u64, String, String, String)>,
+fn slop_region(
+    region: &Region,
     scale_regions: &Scalingregions,
-    chromsizes: &HashMap<String, u64>
-) -> Vec<Vec<(u64, u64)>> {
-    let mut regionranges: Vec<Vec<(u64, u64)>> = Vec::new();
-    // Idea is to create a vector of tuples with start and end of every bin (binsize passed by computeMatrix).
-    // The number of columns per region needs to be fixed per region.
+    chromsizes: &HashMap<String, u32>
+) -> Vec<Bin> {
+    // Idea is to create a vector Bins (Conbin or Catbin) which encodes start and end of every bin (binsize passed by computeMatrix).
+    // Catbin takes care of the situation where one needs metagenes, and thus multiple start/end per bin are possible.
+    // The number of columns is predetermined
     // Note that the before / after could mean that we run out of chromosome. 
     // Invalid regions (later to be encoded as NA or 0), will be pushed as (0,0) tuples.
-    let col_expected = scale_regions.cols_expected / scale_regions.bwfiles;
-    for region in regions.iter() {
-        // To implement: 
-        // // scale-regions + unscaled 5 and 3
-        // // + and - encodings
-        let chromend: u64 = *chromsizes.get(&region.0).unwrap();
-        assert!(region.2 <= chromend, "Region end goes beyond chromosome boundary. Fix your bed files. {:?} > {}", region, chromend);
-        assert!(region.1 <= chromend, "Region start goes beyond chromosome boundary. Fix your bed files. {:?} > {}", region, chromend);
-
-        let anchorpoint = match scale_regions.referencepoint.as_str() {
-            "TSS" => region.1,
-            "TES" => region.2,
-            "center" => (region.1 + region.2) / 2,
-            _ => panic!("Reference should either be TSS, TES or center. {:?} is not supported.", scale_regions.referencepoint),
-        };
-
-        let mut regionsizes: Vec<(u64, u64)> = Vec::new();
-        let mut absstart: i64 = anchorpoint as i64 - scale_regions.upstream as i64;
-        let absstop: i64 = anchorpoint as i64 + scale_regions.downstream as i64;
-        while absstart < absstop {
-            let bin = absstart + scale_regions.binsize as i64;
-            if absstart < 0  || bin > chromend as i64 {
-                regionsizes.push((0,0));
-            } else {
-                regionsizes.push((absstart as u64, bin as u64))
-            }
-            absstart = bin;
-        }
-        assert!(
-            regionsizes.len() == col_expected,
-            "Number of bins does not match expected number of columns: (CHROMLEN = {}) {:?} \n \n {:?}, \n \n {} != {}",
-            *chromsizes.get(&region.0).unwrap(),
-            region,
-            regionsizes,
-            regionsizes.len(),
-            col_expected,
-        );
-        regionranges.push(regionsizes);
-    }
-    return regionranges;
+    // Note that if nan_after_end is set to true, we will push (0,0) tuples after the end of the region.
+    
+    // Get the chromosome end for a specific region, and assert that the region stays within the chromosome boundary.
+    // Note that only a right check is needed, as positions are u32.
+    // Note that we know &region.chrom is inside chromsizes already, since this filtering is done at the region reading stage.
+    let chromend: u32 = *chromsizes.get(&region.chrom).unwrap();
+    region.assert_end(chromend);
+    region.get_anchor_bins(scale_regions, chromend)
 }
 
-pub struct Scalingregions {
-    pub upstream: u64,
-    pub downstream: u64,
-    pub unscaled5prime: u64,
-    pub unscaled3prime: u64,
-    pub regionbodylength: u64,
-    pub binsize: u64,
-    pub cols_expected: usize,
-    pub missingdata_as_zero: bool,
-    pub referencepoint: String,
-    pub mode: String,
-    pub bwfiles: usize,
-    pub avgtype: String,
-    pub verbose: bool,
-    pub proc_number: usize,
-    pub bedlabels: Vec<String>
+fn matrix_dump(
+    sortregions: &str,
+    sortusing: &str,
+    sort_using_samples: Vec<u32>,
+    regions: Vec<Region>,
+    matrix: Vec<Vec<f32>>,
+    scale_regions: Scalingregions,
+    regionsizes: HashMap<String, u32>,
+    ofile: &str,
+    verbose: bool
+) {
+    // Takes a pre-computed matrix, resorts it if requested, and writes it to file.
+    // Resort the matrix, if this is requested.
+    if sortregions != "keep" {
+        if verbose {
+            println!("Sorting output matrix with settings: sortRegions: {}, sortUsing {}", sortregions, sortusing);
+        }
+        // If sortusingsamples is set, we need a vector to subset the columns of interest
+        let mut cols_of_interest: Vec<usize> = Vec::new();
+        if !sort_using_samples.is_empty() {
+            for sample_ix in sort_using_samples.iter() {
+                // Note that sort_using_samples is assumed to be 1-index. Hence we need to subtract 1.
+                let start = (sample_ix - 1) * scale_regions.bpsum;
+                let end = start + scale_regions.bpsum;
+                cols_of_interest.extend(start as usize..end as usize);
+            }
+        }
+        let mut regionslices: Vec<(usize, usize)> = Vec::new();
+        let mut rstart: usize = 0;
+        let mut rend: usize = 0;
+        let mut lastregion = &regions[0].name;
+        for (ix, region) in regions.iter().enumerate() {
+            if region.name != *lastregion {
+                regionslices.push((rstart, rend));
+                rstart = ix;
+                rend = ix;
+                lastregion = &region.name;
+            }
+            rend = ix;
+        }
+        regionslices.push((rstart, rend));
+        let mut sortedix: Vec<usize> = Vec::new();
+        if sortusing == "region_length" {
+            if !sort_using_samples.is_empty() && verbose {
+                println!("Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.", sort_using_samples);
+            }
+            sortedix = regionslices
+                .iter()
+                .flat_map(|(start, end)| {
+                    let rslice = &regions[*start..*end+1];
+                    let tix = rslice
+                        .iter()
+                        .enumerate()
+                        .map(|(ix, region)| {
+                            (ix + *start, region.regionlength)
+                        })
+                        .collect::<Vec<_>>()
+                        .iter()
+                        .sorted_by(|ix, metric| ix.1.partial_cmp(&metric.1).unwrap())
+                        .map(|(ix, _)| *ix)
+                        .collect::<Vec<usize>>();
+                    match sortregions {
+                        "ascend" => tix,
+                        "descend" => tix.into_iter().rev().collect(),
+                        _ => panic!("If sortRegions is not keep, it should be either ascend or descend. Not {}", sortregions),
+                    }
+                })
+                .collect();
+        } else {
+            sortedix = regionslices
+                .iter()
+                .flat_map(|(start, end)| {
+                    let rslice = &matrix[*start..*end+1];
+                    let tix = rslice
+                        .iter()
+                        .enumerate()
+                        .map(|(ix, vals)| {
+                            let subset: Vec<_> = if cols_of_interest.is_empty() {
+                                vals.iter().collect()
+                            } else {
+                                cols_of_interest
+                                    .iter()
+                                    .filter_map(|&index| vals.get(index))  // `vec.get(index)` returns Option<&T>
+                                    .collect()
+                            };
+                            let metric = match sortusing {
+                                "mean" => mean_float(subset),
+                                "median" => median_float(subset),
+                                "max" => max_float(subset),
+                                "min" => min_float(subset),
+                                "sum" => sum_float(subset),
+                                _ => panic!("Sortusing should be either mean, median, max, min, sum or region_length. Not {}", sortusing),
+                            };
+                            (ix + *start, metric)
+                        })
+                        .collect::<Vec<_>>()
+                        .iter()
+                        .sorted_by(|ix, metric| ix.1.partial_cmp(&metric.1).unwrap())
+                        .map(|(ix, _)| *ix)
+                        .collect::<Vec<usize>>();
+                    match sortregions {
+                        "ascend" => tix,
+                        "descend" => tix.into_iter().rev().collect(),
+                        _ => panic!("If sortRegions is not keep, it should be either ascend or descend. Not {}", sortregions),
+                    }
+                })
+                .collect();
+            }
+        // assert sorted ix length == matrix length == regions length
+        assert_eq!(
+            sortedix.len(),
+            matrix.len(),
+            "Length of sorted indices does not match matrix length: {} != {}", sortedix.len(), matrix.len()
+        );
+        assert_eq!(
+            sortedix.len(),
+            regions.len(),
+            "Length of sorted indices does not match regions length: {} ! = {}", sortedix.len(), regions.len()
+        );
+
+        // Reorder matrix & regions
+        let sortedmatrix = sortedix
+            .iter()
+            .map(|ix| matrix[*ix].clone())
+            .collect();
+        let sortedregions = sortedix
+            .into_iter()
+            .map(|ix| regions[ix].clone())
+            .collect();
+        write_matrix(
+            header_matrix(&scale_regions, regionsizes),
+            sortedmatrix,
+            ofile,
+            sortedregions,
+            &scale_regions
+        );
+    } else {
+        write_matrix(
+            header_matrix(&scale_regions, regionsizes),
+            matrix,
+            ofile,
+            regions,
+            &scale_regions
+        );
+    }
 }

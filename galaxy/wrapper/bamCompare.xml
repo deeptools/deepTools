@@ -4,7 +4,7 @@
         <token name="@BINARY@">bamCompare</token>
         <import>deepTools_macros.xml</import>
     </macros>
-    <expand macro="requirements" />
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         ln -s '$bamFile1' one.bam &&
@@ -74,16 +74,12 @@
 ]]>
     </command>
     <inputs>
-        <param argument="--bamFile1" format="bam,cram" type="data" label="First BAM/CRAM file (e.g. treated sample)"
-            help=""/>
-        <param argument="--bamFile2" format="bam,cram" type="data" label="Second BAM/CRAM file (e.g. control sample)"
-            help=""/>
-
+        <param argument="--bamFile1" format="bam,cram" type="data" label="First BAM/CRAM file (e.g. treated sample)"/>
+        <param argument="--bamFile2" format="bam,cram" type="data" label="Second BAM/CRAM file (e.g. control sample)"/>
         <param argument="--binSize" type="integer" value="50" min="1"
             label="Bin size in bases"
             help="The genome will be divided into bins of the specified size. For each bin, the overlapping number of fragments (or reads) will be reported.
                 If only half a fragment overlaps then this fraction will be reported."/>
-
         <conditional name="scaling">
             <param name="method" type="select"
                 label="Method to use for scaling the largest sample to the smallest">
@@ -95,14 +91,13 @@
             <when value="SES">
                 <param argument="--sampleLength" type="integer" value="1000" min="10"
                     label="Length in bases used to sample the genome and compute the size or scaling factors."
-                    help="The default is fine. Only change it if you know what you are doing." />
+                    help="The default is fine. Only change it if you know what you are doing."/>
                 <param argument="--numberOfSamples" type="integer" value="100000" min="0"
-                    label="Number of samplings taken from the genome to compute the scaling factors"
-                    help="" />
+                    label="Number of samplings taken from the genome to compute the scaling factors"/>
             </when>
-            <when value="readCount" />
+            <when value="readCount"/>
             <when value="own">
-                <expand macro="scaleFactors" />
+                <expand macro="scaleFactors"/>
             </when>
             <when value="None">
                 <param name="type" type="select" label="Normalization method" >
@@ -132,78 +127,157 @@
                 <option value="second">Returns the scaled value of the second BAM file</option>
             </param>
             <when value="log2">
-                <expand macro="pseudocount" />
+                <expand macro="pseudocount"/>
             </when>
             <when value="ratio">
-                <expand macro="pseudocount" />
+                <expand macro="pseudocount"/>
             </when>
-            <when value="add" />
-            <when value="subtract" />
-            <when value="mean" />
-            <when value="first" />
-            <when value="second" />
+            <when value="add"/>
+            <when value="subtract"/>
+            <when value="mean"/>
+            <when value="first"/>
+            <when value="second"/>
             <when value="reciprocal_ratio">
-                <expand macro="pseudocount" />
+                <expand macro="pseudocount"/>
             </when>
         </conditional>
 
-        <expand macro="exactScaling" />
+        <expand macro="exactScaling"/>
         <param name="outFileFormat" type="select" label="Coverage file format">
             <option value="bigwig" selected="true">bigwig</option>
             <option value="bedgraph">bedgraph</option>
         </param>
-        <expand macro="region_limit_operation" />
+        <expand macro="region_limit_operation"/>
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
-            <when value="no" />
+            <when value="no"/>
             <when value="yes">
-                <expand macro="smoothLength" />
-                <expand macro="read_processing_options" />
+                <expand macro="smoothLength"/>
+                <expand macro="read_processing_options"/>
 
-                <expand macro="skipNAs" />
-                <expand macro="skipZeroOverZero" />
+                <expand macro="skipNAs"/>
+                <expand macro="skipZeroOverZero"/>
 
                 <param argument="--ignoreForNormalization" type="text" value="" size="50"
                     label="regions that should be excluded for calculating the scaling factor"
                     help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.
                         For example, if you know of copy number variations between samples then you may want to exclude these.
                         Another typical example is the difference in chromosome X copies between males and females in many species.
-                        Example inputs are chrX,chrY,chr3 or chr10:12220-128932" />
-                <expand macro="blacklist" />
+                        Example inputs are chrX,chrY,chr3 or chr10:12220-128932"/>
+                <expand macro="blacklist"/>
             </when>
         </conditional>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
         <change_format>
-            <when input="outFileFormat" value="bigwig" format="bigwig" />
-            <when input="outFileFormat" value="bedgraph" format="bedgraph" />
+            <when input="outFileFormat" value="bigwig" format="bigwig"/>
+            <when input="outFileFormat" value="bedgraph" format="bedgraph"/>
         </change_format>
         </data>
     </outputs>
     <tests>
-        <test>
-            <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam" />
-            <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam" />
-            <param name="showAdvancedOpt" value="no" />
-            <param name="outFileFormat" value="bigwig" />
-            <param name="outFileFormat" value="bedgraph" />
-            <param name="binSize" value="5" />
-            <param name="type" value="ratio" />
-            <output name="outFileName" file="bamCompare_result1.bg" ftype="bedgraph" />
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam"/>
+            <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="no"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="5"/>
+            <param name="type" value="ratio"/>
+            <output name="outFileName" file="bamCompare_result1.bg" ftype="bedgraph"/>
         </test>
-        <test>
-            <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam" />
-            <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="outFileFormat" value="bigwig" />
-            <param name="outFileFormat" value="bigwig" />
-            <param name="binSize" value="10" />
-            <param name="type" value="ratio" />
-            <output name="outFileName" file="bamCompare_result2.bw" ftype="bigwig" />
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam"/>
+            <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bigwig"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <output name="outFileName" file="bamCompare_result2.bw" ftype="bigwig"/>
+        </test>
+        <!-- Test with BAM and CRAM file as input-->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testA.cram" ftype="cram"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t200\t1"/>
+                    <has_text_matching expression="chr_cigar\t0\t200\t1"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM and CRAM files and substract option-->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testA.cram" ftype="cram"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="substract"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t200\t0"/>
+                    <has_text_matching expression="chr_cigar\t0\t200\t0"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM files with pseudocounts-->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testB.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <param name="pseudocount" value="1 1"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t50\t1"/>
+                    <has_text_matching expression="3R\t50\t100\t0.571429"/>
+                    <has_text_matching expression="3R\t100\t150\t1.14286"/>
+                    <has_text_matching expression="3R\t150\t200\t0.8"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM files with skipZeroOverZero -->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testB.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <param name="skipZeroOverZero" value="--skipZeroOverZero"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t50\t100\t0.571429"/>
+                    <has_text_matching expression="3R\t100\t150\t1.14286"/>
+                    <has_text_matching expression="3R\t150\t200\t0.8"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM files with skipNAs -->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testB.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <param name="skipNAs" value="true"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t100\t150\t1.14286"/>
+                    <has_text_matching expression="3R\t150\t200\t0.8"/>
+                </assert_contents>
+            </output>
         </test>
     </tests>
     <help>
@@ -248,5 +322,5 @@ Like BAM files, bigWig files are compressed, binary files. If you would like to 
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>

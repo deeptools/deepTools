@@ -1,0 +1,14 @@
+name: Cargo
+on: [push, pull_request]
+
+jobs:
+  cargo_test:
+    name: run cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update stable && rustup default stable
+      - name: cargo build
+        run: cargo build --verbose
+      - name: cargo test
+        run: cargo test --verbose

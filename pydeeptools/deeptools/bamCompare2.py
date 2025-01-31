@@ -244,6 +244,12 @@ def main(args=None):
         args.scaleFactorsMethod = 'None'
     else:
         args.normalizeUsing = 'None'
+    if not args.minMappingQuality:
+        args.minMappingQuality = 0
+    if not args.samFlagInclude:
+        args.samFlagInclude = 0
+    if not args.samFlagExclude:
+        args.samFlagExclude = 0
     print(args)
     args.pseudocount = 1
     r_bamcompare(
@@ -252,11 +258,18 @@ def main(args=None):
         args.outFileName, # output file
         args.outFileFormat, # output file format
         args.normalizeUsing, # normalization method
-        args.scaleFactorsMethod, # scaling method
         args.effectiveGenomeSize, # effective genome size
+        args.scaleFactorsMethod, # scaling method
         args.operation,
         args.pseudocount,
+        args.ignoreDuplicates,
+        args.minMappingQuality,
+        args.samFlagInclude,
+        args.samFlagExclude,
+        args.minFragmentLength,
+        args.maxFragmentLength,
         args.numberOfProcessors, # threads
+        args.ignoreForNormalization,
         args.binSize, # bin size
         [], # regions
         True # verbose
