@@ -1476,3 +1476,17 @@ impl Bin {
         }
     }
 }
+
+pub struct TempZip<I>
+where I: Iterator {
+    pub iterators: Vec<I>
+}
+
+impl<I, T> Iterator for TempZip<I>
+where I: Iterator<Item=T> {
+    type Item = Vec<T>;
+    fn next(&mut self) -> Option<Self::Item> {
+        let o: Option<Vec<T>> = self.iterators.iter_mut().map(|x| x.next()).collect();
+        o
+    }
+}

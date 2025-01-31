@@ -13,7 +13,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::Path; 
 use std::sync::{Arc, Mutex};
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider};
+use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider};
 use crate::filehandler::{bam_ispaired, read_bedfile, read_gtffile, chrombounds_from_bam, is_bed_or_gtf};
 use crate::calc::{median, calc_ratio, deseq_scalefactors};
 use crate::bamcompare::ParsedBamFile;
@@ -268,18 +268,4 @@ pub fn r_mbams(
         println!("Matrix written.");
     }
     Ok(())
-}
-
-struct TempZip<I>
-where I: Iterator {
-    iterators: Vec<I>
-}
-
-impl<I, T> Iterator for TempZip<I>
-where I: Iterator<Item=T> {
-    type Item = Vec<T>;
-    fn next(&mut self) -> Option<Self::Item> {
-        let o: Option<Vec<T>> = self.iterators.iter_mut().map(|x| x.next()).collect();
-        o
-    }
 }
