@@ -19,7 +19,6 @@ import plotly.offline as py
 import plotly.graph_objs as go
 
 # own modules
-from deeptools import cm  # noqa: F401
 from deeptools import parserCommon
 from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, plotly_single

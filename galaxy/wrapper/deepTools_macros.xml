@@ -5,7 +5,7 @@
     <token name="@GALAXY_VERSION@">23.2</token>
     <xml name="requirements">
         <requirements>
-            <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement>
+            <!-- <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement> -->
             <requirement type="package" version="1.21">samtools</requirement>
         </requirements>
         <expand macro="stdio"/>

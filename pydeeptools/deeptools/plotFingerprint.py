@@ -2,8 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import sys
+<<<<<<< HEAD
 import argparse
 import numpy as np
+=======
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['svg.fonttype'] = 'none'
+>>>>>>> 4.0.0
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson

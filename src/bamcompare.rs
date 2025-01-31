@@ -8,7 +8,7 @@ use std::fs::File;
 use itertools::Itertools;
 use bigtools::{Value};
 use crate::filehandler::{bam_ispaired, write_covfile};
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters};
+use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider};
 use crate::normalization::scale_factor_bamcompare;
 use crate::calc::{median, calc_ratio};
 use tempfile::{TempPath};
@@ -60,17 +60,19 @@ pub fn r_bamcompare(
     };
 
     // Parse regions & calculate coverage. Note that 
-    let (regions, chromsizes)  = parse_regions(&regions, bamifile1);
+    let (regions, chromsizes)  = parse_regions(&regions, vec![bamifile1, bamifile2]);
+    let regionblocks = region_divider(&regions);
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     
     // Set up the bam files in a Vec.
     let bamfiles = vec![(bamifile1, ispe1), (bamifile2, ispe2)];
 
-    let covcalcs: Vec<ParsedBamFile> = pool.install(|| {
+    let mut covcalcs: Vec<ParsedBamFile> = pool.install(|| {
         bamfiles.par_iter()
             .map(|(bamfile, ispe)| {
-                let (bg, mapped, unmapped, readlen, fraglen) = regions.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false))
+                let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
@@ -100,45 +102,44 @@ pub fn r_bamcompare(
     println!("scale factor1 = {}, scale factor2 = {}", sf.0, sf.1);
     // Create output stream
     let mut chrom = "".to_string();
-    let lines = covcalcs[0].bg.iter().zip(covcalcs[1].bg.iter()).flat_map(
-        |(t1, t2)| {
-            let reader1 = BufReader::new(File::open(t1).unwrap()).lines();
-            let reader2 = BufReader::new(File::open(t2).unwrap()).lines();
 
-            reader1.zip(reader2).map(
-                |(l1, l2)| {
-                    let l1 = l1.unwrap();
-                    let l2 = l2.unwrap();
-                    let fields1: Vec<&str> = l1.split('\t').collect();
-                    let fields2: Vec<&str> = l2.split('\t').collect();
-        
-                    let chrom1: String = fields1[0].to_string();
-                    let chrom2: String = fields2[0].to_string();
-                    let start1: u32 = fields1[1].parse().unwrap();
-                    let start2: u32 = fields2[1].parse().unwrap();
-                    let end1: u32 = fields1[2].parse().unwrap();
-                    let end2: u32 = fields2[2].parse().unwrap();
-        
-                    // Assert the regions are equal.
-                    assert_eq!(chrom1, chrom2);
-                    assert_eq!(start1, start2);
-                    assert_eq!(end1, end2);
-        
-                    // Calculate the coverage.
-                    let cov1: f32 = fields1[3].parse().unwrap();
-                    let cov2: f32 = fields2[3].parse().unwrap();
-                    let cov = calc_ratio(cov1, cov2, &sf.0, &sf.1, &pseudocount, operation);
-        
-                    (chrom1, Value { start: start1, end: end1, value: cov })
-                }).coalesce(|p, c| {
-                if p.1.value == c.1.value {
-                    Ok((p.0, Value {start: p.1.start, end: c.1.end, value: p.1.value}))
-                } else {
-                    Err((p, c))
-                }
-            })
-        }
-    );
+    // Extract both vecs of TempPaths into a single vector
+    let its = vec![
+        covcalcs[0].bg.drain(..).collect::<Vec<_>>(),
+        covcalcs[1].bg.drain(..).collect::<Vec<_>>()
+    ];
+    let its: Vec<_> = its.iter().map(|x| x.into_iter()).collect();
+    let zips = TempZip { iterators: its };
+    let zips_vec: Vec<_> = zips.collect();
+
+    let lines = zips_vec
+    .into_iter()
+    .flat_map(|c| {
+        let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
+        let temp_zip = TempZip { iterators: readers };
+        temp_zip.into_iter().map(|mut _l| {
+            let lines: Vec<_> = _l
+                .iter_mut()
+                .map(|x| x.as_mut().unwrap())
+                .map(|x| x.split('\t').collect())
+                .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
+                .collect();
+            assert_eq!(lines.len(), 2);
+            assert_eq!(lines[0].0, lines[1].0);
+            assert_eq!(lines[0].1, lines[1].1);
+            assert_eq!(lines[0].2, lines[1].2);
+            // Calculate the coverage.
+            let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
+            (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
+        }).coalesce(|p, c| {
+            if p.1.value == c.1.value && p.0 == c.0 {
+                Ok((p.0, Value {start: p.1.start, end: c.1.end, value: p.1.value}))
+            } else {
+                Err((p, c))
+            }
+        })
+    });
+
     write_covfile(lines, ofile, ofiletype, chromsizes);
     Ok(())
 }
