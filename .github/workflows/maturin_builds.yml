@@ -35,7 +35,7 @@ jobs:
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
-          sccache: 'true'
+            #sccache: 'true'
           manylinux: 2_28
           before-script-linux: |
             # Source = https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
