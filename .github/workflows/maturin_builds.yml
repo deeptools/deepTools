@@ -15,6 +15,7 @@ jobs:
         platform:
           - runner: ubuntu-22.04
             target: x86_64
+            manylinux: 2_24
           - runner: ubuntu-22.04
             target: x86
               #- runner: ubuntu-22.04
@@ -36,7 +37,7 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
-          manylinux: auto
+          manylinux: ${{ matrix.platform.manylinux }}
           before-script-linux: |
             # Source = https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
             # If we're running on rhel centos, install needed packages.
