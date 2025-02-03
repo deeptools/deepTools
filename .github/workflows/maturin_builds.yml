@@ -41,7 +41,7 @@ jobs:
             # Source = https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
             # If we're running on rhel centos, install needed packages.
             if command -v yum &> /dev/null; then
-                yum update -y && yum install -y perl-core openssl openssl-devel pkg-config
+                yum update -y && yum install -y perl-core openssl openssl-devel pkgconfig
             else
                 # If we're running on debian-based system.
                 apt update -y && apt-get install -y libssl-dev openssl pkg-config
