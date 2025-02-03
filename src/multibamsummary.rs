@@ -30,7 +30,7 @@ pub fn r_mbams(
     nproc: usize,
     bed_file: Py<PyList>,
     supregion: &str,
-    _blacklist: &str,
+    blacklist: &str,
     verbose: bool,
     _extend_reads: u32,
     _center_reads: bool,
@@ -81,6 +81,7 @@ pub fn r_mbams(
     
     let mut regions: Vec<Region> = Vec::new();
     let mut gene_mode = false;
+    let mut backlistregions: Option<Vec<Region>> = None;
     if mode == "BED-file" {
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
@@ -116,12 +117,39 @@ pub fn r_mbams(
                 regionsizes.insert(regsize.0, regsize.1);
             });
         gene_mode = true;
+
+        // If there is a blacklist, read it.
+        if blacklist != "None" {
+            // Check if it's a bed or gtf file
+            let isbed = is_bed_or_gtf(blacklist);
+            match isbed.as_str() {
+                "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+                "bed" => {
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    backlistregions = Some(bls);
+                },
+                _ => panic!("Error: Cannot determine filetype of blacklist file.")
+            }
+        }
     } else {
         if verbose {
             println!("BINS mode. with binsize: {}, distance between bins: {}", binsize, distance_between_bins);
         }
-        let (parsedregions, _chromsizes) = parse_regions(supregion, bamfiles.iter().map(|x| x.as_str()).collect());
+        let (parsedregions, chromsizes) = parse_regions(supregion, bamfiles.iter().map(|x| x.as_str()).collect());
         regions = parsedregions;
+        // If there is a blacklist, read it.
+        if blacklist != "None" {
+            // Check if it's a bed or gtf file
+            let isbed = is_bed_or_gtf(blacklist);
+            match isbed.as_str() {
+                "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+                "bed" => {
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    backlistregions = Some(bls);
+                },
+                _ => panic!("Error: Cannot determine filetype of blacklist file.")
+            }
+        }
     }
 
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();    
@@ -142,7 +170,7 @@ pub fn r_mbams(
         bampfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode, &backlistregions))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

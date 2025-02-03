@@ -7,8 +7,8 @@ use std::io::{BufReader};
 use std::fs::File;
 use itertools::Itertools;
 use bigtools::{Value};
-use crate::filehandler::{bam_ispaired, write_covfile};
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider};
+use crate::filehandler::{bam_ispaired, write_covfile, is_bed_or_gtf, read_bedfile};
+use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider, Region};
 use crate::normalization::scale_factor_bamcompare;
 use crate::calc::{median, calc_ratio};
 use tempfile::{TempPath};
@@ -27,6 +27,7 @@ pub fn r_bamcompare(
     operation: &str,
     pseudocount: f32,
     // filtering options
+    blacklist: &str, // path to blacklist filename, or 'None'
     _ignoreduplicates: bool,
     minmappingquality: u8, // 
     samflaginclude: u16,
@@ -63,6 +64,21 @@ pub fn r_bamcompare(
     let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile1, bamifile2]);
     let regionblocks = region_divider(&regions);
 
+    // If there is a blacklist, read it.
+    let mut backlistregions: Option<Vec<Region>> = None;
+    if blacklist != "None" {
+        // Check if it's a bed or gtf file
+        let isbed = is_bed_or_gtf(blacklist);
+        match isbed.as_str() {
+            "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+            "bed" => {
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                backlistregions = Some(bls);
+            },
+            _ => panic!("Error: Cannot determine filetype of blacklist file.")
+        }
+    }
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     
     // Set up the bam files in a Vec.
@@ -72,7 +88,7 @@ pub fn r_bamcompare(
         bamfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false, &backlistregions))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

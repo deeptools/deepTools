@@ -6,8 +6,8 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
 use bigtools::Value;
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider};
-use crate::filehandler::{bam_ispaired, write_covfile};
+use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider, Region};
+use crate::filehandler::{bam_ispaired, write_covfile, is_bed_or_gtf, read_bedfile};
 use crate::normalization::scale_factor;
 use crate::calc::median;
 
@@ -28,7 +28,7 @@ pub fn r_bamcoverage(
     _extendreads: u32, // if 0, no extension
     _centerreads: bool,
     _filterrnastrand: &str, // forward, reverse or 'None'
-    _blacklist: &str, // path to blacklist filename, or 'None'
+    blacklist: &str, // path to blacklist filename, or 'None'
     _ignorechr: Py<PyList>, // list of chromosomes to ignore. Is empty if none.
     _skipnoncovregions: bool,
     _smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
@@ -68,14 +68,29 @@ pub fn r_bamcoverage(
     if verbose {
         println!("Sample: {} is-paired: {}", bamifile, ispe);
     }
-
     // Parse regions & calculate coverage
     let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile]);
     let regionblocks = region_divider(&regions);
+
+    // If there is a blacklist, read it.
+    let mut backlistregions: Option<Vec<Region>> = None;
+    if blacklist != "None" {
+        // Check if it's a bed or gtf file
+        let isbed = is_bed_or_gtf(blacklist);
+        match isbed.as_str() {
+            "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+            "bed" => {
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                backlistregions = Some(bls);
+            },
+            _ => panic!("Error: Cannot determine filetype of blacklist file.")
+        }
+    }
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
         regionblocks.par_iter()
-            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true, false))
+            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true, false, &backlistregions))
             .reduce(
                 || (vec![], 0, 0, vec![], vec![]),
                 |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
