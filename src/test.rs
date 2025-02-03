@@ -1,3 +1,5 @@
+use crate::calc::median;
+
 #[cfg(test)]
 mod tests {
     use super::*;

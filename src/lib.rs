@@ -8,6 +8,7 @@ mod covcalc;
 mod filehandler;
 mod multibamsummary;
 mod normalization;
+#[cfg(test)]
 mod test;
 
 #[pymodule]
