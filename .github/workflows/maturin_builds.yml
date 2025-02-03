@@ -15,7 +15,6 @@ jobs:
         platform:
           - runner: ubuntu-22.04
             target: x86_64
-            manylinux: 2_24
           - runner: ubuntu-22.04
             target: x86
               #- runner: ubuntu-22.04
@@ -37,15 +36,15 @@ jobs:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
           sccache: 'true'
-          manylinux: ${{ matrix.platform.manylinux }}
+          manylinux: 'auto'
           before-script-linux: |
             # Source = https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
             # If we're running on rhel centos, install needed packages.
             if command -v yum &> /dev/null; then
-                sudo yum install -y perl-core openssl openssl-devel pkgconfig clang llvm-devel
+                yum install -y perl-core openssl openssl-devel pkgconfig clang llvm-devel
             else
                 # If we're running on debian-based system.
-                su -c "apt update -y && apt-get install -y libssl-dev openssl pkg-config clang libclang-dev"
+                apt update -y && apt-get install -y libssl-dev openssl pkg-config clang libclang-dev
             fi
       - name: Upload wheels
         uses: actions/upload-artifact@v4
