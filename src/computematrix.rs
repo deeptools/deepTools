@@ -149,7 +149,7 @@ pub fn r_computematrix(
 
     // Discriminate between reference-point and scale-regions mode.
 
-    let mut matrix: Vec<Vec<f32>> = pool.install(|| {
+    let matrix: Vec<Vec<f32>> = pool.install(|| {
         bw_files.par_iter()
             .map(|i| bwintervals(&i, &regions, &slopregions, &scale_regions))
             .reduce(
@@ -197,6 +197,8 @@ fn slop_region(
     region.get_anchor_bins(scale_regions, chromend)
 }
 
+#[allow(unused_mut)]
+#[allow(unused_assignments)]
 fn matrix_dump(
     sortregions: &str,
     sortusing: &str,
@@ -238,7 +240,7 @@ fn matrix_dump(
             rend = ix;
         }
         regionslices.push((rstart, rend));
-        let mut sortedix: Vec<usize> = Vec::new();
+        let mut sortedix: Vec<usize>;
         if sortusing == "region_length" {
             if !sort_using_samples.is_empty() && verbose {
                 println!("Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.", sort_using_samples);

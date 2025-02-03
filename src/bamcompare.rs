@@ -27,7 +27,7 @@ pub fn r_bamcompare(
     operation: &str,
     pseudocount: f32,
     // filtering options
-    ignoreduplicates: bool,
+    _ignoreduplicates: bool,
     minmappingquality: u8, // 
     samflaginclude: u16,
     samflagexclude: u16,
@@ -36,7 +36,7 @@ pub fn r_bamcompare(
     nproc: usize,
     _ignorechr: Py<PyList>,
     binsize: u32,
-    regions: Vec<(String, u32, u32)>,
+    supregion: &str,
     verbose: bool
 ) -> PyResult<()> {
     let ispe1 = bam_ispaired(bamifile1);
@@ -60,7 +60,7 @@ pub fn r_bamcompare(
     };
 
     // Parse regions & calculate coverage. Note that 
-    let (regions, chromsizes)  = parse_regions(&regions, vec![bamifile1, bamifile2]);
+    let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile1, bamifile2]);
     let regionblocks = region_divider(&regions);
 
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
@@ -96,13 +96,16 @@ pub fn r_bamcompare(
             })
         .collect()
     });
-
+    // Print out some stats if verbose
+    if verbose {
+        println!("bamfile\tPE\tmapped\tunmapped\tmed_readlen\tmed_fraglen");
+        println!("{}\t{}\t{}\t{}\t{}\t{}", covcalcs[0].bamfile, covcalcs[0].ispe, covcalcs[0].mapped, covcalcs[0].unmapped, covcalcs[0].readlen, covcalcs[0].fraglen);
+        println!("{}\t{}\t{}\t{}\t{}\t{}", covcalcs[1].bamfile, covcalcs[1].ispe, covcalcs[1].mapped, covcalcs[1].unmapped, covcalcs[1].readlen, covcalcs[1].fraglen);
+    }
     // Calculate scale factors.
     let sf = scale_factor_bamcompare(scalefactorsmethod, covcalcs[0].mapped, covcalcs[1].mapped, binsize, effective_genome_size, norm);
     println!("scale factor1 = {}, scale factor2 = {}", sf.0, sf.1);
-    // Create output stream
-    let mut chrom = "".to_string();
-
+    
     // Extract both vecs of TempPaths into a single vector
     let its = vec![
         covcalcs[0].bg.drain(..).collect::<Vec<_>>(),

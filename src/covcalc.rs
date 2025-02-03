@@ -1,4 +1,4 @@
-use rust_htslib::bam::{self, Read, IndexedReader, record::Cigar};
+use rust_htslib::bam::{Read, IndexedReader};
 use rust_htslib::bam::ext::BamRecordExtensions;
 use std::collections::HashMap;
 use tempfile::{Builder, TempPath};
@@ -6,10 +6,9 @@ use std::io::{BufWriter, Write};
 use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
-use rayon::prelude::*;
 use std::collections::HashSet;
 
-pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
+pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
     // returns a vector of regions, with all chromosomes and full lengths if original regions was empty
     // Else it validates the regions against the information from the bam header
@@ -44,7 +43,7 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
     let header = bam.header().clone();
     let mut chromregions: Vec<Region> = Vec::new();
     let mut chromsizes = HashMap::new();
-    if regions.is_empty() {
+    if region == "None" {
         // if regions is empty, we default to all chromosomes, full length
         for tid in 0..header.target_count() {
             let chromname = String::from_utf8(header.tid2name(tid).to_vec())
@@ -78,27 +77,50 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
                 chromsizes.insert(chromname, chromlen as u32);
             }
         }
-        
-        for region in regions {
-            let chromname = &region.0;
-            assert!(region.1 < region.2, "Region start must be strictly less than region end.");
+        // Either the region is just a chromosome, or it is a 'true region' i.e. chr:start:end
+        // first test if the region is a chromosome alone
+        let parts = region.split(":").collect::<Vec<&str>>();
+        if parts.len() == 1 {
+            let chromname = parts[0].to_string();
             // Check if chromname is in validchroms
-            if !validchroms.contains(chromname) {
-                continue;
+            if !validchroms.contains(&chromname) {
+                panic!("Supplied chromosome {} is not found in (at least one) bamfile.", chromname);
             }
+            let chromlen = chromsizes.get(&chromname).unwrap();
             let _reg = Region {
-                chrom: chromname.clone(),
-                start: Revalue::U(region.1),
-                end: Revalue::U(region.2),
+                chrom: chromname.to_string(),
+                start: Revalue::U(0),
+                end: Revalue::U(*chromlen),
                 score: String::from("."),
                 strand: String::from("."),
-                name: format!("{}:{}-{}", chromname, region.1, region.2),
-                regionlength: region.2 - region.1,
+                name: format!("{}:{}-{}", chromname, 0, chromlen),
+                regionlength: *chromlen,
+            };
+            chromregions.push(_reg);
+        } else {
+            // We have a region, split it into chrom, start, end
+            let chromname = parts[0].to_string();
+            let start = parts[1].parse::<u32>().expect("Error reading supplied start position.");
+            let end = parts[2].parse::<u32>().expect("Error reading supplied end position.");
+            // Check if chromname is in validchroms
+            if !validchroms.contains(&chromname) {
+                panic!("Supplied chromosome {} is not found in (at least one) bamfile.", chromname);
+            }
+            let chromlen = chromsizes.get(&chromname).unwrap();
+            assert!(end <= *chromlen, "Region end goes beyond chromosome boundary. Supplied {} > {}", end, chromlen);
+            let _reg = Region {
+                chrom: chromname.to_string(),
+                start: Revalue::U(start),
+                end: Revalue::U(end),
+                score: String::from("."),
+                strand: String::from("."),
+                name: format!("{}:{}-{}", chromname, start, end),
+                regionlength: end - start,
             };
             chromregions.push(_reg);
         }
     }
-    // Sort regions to make our live easier down the line
+    // Sort regions to make our live easier down the line (and to have valid bigwigs written.)
     // Sort Vec of Regions per chromosome, and then by start.
     chromregions.sort_by(|a, b| a.chrom.cmp(&b.chrom).then(a.get_startu().cmp(&b.get_startu())));
     return (chromregions, chromsizes);
@@ -107,6 +129,8 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
 /// Main workhorse for bamCoverage and bamCompare
 /// Calculates coverage either per bp (bs = 1) or over bins (bs > 1)
 #[allow(unused_assignments)]
+#[allow(unused_variables)]
+#[allow(unused_mut)]
 pub fn bam_pileup<'a>(
     bam_ifile: &str,
     regionvec: &'a Vec<Region>,
@@ -519,6 +543,8 @@ impl Region {
         }
     }
 
+    #[allow(unused_assignments)]
+    #[allow(unused_mut)]
     pub fn get_anchor_bins(&self, scale_regions: &Scalingregions, chromend: u32) -> Vec<Bin> {
         // Given an anchorpoint, return a vector, start, end , middle
         // The order of the vector is always 5' -> 3', meaning 'increasing' for +/. regions, and 'decreasing' for - regions.

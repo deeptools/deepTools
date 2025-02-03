@@ -25,23 +25,23 @@ pub fn r_bamcoverage(
     // processing options
     mnase: bool,
     _offset: Py<PyList>, // list of max 2 [offset 5', offset 3'], if no offset is required we have [1, -1]
-    extendreads: u32, // if 0, no extension
-    centerreads: bool,
-    filterrnastrand: &str, // forward, reverse or 'None'
-    blacklist: &str, // path to blacklist filename, or 'None'
+    _extendreads: u32, // if 0, no extension
+    _centerreads: bool,
+    _filterrnastrand: &str, // forward, reverse or 'None'
+    _blacklist: &str, // path to blacklist filename, or 'None'
     _ignorechr: Py<PyList>, // list of chromosomes to ignore. Is empty if none.
-    skipnoncovregions: bool,
-    smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
+    _skipnoncovregions: bool,
+    _smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
     binsize: u32,
     // filtering options
-    ignoreduplicates: bool,
+    _ignoreduplicates: bool,
     minmappingquality: u8, // 
     samflaginclude: u16,
     samflagexclude: u16,
     minfraglen: u32,
     maxfraglen: u32,
     nproc: usize,
-    regions: Vec<(String, u32, u32)>,
+    supregion: &str,
     verbose: bool
 ) -> PyResult<()> {
     let mut offset: Vec<i32> = Vec::new();
@@ -70,7 +70,7 @@ pub fn r_bamcoverage(
     }
 
     // Parse regions & calculate coverage
-    let (regions, chromsizes)  = parse_regions(&regions, vec![bamifile]);
+    let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile]);
     let regionblocks = region_divider(&regions);
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
@@ -134,7 +134,7 @@ fn validate_args(
     norm: &str,
     effectivegenomesize: &u64,
     scalefactor: &f32,
-    offset: &Vec<i32>,
+    _offset: &Vec<i32>,
     ignorechr: &Vec<String>,
     verbose: &bool
 ) {
