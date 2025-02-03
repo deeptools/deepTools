@@ -2,22 +2,16 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
-use itertools::{multizip, multiunzip, izip};
+use itertools::multiunzip;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter};
 use std::fs::File;
-use ndarray::{Array1, Array2, stack, Axis};
-use std::io;
+use ndarray::Array2;
 use ndarray_npy::NpzWriter;
-use std::borrow::Cow;
 use std::collections::HashMap;
-use std::path::Path; 
-use std::sync::{Arc, Mutex};
 use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider};
 use crate::filehandler::{bam_ispaired, read_bedfile, read_gtffile, chrombounds_from_bam, is_bed_or_gtf};
-use crate::calc::{median, calc_ratio, deseq_scalefactors};
-use crate::bamcompare::ParsedBamFile;
-use crate::normalization::scale_factor_bamcompare;
+use crate::calc::deseq_scalefactors;
 use crate::covcalc::{Region, Gtfparse};
 
 #[pyfunction]
@@ -32,11 +26,11 @@ pub fn r_mbams(
     // optional parameters
     labels: Py<PyList>,
     mut binsize: u32,
-    mut distance_between_bins: u32,
+    distance_between_bins: u32,
     nproc: usize,
     bed_file: Py<PyList>,
-    sup_regions: Vec<(String, u32, u32)>,
-    _blacklist: &str,
+    supregion: &str,
+    blacklist: &str,
     verbose: bool,
     _extend_reads: u32,
     _center_reads: bool,
@@ -53,7 +47,7 @@ pub fn r_mbams(
     let mut bamfiles: Vec<String> = Vec::new();
     let mut bamlabels: Vec<String> = Vec::new();
     let mut bedfiles: Vec<String> = Vec::new();
-    let mut ignorechr: Vec<String> = Vec::new();
+    let ignorechr: Vec<String> = Vec::new();
     Python::with_gil(|py| {
         bamfiles = bam_files.extract(py).expect("Failed to retrieve bam files.");
         bamlabels = labels.extract(py).expect("Failed to retrieve labels.");
@@ -87,9 +81,13 @@ pub fn r_mbams(
     
     let mut regions: Vec<Region> = Vec::new();
     let mut gene_mode = false;
+    let mut backlistregions: Option<Vec<Region>> = None;
     if mode == "BED-file" {
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
+        }
+        if supregion != "None" {
+            println!("Region supplied in BED-file mode. The region will be ignored.");
         }
         let gtfparse = Gtfparse {
             metagene: metagene,
@@ -101,8 +99,6 @@ pub fn r_mbams(
         let chromsizes = chrombounds_from_bam(bamfiles.iter().map(|x| x.as_str()).collect());
 
         binsize = 1;
-        distance_between_bins = 0;
-
         // Parse regions from bed files. Note that we retain the name of the bed file (in case there are more then 1)
         // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
         let mut regionsizes: HashMap<String, u32> = HashMap::new();
@@ -121,12 +117,39 @@ pub fn r_mbams(
                 regionsizes.insert(regsize.0, regsize.1);
             });
         gene_mode = true;
+
+        // If there is a blacklist, read it.
+        if blacklist != "None" {
+            // Check if it's a bed or gtf file
+            let isbed = is_bed_or_gtf(blacklist);
+            match isbed.as_str() {
+                "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+                "bed" => {
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    backlistregions = Some(bls);
+                },
+                _ => panic!("Error: Cannot determine filetype of blacklist file.")
+            }
+        }
     } else {
         if verbose {
             println!("BINS mode. with binsize: {}, distance between bins: {}", binsize, distance_between_bins);
         }
-        let (parsedregions, chromsizes) = parse_regions(&sup_regions, bamfiles.iter().map(|x| x.as_str()).collect());
+        let (parsedregions, chromsizes) = parse_regions(supregion, bamfiles.iter().map(|x| x.as_str()).collect());
         regions = parsedregions;
+        // If there is a blacklist, read it.
+        if blacklist != "None" {
+            // Check if it's a bed or gtf file
+            let isbed = is_bed_or_gtf(blacklist);
+            match isbed.as_str() {
+                "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+                "bed" => {
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    backlistregions = Some(bls);
+                },
+                _ => panic!("Error: Cannot determine filetype of blacklist file.")
+            }
+        }
     }
 
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();    
@@ -147,7 +170,7 @@ pub fn r_mbams(
         bampfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode, &backlistregions))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
@@ -177,7 +200,6 @@ pub fn r_mbams(
     let zips_vec: Vec<_> = zips.collect();
     println!(" Length of ziperators = {}", zips_vec.len());
 
-    let mut matvec: Vec<Vec<f32>> = Vec::new();
     let matvec: Vec<_> = pool.install(|| {
         let _m: Vec<_> = zips_vec
             .par_iter()

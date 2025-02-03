@@ -1,4 +1,4 @@
-use rust_htslib::bam::{self, Read, IndexedReader, record::Cigar};
+use rust_htslib::bam::{Read, IndexedReader};
 use rust_htslib::bam::ext::BamRecordExtensions;
 use std::collections::HashMap;
 use tempfile::{Builder, TempPath};
@@ -6,10 +6,9 @@ use std::io::{BufWriter, Write};
 use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
-use rayon::prelude::*;
 use std::collections::HashSet;
 
-pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
+pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
     // returns a vector of regions, with all chromosomes and full lengths if original regions was empty
     // Else it validates the regions against the information from the bam header
@@ -44,7 +43,7 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
     let header = bam.header().clone();
     let mut chromregions: Vec<Region> = Vec::new();
     let mut chromsizes = HashMap::new();
-    if regions.is_empty() {
+    if region == "None" {
         // if regions is empty, we default to all chromosomes, full length
         for tid in 0..header.target_count() {
             let chromname = String::from_utf8(header.tid2name(tid).to_vec())
@@ -78,27 +77,46 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
                 chromsizes.insert(chromname, chromlen as u32);
             }
         }
-        
-        for region in regions {
-            let chromname = &region.0;
-            assert!(region.1 < region.2, "Region start must be strictly less than region end.");
+        // Either the region is just a chromosome, or it is a 'true region' i.e. chr:start:end
+        // first test if the region is a chromosome alone
+        let parts = region.split(":").collect::<Vec<&str>>();
+        if parts.len() == 1 {
+            let chromname = parts[0].to_string();
             // Check if chromname is in validchroms
-            if !validchroms.contains(chromname) {
-                continue;
-            }
+            assert!(validchroms.contains(&chromname), "Supplied chromosome {} is not found.", chromname);
+            let chromlen = chromsizes.get(&chromname).unwrap();
             let _reg = Region {
-                chrom: chromname.clone(),
-                start: Revalue::U(region.1),
-                end: Revalue::U(region.2),
+                chrom: chromname.to_string(),
+                start: Revalue::U(0),
+                end: Revalue::U(*chromlen),
                 score: String::from("."),
                 strand: String::from("."),
-                name: format!("{}:{}-{}", chromname, region.1, region.2),
-                regionlength: region.2 - region.1,
+                name: format!("{}:{}-{}", chromname, 0, chromlen),
+                regionlength: *chromlen,
+            };
+            chromregions.push(_reg);
+        } else {
+            // We have a region, split it into chrom, start, end
+            let chromname = parts[0].to_string();
+            let start = parts[1].parse::<u32>().expect("Error reading supplied start position.");
+            let end = parts[2].parse::<u32>().expect("Error reading supplied end position.");
+            // Check if chromname is in validchroms
+            assert!(validchroms.contains(&chromname), "Supplied chromosome {} is not found.", chromname);
+            let chromlen = chromsizes.get(&chromname).unwrap();
+            assert!(end <= *chromlen, "Suplied region end goes beyond chromosome boundary. {} > {}", end, chromlen);
+            let _reg = Region {
+                chrom: chromname.to_string(),
+                start: Revalue::U(start),
+                end: Revalue::U(end),
+                score: String::from("."),
+                strand: String::from("."),
+                name: format!("{}:{}-{}", chromname, start, end),
+                regionlength: end - start,
             };
             chromregions.push(_reg);
         }
     }
-    // Sort regions to make our live easier down the line
+    // Sort regions to make our live easier down the line (and to have valid bigwigs written.)
     // Sort Vec of Regions per chromosome, and then by start.
     chromregions.sort_by(|a, b| a.chrom.cmp(&b.chrom).then(a.get_startu().cmp(&b.get_startu())));
     return (chromregions, chromsizes);
@@ -107,6 +125,8 @@ pub fn parse_regions(regions: &Vec<(String, u32, u32)>, bam_ifile: Vec<&str>) ->
 /// Main workhorse for bamCoverage and bamCompare
 /// Calculates coverage either per bp (bs = 1) or over bins (bs > 1)
 #[allow(unused_assignments)]
+#[allow(unused_variables)]
+#[allow(unused_mut)]
 pub fn bam_pileup<'a>(
     bam_ifile: &str,
     regionvec: &'a Vec<Region>,
@@ -115,7 +135,8 @@ pub fn bam_pileup<'a>(
     ignorechr: &Vec<String>,
     _filters: &Alignmentfilters,
     collapse: bool,
-    gene_mode: bool
+    gene_mode: bool,
+    blacklist: &Option<Vec<Region>>
 ) -> (
     Vec<TempPath>, // temp bedgraph file.
     u32, // mapped reads
@@ -144,12 +165,19 @@ pub fn bam_pileup<'a>(
         .rand_bytes(12)
         .tempfile()
         .expect("Failed to create temporary file.");
-    
+
+        
+    // There could be a blacklist. If so, the reads overlapping the blacklist are not counted.
+    // CHeck if blacklist is set.
+    let blacklist_filter: bool;
+    match blacklist {
+        Some(bl) => blacklist_filter = true,
+        None => blacklist_filter = false,
+    }
     // Two cases: either the binsize is 1, or it is > 1.
     // Counting between the two modes is different. In binsize == 1 we compute pileups
     // for binsize > 1, we count the number of reads that overlap a bin.
 
-    // Convert region to tuple to ease computations.
     for regstruct  in regionvec.iter() {
         // There are two options here:
         // either we are supposed to calculate coverage over regions (variable binsize required) gene_mode = true
@@ -179,6 +207,11 @@ pub fn bam_pileup<'a>(
                         counts = vec![0.0; 1];
                         for record in bam.records() {
                             let record = record.expect("Error parsing record.");
+                            if blacklist_filter {
+                                if pos_in_blacklist(record.pos(), region.0.as_str(), blacklist.as_ref().unwrap()) {
+                                    continue;
+                                }
+                            }
                             if !ignorechr.contains(&region.0) {
                                 if record.is_unmapped() {
                                     unmapped_reads += 1;
@@ -209,6 +242,11 @@ pub fn bam_pileup<'a>(
                                 .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
                             for record in bam.records() {
                                 let record = record.expect("Error parsing record.");
+                                if blacklist_filter {
+                                    if pos_in_blacklist(record.pos(), region.0.as_str(), blacklist.as_ref().unwrap()) {
+                                        continue;
+                                    }
+                                }
                                 if !ignorechr.contains(&region.0) {
                                     if record.is_unmapped() {
                                         unmapped_reads += 1;
@@ -249,7 +287,11 @@ pub fn bam_pileup<'a>(
                             readlens.push(record.seq_len() as u32);
                         }
                     }
-
+                    if blacklist_filter {
+                        if pos_in_blacklist(record.pos(), region.0.as_str(), blacklist.as_ref().unwrap()) {
+                            continue;
+                        }
+                    }
                     let indices: HashSet<usize> = record
                         .aligned_blocks()
                         .filter(|x| (x[1] as u32) < region.2)
@@ -342,6 +384,7 @@ pub fn bam_pileup<'a>(
                     }
                 }
                 let pos = pileup.pos();
+                
                 if pileup_start {
                     // if the first pileup is not at the start of the region, write 0 coverage
                     if pos > l_start {
@@ -360,11 +403,33 @@ pub fn bam_pileup<'a>(
                 } else {
                     if pos != l_end + 1 {
                         if collapse {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, pos, 0 as f32).unwrap();
+                            if blacklist_filter {
+                                let writevec = pileupwriter_blacklist(
+                                    l_start,
+                                    l_end + 1,
+                                    l_cov as f32,
+                                    blacklist.as_ref().unwrap(),
+                                    region.0.as_str()
+                                );
+                                for (start, end, cov) in writevec {
+                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, cov).unwrap();
+                                }
+                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, pos, 0 as f32).unwrap();
+                            } else {
+                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
+                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, pos, 0 as f32).unwrap();
+                            }
                         } else {
                             for p in l_start..l_end + 1 {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                                if blacklist_filter {
+                                    if pos_in_blacklist(p as i64, region.0.as_str(), blacklist.as_ref().unwrap()) {
+                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
+                                    } else {
+                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                                    }
+                                } else {
+                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                                }
                             }
                             for p in l_end + 1..pos {
                                 writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
@@ -375,10 +440,31 @@ pub fn bam_pileup<'a>(
                         l_cov = cov;
                     } else if l_cov != cov {
                         if collapse {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, pos, l_cov as f32).unwrap();
+                            if blacklist_filter {
+                                let writevec = pileupwriter_blacklist(
+                                    l_start,
+                                    pos,
+                                    l_cov as f32,
+                                    blacklist.as_ref().unwrap(),
+                                    region.0.as_str()
+                                );
+                                for (start, end, cov) in writevec {
+                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, cov).unwrap();
+                                }
+                            } else {
+                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, pos, l_cov as f32).unwrap();
+                            }
                         } else {
                             for p in l_start..pos {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                                if blacklist_filter {
+                                    if pos_in_blacklist(p as i64, region.0.as_str(), blacklist.as_ref().unwrap()) {
+                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
+                                    } else {
+                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                                    }
+                                } else {
+                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                                }
                             }
                         }
                         written = true;
@@ -401,13 +487,35 @@ pub fn bam_pileup<'a>(
             } else {
                 // Still need to write the last pileup(s)
                 if collapse {
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
+                    if blacklist_filter {
+                        let writevec = pileupwriter_blacklist(
+                            l_start,
+                            l_end + 1,
+                            l_cov as f32,
+                            blacklist.as_ref().unwrap(),
+                            region.0.as_str()
+                        );
+                        for (start, end, cov) in writevec {
+                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, cov).unwrap();
+                        }
+                    } else {
+                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
+                    }
                     // Make sure that if we didn't reach end of chromosome, we still write 0 cov.
                     if l_end + 1 < region.2 {
                         writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, region.2, 0 as f32).unwrap();
                     }
                 } else {
                     for p in l_start..l_end + 1 {
+                        if blacklist_filter {
+                            if pos_in_blacklist(p as i64, region.0.as_str(), blacklist.as_ref().unwrap()) {
+                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
+                            } else {
+                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                            }
+                        } else {
+                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
+                        }
                         writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
                     }
                     if l_end + 1 < region.2 {
@@ -422,6 +530,44 @@ pub fn bam_pileup<'a>(
     let bgpath = bg.into_temp_path();
     let tmpvec   = vec![bgpath];
     return (tmpvec, mapped_reads, unmapped_reads, readlens, fraglens);
+}
+
+fn pos_in_blacklist(pos: i64, chrom: &str, blacklist: &Vec<Region>) -> bool {
+    for region in blacklist.iter() {
+        // Note that get_startu / getendu is used as they are guaranteed to be u32's to start with.
+        if region.get_startu() <= pos as u32 && pos as u32 <= region.get_endu() && region.chrom == chrom {
+            return true;
+        }
+    }
+    return false;
+}
+
+fn pileupwriter_blacklist(start: u32, end: u32, cov: f32, blacklist: &Vec<Region>, chrom: &str) -> Vec<(u32, u32, f32)> {
+    let mut writevec: Vec<(u32, u32, f32)> = Vec::new();
+    // Pileup writing is a bit more annoying if we have a blacklist, as this comes 'compressed' already.
+    let mut lcov: f32;
+    if pos_in_blacklist(start as i64, chrom, blacklist) {
+        lcov = 0.0;
+    } else {
+        lcov = cov;
+    }
+    let mut lstart = start;
+    let mut ccov: f32;
+    // Iterate over the rest.
+    for pos in start+1..end {
+        if pos_in_blacklist(pos as i64, chrom, blacklist) {
+            ccov = 0.0;
+        } else {
+            ccov = cov;
+        }
+        if ccov != lcov {
+            writevec.push((lstart, pos, lcov));
+            lstart = pos;
+            lcov = ccov;
+        }
+    }
+    writevec.push((lstart, end, lcov));
+    return writevec;
 }
 
 pub struct Alignmentfilters {
@@ -519,6 +665,8 @@ impl Region {
         }
     }
 
+    #[allow(unused_assignments)]
+    #[allow(unused_mut)]
     pub fn get_anchor_bins(&self, scale_regions: &Scalingregions, chromend: u32) -> Vec<Bin> {
         // Given an anchorpoint, return a vector, start, end , middle
         // The order of the vector is always 5' -> 3', meaning 'increasing' for +/. regions, and 'decreasing' for - regions.

@@ -212,9 +212,14 @@ def process_args(args=None):
     if not args.BED:
         args.BED = []
     if not args.region:
-        args.region = []
+        args.region = "None"
     if not args.blackListFileName:
-        args.blackListFileName = "None"
+        args.blackListFileName = 'None'
+    else:
+        if len(args.blackListFileName) != 1:
+            print("Please only provide one blacklist file.")
+            sys.exit()
+        args.blackListFileName = args.blackListFileName[0]
     if not args.outRawCounts:
         args.outRawCounts = "None"
     if not args.scalingFactors:
