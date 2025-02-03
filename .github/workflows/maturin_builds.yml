@@ -42,10 +42,10 @@ jobs:
             # Source = https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
             # If we're running on rhel centos, install needed packages.
             if command -v yum &> /dev/null; then
-                yum update -y && yum install -y perl-core openssl openssl-devel pkgconfig clang llvm-devel
+                yum install -y perl-core openssl openssl-devel pkgconfig clang llvm-devel
             else
                 # If we're running on debian-based system.
-                apt update -y && apt-get install -y libssl-dev openssl pkg-config clang libclang-dev
+                apt-get install -y libssl-dev openssl pkg-config clang libclang-dev
             fi
       - name: Upload wheels
         uses: actions/upload-artifact@v4
