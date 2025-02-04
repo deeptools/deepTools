@@ -32,13 +32,13 @@ pub fn r_mbams(
     supregion: &str,
     blacklist: &str,
     verbose: bool,
-    _extend_reads: u32,
-    _center_reads: bool,
-    sam_flag_incl: u16, // sam flag include
-    sam_flag_excl: u16, // sam flag exclude
-    min_fragment_length: u32, // minimum fragment length.
-    max_fragment_length: u32, // maximum fragment length.
-    min_mapping_quality: u8, // minimum mapping quality.
+    extendreads: u32,
+    centerreads: bool,
+    samflaginclude: u16, // sam flag include
+    samflagexclude: u16, // sam flag exclude
+    minfraglen: u32, // minimum fragment length.
+    maxfraglen: u32, // maximum fragment length.
+    minmappingquality: u8, // minimum mapping quality.
     metagene: bool, // metagene mode or not.
     txnid: &str, // transcript id to use when parsing GTF file.
     exonid: &str, // exon id to use when parsing GTF file.
@@ -71,13 +71,18 @@ pub fn r_mbams(
         }
     }
     
-    let filters: Alignmentfilters = Alignmentfilters {
-        minmappingquality: min_mapping_quality,
-        samflaginclude: sam_flag_incl,
-        samflagexclude: sam_flag_excl,
-        minfraglen: min_fragment_length,
-        maxfraglen: max_fragment_length
-    };
+    let filters = Alignmentfilters::new(
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        None, // No MNase mode.
+        None, // No offset
+        None, // No strand filtering.
+        Some(extendreads),
+        Some(centerreads),
+    );
     
     let mut regions: Vec<Region> = Vec::new();
     let mut gene_mode = false;

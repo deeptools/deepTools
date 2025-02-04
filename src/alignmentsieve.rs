@@ -18,13 +18,13 @@ pub fn r_alignmentsieve(
     verbose: bool, // verbose
     shift: Py<PyList>, // python list of the shift to perform.
     _bed: bool, // output format in BEDPE.
-    filter_rna_strand: &str, // "forward", "reverse" or "None".
-    min_mapping_quality: u8, // minimum mapping quality.
-    sam_flag_incl: u16, // sam flag include
-    sam_flag_excl: u16, // sam flag exclude
+    filterrnastrand: &str, // "forward", "reverse" or "None".
+    minmappingquality: u8, // minimum mapping quality.
+    samflaginclude: u16, // sam flag include
+    samflagexclude: u16, // sam flag exclude
     _blacklist: &str, // blacklist file name.
-    min_fragment_length: u32, // minimum fragment length.
-    max_fragment_length: u32, // maximum fragment length.
+    minfraglen: u32, // minimum fragment length.
+    maxfraglen: u32, // maximum fragment length.
     _extend_reads: u32,
     _center_reads: bool,
     
@@ -47,17 +47,22 @@ pub fn r_alignmentsieve(
     // Define regions 
     let (regions, _chromsizes) = parse_regions("None", vec![bamifile]);
 
-    let filters = Alignmentfilters{
-        minmappingquality: min_mapping_quality,
-        samflaginclude: sam_flag_incl,
-        samflagexclude: sam_flag_excl,
-        minfraglen: min_fragment_length,
-        maxfraglen: max_fragment_length
-    };
+    let filters = Alignmentfilters::new(
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        None,
+        None,
+        Some(filterrnastrand.to_string()),
+        None,
+        None,
+    );
     let pool = ThreadPoolBuilder::new().num_threads(1).build().unwrap();
     let (sieve, filtersieve, totalreads, filteredreads) = pool.install(|| {
         regions.par_iter()
-            .map(|i| sieve_bamregion(bamifile, i, &filters, filter_rna_strand, &readshift, write_filters, nproc, verbose))
+            .map(|i| sieve_bamregion(bamifile, i, &filters, &readshift, write_filters, nproc, verbose))
             .reduce(
                 || (Vec::new(), Vec::new(), 0, 0),
                 |(mut _sieve, mut _filtersieve, mut _total, mut _filter), (sieve, filtersieve, total, filter)| {
@@ -111,7 +116,7 @@ pub fn r_alignmentsieve(
 }
 
 
-fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters, filter_rna_strand: &str, _shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
+fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters, _shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
     let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
     let mut total_reads: u64 = 0;
     let mut filtered_reads: u64 = 0;
@@ -230,8 +235,8 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
                 }
             }
         }
-        if filter_rna_strand != "None" {
-            match (filter_rna_strand, record.is_paired()) {
+        if alfilters.filterrnastrand.as_str() != "None" {
+            match (alfilters.filterrnastrand.as_str(), record.is_paired()) {
                 ("forward", true) => {
                     if !((record.flags() & 144 == 128) || (record.flags() & 96 == 64)) {
                         filtered_reads += 1;

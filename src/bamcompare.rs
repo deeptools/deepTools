@@ -27,8 +27,9 @@ pub fn r_bamcompare(
     operation: &str,
     pseudocount: f32,
     // filtering options
+    extendreads: u32, // if 0, no extension
+    centerreads: bool,
     blacklist: &str, // path to blacklist filename, or 'None'
-    _ignoreduplicates: bool,
     minmappingquality: u8, // 
     samflaginclude: u16,
     samflagexclude: u16,
@@ -52,13 +53,18 @@ pub fn r_bamcompare(
         ignorechr = _ignorechr.extract(py).expect("Failed to retrieve ignorechr.");
     });
     // Set alignment filters
-    let filters = Alignmentfilters {
-        minmappingquality: minmappingquality,
-        samflaginclude: samflaginclude,
-        samflagexclude: samflagexclude,
-        minfraglen: minfraglen,
-        maxfraglen: maxfraglen
-    };
+    let filters = Alignmentfilters::new(
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        None, // No MNase mode.
+        None, // No offset
+        None, // No strand filtering.
+        Some(extendreads),
+        Some(centerreads),
+    );
 
     // Parse regions & calculate coverage. Note that 
     let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile1, bamifile2]);

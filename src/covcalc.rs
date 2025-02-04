@@ -1,4 +1,4 @@
-use rust_htslib::bam::{Read, IndexedReader};
+use rust_htslib::bam::{Read, IndexedReader, Record};
 use rust_htslib::bam::ext::BamRecordExtensions;
 use std::collections::HashMap;
 use tempfile::{Builder, TempPath};
@@ -576,6 +576,41 @@ pub struct Alignmentfilters {
     pub samflagexclude: u16,
     pub minfraglen: u32,
     pub maxfraglen: u32,
+    pub mnase: bool,
+    pub offset: (i32, i32),
+    pub filterrnastrand: String,
+    pub extendreads: u32,
+    pub centerreads: bool
+}
+impl Alignmentfilters {
+    pub fn new(
+        minmappingquality: Option<u8>,
+        samflaginclude: Option<u16>,
+        samflagexclude: Option<u16>,
+        minfraglen: Option<u32>,
+        maxfraglen: Option<u32>,
+        mnase: Option<bool>,
+        offset: Option<(i32, i32)>,
+        filterrnastrand: Option<String>,
+        extendreads: Option<u32>,
+        centerreads: Option<bool>
+    ) -> Self {
+        Self {
+            minmappingquality: minmappingquality.unwrap_or(0),
+            samflaginclude: samflaginclude.unwrap_or(0),
+            samflagexclude: samflagexclude.unwrap_or(0),
+            minfraglen: minfraglen.unwrap_or(0),
+            maxfraglen: maxfraglen.unwrap_or(0),
+            mnase: mnase.unwrap_or(false),
+            offset: offset.unwrap_or((1, -1)),
+            filterrnastrand: filterrnastrand.unwrap_or(String::from("None")),
+            extendreads: extendreads.unwrap_or(0),
+            centerreads: centerreads.unwrap_or(false)
+        }
+    }
+    pub fn filterrecord(&self, rec: Record) -> Option<Record> {
+        Some(rec)
+    }
 }
 
 

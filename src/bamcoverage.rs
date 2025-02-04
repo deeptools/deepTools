@@ -25,46 +25,76 @@ pub fn r_bamcoverage(
     // processing options
     mnase: bool,
     _offset: Py<PyList>, // list of max 2 [offset 5', offset 3'], if no offset is required we have [1, -1]
-    _extendreads: u32, // if 0, no extension
-    _centerreads: bool,
-    _filterrnastrand: &str, // forward, reverse or 'None'
+    extendreads: u32, // if 0, no extension
+    centerreads: bool,
+    filterrnastrand: &str, // forward, reverse or 'None'
     blacklist: &str, // path to blacklist filename, or 'None'
     _ignorechr: Py<PyList>, // list of chromosomes to ignore. Is empty if none.
     _skipnoncovregions: bool,
     _smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
     binsize: u32,
     // filtering options
-    _ignoreduplicates: bool,
     minmappingquality: u8, // 
     samflaginclude: u16,
     samflagexclude: u16,
-    minfraglen: u32,
-    maxfraglen: u32,
+    mut minfraglen: u32, // default 0 -> no filter
+    mut maxfraglen: u32, // defualt 0 -> no filter
     nproc: usize,
     supregion: &str,
     verbose: bool
 ) -> PyResult<()> {
-    let mut offset: Vec<i32> = Vec::new();
+    let mut offset: (i32, i32) = (1, -1);
     let mut ignorechr: Vec<String> = Vec::new();
     Python::with_gil(|py| {
-        offset = _offset.extract(py).expect("Failed to retrieve offset.");
+        let offsetv: Vec<i32> = _offset.extract(py).expect("Failed to retrieve offset.");
+        if offsetv.len() == 1 {
+            offset = (offsetv[0], -1);
+        } else if offsetv.len() == 2 {
+            offset = (offsetv[0], offsetv[1]);
+        }
         ignorechr = _ignorechr.extract(py).expect("Failed to retrieve ignorechr.");
     });
     let ispe = bam_ispaired(bamifile);
-    validate_args(
-        &ispe, &mnase,
-        &norm, &effectivegenomesize,
-        &scalefactor,
-        &offset, &ignorechr, &verbose
-    );
+
+    // If mnase, library should be PE !
+    if mnase && !ispe {
+        panic!("Error: MNase-seq requires paired-end data.");
+    }
+    if norm == "RPGC" && effectivegenomesize == 0 {
+        panic!("Error: Effective genome size is required for RPGC normalization.");
+    }
+    if norm != "None" && scalefactor != 1.0 {
+        println!("Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used", norm);
+    }
+    if verbose {
+        println!("Chromosomes to ignore for normalization: {:?}", ignorechr);
+    }
+
+    // if mnase, set the min / max fragment lengths if these are not set.
+    if mnase {
+        if minfraglen == 0 {
+            minfraglen = 130;
+        }
+        if maxfraglen == 0 {
+            maxfraglen = 200;
+        }
+        if binsize != 1 {
+            println!("Note that a binsize of 1 is recommended for MNase mode. (binsize set at {})", binsize);
+        }
+    }
     // Set alignment filters
-    let filters = Alignmentfilters {
-        minmappingquality: minmappingquality,
-        samflaginclude: samflaginclude,
-        samflagexclude: samflagexclude,
-        minfraglen: minfraglen,
-        maxfraglen: maxfraglen
-    };
+    let filters = Alignmentfilters::new(
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        Some(mnase),
+        Some(offset),
+        Some(filterrnastrand.to_string()),
+        Some(extendreads),
+        Some(centerreads),
+    );
     if verbose {
         println!("Sample: {} is-paired: {}", bamifile, ispe);
     }
@@ -141,29 +171,4 @@ pub fn r_bamcoverage(
 
     write_covfile(lines, ofile, ofiletype, chromsizes);
     Ok(())
-}
-
-fn validate_args(
-    ispe: &bool,
-    mnase: &bool,
-    norm: &str,
-    effectivegenomesize: &u64,
-    scalefactor: &f32,
-    _offset: &Vec<i32>,
-    ignorechr: &Vec<String>,
-    verbose: &bool
-) {
-    // If mnase, library should be PE !
-    if *mnase && !ispe {
-        panic!("Error: MNase-seq requires paired-end data.");
-    }
-    if norm == "RPGC" && *effectivegenomesize == 0 {
-        panic!("Error: Effective genome size is required for RPGC normalization.");
-    }
-    if norm != "None" && *scalefactor != 1.0 {
-        println!("Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used", norm);
-    }
-    if *verbose {
-        println!("Chromosomes to ignore for normalization: {:?}", ignorechr);
-    }
 }

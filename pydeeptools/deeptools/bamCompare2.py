@@ -252,6 +252,8 @@ def main(args=None):
         args.samFlagExclude = 0
     if not args.region:
         args.region = 'None'
+    if not args.extendReads:
+        args.extendReads = 0
     if not args.blackListFileName:
         args.blackListFileName = 'None'
     else:
@@ -272,7 +274,9 @@ def main(args=None):
         args.scaleFactorsMethod, # scaling method
         args.operation,
         args.pseudocount,
-        args.ignoreDuplicates,
+        args.extendReads,
+        args.centerReads,
+        args.blackListFileName,
         args.minMappingQuality,
         args.samFlagInclude,
         args.samFlagExclude,
@@ -282,7 +286,7 @@ def main(args=None):
         args.ignoreForNormalization,
         args.binSize, # bin size
         args.region, # regions
-        True # verbose
+        args.verbose # verbose
     )
 
     # #if args.normalizeUsing == "RPGC":
