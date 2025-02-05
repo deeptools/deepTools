@@ -2,12 +2,6 @@ name: Build Python Wheels
 
 on:
   workflow_dispatch:
-    inputs:
-      debug_enabled:
-        type: boolean
-        description: 'Debug enabled (~/.ssh/id_rsa)'
-        required: false
-        default: true #false
   push:
 
 jobs:
@@ -18,16 +12,6 @@ jobs:
         target: [x86_64-unknown-linux-gnu, i686-unknown-linux-gnu]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup debug session
-        uses: mxschmitt/action-tmate@v3
-        #if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
-        if: ${{ failure() }}
-        timeout-minutes: 5
-        with:
-          detached: true
-          limit-access-to-actor: true
-
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
@@ -36,7 +20,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libssl-dev libclang-dev liblzma-dev
+          sudo apt-get install -y libclang-dev liblzma-dev
           awk '/dependencies = \[/,/\]/' pyproject.toml | \
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
