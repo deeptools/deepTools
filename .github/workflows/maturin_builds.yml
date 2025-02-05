@@ -26,6 +26,14 @@ jobs:
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
             xargs pip install
+      - name: Check Perl version
+        run: perl -v
+      - name: List installed Perl modules
+        run: perl -MCPAN -e 'CPAN::Shell->r'
+      - name: Install IPC::Cmd with verbose output
+        run: cpanm --verbose --notest IPC::Cmd
+      - name: Install IPC::Cmd using cpan
+        run: echo yes | cpan IPC::Cmd
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
