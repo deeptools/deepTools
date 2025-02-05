@@ -25,21 +25,22 @@ jobs:
           cache: 'pip'
 
       - name: Set up Perl
-        uses: shogo82148/actions-setup-perl@v1
+        uses: perl-actions/install-with-cpanm@v1
         with:
-          perl-version: '5.x'
-          distribution: 'default'
+          install: |
+            IPC::Cmd
+            YAML
 
       - name: Install system dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y \
             libclang-dev \
             liblzma-dev
-          awk '/dependencies = \[/,/\]/' pyproject.toml | \
-            grep -v "dependencies" | \
-            grep -v "\[" | grep -v "\]" | tr -d '", ' | \
-            xargs pip install
-          cpanm IPC::Cmd YAML
+          
+          # awk '/dependencies = \[/,/\]/' pyproject.toml | \
+          #   grep -v "dependencies" | \
+          #   grep -v "\[" | grep -v "\]" | tr -d '", ' | \
+          #   xargs pip install
       
       - name: Build wheels
         uses: PyO3/maturin-action@v1
