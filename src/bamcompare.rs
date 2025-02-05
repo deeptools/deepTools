@@ -52,8 +52,29 @@ pub fn r_bamcompare(
     Python::with_gil(|py| {
         ignorechr = _ignorechr.extract(py).expect("Failed to retrieve ignorechr.");
     });
+
+
+    // Parse regions & calculate coverage. Note that 
+    let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile1, bamifile2]);
+    let regionblocks = region_divider(&regions);
+
+    // If there is a blacklist, read it.
+    let mut blacklistregions: Option<Vec<Region>> = None;
+    if blacklist != "None" {
+        // Check if it's a bed or gtf file
+        let isbed = is_bed_or_gtf(blacklist);
+        match isbed.as_str() {
+            "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+            "bed" => {
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                blacklistregions = Some(bls);
+            },
+            _ => panic!("Error: Cannot determine filetype of blacklist file.")
+        }
+    }
     // Set alignment filters
     let filters = Alignmentfilters::new(
+        blacklistregions,
         Some(minmappingquality),
         Some(samflaginclude),
         Some(samflagexclude),
@@ -65,26 +86,6 @@ pub fn r_bamcompare(
         Some(extendreads),
         Some(centerreads),
     );
-
-    // Parse regions & calculate coverage. Note that 
-    let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile1, bamifile2]);
-    let regionblocks = region_divider(&regions);
-
-    // If there is a blacklist, read it.
-    let mut backlistregions: Option<Vec<Region>> = None;
-    if blacklist != "None" {
-        // Check if it's a bed or gtf file
-        let isbed = is_bed_or_gtf(blacklist);
-        match isbed.as_str() {
-            "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
-            "bed" => {
-                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
-                backlistregions = Some(bls);
-            },
-            _ => panic!("Error: Cannot determine filetype of blacklist file.")
-        }
-    }
-
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     
     // Set up the bam files in a Vec.
@@ -94,7 +95,7 @@ pub fn r_bamcompare(
         bamfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false, &backlistregions))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

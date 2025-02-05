@@ -288,30 +288,3 @@ def main(args=None):
         args.region, # regions
         args.verbose # verbose
     )
-
-    # #if args.normalizeUsing == "RPGC":
-    # #    sys.exit("RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare!")
-    # #if args.normalizeUsing == 'None':
-    #     args.normalizeUsing = None  # For the sake of sanity
-    # if args.scaleFactorsMethod != 'None' and args.normalizeUsing:
-    #     sys.exit("`--normalizeUsing {}` is only valid if you also use `--scaleFactorsMethod None`! To prevent erroneous output, I will quit now.\n".format(args.normalizeUsing))
-
-    # # Get mapping statistics
-    # bam1, mapped1, unmapped1, stats1 = bamHandler.openBam(args.bamfile1, returnStats=True, nThreads=args.numberOfProcessors)
-    # bam1.close()
-    # bam2, mapped2, unmapped2, stats2 = bamHandler.openBam(args.bamfile2, returnStats=True, nThreads=args.numberOfProcessors)
-    # bam2.close()
-
-    # scale_factors = get_scale_factors(args, [stats1, stats2], [mapped1, mapped2])
-    # if scale_factors is None:
-    #     # check whether one of the depth norm methods are selected
-    #     if args.normalizeUsing is not None:
-    #         args.scaleFactor = 1.0
-    #         # if a normalization is required then compute the scale factors
-    #         args.bam = args.bamfile1
-    #         scale_factor_bam1 = get_scale_factor(args, stats1)
-    #         args.bam = args.bamfile2
-    #         scale_factor_bam2 = get_scale_factor(args, stats2)
-    #         scale_factors = [scale_factor_bam1, scale_factor_bam2]
-    #     else:
-    #         scale_factors = [1, 1]

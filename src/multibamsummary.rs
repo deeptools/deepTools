@@ -71,22 +71,10 @@ pub fn r_mbams(
         }
     }
     
-    let filters = Alignmentfilters::new(
-        Some(minmappingquality),
-        Some(samflaginclude),
-        Some(samflagexclude),
-        Some(minfraglen),
-        Some(maxfraglen),
-        None, // No MNase mode.
-        None, // No offset
-        None, // No strand filtering.
-        Some(extendreads),
-        Some(centerreads),
-    );
-    
+  
     let mut regions: Vec<Region> = Vec::new();
     let mut gene_mode = false;
-    let mut backlistregions: Option<Vec<Region>> = None;
+    let mut blacklistregions: Option<Vec<Region>> = None;
     if mode == "BED-file" {
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
@@ -131,7 +119,7 @@ pub fn r_mbams(
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
                     let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
-                    backlistregions = Some(bls);
+                    blacklistregions = Some(bls);
                 },
                 _ => panic!("Error: Cannot determine filetype of blacklist file.")
             }
@@ -150,12 +138,26 @@ pub fn r_mbams(
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
                     let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
-                    backlistregions = Some(bls);
+                    blacklistregions = Some(bls);
                 },
                 _ => panic!("Error: Cannot determine filetype of blacklist file.")
             }
         }
     }
+
+    let filters = Alignmentfilters::new(
+        blacklistregions,
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        None, // No MNase mode.
+        None, // No offset
+        None, // No strand filtering.
+        Some(extendreads),
+        Some(centerreads),
+    );
 
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();    
     
@@ -175,7 +177,7 @@ pub fn r_mbams(
         bampfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode, &backlistregions))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

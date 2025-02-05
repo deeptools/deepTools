@@ -7,6 +7,7 @@ use tempfile::{Builder, TempPath};
 use std::fs::File;
 use std::io::Write;
 use crate::covcalc::{parse_regions, Alignmentfilters, Region};
+use crate::filehandler::{is_bed_or_gtf, read_bedfile};
 
 #[pyfunction]
 pub fn r_alignmentsieve(
@@ -22,7 +23,7 @@ pub fn r_alignmentsieve(
     minmappingquality: u8, // minimum mapping quality.
     samflaginclude: u16, // sam flag include
     samflagexclude: u16, // sam flag exclude
-    _blacklist: &str, // blacklist file name.
+    blacklist: &str, // blacklist file name.
     minfraglen: u32, // minimum fragment length.
     maxfraglen: u32, // maximum fragment length.
     _extend_reads: u32,
@@ -45,9 +46,24 @@ pub fn r_alignmentsieve(
     // shift is of length 0, 2, or 4.
 
     // Define regions 
-    let (regions, _chromsizes) = parse_regions("None", vec![bamifile]);
+    let (regions, chromsizes) = parse_regions("None", vec![bamifile]);
+    // If there is a blacklist, read it.
+    let mut backlistregions: Option<Vec<Region>> = None;
+    if blacklist != "None" {
+        // Check if it's a bed or gtf file
+        let isbed = is_bed_or_gtf(blacklist);
+        match isbed.as_str() {
+            "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+            "bed" => {
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                backlistregions = Some(bls);
+            },
+            _ => panic!("Error: Cannot determine filetype of blacklist file.")
+        }
+    }
 
     let filters = Alignmentfilters::new(
+        backlistregions,
         Some(minmappingquality),
         Some(samflaginclude),
         Some(samflagexclude),

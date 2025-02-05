@@ -74,27 +74,18 @@ pub fn r_bamcoverage(
     if mnase {
         if minfraglen == 0 {
             minfraglen = 130;
+        } else {
+            println!("Note that MNase mode is set, but minfraglen is set at {}. Recommended is 130.", minfraglen);
         }
         if maxfraglen == 0 {
             maxfraglen = 200;
+        } else {
+            println!("Note that MNase mode is set, but maxfraglen is set at {}. Recommended is 200.", maxfraglen);
         }
         if binsize != 1 {
-            println!("Note that a binsize of 1 is recommended for MNase mode. (binsize set at {})", binsize);
+            println!("Note that MNase mode is set, but binsize is set at {}. Recommended is 1.", binsize);
         }
     }
-    // Set alignment filters
-    let filters = Alignmentfilters::new(
-        Some(minmappingquality),
-        Some(samflaginclude),
-        Some(samflagexclude),
-        Some(minfraglen),
-        Some(maxfraglen),
-        Some(mnase),
-        Some(offset),
-        Some(filterrnastrand.to_string()),
-        Some(extendreads),
-        Some(centerreads),
-    );
     if verbose {
         println!("Sample: {} is-paired: {}", bamifile, ispe);
     }
@@ -116,11 +107,24 @@ pub fn r_bamcoverage(
             _ => panic!("Error: Cannot determine filetype of blacklist file.")
         }
     }
-
+    // Set alignment filters
+    let filters = Alignmentfilters::new(
+        backlistregions,
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        Some(mnase),
+        Some(offset),
+        Some(filterrnastrand.to_string()),
+        Some(extendreads),
+        Some(centerreads),
+    );
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
         regionblocks.par_iter()
-            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true, false, &backlistregions))
+            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true, false))
             .reduce(
                 || (vec![], 0, 0, vec![], vec![]),
                 |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
