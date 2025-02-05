@@ -43,7 +43,7 @@ jobs:
           before-script-linux: |
             set -ex
             if command -v yum &> /dev/null; then
-                yum update -y && yum install -y perl-core openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
+                yum update -y && yum install -y epel-release && yum install -y perl-core openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
                 if [[ ! -d "/usr/lib64" ]]; then
                     ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
                 fi
