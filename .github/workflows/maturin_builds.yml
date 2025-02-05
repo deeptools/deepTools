@@ -43,7 +43,13 @@ jobs:
           before-script-linux: |
             set -ex
             if command -v yum &> /dev/null; then
-                yum update -y && yum install -y epel-release && yum install -y perl-core openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
+                yum update -y && yum install -y yum-utils
+                yum-config-manager --add-repo https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=x86_64
+                yum install -y epel-release centos-release-scl
+                wget https://apt.llvm.org/llvm-snapshot.gpg.key
+                rpm --import llvm-snapshot.gpg.key
+                wget https://raw.githubusercontent.com/llvm/llvm-project/main/llvm/utils/repo-config/centos/llvm-rhel.repo -O /etc/yum.repos.d/llvm-rhel.repo
+                yum update && yum install -y perl-core openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
                 if [[ ! -d "/usr/lib64" ]]; then
                     ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
                 fi
