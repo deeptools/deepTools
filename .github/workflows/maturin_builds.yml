@@ -31,11 +31,13 @@ jobs:
       
       - name: Build wheels
         uses: PyO3/maturin-action@v1
+        env:
+          RUST_BACKTRACE: "1"
         with:
           target: ${{ matrix.target }}
           sccache: 'true'
           args: --release --out dist --find-interpreter
-          manylinux: auto
+          manylinux: "2_24"
           # Following is a workaround taken from:
           # https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
           before-script-linux: |
