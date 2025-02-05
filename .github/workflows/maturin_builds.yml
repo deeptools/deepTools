@@ -7,28 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [x86_64-unknown-linux-gnu, i686-unknown-linux-gnu]
+        target: [x86_64, i686]
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          architecture: x64
           cache: 'pip'
-         
-          # awk '/dependencies = \[/,/\]/' pyproject.toml | \
-          #   grep -v "dependencies" | \
-          #   grep -v "\[" | grep -v "\]" | tr -d '", ' | \
-          #   xargs pip install
-      
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
@@ -36,31 +23,31 @@ jobs:
         with:
           target: ${{ matrix.target }}
           sccache: 'true'
-          args: --release --out dist --find-interpreter
+          args: --release --out dist --find-interpreter -m Cargo.toml
           manylinux: "auto"
-          # Following is a workaround taken from:
-          # https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
-          before-script-linux: |
-            set -ex
-            if command -v yum &> /dev/null; then
-                yum update -y && yum install -y wget
-                yum-config-manager --add-repo https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=x86_64
-                wget https://apt.llvm.org/llvm-snapshot.gpg.key
-                rpm --import llvm-snapshot.gpg.key
-                wget https://raw.githubusercontent.com/llvm/llvm-project/main/llvm/utils/repo-config/centos/llvm-rhel.repo -O /etc/yum.repos.d/llvm-rhel.repo
-                yum update && yum install -y perl-core openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
-                if [[ ! -d "/usr/lib64" ]]; then
-                    ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
-                fi
-            else
-                apt update -y && apt-get install -y libssl-dev openssl pkg-config libclang-dev liblzma-dev
-            fi
-            export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-            export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
-            if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
-                echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
-                exit 1
-            fi
-            export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
-            export OPENSSL_NO_VENDOR=1
+          # # Following is a workaround taken from:
+          # # https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
+          # before-script-linux: |
+          #   set -ex
+          #   if command -v yum &> /dev/null; then
+          #       yum update -y && yum install -y wget
+          #       yum-config-manager --add-repo https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=x86_64
+          #       wget https://apt.llvm.org/llvm-snapshot.gpg.key
+          #       rpm --import llvm-snapshot.gpg.key
+          #       wget https://raw.githubusercontent.com/llvm/llvm-project/main/llvm/utils/repo-config/centos/llvm-rhel.repo -O /etc/yum.repos.d/llvm-rhel.repo
+          #       yum update && yum install -y perl-core openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
+          #       if [[ ! -d "/usr/lib64" ]]; then
+          #           ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
+          #       fi
+          #   else
+          #       apt update -y && apt-get install -y libssl-dev openssl pkg-config libclang-dev liblzma-dev
+          #   fi
+          #   export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+          #   export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+          #   if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+          #       echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+          #       exit 1
+          #   fi
+          #   export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
+          #   export OPENSSL_NO_VENDOR=1
 
