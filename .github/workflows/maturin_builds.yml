@@ -2,9 +2,6 @@ name: Build Python Wheels
 
 on:
   push:
-    tags:
-      - '*'
-  pull_request:
 
 jobs:
   linux:
