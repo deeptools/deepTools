@@ -19,29 +19,11 @@ jobs:
           override: true
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.10'
           cache: 'pip'
-
-      - name: Set up Perl
-        uses: perl-actions/install-with-cpanm@v1
-        with:
-          install: |
-            IPC::Cmd
-            Text::Template
-            IPC::Run3
-            Test::More
-            YAML
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update && sudo apt-get install -y \
-            libclang-dev \
-            liblzma-dev \
-            libperl-dev \
-            perl-modules
-          
+         
           # awk '/dependencies = \[/,/\]/' pyproject.toml | \
           #   grep -v "dependencies" | \
           #   grep -v "\[" | grep -v "\]" | tr -d '", ' | \
@@ -51,5 +33,42 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
+          sccache: 'true'
+          args: --release --out dist --find-interpreter
           manylinux: auto
-          args: --release --out dist
+          # Following is a workaround taken from:
+          # https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
+          before-script-linux: |
+            set -ex
+
+            # If we're running on rhel centos, install needed packages.
+            if command -v yum &> /dev/null; then
+                yum update -y && yum install -y perl-core openssl openssl-devel pkgconfig libatomic clang-devel xz-devel
+
+                # If we're running on i686 we need to symlink libatomic
+                # in order to build openssl with -latomic flag.
+                if [[ ! -d "/usr/lib64" ]]; then
+                    ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
+                fi
+
+                OPENSSL_LIB_DIR=/usr/lib
+            else
+                # If we're running on debian-based system.
+                apt update -y && apt-get install -y libssl-dev openssl pkg-config libclang-dev liblzma-dev
+
+                OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
+            fi
+
+            export OPENSSL_DIR="/usr/lib/ssl"
+            export OPENSSL_INCLUDE_DIR=/usr/include/openssl
+            export OPENSSL_NO_VENDOR=1
+
+            ls $OPENSSL_LIB_DIR
+            ls $OPENSSL_INCLUDE_DIR
+
+
+            echo "OpenSSL Lib Dir: $OPENSSL_LIB_DIR"
+            echo "OpenSSL Include Dir: $OPENSSL_INCLUDE_DIR"
+
+            pkg-config --list-all
+            pkg-config --libs --cflags openssl
