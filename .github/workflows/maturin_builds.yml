@@ -20,25 +20,12 @@ jobs:
           sudo apt-get update && sudo apt-get install -y \
             libclang-dev \
             liblzma-dev \
-            perl \
             cpanminus
-          cpanm --notest YAML IPC::Cmd
+          cpanm -l ~/perl5 IPC::Cmd YAML
           awk '/dependencies = \[/,/\]/' pyproject.toml | \
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
             xargs pip install
-      - name: Set up local::lib environment
-        run: |
-          eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)
-          echo 'PATH="$HOME/perl5/bin:$PATH"' >> $GITHUB_ENV
-          echo 'PERL5LIB="$HOME/perl5/lib/perl5"' >> $GITHUB_ENV
-          echo 'PERL_LOCAL_LIB_ROOT="$HOME/perl5"' >> $GITHUB_ENV
-          echo 'PERL_MB_OPT="--install_base $HOME/perl5"' >> $GITHUB_ENV
-          echo 'PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"' >> $GITHUB_ENV
-      - name: Check Perl version
-        run: perl -v
-      - name: List installed Perl modules
-        run: perl -MCPAN -e 'CPAN::Shell->r'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
