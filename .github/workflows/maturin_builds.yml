@@ -45,7 +45,6 @@ jobs:
             if command -v yum &> /dev/null; then
                 yum update -y && yum install -y yum-utils
                 yum-config-manager --add-repo https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=x86_64
-                yum install -y centos-release-scl
                 wget https://apt.llvm.org/llvm-snapshot.gpg.key
                 rpm --import llvm-snapshot.gpg.key
                 wget https://raw.githubusercontent.com/llvm/llvm-project/main/llvm/utils/repo-config/centos/llvm-rhel.repo -O /etc/yum.repos.d/llvm-rhel.repo
