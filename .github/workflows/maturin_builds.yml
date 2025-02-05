@@ -7,7 +7,7 @@ on:
         type: boolean
         description: 'Debug enabled (~/.ssh/id_rsa)'
         required: false
-        default: false
+        default: true #false
   push:
 
 jobs:
@@ -21,7 +21,8 @@ jobs:
 
       - name: Setup debug session
         uses: mxschmitt/action-tmate@v3
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        #if: ${{ github.event_name == 'workflow_dispatch' && inputs.debug_enabled }}
+        if: ${{ failure() }}
         timeout-minutes: 5
         with:
           detached: true
