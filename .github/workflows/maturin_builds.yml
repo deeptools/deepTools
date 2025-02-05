@@ -37,9 +37,7 @@ jobs:
       - name: Check Perl version
         run: perl -v
       - name: List installed Perl modules
-        run: |
-          eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)
-          perl -MCPAN -e 'CPAN::Shell->r'
+        run: perl -MCPAN -e 'CPAN::Shell->r'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
