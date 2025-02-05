@@ -47,19 +47,25 @@ jobs:
                 if [[ ! -d "/usr/lib64" ]]; then
                     ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
                 fi
-                export OPENSSL_LIB_DIR=/usr/lib
             else
                 apt update -y && apt-get install -y libssl-dev openssl pkg-config libclang-dev liblzma-dev
-                export OPENSSL_LIB_DIR=/usr/lib/x86_64-linux-gnu
             fi
-            export OPENSSL_DIR="/usr/lib/ssl"
-            export OPENSSL_INCLUDE_DIR=/usr/include/openssl
+
+            # Use pkg-config to set OpenSSL paths
+            export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+            export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+
+            # Check if the directories exist
+            if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+                echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+                exit 1
+            fi
+
+            export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
             export OPENSSL_NO_VENDOR=1
-            echo "OpenSSL Dir: $OPENSSL_DIR"
-            ls $OPENSSL_DIR
+
             echo "OpenSSL Lib Dir: $OPENSSL_LIB_DIR"
-            ls $OPENSSL_LIB_DIR
+            ls "$OPENSSL_LIB_DIR"
+
             echo "OpenSSL Include Dir: $OPENSSL_INCLUDE_DIR"
-            ls $OPENSSL_INCLUDE_DIR
-            pkg-config --list-all
-            pkg-config --libs --cflags openssl
+            ls "$OPENSSL_INCLUDE_DIR"
