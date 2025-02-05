@@ -21,7 +21,7 @@ jobs:
             libclang-dev \
             liblzma-dev \
             cpanminus
-          cpanm --notest IPC::Cmd YAML
+          cpanm --notest YAML IPC::Cmd
           awk '/dependencies = \[/,/\]/' pyproject.toml | \
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
@@ -29,19 +29,17 @@ jobs:
       - name: Set up local::lib environment
         run: |
           eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)
-          echo 'export PATH="$HOME/perl5/bin:$PATH"' >> $GITHUB_ENV
-          echo 'export PERL5LIB="$HOME/perl5/lib/perl5"' >> $GITHUB_ENV
-          echo 'export PERL_LOCAL_LIB_ROOT="$HOME/perl5"' >> $GITHUB_ENV
-          echo 'export PERL_MB_OPT="--install_base $HOME/perl5"' >> $GITHUB_ENV
-          echo 'export PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"' >> $GITHUB_ENV
+          echo 'PATH="$HOME/perl5/bin:$PATH"' >> $GITHUB_ENV
+          echo 'PERL5LIB="$HOME/perl5/lib/perl5"' >> $GITHUB_ENV
+          echo 'PERL_LOCAL_LIB_ROOT="$HOME/perl5"' >> $GITHUB_ENV
+          echo 'PERL_MB_OPT="--install_base $HOME/perl5"' >> $GITHUB_ENV
+          echo 'PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"' >> $GITHUB_ENV
       - name: Check Perl version
         run: perl -v
       - name: List installed Perl modules
-        run: perl -MCPAN -e 'CPAN::Shell->r'
-      - name: Install IPC::Cmd with verbose output
-        run: cpanm --verbose --notest IPC::Cmd
-      - name: Install IPC::Cmd using cpan
-        run: echo yes | cpan IPC::Cmd
+        run: |
+          eval $(perl -I$HOME/perl5/lib/perl5 -Mlocal::lib)
+          perl -MCPAN -e 'CPAN::Shell->r'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
