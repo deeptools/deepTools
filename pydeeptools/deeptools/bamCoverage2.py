@@ -178,7 +178,6 @@ def main(args=None):
         args.smoothLength,
         args.binSize, # bin size
         # Filtering options
-        args.ignoreDuplicates,
         args.minMappingQuality,
         args.samFlagInclude,
         args.samFlagExclude,

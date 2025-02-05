@@ -70,13 +70,13 @@ def read_options():
                        default=False,
                        metavar="INT bp")
 
-    # group.add_argument('--ignoreDuplicates',
-    #                    help='If set, reads that have the same orientation '
-    #                    'and start position will be considered only '
-    #                    'once. If reads are paired, the mate\'s position '
-    #                    'also has to coincide to ignore a read.',
-    #                    action='store_true'
-    #                    )
+    group.add_argument('--ignoreDuplicates',
+                       help='If set, reads that have the same orientation '
+                       'and start position will be considered only '
+                       'once. If reads are paired, the mate\'s position '
+                       'also has to coincide to ignore a read.',
+                       action='store_true'
+                       )
 
     group.add_argument('--minMappingQuality',
                        metavar='INT',

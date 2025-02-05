@@ -1,5 +1,6 @@
 use rust_htslib::bam::{Read, IndexedReader, Record};
 use rust_htslib::bam::ext::BamRecordExtensions;
+use core::panic;
 use std::collections::HashMap;
 use tempfile::{Builder, TempPath};
 use std::io::{BufWriter, Write};
@@ -580,7 +581,8 @@ pub struct Alignmentfilters {
     pub offset: (i32, i32),
     pub filterrnastrand: String,
     pub extendreads: u32,
-    pub centerreads: bool
+    pub centerreads: bool,
+    pub filter: bool,
 }
 impl Alignmentfilters {
     pub fn new(
@@ -595,21 +597,123 @@ impl Alignmentfilters {
         extendreads: Option<u32>,
         centerreads: Option<bool>
     ) -> Self {
+        // Go through the arguments, and if they are not set or have default values, we set a filter boolean to false.
+        // Only when filtering needs to happen the filterrecord will be invoked, for performance.
+        let mut filter: bool = false;
+
+        let _mmq = minmappingquality.unwrap_or(0);
+        let _sfi = samflaginclude.unwrap_or(0);
+        let _sfe = samflagexclude.unwrap_or(0);
+        let _mifl = minfraglen.unwrap_or(0);
+        let _mafl = maxfraglen.unwrap_or(0);
+        let _mnase = mnase.unwrap_or(false);
+        let _offset =  offset.unwrap_or((1, -1));
+        let _frs = filterrnastrand.unwrap_or(String::from("None"));
+        let _extend = extendreads.unwrap_or(0);
+        let _center = centerreads.unwrap_or(false);
+
+        // Set the filter bool for a quick escape in case filtering is not needed.
+        if _mmq > 0 || _sfi > 0 || _sfe > 0 || _mifl > 0 || _mafl > 0 || _mnase || _offset != (1, -1) || _frs != "None" || _extend > 0 || _center {
+            filter = true;
+        }
+
         Self {
-            minmappingquality: minmappingquality.unwrap_or(0),
-            samflaginclude: samflaginclude.unwrap_or(0),
-            samflagexclude: samflagexclude.unwrap_or(0),
-            minfraglen: minfraglen.unwrap_or(0),
-            maxfraglen: maxfraglen.unwrap_or(0),
-            mnase: mnase.unwrap_or(false),
-            offset: offset.unwrap_or((1, -1)),
-            filterrnastrand: filterrnastrand.unwrap_or(String::from("None")),
-            extendreads: extendreads.unwrap_or(0),
-            centerreads: centerreads.unwrap_or(false)
+            minmappingquality: _mmq,
+            samflaginclude: _sfi,
+            samflagexclude: _sfe,
+            minfraglen: _mifl,
+            maxfraglen: _mafl,
+            mnase: _mnase,
+            offset: _offset,
+            filterrnastrand: _frs, 
+            extendreads: _extend,
+            centerreads: _center,
+            filter: filter,
         }
     }
     pub fn filterrecord(&self, rec: Record) -> Option<Record> {
-        Some(rec)
+        if !self.filter {
+            if rec.is_unmapped() {
+                return None;
+            } else {
+                return Some(rec);
+            }
+        } else {
+            // True filtering.
+            // unmapped > quality > samflags > min/max fraglen
+            if rec.is_unmapped() {
+                return None;
+            }
+            // quality
+            if rec.mapq() < self.minmappingquality {
+                return None;
+            }
+            // samflags
+            if self.samflaginclude > 0 {
+                if (rec.flags() & self.samflaginclude) == 0 {
+                    return None;
+                }
+            }
+            if self.samflagexclude > 0 {
+                if (rec.flags() & self.samflagexclude) != 0 {
+                    return None;
+                }
+            }
+            // min/max fraglen
+            if self.minfraglen != 0 || self.maxfraglen != 0 {
+                if rec.is_paired() {
+                    if rec.insert_size().abs() < self.minfraglen as i64 || rec.insert_size().abs() > self.maxfraglen as i64 {
+                        return None;
+                    }
+                } else {
+                    let fragsize: u32 = rec
+                        .aligned_blocks()
+                        .map(|x| x[1] as u32 - x[0] as u32)
+                        .sum();
+                    if fragsize < self.minfraglen || fragsize > self.maxfraglen {
+                        return None;
+                    }
+                }
+            }
+            // filterrnastrand
+            if self.filterrnastrand.as_str() != "None" {
+                match (self.filterrnastrand.as_str(), rec.is_paired()) {
+                    ("forward", true) => {
+                        if !((rec.flags() & 144 == 128) || (rec.flags() & 96 == 64)) {
+                            return None;
+                        }
+                    },
+                    ("forward", false) => {
+                        if !(rec.flags() & 16 == 16) {
+                            return None;
+                        }
+                    },
+                    ("reverse", true) => {
+                        if !((rec.flags() & 144 == 144) || (rec.flags() & 96 == 96)) {
+                            return None;
+                        }
+                    },
+                    ("reverse", false) => {
+                        if !(rec.flags() & 16 == 0) {
+                            return None;
+                        }
+                    },
+                    _ => {
+                        panic!("filterrnastrand should be either forward or reverse. {:?} is not supported.", self.filterrnastrand)
+                    },
+                }
+            }
+            // Then we can have MNase mode with possible extend - center
+            // OR offset with possible extend - center
+            // or just extend - center
+            // note that extend - center can also be optional by = 0 or false, respectively.
+            return Some(rec);
+            //
+            
+            // Centering before offset
+            // extend if needed
+
+        }
     }
 }
 
