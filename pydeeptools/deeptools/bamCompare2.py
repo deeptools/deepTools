@@ -272,6 +272,7 @@ def main(args=None):
         args.scaleFactorsMethod, # scaling method
         args.operation,
         args.pseudocount,
+        args.blackListFileName,
         args.ignoreDuplicates,
         args.minMappingQuality,
         args.samFlagInclude,
