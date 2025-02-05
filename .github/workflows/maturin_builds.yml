@@ -10,25 +10,36 @@ jobs:
         target: [x86_64-unknown-linux-gnu, i686-unknown-linux-gnu]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          architecture: x64
-      - uses: actions-rs/toolchain@v1
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
+          override: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Set up Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: '5.x'
+          distribution: 'default'
+
       - name: Install system dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y \
             libclang-dev \
-            liblzma-dev \
-            cpanminus
-          cpanm -l ~/perl5 IPC::Cmd YAML
+            liblzma-dev
           awk '/dependencies = \[/,/\]/' pyproject.toml | \
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
             xargs pip install
+      
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
