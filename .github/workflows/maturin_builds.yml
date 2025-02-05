@@ -39,6 +39,7 @@ jobs:
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
             xargs pip install
+          cpanm IPC::Cmd YAML
       
       - name: Build wheels
         uses: PyO3/maturin-action@v1
