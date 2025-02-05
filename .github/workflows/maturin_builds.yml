@@ -18,7 +18,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y  libipc-run-perl libclang-dev liblzma-dev
+          sudo apt-get install -y perl-modules libclang-dev liblzma-dev
           awk '/dependencies = \[/,/\]/' pyproject.toml | \
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
