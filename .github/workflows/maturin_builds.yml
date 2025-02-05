@@ -29,13 +29,18 @@ jobs:
         with:
           install: |
             IPC::Cmd
+            Text::Template
+            IPC::Run3
+            Test::More
             YAML
 
       - name: Install system dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y \
             libclang-dev \
-            liblzma-dev
+            liblzma-dev \
+            libperl-dev \
+            perl-modules
           
           # awk '/dependencies = \[/,/\]/' pyproject.toml | \
           #   grep -v "dependencies" | \
