@@ -1,8 +1,6 @@
 name: Build Python Wheels
 
-on:
-  workflow_dispatch:
-  push:
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   linux:

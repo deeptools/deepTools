@@ -1,5 +1,5 @@
 name: Planemo
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 env:
   GALAXY_BRANCH: release_24.1
