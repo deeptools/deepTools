@@ -35,7 +35,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libclang-dev liblzma-dev
+          sudo apt-get install -y libssl-dev libclang-dev liblzma-dev
           awk '/dependencies = \[/,/\]/' pyproject.toml | \
             grep -v "dependencies" | \
             grep -v "\[" | grep -v "\]" | tr -d '", ' | \
