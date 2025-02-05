@@ -43,7 +43,7 @@ jobs:
           before-script-linux: |
             set -ex
             if command -v yum &> /dev/null; then
-                yum update -y && yum install -y yum-utils
+                yum update -y && yum install -y wget
                 yum-config-manager --add-repo https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=x86_64
                 wget https://apt.llvm.org/llvm-snapshot.gpg.key
                 rpm --import llvm-snapshot.gpg.key
