@@ -26,7 +26,7 @@ jobs:
         with:
           detached: true
           limit-access-to-actor: true
-      - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
