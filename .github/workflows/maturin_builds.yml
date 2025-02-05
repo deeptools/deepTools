@@ -69,3 +69,5 @@ jobs:
 
             echo "OpenSSL Include Dir: $OPENSSL_INCLUDE_DIR"
             ls "$OPENSSL_INCLUDE_DIR"
+
+            clang --version
