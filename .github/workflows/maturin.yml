@@ -33,7 +33,18 @@ jobs:
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
-          manylinux: 2_34
+          manylinux: 2_28
+          before-script-linux: |
+            set -ex
+            apt update -y && apt install -y build-essential perl-modules curl libssl-dev openssl pkg-config clang liblzma-dev
+            export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+            export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+            if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+                echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+                exit 1
+            fi
+            export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
+            export OPENSSL_NO_VENDOR=1
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
