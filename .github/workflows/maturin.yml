@@ -17,12 +17,12 @@ jobs:
         platform:
           - runner: ubuntu-22.04
             target: x86_64
-          - runner: ubuntu-22.04
-            target: x86
-          - runner: ubuntu-22.04
-            target: aarch64
-          - runner: ubuntu-22.04
-            target: armv7
+    #       - runner: ubuntu-22.04
+    #         target: x86
+    #       - runner: ubuntu-22.04
+    #         target: aarch64
+    #       - runner: ubuntu-22.04
+    #         target: armv7
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -36,7 +36,7 @@ jobs:
           manylinux: 2_24
           before-script-linux: |
             set -ex
-            apt update -y && apt-get install -y build-essential perl-modules curl libssl-dev openssl pkg-config libclang-dev liblzma-dev
+            apt update -y && apt-get install -y build-essential perl-modules curl libssl-dev openssl pkg-config clang liblzma-dev
             # curl -L https://cpanmin.us | perl - --sudo App::cpanminus
             # cpanm --force Test::More ExtUtils::Manifest YAML IPC::Cmd
             export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
