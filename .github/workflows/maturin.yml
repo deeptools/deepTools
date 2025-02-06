@@ -36,7 +36,8 @@ jobs:
           manylinux: 2_24
           before-script-linux: |
             set -ex
-            apt update -y && apt-get install -y build-essential perl-modules curl libssl-dev openssl pkg-config clang liblzma-dev
+            sed -i.bak -e 's|http://deb.debian.org/debian|http://archive.debian.org/debian|g' -e 's|http://security.debian.org/debian-security|http://archive.debian.org/debian-security|g' /etc/apt/sources.list
+            apt update -y && apt install -y build-essential perl-modules curl libssl-dev openssl pkg-config clang liblzma-dev
             # curl -L https://cpanmin.us | perl - --sudo App::cpanminus
             # cpanm --force Test::More ExtUtils::Manifest YAML IPC::Cmd
             export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
