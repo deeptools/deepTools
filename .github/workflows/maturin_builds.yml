@@ -29,8 +29,6 @@ jobs:
           # https://github.com/Intreecom/scyllapy/blob/develop/.github/workflows/release.yaml
           before-script-linux: |
             set -ex
-            # Print the current distribution information
-            echo "System Information:" && uname -a
             if command -v lsb_release &> /dev/null; then
                 lsb_release -a
             elif [ -f /etc/os-release ]; then
@@ -45,15 +43,16 @@ jobs:
             if command -v yum &> /dev/null; then
                 yum update -y
                 yum-config-manager --add-repo https://mirrors.fedoraproject.org/metalink?repo=epel-7&arch=${{ matrix.target }}
+                yum groupinstall -y "Development Tools"
                 yum install -y perl-devel curl openssl openssl-libs openssl-devel pkgconfig libatomic clang-devel xz-devel
                 if [[ ! -d "/usr/lib64" ]]; then
                     ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
                 fi
             else
-                apt update -y && apt-get install -y perl-modules curl libssl-dev openssl pkg-config libclang-dev liblzma-dev
+                apt update -y && apt-get install -y build-essential perl-modules curl libssl-dev openssl pkg-config libclang-dev liblzma-dev
             fi
             curl -L https://cpanmin.us | perl - --sudo App::cpanminus
-            cpanm ExtUtils::Manifest && cpanm YAML IPC::Cmd
+            cpanm YAML IPC::Cmd
             export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
             export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
             if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
