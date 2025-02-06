@@ -36,7 +36,7 @@ jobs:
           manylinux: 2_28
           before-script-linux: |
             set -ex
-            apt update -y && apt install -y build-essential perl-modules curl libssl-dev openssl pkg-config clang liblzma-dev
+            apt-get update -y && apt-get install -y build-essential perl-modules curl libssl-dev openssl pkg-config clang liblzma-dev
             export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
             export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
             if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
