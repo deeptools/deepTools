@@ -61,6 +61,12 @@ jobs:
         with:
           python-version: 3.x
           architecture: ${{ matrix.platform.target }}
+      - name: Install OpenSSL
+        run: |
+          choco install openssl
+          $env:OPENSSL_DIR = "C:\Program Files\OpenSSL-Win64"
+          $env:OPENSSL_INCLUDE_DIR = "$env:OPENSSL_DIR\include"
+          $env:OPENSSL_LIB_DIR = "$env:OPENSSL_DIR\lib"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
