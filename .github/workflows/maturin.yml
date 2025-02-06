@@ -72,10 +72,6 @@ jobs:
         uses: PyO3/maturin-action@v1
         env:
           RUST_BACKTRACE: 1
-        run: |
-          echo OPENSSL_DIR=$env:OPENSSL_DIR
-          echo OPENSSL_INCLUDE_DIR=$env:OPENSSL_INCLUDE_DIR
-          echo OPENSSL_LIB_DIR=$env:OPENSSL_LIB_DIR
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
