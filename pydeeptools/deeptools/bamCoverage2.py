@@ -1,7 +1,7 @@
 import argparse
 from deeptools import parserCommon
 from deeptools.hp import r_bamcoverage
-
+import sys
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -143,13 +143,19 @@ def main(args=None):
         args.filterRNAstrand = 'None'
     if not args.blackListFileName:
         args.blackListFileName = 'None'
+    else:
+        if len(args.blackListFileName) != 1:
+            print("Please only provide one blacklist file.")
+            sys.exit()
+        args.blackListFileName = args.blackListFileName[0]
     if not args.minMappingQuality:
         args.minMappingQuality = 0
     if not args.samFlagInclude:
         args.samFlagInclude = 0
     if not args.samFlagExclude:
         args.samFlagExclude = 0
-
+    if not args.region:
+        args.region = 'None'
     print(args)
 
     r_bamcoverage(
@@ -180,6 +186,6 @@ def main(args=None):
         args.maxFragmentLength,
         # running options
         args.numberOfProcessors, # threads
-        [], # regions
+        args.region, # regions
         args.verbose # verbose
     )

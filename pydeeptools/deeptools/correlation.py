@@ -92,8 +92,11 @@ class Correlation:
                              "and plotting\n".format(num_nam))
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
-
-        self.labels = list(map(toString, _ma['labels']))
+        # Since deeptools 4.0 the labels are encoded and would need to be decoded.
+        if _ma['labels'].dtype == np.uint8:
+            self.labels = [bytes(x).decode('utf-8').rstrip('\x00') for x in _ma['labels']]
+        else:
+            self.labels = list(map(toString, _ma['labels']))
 
         assert len(self.labels) == self.matrix.shape[1], "ERROR, length of labels is not equal " \
                                                          "to length of matrix samples"

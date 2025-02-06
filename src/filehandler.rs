@@ -1,4 +1,4 @@
-use rust_htslib::bam::{Read, Reader};
+use rust_htslib::bam::{Read, Reader, IndexedReader};
 use itertools::Itertools;
 use std::io::{BufReader, BufWriter, Write};
 use std::io::prelude::*;
@@ -9,7 +9,7 @@ use bigtools::beddata::BedParserStreamingIterator;
 use std::collections::HashMap;
 use flate2::write::GzEncoder;
 use flate2::Compression;
-use crate::computematrix::{Scalingregions, Gtfparse, Revalue, Region, Bin};
+use crate::covcalc::{Scalingregions, Gtfparse, Revalue, Region, Bin};
 use crate::calc::{mean_float, median_float, min_float, max_float, sum_float, std_float};
 
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
@@ -45,6 +45,25 @@ where
         let writer = BigWigWrite::create_file(ofile, chromsizes).unwrap();
         let _ = writer.write(vals, runtime);
     }
+}
+
+pub fn is_bed_or_gtf(fp: &str) -> String {
+    // Check if file is a bed or gtf file.
+    let file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
+    let reader = BufReader::new(file);
+    // Get the first line that doesn't start with #
+    for line in reader.lines() {
+        let line = line.unwrap();
+        if !line.starts_with('#') {
+            let fields: Vec<&str> = line.split('\t').collect();
+            if fields.len() == 9 {
+                return "gtf".to_string();
+            } else {
+                return "bed".to_string();
+            }
+        }
+    }
+    "Unknown".to_string()
 }
 
 pub fn read_gtffile(gtf_file: &String, gtfparse: &Gtfparse, chroms: Vec<&String>) -> (Vec<Region>, (String, u32)) {
@@ -107,8 +126,8 @@ pub fn read_gtffile(gtf_file: &String, gtfparse: &Gtfparse, chroms: Vec<&String>
             let (starts, ends): (Vec<u32>, Vec<u32>) = txnentry.iter().map(|(s, e)| (*s, *e)).unzip();
             let chrom = txn_chrom.get(&txnid).unwrap().to_string();
 
-            if !chroms.contains(&&chrom) {
-                println!("Warning, region {} not found in at least one of the bigwig files. Skipping {}.", chrom, txnid);
+            if !chroms.contains(&&chrom.to_string()) {
+                println!("Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.", chrom, txnid);
             } else {
                 regions.push(
                     Region {
@@ -151,9 +170,8 @@ pub fn read_gtffile(gtf_file: &String, gtfparse: &Gtfparse, chroms: Vec<&String>
                 } else {
                     names.insert(entryname.clone(), 0);
                 }
-
                 if !chroms.contains(&&fields[0].to_string()) {
-                    println!("Warning, region {} not found in at least one of the bigwig files. Skipping {}.", fields[0], entryname);
+                    println!("Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.", fields[0], entryname);
                 } else {
                     regions.push(
                         Region {
@@ -203,8 +221,10 @@ pub fn read_bedfile(bed_file: &String, metagene: bool, chroms: Vec<&String>) -> 
                 }
                 let chrom = fields[0];
                 let mut entryname = format!("{}:{}-{}", fields[0], fields[1], fields[2]);
+                // Only check for valid chroms, if chroms vec is not empty.
+
                 if !chroms.contains(&&chrom.to_string()) {
-                    println!("Warning, region {} not found in at least one of the bigwig files. Skipping {}.", chrom, entryname);
+                    println!("Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.", chrom, entryname);
                     continue;
                 }
                 if names.contains_key(&entryname) {
@@ -236,7 +256,7 @@ pub fn read_bedfile(bed_file: &String, metagene: bool, chroms: Vec<&String>) -> 
                 let chrom = fields[0];
                 let mut entryname = fields[3].to_string();
                 if !chroms.contains(&&chrom.to_string()) {
-                    println!("Warning, region {} not found in at least one of the bigwig files. Skipping {}.", chrom, entryname);
+                    println!("Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.", chrom, entryname);
                     continue;
                 }
                 let start = fields[1].parse().unwrap();
@@ -265,7 +285,7 @@ pub fn read_bedfile(bed_file: &String, metagene: bool, chroms: Vec<&String>) -> 
                 let chrom = fields[0];
                 let mut entryname = fields[3].to_string();
                 if !chroms.contains(&&chrom.to_string()) {
-                    println!("Warning, region {} not found in at least one of the bigwig files. Skipping {}.", chrom, entryname);
+                    println!("Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.", chrom, entryname);
                     continue;
                 }
                 if names.contains_key(&entryname) {
@@ -347,6 +367,45 @@ pub fn chrombounds_from_bw(bwfile: &str) -> HashMap<String, u32> {
     let reader = BigWigRead::open(bwf).unwrap();
     for chrom in reader.chroms() {
         chromsizes.insert(chrom.name.clone(), chrom.length);
+    }
+    chromsizes
+}
+
+pub fn chrombounds_from_bam(bamfiles: Vec<&str>) -> HashMap<String, u32> {
+    let mut found_chroms: HashMap<String, usize> = HashMap::new();
+    for bam in bamfiles.iter() {
+        let bam = IndexedReader::from_path(bam).unwrap();
+        let chroms: Vec<String> = bam.header().target_names().iter().map(|x| String::from_utf8(x.to_vec()).unwrap()).collect();
+        for chrom in chroms.iter() {
+            // if it's not in the hashmap, add it, else increment count
+            if !found_chroms.contains_key(chrom) {
+                found_chroms.insert(chrom.clone(), 1);
+            } else {
+                let count = found_chroms.get_mut(chrom).unwrap();
+                *count += 1;
+            }
+        }
+    }
+    let mut validchroms: Vec<String> = Vec::new();
+    // loop over all chroms in the hashmap, if the count is expected, include them
+    for (chrom, count) in found_chroms.iter() {
+        if *count == bamfiles.len() {
+            validchroms.push(chrom.clone());
+        } else {
+            println!("Chromosome {} is missing in at least one bam file, and thus ignored!", chrom);
+        }
+    }
+    let bam = IndexedReader::from_path(bamfiles[0]).unwrap();
+    let header = bam.header().clone();
+    let mut chromsizes = HashMap::new();
+    for tid in 0..header.target_count() {
+        let chromname = String::from_utf8(header.tid2name(tid).to_vec())
+            .expect("Invalid UTF-8 in chromosome name");
+        let chromlen = header.target_len(tid)
+            .expect("Error retrieving length for chromosome");
+        if validchroms.contains(&chromname) {
+            chromsizes.insert(chromname, chromlen as u32);
+        }
     }
     chromsizes
 }

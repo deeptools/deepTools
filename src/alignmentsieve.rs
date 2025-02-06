@@ -1,14 +1,12 @@
-use bigtools::utils::misc::Name;
-use flate2::write;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
-use rust_htslib::bam::{self, record, Header, IndexedReader, Read, Reader, Writer};
-use tempfile::{Builder, TempPath, NamedTempFile};
+use rust_htslib::bam::{self, Header, IndexedReader, Read, Reader, Writer};
+use tempfile::{Builder, TempPath};
 use std::fs::File;
 use std::io::Write;
-use crate::covcalc::{parse_regions, Alignmentfilters};
+use crate::covcalc::{parse_regions, Alignmentfilters, Region};
 
 #[pyfunction]
 pub fn r_alignmentsieve(
@@ -27,14 +25,14 @@ pub fn r_alignmentsieve(
     _blacklist: &str, // blacklist file name.
     min_fragment_length: u32, // minimum fragment length.
     max_fragment_length: u32, // maximum fragment length.
-    extend_reads: u32,
-    center_reads: bool,
+    _extend_reads: u32,
+    _center_reads: bool,
     
 ) -> PyResult<()> {
     // Input bam file
-    let mut bam = Reader::from_path(bamifile).unwrap();
+    let bam = Reader::from_path(bamifile).unwrap();
     let header = Header::from_template(bam.header());
-    let header_view = bam.header().clone();
+    let _header_view = bam.header().clone();
 
     let mut write_filters: bool = false;
     if filtered_out_readsfile != "None" {
@@ -47,7 +45,7 @@ pub fn r_alignmentsieve(
     // shift is of length 0, 2, or 4.
 
     // Define regions 
-    let (regions, chromsizes) = parse_regions(&Vec::new(), bamifile);
+    let (regions, _chromsizes) = parse_regions("None", vec![bamifile]);
 
     let filters = Alignmentfilters{
         minmappingquality: min_mapping_quality,
@@ -74,7 +72,7 @@ pub fn r_alignmentsieve(
 
     // write output
     let mut obam = Writer::from_path(ofile, &header, bam::Format::Bam).unwrap();
-    obam.set_threads(nproc);
+    let _ = obam.set_threads(nproc);
     for sb in sieve.into_iter() {
         if let Some(sb) = sb {
             let mut bam = Reader::from_path(&sb).unwrap();
@@ -87,7 +85,7 @@ pub fn r_alignmentsieve(
     // write filtered reads if necessary
     if write_filters {
         let mut ofilterbam = Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
-        ofilterbam.set_threads(nproc);
+        let _ = ofilterbam.set_threads(nproc);
         for sb in filtersieve.into_iter() {
             if let Some(sb) = sb {
                 let mut bam = Reader::from_path(&sb).unwrap();
@@ -99,7 +97,7 @@ pub fn r_alignmentsieve(
         }
     }
 
-    let mut ofilterbam = Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
+    let _ofilterbam = Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
 
     if filter_metrics != "None" {
         let mut of = File::create(filter_metrics).unwrap();
@@ -113,7 +111,8 @@ pub fn r_alignmentsieve(
 }
 
 
-fn sieve_bamregion(ibam: &str, region: &(String, u32, u32), alfilters: &Alignmentfilters, filter_rna_strand: &str, shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
+fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters, filter_rna_strand: &str, _shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
+    let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
     let mut total_reads: u64 = 0;
     let mut filtered_reads: u64 = 0;
     let mut bam = IndexedReader::from_path(ibam).unwrap();
@@ -147,8 +146,8 @@ fn sieve_bamregion(ibam: &str, region: &(String, u32, u32), alfilters: &Alignmen
     if nproc > 4 {
         let readthreads = 2;
         let writethreads = nproc - 2;
-        bam.set_threads(readthreads);
-        sievebamout.set_threads(writethreads);
+        let _ = bam.set_threads(readthreads);
+        let _ = sievebamout.set_threads(writethreads);
         if verbose {
             println!("Reading = {}, Writing = {}", readthreads, writethreads);
         }

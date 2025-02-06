@@ -33,6 +33,9 @@
 
  - unmapped reads to unfiltered_out
 
+## multiBamSummary
+ - npz output has labels encoded as u8s, no longer strings.
+
 # Todo
 
 - AlignmentSieve: Shift, Bed, Optimization.

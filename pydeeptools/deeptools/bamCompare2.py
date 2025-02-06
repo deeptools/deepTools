@@ -250,8 +250,18 @@ def main(args=None):
         args.samFlagInclude = 0
     if not args.samFlagExclude:
         args.samFlagExclude = 0
-    print(args)
+    if not args.region:
+        args.region = 'None'
+    if not args.blackListFileName:
+        args.blackListFileName = 'None'
+    else:
+        if len(args.blackListFileName) != 1:
+            print("Please only provide one blacklist file.")
+            sys.exit()
+        args.blackListFileName = args.blackListFileName[0]
+
     args.pseudocount = 1
+    
     r_bamcompare(
         args.bamfile1, # bam file 1
         args.bamfile2, # bam file 2
@@ -271,7 +281,7 @@ def main(args=None):
         args.numberOfProcessors, # threads
         args.ignoreForNormalization,
         args.binSize, # bin size
-        [], # regions
+        args.region, # regions
         True # verbose
     )
 

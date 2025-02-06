@@ -206,13 +206,20 @@ def process_args(args=None):
             args.labels = smartLabels(args.bamfiles)
         else:
             args.labels = [os.path.basename(x) for x in args.bamfiles]
-
+    if not args.outFileName:
+        print("Please provide an output file name.")
+        exit(0)
     if not args.BED:
-        args.BED = "None"
+        args.BED = []
     if not args.region:
-        args.region = []
+        args.region = "None"
     if not args.blackListFileName:
-        args.blackListFileName = "None"
+        args.blackListFileName = 'None'
+    else:
+        if len(args.blackListFileName) != 1:
+            print("Please only provide one blacklist file.")
+            sys.exit()
+        args.blackListFileName = args.blackListFileName[0]
     if not args.outRawCounts:
         args.outRawCounts = "None"
     if not args.scalingFactors:
@@ -268,73 +275,3 @@ def main(args=None):
         args.exonID,
         args.transcript_id_designator
     )
-
-    # if 'BED' in args:
-    #     bed_regions = args.BED
-    # else:
-    #     bed_regions = None
-
-    # if len(args.bamfiles) == 1 and not (args.outRawCounts or args.scalingFactors):
-    #     sys.stderr.write("You've input a single BAM file and not specified "
-    #                      "--outRawCounts or --scalingFactors. The resulting output will NOT be "
-    #                      "useful with any deepTools program!\n")
-
-    # stepsize = args.binSize + args.distanceBetweenBins
-    # c = countR.CountReadsPerBin(
-    #     args.bamfiles,
-    #     args.binSize,
-    #     numberOfSamples=None,
-    #     genomeChunkSize=args.genomeChunkSize,
-    #     numberOfProcessors=args.numberOfProcessors,
-    #     verbose=args.verbose,
-    #     region=args.region,
-    #     bedFile=bed_regions,
-    #     blackListFileName=args.blackListFileName,
-    #     extendReads=args.extendReads,
-    #     minMappingQuality=args.minMappingQuality,
-    #     ignoreDuplicates=args.ignoreDuplicates,
-    #     center_read=args.centerReads,
-    #     samFlag_include=args.samFlagInclude,
-    #     samFlag_exclude=args.samFlagExclude,
-    #     minFragmentLength=args.minFragmentLength,
-    #     maxFragmentLength=args.maxFragmentLength,
-    #     stepSize=stepsize,
-    #     zerosToNans=False,
-    #     out_file_for_raw_data=args.outRawCounts)
-
-    # num_reads_per_bin = c.run(allArgs=args)
-
-    # sys.stderr.write("Number of bins "
-    #                  "found: {}\n".format(num_reads_per_bin.shape[0]))
-
-    # if num_reads_per_bin.shape[0] < 2:
-    #     exit("ERROR: too few non zero bins found.\n"
-    #          "If using --region please check that this "
-    #          "region is covered by reads.\n")
-
-    # # numpy will append .npz to the file name if we don't do this...
-    # if args.outFileName:
-    #     f = open(args.outFileName, "wb")
-    #     np.savez_compressed(f,
-    #                         matrix=num_reads_per_bin,
-    #                         labels=args.labels)
-    #     f.close()
-
-    # if args.scalingFactors:
-    #     f = open(args.scalingFactors, 'w')
-    #     f.write("sample\tscalingFactor\n")
-    #     scalingFactors = countR.estimateSizeFactors(num_reads_per_bin)
-    #     for sample, scalingFactor in zip(args.labels, scalingFactors):
-    #         f.write("{}\t{:6.4f}\n".format(sample, scalingFactor))
-    #     f.close()
-
-    # if args.outRawCounts:
-    #     # append to the generated file the
-    #     # labels
-    #     header = "#'chr'\t'start'\t'end'\t"
-    #     header += "'" + "'\t'".join(args.labels) + "'\n"
-    #     f = open(args.outRawCounts, 'r+')
-    #     content = f.read()
-    #     f.seek(0, 0)
-    #     f.write(header + content)
-    #     f.close()

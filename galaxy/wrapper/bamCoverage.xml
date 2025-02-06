@@ -158,6 +158,39 @@
         </data>
     </outputs>
     <tests>
+        <!-- Test minimal arguments for bamCoverage-->
+        <test expect_num_outputs="1">
+            <param name="bamInput" value="testA.bam" ftype="bam"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="showAdvancedOpt" value="no"/>
+            <param name="type" value="no"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t100\t0"/>
+                    <has_text_matching expression="3R\t100\t200\t1"/>
+                    <has_text_matching expression="chr_cigar\t0\t50\t1"/>
+                    <has_text_matching expression="chr_cigar\t50\t200\t0"/>
+                </assert_contents>
+            </output>
+        </test>
+
+        <!-- Test skipNAs for bamCoverage-->
+        <test expect_num_outputs="1">
+            <param name="bamInput" value="testA.bam" ftype="bam"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="showAdvancedOpt" value="no"/>
+            <param name="type" value="no"/>
+            <param name="skipNAs" value="true"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t100\t0"/>
+                    <has_text_matching expression="3R\t100\t200\t1"/>
+                    <has_text_matching expression="chr_cigar\t0\t50\t1"/>
+                    <has_text_matching expression="chr_cigar\t50\t200\t0"/>
+                </assert_contents>
+            </output>
+        </test>
+
         <test expect_num_outputs="1">
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="outFileFormat" value="bigwig"/>
@@ -222,6 +255,18 @@
             <param name="minMappingQuality" value="0"/>
             <param name="type" value="no"/>
             <output name="outFileName" file="bamCoverage_result6.bw" ftype="bigwig"/>
+        </test>
+
+        <!-- Test bamCoverage with filter blacklist-->
+        <test expect_num_outputs="1">
+            <param name="bamInput" value="coverage_filtering.bam" ftype="bam"/>
+            <param name="blackListFileName" value="coverage_filtering.blacklist.bed"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="type" value="1x"/>
+            <param name="effectiveGenomeSize_opt" value="specific"/>
+            <param name="effectiveGenomeSize" value="1400"/>
+            <output name="outFileName" file="coverage_filtered.bg" ftype="bedgraph"></output>
         </test>
     </tests>
     <help>

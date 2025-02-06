@@ -184,7 +184,6 @@
             <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="showAdvancedOpt" value="no"/>
-            <param name="outFileFormat" value="bigwig"/>
             <param name="outFileFormat" value="bedgraph"/>
             <param name="binSize" value="5"/>
             <param name="type" value="ratio"/>
@@ -195,10 +194,90 @@
             <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="outFileFormat" value="bigwig"/>
             <param name="binSize" value="10"/>
             <param name="type" value="ratio"/>
             <output name="outFileName" file="bamCompare_result2.bw" ftype="bigwig"/>
+        </test>
+        <!-- Test with BAM and CRAM file as input-->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testA.cram" ftype="cram"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t200\t1"/>
+                    <has_text_matching expression="chr_cigar\t0\t200\t1"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM and CRAM files and substract option-->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testA.cram" ftype="cram"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="substract"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t200\t0"/>
+                    <has_text_matching expression="chr_cigar\t0\t200\t0"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM files with pseudocounts-->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testB.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <param name="pseudocount" value="1 1"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t0\t50\t1"/>
+                    <has_text_matching expression="3R\t50\t100\t0.571429"/>
+                    <has_text_matching expression="3R\t100\t150\t1.14286"/>
+                    <has_text_matching expression="3R\t150\t200\t0.8"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM files with skipZeroOverZero -->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testB.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <param name="skipZeroOverZero" value="--skipZeroOverZero"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t50\t100\t0.571429"/>
+                    <has_text_matching expression="3R\t100\t150\t1.14286"/>
+                    <has_text_matching expression="3R\t150\t200\t0.8"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Test with BAM files with skipNAs -->
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testB.bam" ftype="bam"/>
+            <param name="showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="type" value="ratio"/>
+            <param name="skipNAs" value="true"/>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text_matching expression="3R\t100\t150\t1.14286"/>
+                    <has_text_matching expression="3R\t150\t200\t0.8"/>
+                </assert_contents>
+            </output>
         </test>
     </tests>
     <help>

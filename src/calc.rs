@@ -1,3 +1,5 @@
+use ndarray::{Array1, Array2, Axis};
+
 pub fn median(mut nvec: Vec<u32>) -> f32 {
     if nvec.is_empty() {
         0.0
@@ -155,4 +157,20 @@ pub fn calc_ratio(
             return (num / den).log2();
         }
     }
+}
+
+pub fn deseq_scalefactors(array2: &Array2<f32>) -> Array1<f32> {
+    let loggeomeans = array2.mapv(|v| v.ln()).sum_axis(Axis(1)) / array2.shape()[1] as f32;
+    let masked_array = array2.mapv(|x| if x <= 0.0 { f32::NAN } else { x });
+    let masked_loggeomeans = loggeomeans.mapv(|x| if x.is_infinite() { f32::NAN } else { x });
+    let adjusted_loga = masked_array.mapv(|x| x.ln()).t().to_owned() - &masked_loggeomeans;
+    let medians: Array1<f32> = adjusted_loga.t().axis_iter(Axis(1))
+        .map(|x| {
+            let vec: Vec<&f32> = x.iter()
+                .filter(|&&x| !x.is_nan())
+                .collect();
+            median_float(vec)
+        })
+        .collect();
+    medians.mapv(|x| 1.0 / x.exp())
 }
