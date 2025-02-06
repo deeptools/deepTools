@@ -1,4 +1,4 @@
-name: Maturin
+name: Wheels
 # maturin generate-ci github > .github/workflows/maturin.yml
 
 on:
@@ -10,41 +10,42 @@ permissions:
   contents: read
 
 jobs:
-  linux:
-    runs-on: ${{ matrix.platform.runner }}
-    strategy:
-      matrix:
-        platform:
-          - runner: ubuntu-22.04
-            target: x86_64
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
-          manylinux: 2_28
-          before-script-linux: |
-            set -ex
-            dnf install -y epel-release && dnf update -y
-            dnf install -y gcc gcc-c++ make perl curl openssl-devel pkgconfig clang xz-devel
-            export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-            export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
-            if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
-                echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
-                exit 1
-            fi
-            export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
-            export OPENSSL_NO_VENDOR=1
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-linux-${{ matrix.platform.target }}
-          path: dist
+
+  # linux:
+  #   runs-on: ${{ matrix.platform.runner }}
+  #   strategy:
+  #     matrix:
+  #       platform:
+  #         - runner: ubuntu-22.04
+  #           target: x86_64
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.x
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.platform.target }}
+  #         args: --release --out dist --find-interpreter
+  #         manylinux: 2_28
+  #         before-script-linux: |
+  #           set -ex
+  #           dnf install -y epel-release && dnf update -y
+  #           dnf install -y gcc gcc-c++ make perl curl openssl-devel pkgconfig clang xz-devel
+  #           export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+  #           export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+  #           if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+  #               echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+  #               exit 1
+  #           fi
+  #           export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
+  #           export OPENSSL_NO_VENDOR=1
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-linux-${{ matrix.platform.target }}
+  #         path: dist
 
   windows:
     runs-on: ${{ matrix.platform.runner }}
@@ -69,6 +70,12 @@ jobs:
           $env:OPENSSL_LIB_DIR = "$env:OPENSSL_DIR\lib"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
+        env:
+          RUST_BACKTRACE: 1
+        run: |
+          echo OPENSSL_DIR=$env:OPENSSL_DIR
+          echo OPENSSL_INCLUDE_DIR=$env:OPENSSL_INCLUDE_DIR
+          echo OPENSSL_LIB_DIR=$env:OPENSSL_LIB_DIR
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
@@ -78,69 +85,69 @@ jobs:
           name: wheels-windows-${{ matrix.platform.target }}
           path: dist
 
-  macos:
-    runs-on: ${{ matrix.platform.runner }}
-    strategy:
-      matrix:
-        platform:
-          - runner: macos-13
-            target: x86_64
-          - runner: macos-14
-            target: aarch64
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-macos-${{ matrix.platform.target }}
-          path: dist
+  # macos:
+  #   runs-on: ${{ matrix.platform.runner }}
+  #   strategy:
+  #     matrix:
+  #       platform:
+  #         - runner: macos-13
+  #           target: x86_64
+  #         - runner: macos-14
+  #           target: aarch64
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.x
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.platform.target }}
+  #         args: --release --out dist --find-interpreter
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-macos-${{ matrix.platform.target }}
+  #         path: dist
 
-  sdist:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build sdist
-        uses: PyO3/maturin-action@v1
-        with:
-          command: sdist
-          args: --out dist
-      - name: Upload sdist
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-sdist
-          path: dist
+  # sdist:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build sdist
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         command: sdist
+  #         args: --out dist
+  #     - name: Upload sdist
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-sdist
+  #         path: dist
 
-  release:
-    name: Release
-    runs-on: ubuntu-latest
-    if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, windows, macos, sdist]
-    permissions:
-      # Use to sign the release artifacts
-      id-token: write
-      # Used to upload release artifacts
-      contents: write
-      # Used to generate artifact attestation
-      attestations: write
-    steps:
-      - uses: actions/download-artifact@v4
-      - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@v1
-        with:
-          subject-path: 'wheels-*/*'
-      - name: Publish to PyPI
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        with:
-          command: upload
-          args: --non-interactive --skip-existing wheels-*/*
+  # release:
+  #   name: Release
+  #   runs-on: ubuntu-latest
+  #   if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
+  #   needs: [linux, windows, macos, sdist]
+  #   permissions:
+  #     # Use to sign the release artifacts
+  #     id-token: write
+  #     # Used to upload release artifacts
+  #     contents: write
+  #     # Used to generate artifact attestation
+  #     attestations: write
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #     - name: Generate artifact attestation
+  #       uses: actions/attest-build-provenance@v1
+  #       with:
+  #         subject-path: 'wheels-*/*'
+  #     - name: Publish to PyPI
+  #       if: ${{ startsWith(github.ref, 'refs/tags/') }}
+  #       uses: PyO3/maturin-action@v1
+  #       env:
+  #         MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+  #       with:
+  #         command: upload
+  #         args: --non-interactive --skip-existing wheels-*/*
