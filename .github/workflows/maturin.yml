@@ -3,15 +3,10 @@
 #
 #    maturin generate-ci github
 #
-name: CI
+name: Maturin
 
 on:
   push:
-    branches:
-      - main
-      - master
-    tags:
-      - '*'
   pull_request:
   workflow_dispatch:
 
