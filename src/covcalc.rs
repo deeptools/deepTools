@@ -8,6 +8,7 @@ use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
 use std::collections::HashSet;
+use std::fs::OpenOptions;
 
 pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
@@ -134,7 +135,7 @@ pub fn bam_pileup<'a>(
     provbs: &u32,
     ispe: &bool,
     ignorechr: &Vec<String>,
-    _filters: &Alignmentfilters,
+    filters: &Alignmentfilters,
     collapse: bool,
     gene_mode: bool
 ) -> (
@@ -148,10 +149,9 @@ pub fn bam_pileup<'a>(
     let mut binsize = &bs;
     // constant to check if read is first in pair (relevant later)
     const FREAD: u16 = 0x40;
-
-    // open bam file and fetch proper chrom
-    let mut bam = IndexedReader::from_path(bam_ifile).unwrap();
     
+    
+
     // init variables for mapping statistics and lengths
     let mut mapped_reads: u32 = 0;
     let mut unmapped_reads: u32 = 0;
@@ -174,6 +174,7 @@ pub fn bam_pileup<'a>(
         // There are two options here:
         // either we are supposed to calculate coverage over regions (variable binsize required) gene_mode = true
         // or we have a regular bin setting, gene_mode = false
+        println!("Regstruct = {:?}", regstruct);
         let mut region: (String, u32, u32);
         if gene_mode {
             region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
@@ -183,22 +184,57 @@ pub fn bam_pileup<'a>(
             region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
         }
         //let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
+        // open bam file and fetch proper chrom
+        let mut bam = IndexedReader::from_path(&bam_ifile).unwrap();
         bam.fetch((region.0.as_str(), region.1, region.2))
             .expect(&format!("Error fetching region: {:?}", region));
-    
-        if binsize >= &1 {
-            let mut counts: Vec<f32>;
-            let mut startstr: String = region.1.to_string();
-            let mut endstr: String = region.2.to_string();
+        let mut counts: Vec<f32>;
+        let mut startstr: String = region.1.to_string();
+        let mut endstr: String = region.2.to_string();
+        if gene_mode {
+            // It could be that we are in metagene mode, i.e. we only  want counts over exons
+            // In this we need another iter - fetch per regstruct
+            match (regstruct.start.clone(), regstruct.end.clone()) {
+                (Revalue::U(start), Revalue::U(end)) => {
+                    counts = vec![0.0; 1];
+                    for record in bam.records() {
+                        let record = record.expect("Error parsing record.");
+                        if filters.filter(&record) {
+                            continue;
+                        }
+                        if !ignorechr.contains(&region.0) {
+                            if record.is_unmapped() {
+                                unmapped_reads += 1;
+                            } else {
+                                mapped_reads += 1;
+                                if *ispe {
+                                    if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                                        fraglens.push(record.insert_size().abs() as u32);
+                                    }
+                                }
+                                readlens.push(record.seq_len() as u32);
+                            }
+                        }
+                        counts[0] += 1.0;
+                    }
+                },
+                (Revalue::V(starts), Revalue::V(ends)) => {
+                    // Make a string with the start values comma separated
+                    startstr = starts.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+                    endstr = ends.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
 
-            if gene_mode {
-                // It could be that we are in metagene mode, i.e. we only  want counts over exons
-                // In this we need another iter - fetch per regstruct
-                match (regstruct.start.clone(), regstruct.end.clone()) {
-                    (Revalue::U(start), Revalue::U(end)) => {
-                        counts = vec![0.0; 1];
+                    counts = vec![0.0; 1];
+                    let exons: Vec<(u32, u32)> = starts.iter().zip(ends.iter())
+                        .map(|(&s, &e)| (s, e)) 
+                        .collect();
+                    for exon in exons {
+                        bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
+                            .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
                         for record in bam.records() {
                             let record = record.expect("Error parsing record.");
+                            if filters.filter(&record) {
+                                continue;
+                            }
                             if !ignorechr.contains(&region.0) {
                                 if record.is_unmapped() {
                                     unmapped_reads += 1;
@@ -214,123 +250,20 @@ pub fn bam_pileup<'a>(
                             }
                             counts[0] += 1.0;
                         }
-                    },
-                    (Revalue::V(starts), Revalue::V(ends)) => {
-                        // Make a string with the start values comma separated
-                        startstr = starts.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
-                        endstr = ends.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
-
-                        counts = vec![0.0; 1];
-                        let exons: Vec<(u32, u32)> = starts.iter().zip(ends.iter())
-                            .map(|(&s, &e)| (s, e)) 
-                            .collect();
-                        for exon in exons {
-                            bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
-                                .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
-                            for record in bam.records() {
-                                let record = record.expect("Error parsing record.");
-                                if !ignorechr.contains(&region.0) {
-                                    if record.is_unmapped() {
-                                        unmapped_reads += 1;
-                                    } else {
-                                        mapped_reads += 1;
-                                        if *ispe {
-                                            if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                                fraglens.push(record.insert_size().abs() as u32);
-                                            }
-                                        }
-                                        readlens.push(record.seq_len() as u32);
-                                    }
-                                }
-                                counts[0] += 1.0;
-                            }
-                        }
-                    },
-                    _ => panic!("Start and End are not either both u32, or Vecs. This means your regions file is ill-defined. Fix {}.",regstruct.name),
-                }
-            } else {
-                // populate the bg vector with 0 counts over all bins
-                counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
-                // let mut binstart = region.1;
-                let mut binix: u32 = 0;
-                
-                for record in bam.records() {
-                    let record = record.expect("Error parsing record.");
-                    if !ignorechr.contains(&region.0) {
-                        if record.is_unmapped() {
-                            unmapped_reads += 1;
-                        } else {
-                            mapped_reads += 1;
-                            if *ispe {
-                                if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                    fraglens.push(record.insert_size().abs() as u32);
-                                }
-                            }
-                            readlens.push(record.seq_len() as u32);
-                        }
                     }
-                    let indices: HashSet<usize> = record
-                        .aligned_blocks()
-                        .filter(|x| (x[1] as u32) < region.2)
-                        .flat_map(|x| x[0] as u32..x[1] as u32)
-                        .map(|x| (x / binsize) as usize)
-                        .collect();
-                    indices.into_iter()
-                        .for_each(|ix| counts[ix] += 1.0);
-                }
+                },
+                _ => panic!("Start and End are not either both u32, or Vecs. This means your regions file is ill-defined. Fix {}.",regstruct.name),
             }
-            let mut writer = BufWriter::new(&bg);
-            // There are two scenarios: 
-            // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
-            // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
-            if counts.len() == 1 {
-                writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
-            } else {
-                if collapse {
-                    let mut lcov = counts[0];
-                    let mut lstart = region.1;
-                    let mut lend = region.1 + binsize;
-                    let mut start = lstart;
-                    let mut end = lend;
-                    let mut bin: u32 = 0;
-        
-                    for (ix, count) in counts.into_iter().skip(1).enumerate() {
-                        bin = (ix + 1) as u32; // offset of 1 due to skip(1)
-                        start = (bin * binsize) + region.1;
-                        end = min(start + binsize, region.2);
-                        if count != lcov {
-                            //bg.push((&region.0, lstart, lend, lcov));
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
-                            lstart = lend;
-                            lcov = count;
-                        }
-                        lend = end;
-                    }
-                    // write last entry
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
-                } else {
-                    let mut start = region.1;
-                    let mut end = region.1 + binsize;
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, counts[0]).unwrap();
-                    for (ix, count) in counts.into_iter().skip(1).enumerate() {
-                        let bin = (ix + 1) as u32;
-                        start = (bin * binsize) + region.1;
-                        end = min(start + binsize, region.2);
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, count).unwrap();
-                    }
-                }
-            }
-
-        // binsize = 1
         } else {
-            let mut l_start: u32 = region.1;
-            let mut l_end: u32 = region.1;
-            let mut l_cov: u32 = 0;
-            let mut pileup_start: bool = true;
-            let mut writer = BufWriter::new(&bg);
-            let mut written: bool = false;
+            // populate the bg vector with 0 counts over all bins
+            counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
+            // let mut binstart = region.1;
+            let mut binix: u32 = 0;
             for record in bam.records() {
                 let record = record.expect("Error parsing record.");
+                if filters.filter(&record) {
+                    continue;
+                }
                 if !ignorechr.contains(&region.0) {
                     if record.is_unmapped() {
                         unmapped_reads += 1;
@@ -344,101 +277,68 @@ pub fn bam_pileup<'a>(
                         readlens.push(record.seq_len() as u32);
                     }
                 }
-            }
-            // Refetch bam file to reset iterator.
-            bam.fetch((region.0.as_str(), region.1, region.2))
-                .expect(&format!("Error fetching region: {:?}", region));
-            for p in bam.pileup() {
-                // Per default pileups count deletions in cigar string too.
-                // For consistency with previous deepTools functionality, we ignore them.
-                // to be fair I think they shouldn't be counted anyhow, but who am I ?
-                // Note that coverages can be 0 now.
-                let pileup = p.expect("Error parsing pileup.");
-                let mut cov: u32 = 0;
-                for _a in pileup.alignments() {
-                    if !_a.is_del() {
-                        cov += 1;
-                    }
-                }
-                let pos = pileup.pos();
-                
-                if pileup_start {
-                    // if the first pileup is not at the start of the region, write 0 coverage
-                    if pos > l_start {
-                        if collapse {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, pos, 0 as f32).unwrap();
-                        } else {
-                            for p in l_start..pos {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                            }
+                let indices: HashSet<usize> = record
+                    .aligned_blocks()
+                    .filter(|x| (x[1] as u32) >= region.1 && (x[1] as u32) <= region.2)
+                    .filter(|x| (x[0] as u32) >= region.1 && (x[0] as u32) <= region.2 )
+                    .flat_map(|x| x[0] as u32..x[1] as u32)
+                    .map(|x| ((x - region.1) / binsize) as usize)
+                    .collect();
+                indices.into_iter()
+                    .for_each(|ix| {
+                        if ix < counts.len() {
+                            counts[ix] += 1.0;
                         }
-                        written = true;
-                    }
-                    pileup_start = false;
-                    l_start = pos;
-                    l_cov = cov;
-                } else {
-                    if pos != l_end + 1 {
-                        if collapse {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, pos, 0 as f32).unwrap();
-                        } else {
-                            for p in l_start..l_end + 1 {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                            }
-                            for p in l_end + 1..pos {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                            }
-                        }
-                        written = true;
-                        l_start = pos;
-                        l_cov = cov;
-                    } else if l_cov != cov {
-                        if collapse {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, pos, l_cov as f32).unwrap();
-                        } else {
-                            for p in l_start..pos {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                            }
-                        }
-                        written = true;
-                        l_start = pos;
-                        l_cov = cov;
-                    }
-                }
-                l_end = pos;
-                l_cov = cov;
-            }
-            // if bg is empty, whole region is 0 coverage
-            if !written {
-                if collapse {
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, region.2, 0 as f32).unwrap();
-                } else {
-                    for p in l_start..region.2 {
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                    }
-                }
-            } else {
-                // Still need to write the last pileup(s)
-                if collapse {
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
-                    // Make sure that if we didn't reach end of chromosome, we still write 0 cov.
-                    if l_end + 1 < region.2 {
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, region.2, 0 as f32).unwrap();
-                    }
-                } else {
-                    for p in l_start..l_end + 1 {
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                    }
-                    if l_end + 1 < region.2 {
-                        for p in l_end + 1..region.2 + 1 {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                        }
-                    }
-                }
+                    });
             }
         }
+        let file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&bg)
+            .expect("Error opening tmp file.");
+
+        let mut writer = BufWriter::new(file);
+        // There are two scenarios: 
+        // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
+        // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
+        if counts.len() == 1 {
+            writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
+        } else {
+            if collapse {
+                let mut lcov = counts[0];
+                let mut lstart = region.1;
+                let mut lend = region.1 + binsize;
+                let mut start = lstart;
+                let mut end = lend;
+                let mut bin: u32 = 0;
+    
+                for (ix, count) in counts.into_iter().skip(1).enumerate() {
+                    bin = (ix + 1) as u32; // offset of 1 due to skip(1)
+                    start = (bin * binsize) + region.1;
+                    end = min(start + binsize, region.2);
+                    if count != lcov {
+                        //bg.push((&region.0, lstart, lend, lcov));
+                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
+                        lstart = lend;
+                        lcov = count;
+                    }
+                    lend = end;
+                }
+                // write last entry
+                writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
+            } else {
+                let mut start = region.1;
+                let mut end = region.1 + binsize;
+                writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, counts[0]).unwrap();
+                for (ix, count) in counts.into_iter().skip(1).enumerate() {
+                    let bin = (ix + 1) as u32;
+                    start = (bin * binsize) + region.1;
+                    end = min(start + binsize, region.2);
+                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, count).unwrap();
+                }
+            }
+        }       
     }
     let bgpath = bg.into_temp_path();
     let tmpvec   = vec![bgpath];
@@ -521,39 +421,36 @@ impl Alignmentfilters {
             filter: filter,
         }
     }
-    pub fn filterrecord(&self, rec: Record) -> Option<Record> {
-        if !self.filter {
-            if rec.is_unmapped() {
-                return None;
-            } else {
-                return Some(rec);
-            }
+    pub fn filter(&self, rec: &Record) -> bool {
+        // Decides filtering of a record. The bool return is used to 'continue', i.e. skip the record.
+        if rec.is_unmapped() {
+            return true;
+        } else if !self.filter {
+            return false;
         } else {
             // True filtering.
-            // unmapped > quality > samflags > min/max fraglen
-            if rec.is_unmapped() {
-                return None;
-            }
+            // quality > samflags > min/max fraglen
             // quality
+            let mut skip: bool = false;
             if rec.mapq() < self.minmappingquality {
-                return None;
+                skip = true;
             }
             // samflags
             if self.samflaginclude > 0 {
                 if (rec.flags() & self.samflaginclude) == 0 {
-                    return None;
+                    skip = true;
                 }
             }
             if self.samflagexclude > 0 {
                 if (rec.flags() & self.samflagexclude) != 0 {
-                    return None;
+                    skip = true;
                 }
             }
             // min/max fraglen
             if self.minfraglen != 0 || self.maxfraglen != 0 {
                 if rec.is_paired() {
                     if rec.insert_size().abs() < self.minfraglen as i64 || rec.insert_size().abs() > self.maxfraglen as i64 {
-                        return None;
+                        skip = true;
                     }
                 } else {
                     let fragsize: u32 = rec
@@ -561,7 +458,7 @@ impl Alignmentfilters {
                         .map(|x| x[1] as u32 - x[0] as u32)
                         .sum();
                     if fragsize < self.minfraglen || fragsize > self.maxfraglen {
-                        return None;
+                        skip = true;
                     }
                 }
             }
@@ -570,22 +467,22 @@ impl Alignmentfilters {
                 match (self.filterrnastrand.as_str(), rec.is_paired()) {
                     ("forward", true) => {
                         if !((rec.flags() & 144 == 128) || (rec.flags() & 96 == 64)) {
-                            return None;
+                            skip = true;
                         }
                     },
                     ("forward", false) => {
                         if !(rec.flags() & 16 == 16) {
-                            return None;
+                            skip = true;
                         }
                     },
                     ("reverse", true) => {
                         if !((rec.flags() & 144 == 144) || (rec.flags() & 96 == 96)) {
-                            return None;
+                            skip = true;
                         }
                     },
                     ("reverse", false) => {
                         if !(rec.flags() & 16 == 0) {
-                            return None;
+                            skip = true;
                         }
                     },
                     _ => {
@@ -593,20 +490,16 @@ impl Alignmentfilters {
                     },
                 }
             }
-            // Then we can have MNase mode with possible extend - center
-            if self.mnase {
-
-            }
-            // OR offset with possible extend - center
-            // or just extend - center
-            // note that extend - center can also be optional by = 0 or false, respectively.
-            return Some(rec);
-            //
-            
-            // Centering before offset
-            // extend if needed
-
+            return skip;
         }
+    }
+
+    pub fn mnase(&self, rec: &Record) -> Option<Record> {
+        // Only retain records that are proper pairs, and not reverse strand.
+        if rec.is_paired() && rec.is_proper_pair() && !rec.is_reverse() {
+            
+        }
+        return None;
     }
 }
 
@@ -1536,19 +1429,46 @@ fn refpoint_exonwalker(exons: &Vec<(u32, u32)>, anchor: u32, binsize: u32, chrom
 pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
     // This function decides on how regions are divided to process in parallel.
     // Since the Vec<Region> could be chromosomes on one hand, or genes on the other, we can decide on how to chop them up.
-    // Note that this somehow relates to 'genomeChunkLength', but not entirely. The sweet spot is bp length is ~ 1000000
+    // Note that this somehow relates to 'genomeChunkLength', but not entirely.
     let mut bplen: u32 = 0;
     let mut blocks: Vec<Vec<Region>> = Vec::new();
     let mut tempregionvec: Vec<Region> = Vec::new();
 
     for reg in regs.iter() {
-        if reg.regionlength > 1000000 {
+        if reg.regionlength > 10000000 {
             if tempregionvec.len() > 0 {
                 blocks.push(tempregionvec.clone());
                 tempregionvec = Vec::new();
                 bplen = 0
             }
-            blocks.push(vec![reg.clone()]);
+            // our regions are rather large, so we can split these up (in case both start/end are Revalue:U)
+            match (&reg.start, &reg.end) {
+                (Revalue::U(start), Revalue::U(end)) => {
+                    let mut start: u32 = *start;
+                    let mut end: u32 = *end;
+                    while start < end {
+                        let newend = std::cmp::min(start + 10000000, end);
+                        println!("Pushing {} - {}", start, newend);
+                        let mut entryname = format!("{}:{}-{}", reg.chrom, start, newend);
+                        tempregionvec.push( Region {
+                            chrom: reg.chrom.clone(),
+                            start: Revalue::U(start),
+                            end: Revalue::U(newend),
+                            score: reg.score.clone(),
+                            strand: reg.strand.clone(),
+                            name: entryname,
+                            regionlength: newend-start
+                        } );
+                        start = newend;
+                    }
+                    blocks.push(tempregionvec);
+                    tempregionvec = Vec::new();
+                },
+                _ => {
+                    blocks.push(vec![reg.clone()]);
+                }
+            //blocks.push(vec![reg.clone()]);
+            }
         } else {
             tempregionvec.push(reg.clone());
             bplen += reg.regionlength;

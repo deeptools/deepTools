@@ -101,6 +101,12 @@ def get_optional_args():
                           choices=['forward', 'reverse'],
                           default=None)
 
+    optional.add_argument('--no_collapse',
+                          help='By default adjacent bins that have the same value are collapsed. This reduces the size of the output file (drastically).'
+                          'If you like to opt out of this behavior, you can set this flag.',
+                          default=True,
+                          action='store_false')
+
     return parser
 
 def scaleFactor(string):
@@ -186,5 +192,6 @@ def main(args=None):
         # running options
         args.numberOfProcessors, # threads
         args.region, # regions
-        args.verbose # verbose
+        args.verbose, # verbose
+        args.no_collapse, 
     )

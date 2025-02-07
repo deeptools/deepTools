@@ -135,6 +135,11 @@ def getOptionalArgs():
                           'This is determined BEFORE any applicable pseudocount '
                           'is added.',
                           action='store_true')
+    optional.add_argument('--no_collapse',
+                          help='By default adjacent bins that have the same value are collapsed. This reduces the size of the output file (drastically).'
+                          'If you like to opt out of this behavior, you can set this flag.',
+                          default=True,
+                          action='store_false')
 
     return parser
 
@@ -286,5 +291,6 @@ def main(args=None):
         args.ignoreForNormalization,
         args.binSize, # bin size
         args.region, # regions
-        args.verbose # verbose
+        args.verbose, # verbose
+        args.no_collapse, # collapse the ofile or not.
     )

@@ -41,7 +41,8 @@ pub fn r_bamcoverage(
     mut maxfraglen: u32, // defualt 0 -> no filter
     nproc: usize,
     supregion: &str,
-    verbose: bool
+    verbose: bool,
+    collapse: bool,
 ) -> PyResult<()> {
     let mut offset: (i32, i32) = (1, -1);
     let mut ignorechr: Vec<String> = Vec::new();
@@ -124,7 +125,7 @@ pub fn r_bamcoverage(
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
         regionblocks.par_iter()
-            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, true, false))
+            .map(|i| bam_pileup(bamifile, &i, &binsize, &ispe, &ignorechr, &filters, collapse, false))
             .reduce(
                 || (vec![], 0, 0, vec![], vec![]),
                 |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
@@ -163,16 +164,42 @@ pub fn r_bamcoverage(
                 |l| {
                     let l = l.unwrap();
                     let fields: Vec<&str> = l.split('\t').collect();
-                    let chrom: String = fields[0].to_string();
-                    let start: u32 = fields[1].parse().unwrap();
-                    let end: u32 = fields[2].parse().unwrap();
-                    let cov: f32 = fields[3].parse().unwrap();
-                    (chrom, Value {start: start, end: end, value: cov * sf})
+                    (fields[0].to_string(), Value {
+                        start: fields[1].parse::<u32>().unwrap(),
+                        end: fields[2].parse::<u32>().unwrap(),
+                        value: fields[3].parse::<f32>().unwrap() * sf
+                    })
                 }
             )
         }
     );
-
+    if verbose {
+        println!("Writing output to: {}", ofile);
+    }
+    
     write_covfile(lines, ofile, ofiletype, chromsizes);
+    
+    // // Create output stream
+    // let lines: Vec<(String, Value)> = bg.into_par_iter().flat_map(
+    //     |bg| {
+    //         let reader = BufReader::new(File::open(bg).unwrap());
+    //         reader.lines().map(
+    //             |l| {
+    //                 let l = l.unwrap();
+    //                 let fields: Vec<&str> = l.split('\t').collect();
+    //                 let chrom: String = fields[0].to_string();
+    //                 let start: u32 = fields[1].parse().unwrap();
+    //                 let end: u32 = fields[2].parse().unwrap();
+    //                 let cov: f32 = fields[3].parse().unwrap();
+    //                 (chrom, Value {start: start, end: end, value: cov * sf})
+    //             }
+    //         ).collect::<Vec<_>>()
+    //     }
+    // ).collect();
+    // if verbose {
+    //     println!("Writing output to: {}", ofile);
+    // }
+    // write_covfile(lines.into_iter(), ofile, ofiletype, chromsizes);
+
     Ok(())
 }

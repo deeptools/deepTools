@@ -39,7 +39,8 @@ pub fn r_bamcompare(
     _ignorechr: Py<PyList>,
     binsize: u32,
     supregion: &str,
-    verbose: bool
+    verbose: bool,
+    collapse: bool
 ) -> PyResult<()> {
     let ispe1 = bam_ispaired(bamifile1);
     let ispe2 = bam_ispaired(bamifile2);
@@ -138,35 +139,59 @@ pub fn r_bamcompare(
     let zips = TempZip { iterators: its };
     let zips_vec: Vec<_> = zips.collect();
 
-    let lines = zips_vec
-    .into_iter()
-    .flat_map(|c| {
-        let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
-        let temp_zip = TempZip { iterators: readers };
-        temp_zip.into_iter().map(|mut _l| {
-            let lines: Vec<_> = _l
-                .iter_mut()
-                .map(|x| x.as_mut().unwrap())
-                .map(|x| x.split('\t').collect())
-                .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
-                .collect();
-            assert_eq!(lines.len(), 2);
-            assert_eq!(lines[0].0, lines[1].0);
-            assert_eq!(lines[0].1, lines[1].1);
-            assert_eq!(lines[0].2, lines[1].2);
-            // Calculate the coverage.
-            let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
-            (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
-        }).coalesce(|p, c| {
-            if p.1.value == c.1.value && p.0 == c.0 {
-                Ok((p.0, Value {start: p.1.start, end: c.1.end, value: p.1.value}))
-            } else {
-                Err((p, c))
-            }
-        })
-    });
-
-    write_covfile(lines, ofile, ofiletype, chromsizes);
+    if collapse {
+        let lines = zips_vec
+            .into_iter()
+            .flat_map(|c| {
+                let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
+                let temp_zip = TempZip { iterators: readers };
+                temp_zip.into_iter().map(|mut _l| {
+                    let lines: Vec<_> = _l
+                        .iter_mut()
+                        .map(|x| x.as_mut().unwrap())
+                        .map(|x| x.split('\t').collect())
+                        .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
+                        .collect();
+                    assert_eq!(lines.len(), 2);
+                    assert_eq!(lines[0].0, lines[1].0, "Error: Chromosome mismatch in bam files. {} != {}", lines[0].0, lines[1].0);
+                    assert_eq!(lines[0].1, lines[1].1, "Error: Start position mismatch in bam files. {} != {}", lines[0].1, lines[1].1);
+                    assert_eq!(lines[0].2, lines[1].2, "Error: End position mismatch in bam files. {} != {}", lines[0].2, lines[1].2);
+                    // Calculate the coverage.
+                    let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
+                    (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
+                }).coalesce(|p, c| {
+                    if p.1.value == c.1.value && p.0 == c.0 {
+                        Ok((p.0, Value {start: p.1.start, end: c.1.end, value: p.1.value}))
+                    } else {
+                        Err((p, c))
+                    }
+                })
+        });
+        write_covfile(lines, ofile, ofiletype, chromsizes);
+    } else {
+        let lines = zips_vec
+            .into_iter()
+            .flat_map(|c| {
+                let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
+                let temp_zip = TempZip { iterators: readers };
+                temp_zip.into_iter().map(|mut _l| {
+                    let lines: Vec<_> = _l
+                        .iter_mut()
+                        .map(|x| x.as_mut().unwrap())
+                        .map(|x| x.split('\t').collect())
+                        .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
+                        .collect();
+                    assert_eq!(lines.len(), 2);
+                    assert_eq!(lines[0].0, lines[1].0, "Error: Chromosome mismatch in bam files. {} != {}", lines[0].0, lines[1].0);
+                    assert_eq!(lines[0].1, lines[1].1, "Error: Start position mismatch in bam files. {} != {}", lines[0].1, lines[1].1);
+                    assert_eq!(lines[0].2, lines[1].2, "Error: End position mismatch in bam files. {} != {}", lines[0].2, lines[1].2);
+                    // Calculate the coverage.
+                    let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
+                    (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
+                })
+        });
+        write_covfile(lines, ofile, ofiletype, chromsizes);
+    }
     Ok(())
 }
 
