@@ -38,18 +38,20 @@ jobs:
               # maturin-action's manylinux switches to AlmaLinux 8
               dnf install -y epel-release && dnf update -y
               dnf install -y gcc gcc-c++ make perl curl openssl-devel pkgconfig clang xz-devel
-            elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
-              apt-get update
-              apt-get install -y build-essential perl curl libssl-dev pkg-config clang liblzma-dev
-            fi
-            export OPENSSL_NO_VENDOR=1
-            export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-            export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
-            if [ "${{ matrix.platform.target }}" = "x86_64" ]; then
+              export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+              export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
               export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
             elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
-              export OPENSSL_DIR="$OPENSSL_LIB_DIR"
+              # cross-compiling on Ubuntu 22.04
+              apt-get update
+              apt-get install -y build-essential perl curl pkg-config clang liblzma-dev
+              apt-get install -y libssl-dev:aarch64 crossbuild-essential-arm64
+              export OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu
+              export OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu
+              export OPENSSL_DIR=/usr/lib/aarch64-linux-gnu
+              export OPENSSL_NO_VENDOR=1
             fi
+            export OPENSSL_NO_VENDOR=1
             if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
                 echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
                 exit 1
