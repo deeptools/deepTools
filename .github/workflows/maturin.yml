@@ -29,7 +29,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist --find-interpreter --features openssl/vendored
+          args: --release --out dist --find-interpreter
           manylinux: 2_28
           before-script-linux: |
             set -ex
