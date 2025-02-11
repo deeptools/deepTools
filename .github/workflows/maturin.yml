@@ -35,16 +35,19 @@ jobs:
             set -ex
             cat /etc/*release*
             if [ "${{ matrix.platform.target }}" = "x86_64" ]; then
+              apt-get update
+              apt-get install -y build-essential perl curl libssl-dev pkg-config clang liblzma-dev
+            elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
               dnf install -y epel-release && dnf update -y
               dnf install -y gcc gcc-c++ make perl curl openssl-devel pkgconfig clang xz-devel
-              export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-              export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
-              if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
-                  echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
-                  exit 1
-              fi
-              export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
-              export OPENSSL_NO_VENDOR=1
+            fi
+            export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+            export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+            export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
+            export OPENSSL_NO_VENDOR=1
+            if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+                echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+                exit 1
             fi
       - name: Upload wheels
         uses: actions/upload-artifact@v4
