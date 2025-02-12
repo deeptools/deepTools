@@ -118,8 +118,8 @@ jobs:
           architecture: ${{ matrix.platform.target }}
       - name: Install OpenSSL
         run: |
-          vcpkg install openssl:${{ matrix.platform.target }}-windows
-          vcpkg install liblzma:${{ matrix.platform.target }}-windows
+          vcpkg install openssl-dev:${{ matrix.platform.target }}-windows
+          vcpkg install liblzma-dev:${{ matrix.platform.target }}-windows
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
