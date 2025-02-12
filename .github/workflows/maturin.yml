@@ -89,6 +89,12 @@ jobs:
           args: --release --out dist --find-interpreter
           # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: musllinux_1_2
+          before-script-linux: |
+            apt-get update
+            apt-get install -y musl-tools musl-dev
+            if [ "${{ matrix.platform.target }}" = "aarch64" ]; then
+              apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            fi
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
