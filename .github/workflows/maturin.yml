@@ -13,9 +13,6 @@ permissions:
 jobs:
 
   linux:
-    # Once upon a time... we did not vendor OpenSSL, see:
-    # https://github.com/deeptools/deepTools/actions/runs/13182744265/workflow#L18
-    # but that was only compiling to x86_64.
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -36,6 +33,34 @@ jobs:
           args: --release --out dist --find-interpreter
           # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: 2_28
+          before-script-linux: |
+            set -ex
+            cat /etc/*release*
+            if [ "${{ matrix.platform.target }}" = "x86_64" ]; then
+              # maturin-action's manylinux switches to AlmaLinux 8
+              dnf install -y epel-release && dnf update -y
+              dnf install -y gcc gcc-c++ make perl curl clang xz-devel
+              # dnf install -y openssl-devel pkgconfig
+              # export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+              # export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+              # export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
+            elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
+              # cross-compiling on Ubuntu 22.04
+              ## We're vendoring openssl because the libssl-dev is not available for aarch64
+              apt-get update
+              apt-get install -y build-essential perl curl clang liblzma-dev
+              # apt-get install -y libssl-dev:aarch64 pkg-config crossbuild-essential-arm64
+              # export OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu
+              # export OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu
+              # export OPENSSL_DIR=/usr/lib/aarch64-linux-gnu
+              # export OPENSSL_NO_VENDOR=1
+            fi
+            # export OPENSSL_NO_VENDOR=1
+            # if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+            #     echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+            #     exit 1
+            # fi
+            # env | grep SSL  # for debugging when rust crate fails to find headers
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
