@@ -116,10 +116,14 @@ jobs:
         with:
           python-version: 3.x
           architecture: ${{ matrix.platform.target }}
-      - name: Install OpenSSL
+      - name: Install And Configure Dependencies
+        env:
+          VCPKG_DEFAULT_TRIPLET: ${{ matrix.platform.target }}-windows
+          OPENSSL_DIR: ${{ github.workspace }}/vcpkg/installed/${{ matrix.platform.target }}-windows
+          OPENSSL_ROOT: ${{ github.workspace }}/vcpkg/installed/${{ matrix.platform.target }}-windows
+          LZMA_ROOT: ${{ github.workspace }}/vcpkg/installed/${{ matrix.platform.target }}-windows
         run: |
-          vcpkg install openssl-dev:${{ matrix.platform.target }}-windows
-          vcpkg install liblzma-dev:${{ matrix.platform.target }}-windows
+          vcpkg install openssl liblzma
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
