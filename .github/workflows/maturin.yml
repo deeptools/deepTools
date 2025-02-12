@@ -39,17 +39,18 @@ jobs:
             if [ "${{ matrix.platform.target }}" = "x86_64" ]; then
               # maturin-action's manylinux switches to AlmaLinux 8
               dnf install -y epel-release && dnf update -y
-              dnf install -y gcc gcc-c++ make perl curl clang xz-devel
-              # dnf install -y openssl-devel pkgconfig
+              dnf install -y gcc gcc-c++ make perl curl clang xz-devel pkgconfig
+              ## we've vendored openssl via Cargo.toml anyway, so this part is no longer used...
+              # dnf install -y openssl-devel
               # export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
               # export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
               # export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
             elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
               # cross-compiling on Ubuntu 22.04
-              ## We're vendoring openssl because the libssl-dev is not available for aarch64
+              ## We're vendoring openssl because libssl-dev:aarch64 is not available!
               apt-get update
-              apt-get install -y build-essential perl curl clang liblzma-dev
-              # apt-get install -y libssl-dev:aarch64 pkg-config crossbuild-essential-arm64
+              apt-get install -y build-essential perl curl clang liblzma-dev pkg-config \
+                gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross crossbuild-essential-arm64
               # export OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu
               # export OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu
               # export OPENSSL_DIR=/usr/lib/aarch64-linux-gnu
