@@ -109,7 +109,8 @@ def plotCorrelationArgs():
     optional.add_argument('--PCs',
                           help='The principal components to plot. If specified, '
                           'you must provide two different integers, greater '
-                          'than zero, separated by a space. An example (and the default) is "1 2". (Default: %(default)s)',
+                          'than zero, separated by a space. An example (and the '
+                          'default) is "1 2". (Default: %(default)s)',
                           type=int,
                           nargs=2,
                           default=[1, 2])
@@ -125,12 +126,25 @@ def plotCorrelationArgs():
     optional.add_argument('--colors',
                           metavar="COLORS",
                           nargs='+',
-                          help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors red blue green. If not specified, the symbols will be given automatic colors.")
+                          help='A list of colors for the symbols. Color names and RGB '
+                          'hex values (e.g., #eeff22) are accepted. The color names '
+                          'should be space separated. For example, --colors red blue '
+                          'green. Expanders can be passed with color:number, for example '
+                          '--colors red:3 blue:3 will produce [red, red, red, blue, blue, blue] '
+                          'values. If not specified, the symbols will be given automatic '
+                          'with rainbow colors.',
+                          )
 
     optional.add_argument('--markers',
                           metavar="MARKERS",
                           nargs='+',
-                          help="A list of markers for the symbols. (e.g., '<','>','o') are accepted. The marker values should be space separated. For example, --markers 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes.")
+                          help="A list of markers for the symbols. (e.g., '<','>','o') "
+                          "are accepted. The marker values should be space separated. "
+                          "For example, --markers 's' 'o' 's' 'o'. Expanders can be passed "
+                          "with marker:number, for example --markers s:3 o:3 will produce "
+                          "[s, s, s, o, o, o] values. "
+                          "If not specified, the symbols will be circles ('o').",
+                          default=['o'])
 
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(version('deeptools')))
@@ -148,7 +162,8 @@ def plotCorrelationArgs():
                             'in the matrix is centered at 0 before the PCA is '
                             'computed. This is useful only if you have a strong '
                             'bin/gene/etc. correlation and the resulting '
-                            'principal component has samples stacked vertically. This option is not applicable if --transpose is specified.',
+                            'principal component has samples stacked vertically. '
+                            'This option is not applicable if --transpose is specified.',
                             action='store_true')
 
     return parser
