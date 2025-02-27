@@ -32,10 +32,11 @@ dependencies = [
     "scipy >= 1.15",
     "matplotlib >= 3.10",
     "pysam >= 0.23",
-    "numpydoc >= 2.2",
+    "numpydoc >= 1.8",
     "pyBigWig >= 0.3",
     "py2bit >= 0.3",
     "pandas >= 2.2",
+    "scikit-learn >= 1.6",
     "deeptoolsintervals >= 0.1"
 ]
 description = "Useful tools for exploring deep sequencing data."

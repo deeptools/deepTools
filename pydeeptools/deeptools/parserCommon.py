@@ -38,6 +38,15 @@ def output(args=None):
 
     return parser
 
+def expand_list(list):
+    values = []
+    for i in list:
+        if ':' in i:
+            value, number = i.split(':')
+            values.extend([value] * int(number))
+        else:
+            values.append(i)
+    return values
 
 def read_options():
     """Common arguments related to BAM files and the interpretation

@@ -9,7 +9,7 @@ matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 from importlib.metadata import version
 from deeptools.correlation import Correlation
-from deeptools.parserCommon import writableFile
+from deeptools.parserCommon import writableFile, expand_list
 
 
 def parse_arguments(args=None):
@@ -102,9 +102,9 @@ def plotCorrelationArgs():
                           'original matrix. Specifying 0 will result in all '
                           'rows being used. If the matrix is to be transposed, '
                           'rows with 0 variance are always excluded, even if a '
-                          'values of 0 is specified. The default is 1000. (Default: %(default)s)',
+                          'values of 0 is specified. The default is 500. (Default: %(default)s)',
                           type=int,
-                          default=1000)
+                          default=500)
 
     optional.add_argument('--PCs',
                           help='The principal components to plot. If specified, '
@@ -143,8 +143,13 @@ def plotCorrelationArgs():
                           "For example, --markers 's' 'o' 's' 'o'. Expanders can be passed "
                           "with marker:number, for example --markers s:3 o:3 will produce "
                           "[s, s, s, o, o, o] values. "
-                          "If not specified, the symbols will be circles ('o').",
+                          "If not specified, the symbols will be only filled circles ('o').",
                           default=['o'])
+    
+    optional.add_argument('--addLabels',
+                          help='Add labels to the plot. If specified, the labels will be added next '
+                          'to points also legend is ommited.',
+                          action='store_true')
 
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(version('deeptools')))
@@ -191,6 +196,11 @@ def main(args=None):
     corr.ntop = args.ntop
     corr.log2 = args.log2
 
+    if args.colors is not None:
+        args.colors = expand_list(args.colors)
+    if args.markers is not None:
+        args.markers = expand_list(args.markers)
+
     Wt, eigenvalues = corr.plot_pca(args.plotFile,
                                     PCs=args.PCs,
                                     plot_title=args.plotTitle,
@@ -198,7 +208,8 @@ def main(args=None):
                                     plotWidth=args.plotWidth,
                                     plotHeight=args.plotHeight,
                                     cols=args.colors,
-                                    marks=args.markers)
+                                    marks=args.markers,
+                                    add_labels=args.addLabels)
 
     if args.outFileNameData is not None:
         of = open(args.outFileNameData, "w")

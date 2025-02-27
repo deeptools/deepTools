@@ -15,6 +15,8 @@ import matplotlib.mlab
 import matplotlib.markers
 import matplotlib.colors as pltcolors
 from deeptools.utilities import toString, convertCmap
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 class Correlation:
     """
@@ -438,7 +440,7 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None, marks=None):
+    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None, marks=None, add_labels=False):
         """
         Plot the PCA of a matrix
 
@@ -461,29 +463,32 @@ class Correlation:
             self.matrix = np.log2(self.matrix + 0.01)
 
         # Row center / transpose
-        if self.rowCenter and not self.transpose:
-            _ = self.matrix.mean(axis=1)
-            self.matrix -= _[:, None]
+        #if self.rowCenter and not self.transpose:
+        #    _ = self.matrix.mean(axis=1)
+        #    self.matrix -= _[:, None]
         if self.transpose:
             m = m.T
 
         # Center and scale
-        m2 = (m - np.mean(m, axis=0))
-        m2 /= np.std(m2, axis=0, ddof=1)  # Use the unbiased std. dev.
+        #m2 = (m - np.mean(m, axis=0))
+        #m2 /= np.std(m2, axis=0, ddof=1)  # Use the unbiased std. dev.
+
+        scaler = StandardScaler()
+        m2 = scaler.fit_transform(m)
 
         # SVD
-        U, s, Vh = np.linalg.svd(m2, full_matrices=False, compute_uv=True)  # Is full_matrices ever needed?
+        U, s, Vh = np.linalg.svd(m, full_matrices=False, compute_uv=True)  # Is full_matrices ever needed?
 
         # % variance, eigenvalues
         eigenvalues = s**2
-        variance = eigenvalues / float(np.max([1, m2.shape[1] - 1]))
+        variance = eigenvalues / float(np.max([1, m.shape[1] - 1]))
         pvar = variance / variance.sum()
 
         # Weights/projections
         Wt = Vh
         if self.transpose:
             # Use the projected coordinates for the transposed matrix
-            Wt = np.dot(m2, Vh.T).T
+            Wt = np.dot(m, Vh.T).T
 
         if plot_filename is not None:
             n = n_bars = len(self.labels)
@@ -498,8 +503,8 @@ class Correlation:
             if marks is not None:
                 markers = itertools.cycle(marks)
 
-            ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
-            ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
+            #ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
+            #ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
             for i in range(n):
                 color = next(colors)
                 marker = next(markers)
@@ -507,16 +512,22 @@ class Correlation:
                     color = pltcolors.to_hex(color, keep_alpha=True)
                 ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
                             marker=marker, color=color, s=150, label=self.labels[i], zorder=i + 3)
-                print("Point: ", self.labels[i], Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i])
+                if add_labels:
+                    ax1.text(Wt[PCs[0] - 1, i] * 1.05, Wt[PCs[1] - 1, i] * 1.05, self.labels[i], color="black", fontsize=6, zorder=i + 4)
+
             if plot_title == '':
                 ax1.set_title('PCA')
             else:
                 ax1.set_title(plot_title)
             ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
             ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
-            lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
-                             bbox_to_anchor=(1, 0.5),
-                             prop={'size': 12}, markerscale=0.9)
+            
+            if not add_labels:
+                lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
+                                 bbox_to_anchor=(1, 0.5),
+                                 prop={'size': 12}, markerscale=0.9)
+            else:
+                lgd = None
 
             # Scree plot
             ind = np.arange(n_bars)  # the x locations for the groups
@@ -537,7 +548,10 @@ class Correlation:
 
             plt.subplots_adjust(top=3.85)
             plt.tight_layout()
-            plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+            if lgd is not None:
+                plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+            else:
+                plt.savefig(plot_filename, format=image_format, bbox_inches='tight')
             plt.close()
 
         return Wt, eigenvalues
