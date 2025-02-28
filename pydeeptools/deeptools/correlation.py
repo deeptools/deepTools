@@ -340,6 +340,7 @@ class Correlation:
         Plot the scatter plots of a matrix
         in which each row is a sample
         """
+        plt.style.use('ggplot')
 
         num_samples = self.matrix.shape[1]
         corr_matrix = self.compute_correlation()
