@@ -2,15 +2,12 @@
 # -*- coding: utf-8 -*-
 
 import sys
-<<<<<<< HEAD
 import argparse
 import numpy as np
-=======
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
->>>>>>> 4.0.0
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
@@ -405,6 +402,8 @@ def main(args=None):
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
     if args.plotFile is not None:
+        plt.style.use('ggplot')
+
         i = 0
         # matplotlib won't iterate through line styles by itself
         pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
@@ -422,41 +421,39 @@ def main(args=None):
         plt.close()
 
     if args.outRawCounts is not None:
-        of = open(args.outRawCounts, "w")
-        of.write("#plotFingerprint --outRawCounts\n")
-        of.write("'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
-        for row in num_reads_per_bin:
-            of.write(fmt % tuple(row))
-        of.close()
+        with open(args.outRawCounts, "w") as of:
+            of.write("#plotFingerprint --outRawCounts\n")
+            of.write("'" + "'\t'".join(args.labels) + "'\n")
+            fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
+            for row in num_reads_per_bin:
+                of.write(fmt % tuple(row))
 
     if args.outQualityMetrics is not None:
-        of = open(args.outQualityMetrics, "w")
-        of.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
-        if args.JSDsample:
-            of.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
-        else:
-            of.write("\tSynthetic JS Distance")
-        of.write("\n")
-        line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
-        for idx, reads in enumerate(num_reads_per_bin.T):
-            counts = np.cumsum(np.sort(reads))
-            counts = counts / float(counts[-1])
-            AUC = np.sum(counts) / float(len(counts))
-            XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
-            elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
-            expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
-            of.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
+        with open(args.outQualityMetrics, "w") as of:
+            of.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
             if args.JSDsample:
-                JSD = getJSD(args, idx, num_reads_per_bin)
-                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
-                CHANCE = getCHANCE(args, idx, num_reads_per_bin)
-                of.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+                of.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
             else:
-                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
-                of.write("\t{0}".format(syntheticJSD))
+                of.write("\tSynthetic JS Distance")
             of.write("\n")
-        of.close()
+            line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
+            for idx, reads in enumerate(num_reads_per_bin.T):
+                counts = np.cumsum(np.sort(reads))
+                counts = counts / float(counts[-1])
+                AUC = np.sum(counts) / float(len(counts))
+                XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
+                elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
+                expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
+                of.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
+                if args.JSDsample:
+                    JSD = getJSD(args, idx, num_reads_per_bin)
+                    syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                    CHANCE = getCHANCE(args, idx, num_reads_per_bin)
+                    of.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+                else:
+                    syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                    of.write("\t{0}".format(syntheticJSD))
+                of.write("\n")
 
 
 if __name__ == "__main__":
