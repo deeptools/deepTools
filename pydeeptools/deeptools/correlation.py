@@ -440,13 +440,15 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, log1p=False, plotWidth=5, plotHeight=10, cols=None, marks=None, add_labels=False):
+    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False):
         """
         Plot the PCA of a matrix
 
         Returns the matrix of plotted values.
         """
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight))
+        plt.style.use('ggplot')
+
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
 
         # Filter
         m = self.matrix
@@ -463,32 +465,28 @@ class Correlation:
             self.matrix = np.log2(self.matrix + 0.01)
 
         # Row center / transpose
-        #if self.rowCenter and not self.transpose:
-        #    _ = self.matrix.mean(axis=1)
-        #    self.matrix -= _[:, None]
+        if self.rowCenter and not self.transpose:
+            _ = self.matrix.mean(axis=1)
+            self.matrix -= _[:, None]
         if self.transpose:
             m = m.T
 
         # Center and scale
-        #m2 = (m - np.mean(m, axis=0))
-        #m2 /= np.std(m2, axis=0, ddof=1)  # Use the unbiased std. dev.
-
         scaler = StandardScaler()
         m2 = scaler.fit_transform(m)
 
-        # SVD
-        U, s, Vh = np.linalg.svd(m, full_matrices=False, compute_uv=True)  # Is full_matrices ever needed?
+        # PCA
+        pca = PCA()
+        Wt = pca.fit_transform(m2)
 
         # % variance, eigenvalues
-        eigenvalues = s**2
-        variance = eigenvalues / float(np.max([1, m.shape[1] - 1]))
+        variance = pca.explained_variance_ratio_
         pvar = variance / variance.sum()
+        eigenvalues = pca.explained_variance_
 
-        # Weights/projections
-        Wt = Vh
         if self.transpose:
             # Use the projected coordinates for the transposed matrix
-            Wt = np.dot(m, Vh.T).T
+            Wt = np.dot(m, Wt.T).T
 
         if plot_filename is not None:
             n = n_bars = len(self.labels)
@@ -503,18 +501,39 @@ class Correlation:
             if marks is not None:
                 markers = itertools.cycle(marks)
 
-            #ax1.axhline(y=0, color="black", linestyle="dotted", zorder=1)
-            #ax1.axvline(x=0, color="black", linestyle="dotted", zorder=2)
             for i in range(n):
                 color = next(colors)
                 marker = next(markers)
                 if isinstance(color, np.ndarray):
                     color = pltcolors.to_hex(color, keep_alpha=True)
                 ax1.scatter(Wt[PCs[0] - 1, i], Wt[PCs[1] - 1, i],
-                            marker=marker, color=color, s=150, label=self.labels[i], zorder=i + 3)
+                            marker=marker, color=color, alpha=0.7, label=self.labels[i], zorder=i)
                 if add_labels:
-                    ax1.text(Wt[PCs[0] - 1, i] * 1.05, Wt[PCs[1] - 1, i] * 1.05, self.labels[i], color="black", fontsize=6, zorder=i + 4)
+                    ax1.text(Wt[PCs[0] - 1, i] * 1.05, Wt[PCs[1] - 1, i] * 1.05, self.labels[i], color="black", fontsize=6, zorder=i)
+            
+            # set limits
+            xmin = np.min(Wt[PCs[0] - 1, :])
+            xmax = np.max(Wt[PCs[0] - 1, :])
+            ymin = np.min(Wt[PCs[1] - 1, :])
+            ymax = np.max(Wt[PCs[1] - 1, :])
+            
+            # symetric limits
+            xabs = max(abs(xmin), abs(xmax))
+            yabs = max(abs(ymin), abs(ymax))
+            xmin = -xabs
+            xmax = xabs
+            ymin = -yabs
+            ymax = yabs
 
+            # add some space
+            xmin -= 0.05 * (xmax - xmin)
+            xmax += 0.05 * (xmax - xmin)
+            ymin -= 0.05 * (ymax - ymin)
+            ymax += 0.05 * (ymax - ymin)
+            ax1.set_xlim([xmin, xmax])
+            ax1.set_ylim([ymin, ymax])
+
+            # labels
             if plot_title == '':
                 ax1.set_title('PCA')
             else:
@@ -523,9 +542,13 @@ class Correlation:
             ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
             
             if not add_labels:
-                lgd = ax1.legend(scatterpoints=1, loc='center left', borderaxespad=0.5,
-                                 bbox_to_anchor=(1, 0.5),
-                                 prop={'size': 12}, markerscale=0.9)
+                if n < 30:
+                    ncols = 1
+                else:
+                    ncols = 2
+                lgd = ax1.legend(scatterpoints=1, loc='upper left', borderaxespad=0.,
+                                 bbox_to_anchor=(1.05, 1), ncols=ncols,
+                                 prop={'size': 8}, markerscale=0.9)
             else:
                 lgd = None
 
@@ -546,12 +569,10 @@ class Correlation:
             ax3.set_ylim([0, 1.05])
             ax3.set_ylabel('Cumulative variability')
 
-            plt.subplots_adjust(top=3.85)
-            plt.tight_layout()
             if lgd is not None:
-                plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,), bbox_inches='tight')
+                plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,))
             else:
-                plt.savefig(plot_filename, format=image_format, bbox_inches='tight')
+                plt.savefig(plot_filename, format=image_format)
             plt.close()
 
         return Wt, eigenvalues

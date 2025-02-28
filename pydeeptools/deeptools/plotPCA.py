@@ -84,7 +84,7 @@ def plotCorrelationArgs():
     optional.add_argument('--plotWidth',
                           help='Plot width in cm. The minimum value is 1 cm. (Default: %(default)s)',
                           type=float,
-                          default=10)
+                          default=12)
 
     optional.add_argument('--outFileNameData',
                           metavar='file.tab',
@@ -141,7 +141,7 @@ def plotCorrelationArgs():
                           help="A list of markers for the symbols. (e.g., '<','>','o') "
                           "are accepted. The marker values should be space separated. "
                           "For example, --markers 's' 'o' 's' 'o'. Expanders can be passed "
-                          "with marker:number, for example --markers s:3 o:3 will produce "
+                          "with marker:number, for example --markers o:3 ws:3 ill produce "
                           "[s, s, s, o, o, o] values. "
                           "If not specified, the symbols will be only filled circles ('o').",
                           default=['o'])
@@ -212,14 +212,12 @@ def main(args=None):
                                     add_labels=args.addLabels)
 
     if args.outFileNameData is not None:
-        of = open(args.outFileNameData, "w")
-        of.write("#plotPCA --outFileNameData\n")
-        of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
-        n = eigenvalues.shape[0]
-        for i in range(n):
-            of.write("{}\t{}\t{}\n".format(i + 1, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
-        of.close()
-
+        with open(args.outFileNameData, "w") as of:
+            #of.write("#plotPCA --outFileNameData\n")
+            of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
+            n = eigenvalues.shape[0]
+            for i in range(n):
+                of.write("{}\t{}\t{}\n".format(i + 1, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
 
 if __name__ == "__main__":
     main()
