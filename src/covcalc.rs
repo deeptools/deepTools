@@ -174,7 +174,6 @@ pub fn bam_pileup<'a>(
         // There are two options here:
         // either we are supposed to calculate coverage over regions (variable binsize required) gene_mode = true
         // or we have a regular bin setting, gene_mode = false
-        println!("Regstruct = {:?}", regstruct);
         let mut region: (String, u32, u32);
         if gene_mode {
             region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
@@ -1448,7 +1447,6 @@ pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
                     let mut end: u32 = *end;
                     while start < end {
                         let newend = std::cmp::min(start + 10000000, end);
-                        println!("Pushing {} - {}", start, newend);
                         let mut entryname = format!("{}:{}-{}", reg.chrom, start, newend);
                         tempregionvec.push( Region {
                             chrom: reg.chrom.clone(),
