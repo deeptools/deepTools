@@ -11,7 +11,7 @@ module-name = "deeptools.hp"
 bindings = "pyo3"
 
 [project]
-name = "deepools"
+name = "deeptools"
 version = "4.0.0"
 authors = [
     {name="Fidel Ramirez"},
