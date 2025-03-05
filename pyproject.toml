@@ -11,7 +11,7 @@ module-name = "deeptools.hp"
 bindings = "pyo3"
 
 [project]
-name = "deepTools"
+name = "deeptools"
 version = "4.0.0"
 authors = [
     {name="Fidel Ramirez"},
@@ -26,7 +26,7 @@ authors = [
     {name="Thomas Manke"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
-requires-python = "> 3.8"
+requires-python = "> 3.9"
 dependencies = [
     "numpy >= 2.0.0",
     "scipy >= 0.17.0",
