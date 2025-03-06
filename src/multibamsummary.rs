@@ -177,7 +177,7 @@ pub fn r_mbams(
         bampfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

@@ -130,14 +130,15 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
 #[allow(unused_variables)]
 #[allow(unused_mut)]
 pub fn bam_pileup<'a>(
-    bam_ifile: &str,
-    regionvec: &'a Vec<Region>,
-    provbs: &u32,
-    ispe: &bool,
-    ignorechr: &Vec<String>,
-    filters: &Alignmentfilters,
-    collapse: bool,
-    gene_mode: bool
+    bam_ifile: &str, // the bam file to consider.
+    regionvec: &'a Vec<Region>, // Vector with regions to calculate coverage from.
+    provbs: &u32, // Provisional bin size, in case we have gene mode later on this gets omitted.
+    ispe: &bool, // Wether or not the bam file is paired end or single end.
+    ignorechr: &Vec<String>, // chromosomes to ignore for normalization calculation.
+    filters: &Alignmentfilters, // a struct with filtering settings.
+    collapse: bool, // collapse bins with same coverage, should be avoided in bamCompare scenario for example.
+    gene_mode: bool, // Gene mode (BED / GTF) or not (bins)
+    gather_lengths: bool, // Wether or not to collect frag/read lengths (blows up memory for big bam files in MBS, for example).
 ) -> (
     Vec<TempPath>, // temp bedgraph file.
     u32, // mapped reads
@@ -197,10 +198,16 @@ pub fn bam_pileup<'a>(
                 (Revalue::U(start), Revalue::U(end)) => {
                     counts = vec![0.0; 1];
                     for record in bam.records() {
-                        let record = record.expect("Error parsing record.");
-                        if filters.filter(&record) {
-                            continue;
+                        let mut record = record.expect("Error parsing record.");
+                        if filters.manipulate {
+                            filters.manipulate_record(&mut record);
                         }
+                        if filters.filter {
+                            if filters.filter_record(&record) {
+                                continue;
+                            }
+                        }
+
                         if !ignorechr.contains(&region.0) {
                             if record.is_unmapped() {
                                 unmapped_reads += 1;
@@ -208,10 +215,14 @@ pub fn bam_pileup<'a>(
                                 mapped_reads += 1;
                                 if *ispe {
                                     if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                        fraglens.push(record.insert_size().abs() as u32);
+                                        if gather_lengths {
+                                            fraglens.push(record.insert_size().abs() as u32);
+                                        }
                                     }
                                 }
-                                readlens.push(record.seq_len() as u32);
+                                if gather_lengths {
+                                    readlens.push(record.seq_len() as u32);
+                                }
                             }
                         }
                         counts[0] += 1.0;
@@ -230,9 +241,14 @@ pub fn bam_pileup<'a>(
                         bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
                             .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
                         for record in bam.records() {
-                            let record = record.expect("Error parsing record.");
-                            if filters.filter(&record) {
-                                continue;
+                            let mut record = record.expect("Error parsing record.");
+                            if filters.manipulate {
+                                filters.manipulate_record(&mut record);
+                            }
+                            if filters.filter {
+                                if filters.filter_record(&record) {
+                                    continue;
+                                }
                             }
                             if !ignorechr.contains(&region.0) {
                                 if record.is_unmapped() {
@@ -241,10 +257,14 @@ pub fn bam_pileup<'a>(
                                     mapped_reads += 1;
                                     if *ispe {
                                         if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                            fraglens.push(record.insert_size().abs() as u32);
+                                            if gather_lengths {
+                                                fraglens.push(record.insert_size().abs() as u32);
+                                            }
                                         }
                                     }
-                                    readlens.push(record.seq_len() as u32);
+                                    if gather_lengths {
+                                        readlens.push(record.seq_len() as u32);
+                                    }
                                 }
                             }
                             counts[0] += 1.0;
@@ -259,9 +279,14 @@ pub fn bam_pileup<'a>(
             // let mut binstart = region.1;
             let mut binix: u32 = 0;
             for record in bam.records() {
-                let record = record.expect("Error parsing record.");
-                if filters.filter(&record) {
-                    continue;
+                let mut record = record.expect("Error parsing record.");
+                if filters.manipulate {
+                    filters.manipulate_record(&mut record);
+                }
+                if filters.filter {
+                    if filters.filter_record(&record) {
+                        continue;
+                    }
                 }
                 if !ignorechr.contains(&region.0) {
                     if record.is_unmapped() {
@@ -270,10 +295,14 @@ pub fn bam_pileup<'a>(
                         mapped_reads += 1;
                         if *ispe {
                             if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                fraglens.push(record.insert_size().abs() as u32);
+                                if gather_lengths {
+                                    fraglens.push(record.insert_size().abs() as u32);
+                                }
                             }
                         }
-                        readlens.push(record.seq_len() as u32);
+                        if gather_lengths {
+                            readlens.push(record.seq_len() as u32);
+                        }
                     }
                 }
                 let indices: HashSet<usize> = record
@@ -367,6 +396,7 @@ pub struct Alignmentfilters {
     pub extendreads: u32,
     pub centerreads: bool,
     pub filter: bool,
+    pub manipulate: bool,
 }
 impl Alignmentfilters {
     pub fn new(
@@ -385,6 +415,7 @@ impl Alignmentfilters {
         // Go through the arguments, and if they are not set or have default values, we set a filter boolean to false.
         // Only when filtering needs to happen the filterrecord will be invoked, for performance.
         let mut filter: bool = false;
+        let mut manipulate: bool = false;
         let _mmq = minmappingquality.unwrap_or(0);
         let _sfi = samflaginclude.unwrap_or(0);
         let _sfe = samflagexclude.unwrap_or(0);
@@ -396,12 +427,13 @@ impl Alignmentfilters {
         let _extend = extendreads.unwrap_or(0);
         let _center = centerreads.unwrap_or(false);
 
-        // Set the filter bool for a quick escape in case filtering is not needed.
-        if _mmq > 0 || _sfi > 0 || _sfe > 0 || _mifl > 0 || _mafl > 0 || _mnase || _offset != (1, -1) || _frs != "None" || _extend > 0 || _center {
-            filter = true;
+        // Set the manipulate bool for a quick escape in case manipulation is not needed.
+        if _offset != (1, -1) || _mnase || _extend > 0 || _center {
+            manipulate = true;
         }
-        // If blacklist is set, we also need to filter.
-        if blacklist.is_some() {
+
+        // Set the filter bool for a quick escape in case filtering is not needed.
+        if _mmq > 0 || _sfi > 0 || _sfe > 0 || _mifl > 0 || _mafl > 0 || _frs != "None" || blacklist.is_some() {
             filter = true;
         }
 
@@ -418,9 +450,10 @@ impl Alignmentfilters {
             extendreads: _extend,
             centerreads: _center,
             filter: filter,
+            manipulate: manipulate,
         }
     }
-    pub fn filter(&self, rec: &Record) -> bool {
+    pub fn filter_record(&self, rec: &Record) -> bool {
         // Decides filtering of a record. The bool return is used to 'continue', i.e. skip the record.
         if rec.is_unmapped() {
             return true;
@@ -493,12 +526,8 @@ impl Alignmentfilters {
         }
     }
 
-    pub fn mnase(&self, rec: &Record) -> Option<Record> {
-        // Only retain records that are proper pairs, and not reverse strand.
-        if rec.is_paired() && rec.is_proper_pair() && !rec.is_reverse() {
-            
-        }
-        return None;
+    pub fn manipulate_record(&self, rec: &mut Record) {
+        println!("Will manipulate the record, but not now lol");
     }
 }
 
@@ -1440,33 +1469,33 @@ pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
                 tempregionvec = Vec::new();
                 bplen = 0
             }
-            // our regions are rather large, so we can split these up (in case both start/end are Revalue:U)
-            match (&reg.start, &reg.end) {
-                (Revalue::U(start), Revalue::U(end)) => {
-                    let mut start: u32 = *start;
-                    let mut end: u32 = *end;
-                    while start < end {
-                        let newend = std::cmp::min(start + 10000000, end);
-                        let mut entryname = format!("{}:{}-{}", reg.chrom, start, newend);
-                        tempregionvec.push( Region {
-                            chrom: reg.chrom.clone(),
-                            start: Revalue::U(start),
-                            end: Revalue::U(newend),
-                            score: reg.score.clone(),
-                            strand: reg.strand.clone(),
-                            name: entryname,
-                            regionlength: newend-start
-                        } );
-                        start = newend;
-                    }
-                    blocks.push(tempregionvec);
-                    tempregionvec = Vec::new();
-                },
-                _ => {
-                    blocks.push(vec![reg.clone()]);
-                }
-            //blocks.push(vec![reg.clone()]);
-            }
+            // // our regions are rather large, so we can split these up (in case both start/end are Revalue:U)
+            // match (&reg.start, &reg.end) {
+            //     (Revalue::U(start), Revalue::U(end)) => {
+            //         let mut start: u32 = *start;
+            //         let mut end: u32 = *end;
+            //         while start < end {
+            //             let newend = std::cmp::min(start + 10000000, end);
+            //             let mut entryname = format!("{}:{}-{}", reg.chrom, start, newend);
+            //             tempregionvec.push( Region {
+            //                 chrom: reg.chrom.clone(),
+            //                 start: Revalue::U(start),
+            //                 end: Revalue::U(newend),
+            //                 score: reg.score.clone(),
+            //                 strand: reg.strand.clone(),
+            //                 name: entryname,
+            //                 regionlength: newend-start
+            //             } );
+            //             start = newend;
+            //         }
+            //         blocks.push(tempregionvec);
+            //         tempregionvec = Vec::new();
+            //     },
+            //     _ => {
+            //         blocks.push(vec![reg.clone()]);
+            //     }
+            blocks.push(vec![reg.clone()]);
+            // }
         } else {
             tempregionvec.push(reg.clone());
             bplen += reg.regionlength;

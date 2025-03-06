@@ -248,7 +248,6 @@ def main(args=None):
     """
     args = process_args(args)
     print(f"args = {args}")
-    print("running r_mbams")
     r_mbams(
         args.command,
         args.bamfiles,

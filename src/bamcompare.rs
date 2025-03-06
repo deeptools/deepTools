@@ -96,7 +96,7 @@ pub fn r_bamcompare(
         bamfiles.par_iter()
             .map(|(bamfile, ispe)| {
                 let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false, true))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
