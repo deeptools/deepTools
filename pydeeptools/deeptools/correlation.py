@@ -554,21 +554,18 @@ class Correlation:
                 lgd = None
 
             # Scree plot
-            ind = np.arange(n_bars)  # the x locations for the groups
-            width = 0.35        # the width of the bars
-
-            ax2.bar(width + ind, eigenvalues[:n_bars], width * 2)
+            ind = np.arange(n_bars) + 1 # the x locations for the groups
+            
+            ax2.plot(ind, pvar, "bo-")
             ax2.set_xlabel('Principal Component')
             ax2.set_title('Scree plot')
-            ax2.set_xticks(ind + width * 2)
-            ax2.set_xticklabels(ind + 1)
+            ax2.set_xticks(ind)
+            ax2.plot(ind, pvar.cumsum()[:n], "ro-")
+            ax2.set_ylabel('Variability')
 
-            ax3 = ax2.twinx()
-            ax3.axhline(y=1, color="black", linestyle="dotted")
-            ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "r-")
-            ax3.plot(width * 2 + ind, pvar.cumsum()[:n], "wo", markeredgecolor="black")
-            ax3.set_ylim([0, 1.05])
-            ax3.set_ylabel('Cumulative variability')
+            ax2.axhline(y=1, color="black", linestyle="dotted")
+
+            ax2.legend(['individual', 'acumulative'], loc="center right", labelcolor=["blue", "red"], ncols=1)
 
             if lgd is not None:
                 plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,))
