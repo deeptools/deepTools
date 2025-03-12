@@ -11,10 +11,8 @@ Please cite deepTools as follows:
 Where deepTools are used:
 
 * DEEP consortium
-* public Galaxy server hosted at `<https://usegalaxy.org/>`_.
-* public Galaxy instance hosted by the Max-Planck-Institute for Immunobiology and Epigenetics: deeptools.ie-freiburg.mpg.de
+* public Galaxy servers `usegalaxy.org <https://usegalaxy.org/>`__, `Galaxy Europe <https://usegalaxy.eu>`__ and `Galaxy Australia <https://usegalaxy.org.au>`__.
 * in-house Galaxy instance of the Max-Planck-Institute for Immunobiology and Epigenetics
-* Galaxy instance of the University of Freiburg, Germany
 * Galaxy instance of the ICGMB, Strasbourg, France
 * Galaxy instance of LCSB and HPC @ Uni.lu, Belval, Luxembourg
 

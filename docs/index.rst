@@ -4,12 +4,12 @@ deepTools: *tools for exploring deep sequencing data*
 
 .. image:: images/start_collage.png
 
-deepTools is a **suite of python tools** particularly developed for the
+deepTools is a **suite of tools** particularly developed for the
 efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq or MNase-seq.
 
 There are 3 ways for using deepTools:
 
-* **Galaxy usage** --  our public `deepTools Galaxy server <http://deeptools.ie-freiburg.mpg.de>`_ let's you use the deepTools within the familiar Galaxy framework without the need to master the command line
+* **Galaxy usage** -- deepTools comes with first-class integration for the `Galaxy platform <https://galaxyproject.org>`__ and is available for zero-install, browser-based use on major public Galaxy servers including `usegalaxy.org <https://usegalaxy.org>`__, `Galaxy Europe <https://usegalaxy.eu>`__ and `Galaxy Australia <https://usegalaxy.org.au>`__.
 * **command line usage** -- simply download and install the tools (see :doc:`content/installation` and :doc:`content/list_of_tools`)
 * **API** -- make use of your favorite deepTools modules in your own python programs (see :doc:`content/api`)
 
@@ -18,12 +18,12 @@ currently available.
 
 .. image:: images/start_workflow.png
 
-If the file names in the figure mean nothing to you,
+If the file format names in the figure mean nothing to you,
 please make sure to check our :doc:`content/help_glossary`.
 
 deepTools 4.0.0
 ---------------
-As of deepTools 4.0.0, quite big changes have been made to the computation backend (which is now written in `rust <https://www.rust-lang.org/>`_).
+As of deepTools 4.0.0, quite big changes have been made to the computation backend (which is now written in `rust <https://www.rust-lang.org/>`__).
 The main idea behind this change is to make some tools faster and more robust. 
 Useability of the tools are not affected. But note that the output (read precision) might be slightly different than before.
 
