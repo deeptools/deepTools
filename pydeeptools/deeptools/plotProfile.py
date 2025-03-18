@@ -12,20 +12,17 @@ matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
+from matplotlib.font_manager import FontProperties 
 from matplotlib import colors as pltcolors
 import matplotlib.gridspec as gridspec
-
-import plotly.offline as py
-import plotly.graph_objs as go
 
 # own modules
 from deeptools import parserCommon
 from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, plotly_single, getProfileTicks
+from deeptools.heatmapper_utilities import plot_single, getProfileTicks, justify_text
 from deeptools.computeMatrixOperations import filterHeatmapValues
 
-
+plt.style.use('ggplot')
 debug = 0
 old_settings = np.seterr(all='ignore')
 plt.ioff()
@@ -82,9 +79,13 @@ def process_args(args=None):
         args.plotHeight = 0.5
     elif args.plotHeight > 100:
         args.plotHeight = 100
+    
+    if not args.label_rotation:
+        args.label_rotation=45.0
+    else:
+        args.label_rotation= args.label_rotation
 
     return args
-
 
 class Profile(object):
 
@@ -100,9 +101,9 @@ class Profile(object):
                  plot_type='lines',
                  image_format=None,
                  color_list=None,
-                 legend_location='best',
+                 legend_location='upper-right',
                  plots_per_row=8,
-                 label_rotation=0,
+                 label_rotation=45,
                  dpi=200):
         """
         Using the hm matrix, makes a line plot
@@ -174,7 +175,7 @@ class Profile(object):
             cols = self.numplots
         self.grids = gridspec.GridSpec(rows, cols)
 
-        plt.rcParams['font.size'] = 10.0
+        plt.rcParams['font.size'] = 8.0
         self.font_p = FontProperties()
         self.font_p.set_size('small')
 
@@ -212,8 +213,6 @@ class Profile(object):
         cmap = cm.coolwarm
         cmap.set_bad('black')
 
-        if self.image_format == "plotly":
-            return self.plotly_hexbin()
 
         for plot in range(self.numplots):
             col = plot % self.plots_per_row
@@ -333,133 +332,9 @@ class Profile(object):
         plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format)
         plt.close()
 
-    def plotly_hexbin(self):
-        """plot_hexbin, but for plotly. it's annoying that we have to have sub-subplots"""
-        fig = go.Figure()
-        cols = self.plots_per_row if self.numplots > self.plots_per_row else self.numplots
-        rows = np.ceil(self.numplots / float(cols)).astype(int)
-        fig['layout'].update(title=self.plot_title)
-        domainWidth = .9 / cols
-        domainHeight = .9 / rows
-        bufferHeight = 0.0
-        if rows > 1:
-            bufferHeight = 0.1 / (rows - 1)
-        else:
-            domainHeight = 1.0
-        bufferWidth = 0.0
-        if cols > 1:
-            bufferWidth = 0.1 / (cols - 1)
-        else:
-            domainWidth = 1.0
-        subHeight = domainHeight / float(self.numlines)
-        if self.per_group:
-            sideLabels = self.hm.matrix.sample_labels
-        else:
-            sideLabels = self.hm.matrix.group_labels
-
-        data = []
-        annos = []
-        vmin = np.inf
-        vmax = -np.inf
-        for i in range(self.numplots):
-            row = rows - i / self.plots_per_row - 1
-            col = i % self.plots_per_row
-
-            if self.per_group:
-                title = self.hm.matrix.group_labels[i]
-            else:
-                title = self.hm.matrix.sample_labels[i]
-
-            base = row * (domainHeight + bufferHeight)
-            domain = [base, base + domainHeight]
-            titleY = base + domainHeight
-            base = col * (domainWidth + bufferWidth)
-            domain = [base, base + domainWidth]
-            titleX = base + 0.5 * domainWidth
-            xanchor = 'x{}'.format(i + 1)
-            fig['layout']['xaxis{}'.format(i + 1)] = dict(domain=domain)
-            annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': title, 'y': titleY, 'x': titleX, 'font': {'size': 16}, 'showarrow': False})
-
-            # set yMin/yMax
-            yMin = np.inf
-            yMax = -np.inf
-            for j in range(self.numlines):
-                # get the max and min
-                if self.per_group:
-                    _row, _col = i, j
-                else:
-                    _row, _col = j, i
-
-                ma = self.hm.matrix.get_matrix(_row, _col)['matrix']
-                if np.min(ma) < yMin:
-                    yMin = np.min(ma)
-                if np.max(ma) > yMax:
-                    yMax = np.max(ma)
-            if self.y_min[i % len(self.y_min)] is not None:
-                yMin = self.y_min[i % len(self.y_min)]
-            if self.y_max[i % len(self.y_max)] is not None:
-                yMax = self.y_max[i % len(self.y_max)]
-
-            for j in range(self.numlines):
-                if self.per_group:
-                    _row, _col = i, j
-                else:
-                    _row, _col = j, i
-                foo = i * self.numlines + j + 1
-                yanchor = 'y{}'.format(foo)
-                base = row * (domainHeight + bufferHeight) + j * subHeight
-                domain = [base, base + subHeight]
-                fig['layout']['yaxis{}'.format(foo)] = {'domain': domain, 'title': self.y_axis_label, 'anchor': xanchor, 'range': [yMin, yMax]}
-                if j == 0:
-                    _ = "xaxis{}".format(xanchor[1:])
-                    fig['layout'][_].update(anchor='y{}'.format(foo))
-                if col == 0:
-                    titleY = base + 0.5 * subHeight
-                    annos.append({'yanchor': 'middle', 'xref': 'paper', 'xanchor': 'left', 'yref': 'paper', 'text': sideLabels[j], 'y': titleY, 'x': -0.03, 'font': {'size': 16}, 'showarrow': False, 'textangle': -90})
-
-                sub_matrix = self.hm.matrix.get_matrix(_row, _col)
-                ma = self.hm.matrix.get_matrix(_row, _col)['matrix']
-
-                fig['layout']['xaxis{}'.format(i + 1)].update(range=[0, ma.shape[1]])
-
-                if self.per_group:
-                    label = sub_matrix['sample']
-                else:
-                    label = sub_matrix['group']
-
-                # Manually compute the 2D histogram with 100x100 bins
-                x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
-                z, xe, ye = np.histogram2d(x_values.flatten(), ma.flatten(), bins=100, range=[[0, ma.shape[1]], [yMin, yMax]])
-
-                _vmin = np.min(z)
-                _vmax = np.max(z)
-                if _vmin < vmin:
-                    vmin = _vmin
-                if _vmax > vmax:
-                    vmax = _vmax
-
-                trace = go.Contour(z=z.T, x=xe, y=ye, xaxis=xanchor, yaxis=yanchor, name=label, connectgaps=False)
-                data.append(trace)
-
-            # Assume the bounds for the last graph are correct
-            totalWidth = ma.shape[1]
-            xticks, xtickslabel = self.getTicks(i)
-            if np.ceil(max(xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(xticks)
-                xticks_use = [x * tickscale for x in xticks]
-            else:
-                xticks_use = xticks
-            xticks_use = [np.ceil(x) for x in xticks_use]
-            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=xtickslabel, tickangle=self.label_rotation)
-
-        for trace in data:
-            trace.update(zmin=vmin, zmax=vmax)
-
-        fig.add_traces(data)
-        fig['layout']['annotations'] = annos
-        py.plot(fig, filename=self.out_file_name, auto_open=False)
 
     def plot_heatmap(self):
+        label_rotation = 45
         cmap = ['RdYlBu_r']
         if self.color_list is not None:  # check the length to be equal to the numebr of plots otherwise multiply it!
             cmap = self.color_list
@@ -482,9 +357,6 @@ class Profile(object):
             self.y_max = [np.percentile(matrix_flatten, 98.0)]
             if np.isnan(self.y_max[0]):
                 self.y_max = [None]
-
-        if self.image_format == "plotly":
-            return self.plotly_heatmap()
 
         ax_list = []
         # turn off y ticks
@@ -510,10 +382,10 @@ class Profile(object):
                 labelleft=True)
 
             if self.per_group:
-                title = self.hm.matrix.group_labels[plot]
+                title = self.hm.matrix.group_labels[plot].replace('.bed','')
                 tickIdx = plot % self.hm.matrix.get_num_samples()
             else:
-                title = self.hm.matrix.sample_labels[plot]
+                title = self.hm.matrix.sample_labels[plot].replace('.bw','')
                 tickIdx = plot
             ax.set_title(title)
             mat = []  # when drawing a heatmap (in contrast to drawing lines)
@@ -530,9 +402,9 @@ class Profile(object):
                 sub_matrix = self.hm.matrix.get_matrix(row, col)
 
                 if self.per_group:
-                    label = sub_matrix['sample']
+                    label = sub_matrix['sample'].replace('.bed','')
                 else:
-                    label = sub_matrix['group']
+                    label = sub_matrix['group'].replace('.bed','')
                 labels.append(label)
                 mat.append(np.ma.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
             img = ax.imshow(np.vstack(mat), interpolation='nearest',
@@ -578,101 +450,6 @@ class Profile(object):
         plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format)
         plt.close()
 
-    def plotly_heatmap(self):
-        """plot_heatmap, but with plotly output"""
-        fig = go.Figure()
-        cols = self.plots_per_row if self.numplots > self.plots_per_row else self.numplots
-        rows = np.ceil(self.numplots / float(cols)).astype(int)
-        fig['layout'].update(title=self.plot_title)
-        domainWidth = .9 / cols
-        domainHeight = .9 / rows
-        bufferHeight = 0.0
-        if rows > 1:
-            bufferHeight = 0.1 / (rows - 1)
-        else:
-            domainHeight = 1.0
-        bufferWidth = 0.0
-        if cols > 1:
-            bufferWidth = 0.1 / (cols - 1)
-        else:
-            domainWidth = 1.0
-
-        data = []
-        annos = []
-        zmin = np.inf
-        zmax = -np.inf
-        for i in range(self.numplots):
-            row = rows - i / self.plots_per_row - 1
-            col = i % self.plots_per_row
-
-            if self.per_group:
-                title = self.hm.matrix.group_labels[i]
-            else:
-                title = self.hm.matrix.sample_labels[i]
-
-            base = row * (domainHeight + bufferHeight)
-            domain = [base, base + domainHeight]
-            titleY = base + domainHeight
-            xanchor = 'x{}'.format(i + 1)
-            yanchor = 'y{}'.format(i + 1)
-            visible = False
-            if col == 0:
-                visible = True
-            fig['layout']['yaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': xanchor, 'visible': visible}
-            base = col * (domainWidth + bufferWidth)
-            domain = [base, base + domainWidth]
-            titleX = base + 0.5 * domainWidth
-            fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': yanchor}
-            annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': title, 'y': titleY, 'x': titleX, 'font': {'size': 16}, 'showarrow': False})
-
-            mat = []
-            labels = []
-            for j in range(self.numlines):
-                if self.per_group:
-                    row, col = i, j
-                else:
-                    row, col = j, i
-
-                sub_matrix = self.hm.matrix.get_matrix(row, col)
-
-                if self.per_group:
-                    label = sub_matrix['sample']
-                else:
-                    label = sub_matrix['group']
-                labels.append(label)
-                mat.append(np.ma.__getattribute__(self.averagetype)(sub_matrix['matrix'], axis=0))
-                if np.min(mat[-1]) < zmin:
-                    zmin = np.min(mat[-1])
-                if np.max(mat[-1]) > zmax:
-                    zmax = np.max(mat[-1])
-            totalWidth = len(mat[-1])
-            trace = go.Heatmap(name=title, z=mat, x=range(totalWidth + 1), y=labels, xaxis=xanchor, yaxis=yanchor)
-            data.append(trace)
-
-            # Add ticks
-            xticks, xtickslabel = self.getTicks(i)
-            if np.ceil(max(xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(xticks)
-                xticks_use = [x * tickscale for x in xticks]
-            else:
-                xticks_use = xticks
-            xticks_use = [np.ceil(x) for x in xticks_use]
-            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=xtickslabel, tickangle=self.label_rotation)
-
-        # Adjust color scale limits
-        for i, trace in enumerate(data):
-            zminUse = zmin
-            zmaxUse = zmax
-            if self.y_min[i % len(self.y_min)] is not None:
-                zminUse = self.y_min[i % len(self.y_min)]
-            if self.y_max[i % len(self.y_max)] is not None:
-                zmaxUse = self.y_max[i % len(self.y_max)]
-            trace.update(zmin=zminUse, zmax=zmaxUse)
-
-        fig.add_traces(data)
-        fig['layout']['annotations'] = annos
-        py.plot(fig, filename=self.out_file_name, auto_open=False)
-
     def plot_profile(self):
         if self.y_min is None:
             self.y_min = [None]
@@ -680,12 +457,13 @@ class Profile(object):
             self.y_max = [None]
 
         if not self.color_list:
-            cmap_plot = plt.get_cmap('jet')
+            cmap_plot = plt.get_cmap('gnuplot')
             if self.numlines > 1:
                 # kmeans, so we need to color by cluster
                 self.color_list = cmap_plot(np.arange(self.numlines, dtype=float) / float(self.numlines))
             else:
-                self.color_list = cmap_plot(np.arange(self.numplots, dtype=float) / float(self.numplots))
+                self.color_list1 =  np.tile(cmap_plot(np.arange(self.numplots, dtype=float) / float(self.numplots))[1], self.numplots)
+                self.color_list = self.color_list1.reshape(self.numplots, 4)
         if (self.numlines > 1 and len(self.color_list) < self.numlines) or\
            (self.numlines == 1 and len(self.color_list) < self.numplots):
             sys.exit("\nThe given list of colors is too small, "
@@ -695,10 +473,6 @@ class Profile(object):
                 sys.exit("\nThe color name {} is not valid. Check "
                          "the name or try with a html hex string "
                          "for example #eeff22".format(color))
-
-        if self.image_format == "plotly":
-            return self.plotly_profile()
-
         first = True
         ax_list = []
         globalYmin = np.inf
@@ -714,12 +488,12 @@ class Profile(object):
                 ax = self.fig.add_subplot(self.grids[row, col])
 
             if self.per_group:
-                title = self.hm.matrix.group_labels[plot]
+                title = self.hm.matrix.group_labels[plot].replace('.bed','')
                 if row != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
                 tickIdx = plot % self.hm.matrix.get_num_samples()
             else:
-                title = self.hm.matrix.sample_labels[plot]
+                title = justify_text(self.hm.matrix.sample_labels[plot].replace('.bw',''), 20)
                 if col != 0 and len(self.y_min) == 1 and len(self.y_max) == 1:
                     plt.setp(ax.get_yticklabels(), visible=False)
                 tickIdx = plot
@@ -738,9 +512,9 @@ class Profile(object):
                 sub_matrix = self.hm.matrix.get_matrix(_row, _col)
 
                 if self.per_group:
-                    label = sub_matrix['sample']
+                    label = sub_matrix['sample'].replace('.bw','')
                 else:
-                    label = sub_matrix['group']
+                    label = sub_matrix['group'].replace('.bed','')
 
                 if self.numlines > 1:
                     coloridx = data_idx
@@ -774,15 +548,30 @@ class Profile(object):
             ticks[0].label1.set_horizontalalignment('left')
             ticks[-1].label1.set_horizontalalignment('right')
 
+            handles, labels = ax.get_legend_handles_labels()
+
+            Label =  [justify_text(label, 100) for label in labels]
+
             if first and self.y_axis_label != '':
                 ax.set_ylabel(self.y_axis_label)
             if first and self.plot_type not in ['heatmap', 'overlapped_lines']:
-                ax.legend(loc=self.legend_location.replace('-', ' '),
-                          ncol=1, prop=self.font_p,
-                          frameon=False, markerscale=0.5)
+                # if self.per_group:
+                #     # ax.legend(loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0, 0),
+                #     #       ncol=2, prop={'size':4},
+                #     #       frameon=True, markerscale=0.5, borderaxespad=0.)
+                #     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2, frameon=False, prop={'size': 5})
+
+                # else:
+                #     # ax.legend(loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.1),
+                #     #       ncol=1, prop={'size':8},
+                #     #       frameon=False, markerscale=0.5)
+                #ax.legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.1, 1.2), ncol=1, frameon=False, prop={'size': 6})
                 if len(self.y_min) == 1 and len(self.y_max) == 1:
                     first = False
             ax_list.append(ax)
+
+        ax_list[-1].legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.1), ncol=1, frameon=False, prop={'size': 7})
+
 
         # It turns out that set_ylim only takes float64s
         for sample_id, subplot in enumerate(ax_list):
@@ -800,112 +589,11 @@ class Profile(object):
                 lims = (lims[0], lims[0] + 1)
             ax_list[sample_id].set_ylim(lims)
 
-        plt.subplots_adjust(wspace=0.05, hspace=0.3)
+        # plt.subplots_adjust(wspace=0.05, hspace=0.3)
+        plt.subplots_adjust(wspace=0.2, hspace=0.6)
         plt.tight_layout()
-        plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format)
+        plt.savefig(self.out_file_name, dpi=self.dpi, format=self.image_format, bbox_inches='tight', pad_inches=0.1,)
         plt.close()
-
-    def plotly_profile(self):
-        """
-        plot_profile for plotly output
-
-        y_min, y_max, and color_list are set already
-        """
-        fig = go.Figure()
-        cols = self.plots_per_row if self.numplots > self.plots_per_row else self.numplots
-        rows = np.ceil(self.numplots / float(cols)).astype(int)
-        fig['layout'].update(title=self.plot_title)
-        domainWidth = .9 / cols
-        domainHeight = .9 / rows
-        bufferHeight = 0.0
-        if rows > 1:
-            bufferHeight = 0.1 / (rows - 1)
-        bufferWidth = 0.0
-        if cols > 1:
-            bufferWidth = 0.1 / (cols - 1)
-
-        data = []
-        annos = []
-        yMin = None
-        yMax = None
-        for i in range(self.numplots):
-            row = np.floor(i / self.plots_per_row)
-            # row = rows - i / self.plots_per_row - 1
-            col = i % self.plots_per_row
-            xanchor = 'x{}'.format(i + 1)
-            yanchor = 'y{}'.format(i + 1)
-            base = row * (domainHeight + bufferHeight)
-            domain = [base, base + domainHeight]
-            titleY = base + domainHeight
-            fig['layout']['yaxis{}'.format(i + 1)] = {'domain': domain, 'title': self.y_axis_label, 'anchor': xanchor, 'autorange': False}
-            base = col * (domainWidth + bufferWidth)
-            domain = [base, base + domainWidth]
-            titleX = base + 0.5 * domainWidth
-            fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': yanchor}
-
-            if self.per_group:
-                title = self.hm.matrix.group_labels[i]
-            else:
-                title = self.hm.matrix.sample_labels[i]
-            annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': title, 'y': titleY, 'x': titleX, 'font': {'size': 16}, 'showarrow': False})
-
-            for j in range(self.numlines):
-                if self.per_group:
-                    _row, _col = i, j
-                else:
-                    _row, _col = j, i
-
-                sub_matrix = self.hm.matrix.get_matrix(_row, _col)
-                fig['layout']['xaxis{}'.format(i + 1)].update(range=[0, sub_matrix['matrix'].shape[1]])
-
-                if self.per_group:
-                    label = sub_matrix['sample']
-                else:
-                    label = sub_matrix['group']
-
-                if self.numlines > 1:
-                    coloridx = j
-                else:
-                    coloridx = i
-                color = self.color_list[coloridx]
-                traces = plotly_single(sub_matrix['matrix'],
-                                       self.averagetype,
-                                       color,
-                                       label,
-                                       plot_type=self.plot_type)
-                for trace in traces:
-                    trace.update(xaxis=xanchor, yaxis=yanchor)
-                    if yMin is None or min(trace['y']) < yMin:
-                        yMin = min(trace['y'])
-                    if yMax is None or max(trace['y']) > yMax:
-                        yMax = max(trace['y'])
-                if row == col == 0:
-                    traces[0].update(showlegend=True)
-                data.extend(traces)
-            totalWidth = sub_matrix['matrix'].shape[1]
-            xticks, xtickslabel = self.getTicks(i)
-            if np.ceil(max(xticks)) != float(totalWidth):
-                tickscale = float(totalWidth) / max(xticks)
-                xticks_use = [x * tickscale for x in xticks]
-            else:
-                xticks_use = xticks
-            xticks_use = [np.ceil(x) for x in xticks_use]
-            fig['layout']['xaxis{}'.format(i + 1)].update(tickmode='array', tickvals=xticks_use, ticktext=xtickslabel, tickangle=self.label_rotation)
-
-        # Set the y limits
-        for i in range(self.numplots):
-            yaxis = 'yaxis{}'.format(i + 1)
-            yRange = [yMin, yMax]
-            if self.y_min[i % len(self.y_min)] is not None:
-                yRange[0] = self.y_min[i % len(self.y_min)]
-            if self.y_max[i % len(self.y_max)] is not None:
-                yRange[1] = self.y_max[i % len(self.y_max)]
-            fig['layout'][yaxis].update(range=yRange)
-
-        fig.add_traces(data)
-        fig['layout']['annotations'] = annos
-        py.plot(fig, filename=self.out_file_name, auto_open=False)
-
 
 def main(args=None):
     args = process_args(args)
