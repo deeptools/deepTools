@@ -26,11 +26,11 @@ authors = [
     {name="Thomas Manke"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
-requires-python = "> 3.8"
+requires-python = "> 3.9"
 dependencies = [
-    "numpy >= 2.2",
-    "scipy >= 1.15",
-    "matplotlib >= 3.10",
+    "numpy >= 2.0",
+    "scipy >= 1.13",
+    "matplotlib >= 3.9",
     "pysam >= 0.23",
     "numpydoc >= 1.8",
     "pyBigWig >= 0.3",
