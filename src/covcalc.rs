@@ -1,4 +1,4 @@
-use rust_htslib::bam::{Read, IndexedReader, Record};
+use rust_htslib::bam::{Read, IndexedReader};
 use rust_htslib::bam::ext::BamRecordExtensions;
 use core::panic;
 use std::collections::HashMap;
@@ -9,6 +9,7 @@ use std::fmt;
 use ndarray::Array1;
 use std::collections::HashSet;
 use std::fs::OpenOptions;
+use crate::filtering::Alignmentfilters;
 
 pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
@@ -199,15 +200,11 @@ pub fn bam_pileup<'a>(
                     counts = vec![0.0; 1];
                     for record in bam.records() {
                         let mut record = record.expect("Error parsing record.");
-                        if filters.manipulate {
-                            filters.manipulate_record(&mut record);
-                        }
                         if filters.filter {
                             if filters.filter_record(&record) {
                                 continue;
                             }
                         }
-
                         if !ignorechr.contains(&region.0) {
                             if record.is_unmapped() {
                                 unmapped_reads += 1;
@@ -242,9 +239,6 @@ pub fn bam_pileup<'a>(
                             .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
                         for record in bam.records() {
                             let mut record = record.expect("Error parsing record.");
-                            if filters.manipulate {
-                                filters.manipulate_record(&mut record);
-                            }
                             if filters.filter {
                                 if filters.filter_record(&record) {
                                     continue;
@@ -280,44 +274,58 @@ pub fn bam_pileup<'a>(
             let mut binix: u32 = 0;
             for record in bam.records() {
                 let mut record = record.expect("Error parsing record.");
-                if filters.manipulate {
-                    filters.manipulate_record(&mut record);
-                }
+
                 if filters.filter {
                     if filters.filter_record(&record) {
                         continue;
                     }
                 }
-                if !ignorechr.contains(&region.0) {
+                if filters.manipulate {
+                    let manipulated_blocks = filters.manipulate_record(&mut record);
+                    if manipulated_blocks.is_none() {
+                        continue;
+                    }
+                    let block = manipulated_blocks.unwrap();
+                    let ixstart = ((block[0] - region.1) / binsize) as usize;
+                    let ixend = ((block[1] - region.1) / binsize) as usize;
+
+                    let indices: HashSet<usize> = (ixstart..ixend).collect();
+                    indices.into_iter()
+                        .for_each(|ix| {
+                            if ix < counts.len() {
+                                counts[ix] += 1.0;
+                            }
+                        });
+                } else {
+                    let indices: HashSet<usize> = record
+                        .aligned_blocks()
+                        .filter(|x| (x[1] as u32) >= region.1 && (x[1] as u32) <= region.2)
+                        .filter(|x| (x[0] as u32) >= region.1 && (x[0] as u32) <= region.2 )
+                        .flat_map(|x| x[0] as u32..x[1] as u32)
+                        .map(|x| ((x - region.1) / binsize) as usize)
+                        .collect();
+                    indices.into_iter()
+                        .for_each(|ix| {
+                            if ix < counts.len() {
+                                counts[ix] += 1.0;
+                            }
+                        });
+                }
+
+                if !ignorechr.contains(&region.0) && gather_lengths {
                     if record.is_unmapped() {
                         unmapped_reads += 1;
                     } else {
                         mapped_reads += 1;
                         if *ispe {
                             if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                if gather_lengths {
-                                    fraglens.push(record.insert_size().abs() as u32);
-                                }
+                                fraglens.push(record.insert_size().abs() as u32);
                             }
                         }
-                        if gather_lengths {
-                            readlens.push(record.seq_len() as u32);
-                        }
+                        readlens.push(record.seq_len() as u32);
                     }
                 }
-                let indices: HashSet<usize> = record
-                    .aligned_blocks()
-                    .filter(|x| (x[1] as u32) >= region.1 && (x[1] as u32) <= region.2)
-                    .filter(|x| (x[0] as u32) >= region.1 && (x[0] as u32) <= region.2 )
-                    .flat_map(|x| x[0] as u32..x[1] as u32)
-                    .map(|x| ((x - region.1) / binsize) as usize)
-                    .collect();
-                indices.into_iter()
-                    .for_each(|ix| {
-                        if ix < counts.len() {
-                            counts[ix] += 1.0;
-                        }
-                    });
+
             }
         }
         let file = OpenOptions::new()
@@ -330,6 +338,7 @@ pub fn bam_pileup<'a>(
         // There are two scenarios: 
         // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
         // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
+        // Note that collapse can also be passed as a CLI, for those that want that.
         if counts.len() == 1 {
             writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
         } else {
@@ -382,155 +391,6 @@ fn pos_in_blacklist(pos: i64, chrom: &str, blacklist: &Vec<Region>) -> bool {
     }
     return false;
 }
-
-pub struct Alignmentfilters {
-    pub blacklist: Option<Vec<Region>>,
-    pub minmappingquality: u8,
-    pub samflaginclude: u16,
-    pub samflagexclude: u16,
-    pub minfraglen: u32,
-    pub maxfraglen: u32,
-    pub mnase: bool,
-    pub offset: (i32, i32),
-    pub filterrnastrand: String,
-    pub extendreads: u32,
-    pub centerreads: bool,
-    pub filter: bool,
-    pub manipulate: bool,
-}
-impl Alignmentfilters {
-    pub fn new(
-        blacklist: Option<Vec<Region>>,
-        minmappingquality: Option<u8>,
-        samflaginclude: Option<u16>,
-        samflagexclude: Option<u16>,
-        minfraglen: Option<u32>,
-        maxfraglen: Option<u32>,
-        mnase: Option<bool>,
-        offset: Option<(i32, i32)>,
-        filterrnastrand: Option<String>,
-        extendreads: Option<u32>,
-        centerreads: Option<bool>
-    ) -> Self {
-        // Go through the arguments, and if they are not set or have default values, we set a filter boolean to false.
-        // Only when filtering needs to happen the filterrecord will be invoked, for performance.
-        let mut filter: bool = false;
-        let mut manipulate: bool = false;
-        let _mmq = minmappingquality.unwrap_or(0);
-        let _sfi = samflaginclude.unwrap_or(0);
-        let _sfe = samflagexclude.unwrap_or(0);
-        let _mifl = minfraglen.unwrap_or(0);
-        let _mafl = maxfraglen.unwrap_or(0);
-        let _mnase = mnase.unwrap_or(false);
-        let _offset =  offset.unwrap_or((1, -1));
-        let _frs = filterrnastrand.unwrap_or(String::from("None"));
-        let _extend = extendreads.unwrap_or(0);
-        let _center = centerreads.unwrap_or(false);
-
-        // Set the manipulate bool for a quick escape in case manipulation is not needed.
-        if _offset != (1, -1) || _mnase || _extend > 0 || _center {
-            manipulate = true;
-        }
-
-        // Set the filter bool for a quick escape in case filtering is not needed.
-        if _mmq > 0 || _sfi > 0 || _sfe > 0 || _mifl > 0 || _mafl > 0 || _frs != "None" || blacklist.is_some() {
-            filter = true;
-        }
-
-        Self {
-            blacklist: blacklist,
-            minmappingquality: _mmq,
-            samflaginclude: _sfi,
-            samflagexclude: _sfe,
-            minfraglen: _mifl,
-            maxfraglen: _mafl,
-            mnase: _mnase,
-            offset: _offset,
-            filterrnastrand: _frs, 
-            extendreads: _extend,
-            centerreads: _center,
-            filter: filter,
-            manipulate: manipulate,
-        }
-    }
-    pub fn filter_record(&self, rec: &Record) -> bool {
-        // Decides filtering of a record. The bool return is used to 'continue', i.e. skip the record.
-        if rec.is_unmapped() {
-            return true;
-        } else if !self.filter {
-            return false;
-        } else {
-            // True filtering.
-            // quality > samflags > min/max fraglen
-            // quality
-            let mut skip: bool = false;
-            if rec.mapq() < self.minmappingquality {
-                skip = true;
-            }
-            // samflags
-            if self.samflaginclude > 0 {
-                if (rec.flags() & self.samflaginclude) == 0 {
-                    skip = true;
-                }
-            }
-            if self.samflagexclude > 0 {
-                if (rec.flags() & self.samflagexclude) != 0 {
-                    skip = true;
-                }
-            }
-            // min/max fraglen
-            if self.minfraglen != 0 || self.maxfraglen != 0 {
-                if rec.is_paired() {
-                    if rec.insert_size().abs() < self.minfraglen as i64 || rec.insert_size().abs() > self.maxfraglen as i64 {
-                        skip = true;
-                    }
-                } else {
-                    let fragsize: u32 = rec
-                        .aligned_blocks()
-                        .map(|x| x[1] as u32 - x[0] as u32)
-                        .sum();
-                    if fragsize < self.minfraglen || fragsize > self.maxfraglen {
-                        skip = true;
-                    }
-                }
-            }
-            // filterrnastrand
-            if self.filterrnastrand.as_str() != "None" {
-                match (self.filterrnastrand.as_str(), rec.is_paired()) {
-                    ("forward", true) => {
-                        if !((rec.flags() & 144 == 128) || (rec.flags() & 96 == 64)) {
-                            skip = true;
-                        }
-                    },
-                    ("forward", false) => {
-                        if !(rec.flags() & 16 == 16) {
-                            skip = true;
-                        }
-                    },
-                    ("reverse", true) => {
-                        if !((rec.flags() & 144 == 144) || (rec.flags() & 96 == 96)) {
-                            skip = true;
-                        }
-                    },
-                    ("reverse", false) => {
-                        if !(rec.flags() & 16 == 0) {
-                            skip = true;
-                        }
-                    },
-                    _ => {
-                        panic!("filterrnastrand should be either forward or reverse. {:?} is not supported.", self.filterrnastrand)
-                    },
-                }
-            }
-            return skip;
-        }
-    }
-
-    pub fn manipulate_record(&self, rec: &mut Record) {
-        println!("Will manipulate the record, but not now lol");
-    }
-}
-
 
 #[derive(Clone, Debug)]
 pub struct Region {

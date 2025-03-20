@@ -3,6 +3,10 @@ Changes in deepTools4.0
 
 # Changes
 
+## bamCoverage
+
+ - --no_collapse flag to not merge bins with equal coverage values together.
+ 
 ## computeMatrix
 
  - --sortRegions 'no' option no longer exists
@@ -19,6 +23,34 @@ Changes in deepTools4.0
 
 - options label, smartLabels, genomeChunkLength are removed.
 - ignoreDuplicates is removed, and (if wanted) should be set by the SamFlagExclude setting.
+
+
+
+
+
+
+
+
+
+
+
+
+# Good to know
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Testing
  

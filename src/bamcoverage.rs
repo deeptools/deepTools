@@ -6,7 +6,8 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
 use bigtools::Value;
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, region_divider, Region};
+use crate::covcalc::{bam_pileup, parse_regions, region_divider, Region};
+use crate::filtering::Alignmentfilters;
 use crate::filehandler::{bam_ispaired, write_covfile, is_bed_or_gtf, read_bedfile};
 use crate::normalization::scale_factor;
 use crate::calc::median;
@@ -67,20 +68,32 @@ pub fn r_bamcoverage(
     if norm != "None" && scalefactor != 1.0 {
         println!("Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used", norm);
     }
+    if mnase && offset != (1, -1) {
+        println!("Warning: Both MNase and offset are set. The offset will be ignored !");
+    }
+    if offset != (1, -1) {
+        if offset.0 == 0 {
+            panic!("Offsets cannot be 0 as they are 1-based positions inside each alignment.");
+        }
+        if offset.1 > 0 && offset.1 < offset.0 {
+            panic!("Right side offset cannot be smaller than the left side offset.");
+        }
+    }
     if verbose {
         println!("Chromosomes to ignore for normalization: {:?}", ignorechr);
     }
+
 
     // if mnase, set the min / max fragment lengths if these are not set.
     if mnase {
         if minfraglen == 0 {
             minfraglen = 130;
-        } else {
+        } else if minfraglen != 130{
             println!("Note that MNase mode is set, but minfraglen is set at {}. Recommended is 130.", minfraglen);
         }
         if maxfraglen == 0 {
             maxfraglen = 200;
-        } else {
+        } else if maxfraglen != 200 {
             println!("Note that MNase mode is set, but maxfraglen is set at {}. Recommended is 200.", maxfraglen);
         }
         if binsize != 1 {

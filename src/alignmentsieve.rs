@@ -6,7 +6,8 @@ use rust_htslib::bam::{self, Header, IndexedReader, Read, Reader, Writer};
 use tempfile::{Builder, TempPath};
 use std::fs::File;
 use std::io::Write;
-use crate::covcalc::{parse_regions, Alignmentfilters, Region};
+use crate::covcalc::{parse_regions, Region};
+use crate::filtering::Alignmentfilters;
 use crate::filehandler::{is_bed_or_gtf, read_bedfile};
 
 #[pyfunction]
