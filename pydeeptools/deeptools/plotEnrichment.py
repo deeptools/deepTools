@@ -18,10 +18,8 @@ from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
 from deeptools import parserCommon
+
 plt.style.use('ggplot')
-
-old_settings = np.seterr(all='ignore')
-
 
 def parse_arguments(args=None):
     basic_args = plot_enrichment_args()
