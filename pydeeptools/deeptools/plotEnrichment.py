@@ -19,7 +19,6 @@ from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
 from deeptools import parserCommon
 
-#plt.style.use('ggplot')
 
 def parse_arguments(args=None):
     basic_args = plot_enrichment_args()
@@ -464,7 +463,7 @@ def main(args=None):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
     if args.ggplot:
-        plt.style.use('ggplot')  # This applies the ggplot style for all subsequent matplotlib plots
+        plt.style.use('ggplot') 
 
     # Ensure that if we're given an attributeKey that it's not empty
     if args.attributeKey and args.attributeKey == "":
