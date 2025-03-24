@@ -417,12 +417,15 @@ def plotMatrix(hm, outFileName,
         #                        frameon=False, markerscale=0.5)
 
     # Create a single legend for all subplots at the bottom
-        
-        if legend_location!='none' and 'best':
-            fig.legend(handles, Labels, loc='upper left', bbox_to_anchor=(0.1, 0.9), ncol=int(numsamples/2), frameon=False, markerscale=0.5)
-        else:
-            fig.legend(handles, Labels, loc=legend_location.replace('-',' '), bbox_to_anchor=(0.1, 0.9), ncol=int(numsamples/2), frameon=False, fontSize=6.0 ,markerscale=0.5)
+ 
+        if legend_location in ['none', 'best']:  
+            legend_location = 'upper left'  # Choose a valid default location
 
+        legend_location = legend_location.replace('-', ' ')  # Standardize input  
+        ncol_value = int(numsamples / 2) if numsamples > 1 else numsamples  
+
+        fig.legend(handles, Labels, loc=legend_location, bbox_to_anchor=(0.1, 0.9),  
+           ncol=ncol_value, frameon=False, markerscale=0.5)
 
     first_group = 0  # helper variable to place the title per sample/group
     for sample in range(hm.matrix.get_num_samples()):
