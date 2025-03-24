@@ -384,16 +384,14 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
 
         if args.perSample:
             xlabels = [item.replace('.bam', '').replace('.bed', '') for item in features ]
-            ylabel = "% alignments in {0}".format(args.labels[i].replace('.bed',''))
+            ylabel = "% alignments in {0}".format( [ylab.split('/')[-1] for ylab in args.labels][i])
             vals = [featureCounts[i][foo] for foo in features]
             vals = 100 * np.array(vals, dtype='float64') / totalCounts[i]
         else:
-            xlabels = args.labels
+            xlabels = [x.split('/')[-1] for x in args.labels]
             ylabel = "% {0}".format(features[i].replace('.bed',''))
             vals = [foo[features[i]] for foo in featureCounts]
             vals = 100 * np.array(vals, dtype='float64') / np.array(totalCounts, dtype='float64')
-
-        print (vals)
 
         ax = plt.subplot(grids[row, col])
         ax.bar(np.arange(vals.shape[0]), vals, width=0.5, bottom=0.0, align='center', color=args.colors, edgecolor=args.colors, alpha=args.alpha)
@@ -455,7 +453,7 @@ def main(args=None):
 
     if args.labels is None:
         args.labels = args.bamfiles
-        args.labels = [item.replace('.bam', '').replace('.filtered', '') for item in args.bamfiles ]
+        args.labels = [item.replace('.bam', '').replace('.filtered', '').replace('.cram','') for item in args.bamfiles ]
     if args.smartLabels:
         args.labels = smartLabels(args.bamfiles)
     if len(args.labels) != len(args.bamfiles):
@@ -541,6 +539,8 @@ def main(args=None):
         of = open(args.outRawCounts, "w")
         of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
         for i, x in enumerate(args.labels):
+            x = x.split('/')[-1]
             for k, v in featureCounts[i].items():
+                print(x)
                 of.write("{0}\t{1}\t{2:5.2f}\t{3}\t{4}\n".format(x, k, (100.0 * v) / totalCounts[i], v, totalCounts[i]))
         of.close()
