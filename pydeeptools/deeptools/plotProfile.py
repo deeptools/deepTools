@@ -462,7 +462,7 @@ class Profile(object):
                 # kmeans, so we need to color by cluster
                 self.color_list = cmap_plot(np.arange(self.numlines, dtype=float) / float(self.numlines))
             else:
-                self.color_list1 =  np.tile(cmap_plot(np.arange(self.numplots, dtype=float) / float(self.numplots))[1], self.numplots)
+                self.color_list1 =  np.tile(cmap_plot(np.arange(self.numplots, dtype=float) / float(self.numplots))[0], self.numplots)
                 self.color_list = self.color_list1.reshape(self.numplots, 4)
         if (self.numlines > 1 and len(self.color_list) < self.numlines) or\
            (self.numlines == 1 and len(self.color_list) < self.numplots):
@@ -570,7 +570,7 @@ class Profile(object):
                     first = False
             ax_list.append(ax)
 
-        ax_list[-1].legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.1), ncol=1, frameon=False, prop={'size': 7})
+        ax_list[-1].legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.18), ncol=1, frameon=False, prop={'size': 7})
 
 
         # It turns out that set_ylim only takes float64s
