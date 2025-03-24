@@ -1,3 +1,23 @@
+Changes in deepTools4.0
+=======================
+
+Changes:
+
+* plotHeatmap and plotProfile:
+	- Implemented the built-in Matplotlib color scheme for the heatmap.
+	- Removed the Plotly functions to streamline the visualization.
+	- Adjusted the legend position to be outside the plot area, preventing overlap with the subplots.
+	- Enabled the ggplot2 theme for enhanced aesthetics.
+	- Split and wrapped longer sample names to avoid overlap with other labels.
+	- Eliminated overlapping x and y-axis ticks for improved readability.
+	- Removed the file extensions from input files when using them as labels in the plots.
+
+* plotEnrichment:
+	- Implemented the built-in Matplotlib color scheme for the heatmap.
+	- Removed the Plotly functions to streamline the visualization.
+	- Added spacing between bars in bar plots for improved visual clarity.
+	- Retained only sample names, when provided with the complete file path and name.
+
 Changes in deepTools2.0
 ========================
 
