@@ -24,16 +24,13 @@ from deeptools.utilities import convertCmap
 from deeptools.computeMatrixOperations import filterHeatmapValues
 import textwrap, re
 
-
-plt.style.use('ggplot')
-
 debug = 0
 old_settings = np.seterr(all='ignore')
 plt.ioff()
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
-        parents=[parserCommon.heatmapperMatrixArgs(),
+        parents=[parserCommon.heatmapperMatrixArgs(), 
                  parserCommon.heatmapperOutputArgs(mode='heatmap'),
                  parserCommon.heatmapperOptionalArgs(mode='heatmap')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -679,6 +676,9 @@ def main(args=None):
 
     if args.samplesLabel and len(args.samplesLabel):
         hm.matrix.set_sample_labels(args.samplesLabel)
+    
+    if args.ggplot:
+        plt.style.use('ggplot') 
 
     if args.sortRegions != 'no':
         sortUsingSamples = []
