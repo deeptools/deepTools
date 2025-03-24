@@ -22,7 +22,7 @@ from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, getProfileTicks, justify_text
 from deeptools.computeMatrixOperations import filterHeatmapValues
 
-plt.style.use('ggplot')
+
 debug = 0
 old_settings = np.seterr(all='ignore')
 plt.ioff()
@@ -84,6 +84,9 @@ def process_args(args=None):
         args.label_rotation=45.0
     else:
         args.label_rotation= args.label_rotation
+    
+    if args.ggplot:
+        plt.style.use('ggplot') 
 
     return args
 
