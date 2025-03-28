@@ -568,7 +568,7 @@ class Correlation:
 
             ax2.axhline(y=1, color="black", linestyle="dotted")
 
-            ax2.legend(['individual', 'acumulative'], loc="center right", labelcolor=["blue", "red"], ncols=1)
+            ax2.legend(['individual', 'accumulative'], loc="center right", labelcolor=["blue", "red"], ncols=1)
 
             if lgd is not None:
                 plt.savefig(plot_filename, format=image_format, bbox_extra_artists=(lgd,))
