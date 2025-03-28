@@ -16,7 +16,6 @@ from deeptools.parserCommon import writableFile
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from importlib.metadata import version
 
-
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description='This tool calculates the fragment sizes for read pairs given a BAM file from paired-end sequencing.'
@@ -48,7 +47,10 @@ def parse_arguments():
                         'eps, pdf, svg and plotly.',
                         default=None,
                         choices=['png', 'pdf', 'svg', 'eps'])
-
+    parser.add_argument('--ggplot',
+                        help='Use ggplot theme for figures',
+                        action='store_true')
+    
     parser.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. The default is '
                         'to use 1. (Default: %(default)s)',
@@ -306,6 +308,9 @@ def main(args=None):
 
     if args.table is not None:
         printTable(args, fraglengths, readlengths)
+
+    if args.ggplot:
+        plt.style.use('ggplot')
 
     if args.histogram:
         if args.samplesLabel:
