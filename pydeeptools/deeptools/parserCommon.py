@@ -869,6 +869,10 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           '"eps", "pdf", "plotly" and "svg"',
                           choices=['png', 'pdf', 'svg', 'eps'])
 
+    optional.add_argument('--ggplot',
+                          help='Use ggplot theme for figures.',
+                          action='store_true')
+
     optional.add_argument('--verbose',
                           help='If set, warning messages and '
                           'additional information are given.',
