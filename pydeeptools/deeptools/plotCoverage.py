@@ -16,9 +16,6 @@ import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 
-plt.style.use('ggplot')
-
-
 def parse_arguments(args=None):
     parent_parser = parserCommon.getParentArgParse(binSize=False)
     read_options_parser = parserCommon.read_options()
@@ -104,12 +101,15 @@ def required_args():
                           'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
 
+    optional.add_argument('--ggplot',
+                          help='Use ggplot theme for figures',
+                          action='store_true')
+    
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
                           'that have zero or nan values in _all_ samples '
                           'are excluded.',
-                          action='store_true',
-                          required=False)
+                          action='store_true')
 
     optional.add_argument('--numberOfSamples', '-n',
                           help='Number of 1 bp regions to sample. (Default: %(default)s)',
@@ -230,16 +230,11 @@ def main(args=None):
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
 
     if args.plotFile:
-        if args.plotFileFormat == 'plotly':
-            fig = go.Figure()
-            fig['layout']['xaxis1'] = {'domain': [0.0, 0.48], 'anchor': 'x1', 'title': 'coverage (#reads per base)'}
-            fig['layout']['xaxis2'] = {'domain': [0.52, 1.0], 'anchor': 'x2', 'title': 'coverage (#reads per base)'}
-            fig['layout']['yaxis1'] = {'domain': [0.0, 1.0], 'anchor': 'x1', 'title': 'fraction of bases sampled'}
-            fig['layout']['yaxis2'] = {'domain': [0.0, 1.0], 'anchor': 'x2', 'title': 'fraction of bases sampled >= coverage'}
-            fig['layout'].update(title=args.plotTitle)
-        else:
-            fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
-            plt.suptitle(args.plotTitle)
+        if args.ggplot:
+            plt.style.use('ggplot')
+
+        fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
+        plt.suptitle(args.plotTitle)
 
     # plot up to two std from mean
     num_reads_per_bin = num_reads_per_bin.astype(int)
