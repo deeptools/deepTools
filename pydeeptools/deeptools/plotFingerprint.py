@@ -125,7 +125,11 @@ def get_optional_args():
                           help='Title of the plot, to be printed on top of '
                           'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
-
+    
+    optional.add_argument('--ggplot',
+                          help='Use ggplot theme for figures',
+                          action='store_true')
+    
     optional.add_argument('--skipZeros',
                           help='If set, then regions with zero overlapping reads'
                           'for *all* given BAM files are ignored. This '
@@ -402,7 +406,8 @@ def main(args=None):
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
     if args.plotFile is not None:
-        plt.style.use('ggplot')
+        if args.ggplot:
+            plt.style.use('ggplot')
 
         i = 0
         # matplotlib won't iterate through line styles by itself
