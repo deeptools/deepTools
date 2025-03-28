@@ -335,12 +335,14 @@ class Correlation:
         plt.close()
 
 
-    def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, xRange=None, yRange=None):
+    def plot_scatter(self, plot_filename, plot_title='', image_format=None, log1p=False, xRange=None, yRange=None, ggplot=False):
         """
         Plot the scatter plots of a matrix
         in which each row is a sample
         """
-        plt.style.use('ggplot')
+
+        if ggplot:
+            plt.style.use('ggplot')
 
         num_samples = self.matrix.shape[1]
         corr_matrix = self.compute_correlation()
@@ -441,13 +443,14 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False):
+    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False, ggplot=False):
         """
         Plot the PCA of a matrix
 
         Returns the matrix of plotted values.
         """
-        plt.style.use('ggplot')
+        if ggplot:
+            plt.style.use('ggplot')
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
 

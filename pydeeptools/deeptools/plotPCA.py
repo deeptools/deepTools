@@ -74,7 +74,7 @@ def plotCorrelationArgs():
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
                           'eps, pdf, plotly and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument('--plotHeight',
                           help='Plot height in cm. (Default: %(default)s)',
@@ -170,6 +170,11 @@ def plotCorrelationArgs():
                             'principal component has samples stacked vertically. '
                             'This option is not applicable if --transpose is specified.',
                             action='store_true')
+    
+    optional.add_argument('--ggplot',
+                          help='Use the ggplot theme for figures.',
+                          action='store_true')
+
 
     return parser
 
@@ -209,7 +214,8 @@ def main(args=None):
                                     plotHeight=args.plotHeight,
                                     cols=args.colors,
                                     marks=args.markers,
-                                    add_labels=args.addLabels)
+                                    add_labels=args.addLabels,
+                                    ggplot=args.ggplot)
 
     if args.outFileNameData is not None:
         with open(args.outFileNameData, "w") as of:
