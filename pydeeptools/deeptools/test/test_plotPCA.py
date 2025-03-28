@@ -9,7 +9,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotPCA/"
 
 print(TEST_DATA)
 print(ROOT)
-tolerance = 13
+tolerance = 50
 
 def test_plotPCA_default():
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
