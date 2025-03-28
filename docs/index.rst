@@ -9,7 +9,7 @@ efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq
 
 There are 3 ways for using deepTools:
 
-* **Galaxy usage** -- deepTools comes with first-class integration for the `Galaxy platform <https://galaxyproject.org>`__ and is available for zero-install, browser-based use on major public Galaxy servers including `usegalaxy.org <https://usegalaxy.org>`__, `Galaxy Europe <https://usegalaxy.eu>`__ and `Galaxy Australia <https://usegalaxy.org.au>`__.
+* **Galaxy usage** -- deepTools comes with first-class integration for the `Galaxy platform <https://galaxyproject.org>`__ and is available for zero-install, browser-based use on major public Galaxy servers including `usegalaxy.org <https://usegalaxy.org>`__, `Galaxy Europe <https://usegalaxy.eu>`__ and `Galaxy Australia <https://usegalaxy.org.au>`__. Check out the :doc:`content/galaxy_usage` page to dive right in.
 * **command line usage** -- simply download and install the tools (see :doc:`content/installation` and :doc:`content/list_of_tools`)
 * **API** -- make use of your favorite deepTools modules in your own python programs (see :doc:`content/api`)
 
@@ -43,7 +43,6 @@ Contents:
    content/advanced_features
    content/example_usage
    content/changelog
-   content/help_galaxy_intro
    content/help_faq
    content/help_faq_galaxy
    content/help_glossary

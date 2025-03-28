@@ -6,14 +6,14 @@ Example usage
 .. toctree::
    :maxdepth: 1
 
-   example_step_by_step
+   galaxy_usage
    example_gallery
 
 How we use deepTools for ChIP-seq analyses 
 -------------------------------------------
 
 
-To get a feeling for what deepTools can do, we'd like to give you a brief glimpse into how we typically use deepTools for ChIP-seq analyses. For more detailed exampes and descriptions of the tools, simply follow the respective links.
+To get a feeling for what deepTools can do, we'd like to give you a brief glimpse into how we typically use deepTools for ChIP-seq analyses. For more detailed examples and descriptions of the tools, simply follow the respective links.
 
 .. note:: While some tools, such as :doc:`tools/plotFingerprint`, specifically address ChIP-seq-issues, the majority of tools is widely applicable to deep-sequencing data, including RNA-seq.
 
@@ -22,7 +22,7 @@ To get a feeling for what deepTools can do, we'd like to give you a brief glimps
 As shown in the flow chart above, our work usually begins with one or
 more :ref:`FASTQ <fastq>`
 file(s) of deeply-sequenced samples. After preliminary quality control using
-`FASTQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__,
+`FASTQC <http://www.bioinformatics.babraham.ac.uk/projects/fastqc/>`__ or `Falco <https://github.com/smithlabcode/falco/>`__,
 we align the reads to the reference genome, e.g., using
 `bowtie2 <http://bowtie-bio.sourceforge.net/bowtie2/manual.shtml>`__.
 The standard output of bowtie2 (and other mapping tools) is in the form of sorted and indexed :ref:`BAM` files
@@ -54,7 +54,7 @@ For paired-end samples, we often additionally check whether the fragment sizes a
 
 3. **GC-bias check** (:doc:`tools/computeGCBias`). Many sequencing protocols
    require several rounds of PCR-based DNA amplification, which often introduces notable bias, due to many DNA polymerases preferentially amplifying GC-rich templates. Depending on the sample (preparation), the GC-bias can vary    significantly and we routinely check its extent. When we need to compare files with different GC biases, we use the :doc:`tools/correctGCBias` module.
-   See the paper by `Benjamini and Speed <http://nar.oxfordjournals.org/content/40/10/e72>`__ for many insights into this problem.
+   See the paper by `Benjamini and Speed <https://doi.org/10.1093/nar/gks001>`__ for many insights into this problem.
    
 .. image:: ../images/test_plots/ExampleCorrectGCBias.png
     :width: 50%
@@ -62,7 +62,7 @@ For paired-end samples, we often additionally check whether the fragment sizes a
 4. **Assessing the ChIP strength**. We do this quality control step to get a
    feeling for the signal-to-noise ratio in samples from ChIP-seq
    experiments. It is based on the insights published by `Diaz et
-   al. <http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml>`_
+   al. <https://doi.org/10.1515/1544-6115.1750>`_
 
 .. image:: ../images/test_plots/fingerprints.png
     :width: 70%
@@ -75,10 +75,10 @@ from their significantly decreased size:
 
 -  useful for data sharing and storage
 -  intuitive visualization in Genome Browsers (e.g.
-   `IGV <http://www.broadinstitute.org/igv/>`__)
+   `IGV, the Integrative Genomics Viewer <http://www.broadinstitute.org/igv/>`__)
 -  more efficient downstream analyses are possible
 
 The deepTools modules :doc:`tools/bamCompare` and :doc:`tools/bamCoverage` not only allow for simple conversion of BAM to bigWig (or :ref:`bedGraph` for that matter), but also for normalization, such that different samples can be compared  despite differences in their sequencing depth.
 
-Finally, once all the converted files have passed our visual inspections (e.g., using the `Integrative Genomics Viewer <https://www.broadinstitute.org/igv/>`_), the fun
+Finally, once all the converted files have passed our visual inspections (e.g., using `IGV <https://www.broadinstitute.org/igv/>`_), the fun
 of downstream analysis with :doc:`tools/computeMatrix`, :doc:`tools/plotHeatmap` and :doc:`tools/plotProfile` can begin! 

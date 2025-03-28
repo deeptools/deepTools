@@ -1,116 +1,141 @@
 Galaxy-related FAQ
 ===================
 
+The Galaxy Project is maintaining an impressive `FAQ collection <https://training.galaxyproject.org/training-material/faqs/galaxy/>`__ regarding usage of their platform.
+
+Here we are only highlighting a few that deepTools users have happened to ask before.
+
 .. contents:: 
     :local:
 
 I've reached my quota - what can I do to save some space?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-1. make sure that all the data sets you deleted are **permanently** eliminated from our disks: go to the history option button and select "Purge deleted data sets", then hit the "refresh" button on top of your history panel
-2. download all data sets for which you've completed the analysis, then remove the data sets (click on the "x" and then **make sure they're purged** (see above)).
+See Galaxy FAQ: `How can I reduce quota usage ... <https://training.galaxyproject.org/training-material/faqs/galaxy/account_reduce_quota_usage.html>`__.
+
+In addition, we recommend you to avoid multiple uploads of the same data to different histories.
+The preferred way is to **copy** the data sets between histories instead, which will not consume extra quota. This Galaxy FAQ: `Copy a dataset between histories <https://training.galaxyproject.org/training-material/faqs/galaxy/histories_copy_dataset.html>`__ explains different ways of doing so.
 
 ----------------------------------------------------------------------
 
-Copying from one history to another doesn't work for me - the data set simply doesn't show up in the target history!
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Once you've copied a data set from one history to another, check two things:
-    * do you see the destination history in your history panel, i.e. does the title of the current history panel match the name of the destination history you selected in the main frame?
-    * hit the refresh button
-
-.. image:: ../images/Gal_historyReload.png
-
-----------------------------------------------------------------------
-
-How can I use a published workflow?
+How can I find and use published deepTools workflows?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You **must register** if you want to use the workflows within `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__. ("User" --> "Register" - all you have to supply is an email address). Make sure to read the Terms of Use, though!
+`WorkflowHub <https://workflowhub.eu/>`__ and `Dockstore <https://dockstore.org>`__ are two excellent places to look for scientific workflows.
 
-You can find workflows that are public or specifically shared with you by another user via "Shared Data" --> "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
+To search specifically for Galaxy workflows that make use of deepTools, you can use the following queries:
 
-.. image:: ../images/GalHow_wf01.png
+- on WorkflowHub: `<https://workflowhub.eu/workflows?filter%5Bquery%5D=deeptools&filter%5Bworkflow_type%5D=galaxy>`__
+- on Dockstore: `<https://dockstore.org/search?descriptorType=gxformat2&entryType=workflows&search=deeptools>`__
 
+.. Note:: Both WorkflowHub and Dockstore are general workflow registries on which anyone can deposit workflows.
 
-A green box should appear, there you select "start using this workflow", which should lead you to your own workflow menu (that you can always access via the top menu "Workflow"). Here, you should now see a workflow labeled "imported: ....". If you want to use the workflow right away, click on the triangle and select "Run". The workflow should now be available within the Galaxy main data frame and should be waiting for your input.
+   If you are looking for high-quality workflows pay attention to workflow authors and submitters to see if you recognize them.
 
-.. image:: ../images/GalHow_wf02.png
+   Within the Galaxy ecosystem the `Intergalactic Workflow Commission (IWC) <https://iwc.galaxyproject.org>`__ is an organization aiming at publishing workflows adhering to best-practices and standards in their field. They register their workflows at both Dockstore and WorkflowHub so IWC-submitted workflows can be one thing to look out for on these registries.
 
-----------------------------------------------------------------------
+Once you have found a workflow you want to use, you can import it onto a Galaxy instance of your choice by following one of these instructions:
 
-I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- Galaxy FAQ: `Import a workflow from WorkflowHub <https://training.galaxyproject.org/training-material/faqs/galaxy/workflows_run_wfh.html>`__
+- Galaxy FAQ: `Import a workflow from Dockstore <https://training.galaxyproject.org/training-material/faqs/galaxy/workflows_run_ds.html>`__
 
-Yes, it is possible. The only requirement is that your local Galaxy has a recent installation of deepTools.
+This will import the workflow to your list of workflows. Note that it will also carry a little blue-white shield icon next to its name, which indicates that this is an original workflow version imported from a TRS server. If you ever modify the workflow with Galaxy’s workflow editor, it will lose this indicator.
 
-Go to the workflows, click on the ones you're interested in and go to "Download". This will save the workflows into .ga files on your computer. Now go to your local Galaxy installation and login. Go to the workflow menu and select "import workflow" (top right hand corner of the page). Click on "Browse" and select the saved workflow. If you have the same tool versions installed in your local Galaxy, these workflows should work right away.
+You can then follow the Galaxy FAQ on `Running a workflow <https://training.galaxyproject.org/training-material/faqs/galaxy/workflows_run.html>`__ to use the imported workflow.
+
+.. Note:: If you see error messages during the import or when trying to run the workflow, a likely reason is that the Galaxy server you are working on does not have all the tools installed that the workflow wants to use.
+
+   If your workflow is from the IWC organization it should normally be usable on all major public Galaxy servers.
 
 ----------------------------------------------------------------------
 
 ``plotProfile`` says that one option will only work if "computeMatrix was run with --missingDataAsZero". How can I find out whether I ran ``computeMatrix`` that way?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Galaxy keeps track of everything you do. To see which options you chose to generate a specific data set, simply click on the "info" button.
+Galaxy keeps track of everything you do. To see which options you chose to generate a specific dataset, you can use Galaxy's `"Run Job Again" <https://training.galaxyproject.org/training-material/faqs/galaxy/tools_rerun.html>`__ functionality to restore the tool interface with the same settings that you configured to create any of your existing datasets.
 
-.. image:: ../images/Gal_FAQ_info.png
+Alternatively, you can click the ``(i)`` *Dataset Details* icon on the dataset in question, then check the *"Tool Parameters"* section of the resulting page.
 
 ----------------------------------------------------------------------
 
-How can I have a look at the continuous read coverages from bigWig files? Which genome browser do you recommend?
+.. _galaxy-visualize:
+
+How can I visualize bigWig/bed/bam datasets from Galaxy? Which genome browser do you recommend?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-There are 2 popular genome browsers for visualizing continuous data: `UCSC <http://genome.ucsc.edu/cgi-bin/hgGateway?redirect=manual&source=genome-euro.ucsc.edu>`__ and `IGV <http://www.broadinstitute.org/igv/>`__.
+There are 2 popular genome browsers that we recommend for visualizing positional genomic data along its corresponding reference genome: the `Integrative Genomics Viewer IGV <https://igv.org/>`__ and the `UCSC genome browser <https://genome.ucsc.edu/cgi-bin/hgGateway>`__.
 
-IGV (recommended)
-~~~~~~~~~~~~~~~~~~~
+IGV
+~~~~
 
-We recommend downloading `IGV <http://www.broadinstitute.org/igv/>`__, which is free for academic use. IGV itself needs an up-to-date Java installation and a considerable amount of RAM. It's usage is rather intuitive and the display can be easily customized. In addition, you can download genome-wide annotation data that can be displayed together with your own data.
+This is our recommendation unless you want to visualize your data in relation to the vast amount of annotation tracks available in the UCSC genome browser. This option requires a bit of setup on your local machine, but then provides a rather intuitive, yet flexible user interface.
 
-To display data in IGV, do the following:
+To set up IGV for use on your computer, first follow our :ref:`general instructions <igv-setup>`.
 
-1. Go to http://www.broadinstitute.org/igv/, register and download IGV
-2. Unpack the IGV archive and change to the extracted IGV folder
-3. Use the ``igv.bat`` (Windows), ``igv.sh`` (Linux) or ``igv.command`` (OSX) to start IGV (for more information please read the included ``readme.txt`` file or the IGV documentation).
-4. Choose the genome version of the file(s) you would like to visualize (e.g. dm3) **THIS IS THE MOST IMPORTANT STEP!** IGV will not detect the genome version automatically, i.e. if you select mm9 but your file is based on human data, it will still be displayed without an error message (but with the wrong positions, obviously!)
-5. Go to your deepTools Galaxy server (http://deeptools.ie-freiburg.mpg.de/) and navigate to your data set of choice
-6. Click on your data set so that you see its details like in the screenshot below (**Keep in mind that not all datasets can be visualized in IGV or UCSC.** We recommend to use :ref:`bigwig` or :ref:`bed` files for visualization.)
+Then to display data from any Galaxy server in your local IGV:
 
-.. image:: ../images/Gal_FAQ_IGV_dataset.png
+1. Make sure you have started IGV on your computer.
 
-Now click on **"display with IGV local"** to visualize your data set in IGV that should already be running on your computer.
+2. In Galaxy, expand the dataset that you would like to visualize by clicking on it.
 
-.. Note:: "display with IGV Web current" can be used if you do not have an installed IGV. It will start an IGV web start version. **We do *not* recommend that option**.
+3. (highly recommended) In the expanded view, make sure you have `set the dataset's reference genome/database (dbkey) <https://training.galaxyproject.org/training-material/faqs/galaxy/datasets_change_dbkey.html>`__ correctly.
 
-Here's a screenshot of a typical bigWig file display:
+   .. important:: Obviously it is of importance to visualize the data against the **correct** reference genome!
+      Galaxy will use the genome/database information of the dataset to load what it assumes is the correct reference genome in IGV for you.
+      If you haven't previously installed that genome, IGV will download it for you automatically.
 
-.. image:: ../images/Gal_FAQ_IGV.png
+      **Careful**: if the genome/database information is **not** set (i.e. Galaxy shows a ``?``) for your dataset, IGV will just use whatever reference genome it has loaded at the moment to visualize your data against!
 
+4. Click on the *Visualize* icon attached to your dataset and select *"display with IGV (local)"* from the central panel (the *web_current* option, if shown, is not recommended).
 
-For more information, check out the `IGV documentation <http://www.broadinstitute.org/software/igv/UserGuide>`__.
+5. Switch over to IGV and wait for Galaxy to complete the initial communication with IGV.
 
-
-UCSC
-~~~~~~~~
-
-There is a direct link from within deepTools Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
-
-.. image:: ../images/Gal_FAQ_UCSC_dataset.png
+6. Check again that the expected reference genome has been selected in IGV, then start exploring your data just as you would for local data.
 
 
-Click on "main" and the UCSC browser should open within a new window, displaying the data set that you chose.
-The default setting for bigWig files is the "dense" display that looks like a heatmap.
+UCSC Genome Browser
+~~~~~~~~~~~~~~~~~~~~
+
+This option lets you visualize your data without any local setup. All data transfer happens only between the Galaxy server and the UCSC genome browser. The resulting web-based visualization may be less responsive and may not look as nice as the one using IGV, but you will have all annotation tracks stored at UCSC at your disposal to display them alongside your data.
+
+The steps to display data from any Galaxy server in the UCSC genome browser are very similar to the ones described above for IGV:
+
+1. In Galaxy, expand the dataset that you would like to visualize by clicking on it.
+2. In the expanded view, make sure you have `set the dataset's reference genome/database (dbkey) <https://training.galaxyproject.org/training-material/faqs/galaxy/datasets_change_dbkey.html>`__ correctly.
+
+   .. important:: Obviously it is of importance to visualize the data against the **correct** reference genome!
+      Galaxy will use the genome/database information of the dataset to set what it assumes is the correct reference genome in the UCSC genome browser for you.
+
+3. Click on the *Visualize* icon attached to your dataset and select *"display at UCSC (main)"* from the central panel.
+
+   .. Tip:: If the option doesn't appear, verify that the dataset's  format is of a supported type (e.g. bigwig, bed or bam) and that its reference genome/database (dbkey) is set (see the previous  step).
+
+4. Wait for Galaxy to complete the initial communication with the UCSC server.
+5. Check again that the expected reference genome is mentioned in the title of the browser view, then start exploring your data.
+
+The default setting for user-provided custom tracks in the UCSC genome browser is the "dense" display which looks like a heatmap for bigwig and bam data.
 
 .. image:: ../images/Gal_FAQ_UCSC01.png
 
+**Usage hints**
 
-If you would like to display the continuous profile in a "valley-mountain" fashion like the one shown in the IGV screenshot, go to the drop-down menu underneath your custom track and choose "full".
+- If you would like to display bigwig data in a "valley-mountain" fashion or bam data as a stack of reads, go to the drop-down menu underneath your custom track and choose "full", then click *"Refresh"* in the section title or at the very bottom of the page.
 
-UCSC has large amounts of public data that you can display which you can find by scrolling down the page, beyond your custom track entry. For more information on how to use the UCSC Genome Browser, go `here <https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html>`__.
+- The UCSC genome browser remembers the state of your session from previous browser tabs.
 
-**Known issues with UCSC**
+  .. Tip:: This means that to view more than one dataset from Galaxy simultaneously, you can just go back to Galaxy and repeat the above steps.
+     The new genome browser view will show the newly selected data alongside all previously configured tracks.
 
-* **chromosome naming**: UCSC expects chromosome names to be indicated in the format "chr"Number, e.g. chr1. If you mapped your reads to a non-UCSC-standard genome, chances are that chromosomes are labeled just with their number. bigWig files generated from these BAM files will not be recognized by UCSC, i.e. you will see the data set name, but no signal.
-* **no upload of bigWig files from your hard drive**: to minimize the computational strains, UCSC relies on streaming bigWig files (i.e. there's no need to load the entire file at once, the browser will always just load the data for the specific region a user is looking at).
+- UCSC has large amounts of public data that you can display together with your data.
+
+  You can configure these public tracks by scrolling down the page, beyond your custom track section.
+
+- The UCSC `genome browser user guide <https://genome.ucsc.edu/goldenPath/help/hgTracksHelp.html>`__ has a lot more information on what you can do with this tool.
+
+- **Known issue with chromosome names**:
+
+  The UCSC genome browser expects chromosome names to be indicated in the format *"chr<number>"*, e.g. chr1.
+  If you mapped your reads to a non-UCSC-standard genome, chances are that chromosomes are labeled just with their number.
+  Such data will not be recognized by the genome browser, i.e. you will see just the track name, but no signal.
 
 ----------------------------------------------------------------------
 

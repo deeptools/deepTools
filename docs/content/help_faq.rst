@@ -1,7 +1,7 @@
 General FAQ
 ===========
 
-.. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
+.. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue on `github <http://github.com/deeptools/deeptools>`__.
 
 .. Note:: We also have a :doc:`help_faq_galaxy` with questions that are more specific to Galaxy rather than deepTools usage.
 
@@ -305,5 +305,35 @@ Where can I download the 2bit genome files required for ``computeGCBias``?
 The 2bit files of most genomes can be found `here <http://hgdownload.cse.ucsc.edu/gbdb/>`__.
 Search for the .2bit ending. Otherwise, **fasta files can be converted to 2bit** using the UCSC program
 faToTwoBit (available for different platforms from `UCSC here <http://hgdownload.cse.ucsc.edu/admin/exe/>`__).
+
+---------------------------------------------------------------------------
+
+.. _igv-setup:
+
+How to set up IGV for data visualization?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `Integrative Genomics Viewer IGV <https://igv.org/>`__ is a powerful and rather user-friendly tool to visualize positional genomic data with respect to a reference genome. It can handle many of the output formats generated during a :doc:`typical deepTools-based analysis <example_usage>` like :ref:`BAM`, :ref:`bigWig`, :ref:`BED` and :ref:`bedGraph` format.
+
+We recommend downloading the `desktop version of IGV <https://igv.org/doc/desktop/#DownloadPage/>`__, which is free and open-source software, for your operating system, then to start using it:
+
+1. Unpack the downloaded archive and move the contained IGV folder wherever is convenient for you, or, on Windows, run the downloaded installer.
+2. Start IGV according to the instructions in the ``readme.txt`` file inside the IGV folder, or, on Windows, simply open the installed desktop application.
+3. Follow the IGV `Quick Start instructions <https://igv.org/doc/desktop/#QuickStart/>`__ to load your data and its corresponding reference genome.
+
+Here's a screenshot of a typical bigWig file display in IGV:
+
+.. image:: ../images/Gal_FAQ_IGV.png
+
+.. Tip:: We typically convert :ref:`BAM` and :ref:`bedGraph` files to :ref:`bigWig` format before loading them into IGV.
+
+   The :ref:`bigWig` format is internally indexed and can therefor be loaded more efficiently than data in the :ref:`bedGraph` format.
+   Conversion from :ref:`BAM` to :ref:`bigWig` format comes with a very significant decrease in data size, while preserving relevant information (coverage) for many data interpretation purposes.
+
+.. Note:: If you want to visualize :ref:`BAM` format directly (because you need sequenced read-level information), you need to provide the BAM index file alongside the BAM file as `explained in the IGV documentation <https://igv.org/doc/desktop/#FileFormats/DataTracks/#bam>`__.
+
+   This is of no relevance if you're :ref:`using IGV from Galaxy <galaxy-visualize>` since Galaxy will handle the index file transparently for you.
+
+
 
 
