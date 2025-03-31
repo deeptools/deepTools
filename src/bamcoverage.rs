@@ -2,6 +2,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use core::panic;
 use std::io::prelude::*;
 use std::io::BufReader;
 use std::fs::File;
@@ -25,7 +26,7 @@ pub fn r_bamcoverage(
     scalefactor: f32, // default 1.0
     // processing options
     mnase: bool,
-    _offset: Py<PyList>, // list of max 2 [offset 5', offset 3'], if no offset is required we have [1, -1]
+    _offset: Py<PyList>, // list of 2 [offset 5', offset 3'], if no offset is required we have [0, 0]
     extendreads: u32, // if 0, no extension
     centerreads: bool,
     filterrnastrand: &str, // forward, reverse or 'None'
@@ -45,14 +46,14 @@ pub fn r_bamcoverage(
     verbose: bool,
     collapse: bool,
 ) -> PyResult<()> {
-    let mut offset: (i32, i32) = (1, -1);
+    let mut offset: (i32, i32) = (0, 0);
     let mut ignorechr: Vec<String> = Vec::new();
     Python::with_gil(|py| {
         let offsetv: Vec<i32> = _offset.extract(py).expect("Failed to retrieve offset.");
-        if offsetv.len() == 1 {
-            offset = (offsetv[0], -1);
-        } else if offsetv.len() == 2 {
+        if offsetv.len() == 2 {
             offset = (offsetv[0], offsetv[1]);
+        } else {
+            panic!("Error: Offset should be a list of 2. Received: {:?}", offsetv);
         }
         ignorechr = _ignorechr.extract(py).expect("Failed to retrieve ignorechr.");
     });
@@ -71,10 +72,7 @@ pub fn r_bamcoverage(
     if mnase && offset != (1, -1) {
         println!("Warning: Both MNase and offset are set. The offset will be ignored !");
     }
-    if offset != (1, -1) {
-        if offset.0 == 0 {
-            panic!("Offsets cannot be 0 as they are 1-based positions inside each alignment.");
-        }
+    if offset != (0, 0) {
         if offset.1 > 0 && offset.1 < offset.0 {
             panic!("Right side offset cannot be smaller than the left side offset.");
         }

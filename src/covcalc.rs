@@ -281,15 +281,16 @@ pub fn bam_pileup<'a>(
                     }
                 }
                 if filters.manipulate {
-                    let manipulated_blocks = filters.manipulate_record(&mut record);
-                    if manipulated_blocks.is_none() {
+                    let manipulated_blockpos = filters.manipulate_record(&mut record);
+                    if manipulated_blockpos.is_none() {
                         continue;
                     }
-                    let block = manipulated_blocks.unwrap();
-                    let ixstart = ((block[0] - region.1) / binsize) as usize;
-                    let ixend = ((block[1] - region.1) / binsize) as usize;
+                    let indices: HashSet<usize> = manipulated_blockpos
+                        .unwrap()
+                        .into_iter()
+                        .map(|x| ((x - region.1) / binsize) as usize)
+                        .collect();
 
-                    let indices: HashSet<usize> = (ixstart..ixend).collect();
                     indices.into_iter()
                         .for_each(|ix| {
                             if ix < counts.len() {

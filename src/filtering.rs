@@ -40,13 +40,13 @@ impl Alignmentfilters {
         let _mifl = minfraglen.unwrap_or(0);
         let _mafl = maxfraglen.unwrap_or(0);
         let _mnase = mnase.unwrap_or(false);
-        let _offset =  offset.unwrap_or((1, -1));
+        let _offset =  offset.unwrap_or((0, 0));
         let _frs = filterrnastrand.unwrap_or(String::from("None"));
         let _extend = extendreads.unwrap_or(0);
         let _center = centerreads.unwrap_or(false);
 
         // Set the manipulate bool for a quick escape in case manipulation is not needed.
-        if _offset != (1, -1) || _mnase || _extend > 0 || _center {
+        if _offset != (0, 0) || _mnase || _extend > 0 || _center {
             manipulate = true;
         }
 
@@ -144,7 +144,7 @@ impl Alignmentfilters {
         }
     }
 
-    pub fn manipulate_record(&self, rec: &Record) -> Option<[u32; 2]> {
+    pub fn manipulate_record(&self, rec: &Record) -> Option<Vec<u32>> {
         // Not just simple yes - no filtering, but actually manipulating the record.
         // In general, this is the case for MNase mode, offset, extendreads and centerreads.
         if self.mnase {
@@ -154,26 +154,65 @@ impl Alignmentfilters {
             let rinsertsize = rec.insert_size().abs() as u32;
             if rec.is_proper_pair() && !rec.is_reverse() && rinsertsize > 1 {
                 // Not sure why the insert size test is here, but note we always filter prior to manipulating.
-                // insertsize even
                 let recpos: u32 = rec.pos() as u32;
                 let frag_start = recpos - 1 + rinsertsize / 2;
 
                 if rinsertsize % 2 == 0 {
-                    // 
                     return Some(
-                        [frag_start, frag_start + 2]
+                        (frag_start..frag_start + 2).collect()
                     );
                 } else {
-                    // Uneven middle, frag start + 4 to keep output consistent with deeptools 3.
                     return Some(
-                        [frag_start, frag_start + 4]
+                        (frag_start..frag_start+4).collect()
                     );
                 }
             }
             return None;
         }
-        if self.offset != (1, -1) {
-            println!("Offset implementation");
+        if self.offset != (0, 0) {
+            // Collect blocks and flatten them out.
+            let mut blockvec: Vec<u32> = rec
+                .aligned_blocks()
+                .flat_map(|x| x[0] as u32..x[1] as u32)
+                .collect();
+            let blocklen = blockvec.len() as i32;
+
+            // Convert potential negative indices to positive indices
+            // It could be that for the offset only one value is given, in which case we only use that site
+            if self.offset.1 == 0 {
+                // 
+                let pos = if self.offset.0 < 0 {blocklen + self.offset.0 } else {self.offset.0 - 1};
+                if pos < 0 || pos >= blocklen {
+                    return None;
+                }
+
+                if rec.is_reverse() {
+                    blockvec.reverse();
+                    blockvec = blockvec[pos as usize..pos as usize + 1].to_vec();
+                    blockvec.reverse();
+                    return Some(blockvec);
+                } else {
+                    blockvec = blockvec[pos as usize..pos as usize + 1].to_vec();
+                    return Some(blockvec);
+                }
+            } else {
+                let start = if self.offset.0 < 0 { blocklen + self.offset.0 } else { self.offset.0 -1};
+                let end = if self.offset.1 < 0 { blocklen + self.offset.1 + 1 } else { self.offset.1 };
+
+                // if the range falls outside the vec, return none (retain deeptools 3 behavior)
+                if start < 0 || end < 0 || start >= blocklen || end >= blocklen || start >= end {
+                    return None;
+                }
+                if rec.is_reverse() {
+                    blockvec.reverse();
+                    blockvec = blockvec[start as usize..end as usize].to_vec();
+                    blockvec.reverse();
+                    return Some(blockvec);
+                } else {
+                    blockvec = blockvec[start as usize..end as usize].to_vec();
+                    return Some(blockvec);
+                }
+            }
         }
         if self.extendreads > 0 {
             println!("extendreads implementation");

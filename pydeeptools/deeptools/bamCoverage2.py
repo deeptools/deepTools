@@ -141,8 +141,11 @@ def main(args=None):
         args.effectiveGenomeSize = 0
     if not args.normalizeUsing:
         args.normalizeUsing = 'None'
+    print(args.Offset)
     if not args.Offset:
-        args.Offset = [1, -1]
+        args.Offset = [0, 0]
+    elif len(args.Offset) == 1:
+        args.Offset = [args.Offset[0], 0]
     if not args.extendReads:
         args.extendReads = 0
     if not args.filterRNAstrand:
