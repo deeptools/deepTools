@@ -13,7 +13,7 @@ tolerance = 13
 
 def test_plotFingerprint_default():
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    args = "-b {0}test1.bam {0}test2.bam -o {1} --plotFileFormat png".format(TEST_DATA, plotfile.name).split()
+    args = "-b {0}test1.bam {0}test2.bam -o {1} --plotFileFormat png -l test1 test2".format(TEST_DATA, plotfile.name).split()
     deeptools.plotFingerprint.main(args)
 
     res = compare_images(ROOT + 'test_plotFingerprint_default.png', plotfile.name, tolerance)
