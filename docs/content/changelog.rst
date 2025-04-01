@@ -1,3 +1,30 @@
+Changes in deepTools4.0
+=======================
+
+Changes:
+
+* Plots in general:
+    - Removed Plotly for all graphics.
+	- Optional ggplot theme (--ggplot).
+	- Using standard Matplotlib color scheme.
+
+* plotHeatmap and plotProfile:
+	- Adjusted the legend position to be outside the plot area, preventing overlap with the subplots.
+	- Split and wrapped longer sample names to avoid overlap with other labels.
+	- Eliminated overlapping x and y-axis ticks for improved readability.
+	- Removed the file extensions from input files when using them as labels in the plots.
+
+* plotEnrichment:
+	- Added spacing between bars in bar plots for improved visual clarity.
+	- Retained only sample names, when provided with the complete file path and name.
+
+* plotPCA:
+    - Using scikit-learn for computing PCA.
+	- New option to add labels for each point (--addLabels).
+	- Expander for colors and markers, for example ``--colors red:3 blue:3`` is expanded as ``[red, red, red, blue, blue, blue]``.
+	- Scree plot is showing lines for individual and accumulated variation.
+	- Points are by default rainbow colored circles.
+
 Changes in deepTools2.0
 ========================
 

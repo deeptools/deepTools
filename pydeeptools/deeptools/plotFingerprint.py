@@ -1,27 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import numpy as np
-import argparse
 import sys
+import argparse
+import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
-
-import plotly.offline as py
-import plotly.graph_objs as go
 
 import deeptools.countReadsPerBin as countR
 import deeptools.sumCoveragePerBin as sumR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 
-old_settings = np.seterr(all='ignore')
 MAXLEN = 10000000
 
 
@@ -122,14 +117,19 @@ def get_optional_args():
                           'overrides the image format based on the ending '
                           'given via --plotFile '
                           'ending. The available options are: "png", '
-                          '"eps", "pdf", "plotly" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+                          '"eps", "pdf", "jpeg", and "svg"',
+                          choices=['png', 'pdf', 'svg', 'jpeg', 'eps'],
+                          default=None)
 
     optional.add_argument('--plotTitle', '-T',
                           help='Title of the plot, to be printed on top of '
                           'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
-
+    
+    optional.add_argument('--ggplot',
+                          help='Use ggplot theme for figures',
+                          action='store_true')
+    
     optional.add_argument('--skipZeros',
                           help='If set, then regions with zero overlapping reads'
                           'for *all* given BAM files are ignored. This '
@@ -406,78 +406,59 @@ def main(args=None):
     x = np.arange(total).astype('float') / total  # normalize from 0 to 1
 
     if args.plotFile is not None:
+        if args.ggplot:
+            plt.style.use('ggplot')
+
         i = 0
         # matplotlib won't iterate through line styles by itself
         pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
-        plotly_colors = ["#d73027", "#fc8d59", "#f33090", "#e0f3f8", "#91bfdb", "#4575b4"]
-        plotly_line_styles = sum([6 * ["solid"], 6 * ["dot"], 6 * ["dash"], 6 * ["longdash"], 6 * ["dashdot"], 6 * ["longdashdot"]], [])
-        data = []
         for i, reads in enumerate(num_reads_per_bin.T):
             count = np.cumsum(np.sort(reads))
             count = count / count[-1]  # to normalize y from 0 to 1
-            if args.plotFileFormat == 'plotly':
-                trace = go.Scatter(x=x, y=count, mode='lines', name=args.labels[i])
-                trace['line'].update(dash=plotly_line_styles[i % 36], color=plotly_colors[i % 6])
-                data.append(trace)
-            else:
-                j = i % len(pyplot_line_styles)
-                plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
-                plt.xlabel('rank')
-                plt.ylabel('fraction w.r.t. bin with highest coverage')
-        # set the plotFileFormat explicitly to None to trigger the
-        # format from the file-extension
-        if not args.plotFileFormat:
-            args.plotFileFormat = None
-
-        if args.plotFileFormat == 'plotly':
-            fig = go.Figure()
-            fig.add_traces(data)
-            fig['layout'].update(title=args.plotTitle)
-            fig['layout']['xaxis1'].update(title="rank")
-            fig['layout']['yaxis1'].update(title="fraction w.r.t bin with highest coverage")
-            py.plot(fig, filename=args.plotFile, auto_open=False)
-        else:
-            plt.legend(loc='upper left')
-            plt.suptitle(args.plotTitle)
-            plt.savefig(args.plotFile, bbox_inches=0, format=args.plotFileFormat)
-            plt.close()
+            j = i % len(pyplot_line_styles)
+            plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
+        
+        plt.xlabel('rank')
+        plt.ylabel('fraction w.r.t. bin with highest coverage')
+        plt.legend(loc='upper left')
+        plt.suptitle(args.plotTitle)
+        plt.savefig(args.plotFile, bbox_inches=0, format=args.plotFileFormat)
+        plt.close()
 
     if args.outRawCounts is not None:
-        of = open(args.outRawCounts, "w")
-        of.write("#plotFingerprint --outRawCounts\n")
-        of.write("'" + "'\t'".join(args.labels) + "'\n")
-        fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
-        for row in num_reads_per_bin:
-            of.write(fmt % tuple(row))
-        of.close()
+        with open(args.outRawCounts, "w") as of:
+            of.write("#plotFingerprint --outRawCounts\n")
+            of.write("'" + "'\t'".join(args.labels) + "'\n")
+            fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
+            for row in num_reads_per_bin:
+                of.write(fmt % tuple(row))
 
     if args.outQualityMetrics is not None:
-        of = open(args.outQualityMetrics, "w")
-        of.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
-        if args.JSDsample:
-            of.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
-        else:
-            of.write("\tSynthetic JS Distance")
-        of.write("\n")
-        line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
-        for idx, reads in enumerate(num_reads_per_bin.T):
-            counts = np.cumsum(np.sort(reads))
-            counts = counts / float(counts[-1])
-            AUC = np.sum(counts) / float(len(counts))
-            XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
-            elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
-            expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
-            of.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
+        with open(args.outQualityMetrics, "w") as of:
+            of.write("Sample\tAUC\tSynthetic AUC\tX-intercept\tSynthetic X-intercept\tElbow Point\tSynthetic Elbow Point")
             if args.JSDsample:
-                JSD = getJSD(args, idx, num_reads_per_bin)
-                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
-                CHANCE = getCHANCE(args, idx, num_reads_per_bin)
-                of.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+                of.write("\tJS Distance\tSynthetic JS Distance\t% genome enriched\tdiff. enrichment\tCHANCE divergence")
             else:
-                syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
-                of.write("\t{0}".format(syntheticJSD))
+                of.write("\tSynthetic JS Distance")
             of.write("\n")
-        of.close()
+            line = np.arange(num_reads_per_bin.shape[0]) / float(num_reads_per_bin.shape[0] - 1)
+            for idx, reads in enumerate(num_reads_per_bin.T):
+                counts = np.cumsum(np.sort(reads))
+                counts = counts / float(counts[-1])
+                AUC = np.sum(counts) / float(len(counts))
+                XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
+                elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
+                expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
+                of.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
+                if args.JSDsample:
+                    JSD = getJSD(args, idx, num_reads_per_bin)
+                    syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                    CHANCE = getCHANCE(args, idx, num_reads_per_bin)
+                    of.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+                else:
+                    syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
+                    of.write("\t{0}".format(syntheticJSD))
+                of.write("\n")
 
 
 if __name__ == "__main__":
