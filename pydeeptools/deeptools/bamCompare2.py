@@ -258,7 +258,14 @@ def main(args=None):
     if not args.region:
         args.region = 'None'
     if not args.extendReads:
-        args.extendReads = 0
+        args.extendReads = False
+        args.extendReadsLen = 0
+    elif isinstance(args.extendReads, bool):
+        args.extendReadsLen = 0
+        args.extendReads = True
+    elif isinstance(args.extendReads, int):
+        args.extendReadsLen = args.extendReads
+        args.extendReads = True
     if not args.blackListFileName:
         args.blackListFileName = 'None'
     else:
@@ -280,6 +287,7 @@ def main(args=None):
         args.operation,
         args.pseudocount,
         args.extendReads,
+        args.extendReadsLen,
         args.centerReads,
         args.blackListFileName,
         args.minMappingQuality,

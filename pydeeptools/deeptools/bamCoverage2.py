@@ -141,13 +141,19 @@ def main(args=None):
         args.effectiveGenomeSize = 0
     if not args.normalizeUsing:
         args.normalizeUsing = 'None'
-    print(args.Offset)
     if not args.Offset:
         args.Offset = [0, 0]
     elif len(args.Offset) == 1:
         args.Offset = [args.Offset[0], 0]
     if not args.extendReads:
-        args.extendReads = 0
+        args.extendReads = False
+        args.extendReadsLen = 0
+    elif isinstance(args.extendReads, bool):
+        args.extendReadsLen = 0
+        args.extendReads = True
+    elif isinstance(args.extendReads, int):
+        args.extendReadsLen = args.extendReads
+        args.extendReads = True
     if not args.filterRNAstrand:
         args.filterRNAstrand = 'None'
     if not args.blackListFileName:
@@ -179,6 +185,7 @@ def main(args=None):
         args.MNase,
         args.Offset,
         args.extendReads,
+        args.extendReadsLen,
         args.centerReads,
         args.filterRNAstrand,
         args.blackListFileName,

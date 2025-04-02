@@ -224,6 +224,15 @@ def process_args(args=None):
         args.outRawCounts = "None"
     if not args.scalingFactors:
         args.scalingFactors = "None"
+    if not args.extendReads:
+        args.extendReads = False
+        args.extendReadsLen = 0
+    elif isinstance(args.extendReads, bool):
+        args.extendReadsLen = 0
+        args.extendReads = True
+    elif isinstance(args.extendReads, int):
+        args.extendReadsLen = args.extendReads
+        args.extendReads = True
     # defaults for the filtering options
     if not args.samFlagInclude:
         args.samFlagInclude = 0
@@ -263,6 +272,7 @@ def main(args=None):
         args.blackListFileName,
         args.verbose,
         args.extendReads,
+        args.extendReadsLen,
         args.centerReads,
         args.samFlagInclude,
         args.samFlagExclude,
