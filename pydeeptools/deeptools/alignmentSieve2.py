@@ -3,7 +3,7 @@ import argparse
 import pysam
 import os
 import sys
-
+import signal
 from deeptools import parserCommon
 from deeptools.bamHandler import openBam
 from deeptools.mapReduce import mapReduce
@@ -343,7 +343,7 @@ def main(args=None):
     # Remove args:
     # label, smartLabels, genomeChunkLength, ignoreDuplicates.
 
-    print(args)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_alignmentsieve(
         args.bam,
         args.outFile,

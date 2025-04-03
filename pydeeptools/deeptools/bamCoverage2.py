@@ -2,6 +2,7 @@ import argparse
 from deeptools import parserCommon
 from deeptools.hp import r_bamcoverage
 import sys
+import signal
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -172,7 +173,7 @@ def main(args=None):
     if not args.region:
         args.region = 'None'
     print(args)
-
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_bamcoverage(
         args.bam, # bam file
         args.outFileName, # output file

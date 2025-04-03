@@ -1,6 +1,7 @@
 import argparse
 from deeptools import parserCommon
 from deeptools.hp import r_bamcompare
+import signal
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -275,7 +276,7 @@ def main(args=None):
         args.blackListFileName = args.blackListFileName[0]
 
     args.pseudocount = 1
-    
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_bamcompare(
         args.bamfile1, # bam file 1
         args.bamfile2, # bam file 2
