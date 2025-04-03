@@ -24,34 +24,6 @@ Changes in deepTools4.0
 - options label, smartLabels, genomeChunkLength are removed.
 - ignoreDuplicates is removed, and (if wanted) should be set by the SamFlagExclude setting.
 
-
-
-
-
-
-
-
-
-
-
-
-# Good to know
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Testing
  
 ## computeMatrix

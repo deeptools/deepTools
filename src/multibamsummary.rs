@@ -33,7 +33,8 @@ pub fn r_mbams(
     supregion: &str,
     blacklist: &str,
     verbose: bool,
-    extendreads: u32,
+    extendreads: bool,
+    extendreadslen: u32,
     centerreads: bool,
     samflaginclude: u16, // sam flag include
     samflagexclude: u16, // sam flag exclude
@@ -157,6 +158,7 @@ pub fn r_mbams(
         None, // No offset
         None, // No strand filtering.
         Some(extendreads),
+        Some(extendreadslen),
         Some(centerreads),
     );
 
@@ -164,7 +166,22 @@ pub fn r_mbams(
     
     // Zip together bamfiles and ispe into a vec of tuples.
     let bampfiles: Vec<_> = bamfiles.into_iter().zip(ispe.into_iter()).collect();
-
+    let bam_ispe_filter: Vec<(String, bool, Alignmentfilters)> = bampfiles.into_iter()
+        .map(|(bamfile, ispe)| {
+            let mut filter = filters.clone();
+            if filter.extendreads && filter.extendreadslen == 0 && ispe {
+                // We need a pass over the bamfile already to get the mean fragment length.
+                filter.set_extendreadslen(&bamfile, nproc, &regions);
+                if filter.extendreadslen == 0 {
+                    panic!("Error: No fragment length found for read extension. Please provide a valid fragment length.");
+                }
+                if verbose {
+                    println!("fragment length for read extension set as: {} for {}", filter.extendreadslen, bamfile);
+                }
+            }
+            (bamfile, ispe, filter)
+        })
+        .collect();
     // Divide up the regions into regionBlocks
     let regionblocks = region_divider(&regions);
     
@@ -175,10 +192,10 @@ pub fn r_mbams(
     }
 
     let covcalcs: Vec<_> = pool.install(|| {
-        bampfiles.par_iter()
-            .map(|(bamfile, ispe)| {
+        bam_ispe_filter.par_iter()
+            .map(|(bamfile, ispe, filter)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode, false))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, filter, false, gene_mode, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

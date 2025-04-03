@@ -151,8 +151,6 @@ pub fn bam_pileup<'a>(
     let mut binsize = &bs;
     // constant to check if read is first in pair (relevant later)
     const FREAD: u16 = 0x40;
-    
-    
 
     // init variables for mapping statistics and lengths
     let mut mapped_reads: u32 = 0;
@@ -201,7 +199,7 @@ pub fn bam_pileup<'a>(
                     for record in bam.records() {
                         let mut record = record.expect("Error parsing record.");
                         if filters.filter {
-                            if filters.filter_record(&record) {
+                            if filters.filter_record(&record, &region.0.as_str()) {
                                 continue;
                             }
                         }
@@ -240,7 +238,7 @@ pub fn bam_pileup<'a>(
                         for record in bam.records() {
                             let mut record = record.expect("Error parsing record.");
                             if filters.filter {
-                                if filters.filter_record(&record) {
+                                if filters.filter_record(&record, region.0.as_str()) {
                                     continue;
                                 }
                             }
@@ -272,15 +270,17 @@ pub fn bam_pileup<'a>(
             counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
             // let mut binstart = region.1;
             let mut binix: u32 = 0;
+
             for record in bam.records() {
                 let mut record = record.expect("Error parsing record.");
 
                 if filters.filter {
-                    if filters.filter_record(&record) {
+                    if filters.filter_record(&record, region.0.as_str()) {
                         continue;
                     }
                 }
                 if filters.manipulate {
+
                     let manipulated_blockpos = filters.manipulate_record(&mut record);
                     if manipulated_blockpos.is_none() {
                         continue;
@@ -380,17 +380,8 @@ pub fn bam_pileup<'a>(
     }
     let bgpath = bg.into_temp_path();
     let tmpvec   = vec![bgpath];
+    
     return (tmpvec, mapped_reads, unmapped_reads, readlens, fraglens);
-}
-
-fn pos_in_blacklist(pos: i64, chrom: &str, blacklist: &Vec<Region>) -> bool {
-    for region in blacklist.iter() {
-        // Note that get_startu / getendu is used as they are guaranteed to be u32's to start with.
-        if region.get_startu() <= pos as u32 && pos as u32 <= region.get_endu() && region.chrom == chrom {
-            return true;
-        }
-    }
-    return false;
 }
 
 #[derive(Clone, Debug)]
@@ -1330,33 +1321,9 @@ pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
                 tempregionvec = Vec::new();
                 bplen = 0
             }
-            // // our regions are rather large, so we can split these up (in case both start/end are Revalue:U)
-            // match (&reg.start, &reg.end) {
-            //     (Revalue::U(start), Revalue::U(end)) => {
-            //         let mut start: u32 = *start;
-            //         let mut end: u32 = *end;
-            //         while start < end {
-            //             let newend = std::cmp::min(start + 10000000, end);
-            //             let mut entryname = format!("{}:{}-{}", reg.chrom, start, newend);
-            //             tempregionvec.push( Region {
-            //                 chrom: reg.chrom.clone(),
-            //                 start: Revalue::U(start),
-            //                 end: Revalue::U(newend),
-            //                 score: reg.score.clone(),
-            //                 strand: reg.strand.clone(),
-            //                 name: entryname,
-            //                 regionlength: newend-start
-            //             } );
-            //             start = newend;
-            //         }
-            //         blocks.push(tempregionvec);
-            //         tempregionvec = Vec::new();
-            //     },
-            //     _ => {
-            //         blocks.push(vec![reg.clone()]);
-            //     }
+
             blocks.push(vec![reg.clone()]);
-            // }
+
         } else {
             tempregionvec.push(reg.clone());
             bplen += reg.regionlength;

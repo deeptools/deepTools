@@ -27,8 +27,9 @@ pub fn r_bamcoverage(
     // processing options
     mnase: bool,
     _offset: Py<PyList>, // list of 2 [offset 5', offset 3'], if no offset is required we have [0, 0]
-    extendreads: u32, // if 0, no extension
-    centerreads: bool,
+    extendreads: bool, // true for extension of reads
+    extendreadslen: u32, // if extendreads is set, and SE, this length is used for extension.
+    centerreads: bool, // to center the reads or not.
     filterrnastrand: &str, // forward, reverse or 'None'
     blacklist: &str, // path to blacklist filename, or 'None'
     _ignorechr: Py<PyList>, // list of chromosomes to ignore. Is empty if none.
@@ -69,7 +70,7 @@ pub fn r_bamcoverage(
     if norm != "None" && scalefactor != 1.0 {
         println!("Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used", norm);
     }
-    if mnase && offset != (1, -1) {
+    if mnase && offset != (0, 0) {
         println!("Warning: Both MNase and offset are set. The offset will be ignored !");
     }
     if offset != (0, 0) {
@@ -77,6 +78,13 @@ pub fn r_bamcoverage(
             panic!("Right side offset cannot be smaller than the left side offset.");
         }
     }
+    if extendreads && extendreadslen == 0 && !ispe {
+        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+    }
+    if centerreads && !extendreads {
+        println!("Warning: Centerreads is set, but extendreads is not. Centering will do nothing in this case.");
+    }
+
     if verbose {
         println!("Chromosomes to ignore for normalization: {:?}", ignorechr);
     }
@@ -120,7 +128,7 @@ pub fn r_bamcoverage(
         }
     }
     // Set alignment filters
-    let filters = Alignmentfilters::new(
+    let mut filters = Alignmentfilters::new(
         backlistregions,
         Some(minmappingquality),
         Some(samflaginclude),
@@ -131,8 +139,18 @@ pub fn r_bamcoverage(
         Some(offset),
         Some(filterrnastrand.to_string()),
         Some(extendreads),
+        Some(extendreadslen),
         Some(centerreads),
     );
+    // If extendreads, extendreadslen & ispe, we need a pass over the bamfile already now to get the mean fraglen.
+    if filters.extendreads && filters.extendreadslen == 0 && ispe {
+        // We need a pass over the bamfile already to get the mean fragment length.
+        filters.set_extendreadslen(bamifile, nproc, &regions);
+        if verbose {
+            println!("fragment length for read extension set as: {}", filters.extendreadslen);
+        }
+    }
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
         regionblocks.par_iter()
@@ -145,10 +163,12 @@ pub fn r_bamcoverage(
                     _fraglen.extend(fraglen);
                     _mapped += mapped;
                     _unmapped += unmapped;
+
                     (_bg, _mapped, _unmapped, _readlen, _fraglen)
                 }
             )
     });
+
     let readlen = median(readlen);
     let fraglen = median(fraglen);
     if verbose {
@@ -166,7 +186,7 @@ pub fn r_bamcoverage(
         scalefactor,
         &verbose
     );
-    
+
     // Create output stream
     let lines = bg.into_iter().flat_map(
         |bg| {
@@ -187,30 +207,7 @@ pub fn r_bamcoverage(
     if verbose {
         println!("Writing output to: {}", ofile);
     }
-    
-    write_covfile(lines, ofile, ofiletype, chromsizes);
-    
-    // // Create output stream
-    // let lines: Vec<(String, Value)> = bg.into_par_iter().flat_map(
-    //     |bg| {
-    //         let reader = BufReader::new(File::open(bg).unwrap());
-    //         reader.lines().map(
-    //             |l| {
-    //                 let l = l.unwrap();
-    //                 let fields: Vec<&str> = l.split('\t').collect();
-    //                 let chrom: String = fields[0].to_string();
-    //                 let start: u32 = fields[1].parse().unwrap();
-    //                 let end: u32 = fields[2].parse().unwrap();
-    //                 let cov: f32 = fields[3].parse().unwrap();
-    //                 (chrom, Value {start: start, end: end, value: cov * sf})
-    //             }
-    //         ).collect::<Vec<_>>()
-    //     }
-    // ).collect();
-    // if verbose {
-    //     println!("Writing output to: {}", ofile);
-    // }
-    // write_covfile(lines.into_iter(), ofile, ofiletype, chromsizes);
 
+    write_covfile(lines, ofile, ofiletype, chromsizes);
     Ok(())
 }

@@ -75,6 +75,7 @@ pub fn r_alignmentsieve(
         Some(filterrnastrand.to_string()),
         None,
         None,
+        None,
     );
     let pool = ThreadPoolBuilder::new().num_threads(1).build().unwrap();
     let (sieve, filtersieve, totalreads, filteredreads) = pool.install(|| {

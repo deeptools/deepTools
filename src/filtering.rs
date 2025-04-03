@@ -1,6 +1,10 @@
-use rust_htslib::bam::{Record, ext::BamRecordExtensions};
+use rust_htslib::bam::{Record, ext::BamRecordExtensions, IndexedReader, Read};
+use rayon::prelude::*;
+use rayon::ThreadPoolBuilder;
 use crate::covcalc::Region;
+use crate::calc::median;
 
+#[derive(Clone)]
 pub struct Alignmentfilters {
     pub blacklist: Option<Vec<Region>>,
     pub minmappingquality: u8,
@@ -11,7 +15,8 @@ pub struct Alignmentfilters {
     pub mnase: bool,
     pub offset: (i32, i32),
     pub filterrnastrand: String,
-    pub extendreads: u32,
+    pub extendreads: bool,
+    pub extendreadslen: u32,
     pub centerreads: bool,
     pub filter: bool,
     pub manipulate: bool,
@@ -27,7 +32,8 @@ impl Alignmentfilters {
         mnase: Option<bool>,
         offset: Option<(i32, i32)>,
         filterrnastrand: Option<String>,
-        extendreads: Option<u32>,
+        extendreads: Option<bool>,
+        extendreadslen: Option<u32>,
         centerreads: Option<bool>
     ) -> Self {
         // Go through the arguments, and if they are not set or have default values, we set a filter boolean to false.
@@ -42,11 +48,12 @@ impl Alignmentfilters {
         let _mnase = mnase.unwrap_or(false);
         let _offset =  offset.unwrap_or((0, 0));
         let _frs = filterrnastrand.unwrap_or(String::from("None"));
-        let _extend = extendreads.unwrap_or(0);
+        let _extend = extendreads.unwrap_or(false);
+        let _extendreadslen = extendreadslen.unwrap_or(0);
         let _center = centerreads.unwrap_or(false);
 
         // Set the manipulate bool for a quick escape in case manipulation is not needed.
-        if _offset != (0, 0) || _mnase || _extend > 0 || _center {
+        if _offset != (0, 0) || _mnase || _extend || _center {
             manipulate = true;
         }
 
@@ -66,12 +73,43 @@ impl Alignmentfilters {
             offset: _offset,
             filterrnastrand: _frs, 
             extendreads: _extend,
+            extendreadslen: _extendreadslen,
             centerreads: _center,
             filter: filter,
             manipulate: manipulate,
         }
     }
-    pub fn filter_record(&self, rec: &Record) -> bool {
+
+    pub fn set_extendreadslen(&mut self, bamfile: &str, nproc: usize, regions: &Vec<Region> ) {
+        const FREAD: u16 = 0x40;
+        let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+        let fraglens: Vec<u32> = pool.install(|| {
+            regions
+                .par_iter()
+                .flat_map(|i| {
+                    let mut bam = IndexedReader::from_path(bamfile).unwrap();
+                    bam.fetch((i.chrom.as_str(), i.get_startu(), i.get_endu()) )
+                        .expect(&format!("Error fetching region: {:?}", i));
+                    let mut fraglens: Vec<u32> = vec![];
+                    for record in bam.records() {
+                        let record = record.expect("Error parsing record.");
+                        if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                            fraglens.push(record.insert_size().abs() as u32);
+                        }
+                    }
+                    fraglens
+                })
+                .collect()
+        });
+        if fraglens.len() > 0 {
+            let medlen = median(fraglens);
+            self.extendreadslen = medlen.ceil() as u32;
+        } else {
+            panic!("No proper pairs found in the given regions. Please check your input.");
+        }
+    }
+    
+    pub fn filter_record(&self, rec: &Record, chrom: &str) -> bool {
         // Decides filtering of a record. The bool return is used to 'continue', i.e. skip the record.
         if rec.is_unmapped() {
             return true;
@@ -81,26 +119,25 @@ impl Alignmentfilters {
             // True filtering.
             // quality > samflags > min/max fraglen
             // quality
-            let mut skip: bool = false;
             if rec.mapq() < self.minmappingquality {
-                skip = true;
+                return true;
             }
             // samflags
             if self.samflaginclude > 0 {
                 if (rec.flags() & self.samflaginclude) == 0 {
-                    skip = true;
+                    return true;
                 }
             }
             if self.samflagexclude > 0 {
                 if (rec.flags() & self.samflagexclude) != 0 {
-                    skip = true;
+                    return true;
                 }
             }
             // min/max fraglen
             if self.minfraglen != 0 || self.maxfraglen != 0 {
                 if rec.is_paired() {
                     if rec.insert_size().abs() < self.minfraglen as i64 || rec.insert_size().abs() > self.maxfraglen as i64 {
-                        skip = true;
+                        return true;
                     }
                 } else {
                     let fragsize: u32 = rec
@@ -108,7 +145,7 @@ impl Alignmentfilters {
                         .map(|x| x[1] as u32 - x[0] as u32)
                         .sum();
                     if fragsize < self.minfraglen || fragsize > self.maxfraglen {
-                        skip = true;
+                        return true;
                     }
                 }
             }
@@ -117,22 +154,22 @@ impl Alignmentfilters {
                 match (self.filterrnastrand.as_str(), rec.is_paired()) {
                     ("forward", true) => {
                         if !((rec.flags() & 144 == 128) || (rec.flags() & 96 == 64)) {
-                            skip = true;
+                            return true;
                         }
                     },
                     ("forward", false) => {
                         if !(rec.flags() & 16 == 16) {
-                            skip = true;
+                            return true;
                         }
                     },
                     ("reverse", true) => {
                         if !((rec.flags() & 144 == 144) || (rec.flags() & 96 == 96)) {
-                            skip = true;
+                            return true;
                         }
                     },
                     ("reverse", false) => {
                         if !(rec.flags() & 16 == 0) {
-                            skip = true;
+                            return true;
                         }
                     },
                     _ => {
@@ -140,7 +177,10 @@ impl Alignmentfilters {
                     },
                 }
             }
-            return skip;
+            if self.blacklist.is_some() {
+                return self.rec_in_blacklist(rec, chrom);
+            }
+            false
         }
     }
 
@@ -170,17 +210,21 @@ impl Alignmentfilters {
             return None;
         }
         if self.offset != (0, 0) {
-            // Collect blocks and flatten them out.
-            let mut blockvec: Vec<u32> = rec
-                .aligned_blocks()
-                .flat_map(|x| x[0] as u32..x[1] as u32)
-                .collect();
+
+            let mut blockvec: Vec<u32> = if self.extendreads {
+                self.rec_extension(rec)
+            } else {
+                rec
+                    .aligned_blocks()
+                    .flat_map(|x| x[0] as u32..x[1] as u32)
+                    .collect()
+            };
+
             let blocklen = blockvec.len() as i32;
 
             // Convert potential negative indices to positive indices
             // It could be that for the offset only one value is given, in which case we only use that site
             if self.offset.1 == 0 {
-                // 
                 let pos = if self.offset.0 < 0 {blocklen + self.offset.0 } else {self.offset.0 - 1};
                 if pos < 0 || pos >= blocklen {
                     return None;
@@ -214,9 +258,96 @@ impl Alignmentfilters {
                 }
             }
         }
-        if self.extendreads > 0 {
-            println!("extendreads implementation");
+        if self.extendreads {
+            // Extend reads
+            let blockvec = self.rec_extension(rec);
+            return Some(blockvec)
         }
         return None;
     }
+
+    pub fn rec_extension(&self, rec: &Record) -> Vec<u32> {
+        // extend the reads. if the read is a proper pair, we get the fragment length from there.
+        // If not (or if se), then extendreadslen is used.
+        // Note that extendsreadslen is already populated at this stage, either by CLI (se) or calculated (pe).
+        let mut blockvec: Vec<u32> = Vec::new();
+        let mut blocklen: u32 = 0;
+
+        rec
+            .aligned_blocks()
+            .for_each(|x| {
+                let _s = x[0] as u32;
+                let _e = x[1] as u32;
+                blockvec.extend(_s.._e);
+                blocklen += _e - _s;
+            });
+
+        if rec.is_proper_pair() {
+            // Proper pairs
+            if rec.is_reverse() {
+                let ns = rec.mpos() as u32;
+                let ne = rec.reference_start() as u32;
+                if ns < ne {
+                    // blockvec.splice(0..0,ns..ne);
+                    let mut new_blockvec = Vec::with_capacity((ne - ns) as usize + blockvec.len());
+                    new_blockvec.extend(ns..ne);
+                    new_blockvec.extend(blockvec);
+                    blockvec = new_blockvec;
+                }
+            } else {
+                let ns = rec.reference_end() as u32;
+                let ne: u32 = ns + rec.insert_size().abs() as u32 - rec.seq_len_from_cigar(false) as u32;
+                if ns < ne {
+                    blockvec.extend(ns..ne);
+                }
+            }
+        } else {
+            // non proper pairs -> 'se mode'
+            if rec.is_reverse() {
+                let ns: u32;
+                let _rem = self.extendreadslen - rec.seq_len_from_cigar(false) as u32;
+                if _rem > rec.reference_start() as u32 {
+                    ns = 0;
+                } else {
+                    ns = rec.reference_start() as u32 - _rem;
+                }
+                let ne = rec.reference_start() as u32;
+                if ns < ne {
+                    //blockvec.splice(0..0,ns..ne);
+                    let mut new_blockvec = Vec::with_capacity((ne - ns) as usize + blockvec.len());
+                    new_blockvec.extend(ns..ne);
+                    new_blockvec.extend(blockvec);
+                    blockvec = new_blockvec;
+                }
+            } else {
+                let ns = rec.reference_end() as u32;
+                let ne: u32 = ns + self.extendreadslen - rec.seq_len_from_cigar(false) as u32;
+                if ns < ne {
+                    blockvec.extend(ns..ne );
+                }
+            }
+        }
+        if self.centerreads {
+            let centerpoint = (blockvec.len() as u32 - blocklen) / 2;
+            return blockvec[centerpoint as usize..(centerpoint + blocklen) as usize].to_vec();
+        }
+        return blockvec;
+    }
+
+    pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str ) -> bool {
+        for region in self.blacklist.as_ref().unwrap().iter() {
+            if region.chrom == chrom {
+                let pos = rec.pos() as u32;
+                if region.get_startu() <= pos as u32 && pos as u32 <= region.get_endu() {
+                    return true;
+                }
+                let end = rec.seq_len_from_cigar(false) as u32 + pos;
+                if region.get_startu() <= end && end <= region.get_endu() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+
 }

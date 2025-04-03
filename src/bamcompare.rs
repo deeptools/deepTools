@@ -28,7 +28,8 @@ pub fn r_bamcompare(
     operation: &str,
     pseudocount: f32,
     // filtering options
-    extendreads: u32, // if 0, no extension
+    extendreads: bool, // if 0, no extension
+    extendreadslen: u32, // length of extension (0 if PE or if not extending)
     centerreads: bool,
     blacklist: &str, // path to blacklist filename, or 'None'
     minmappingquality: u8, // 
@@ -74,8 +75,9 @@ pub fn r_bamcompare(
             _ => panic!("Error: Cannot determine filetype of blacklist file.")
         }
     }
+    // 
     // Set alignment filters
-    let filters = Alignmentfilters::new(
+    let mut filter1 = Alignmentfilters::new(
         blacklistregions,
         Some(minmappingquality),
         Some(samflaginclude),
@@ -86,18 +88,41 @@ pub fn r_bamcompare(
         None, // No offset
         None, // No strand filtering.
         Some(extendreads),
+        Some(extendreadslen),
         Some(centerreads),
     );
+    let mut filter2 = filter1.clone();
+    if filter1.extendreads && filter1.extendreadslen == 0 && !ispe1 {
+        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+    }
+    if filter2.extendreads && filter2.extendreadslen == 0 && !ispe2 {
+        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+    }
+    if filter1.extendreads && filter1.extendreadslen == 0 && ispe1 {
+        // We need a pass over the bamfile already to get the mean fragment length.
+        filter1.set_extendreadslen(bamifile1, nproc, &regions);
+        if verbose {
+            println!("fragment length for read extension set as: {} for bamfile 1", filter1.extendreadslen);
+        }
+    }
+    if filter2.extendreads && filter2.extendreadslen == 0 && ispe2 {
+        // We need a pass over the bamfile already to get the mean fragment length.
+        filter2.set_extendreadslen(bamifile2, nproc, &regions);
+        if verbose {
+            println!("fragment length for read extension set as: {} for bamfile 2", filter2.extendreadslen);
+        }
+    }
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     
     // Set up the bam files in a Vec.
-    let bamfiles = vec![(bamifile1, ispe1), (bamifile2, ispe2)];
+    let bamfiles: Vec<(&str, bool, &Alignmentfilters)> = vec![(bamifile1, ispe1, &filter1), (bamifile2, ispe2, &filter2)];
 
     let mut covcalcs: Vec<ParsedBamFile> = pool.install(|| {
         bamfiles.par_iter()
-            .map(|(bamfile, ispe)| {
+            .map(|(bamfile, ispe, alfilter)| {
                 let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false, true))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, alfilter , false, false, true))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
