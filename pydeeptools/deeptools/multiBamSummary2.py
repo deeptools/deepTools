@@ -5,6 +5,7 @@ import os
 import sys
 import argparse
 import numpy as np
+import signal
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
@@ -256,7 +257,8 @@ def main(args=None):
 
     """
     args = process_args(args)
-    print(f"args = {args}")
+    
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_mbams(
         args.command,
         args.bamfiles,
