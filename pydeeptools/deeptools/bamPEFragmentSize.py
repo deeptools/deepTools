@@ -9,17 +9,12 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
-
-import plotly.offline as py
-import plotly.graph_objs as go
 
 # own tools
 from deeptools.parserCommon import writableFile
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from importlib.metadata import version
-
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -51,8 +46,11 @@ def parse_arguments():
                         'ending. The available options are: png, '
                         'eps, pdf, svg and plotly.',
                         default=None,
-                        choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
-
+                        choices=['png', 'pdf', 'svg', 'eps'])
+    parser.add_argument('--ggplot',
+                        help='Use ggplot theme for figures',
+                        action='store_true')
+    
     parser.add_argument('--numberOfProcessors', '-p',
                         help='Number of processors to use. The default is '
                         'to use 1. (Default: %(default)s)',
@@ -311,6 +309,9 @@ def main(args=None):
     if args.table is not None:
         printTable(args, fraglengths, readlengths)
 
+    if args.ggplot:
+        plt.style.use('ggplot')
+
     if args.histogram:
         if args.samplesLabel:
             if len(args.bamfiles) != len(args.samplesLabel):
@@ -331,38 +332,18 @@ def main(args=None):
             else:
                 maxVal = d['mean'] * 2
 
-            if args.plotFileFormat == 'plotly':
-                trace = go.Histogram(x=d['lengths'],
-                                     histnorm='probability',
-                                     opacity=0.5,
-                                     name=labels[i],
-                                     nbinsx=100,
-                                     xbins=dict(start=d['min'], end=maxVal))
-                data.append(trace)
-            else:
-                plt.bar(d['lengths'][1][:-1], height=d['lengths'][0],
-                        width=d['lengths'][1][1:] - d['lengths'][1][:-1],
-                        align='edge', log=args.logScale,
-                        alpha=0.5, label=labels[i])
+            plt.bar(d['lengths'][1][:-1], height=d['lengths'][0],
+                    width=d['lengths'][1][1:] - d['lengths'][1][:-1],
+                    align='edge', log=args.logScale,
+                    alpha=0.5, label=labels[i])
             i += 1
 
-        if args.plotFileFormat == 'plotly':
-            fig = go.Figure()
-            fig.add_traces(data)
-            fig['layout']['yaxis1'].update(title='Frequency')
-            fig['layout']['xaxis1'].update(title='Fragment Length')
-            fig['layout'].update(title=args.plotTitle)
-            fig['layout'].update(showlegend=True)
-            if args.logScale:
-                fig['layout']['yaxis1'].update(type='log')
-            py.plot(fig, filename=args.histogram, auto_open=False)
-        else:
-            plt.xlabel('Fragment Length')
-            plt.ylabel('Frequency')
-            plt.legend(loc='upper right')
-            plt.title(args.plotTitle)
-            plt.savefig(args.histogram, bbox_inches=0, format=args.plotFileFormat)
-            plt.close()
+        plt.xlabel('Fragment Length')
+        plt.ylabel('Frequency')
+        plt.legend(loc='upper right')
+        plt.title(args.plotTitle)
+        plt.savefig(args.histogram, bbox_inches=0, format=args.plotFileFormat)
+        plt.close()
 
 
 if __name__ == "__main__":

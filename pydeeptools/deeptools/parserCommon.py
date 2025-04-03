@@ -38,6 +38,15 @@ def output(args=None):
 
     return parser
 
+def expand_list(list):
+    values = []
+    for i in list:
+        if ':' in i:
+            value, number = i.split(':')
+            values.extend([value] * int(number))
+        else:
+            values.append(i)
+    return values
 
 def read_options():
     """Common arguments related to BAM files and the interpretation
@@ -660,7 +669,7 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'notation.')
 
         import matplotlib.pyplot as plt
-        color_options = "', '".join([x for x in plt.colormaps() if not x.endswith('_r')])
+        color_options = "', '".join([x for x in plt.colormaps()])
 
         optional.add_argument(
             '--colorMap',
@@ -858,7 +867,11 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           'image format based on the plotFile ending. '
                           'The available options are: "png", '
                           '"eps", "pdf", "plotly" and "svg"',
-                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
+
+    optional.add_argument('--ggplot',
+                          help='Use ggplot theme for figures.',
+                          action='store_true')
 
     optional.add_argument('--verbose',
                           help='If set, warning messages and '

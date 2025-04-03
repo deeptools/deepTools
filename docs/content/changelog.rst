@@ -1,49 +1,50 @@
 Changes in deepTools4.0
 =======================
 
-# Changes
+Plotting
+--------
 
-## bamCoverage
+* Plots in general:
+    - Removed Plotly for all graphics.
+	- Optional ggplot theme (--ggplot).
+	- Using standard Matplotlib color scheme.
 
- - --no_collapse flag to not merge bins with equal coverage values together.
+* plotHeatmap and plotProfile:
+	- Adjusted the legend position to be outside the plot area, preventing overlap with the subplots.
+	- Split and wrapped longer sample names to avoid overlap with other labels.
+	- Eliminated overlapping x and y-axis ticks for improved readability.
+	- Removed the file extensions from input files when using them as labels in the plots.
+
+* plotEnrichment:
+	- Added spacing between bars in bar plots for improved visual clarity.
+	- Retained only sample names, when provided with the complete file path and name.
+
+* plotPCA:
+    - Using scikit-learn for computing PCA.
+	- New option to add labels for each point (--addLabels).
+	- Expander for colors and markers, for example ``--colors red:3 blue:3`` is expanded as ``[red, red, red, blue, blue, blue]``.
+	- Scree plot is showing lines for individual and accumulated variation.
+	- Points are by default rainbow colored circles.
+
+Core
+----
+
+* bamCoverage
+    - --no_collapse flag to not merge bins with equal coverage values together.
  
-## computeMatrix
+* computeMatrix
+    - --sortRegions 'no' option no longer exists
+    - Sorting ascend / descend no longer has subsorting by position.
+    - --quiet / -q option no longer exists.
+    - bed files in computeMatrix no longer support '#' to define groups.
+    - 'chromosome matching' i.e. chr1 <-> 1, chrMT <-> MT is no longer performed.
 
- - --sortRegions 'no' option no longer exists
- - Sorting ascend / descend no longer has subsorting by position.
- - --quiet / -q option no longer exists.
- - bed files in computeMatrix no longer support '#' to define groups.
- - 'chromosome matching' i.e. chr1 <-> 1, chrMT <-> MT is no longer performed.
+* normalization
+    - Exactscaling is no longer an option, it's always performed.
 
-## normalization
+* alignmentSieve
+    - options label, smartLabels, genomeChunkLength are removed.
+    - ignoreDuplicates is removed, and (if wanted) should be set by the SamFlagExclude setting.
 
- - Exactscaling is no longer an option, it's always performed.
-
-## alignmentSieve
-
-- options label, smartLabels, genomeChunkLength are removed.
-- ignoreDuplicates is removed, and (if wanted) should be set by the SamFlagExclude setting.
-
-# Testing
- 
-## computeMatrix
- - referencePoint: TSS, center, TES
- - sortRegions: descend, ascend, keep
- - sortUsing: mean, median, max, min, sum, region_length
- - averageTypeBins: mean, median, min, max ,std, sum
- - skipZeros
- - duplicate renaming _r1, _r2, ...
- - GTF, BED3, BED6, BED12, mixedBED (?)
- - scaleRegions, un5, un3, regionbodylength, metagene
-
- ## alignmentSieve
-
- - unmapped reads to unfiltered_out
-
-## multiBamSummary
- - npz output has labels encoded as u8s, no longer strings.
-
-# Todo
-
-- AlignmentSieve: Shift, Bed, Optimization.
-- bamCoverage / bamCompare: filtering, extend.
+Testing
+-------

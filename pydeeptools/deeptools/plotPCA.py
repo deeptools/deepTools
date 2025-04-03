@@ -7,10 +7,9 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 from importlib.metadata import version
 from deeptools.correlation import Correlation
-from deeptools.parserCommon import writableFile
+from deeptools.parserCommon import writableFile, expand_list
 
 
 def parse_arguments(args=None):
@@ -75,7 +74,7 @@ def plotCorrelationArgs():
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
                           'eps, pdf, plotly and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument('--plotHeight',
                           help='Plot height in cm. (Default: %(default)s)',
@@ -85,7 +84,7 @@ def plotCorrelationArgs():
     optional.add_argument('--plotWidth',
                           help='Plot width in cm. The minimum value is 1 cm. (Default: %(default)s)',
                           type=float,
-                          default=10)
+                          default=12)
 
     optional.add_argument('--outFileNameData',
                           metavar='file.tab',
@@ -103,14 +102,15 @@ def plotCorrelationArgs():
                           'original matrix. Specifying 0 will result in all '
                           'rows being used. If the matrix is to be transposed, '
                           'rows with 0 variance are always excluded, even if a '
-                          'values of 0 is specified. The default is 1000. (Default: %(default)s)',
+                          'values of 0 is specified. The default is 500. (Default: %(default)s)',
                           type=int,
-                          default=1000)
+                          default=500)
 
     optional.add_argument('--PCs',
                           help='The principal components to plot. If specified, '
                           'you must provide two different integers, greater '
-                          'than zero, separated by a space. An example (and the default) is "1 2". (Default: %(default)s)',
+                          'than zero, separated by a space. An example (and the '
+                          'default) is "1 2". (Default: %(default)s)',
                           type=int,
                           nargs=2,
                           default=[1, 2])
@@ -126,12 +126,30 @@ def plotCorrelationArgs():
     optional.add_argument('--colors',
                           metavar="COLORS",
                           nargs='+',
-                          help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors red blue green. If not specified, the symbols will be given automatic colors.")
+                          help='A list of colors for the symbols. Color names and RGB '
+                          'hex values (e.g., #eeff22) are accepted. The color names '
+                          'should be space separated. For example, --colors red blue '
+                          'green. Expanders can be passed with color:number, for example '
+                          '--colors red:3 blue:3 will produce [red, red, red, blue, blue, blue] '
+                          'values. If not specified, the symbols will be given automatic '
+                          'with rainbow colors.',
+                          )
 
     optional.add_argument('--markers',
                           metavar="MARKERS",
                           nargs='+',
-                          help="A list of markers for the symbols. (e.g., '<','>','o') are accepted. The marker values should be space separated. For example, --markers 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes.")
+                          help="A list of markers for the symbols. (e.g., '<','>','o') "
+                          "are accepted. The marker values should be space separated. "
+                          "For example, --markers 's' 'o' 's' 'o'. Expanders can be passed "
+                          "with marker:number, for example --markers o:3 ws:3 ill produce "
+                          "[s, s, s, o, o, o] values. "
+                          "If not specified, the symbols will be only filled circles ('o').",
+                          default=['o'])
+    
+    optional.add_argument('--addLabels',
+                          help='Add labels to the plot. If specified, the labels will be added next '
+                          'to points also legend is ommited.',
+                          action='store_true')
 
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(version('deeptools')))
@@ -149,8 +167,14 @@ def plotCorrelationArgs():
                             'in the matrix is centered at 0 before the PCA is '
                             'computed. This is useful only if you have a strong '
                             'bin/gene/etc. correlation and the resulting '
-                            'principal component has samples stacked vertically. This option is not applicable if --transpose is specified.',
+                            'principal component has samples stacked vertically. '
+                            'This option is not applicable if --transpose is specified.',
                             action='store_true')
+    
+    optional.add_argument('--ggplot',
+                          help='Use the ggplot theme for figures.',
+                          action='store_true')
+
 
     return parser
 
@@ -177,6 +201,11 @@ def main(args=None):
     corr.ntop = args.ntop
     corr.log2 = args.log2
 
+    if args.colors is not None:
+        args.colors = expand_list(args.colors)
+    if args.markers is not None:
+        args.markers = expand_list(args.markers)
+
     Wt, eigenvalues = corr.plot_pca(args.plotFile,
                                     PCs=args.PCs,
                                     plot_title=args.plotTitle,
@@ -184,17 +213,17 @@ def main(args=None):
                                     plotWidth=args.plotWidth,
                                     plotHeight=args.plotHeight,
                                     cols=args.colors,
-                                    marks=args.markers)
+                                    marks=args.markers,
+                                    add_labels=args.addLabels,
+                                    ggplot=args.ggplot)
 
     if args.outFileNameData is not None:
-        of = open(args.outFileNameData, "w")
-        of.write("#plotPCA --outFileNameData\n")
-        of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
-        n = eigenvalues.shape[0]
-        for i in range(n):
-            of.write("{}\t{}\t{}\n".format(i + 1, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
-        of.close()
-
+        with open(args.outFileNameData, "w") as of:
+            #of.write("#plotPCA --outFileNameData\n")
+            of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
+            n = eigenvalues.shape[0]
+            for i in range(n):
+                of.write("{}\t{}\t{}\n".format(i + 1, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
 
 if __name__ == "__main__":
     main()

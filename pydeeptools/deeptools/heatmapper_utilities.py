@@ -3,9 +3,8 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 import matplotlib.colors as pltcolors
-import plotly.graph_objs as go
+import textwrap
 
 old_settings = np.seterr(all='ignore')
 
@@ -68,7 +67,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     x = np.arange(len(summary))
     if isinstance(color, np.ndarray):
         color = pltcolors.to_hex(color, keep_alpha=True)
-    ax.plot(x, summary, color=color, label=label, alpha=0.9)
+    ax.plot(x, summary, color=color, label=label, alpha=0.9, lw=0.8)
     if plot_type == 'fill':
         ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
 
@@ -89,37 +88,6 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     ax.set_xlim(0, max(x))
 
     return ax
-
-
-def plotly_single(ma, average_type, color, label, plot_type='line'):
-    """A plotly version of plot_single. Returns a list of traces"""
-    summary = list(np.ma.__getattribute__(average_type)(ma, axis=0))
-    x = list(np.arange(len(summary)))
-    if isinstance(color, str):
-        color = list(matplotlib.colors.to_rgb(color))
-    traces = [go.Scatter(x=x, y=summary, name=label, line={'color': "rgba({},{},{},0.9)".format(color[0], color[1], color[2])}, showlegend=False)]
-    if plot_type == 'fill':
-        traces[0].update(fill='tozeroy', fillcolor=color)
-
-    if plot_type in ['se', 'std']:
-        if plot_type == 'se':  # standard error
-            std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
-        else:
-            std = np.std(ma, axis=0)
-
-        x_rev = x[::-1]
-        lower = summary - std
-        trace = go.Scatter(x=x + x_rev,
-                           y=np.concatenate([summary + std, lower[::-1]]),
-                           fill='tozerox',
-                           fillcolor="rgba({},{},{},0.2)".format(color[0], color[1], color[2]),
-                           line=go.Line(color='transparent'),
-                           showlegend=False,
-                           name=label)
-        traces.append(trace)
-
-    return traces
-
 
 def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     """
@@ -202,3 +170,31 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         xticks = [max(x, 0) for x in xticks]
 
     return xticks, xtickslabel
+
+def justify_text(text, line_width):
+    """
+    A function to wrap the text with Justify alignment format.
+    Ex. If xticks label is longer, then user specify the line width for the text.
+
+    """
+    words = text.split()
+    lines = textwrap.wrap(text, width=line_width)
+    justified_lines = []
+    
+    for line in lines:
+        words_in_line = line.split()
+        if len(words_in_line) > 1:
+            spaces_needed = line_width - sum(len(w) for w in words_in_line)
+            space_between = spaces_needed // (len(words_in_line) - 1)
+            extra_spaces = spaces_needed % (len(words_in_line) - 1)
+            
+            justified_line = ""
+            for i, word in enumerate(words_in_line):
+                justified_line += word
+                if i < len(words_in_line) - 1:
+                    justified_line += " " * (space_between + (1 if i < extra_spaces else 0))
+            justified_lines.append(justified_line)
+        else:
+            justified_lines.append(line)
+    
+    return "\n".join(justified_lines)

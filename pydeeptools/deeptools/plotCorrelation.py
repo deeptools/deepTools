@@ -8,7 +8,6 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 from importlib.metadata import version
 from deeptools.correlation import Correlation
@@ -102,7 +101,7 @@ def plot_correlation_args():
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
                           'eps, pdf and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument(
         '--removeOutliers',
@@ -255,7 +254,6 @@ def main(args=None):
                                   plotHeight=args.plotHeight)
 
     if args.outFileCorMatrix:
-        o = open(args.outFileCorMatrix, "w")
-        o.write("#plotCorrelation --outFileCorMatrix\n")
-        corr.save_corr_matrix(o)
-        o.close()
+        with open(args.outFileCorMatrix, "w") as o:
+            #o.write("#plotCorrelation --outFileCorMatrix\n")
+            corr.save_corr_matrix(o)

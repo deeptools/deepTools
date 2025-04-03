@@ -8,12 +8,8 @@ import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42
 matplotlib.rcParams['svg.fonttype'] = 'none'
-from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-
-import plotly.offline as py
-import plotly.graph_objs as go
 
 from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
@@ -22,9 +18,6 @@ from deeptools.bamHandler import openBam
 from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
 from deeptools import parserCommon
-
-
-old_settings = np.seterr(all='ignore')
 
 
 def parse_arguments(args=None):
@@ -129,8 +122,8 @@ def plot_enrichment_args():
                           help='Image format type. If given, this option '
                           'overrides the image format based on the plotFile '
                           'ending. The available options are: png, '
-                          'eps, pdf, plotly and svg.',
-                          choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+                          'eps, pdf, and svg.',
+                          choices=['png', 'pdf', 'svg', 'eps'])
 
     optional.add_argument('--outRawCounts',
                           help='Save the counts per region to a tab-delimited file.',
@@ -196,6 +189,12 @@ def plot_enrichment_args():
     bed12.add_argument('--keepExons',
                        help="For BED12 files, use each exon as a region, rather than columns 2/3",
                        action="store_true")
+    
+
+    optional.add_argument('--ggplot',
+                      help='Enables the ggplot theme for the plot (Default: None)',
+                      action='store_true',
+                      default=False)
 
     return parser
 
@@ -369,87 +368,46 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
 
     # Handle the colors
     if not args.colors:
-        cmap_plot = plt.get_cmap('jet')
-        args.colors = cmap_plot(np.arange(barsPerPlot, dtype=float) / float(barsPerPlot))
-        if args.plotFileFormat == 'plotly':
-            args.colors = range(barsPerPlot)
+        args.colors = ['#9E4A06'] * barsPerPlot
     elif len(args.colors) < barsPerPlot:
         sys.exit("Error: {0} colors were requested, but {1} were needed!".format(len(args.colors), barsPerPlot))
 
     data = []
-    if args.plotFileFormat == 'plotly':
-        fig = go.Figure()
-        fig['layout'].update(title=args.plotTitle)
-        domainWidth = .9 / cols
-        domainHeight = .9 / rows
-        bufferHeight = 0.0
-        if rows > 1:
-            bufferHeight = 0.1 / (rows - 1)
-        bufferWidth = 0.0
-        if cols > 1:
-            bufferWidth = 0.1 / (cols - 1)
-    else:
-        grids = gridspec.GridSpec(rows, cols)
-        plt.rcParams['font.size'] = 10.0
+    
+    grids = gridspec.GridSpec(rows, cols)
+    plt.rcParams['font.size'] = 10.0
 
-        # convert cm values to inches
-        fig = plt.figure(figsize=(args.plotWidth / 2.54, args.plotHeight / 2.54))
-        fig.suptitle(args.plotTitle, y=(1 - (0.06 / args.plotHeight)))
+    # convert cm values to inches
+    fig = plt.figure(figsize=(args.plotWidth / 2.54, args.plotHeight / 2.54))
+    fig.suptitle(args.plotTitle, y=(1 - (0.06 / args.plotHeight)))
 
     for i in range(totalPlots):
         col = i % cols
         row = np.floor(i / float(args.numPlotsPerRow)).astype(int)
 
         if args.perSample:
-            xlabels = features
-            ylabel = "% alignments in {0}".format(args.labels[i])
+            xlabels = [item.replace('.bam', '').replace('.bed', '') for item in features ]
+            ylabel = "% alignments in {0}".format( [ylab.split('/')[-1] for ylab in args.labels][i])
             vals = [featureCounts[i][foo] for foo in features]
             vals = 100 * np.array(vals, dtype='float64') / totalCounts[i]
         else:
-            xlabels = args.labels
-            ylabel = "% {0}".format(features[i])
+            xlabels = [x.split('/')[-1] for x in args.labels]
+            ylabel = "% {0}".format(features[i].replace('.bed',''))
             vals = [foo[features[i]] for foo in featureCounts]
             vals = 100 * np.array(vals, dtype='float64') / np.array(totalCounts, dtype='float64')
 
-        if args.plotFileFormat == 'plotly':
-            xanchor = 'x{}'.format(i + 1)
-            yanchor = 'y{}'.format(i + 1)
-            base = row * (domainHeight + bufferHeight)
-            domain = [base, base + domainHeight]
-            fig['layout']['xaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': yanchor}
-            base = col * (domainWidth + bufferWidth)
-            domain = [base, base + domainWidth]
-            fig['layout']['yaxis{}'.format(i + 1)] = {'domain': domain, 'anchor': xanchor, 'title': ylabel}
-            if args.variableScales is False:
-                fig['layout']['yaxis{}'.format(i + 1)].update(range=[0, 100])
-            trace = go.Bar(x=xlabels,
-                           y=vals,
-                           opacity=args.alpha,
-                           orientation='v',
-                           showlegend=False,
-                           xaxis=xanchor,
-                           yaxis=yanchor,
-                           name=ylabel,
-                           marker={'color': args.colors, 'line': {'color': args.colors}})
-            data.append(trace)
-        else:
-            ax = plt.subplot(grids[row, col])
-            ax.bar(np.arange(vals.shape[0]), vals, width=1.0, bottom=0.0, align='center', color=args.colors, edgecolor=args.colors, alpha=args.alpha)
-            ax.set_ylabel(ylabel)
-            ax.set_xticks(np.arange(vals.shape[0]))
-            ax.set_xticklabels(xlabels, rotation='vertical')
-            if args.variableScales is False:
-                ax.set_ylim(0.0, 100.0)
+        ax = plt.subplot(grids[row, col])
+        ax.bar(np.arange(vals.shape[0]), vals, width=0.5, bottom=0.0, align='center', color=args.colors, edgecolor=args.colors, alpha=args.alpha)
+        ax.set_ylabel(ylabel)
+        ax.set_xticks(np.arange(vals.shape[0]))
+        ax.set_xticklabels(xlabels, rotation='vertical')
+        if args.variableScales is False:
+            ax.set_ylim(0.0, 100.0)
 
-    if args.plotFileFormat == 'plotly':
-        fig.add_traces(data)
-        py.plot(fig, filename=args.plotFile, auto_open=False)
-        # colors
-    else:
-        plt.subplots_adjust(wspace=0.05, hspace=0.3, bottom=0.15, top=0.80)
-        plt.tight_layout()
-        plt.savefig(args.plotFile, dpi=200, format=args.plotFileFormat)
-        plt.close()
+    plt.subplots_adjust(wspace=0.05, hspace=0.3, bottom=0.15, top=0.80)
+    plt.tight_layout()
+    plt.savefig(args.plotFile, dpi=200, format=args.plotFileFormat)
+    plt.close()
 
 
 def getChunkLength(args, chromSize):
@@ -498,10 +456,14 @@ def main(args=None):
 
     if args.labels is None:
         args.labels = args.bamfiles
+        args.labels = [item.replace('.bam', '').replace('.filtered', '').replace('.cram','') for item in args.bamfiles ]
     if args.smartLabels:
         args.labels = smartLabels(args.bamfiles)
     if len(args.labels) != len(args.bamfiles):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
+
+    if args.ggplot:
+        plt.style.use('ggplot') 
 
     # Ensure that if we're given an attributeKey that it's not empty
     if args.attributeKey and args.attributeKey == "":
@@ -583,6 +545,8 @@ def main(args=None):
         of = open(args.outRawCounts, "w")
         of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
         for i, x in enumerate(args.labels):
+            x = x.split('/')[-1]
             for k, v in featureCounts[i].items():
+                print(x)
                 of.write("{0}\t{1}\t{2:5.2f}\t{3}\t{4}\n".format(x, k, (100.0 * v) / totalCounts[i], v, totalCounts[i]))
         of.close()
