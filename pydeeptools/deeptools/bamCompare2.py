@@ -135,6 +135,11 @@ def getOptionalArgs():
                           'This is determined BEFORE any applicable pseudocount '
                           'is added.',
                           action='store_true')
+    optional.add_argument('--no_collapse',
+                          help='By default adjacent bins that have the same value are collapsed. This reduces the size of the output file (drastically).'
+                          'If you like to opt out of this behavior, you can set this flag.',
+                          default=True,
+                          action='store_false')
 
     return parser
 
@@ -252,6 +257,15 @@ def main(args=None):
         args.samFlagExclude = 0
     if not args.region:
         args.region = 'None'
+    if not args.extendReads:
+        args.extendReads = False
+        args.extendReadsLen = 0
+    elif isinstance(args.extendReads, bool):
+        args.extendReadsLen = 0
+        args.extendReads = True
+    elif isinstance(args.extendReads, int):
+        args.extendReadsLen = args.extendReads
+        args.extendReads = True
     if not args.blackListFileName:
         args.blackListFileName = 'None'
     else:
@@ -272,8 +286,10 @@ def main(args=None):
         args.scaleFactorsMethod, # scaling method
         args.operation,
         args.pseudocount,
+        args.extendReads,
+        args.extendReadsLen,
+        args.centerReads,
         args.blackListFileName,
-        args.ignoreDuplicates,
         args.minMappingQuality,
         args.samFlagInclude,
         args.samFlagExclude,
@@ -283,32 +299,6 @@ def main(args=None):
         args.ignoreForNormalization,
         args.binSize, # bin size
         args.region, # regions
-        True # verbose
+        args.verbose, # verbose
+        args.no_collapse, # collapse the ofile or not.
     )
-
-    # #if args.normalizeUsing == "RPGC":
-    # #    sys.exit("RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare!")
-    # #if args.normalizeUsing == 'None':
-    #     args.normalizeUsing = None  # For the sake of sanity
-    # if args.scaleFactorsMethod != 'None' and args.normalizeUsing:
-    #     sys.exit("`--normalizeUsing {}` is only valid if you also use `--scaleFactorsMethod None`! To prevent erroneous output, I will quit now.\n".format(args.normalizeUsing))
-
-    # # Get mapping statistics
-    # bam1, mapped1, unmapped1, stats1 = bamHandler.openBam(args.bamfile1, returnStats=True, nThreads=args.numberOfProcessors)
-    # bam1.close()
-    # bam2, mapped2, unmapped2, stats2 = bamHandler.openBam(args.bamfile2, returnStats=True, nThreads=args.numberOfProcessors)
-    # bam2.close()
-
-    # scale_factors = get_scale_factors(args, [stats1, stats2], [mapped1, mapped2])
-    # if scale_factors is None:
-    #     # check whether one of the depth norm methods are selected
-    #     if args.normalizeUsing is not None:
-    #         args.scaleFactor = 1.0
-    #         # if a normalization is required then compute the scale factors
-    #         args.bam = args.bamfile1
-    #         scale_factor_bam1 = get_scale_factor(args, stats1)
-    #         args.bam = args.bamfile2
-    #         scale_factor_bam2 = get_scale_factor(args, stats2)
-    #         scale_factors = [scale_factor_bam1, scale_factor_bam2]
-    #     else:
-    #         scale_factors = [1, 1]

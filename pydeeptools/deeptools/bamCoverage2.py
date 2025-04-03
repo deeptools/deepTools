@@ -101,6 +101,12 @@ def get_optional_args():
                           choices=['forward', 'reverse'],
                           default=None)
 
+    optional.add_argument('--no_collapse',
+                          help='By default adjacent bins that have the same value are collapsed. This reduces the size of the output file (drastically).'
+                          'If you like to opt out of this behavior, you can set this flag.',
+                          default=True,
+                          action='store_false')
+
     return parser
 
 def scaleFactor(string):
@@ -136,9 +142,18 @@ def main(args=None):
     if not args.normalizeUsing:
         args.normalizeUsing = 'None'
     if not args.Offset:
-        args.Offset = [1, -1]
+        args.Offset = [0, 0]
+    elif len(args.Offset) == 1:
+        args.Offset = [args.Offset[0], 0]
     if not args.extendReads:
-        args.extendReads = 0
+        args.extendReads = False
+        args.extendReadsLen = 0
+    elif isinstance(args.extendReads, bool):
+        args.extendReadsLen = 0
+        args.extendReads = True
+    elif isinstance(args.extendReads, int):
+        args.extendReadsLen = args.extendReads
+        args.extendReads = True
     if not args.filterRNAstrand:
         args.filterRNAstrand = 'None'
     if not args.blackListFileName:
@@ -170,6 +185,7 @@ def main(args=None):
         args.MNase,
         args.Offset,
         args.extendReads,
+        args.extendReadsLen,
         args.centerReads,
         args.filterRNAstrand,
         args.blackListFileName,
@@ -178,7 +194,6 @@ def main(args=None):
         args.smoothLength,
         args.binSize, # bin size
         # Filtering options
-        args.ignoreDuplicates,
         args.minMappingQuality,
         args.samFlagInclude,
         args.samFlagExclude,
@@ -187,5 +202,6 @@ def main(args=None):
         # running options
         args.numberOfProcessors, # threads
         args.region, # regions
-        args.verbose # verbose
+        args.verbose, # verbose
+        args.no_collapse, 
     )

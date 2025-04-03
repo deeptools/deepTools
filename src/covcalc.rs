@@ -1,5 +1,6 @@
 use rust_htslib::bam::{Read, IndexedReader};
 use rust_htslib::bam::ext::BamRecordExtensions;
+use core::panic;
 use std::collections::HashMap;
 use tempfile::{Builder, TempPath};
 use std::io::{BufWriter, Write};
@@ -7,6 +8,8 @@ use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
 use std::collections::HashSet;
+use std::fs::OpenOptions;
+use crate::filtering::Alignmentfilters;
 
 pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMap<String, u32>) {
     // Takes a vector of regions, and a bam reference
@@ -128,15 +131,15 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
 #[allow(unused_variables)]
 #[allow(unused_mut)]
 pub fn bam_pileup<'a>(
-    bam_ifile: &str,
-    regionvec: &'a Vec<Region>,
-    provbs: &u32,
-    ispe: &bool,
-    ignorechr: &Vec<String>,
-    _filters: &Alignmentfilters,
-    collapse: bool,
-    gene_mode: bool,
-    blacklist: &Option<Vec<Region>>
+    bam_ifile: &str, // the bam file to consider.
+    regionvec: &'a Vec<Region>, // Vector with regions to calculate coverage from.
+    provbs: &u32, // Provisional bin size, in case we have gene mode later on this gets omitted.
+    ispe: &bool, // Wether or not the bam file is paired end or single end.
+    ignorechr: &Vec<String>, // chromosomes to ignore for normalization calculation.
+    filters: &Alignmentfilters, // a struct with filtering settings.
+    collapse: bool, // collapse bins with same coverage, should be avoided in bamCompare scenario for example.
+    gene_mode: bool, // Gene mode (BED / GTF) or not (bins)
+    gather_lengths: bool, // Wether or not to collect frag/read lengths (blows up memory for big bam files in MBS, for example).
 ) -> (
     Vec<TempPath>, // temp bedgraph file.
     u32, // mapped reads
@@ -149,9 +152,6 @@ pub fn bam_pileup<'a>(
     // constant to check if read is first in pair (relevant later)
     const FREAD: u16 = 0x40;
 
-    // open bam file and fetch proper chrom
-    let mut bam = IndexedReader::from_path(bam_ifile).unwrap();
-    
     // init variables for mapping statistics and lengths
     let mut mapped_reads: u32 = 0;
     let mut unmapped_reads: u32 = 0;
@@ -166,19 +166,11 @@ pub fn bam_pileup<'a>(
         .tempfile()
         .expect("Failed to create temporary file.");
 
-        
-    // There could be a blacklist. If so, the reads overlapping the blacklist are not counted.
-    // CHeck if blacklist is set.
-    let blacklist_filter: bool;
-    match blacklist {
-        Some(bl) => blacklist_filter = true,
-        None => blacklist_filter = false,
-    }
     // Two cases: either the binsize is 1, or it is > 1.
     // Counting between the two modes is different. In binsize == 1 we compute pileups
     // for binsize > 1, we count the number of reads that overlap a bin.
 
-    for regstruct  in regionvec.iter() {
+    for regstruct in regionvec.iter() {
         // There are two options here:
         // either we are supposed to calculate coverage over regions (variable binsize required) gene_mode = true
         // or we have a regular bin setting, gene_mode = false
@@ -191,24 +183,62 @@ pub fn bam_pileup<'a>(
             region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
         }
         //let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
+        // open bam file and fetch proper chrom
+        let mut bam = IndexedReader::from_path(&bam_ifile).unwrap();
         bam.fetch((region.0.as_str(), region.1, region.2))
             .expect(&format!("Error fetching region: {:?}", region));
-    
-        if binsize > &1 {
-            let mut counts: Vec<f32>;
-            let mut startstr: String = region.1.to_string();
-            let mut endstr: String = region.2.to_string();
+        let mut counts: Vec<f32>;
+        let mut startstr: String = region.1.to_string();
+        let mut endstr: String = region.2.to_string();
+        if gene_mode {
+            // It could be that we are in metagene mode, i.e. we only  want counts over exons
+            // In this we need another iter - fetch per regstruct
+            match (regstruct.start.clone(), regstruct.end.clone()) {
+                (Revalue::U(start), Revalue::U(end)) => {
+                    counts = vec![0.0; 1];
+                    for record in bam.records() {
+                        let mut record = record.expect("Error parsing record.");
+                        if filters.filter {
+                            if filters.filter_record(&record, &region.0.as_str()) {
+                                continue;
+                            }
+                        }
+                        if !ignorechr.contains(&region.0) {
+                            if record.is_unmapped() {
+                                unmapped_reads += 1;
+                            } else {
+                                mapped_reads += 1;
+                                if *ispe {
+                                    if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                                        if gather_lengths {
+                                            fraglens.push(record.insert_size().abs() as u32);
+                                        }
+                                    }
+                                }
+                                if gather_lengths {
+                                    readlens.push(record.seq_len() as u32);
+                                }
+                            }
+                        }
+                        counts[0] += 1.0;
+                    }
+                },
+                (Revalue::V(starts), Revalue::V(ends)) => {
+                    // Make a string with the start values comma separated
+                    startstr = starts.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+                    endstr = ends.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
 
-            if gene_mode {
-                // It could be that we are in metagene mode, i.e. we only  want counts over exons
-                // In this we need another iter - fetch per regstruct
-                match (regstruct.start.clone(), regstruct.end.clone()) {
-                    (Revalue::U(start), Revalue::U(end)) => {
-                        counts = vec![0.0; 1];
+                    counts = vec![0.0; 1];
+                    let exons: Vec<(u32, u32)> = starts.iter().zip(ends.iter())
+                        .map(|(&s, &e)| (s, e)) 
+                        .collect();
+                    for exon in exons {
+                        bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
+                            .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
                         for record in bam.records() {
-                            let record = record.expect("Error parsing record.");
-                            if blacklist_filter {
-                                if pos_in_blacklist(record.pos(), region.0.as_str(), blacklist.as_ref().unwrap()) {
+                            let mut record = record.expect("Error parsing record.");
+                            if filters.filter {
+                                if filters.filter_record(&record, region.0.as_str()) {
                                     continue;
                                 }
                             }
@@ -219,142 +249,71 @@ pub fn bam_pileup<'a>(
                                     mapped_reads += 1;
                                     if *ispe {
                                         if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                            fraglens.push(record.insert_size().abs() as u32);
+                                            if gather_lengths {
+                                                fraglens.push(record.insert_size().abs() as u32);
+                                            }
                                         }
                                     }
-                                    readlens.push(record.seq_len() as u32);
+                                    if gather_lengths {
+                                        readlens.push(record.seq_len() as u32);
+                                    }
                                 }
                             }
                             counts[0] += 1.0;
                         }
-                    },
-                    (Revalue::V(starts), Revalue::V(ends)) => {
-                        // Make a string with the start values comma separated
-                        startstr = starts.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
-                        endstr = ends.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+                    }
+                },
+                _ => panic!("Start and End are not either both u32, or Vecs. This means your regions file is ill-defined. Fix {}.",regstruct.name),
+            }
+        } else {
+            // populate the bg vector with 0 counts over all bins
+            counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
+            // let mut binstart = region.1;
+            let mut binix: u32 = 0;
 
-                        counts = vec![0.0; 1];
-                        let exons: Vec<(u32, u32)> = starts.iter().zip(ends.iter())
-                            .map(|(&s, &e)| (s, e)) 
-                            .collect();
-                        for exon in exons {
-                            bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
-                                .expect(&format!("Error fetching region: {}:{},{}", regstruct.chrom, exon.0, exon.1));
-                            for record in bam.records() {
-                                let record = record.expect("Error parsing record.");
-                                if blacklist_filter {
-                                    if pos_in_blacklist(record.pos(), region.0.as_str(), blacklist.as_ref().unwrap()) {
-                                        continue;
-                                    }
-                                }
-                                if !ignorechr.contains(&region.0) {
-                                    if record.is_unmapped() {
-                                        unmapped_reads += 1;
-                                    } else {
-                                        mapped_reads += 1;
-                                        if *ispe {
-                                            if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                                fraglens.push(record.insert_size().abs() as u32);
-                                            }
-                                        }
-                                        readlens.push(record.seq_len() as u32);
-                                    }
-                                }
-                                counts[0] += 1.0;
-                            }
-                        }
-                    },
-                    _ => panic!("Start and End are not either both u32, or Vecs. This means your regions file is ill-defined. Fix {}.",regstruct.name),
+            for record in bam.records() {
+                let mut record = record.expect("Error parsing record.");
+
+                if filters.filter {
+                    if filters.filter_record(&record, region.0.as_str()) {
+                        continue;
+                    }
                 }
-            } else {
-                // populate the bg vector with 0 counts over all bins
-                counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
-                // let mut binstart = region.1;
-                let mut binix: u32 = 0;
-                
-                for record in bam.records() {
-                    let record = record.expect("Error parsing record.");
-                    if !ignorechr.contains(&region.0) {
-                        if record.is_unmapped() {
-                            unmapped_reads += 1;
-                        } else {
-                            mapped_reads += 1;
-                            if *ispe {
-                                if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
-                                    fraglens.push(record.insert_size().abs() as u32);
-                                }
+                if filters.manipulate {
+
+                    let manipulated_blockpos = filters.manipulate_record(&mut record);
+                    if manipulated_blockpos.is_none() {
+                        continue;
+                    }
+                    let indices: HashSet<usize> = manipulated_blockpos
+                        .unwrap()
+                        .into_iter()
+                        .map(|x| ((x - region.1) / binsize) as usize)
+                        .collect();
+
+                    indices.into_iter()
+                        .for_each(|ix| {
+                            if ix < counts.len() {
+                                counts[ix] += 1.0;
                             }
-                            readlens.push(record.seq_len() as u32);
-                        }
-                    }
-                    if blacklist_filter {
-                        if pos_in_blacklist(record.pos(), region.0.as_str(), blacklist.as_ref().unwrap()) {
-                            continue;
-                        }
-                    }
+                        });
+                } else {
                     let indices: HashSet<usize> = record
                         .aligned_blocks()
-                        .filter(|x| (x[1] as u32) < region.2)
+                        .filter(|x| (x[1] as u32) >= region.1 && (x[1] as u32) <= region.2)
+                        .filter(|x| (x[0] as u32) >= region.1 && (x[0] as u32) <= region.2 )
                         .flat_map(|x| x[0] as u32..x[1] as u32)
-                        .map(|x| (x / binsize) as usize)
+                        .map(|x| ((x - region.1) / binsize) as usize)
                         .collect();
                     indices.into_iter()
-                        .for_each(|ix| counts[ix] += 1.0);
+                        .for_each(|ix| {
+                            if ix < counts.len() {
+                                counts[ix] += 1.0;
+                            }
+                        });
                 }
-            }
-            let mut writer = BufWriter::new(&bg);
-            // There are two scenarios: 
-            // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
-            // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
-            if counts.len() == 1 {
-                writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
-            } else {
-                if collapse {
-                    let mut lcov = counts[0];
-                    let mut lstart = region.1;
-                    let mut lend = region.1 + binsize;
-                    let mut start = lstart;
-                    let mut end = lend;
-                    let mut bin: u32 = 0;
-        
-                    for (ix, count) in counts.into_iter().skip(1).enumerate() {
-                        bin = (ix + 1) as u32; // offset of 1 due to skip(1)
-                        start = (bin * binsize) + region.1;
-                        end = min(start + binsize, region.2);
-                        if count != lcov {
-                            //bg.push((&region.0, lstart, lend, lcov));
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
-                            lstart = lend;
-                            lcov = count;
-                        }
-                        lend = end;
-                    }
-                    // write last entry
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
-                } else {
-                    let mut start = region.1;
-                    let mut end = region.1 + binsize;
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, counts[0]).unwrap();
-                    for (ix, count) in counts.into_iter().skip(1).enumerate() {
-                        let bin = (ix + 1) as u32;
-                        start = (bin * binsize) + region.1;
-                        end = min(start + binsize, region.2);
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, count).unwrap();
-                    }
-                }
-            }
 
-        // binsize = 1
-        } else {
-            let mut l_start: u32 = region.1;
-            let mut l_end: u32 = region.1;
-            let mut l_cov: u32 = 0;
-            let mut pileup_start: bool = true;
-            let mut writer = BufWriter::new(&bg);
-            let mut written: bool = false;
-            for record in bam.records() {
-                let record = record.expect("Error parsing record.");
-                if !ignorechr.contains(&region.0) {
+                if !ignorechr.contains(&region.0) && gather_lengths {
                     if record.is_unmapped() {
                         unmapped_reads += 1;
                     } else {
@@ -367,217 +326,63 @@ pub fn bam_pileup<'a>(
                         readlens.push(record.seq_len() as u32);
                     }
                 }
-            }
-            // Refetch bam file to reset iterator.
-            bam.fetch((region.0.as_str(), region.1, region.2))
-                .expect(&format!("Error fetching region: {:?}", region));
-            for p in bam.pileup() {
-                // Per default pileups count deletions in cigar string too.
-                // For consistency with previous deepTools functionality, we ignore them.
-                // to be fair I think they shouldn't be counted anyhow, but who am I ?
-                // Note that coverages can be 0 now.
-                let pileup = p.expect("Error parsing pileup.");
-                let mut cov: u32 = 0;
-                for _a in pileup.alignments() {
-                    if !_a.is_del() {
-                        cov += 1;
-                    }
-                }
-                let pos = pileup.pos();
-                
-                if pileup_start {
-                    // if the first pileup is not at the start of the region, write 0 coverage
-                    if pos > l_start {
-                        if collapse {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, pos, 0 as f32).unwrap();
-                        } else {
-                            for p in l_start..pos {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                            }
-                        }
-                        written = true;
-                    }
-                    pileup_start = false;
-                    l_start = pos;
-                    l_cov = cov;
-                } else {
-                    if pos != l_end + 1 {
-                        if collapse {
-                            if blacklist_filter {
-                                let writevec = pileupwriter_blacklist(
-                                    l_start,
-                                    l_end + 1,
-                                    l_cov as f32,
-                                    blacklist.as_ref().unwrap(),
-                                    region.0.as_str()
-                                );
-                                for (start, end, cov) in writevec {
-                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, cov).unwrap();
-                                }
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, pos, 0 as f32).unwrap();
-                            } else {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, pos, 0 as f32).unwrap();
-                            }
-                        } else {
-                            for p in l_start..l_end + 1 {
-                                if blacklist_filter {
-                                    if pos_in_blacklist(p as i64, region.0.as_str(), blacklist.as_ref().unwrap()) {
-                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                                    } else {
-                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                                    }
-                                } else {
-                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                                }
-                            }
-                            for p in l_end + 1..pos {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                            }
-                        }
-                        written = true;
-                        l_start = pos;
-                        l_cov = cov;
-                    } else if l_cov != cov {
-                        if collapse {
-                            if blacklist_filter {
-                                let writevec = pileupwriter_blacklist(
-                                    l_start,
-                                    pos,
-                                    l_cov as f32,
-                                    blacklist.as_ref().unwrap(),
-                                    region.0.as_str()
-                                );
-                                for (start, end, cov) in writevec {
-                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, cov).unwrap();
-                                }
-                            } else {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, pos, l_cov as f32).unwrap();
-                            }
-                        } else {
-                            for p in l_start..pos {
-                                if blacklist_filter {
-                                    if pos_in_blacklist(p as i64, region.0.as_str(), blacklist.as_ref().unwrap()) {
-                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                                    } else {
-                                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                                    }
-                                } else {
-                                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                                }
-                            }
-                        }
-                        written = true;
-                        l_start = pos;
-                        l_cov = cov;
-                    }
-                }
-                l_end = pos;
-                l_cov = cov;
-            }
-            // if bg is empty, whole region is 0 coverage
-            if !written {
-                if collapse {
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, region.2, 0 as f32).unwrap();
-                } else {
-                    for p in l_start..region.2 {
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                    }
-                }
-            } else {
-                // Still need to write the last pileup(s)
-                if collapse {
-                    if blacklist_filter {
-                        let writevec = pileupwriter_blacklist(
-                            l_start,
-                            l_end + 1,
-                            l_cov as f32,
-                            blacklist.as_ref().unwrap(),
-                            region.0.as_str()
-                        );
-                        for (start, end, cov) in writevec {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, cov).unwrap();
-                        }
-                    } else {
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_start, l_end + 1, l_cov as f32).unwrap();
-                    }
-                    // Make sure that if we didn't reach end of chromosome, we still write 0 cov.
-                    if l_end + 1 < region.2 {
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, l_end + 1, region.2, 0 as f32).unwrap();
-                    }
-                } else {
-                    for p in l_start..l_end + 1 {
-                        if blacklist_filter {
-                            if pos_in_blacklist(p as i64, region.0.as_str(), blacklist.as_ref().unwrap()) {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                            } else {
-                                writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                            }
-                        } else {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                        }
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, l_cov as f32).unwrap();
-                    }
-                    if l_end + 1 < region.2 {
-                        for p in l_end + 1..region.2 + 1 {
-                            writeln!(writer, "{}\t{}\t{}\t{}", region.0, p, p + 1, 0 as f32).unwrap();
-                        }
-                    }
-                }
+
             }
         }
+        let file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(&bg)
+            .expect("Error opening tmp file.");
+
+        let mut writer = BufWriter::new(file);
+        // There are two scenarios: 
+        // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
+        // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
+        // Note that collapse can also be passed as a CLI, for those that want that.
+        if counts.len() == 1 {
+            writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
+        } else {
+            if collapse {
+                let mut lcov = counts[0];
+                let mut lstart = region.1;
+                let mut lend = region.1 + binsize;
+                let mut start = lstart;
+                let mut end = lend;
+                let mut bin: u32 = 0;
+    
+                for (ix, count) in counts.into_iter().skip(1).enumerate() {
+                    bin = (ix + 1) as u32; // offset of 1 due to skip(1)
+                    start = (bin * binsize) + region.1;
+                    end = min(start + binsize, region.2);
+                    if count != lcov {
+                        //bg.push((&region.0, lstart, lend, lcov));
+                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
+                        lstart = lend;
+                        lcov = count;
+                    }
+                    lend = end;
+                }
+                // write last entry
+                writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
+            } else {
+                let mut start = region.1;
+                let mut end = region.1 + binsize;
+                writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, counts[0]).unwrap();
+                for (ix, count) in counts.into_iter().skip(1).enumerate() {
+                    let bin = (ix + 1) as u32;
+                    start = (bin * binsize) + region.1;
+                    end = min(start + binsize, region.2);
+                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, count).unwrap();
+                }
+            }
+        }       
     }
     let bgpath = bg.into_temp_path();
     let tmpvec   = vec![bgpath];
+    
     return (tmpvec, mapped_reads, unmapped_reads, readlens, fraglens);
 }
-
-fn pos_in_blacklist(pos: i64, chrom: &str, blacklist: &Vec<Region>) -> bool {
-    for region in blacklist.iter() {
-        // Note that get_startu / getendu is used as they are guaranteed to be u32's to start with.
-        if region.get_startu() <= pos as u32 && pos as u32 <= region.get_endu() && region.chrom == chrom {
-            return true;
-        }
-    }
-    return false;
-}
-
-fn pileupwriter_blacklist(start: u32, end: u32, cov: f32, blacklist: &Vec<Region>, chrom: &str) -> Vec<(u32, u32, f32)> {
-    let mut writevec: Vec<(u32, u32, f32)> = Vec::new();
-    // Pileup writing is a bit more annoying if we have a blacklist, as this comes 'compressed' already.
-    let mut lcov: f32;
-    if pos_in_blacklist(start as i64, chrom, blacklist) {
-        lcov = 0.0;
-    } else {
-        lcov = cov;
-    }
-    let mut lstart = start;
-    let mut ccov: f32;
-    // Iterate over the rest.
-    for pos in start+1..end {
-        if pos_in_blacklist(pos as i64, chrom, blacklist) {
-            ccov = 0.0;
-        } else {
-            ccov = cov;
-        }
-        if ccov != lcov {
-            writevec.push((lstart, pos, lcov));
-            lstart = pos;
-            lcov = ccov;
-        }
-    }
-    writevec.push((lstart, end, lcov));
-    return writevec;
-}
-
-pub struct Alignmentfilters {
-    pub minmappingquality: u8,
-    pub samflaginclude: u16,
-    pub samflagexclude: u16,
-    pub minfraglen: u32,
-    pub maxfraglen: u32,
-}
-
 
 #[derive(Clone, Debug)]
 pub struct Region {
@@ -1504,19 +1309,21 @@ fn refpoint_exonwalker(exons: &Vec<(u32, u32)>, anchor: u32, binsize: u32, chrom
 pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
     // This function decides on how regions are divided to process in parallel.
     // Since the Vec<Region> could be chromosomes on one hand, or genes on the other, we can decide on how to chop them up.
-    // Note that this somehow relates to 'genomeChunkLength', but not entirely. The sweet spot is bp length is ~ 1000000
+    // Note that this somehow relates to 'genomeChunkLength', but not entirely.
     let mut bplen: u32 = 0;
     let mut blocks: Vec<Vec<Region>> = Vec::new();
     let mut tempregionvec: Vec<Region> = Vec::new();
 
     for reg in regs.iter() {
-        if reg.regionlength > 1000000 {
+        if reg.regionlength > 10000000 {
             if tempregionvec.len() > 0 {
                 blocks.push(tempregionvec.clone());
                 tempregionvec = Vec::new();
                 bplen = 0
             }
+
             blocks.push(vec![reg.clone()]);
+
         } else {
             tempregionvec.push(reg.clone());
             bplen += reg.regionlength;

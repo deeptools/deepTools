@@ -8,7 +8,8 @@ use std::fs::File;
 use itertools::Itertools;
 use bigtools::{Value};
 use crate::filehandler::{bam_ispaired, write_covfile, is_bed_or_gtf, read_bedfile};
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider, Region};
+use crate::covcalc::{bam_pileup, parse_regions, TempZip, region_divider, Region};
+use crate::filtering::Alignmentfilters;
 use crate::normalization::scale_factor_bamcompare;
 use crate::calc::{median, calc_ratio};
 use tempfile::{TempPath};
@@ -27,8 +28,10 @@ pub fn r_bamcompare(
     operation: &str,
     pseudocount: f32,
     // filtering options
+    extendreads: bool, // if 0, no extension
+    extendreadslen: u32, // length of extension (0 if PE or if not extending)
+    centerreads: bool,
     blacklist: &str, // path to blacklist filename, or 'None'
-    _ignoreduplicates: bool,
     minmappingquality: u8, // 
     samflaginclude: u16,
     samflagexclude: u16,
@@ -38,7 +41,8 @@ pub fn r_bamcompare(
     _ignorechr: Py<PyList>,
     binsize: u32,
     supregion: &str,
-    verbose: bool
+    verbose: bool,
+    collapse: bool
 ) -> PyResult<()> {
     let ispe1 = bam_ispaired(bamifile1);
     let ispe2 = bam_ispaired(bamifile2);
@@ -51,21 +55,14 @@ pub fn r_bamcompare(
     Python::with_gil(|py| {
         ignorechr = _ignorechr.extract(py).expect("Failed to retrieve ignorechr.");
     });
-    // Set alignment filters
-    let filters = Alignmentfilters {
-        minmappingquality: minmappingquality,
-        samflaginclude: samflaginclude,
-        samflagexclude: samflagexclude,
-        minfraglen: minfraglen,
-        maxfraglen: maxfraglen
-    };
+
 
     // Parse regions & calculate coverage. Note that 
     let (regions, chromsizes)  = parse_regions(supregion, vec![bamifile1, bamifile2]);
     let regionblocks = region_divider(&regions);
 
     // If there is a blacklist, read it.
-    let mut backlistregions: Option<Vec<Region>> = None;
+    let mut blacklistregions: Option<Vec<Region>> = None;
     if blacklist != "None" {
         // Check if it's a bed or gtf file
         let isbed = is_bed_or_gtf(blacklist);
@@ -73,22 +70,59 @@ pub fn r_bamcompare(
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
                 let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
-                backlistregions = Some(bls);
+                blacklistregions = Some(bls);
             },
             _ => panic!("Error: Cannot determine filetype of blacklist file.")
+        }
+    }
+    // 
+    // Set alignment filters
+    let mut filter1 = Alignmentfilters::new(
+        blacklistregions,
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        None, // No MNase mode.
+        None, // No offset
+        None, // No strand filtering.
+        Some(extendreads),
+        Some(extendreadslen),
+        Some(centerreads),
+    );
+    let mut filter2 = filter1.clone();
+    if filter1.extendreads && filter1.extendreadslen == 0 && !ispe1 {
+        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+    }
+    if filter2.extendreads && filter2.extendreadslen == 0 && !ispe2 {
+        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+    }
+    if filter1.extendreads && filter1.extendreadslen == 0 && ispe1 {
+        // We need a pass over the bamfile already to get the mean fragment length.
+        filter1.set_extendreadslen(bamifile1, nproc, &regions);
+        if verbose {
+            println!("fragment length for read extension set as: {} for bamfile 1", filter1.extendreadslen);
+        }
+    }
+    if filter2.extendreads && filter2.extendreadslen == 0 && ispe2 {
+        // We need a pass over the bamfile already to get the mean fragment length.
+        filter2.set_extendreadslen(bamifile2, nproc, &regions);
+        if verbose {
+            println!("fragment length for read extension set as: {} for bamfile 2", filter2.extendreadslen);
         }
     }
 
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
     
     // Set up the bam files in a Vec.
-    let bamfiles = vec![(bamifile1, ispe1), (bamifile2, ispe2)];
+    let bamfiles: Vec<(&str, bool, &Alignmentfilters)> = vec![(bamifile1, ispe1, &filter1), (bamifile2, ispe2, &filter2)];
 
     let mut covcalcs: Vec<ParsedBamFile> = pool.install(|| {
         bamfiles.par_iter()
-            .map(|(bamfile, ispe)| {
+            .map(|(bamfile, ispe, alfilter)| {
                 let (bg, mapped, unmapped, readlen, fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, false, &backlistregions))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, alfilter , false, false, true))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {
@@ -131,35 +165,59 @@ pub fn r_bamcompare(
     let zips = TempZip { iterators: its };
     let zips_vec: Vec<_> = zips.collect();
 
-    let lines = zips_vec
-    .into_iter()
-    .flat_map(|c| {
-        let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
-        let temp_zip = TempZip { iterators: readers };
-        temp_zip.into_iter().map(|mut _l| {
-            let lines: Vec<_> = _l
-                .iter_mut()
-                .map(|x| x.as_mut().unwrap())
-                .map(|x| x.split('\t').collect())
-                .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
-                .collect();
-            assert_eq!(lines.len(), 2);
-            assert_eq!(lines[0].0, lines[1].0);
-            assert_eq!(lines[0].1, lines[1].1);
-            assert_eq!(lines[0].2, lines[1].2);
-            // Calculate the coverage.
-            let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
-            (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
-        }).coalesce(|p, c| {
-            if p.1.value == c.1.value && p.0 == c.0 {
-                Ok((p.0, Value {start: p.1.start, end: c.1.end, value: p.1.value}))
-            } else {
-                Err((p, c))
-            }
-        })
-    });
-
-    write_covfile(lines, ofile, ofiletype, chromsizes);
+    if collapse {
+        let lines = zips_vec
+            .into_iter()
+            .flat_map(|c| {
+                let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
+                let temp_zip = TempZip { iterators: readers };
+                temp_zip.into_iter().map(|mut _l| {
+                    let lines: Vec<_> = _l
+                        .iter_mut()
+                        .map(|x| x.as_mut().unwrap())
+                        .map(|x| x.split('\t').collect())
+                        .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
+                        .collect();
+                    assert_eq!(lines.len(), 2);
+                    assert_eq!(lines[0].0, lines[1].0, "Error: Chromosome mismatch in bam files. {} != {}", lines[0].0, lines[1].0);
+                    assert_eq!(lines[0].1, lines[1].1, "Error: Start position mismatch in bam files. {} != {}", lines[0].1, lines[1].1);
+                    assert_eq!(lines[0].2, lines[1].2, "Error: End position mismatch in bam files. {} != {}", lines[0].2, lines[1].2);
+                    // Calculate the coverage.
+                    let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
+                    (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
+                }).coalesce(|p, c| {
+                    if p.1.value == c.1.value && p.0 == c.0 {
+                        Ok((p.0, Value {start: p.1.start, end: c.1.end, value: p.1.value}))
+                    } else {
+                        Err((p, c))
+                    }
+                })
+        });
+        write_covfile(lines, ofile, ofiletype, chromsizes);
+    } else {
+        let lines = zips_vec
+            .into_iter()
+            .flat_map(|c| {
+                let readers: Vec<_> = c.into_iter().map(|x| BufReader::new(File::open(x).unwrap()).lines()).collect();
+                let temp_zip = TempZip { iterators: readers };
+                temp_zip.into_iter().map(|mut _l| {
+                    let lines: Vec<_> = _l
+                        .iter_mut()
+                        .map(|x| x.as_mut().unwrap())
+                        .map(|x| x.split('\t').collect())
+                        .map(|x: Vec<&str>| (x[0].to_string(), x[1].parse::<u32>().unwrap(), x[2].parse::<u32>().unwrap(), x[3].parse::<f32>().unwrap()))
+                        .collect();
+                    assert_eq!(lines.len(), 2);
+                    assert_eq!(lines[0].0, lines[1].0, "Error: Chromosome mismatch in bam files. {} != {}", lines[0].0, lines[1].0);
+                    assert_eq!(lines[0].1, lines[1].1, "Error: Start position mismatch in bam files. {} != {}", lines[0].1, lines[1].1);
+                    assert_eq!(lines[0].2, lines[1].2, "Error: End position mismatch in bam files. {} != {}", lines[0].2, lines[1].2);
+                    // Calculate the coverage.
+                    let cov = calc_ratio(lines[0].3, lines[1].3, &sf.0, &sf.1, &pseudocount, operation);
+                    (lines[0].0.clone(), Value { start: lines[0].1, end: lines[0].2, value: cov })
+                })
+        });
+        write_covfile(lines, ofile, ofiletype, chromsizes);
+    }
     Ok(())
 }
 

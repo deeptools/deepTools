@@ -9,7 +9,8 @@ use std::fs::File;
 use ndarray::Array2;
 use ndarray_npy::NpzWriter;
 use std::collections::HashMap;
-use crate::covcalc::{bam_pileup, parse_regions, Alignmentfilters, TempZip, region_divider};
+use crate::covcalc::{bam_pileup, parse_regions, TempZip, region_divider};
+use crate::filtering::Alignmentfilters;
 use crate::filehandler::{bam_ispaired, read_bedfile, read_gtffile, chrombounds_from_bam, is_bed_or_gtf};
 use crate::calc::deseq_scalefactors;
 use crate::covcalc::{Region, Gtfparse};
@@ -32,13 +33,14 @@ pub fn r_mbams(
     supregion: &str,
     blacklist: &str,
     verbose: bool,
-    _extend_reads: u32,
-    _center_reads: bool,
-    sam_flag_incl: u16, // sam flag include
-    sam_flag_excl: u16, // sam flag exclude
-    min_fragment_length: u32, // minimum fragment length.
-    max_fragment_length: u32, // maximum fragment length.
-    min_mapping_quality: u8, // minimum mapping quality.
+    extendreads: bool,
+    extendreadslen: u32,
+    centerreads: bool,
+    samflaginclude: u16, // sam flag include
+    samflagexclude: u16, // sam flag exclude
+    minfraglen: u32, // minimum fragment length.
+    maxfraglen: u32, // maximum fragment length.
+    minmappingquality: u8, // minimum mapping quality.
     metagene: bool, // metagene mode or not.
     txnid: &str, // transcript id to use when parsing GTF file.
     exonid: &str, // exon id to use when parsing GTF file.
@@ -71,17 +73,10 @@ pub fn r_mbams(
         }
     }
     
-    let filters: Alignmentfilters = Alignmentfilters {
-        minmappingquality: min_mapping_quality,
-        samflaginclude: sam_flag_incl,
-        samflagexclude: sam_flag_excl,
-        minfraglen: min_fragment_length,
-        maxfraglen: max_fragment_length
-    };
-    
+  
     let mut regions: Vec<Region> = Vec::new();
     let mut gene_mode = false;
-    let mut backlistregions: Option<Vec<Region>> = None;
+    let mut blacklistregions: Option<Vec<Region>> = None;
     if mode == "BED-file" {
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
@@ -126,7 +121,7 @@ pub fn r_mbams(
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
                     let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
-                    backlistregions = Some(bls);
+                    blacklistregions = Some(bls);
                 },
                 _ => panic!("Error: Cannot determine filetype of blacklist file.")
             }
@@ -145,18 +140,48 @@ pub fn r_mbams(
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
                     let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
-                    backlistregions = Some(bls);
+                    blacklistregions = Some(bls);
                 },
                 _ => panic!("Error: Cannot determine filetype of blacklist file.")
             }
         }
     }
 
+    let filters = Alignmentfilters::new(
+        blacklistregions,
+        Some(minmappingquality),
+        Some(samflaginclude),
+        Some(samflagexclude),
+        Some(minfraglen),
+        Some(maxfraglen),
+        None, // No MNase mode.
+        None, // No offset
+        None, // No strand filtering.
+        Some(extendreads),
+        Some(extendreadslen),
+        Some(centerreads),
+    );
+
     let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();    
     
     // Zip together bamfiles and ispe into a vec of tuples.
     let bampfiles: Vec<_> = bamfiles.into_iter().zip(ispe.into_iter()).collect();
-
+    let bam_ispe_filter: Vec<(String, bool, Alignmentfilters)> = bampfiles.into_iter()
+        .map(|(bamfile, ispe)| {
+            let mut filter = filters.clone();
+            if filter.extendreads && filter.extendreadslen == 0 && ispe {
+                // We need a pass over the bamfile already to get the mean fragment length.
+                filter.set_extendreadslen(&bamfile, nproc, &regions);
+                if filter.extendreadslen == 0 {
+                    panic!("Error: No fragment length found for read extension. Please provide a valid fragment length.");
+                }
+                if verbose {
+                    println!("fragment length for read extension set as: {} for {}", filter.extendreadslen, bamfile);
+                }
+            }
+            (bamfile, ispe, filter)
+        })
+        .collect();
     // Divide up the regions into regionBlocks
     let regionblocks = region_divider(&regions);
     
@@ -167,10 +192,10 @@ pub fn r_mbams(
     }
 
     let covcalcs: Vec<_> = pool.install(|| {
-        bampfiles.par_iter()
-            .map(|(bamfile, ispe)| {
+        bam_ispe_filter.par_iter()
+            .map(|(bamfile, ispe, filter)| {
                 let (bg, _mapped, _unmapped, _readlen, _fraglen) = regionblocks.par_iter()
-                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, &filters, false, gene_mode, &backlistregions))
+                    .map(|i| bam_pileup(bamfile, &i, &binsize, &ispe, &ignorechr, filter, false, gene_mode, false))
                     .reduce(
                         || (vec![], 0, 0, vec![], vec![]),
                         |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen), (bg, mapped, unmapped, readlen, fraglen)| {

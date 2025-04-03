@@ -6,6 +6,7 @@ mod calc;
 mod computematrix;
 mod covcalc;
 mod filehandler;
+mod filtering;
 mod multibamsummary;
 mod normalization;
 #[cfg(test)]
