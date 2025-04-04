@@ -5,6 +5,7 @@ from deeptools.parserCommon import writableFile, numberOfProcessors
 from deeptools import parserCommon
 from importlib.metadata import version
 from deeptools.hp import r_computematrix
+import signal
 
 def parse_arguments(args=None):
     parser = \
@@ -382,7 +383,7 @@ def main(args=None):
                   'unscaled 5 prime': args.unscaled5prime,
                   'unscaled 3 prime': args.unscaled3prime
                   }
-    # Assert all  regions and scores exist
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_computematrix(
         args.command,
         args.regionsFileName,
