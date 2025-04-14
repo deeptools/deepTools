@@ -5,6 +5,8 @@
 import argparse
 import sys
 import numpy as np
+import warnings
+np.warnings = warnings
 from deeptools import writeBedGraph  # This should be made directly into a bigWig
 from deeptools import parserCommon
 from deeptools.getScaleFactor import get_scale_factor

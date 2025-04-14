@@ -5,6 +5,8 @@ from __future__ import division
 import argparse
 from collections import OrderedDict
 import numpy as np
+import warnings
+np.warnings = warnings
 import matplotlib
 matplotlib.use('Agg')
 matplotlib.rcParams['pdf.fonttype'] = 42

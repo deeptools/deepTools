@@ -2,6 +2,8 @@
 
 import deeptools.countReadsPerBin as cr
 import numpy as np
+import warnings
+np.warnings = warnings
 import numpy.testing as nt
 import os.path
 import pytest

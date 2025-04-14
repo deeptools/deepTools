@@ -2,6 +2,8 @@ import sys
 import gzip
 from collections import OrderedDict
 import numpy as np
+import warnings
+np.warnings = warnings
 from copy import deepcopy
 
 import pyBigWig

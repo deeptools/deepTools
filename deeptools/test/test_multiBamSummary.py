@@ -1,5 +1,7 @@
 import deeptools.multiBamSummary as mbs
 import numpy as np
+import warnings
+np.warnings = warnings
 import numpy.testing as nt
 
 import os.path

@@ -1,5 +1,7 @@
 import pyBigWig
 import numpy as np
+import warnings
+np.warnings = warnings
 import os
 import sys
 import shutil

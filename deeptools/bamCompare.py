@@ -3,6 +3,8 @@
 
 import argparse  # to parse command line arguments
 import numpy as np
+import warnings
+np.warnings = warnings
 import sys
 
 # my packages

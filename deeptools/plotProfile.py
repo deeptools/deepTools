@@ -6,6 +6,8 @@ import sys
 
 import argparse
 import numpy as np
+import warnings
+np.warnings = warnings
 from math import ceil
 import matplotlib
 matplotlib.use('Agg')

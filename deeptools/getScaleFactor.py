@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import warnings
+np.warnings = warnings
 import deeptools.mapReduce as mapReduce
 from deeptools import bamHandler
 from deeptools import utilities

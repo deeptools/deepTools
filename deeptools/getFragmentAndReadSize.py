@@ -1,4 +1,6 @@
 import numpy as np
+import warnings
+np.warnings = warnings
 
 # own tools
 from deeptools import bamHandler

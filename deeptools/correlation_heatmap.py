@@ -3,6 +3,8 @@ mplt_use('Agg')
 from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 import numpy as np
+import warnings
+np.warnings = warnings
 import scipy.cluster.hierarchy as sch
 from matplotlib import rcParams
 import matplotlib.colors as pltcolors

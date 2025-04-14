@@ -6,6 +6,8 @@ import matplotlib as mpl
 mpl.use('Agg')
 from deeptools import cm  # noqa: F401
 import numpy as np
+import warnings
+np.warnings = warnings
 
 
 debug = 0

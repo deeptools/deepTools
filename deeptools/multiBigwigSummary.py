@@ -5,6 +5,8 @@ import sys
 import argparse
 import os.path
 import numpy as np
+import warnings
+np.warnings = warnings
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 import deeptools.getScorePerBigWigBin as score_bw

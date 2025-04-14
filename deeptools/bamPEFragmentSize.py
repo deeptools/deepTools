@@ -4,6 +4,8 @@
 import argparse
 import sys
 import numpy as np
+import warnings
+np.warnings = warnings
 
 import matplotlib
 matplotlib.use('Agg')
