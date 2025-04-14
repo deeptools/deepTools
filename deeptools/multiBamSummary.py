@@ -5,6 +5,8 @@ import os
 import sys
 import argparse
 import numpy as np
+import warnings
+np.warnings = warnings
 
 import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon

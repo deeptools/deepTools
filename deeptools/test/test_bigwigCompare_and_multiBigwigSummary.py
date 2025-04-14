@@ -1,6 +1,8 @@
 import deeptools.bigwigCompare as bwComp
 import deeptools.multiBigwigSummary as bwCorr
 import numpy as np
+import warnings
+np.warnings = warnings
 import numpy.testing as nt
 
 import os.path

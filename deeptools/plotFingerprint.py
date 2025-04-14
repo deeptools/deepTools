@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import warnings
+np.warnings = warnings
 import argparse
 import sys
 import matplotlib

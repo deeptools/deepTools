@@ -2,6 +2,8 @@ import sys
 import itertools
 import copy
 import numpy as np
+import warnings
+np.warnings = warnings
 import scipy.cluster.hierarchy as sch
 import scipy.stats
 import matplotlib as mpl

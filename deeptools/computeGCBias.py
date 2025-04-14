@@ -5,6 +5,8 @@ import time
 
 import multiprocessing
 import numpy as np
+import warnings
+np.warnings = warnings
 import argparse
 from scipy.stats import poisson
 import py2bit

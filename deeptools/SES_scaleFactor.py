@@ -3,6 +3,8 @@
 
 import os
 import numpy as np
+import warnings
+np.warnings = warnings
 
 # own packages
 from deeptools import bamHandler

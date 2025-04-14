@@ -2,6 +2,8 @@
 import deeptools.heatmapper as heatmapper
 import deeptoolsintervals.parse as dti
 import numpy as np
+import warnings
+np.warnings = warnings
 import argparse
 import sys
 import os

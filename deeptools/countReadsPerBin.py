@@ -4,6 +4,8 @@ import time
 import sys
 import multiprocessing
 import numpy as np
+import warnings
+np.warnings = warnings
 
 # deepTools packages
 import deeptools.utilities

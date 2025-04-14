@@ -3,6 +3,8 @@
 import argparse
 import sys
 import numpy as np
+import warnings
+np.warnings = warnings
 from deeptools import parserCommon
 from deeptools import writeBedGraph_bam_and_bw
 
