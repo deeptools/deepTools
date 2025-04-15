@@ -855,7 +855,7 @@ def main(args=None):
         if args.kmeans is not None:
             hm.matrix.computeSilhouette(args.kmeans)
         elif args.hclust is not None:
-            hm.matrix.computeSilhouette(args.args.hclust)
+            hm.matrix.computeSilhouette(args.hclust)
 
     if args.outFileNameMatrix:
         hm.save_matrix(args.outFileNameMatrix)
