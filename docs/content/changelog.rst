@@ -41,6 +41,8 @@ Core
 
 * normalization
     - Exactscaling is no longer an option, it's always performed.
+	- SES option in bamCompare mode is no longer available.
+	- blackList filtering is now performed on a position-based level. Meaning reads that overlap partially with the blacklist can still contribute to the signal.
 
 * alignmentSieve
     - options label, smartLabels, genomeChunkLength are removed.
