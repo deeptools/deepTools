@@ -2,6 +2,7 @@ import argparse
 from deeptools import parserCommon
 from deeptools.hp import r_bamcompare
 import signal
+import sys
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -73,7 +74,7 @@ def getOptionalArgs():
                           'for sequencing depth differences between the samples. '
                           'As an alternative, this can be set to None and an option from '
                           '--normalizeUsing <method> can be used. (Default: %(default)s)',
-                          choices=['readCount', 'SES', 'None'],
+                          choices=['readCount', 'None'],
                           default='readCount')
 
     optional.add_argument('--sampleLength', '-l',
@@ -126,7 +127,6 @@ def getOptionalArgs():
                           'values (the first value is used as the numerator '
                           'pseudocount and the second the denominator pseudocount). (Default: %(default)s)',
                           default=[1],
-                          type=float,
                           nargs='+',
                           action=parserCommon.requiredLength(1, 2),
                           required=False)
@@ -158,69 +158,7 @@ def process_args(args=None):
     if not args.ignoreForNormalization:
         args.ignoreForNormalization = []
 
-    if not isinstance(args.pseudocount, list):
-        args.pseudocount = [args.pseudocount]
-
-    if len(args.pseudocount) == 1:
-        args.pseudocount *= 2
-
     return args
-
-# get_scale_factors function is used for scaling in bamCompare
-# while get_scale_factor is used for depth normalization
-
-
-def get_scale_factors(args, statsList, mappedList):
-
-    if args.scaleFactors:
-        scale_factors = list(map(float, args.scaleFactors.split(":")))
-    elif args.scaleFactorsMethod == 'SES':
-        scalefactors_dict = estimateScaleFactor(
-            [args.bamfile1, args.bamfile2],
-            args.sampleLength, args.numberOfSamples,
-            1,
-            mappingStatsList=mappedList,
-            blackListFileName=args.blackListFileName,
-            numberOfProcessors=args.numberOfProcessors,
-            verbose=args.verbose,
-            chrsToSkip=args.ignoreForNormalization)
-
-        scale_factors = scalefactors_dict['size_factors']
-
-        if args.verbose:
-            print("Size factors using SES: {}".format(scale_factors))
-            print("%s regions of size %s where used " %
-                  (scalefactors_dict['sites_sampled'],
-                   args.sampleLength))
-
-            print("ignoring filtering/blacklists, size factors if the number of mapped "
-                  "reads would have been used:")
-            print(tuple(
-                float(min(mappedList)) / np.array(mappedList)))
-
-    elif args.scaleFactorsMethod == 'readCount':
-        # change the scaleFactor to 1.0
-        args.scaleFactor = 1.0
-        # get num of kept reads for bam file 1
-        args.bam = args.bamfile1
-        bam1_mapped, _ = get_num_kept_reads(args, statsList[0])
-        # get num of kept reads for bam file 2
-        args.bam = args.bamfile2
-        bam2_mapped, _ = get_num_kept_reads(args, statsList[1])
-
-        mapped_reads = [bam1_mapped, bam2_mapped]
-
-        # new scale_factors (relative to min of two bams)
-        scale_factors = float(min(bam1_mapped, bam2_mapped)) / np.array(mapped_reads)
-        if args.verbose:
-            print("Size factors using total number "
-                  "of mapped reads: {}".format(scale_factors))
-
-    elif args.scaleFactorsMethod == 'None':
-        scale_factors = None
-
-    return scale_factors
-
 
 def main(args=None):
     """
@@ -274,8 +212,29 @@ def main(args=None):
             print("Please only provide one blacklist file.")
             sys.exit()
         args.blackListFileName = args.blackListFileName[0]
-
-    args.pseudocount = 1
+    if args.scaleFactors:
+        if len(args.scaleFactors.split(":")) == 2:
+            args.sf1 = float(args.scaleFactors.split(":")[0])
+            args.sf2 = float(args.scaleFactors.split(":")[0])
+        elif len(args.scaleFactors.split(":")) == 1:
+            args.sf1 = float(args.scaleFactors.split(":")[0])
+            args.sf2 = float(args.scaleFactors.split(":")[0])
+        else:
+            print("Please provide one scale factor, or two by a ':'.")
+            sys.exit()
+    else:
+        args.sf1 = 0.0
+        args.sf2 = 0.0
+    if len(args.pseudocount) == 1:
+        args.pseudocount1 = float(args.pseudocount[0])
+        args.pseudocount2 = float(args.pseudocount[0])
+    elif len(args.pseudocount) == 2:
+        args.pseudocount1 = float(args.pseudocount[0])
+        args.pseudocount2 = float(args.pseudocount[1])
+    else:
+        print(f"Pseudocounts should be either one or two values. Not {args.pseudocount}")
+        sys.exit()
+    print(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_bamcompare(
         args.bamfile1, # bam file 1
@@ -285,8 +244,11 @@ def main(args=None):
         args.normalizeUsing, # normalization method
         args.effectiveGenomeSize, # effective genome size
         args.scaleFactorsMethod, # scaling method
+        args.sf1,
+        args.sf2,
         args.operation,
-        args.pseudocount,
+        args.pseudocount1,
+        args.pseudocount2,
         args.extendReads,
         args.extendReadsLen,
         args.centerReads,
@@ -298,6 +260,8 @@ def main(args=None):
         args.maxFragmentLength,
         args.numberOfProcessors, # threads
         args.ignoreForNormalization,
+        args.skipNonCoveredRegions,
+        args.skipZeroOverZero,
         args.binSize, # bin size
         args.region, # regions
         args.verbose, # verbose
