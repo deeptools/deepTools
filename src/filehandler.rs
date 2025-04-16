@@ -273,8 +273,8 @@ pub fn read_bedfile(bed_file: &String, metagene: bool, chroms: Vec<&String>) -> 
                         chrom: fields[0].to_string(), //chrom
                         start: Revalue::U(start), //start
                         end: Revalue::U(end), //end
-                        score: ".".to_string(), //score
-                        strand: ".".to_string(), //score
+                        score: fields[4].to_string(), //score
+                        strand: fields[5].to_string(), //strand
                         name: entryname, //region name
                         regionlength: end - start // regionlength
                     }
@@ -321,7 +321,7 @@ pub fn read_bedfile(bed_file: &String, metagene: bool, chroms: Vec<&String>) -> 
                             start: Revalue::V(starts), //start
                             end: Revalue::V(ends), //end
                             score: fields[4].to_string(), //score
-                            strand: fields[5].to_string(), //score
+                            strand: fields[5].to_string(), //strand
                             name: entryname, //region name
                             regionlength: length // regionlength
                         }
@@ -336,7 +336,7 @@ pub fn read_bedfile(bed_file: &String, metagene: bool, chroms: Vec<&String>) -> 
                             start: Revalue::U(start), //start
                             end: Revalue::U(end), //end
                             score: fields[4].to_string(), //score
-                            strand: fields[5].to_string(), //score
+                            strand: fields[5].to_string(), //strand
                             name: entryname, //region name
                             regionlength: end - start // regionlength
                         }
