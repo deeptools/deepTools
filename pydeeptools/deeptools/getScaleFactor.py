@@ -59,24 +59,24 @@ def getFractionKept_worker(chrom, start, end, bamFile, args, offset):
 
             # get rid of duplicate reads that have same position on each of the
             # pairs
-            if args.ignoreDuplicates:
-                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
-                if tLen >= 0:
-                    s = read.pos
-                    e = s + tLen
-                else:
-                    s = read.pnext
-                    e = s - tLen
-                if read.reference_id != read.next_reference_id:
-                    e = read.pnext
-                if lpos is not None and lpos == read.reference_start \
-                        and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
-                    filtered += 1
-                    continue
-                if lpos != read.reference_start:
-                    prev_pos.clear()
-                lpos = read.reference_start
-                prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
+            # if args.ignoreDuplicates:
+            #     # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+            #     if tLen >= 0:
+            #         s = read.pos
+            #         e = s + tLen
+            #     else:
+            #         s = read.pnext
+            #         e = s - tLen
+            #     if read.reference_id != read.next_reference_id:
+            #         e = read.pnext
+            #     if lpos is not None and lpos == read.reference_start \
+            #             and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+            #         filtered += 1
+            #         continue
+            #     if lpos != read.reference_start:
+            #         prev_pos.clear()
+            #     lpos = read.reference_start
+            #     prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
 
             # If filterRNAstrand is in args, then filter accordingly
             # This is very similar to what's used in the get_fragment_from_read function in the filterRnaStrand class
@@ -146,8 +146,7 @@ def fraction_kept(args, stats):
             num_needed_to_sample = 0.1 * bam_mapped
         else:
             num_needed_to_sample = 1000000
-    if args.exactScaling:
-        num_needed_to_sample = bam_mapped
+    num_needed_to_sample = bam_mapped
     if num_needed_to_sample == bam_mapped:
         distanceBetweenBins = 55000
     if args.ignoreForNormalization:
