@@ -124,25 +124,26 @@ pub fn calc_ratio(
     cov2: f32,
     sf1: &f32,
     sf2: &f32,
-    pseudocount: &f32,
+    pseudocount1: &f32,
+    pseudocount2: &f32,
     operation: &str
 ) -> f32 {
     // Pseudocounts are only used in log2 and ratio operations
     // First scale factor is applied, then pseudocount, if applicable.
     match operation {
         "log2" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
             return (num / den).log2();
         }
         "ratio" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
             return num / den;
         }
         "reciprocal_ratio" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
             let ratio: f32 = num / den;
             if ratio >= 1.0 {
                 return den / num;
@@ -150,10 +151,15 @@ pub fn calc_ratio(
                 return -num / den;
             }
         }
+        "subtract" => {
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
+            return num - den;
+        }
         _ => {
             // No operation is never allowed (on the py arg level, so just default to log2)
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
             return (num / den).log2();
         }
     }
