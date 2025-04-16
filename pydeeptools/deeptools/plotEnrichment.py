@@ -326,23 +326,23 @@ def getEnrichment_worker(arglist):
                 continue
             if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
                 continue
-            if args.ignoreDuplicates:
-                # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
-                if tLen >= 0:
-                    s = read.pos
-                    e = s + tLen
-                else:
-                    s = read.pnext
-                    e = s - tLen
-                if read.reference_id != read.next_reference_id:
-                    e = read.pnext
-                if lpos is not None and lpos == read.reference_start \
-                        and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
-                    continue
-                if lpos != read.reference_start:
-                    prev_pos.clear()
-                lpos = read.reference_start
-                prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
+            # if args.ignoreDuplicates:
+            #     # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
+            #     if tLen >= 0:
+            #         s = read.pos
+            #         e = s + tLen
+            #     else:
+            #         s = read.pnext
+            #         e = s - tLen
+            #     if read.reference_id != read.next_reference_id:
+            #         e = read.pnext
+            #     if lpos is not None and lpos == read.reference_start \
+            #             and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
+            #         continue
+            #     if lpos != read.reference_start:
+            #         prev_pos.clear()
+            #     lpos = read.reference_start
+            #     prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
             total[idx] += 1
 
             # Get blocks, possibly extending
