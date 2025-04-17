@@ -645,7 +645,12 @@ pub fn write_matrix(
             region.strand,               // Strand field persisted from bedfile
         );
         writerow.push_str(
-            &row.iter().map(|x| (scale_regions.scale * x).to_string()).collect::<Vec<String>>().join("\t")
+            &row
+                .iter()
+                .map(
+                    |x| ((scale_regions.scale * x * 100.0).round() / 100.0).to_string()
+                )
+                .collect::<Vec<String>>().join("\t")
         );
         writerow.push_str("\n");
         encoder.write_all(writerow.as_bytes()).unwrap();

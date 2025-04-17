@@ -208,7 +208,7 @@ pub fn r_bamcoverage(
                             (fields[0].to_string(), Value {
                                 start: fields[1].parse::<u32>().unwrap(),
                                 end: fields[2].parse::<u32>().unwrap(),
-                                value: fields[3].parse::<f32>().unwrap() * sf
+                                value: (fields[3].parse::<f32>().unwrap() * sf * 100.0).round() / 100.0,
                             })
                         )
                     }
