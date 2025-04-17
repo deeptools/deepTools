@@ -50,10 +50,6 @@ jobs:
           cache: 'pip'
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Set up virtual environment
-        run: python -m venv venv
-      - name: Activate virtual environment
-        run: source venv/bin/activate
       - name: Install maturin
         run: pip install maturin
       - name: Build with maturin
@@ -77,10 +73,6 @@ jobs:
         cache: 'pip' 
     - name: Install Rust
       uses: actions-rust-lang/setup-rust-toolchain@v1
-    - name: Set up virtual environment
-      run: python -m venv venv
-    - name: Activate virtual environment
-      run: source venv/bin/activate
     - name: Install maturin
       run: pip install maturin
     - name: Build with maturin
