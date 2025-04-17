@@ -48,12 +48,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-      - name: pip install
-        run: |
-          pip install .[actions]
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Set up virtual environment
+        run: python -m venv venv
+      - name: Activate virtual environment
+        run: source venv/bin/activate
+      - name: Install maturin
+        run: pip install maturin
+      - name: Build with maturin
+        run: maturin develop --release --extras actions
       - name: Test deepTools
-        run: |
-          pytest -v
+        run: pytest -v
       - name: Build wheel
         run: |
           python -m build
@@ -68,10 +74,16 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-        cache: 'pip'
-    - name: pip install
-      run: |
-        pip install .[actions]
+        cache: 'pip' 
+    - name: Install Rust
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+    - name: Set up virtual environment
+      run: python -m venv venv
+    - name: Activate virtual environment
+      run: source venv/bin/activate
+    - name: Install maturin
+      run: pip install maturin
+    - name: Build with maturin
+      run: maturin develop --release --extras actions
     - name: Test deepTools
-      run: |
-        pytest -v
+      run: pytest -v
