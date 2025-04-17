@@ -58,7 +58,7 @@ jobs:
           maturin develop --release --extras actions
       - name: test deeptools
         run: |
-          source venc/bin/activate
+          source venv/bin/activate
           pytest -v
       - name: build wheel
         run: |
@@ -90,7 +90,7 @@ jobs:
           maturin develop --release --extras actions
       - name: test deeptools
         run: |
-          source venc/bin/activate
+          source venv/bin/activate
           pytest -v
       - name: build wheel
         run: |
