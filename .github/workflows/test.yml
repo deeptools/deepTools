@@ -50,32 +50,53 @@ jobs:
           cache: 'pip'
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: Install maturin
-        run: pip install maturin
-      - name: Build with maturin
-        run: maturin develop --release --extras actions
-      - name: Test deepTools
-        run: pytest -v
-      - name: Build wheel
+      - name: build deeptools
         run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install maturin
+          maturin develop --release --extras actions
+      - name: test deeptools
+        run: |
+          source venc/bin/activate
+          pytest -v
+      - name: build wheel
+        run: |
+          source venv/bin/activate
           python -m build
-      - name: Test wheel
+      - name: test wheel
         run: |
+          source venv/bin/activate
           pip install dist/*whl
   build-osx:
     name: Test on OSX
     runs-on: macOS-latest
+    strategy:
+      matrix:
+        python-version: ['3.9','3.10', '3.11', '3.12']
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip' 
-    - name: Install Rust
-      uses: actions-rust-lang/setup-rust-toolchain@v1
-    - name: Install maturin
-      run: pip install maturin
-    - name: Build with maturin
-      run: maturin develop --release --extras actions
-    - name: Test deepTools
-      run: pytest -v
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - name: Install Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: build deeptools
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install maturin
+          maturin develop --release --extras actions
+      - name: test deeptools
+        run: |
+          source venc/bin/activate
+          pytest -v
+      - name: build wheel
+        run: |
+          source venv/bin/activate
+          python -m build
+      - name: test wheel
+        run: |
+          source venv/bin/activate
+          pip install dist/*whl
