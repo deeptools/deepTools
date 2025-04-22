@@ -89,8 +89,8 @@ pub fn read_gtffile(gtf_file: &String, gtfparse: &Gtfparse, chroms: Vec<&String>
             }
             let fields: Vec<&str> = line.split('\t').collect();
             if fields[2].to_string() == gtfparse.exonid {
-                let start = fields[3].parse().unwrap();
-                let end = fields[4].parse().unwrap();
+                let start: u32 = fields[3].parse().unwrap();
+                let end: u32 = fields[4].parse().unwrap();
                 let txnid = fields[8]
                     .split(';')
                     .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
@@ -154,8 +154,8 @@ pub fn read_gtffile(gtf_file: &String, gtfparse: &Gtfparse, chroms: Vec<&String>
 
             let fields: Vec<&str> = line.split('\t').collect();
             if fields[2].to_string() == gtfparse.txnid {
-                let start = fields[3].parse().unwrap();
-                let end = fields[4].parse().unwrap();
+                let start: u32 = fields[3].parse().unwrap();
+                let end: u32 = fields[4].parse().unwrap();
                 let mut entryname = fields[8]
                     .split(';')
                     .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
@@ -533,9 +533,24 @@ pub fn header_matrix(scale_regions: &Scalingregions, regionsizes: HashMap<String
     headstr.push_str(
         &format!("\"bin size\":[{}],", (0..scale_regions.bwfiles).map(|_| scale_regions.binsize).collect::<Vec<_>>().into_iter().join(","))
     );
-    headstr.push_str(
-        &format!("\"ref point\":[\"{}\"],", (0..scale_regions.bwfiles).map(|_| scale_regions.referencepoint.clone()).collect::<Vec<_>>().into_iter().join("\",\""))
-    );
+    // ref point can be empty (for scale_regions, for example).
+    // To keep compatibility with deepTools 3 it should be written as null
+    let refpointstring = (0..scale_regions.bwfiles)
+        .map(|_| scale_regions.referencepoint.clone())
+        .collect::<Vec<_>>()
+        .into_iter()
+        .join("\",\"");
+
+    if refpointstring.is_empty() {
+        headstr.push_str(
+            &format!("\"ref point\":[null],")
+        );
+    } else {
+        headstr.push_str(
+            &format!("\"ref point\":[\"{}\"],", refpointstring)
+        );
+    }
+    
     headstr.push_str(
         &format!("\"verbose\":{},", scale_regions.verbose)
     );
@@ -648,7 +663,14 @@ pub fn write_matrix(
             &row
                 .iter()
                 .map(
-                    |x| ((scale_regions.scale * x * 100.0).round() / 100.0).to_string()
+                    |x| {
+                        if x.is_nan() {
+                            // as deepTools 3 encoded nan in matrix.
+                            "nan".to_string()
+                        } else {
+                            ((scale_regions.scale * x * 100.0).round() / 100.0).to_string()
+                        }
+                    }
                 )
                 .collect::<Vec<String>>().join("\t")
         );
