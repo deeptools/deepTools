@@ -144,8 +144,15 @@ def main(args=None):
         args.normalizeUsing = 'None'
     if not args.Offset:
         args.Offset = [0, 0]
+    # in rust, no offset is encoded as 0,0
+    # in python code 1, -1 corresponds to no offset.
     elif len(args.Offset) == 1:
         args.Offset = [args.Offset[0], 0]
+    else:
+        if args.Offset[1] == -1:
+            args.Offset[1] = 0
+        args.Offset = [args.Offset[0], args.Offset[1]]
+
     if not args.extendReads:
         args.extendReads = False
         args.extendReadsLen = 0
