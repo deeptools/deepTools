@@ -38,9 +38,13 @@ Core
     - --quiet / -q option no longer exists.
     - bed files in computeMatrix no longer support '#' to define groups.
     - 'chromosome matching' i.e. chr1 <-> 1, chrMT <-> MT is no longer performed.
-
+	- metagene mode erroneously 'nan'ed the before and after values (if they fell outside of the feature). This is fixed now.
+	- Rounding bahvior in matrix output only two decimals now, unscaled 5 and unscaled 3 prime are now strictly separated from the rest of the scaled region (for value calculation).
+	
 * normalization
     - Exactscaling is no longer an option, it's always performed.
+	- SES option in bamCompare mode is no longer available.
+	- blackList filtering is now performed on a position-based level. Meaning reads that overlap partially with the blacklist can still contribute to the signal.
 
 * alignmentSieve
     - options label, smartLabels, genomeChunkLength are removed.

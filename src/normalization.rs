@@ -14,6 +14,7 @@ pub fn scale_factor(
         return scalefactor;
     }
     let mut scale_factor = 1.0;
+
     match norm_method {
         "RPKM" => {
             // RPKM = # reads per tile / total reads (millions) * tile length (kb)
@@ -35,6 +36,7 @@ pub fn scale_factor(
         "RPGC" => {
             // RPGC = mapped reads * fragment length / effective genome size
             let tmp_scalefactor = (mapped as f32 * readlen as f32) / effective_genome_size as f32;
+            println!("Tmp scale factor: {}", tmp_scalefactor);
             scale_factor *= 1.0 / tmp_scalefactor;
         }
         _ => {}
@@ -49,9 +51,13 @@ pub fn scale_factor_bamcompare(
     norm_method: &str,
     mapped_bam1: u32,
     mapped_bam2: u32,
-    _binsize: u32,
-    _effective_genome_size: u64,
-    _norm: &str
+    binsize: u32,
+    effective_genome_size: u64,
+    norm: &str,
+    readlen_bam1: f32,
+    readlen_bam2: f32,
+    fraglen_bam1: f32,
+    fraglen_bam2: f32,
 ) -> (f32, f32) {
     return match norm_method {
         "readCount" => {
@@ -60,12 +66,32 @@ pub fn scale_factor_bamcompare(
             let scale_factor2 = min as f32 / mapped_bam2 as f32;
             (scale_factor1, scale_factor2)
         }
-        "SES" => {
-            // to be implemented
-            (1.0, 1.0)
+        "None" => {
+            // Default to scale factor calculation with 'norm'.
+            let scale_factor1 = scale_factor(
+                norm,
+                mapped_bam1,
+                binsize,
+                effective_genome_size,
+                readlen_bam1,
+                fraglen_bam1,
+                1.0,
+                &false
+            );
+            let scale_factor2 = scale_factor(
+                norm,
+                mapped_bam2,
+                binsize,
+                effective_genome_size,
+                readlen_bam2,
+                fraglen_bam2,
+                1.0,
+                &false
+            );
+            (scale_factor1, scale_factor2)
         }
         _ => {
-            (1.0, 1.0)
+            panic!("ScaleFactorsMethod should either be 'readCount' or 'None'.");
         }
     }
 }

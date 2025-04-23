@@ -1,4 +1,4 @@
-import deeptools.computeMatrix as cm
+import deeptools.computeMatrix2 as cm
 
 import os.path
 from os import unlink
@@ -20,6 +20,7 @@ def test_compute_matrix_with_reference_point_and_advance_options_1():
     """
     outfile = '/tmp/computematrix_1.gz'
     args = "reference-point --regionsFileName {} --scoreFileName {} -o {} -bs 10 --sortUsing sum --averageTypeBins sum -b 10 -a 10".format(REGIONS_IN1, BIGWIG_IN1, outfile).split()
+    print(' '.join(args))
     cm.main(args)
 
     archieve_file_size = os.path.getsize(OUT_ARCHIEVE1)

@@ -124,37 +124,49 @@ pub fn calc_ratio(
     cov2: f32,
     sf1: &f32,
     sf2: &f32,
-    pseudocount: &f32,
+    pseudocount1: &f32,
+    pseudocount2: &f32,
     operation: &str
 ) -> f32 {
     // Pseudocounts are only used in log2 and ratio operations
     // First scale factor is applied, then pseudocount, if applicable.
     match operation {
         "log2" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
-            return (num / den).log2();
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
+            let fcov: f32 = (num / den).log2();
+            return (fcov * 100.0).round() / 100.0;
         }
         "ratio" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
-            return num / den;
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
+            let fcov: f32 = num / den;
+            return (fcov * 100.0).round() / 100.0;
         }
         "reciprocal_ratio" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
             let ratio: f32 = num / den;
             if ratio >= 1.0 {
-                return den / num;
+                let fcov: f32 = den / num;
+                return (fcov * 100.0).round() / 100.0;
             } else {
-                return -num / den;
+                let fcov: f32 = -num / den;
+                return (fcov * 100.0).round() / 100.0;
             }
+        }
+        "subtract" => {
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
+            let fcov: f32 = num - den;
+            return (fcov * 100.0).round() / 100.0;
         }
         _ => {
             // No operation is never allowed (on the py arg level, so just default to log2)
-            let num: f32 = (cov1 * *sf1) + *pseudocount;
-            let den: f32 = (cov2 * *sf2) + *pseudocount;
-            return (num / den).log2();
+            let num: f32 = (cov1 * *sf1) + *pseudocount1;
+            let den: f32 = (cov2 * *sf2) + *pseudocount2;
+            let fcov: f32 = (num / den).log2();
+            return (fcov * 100.0).round() / 100.0;
         }
     }
 }

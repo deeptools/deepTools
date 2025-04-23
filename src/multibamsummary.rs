@@ -240,7 +240,10 @@ pub fn r_mbams(
                         .map(|x| x.split('\t').collect())
                         .map(|x: Vec<&str> | ( x[0].to_string(), x[1].to_string(), x[2].to_string(), x[3].parse::<f32>().unwrap() ) )
                         .collect();
-                    let counts = lines.par_iter().map(|x| x.3).collect::<Vec<_>>();
+                    let counts = lines
+                        .par_iter()
+                        .map(|x| (x.3 * 100.0).round() / 100.0)
+                        .collect::<Vec<_>>();
                     let regions: (String, String, String) = (lines[0].0.clone(), lines[0].1.clone(), lines[0].2.clone());
                     _matvec.push(counts);
                     _regions.push(regions);

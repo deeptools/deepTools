@@ -33,7 +33,7 @@ pub fn r_bamcoverage(
     filterrnastrand: &str, // forward, reverse or 'None'
     blacklist: &str, // path to blacklist filename, or 'None'
     _ignorechr: Py<PyList>, // list of chromosomes to ignore. Is empty if none.
-    _skipnoncovregions: bool,
+    skipnoncovregions: bool,
     _smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
     binsize: u32,
     // filtering options
@@ -88,7 +88,6 @@ pub fn r_bamcoverage(
     if verbose {
         println!("Chromosomes to ignore for normalization: {:?}", ignorechr);
     }
-
 
     // if mnase, set the min / max fragment lengths if these are not set.
     if mnase {
@@ -169,13 +168,20 @@ pub fn r_bamcoverage(
             )
     });
 
-    let readlen = median(readlen);
+    let mut readlen = median(readlen);
+    if filters.extendreads {
+        if verbose {
+            println!("extend reads option on, overriding readlen from {} to {}", readlen, filters.extendreadslen);
+        }
+        readlen = filters.extendreadslen as f32;
+    }
     let fraglen = median(fraglen);
     if verbose {
         println!("Read stats with ignorechr: {:?}", ignorechr);
         println!("Mapped: {} Unmapped: {}", mapped, _unmapped);
         println!("Readlen: {}, Fraglen: {}", readlen, fraglen);
     }
+
     let sf = scale_factor(
         norm, 
         mapped,
@@ -191,15 +197,21 @@ pub fn r_bamcoverage(
     let lines = bg.into_iter().flat_map(
         |bg| {
             let reader = BufReader::new(File::open(bg).unwrap());
-            reader.lines().map(
+            reader.lines().filter_map(
                 |l| {
                     let l = l.unwrap();
                     let fields: Vec<&str> = l.split('\t').collect();
-                    (fields[0].to_string(), Value {
-                        start: fields[1].parse::<u32>().unwrap(),
-                        end: fields[2].parse::<u32>().unwrap(),
-                        value: fields[3].parse::<f32>().unwrap() * sf
-                    })
+                    if skipnoncovregions && fields[3] == "0" {
+                        None
+                    } else {
+                        Some(
+                            (fields[0].to_string(), Value {
+                                start: fields[1].parse::<u32>().unwrap(),
+                                end: fields[2].parse::<u32>().unwrap(),
+                                value: (fields[3].parse::<f32>().unwrap() * sf * 100.0).round() / 100.0,
+                            })
+                        )
+                    }
                 }
             )
         }

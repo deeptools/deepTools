@@ -533,9 +533,9 @@ impl Region {
 
                         let mut absstart: i64 = anchorstart as i64 - scale_regions.upstream as i64;
                         let absstop: i64 = anchorstop as i64 + scale_regions.downstream as i64;
-
+                        println!("+ - U, absstart = {}, anchorstart = {}", absstart, anchorstart);
                         for binix in (absstart..anchorstart as i64).step_by(scale_regions.binsize as usize) {
-                            if binix < 0 || binix as u32 >= chromend || (binix + scale_regions.binsize as i64) as u32 >= chromend {
+                            if binix < 0 || binix as u32 > chromend || (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 leftbins.push(Bin::Conbin(0,0));
                             } else if scale_regions.nan_after_end && binix as u32 <= *start  {
                                 leftbins.push(Bin::Conbin(0,0));
@@ -545,7 +545,7 @@ impl Region {
                         }
 
                         for binix in (anchorstop as i64..absstop).step_by(scale_regions.binsize as usize) {
-                            if binix < 0 || binix as u32 >= chromend || (binix + scale_regions.binsize as i64) as u32 >= chromend {
+                            if binix < 0 || binix as u32 > chromend || (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 rightbins.push(Bin::Conbin(0,0));
                             } else if scale_regions.nan_after_end && binix as u32 >= *end {
                                 rightbins.push(Bin::Conbin(0,0));
@@ -566,6 +566,7 @@ impl Region {
                         for bin in rightbins.into_iter() {
                             bins.push(bin);
                         }
+                        
                     }
                     (Revalue::V(start), Revalue::V(end)) => {
                         let exons: Vec<(u32, u32)> = start.iter().zip(end.iter())
@@ -576,7 +577,7 @@ impl Region {
                         let mut lastanchor: u32 = anchorstop;
                         let mut walked_bps: u32 = 0;
                         while walked_bps < scale_regions.downstream {
-                            if lastanchor >= chromend {
+                            if lastanchor > chromend {
                                 rightbins.push(Bin::Conbin(0,0));
                                 walked_bps += scale_regions.binsize;
                             } else {
@@ -597,6 +598,7 @@ impl Region {
                         let mut leftbins: Vec<Bin> = Vec::new();
                         let mut lastanchor: u32 = anchorstart;
                         let mut walked_bps: u32 = 0;
+
                         while walked_bps < scale_regions.upstream {
                             if lastanchor == 0 {
                                 leftbins.push(Bin::Conbin(0,0));
@@ -642,7 +644,7 @@ impl Region {
 
                         let mut absstart: i64 = anchorstop as i64 + scale_regions.upstream as i64;
                         let absstop: i64 = anchorstart as i64 - scale_regions.downstream as i64;
-
+                        
                         let steps: Vec<_> = (anchorstop as i64..absstart)
                             .step_by(scale_regions.binsize as usize)
                             .collect();
@@ -650,12 +652,12 @@ impl Region {
                             if binix as u32 > chromend || (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 rightbins.push(Bin::Conbin(0,0));
                             } else if scale_regions.nan_after_end && binix as u32 >= *end {
-                                leftbins.push(Bin::Conbin(0,0));
+                                rightbins.push(Bin::Conbin(0,0));
                             } else {
-                                leftbins.push(Bin::Conbin(binix as u32, (binix as u32) + scale_regions.binsize));
+                                rightbins.push(Bin::Conbin(binix as u32, (binix as u32) + scale_regions.binsize));
                             }
                         }
-                        
+                        println!("- - U, absstop = {}, anchorstart = {}", absstop, anchorstart);
                         let steps: Vec<_> = (absstop..anchorstart as i64)
                             .step_by(scale_regions.binsize as usize)
                             .collect();
@@ -663,12 +665,12 @@ impl Region {
                             if binix < 0 {
                                 leftbins.push(Bin::Conbin(0,0));
                             } else if scale_regions.nan_after_end && binix as u32 + scale_regions.binsize <= *start {
-                                rightbins.push(Bin::Conbin(0,0));
+                                leftbins.push(Bin::Conbin(0,0));
                             } else {
-                                rightbins.push(Bin::Conbin(binix as u32, (binix as u32) + scale_regions.binsize));
+                                leftbins.push(Bin::Conbin(binix as u32, (binix as u32) + scale_regions.binsize));
                             }
                         }
-                        
+
                         for bin in rightbins.into_iter() {
                             bins.push(bin);
                         }
@@ -692,7 +694,7 @@ impl Region {
                         let mut lastanchor: u32 = anchorstop;
                         let mut walked_bps: u32 = 0;
                         while walked_bps < scale_regions.upstream {
-                            if lastanchor >= chromend {
+                            if lastanchor > chromend {
                                 rightbins.push(Bin::Conbin(0,0));
                                 walked_bps += scale_regions.binsize;
                             } else {
@@ -731,6 +733,7 @@ impl Region {
                                 lastanchor = retanch;
                             }
                         }
+
                         // Note that now we need to go the exact opposite way as for the + strand as the 'highest position' is the 'starting point'.
                         rightbins.reverse();
                         for bin in rightbins.into_iter() {
@@ -803,7 +806,7 @@ impl Region {
                         }
                         let bodystart = *start + scale_regions.unscaled5prime;
                         let bodyend = *end - scale_regions.unscaled3prime;
-                        
+
                         // Get the bins over the body length. These need to be scaled, so similar to deeptools < 4, linspace is used.
                         let neededbins = (scale_regions.regionbodylength / scale_regions.binsize) as usize;
                         // There's multiple options here:
@@ -811,13 +814,11 @@ impl Region {
                         // regionbodylength / binsize > transcriptlength <= regionbodylength -> 1 >= binsize > binsize.
                         // transcriptlength <= regionbodylength / binsize -> index repetitions with binsize of one.
                         let scaledbinsize = std::cmp::min(std::cmp::max((bodyend - bodystart) / neededbins as u32, 1), scale_regions.binsize);
-
                         innerbins.extend( Array1::linspace(bodystart as f32, (bodyend - scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x as u32)
+                            .mapv(|x| x.round() as u32)
                             .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
                             .into_iter()
                             .collect::<Vec<_>>() );
-
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
                         if scale_regions.unscaled5prime > 0 {
@@ -872,11 +873,11 @@ impl Region {
                             }
                         }
                         un3bins.reverse();
-                        
+
                         let bodystart: u32;
                         let bodyend: u32;
                         if scale_regions.unscaled5prime > 0 {
-                            bodystart = un5bins.last().unwrap().get_end();
+                            bodystart = un5bins.last().unwrap().get_end() - 1;
                         } else {
                             bodystart = *start.first().unwrap();
                         }
@@ -932,7 +933,7 @@ impl Region {
                         }
 
                         let innerbins = Array1::linspace(0 as f32, ((truebodylength)/scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x as u32)
+                            .mapv(|x| x.round() as u32)
                             .map(|x| binmap.get(&x).unwrap().clone())
                             .into_iter()
                             .collect::<Vec<Bin>>();
@@ -959,45 +960,36 @@ impl Region {
                         let mut un5bins: Vec<Bin> = Vec::new();
                         let mut un3bins: Vec<Bin> = Vec::new();
                         let mut innerbins: Vec<Bin> = Vec::new();
-                        if scale_regions.unscaled5prime > 0 {
-                            un5bins.extend((0..scale_regions.unscaled5prime)
+                        if scale_regions.unscaled3prime > 0 {
+                            un3bins.extend((0..scale_regions.unscaled3prime)
                                 .step_by(scale_regions.binsize as usize)
-                                .map(|i| Bin::Conbin(*end - i - scale_regions.binsize, *end - i))
+                                .map(|i| Bin::Conbin(*start + i, *start + i + scale_regions.binsize))
                                 .collect::<Vec<Bin>>());
                         }
                         
-                        if scale_regions.unscaled3prime > 0 {
-                            un3bins.extend( (0..scale_regions.unscaled3prime)
+                        if scale_regions.unscaled5prime > 0 {
+                            un5bins.extend( (0..scale_regions.unscaled5prime)
                                 .step_by(scale_regions.binsize as usize)
                                 .rev()
-                                .map(|i| Bin::Conbin(*start + scale_regions.unscaled3prime - i - scale_regions.binsize, *start + scale_regions.unscaled3prime - i))
+                                .map(|i| Bin::Conbin(*end - i - scale_regions.binsize, *end - i))
                                 .collect::<Vec<Bin>>() );
                         }
                         let bodystart = *start + scale_regions.unscaled3prime;
                         let bodyend = *end - scale_regions.unscaled5prime;
-
+                        
                         // Get the bins over the body length. These need to be scaled, so similar to deeptools < 4, linspace is used.
                         let neededbins = (scale_regions.regionbodylength / scale_regions.binsize) as usize;
                         // There's multiple options here:
                         // transcriptlength >= regionbodylength -> linspace
                         // regionbodylength / binsize > transcriptlength <= regionbodylength -> 1 >= binsize > binsize.
                         // transcriptlength <= regionbodylength / binsize -> index repetitions with binsize of one.
-                        let mut scaledbinsize = (bodyend - bodystart)/neededbins as u32;
-                        if scaledbinsize == 0 {
-                            scaledbinsize = 1;
-                        }
-                        if scaledbinsize > scale_regions.binsize {
-                            scaledbinsize = scale_regions.binsize;
-                        }
-
+                        let scaledbinsize = std::cmp::min(std::cmp::max((bodyend - bodystart) / neededbins as u32, 1), scale_regions.binsize);
                         innerbins.extend( Array1::linspace(bodystart as f32, (bodyend - scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x as u32)
+                            .mapv(|x| x.round() as u32)
                             .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
                             .into_iter()
                             .collect::<Vec<_>>() );
-                        
-                        // Reverse innerbins to go from 3' -> 5'
-                        innerbins.reverse();
+                        println!("");
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
                         if scale_regions.unscaled3prime > 0 {
@@ -1034,7 +1026,6 @@ impl Region {
                             }
                         }
                         un5bins.reverse();
-
                         if scale_regions.unscaled3prime > 0 {
                             let mut walked_bps: u32 = 0;
                             let mut lastanchor: u32 = start[0];
@@ -1053,18 +1044,18 @@ impl Region {
                                 lastanchor = retanch;
                             }
                         }
-                        
+
                         let bodystart: u32;
                         let bodyend: u32;
-                        if scale_regions.unscaled3prime > 0 {
-                            bodystart = un3bins.last().unwrap().get_end();
-                        } else {
-                            bodystart = *start.first().unwrap();
-                        }
                         if scale_regions.unscaled5prime > 0 {
                             bodyend = un5bins.first().unwrap().get_start();
                         } else {
-                            bodyend = *end.last().unwrap();
+                            bodyend = *start.first().unwrap();
+                        }
+                        if scale_regions.unscaled3prime > 0 {
+                            bodystart = un3bins.last().unwrap().get_end() - 1;
+                        } else {
+                            bodystart = *end.last().unwrap();
                         }
                         let truebodylength = self.regionlength - scale_regions.unscaled5prime - scale_regions.unscaled3prime;
                         let neededbins = (scale_regions.regionbodylength / scale_regions.binsize) as usize;
@@ -1113,18 +1104,19 @@ impl Region {
                         }
 
                         let innerbins = Array1::linspace(0 as f32, ((truebodylength)/scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x as u32)
+                            .mapv(|x| x.round() as u32)
                             .map(|x| binmap.get(&x).unwrap().clone())
                             .into_iter()
                             .collect::<Vec<Bin>>();
+
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
-                        if scale_regions.unscaled5prime > 0 {
-                            combined_bins.extend(un5bins.into_iter());
-                        }
-                        combined_bins.extend(innerbins.into_iter());
                         if scale_regions.unscaled3prime > 0 {
                             combined_bins.extend(un3bins.into_iter());
+                        }
+                        combined_bins.extend(innerbins.into_iter());
+                        if scale_regions.unscaled5prime > 0 {
+                            combined_bins.extend(un5bins.into_iter());
                         }
                         return combined_bins;
                     },
@@ -1150,6 +1142,9 @@ fn refpoint_exonwalker(exons: &Vec<(u32, u32)>, anchor: u32, binsize: u32, chrom
         match anchorix {
             Some(i) => {
                 // anchor sits in an exon. Check if anchor + binsize is also in same exon.
+                if anchor + binsize > chromend {
+                    return (Bin::Conbin(0,0), chromend);
+                }
                 if anchor + binsize <= exons[i].1 {
                     (Bin::Conbin(anchor, anchor + binsize), anchor + binsize)
                 } else {
@@ -1217,7 +1212,7 @@ fn refpoint_exonwalker(exons: &Vec<(u32, u32)>, anchor: u32, binsize: u32, chrom
             None => {
                 // our anchor doesn't sit in exons. We just return the anchor + binsize as Bin
                 if anchor + binsize > chromend {
-                    (Bin::Conbin(anchor, chromend), chromend)
+                    (Bin::Conbin(0, 0), chromend)
                 } else {
                     (Bin::Conbin(anchor, anchor + binsize), anchor + binsize)
                 }
@@ -1227,6 +1222,11 @@ fn refpoint_exonwalker(exons: &Vec<(u32, u32)>, anchor: u32, binsize: u32, chrom
         // Walk backwards (upstream, towards chromosome start)
         match anchorix {
             Some(i) => {
+                // Run a check to see if binsize > anchor.
+                if anchor < binsize {
+                    // We are at the start of the chromosome. We need to return a Conbin.
+                    return (Bin::Conbin(0, 0), 0);
+                }
                 // anchor sits in an exon. Check if anchor - binsize is also in same exon.
                 if anchor - binsize >= exons[i].0 {
                     (Bin::Conbin(anchor - binsize, anchor), anchor - binsize)
@@ -1296,7 +1296,7 @@ fn refpoint_exonwalker(exons: &Vec<(u32, u32)>, anchor: u32, binsize: u32, chrom
             None => {
                 // our anchor doesn't sit in exons. We just return the anchor - binsize as Bin
                 if anchor < binsize {
-                    (Bin::Conbin(0, anchor), 0)
+                    (Bin::Conbin(0, 0), 0)
                 } else {
                     (Bin::Conbin(anchor - binsize, anchor), anchor - binsize)
                 }
