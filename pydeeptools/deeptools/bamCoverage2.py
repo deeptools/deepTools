@@ -147,15 +147,10 @@ def main(args=None):
     # in rust, no offset is encoded as 0,0
     # in python code 1, -1 corresponds to no offset.
     elif len(args.Offset) == 1:
-        if args.Offset[0] == 1:
-            args.Offset = [0,0]
-        else:
-            args.Offset = [args.Offset[0], 0]
+        args.Offset = [args.Offset[0], 0]
     else:
         if args.Offset[1] == -1:
             args.Offset[1] = 0
-        if args.Offset[0] == 1:
-            args.Offset[0] = 0
         args.Offset = [args.Offset[0], args.Offset[1]]
 
     if not args.extendReads:
