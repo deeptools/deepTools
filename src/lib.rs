@@ -10,7 +10,7 @@ mod filtering;
 mod multibamsummary;
 mod normalization;
 #[cfg(test)]
-mod test;
+mod tests;
 
 #[pymodule]
 fn hp(m: &Bound<'_, PyModule>) -> PyResult<()> {

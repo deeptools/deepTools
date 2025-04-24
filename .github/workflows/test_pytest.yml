@@ -1,4 +1,4 @@
-name: Test
+name: tests_pytest
 on: [push, pull_request, workflow_dispatch]
 
 defaults:
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9','3.10', '3.11', '3.12']
+        python-version: ['3.9','3.10', '3.11', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -73,7 +73,7 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        python-version: ['3.9','3.10', '3.11', '3.12']
+        python-version: ['3.9','3.10', '3.11', '3.12', '3.13']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
