@@ -1,4 +1,4 @@
-name: Cargo
+name: tests_rust
 on: [push, pull_request, workflow_dispatch]
 
 jobs:

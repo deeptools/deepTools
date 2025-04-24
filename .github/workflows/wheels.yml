@@ -1,11 +1,10 @@
-name: Wheels
+name: build wheels
 # maturin generate-ci github > .github/workflows/maturin.yml
 # Also, see: https://github.com/jackh726/bigtools/blob/master/.github/workflows/release-python.yml
 
 on:
   push:
   pull_request:
-  workflow_dispatch:
 
 permissions:
   contents: read

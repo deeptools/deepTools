@@ -1,4 +1,4 @@
-name: pypi
+name: pypi upload
 
 on:
   create:
