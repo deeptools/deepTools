@@ -533,7 +533,7 @@ impl Region {
 
                         let mut absstart: i64 = anchorstart as i64 - scale_regions.upstream as i64;
                         let absstop: i64 = anchorstop as i64 + scale_regions.downstream as i64;
-                        println!("+ - U, absstart = {}, anchorstart = {}", absstart, anchorstart);
+
                         for binix in (absstart..anchorstart as i64).step_by(scale_regions.binsize as usize) {
                             if binix < 0 || binix as u32 > chromend || (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 leftbins.push(Bin::Conbin(0,0));
@@ -657,7 +657,6 @@ impl Region {
                                 rightbins.push(Bin::Conbin(binix as u32, (binix as u32) + scale_regions.binsize));
                             }
                         }
-                        println!("- - U, absstop = {}, anchorstart = {}", absstop, anchorstart);
                         let steps: Vec<_> = (absstop..anchorstart as i64)
                             .step_by(scale_regions.binsize as usize)
                             .collect();
@@ -989,7 +988,7 @@ impl Region {
                             .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
                             .into_iter()
                             .collect::<Vec<_>>() );
-                        println!("");
+
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
                         if scale_regions.unscaled3prime > 0 {
