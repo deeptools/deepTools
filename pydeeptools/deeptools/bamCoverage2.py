@@ -179,7 +179,6 @@ def main(args=None):
         args.samFlagExclude = 0
     if not args.region:
         args.region = 'None'
-    print(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_bamcoverage(
         args.bam, # bam file
