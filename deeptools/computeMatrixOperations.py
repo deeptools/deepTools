@@ -9,6 +9,7 @@ import csv
 from importlib.metadata import version
 import warnings
 
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
