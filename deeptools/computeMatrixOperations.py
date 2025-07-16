@@ -7,7 +7,7 @@ import sys
 import os
 import csv
 from importlib.metadata import version
-
+import warnings
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
@@ -427,7 +427,7 @@ def filterHeatmapValues(hm, minVal, maxVal):
         minVal = -np.inf
     if maxVal is None:
         maxVal = np.inf
-    np.warnings.filterwarnings('ignore')
+    warnings.filterwarnings('ignore')
     for i, (x, y) in enumerate(zip(np.nanmin(hm.matrix.matrix, axis=1), np.nanmax(hm.matrix.matrix, axis=1))):
         # x/y will be nan iff a row is entirely nan. Don't filter.
         if np.isnan(x) or (x >= minVal and y <= maxVal):
