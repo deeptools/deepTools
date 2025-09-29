@@ -49,6 +49,9 @@ or
 or
   computeMatrixOperations dataRange -h
 
+or
+  computeMatrixOperationsExtended arithmetic -h
+
 """,
         epilog='example usages:\n'
                'computeMatrixOperations subset -m input.mat.gz -o output.mat.gz --group "group 1" "group 2" --samples "sample 3" "sample 10"\n\n'
@@ -136,6 +139,14 @@ or
         parents=[infoArgs()],
         help='Returns the min, max, median, 10th and 90th percentile of the matrix values per sample.',
         usage='Example usage:\n  computeMatrixOperations dataRange -m input.mat.gz\n\n')
+
+    # arithmetic
+    subparsers.add_parser(
+        'arithmetic',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[arithmeticArgs()],
+        help='Perform arithmetic operations between two matrices with identical dimensions.',
+        usage='Example usage:\n  computeMatrixOperationsExtended arithmetic -m input1.mat.gz input2.mat.gz -o output.mat.gz --operation ratio --pseudocount 1\n\n')
 
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(version('deeptools')))
@@ -246,6 +257,43 @@ def filterValuesArgs():
                           help='Maximum value. Any row having a single entry more than this will be excluded. The default is no maximum.',
                           type=float,
                           default=None)
+
+    return parser
+
+
+def arithmeticArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--matrixFile', '-m',
+                          help='Two matrix files from the computeMatrix tool.',
+                          nargs=2,
+                          required=True)
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
+
+    optional = parser.add_argument_group('Optional arguments')
+
+    optional.add_argument('--operation',
+                          choices=['ratio', 'log2ratio', 'subtract', 'add', 'divide', 'multiply'],
+                          default='ratio',
+                          help='Arithmetic operation to perform. ratio=(data1+pseudocount)/(data2+pseudocount), '
+                               'log2ratio=log2((data1+pseudocount)/(data2+pseudocount)), '
+                               'subtract=data1-data2, add=data1+data2, divide=data1/data2, '
+                               'multiply=data1*data2 (Default: %(default)s)')
+
+    optional.add_argument('--pseudocount',
+                          type=float,
+                          default=1.0,
+                          help='Pseudocount to add to avoid division by zero. '
+                               'Only used for ratio and log2ratio operations. '
+                               'Set to 0 to disable. (Default: %(default)s)')
+
+    optional.add_argument('--no-pseudocount',
+                          action='store_true',
+                          help='Disable pseudocount (equivalent to --pseudocount 0)')
 
     return parser
 
@@ -688,6 +736,109 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                 regions[labelIdx][name] = len(regions[labelIdx])
 
 
+def arithmeticMatrices(args):
+    """
+    Perform arithmetic operations between two matrices.
+    Both matrices must have identical dimensions.
+    """
+    # Load both matrices
+    hm1 = heatmapper.heatmapper()
+    hm2 = heatmapper.heatmapper()
+
+    hm1.read_matrix_file(args.matrixFile[0])
+    hm2.read_matrix_file(args.matrixFile[1])
+
+    # Check that matrices have the same dimensions
+    if hm1.matrix.matrix.shape != hm2.matrix.matrix.shape:
+        sys.exit("Error: Matrices have different dimensions. "
+                 "Matrix 1: {}, Matrix 2: {}\n".format(
+                     hm1.matrix.matrix.shape, hm2.matrix.matrix.shape))
+
+    # Check that sample numbers and boundaries match
+    if len(hm1.matrix.sample_labels) != len(hm2.matrix.sample_labels):
+        sys.exit("Error: Matrices have different numbers of samples. "
+                 "Matrix 1: {}, Matrix 2: {}\n".format(
+                     len(hm1.matrix.sample_labels), len(hm2.matrix.sample_labels)))
+
+    if hm1.matrix.sample_boundaries != hm2.matrix.sample_boundaries:
+        sys.exit("Error: Matrices have different sample boundaries.\n")
+
+    # Check that group boundaries match
+    if hm1.matrix.group_boundaries != hm2.matrix.group_boundaries:
+        sys.exit("Error: Matrices have different group boundaries.\n")
+
+    # Determine pseudocount
+    pseudocount = 0.0 if args.no_pseudocount else args.pseudocount
+
+    # Perform the arithmetic operation
+    data1 = hm1.matrix.matrix
+    data2 = hm2.matrix.matrix
+
+    # Handle NaN values by preserving them in the output
+    nan_mask = np.isnan(data1) | np.isnan(data2)
+
+    if args.operation == 'ratio':
+        if pseudocount == 0:
+            # Avoid division by zero
+            with np.errstate(divide='ignore', invalid='ignore'):
+                result = data1 / data2
+        else:
+            result = (data1 + pseudocount) / (data2 + pseudocount)
+
+    elif args.operation == 'log2ratio':
+        if pseudocount == 0:
+            # Avoid division by zero and log of zero/negative
+            with np.errstate(divide='ignore', invalid='ignore'):
+                result = np.log2(data1 / data2)
+        else:
+            with np.errstate(invalid='ignore'):
+                result = np.log2((data1 + pseudocount) / (data2 + pseudocount))
+
+    elif args.operation == 'subtract':
+        result = data1 - data2
+
+    elif args.operation == 'add':
+        result = data1 + data2
+
+    elif args.operation == 'divide':
+        with np.errstate(divide='ignore', invalid='ignore'):
+            result = data1 / data2
+
+    elif args.operation == 'multiply':
+        result = data1 * data2
+
+    else:
+        sys.exit("Error: Unknown operation '{}'\n".format(args.operation))
+
+    # Preserve NaN values from original matrices
+    result[nan_mask] = np.nan
+
+    # Replace the matrix in hm1 with the result
+    hm1.matrix.matrix = result
+
+    # Update the sample labels to indicate the operation
+    operation_label = args.operation
+    if args.operation in ['ratio', 'log2ratio'] and pseudocount != 0:
+        operation_label += "_pc{}".format(pseudocount)
+
+    # Keep the original sample labels but could optionally modify them
+    # to indicate the operation performed
+
+    # Save the result
+    hm1.save_matrix(args.outFileName)
+
+    # Print summary
+    print("Arithmetic operation completed:")
+    print("  Operation: {}".format(args.operation))
+    if args.operation in ['ratio', 'log2ratio']:
+        print("  Pseudocount: {}".format(pseudocount))
+    print("  Matrix 1: {}".format(args.matrixFile[0]))
+    print("  Matrix 2: {}".format(args.matrixFile[1]))
+    print("  Output: {}".format(args.outFileName))
+    print("  Matrix dimensions: {}".format(result.shape))
+    print("  Number of NaN values: {}".format(np.sum(np.isnan(result))))
+
+
 def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verbose=True):
     """
     Iterate through the files noted by regionsFileName and sort hm accordingly
@@ -790,8 +941,10 @@ def main(args=None):
     if args is None:
         if len(sys.argv) == 1:
             args = ["-h"]
-        if len(sys.argv) == 2:
+        elif len(sys.argv) == 2:
             args = [sys.argv[1], "-h"]
+        else:
+            args = sys.argv[1:]  # Pass all arguments except the script name
 
     args = parse_arguments().parse_args(args)
 
@@ -848,5 +1001,11 @@ def main(args=None):
     elif args.command == 'relabel':
         relabelMatrix(hm, args)
         hm.save_matrix(args.outFileName)
+    elif args.command == 'arithmetic':
+        arithmeticMatrices(args)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))
+
+
+if __name__ == "__main__":
+    main()
