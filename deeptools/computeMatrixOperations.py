@@ -941,10 +941,8 @@ def main(args=None):
     if args is None:
         if len(sys.argv) == 1:
             args = ["-h"]
-        elif len(sys.argv) == 2:
+        if len(sys.argv) == 2:
             args = [sys.argv[1], "-h"]
-        else:
-            args = sys.argv[1:]  # Pass all arguments except the script name
 
     args = parse_arguments().parse_args(args)
 
@@ -1005,7 +1003,3 @@ def main(args=None):
         arithmeticMatrices(args)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))
-
-
-if __name__ == "__main__":
-    main()
