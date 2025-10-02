@@ -52,6 +52,9 @@ or
 or
   computeMatrixOperationsExtended arithmetic -h
 
+or
+  computeMatrixOperationsExtended mean -h
+
 """,
         epilog='example usages:\n'
                'computeMatrixOperations subset -m input.mat.gz -o output.mat.gz --group "group 1" "group 2" --samples "sample 3" "sample 10"\n\n'
@@ -147,6 +150,14 @@ or
         parents=[arithmeticArgs()],
         help='Perform arithmetic operations between two matrices with identical dimensions.',
         usage='Example usage:\n  computeMatrixOperationsExtended arithmetic -m input1.mat.gz input2.mat.gz -o output.mat.gz --operation ratio --pseudocount 1\n\n')
+
+    # mean
+    subparsers.add_parser(
+        'mean',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        parents=[meanArgs()],
+        help='Calculate element-wise mean across two or more matrices with identical dimensions.',
+        usage='Example usage:\n  computeMatrixOperationsExtended mean -m input1.mat.gz input2.mat.gz input3.mat.gz -o output.mat.gz\n\n')
 
     parser.add_argument('--version', action='version',
                         version='%(prog)s {}'.format(version('deeptools')))
@@ -294,6 +305,22 @@ def arithmeticArgs():
     optional.add_argument('--no-pseudocount',
                           action='store_true',
                           help='Disable pseudocount (equivalent to --pseudocount 0)')
+
+    return parser
+
+
+def meanArgs():
+    parser = argparse.ArgumentParser(add_help=False)
+    required = parser.add_argument_group('Required arguments')
+
+    required.add_argument('--matrixFile', '-m',
+                          help='Two or more matrix files from the computeMatrix tool.',
+                          nargs='+',
+                          required=True)
+
+    required.add_argument('--outFileName', '-o',
+                          help='Output file name',
+                          required=True)
 
     return parser
 
@@ -839,6 +866,71 @@ def arithmeticMatrices(args):
     print("  Number of NaN values: {}".format(np.sum(np.isnan(result))))
 
 
+def meanMatrices(args):
+    """
+    Calculate the element-wise mean across two or more matrices.
+    All matrices must have identical dimensions.
+    """
+    if len(args.matrixFile) < 2:
+        sys.exit("Error: At least two matrix files are required for mean calculation.\n")
+
+    # Load all matrices
+    matrices = []
+    for matrix_file in args.matrixFile:
+        hm = heatmapper.heatmapper()
+        hm.read_matrix_file(matrix_file)
+        matrices.append(hm)
+
+    # Use the first matrix as reference
+    ref_matrix = matrices[0]
+    ref_shape = ref_matrix.matrix.matrix.shape
+
+    # Check that all matrices have the same dimensions
+    for idx, hm in enumerate(matrices[1:], start=1):
+        if hm.matrix.matrix.shape != ref_shape:
+            sys.exit("Error: Matrix {} has different dimensions. "
+                     "Expected: {}, Got: {}\n".format(
+                         idx + 1, ref_shape, hm.matrix.matrix.shape))
+
+        # Check that sample numbers and boundaries match
+        if len(hm.matrix.sample_labels) != len(ref_matrix.matrix.sample_labels):
+            sys.exit("Error: Matrix {} has different number of samples. "
+                     "Expected: {}, Got: {}\n".format(
+                         idx + 1, len(ref_matrix.matrix.sample_labels),
+                         len(hm.matrix.sample_labels)))
+
+        if hm.matrix.sample_boundaries != ref_matrix.matrix.sample_boundaries:
+            sys.exit("Error: Matrix {} has different sample boundaries.\n".format(idx + 1))
+
+        # Check that group boundaries match
+        if hm.matrix.group_boundaries != ref_matrix.matrix.group_boundaries:
+            sys.exit("Error: Matrix {} has different group boundaries.\n".format(idx + 1))
+
+    # Stack all matrices and compute the mean using nanmean to handle NaN values
+    matrix_stack = np.array([hm.matrix.matrix for hm in matrices])
+
+    # Use nanmean to ignore NaN values when computing the mean
+    # If all values at a position are NaN, the result will be NaN
+    with np.errstate(invalid='ignore'):
+        result = np.nanmean(matrix_stack, axis=0)
+
+    # Replace the matrix in the reference with the mean
+    ref_matrix.matrix.matrix = result
+
+    # Save the result
+    ref_matrix.save_matrix(args.outFileName)
+
+    # Print summary
+    print("Mean calculation completed:")
+    print("  Number of matrices: {}".format(len(matrices)))
+    print("  Input files:")
+    for i, fname in enumerate(args.matrixFile, start=1):
+        print("    {}: {}".format(i, fname))
+    print("  Output: {}".format(args.outFileName))
+    print("  Matrix dimensions: {}".format(result.shape))
+    print("  Number of NaN values: {}".format(np.sum(np.isnan(result))))
+
+
 def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verbose=True):
     """
     Iterate through the files noted by regionsFileName and sort hm accordingly
@@ -1001,5 +1093,7 @@ def main(args=None):
         hm.save_matrix(args.outFileName)
     elif args.command == 'arithmetic':
         arithmeticMatrices(args)
+    elif args.command == 'mean':
+        meanMatrices(args)
     else:
         sys.exit("Unknown command {0}!\n".format(args.command))
