@@ -33,7 +33,7 @@ def parse_arguments(args=None):
         ' method proposed by [Benjamini & Speed (2012). '
         'Nucleic Acids Research, 40(10)]. It will remove reads'
         ' from regions with too high coverage compared to the'
-        ' expected values (typically GC-rich regions) and will'
+        ' expected values (typically GC-moderate regions) and will'
         ' add reads to regions where too few reads are seen '
         '(typically AT-rich regions). '
         'The tool ``computeGCBias`` needs to be run first to generate the '
