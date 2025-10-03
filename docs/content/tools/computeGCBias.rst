@@ -15,7 +15,7 @@ Background
 
 ``computeGCBias`` is based on a paper by `Benjamini and Speed <http://nar.oxfordjournals.org/content/40/10/e72>`_.
 The basic assumption of the GC bias diagnosis is that an ideal sample should show a uniform distribution of sequenced reads across the genome, i.e. all regions of the genome should have similar numbers of reads, regardless of their base-pair composition.
-In reality, the DNA polymerases used for PCR-based amplifications during the library preparation of the sequencing protocols prefer GC-rich regions. This will influence the outcome of the sequencing as there will be more reads for GC-rich regions just because of the DNA polymerase's preference.
+In reality, the DNA polymerases used for PCR-based amplifications during the library preparation of the sequencing protocols prefer GC-moderate regions. This will influence the outcome of the sequencing as there will be more reads for GC-moderate regions just because of the DNA polymerase's preference. As shown **real-life-data** below, the peak is at where the GC content is moderate.
 
 ``computeGCbias`` will first calculate the **expected GC profile** by counting the number of DNA fragments of a fixed size per GC fraction where GC fraction is defined as the number of G's or C's in a genome region of a given length.
 The result is basically a histogram depicting the frequency of DNA fragments for each type of genome region with a GC fraction between 0 to 100 percent. This will be different for each reference genome, but is independent of the actual sequencing experiment.
