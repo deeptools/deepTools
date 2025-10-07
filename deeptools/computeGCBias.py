@@ -17,7 +17,7 @@ from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools import bamHandler
 
 debug = 0
-old_settings = np.seterr(all='ignore')
+old_settings = np.seterr(all="ignore")
 
 
 def parse_arguments(args=None):
@@ -26,15 +26,16 @@ def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
         parents=[requiredArgs, parentParser],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='Computes the GC-bias using Benjamini\'s method '
-        '[Benjamini & Speed (2012). Nucleic Acids Research, 40(10). doi: 10.1093/nar/gks001]. '
-        'The GC-bias is visualized and the resulting table can be used to'
-        'correct the bias with `correctGCBias`.',
-        usage='computeGCBias '
-        '-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt\n'
-        'help: computeGCBias -h / computeGCBias --help',
-        conflict_handler='resolve',
-        add_help=False)
+        description="Computes the GC-bias using Benjamini's method "
+        "[Benjamini & Speed (2012). Nucleic Acids Research, 40(10). doi: 10.1093/nar/gks001]. "
+        "The GC-bias is visualized and the resulting table can be used to"
+        "correct the bias with `correctGCBias`.",
+        usage="computeGCBias "
+        "-b file.bam --effectiveGenomeSize 2150570000 -g mm9.2bit -l 200 --GCbiasFrequenciesFile freq.txt\n"
+        "help: computeGCBias -h / computeGCBias --help",
+        conflict_handler="resolve",
+        add_help=False,
+    )
 
     return parser
 
@@ -42,96 +43,117 @@ def parse_arguments(args=None):
 def getRequiredArgs():
     parser = argparse.ArgumentParser(add_help=False)
 
-    required = parser.add_argument_group('Required arguments')
+    required = parser.add_argument_group("Required arguments")
 
-    required.add_argument('--bamfile', '-b',
-                          metavar='bam file',
-                          help='Sorted BAM file. ',
-                          required=True)
+    required.add_argument(
+        "--bamfile", "-b", metavar="bam file", help="Sorted BAM file. ", required=True
+    )
 
-    required.add_argument('--effectiveGenomeSize',
-                          help='The effective genome size is the portion '
-                          'of the genome that is mappable. Large fractions of '
-                          'the genome are stretches of NNNN that should be '
-                          'discarded. Also, if repetitive regions were not '
-                          'included in the mapping of reads, the effective '
-                          'genome size needs to be adjusted accordingly. '
-                          'A table of values is available here: '
-                          'http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .',
-                          default=None,
-                          type=int,
-                          required=True)
+    required.add_argument(
+        "--effectiveGenomeSize",
+        help="The effective genome size is the portion "
+        "of the genome that is mappable. Large fractions of "
+        "the genome are stretches of NNNN that should be "
+        "discarded. Also, if repetitive regions were not "
+        "included in the mapping of reads, the effective "
+        "genome size needs to be adjusted accordingly. "
+        "A table of values is available here: "
+        "http://deeptools.readthedocs.io/en/latest/content/feature/effectiveGenomeSize.html .",
+        default=None,
+        type=int,
+        required=True,
+    )
 
-    required.add_argument('--genome', '-g',
-                          help='Genome in two bit format. Most genomes can be '
-                          'found here: http://hgdownload.cse.ucsc.edu/gbdb/ '
-                          'Search for the .2bit ending. Otherwise, fasta '
-                          'files can be converted to 2bit using the UCSC '
-                          'programm called faToTwoBit available for different '
-                          'plattforms at '
-                          'http://hgdownload.cse.ucsc.edu/admin/exe/',
-                          metavar='2bit FILE',
-                          required=True)
+    required.add_argument(
+        "--genome",
+        "-g",
+        help="Genome in two bit format. Most genomes can be "
+        "found here: http://hgdownload.cse.ucsc.edu/gbdb/ "
+        "Search for the .2bit ending. Otherwise, fasta "
+        "files can be converted to 2bit using the UCSC "
+        "programm called faToTwoBit available for different "
+        "plattforms at "
+        "http://hgdownload.cse.ucsc.edu/admin/exe/",
+        metavar="2bit FILE",
+        required=True,
+    )
 
-    required.add_argument('--GCbiasFrequenciesFile', '-freq', '-o',
-                          help='Path to save the file containing '
-                          'the observed and expected read frequencies per %%GC-'
-                          'content. This file is needed to run the '
-                          'correctGCBias tool. This is a text file.',
-                          type=argparse.FileType('w'),
-                          metavar='FILE',
-                          required=True)
+    required.add_argument(
+        "--GCbiasFrequenciesFile",
+        "-freq",
+        "-o",
+        help="Path to save the file containing "
+        "the observed and expected read frequencies per %%GC-"
+        "content. This file is needed to run the "
+        "correctGCBias tool. This is a text file.",
+        type=argparse.FileType("w"),
+        metavar="FILE",
+        required=True,
+    )
 
     # define the optional arguments
-    optional = parser.add_argument_group('Optional arguments')
-    optional.add_argument('--fragmentLength', '-l',
-                          help='Fragment length used for the sequencing. If '
-                          'paired-end reads are used, the fragment length is '
-                          'computed based from the bam file',
-                          type=int)
+    optional = parser.add_argument_group("Optional arguments")
+    optional.add_argument(
+        "--fragmentLength",
+        "-l",
+        help="Fragment length used for the sequencing. If "
+        "paired-end reads are used, the fragment length is "
+        "computed based from the bam file",
+        type=int,
+    )
 
-    optional.add_argument("--help", "-h", action="help",
-                          help="show this help message and exit")
+    optional.add_argument(
+        "--help", "-h", action="help", help="show this help message and exit"
+    )
 
-    optional.add_argument('--sampleSize',
-                          default=5e7,
-                          help='Number of sampling points to be considered. (Default: %(default)s)',
-                          type=int)
+    optional.add_argument(
+        "--sampleSize",
+        default=5e7,
+        help="Number of sampling points to be considered. (Default: %(default)s)",
+        type=int,
+    )
 
-    optional.add_argument('--extraSampling',
-                          help='BED file containing genomic regions for which '
-                          'extra sampling is required because they are '
-                          'underrepresented in the genome.',
-                          type=argparse.FileType('r'),
-                          metavar='BED file')
+    optional.add_argument(
+        "--extraSampling",
+        help="BED file containing genomic regions for which "
+        "extra sampling is required because they are "
+        "underrepresented in the genome.",
+        type=argparse.FileType("r"),
+        metavar="BED file",
+    )
 
-    plot = parser.add_argument_group('Diagnostic plot options')
+    plot = parser.add_argument_group("Diagnostic plot options")
 
-    plot.add_argument('--biasPlot',
-                      metavar='FILE NAME',
-                      help='If given, a diagnostic image summarizing '
-                      'the GC-bias will be saved.')
+    plot.add_argument(
+        "--biasPlot",
+        metavar="FILE NAME",
+        help="If given, a diagnostic image summarizing " "the GC-bias will be saved.",
+    )
 
-    plot.add_argument('--plotFileFormat',
-                      metavar='',
-                      help='image format type. If given, this '
-                      'option overrides the '
-                      'image format based on the plotFile ending. '
-                      'The available options are: "png", '
-                      '"eps", "pdf", "plotly" and "svg"',
-                      choices=['png', 'pdf', 'svg', 'eps', 'plotly'])
+    plot.add_argument(
+        "--plotFileFormat",
+        metavar="",
+        help="image format type. If given, this "
+        "option overrides the "
+        "image format based on the plotFile ending. "
+        'The available options are: "png", '
+        '"eps", "pdf", "plotly" and "svg"',
+        choices=["png", "pdf", "svg", "eps", "plotly"],
+    )
 
-    plot.add_argument('--regionSize',
-                      metavar='INT',
-                      type=int,
-                      default=300,
-                      help='To plot the reads per %%GC over a region'
-                      'the size of the region is required. By default, '
-                      'the bin size is set to 300 bases, which is close to the '
-                      'standard fragment size for Illumina machines. However, '
-                      'if the depth of sequencing is low, a larger bin size '
-                      'will be required, otherwise many bins will not '
-                      'overlap with any read (Default: %(default)s)')
+    plot.add_argument(
+        "--regionSize",
+        metavar="INT",
+        type=int,
+        default=300,
+        help="To plot the reads per %%GC over a region"
+        "the size of the region is required. By default, "
+        "the bin size is set to 300 bases, which is close to the "
+        "standard fragment size for Illumina machines. However, "
+        "if the depth of sequencing is low, a larger bin size "
+        "will be required, otherwise many bins will not "
+        "overlap with any read (Default: %(default)s)",
+    )
 
     return parser
 
@@ -149,13 +171,13 @@ def getPositionsToSample(chrom, start, end, stepSize):
     """
     positions_to_sample = np.arange(start, end, stepSize)
 
-    if global_vars['filter_out']:
-        filter_out_tree = GTF(global_vars['filter_out'])
+    if global_vars["filter_out"]:
+        filter_out_tree = GTF(global_vars["filter_out"])
     else:
         filter_out_tree = None
 
-    if global_vars['extra_sampling_file']:
-        extra_tree = GTF(global_vars['extra_sampling_file'])
+    if global_vars["extra_sampling_file"]:
+        extra_tree = GTF(global_vars["extra_sampling_file"])
     else:
         extra_tree = None
 
@@ -168,14 +190,17 @@ def getPositionsToSample(chrom, start, end, stepSize):
 
         if len(extra_match) > 0:
             for intval in extra_match:
-                positions_to_sample = np.append(positions_to_sample,
-                                                list(range(intval[0], intval[1], stepSize)))
+                positions_to_sample = np.append(
+                    positions_to_sample, list(range(intval[0], intval[1], stepSize))
+                )
         # remove duplicates
         positions_to_sample = np.unique(np.sort(positions_to_sample))
         if debug:
-            print("sampling increased to {} from {}".format(
-                len(positions_to_sample),
-                orig_len))
+            print(
+                "sampling increased to {} from {}".format(
+                    len(positions_to_sample), orig_len
+                )
+            )
 
     # skip regions that are filtered out
     if filter_out_tree:
@@ -186,8 +211,10 @@ def getPositionsToSample(chrom, start, end, stepSize):
 
         if len(out_match) > 0:
             for intval in out_match:
-                positions_to_sample = \
-                    positions_to_sample[(positions_to_sample < intval[0]) | (positions_to_sample >= intval[1])]
+                positions_to_sample = positions_to_sample[
+                    (positions_to_sample < intval[0]) |
+                    (positions_to_sample >= intval[1])
+                ]
     return positions_to_sample
 
 
@@ -195,21 +222,20 @@ def countReadsPerGC_wrapper(args):
     return countReadsPerGC_worker(*args)
 
 
-def countReadsPerGC_worker(chromNameBam,
-                           start, end, stepSize, regionSize,
-                           chrNameBamToBit, verbose=False):
+def countReadsPerGC_worker(
+    chromNameBam, start, end, stepSize, regionSize, chrNameBamToBit, verbose=False
+):
     """given a genome region defined by
     (start, end), the GC content is quantified for
     regions of size regionSize that are contiguous
     """
 
     chromNameBit = chrNameBamToBit[chromNameBam]
-    tbit = py2bit.open(global_vars['2bit'])
-    bam = bamHandler.openBam(global_vars['bam'])
+    tbit = py2bit.open(global_vars["2bit"])
+    bam = bamHandler.openBam(global_vars["bam"])
     c = 1
     sub_reads_per_gc = []
-    positions_to_sample = getPositionsToSample(chromNameBit,
-                                               start, end, stepSize)
+    positions_to_sample = getPositionsToSample(chromNameBit, start, end, stepSize)
 
     for index in range(len(positions_to_sample)):
         i = positions_to_sample[index]
@@ -235,10 +261,10 @@ def tabulateGCcontent_wrapper(args):
     return tabulateGCcontent_worker(*args)
 
 
-def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
-                             fragmentLength,
-                             chrNameBamToBit, verbose=False):
-    r""" given genome regions, the GC content of the genome is tabulated for
+def tabulateGCcontent_worker(
+    chromNameBam, start, end, stepSize, fragmentLength, chrNameBamToBit, verbose=False
+):
+    r"""given genome regions, the GC content of the genome is tabulated for
     fragments of length 'fragmentLength' each 'stepSize' positions.
 
     >>> test = Tester()
@@ -300,20 +326,20 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     # indicate the gc content. The values inside the
     # array are counts. Thus, if N_gc[10] = 3, that means
     # that 3 regions have a gc_content of 10.
-    subN_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
-    subF_gc = np.zeros(fragmentLength['median'] + 1, dtype='int')
+    subN_gc = np.zeros(fragmentLength["median"] + 1, dtype="int")
+    subF_gc = np.zeros(fragmentLength["median"] + 1, dtype="int")
 
-    tbit = py2bit.open(global_vars['2bit'])
-    bam = bamHandler.openBam(global_vars['bam'])
+    tbit = py2bit.open(global_vars["2bit"])
+    bam = bamHandler.openBam(global_vars["bam"])
     peak = 0
     startTime = time.time()
 
     if verbose:
-        print("[{:.3f}] computing positions to "
-              "sample".format(time.time() - startTime))
+        print(
+            "[{:.3f}] computing positions to " "sample".format(time.time() - startTime)
+        )
 
-    positions_to_sample = getPositionsToSample(chromNameBit,
-                                               start, end, stepSize)
+    positions_to_sample = getPositionsToSample(chromNameBit, start, end, stepSize)
 
     read_counts = []
     # Optimize IO.
@@ -332,16 +358,18 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         if verbose:
             print("[{:.3f}] caching reads".format(time.time() - startTime))
 
-        counts = np.bincount([r.pos - start_pos
-                              for r in bam.fetch(chromNameBam, start_pos,
-                                                 end_pos + 1)
-                              if not r.is_reverse and not r.is_unmapped and r.pos >= start_pos],
-                             minlength=end_pos - start_pos + 2)
+        counts = np.bincount(
+            [
+                r.pos - start_pos
+                for r in bam.fetch(chromNameBam, start_pos, end_pos + 1)
+                if not r.is_reverse and not r.is_unmapped and r.pos >= start_pos
+            ],
+            minlength=end_pos - start_pos + 2,
+        )
 
         read_counts = counts[positions_to_sample - min(positions_to_sample)]
         if verbose:
-            print("[{:.3f}] finish caching reads.".format(
-                time.time() - startTime))
+            print("[{:.3f}] finish caching reads.".format(time.time() - startTime))
 
     countTime = time.time()
 
@@ -349,11 +377,17 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
     for index in range(len(positions_to_sample)):
         i = positions_to_sample[index]
         # stop if the end of the chromosome is reached
-        if i + fragmentLength['median'] > tbit.chroms(chromNameBit):
+        if i + fragmentLength["median"] > tbit.chroms(chromNameBit):
             break
 
         try:
-            gc = getGC_content(tbit, chromNameBit, int(i), int(i + fragmentLength['median']), fraction=False)
+            gc = getGC_content(
+                tbit,
+                chromNameBit,
+                int(i),
+                int(i + fragmentLength["median"]),
+                fraction=False,
+            )
         except Exception as detail:
             if verbose:
                 print(detail)
@@ -363,12 +397,17 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
 
         # count all reads at position 'i'
         if len(read_counts) == 0:  # case when no cache was done
-            num_reads = len([x.pos for x in bam.fetch(chromNameBam, i, i + 1)
-                             if x.is_reverse is False and x.pos == i])
+            num_reads = len(
+                [
+                    x.pos
+                    for x in bam.fetch(chromNameBam, i, i + 1)
+                    if x.is_reverse is False and x.pos == i
+                ]
+            )
         else:
             num_reads = read_counts[index]
 
-        if num_reads >= global_vars['max_reads']:
+        if num_reads >= global_vars["max_reads"]:
             peak += 1
             continue
 
@@ -376,27 +415,58 @@ def tabulateGCcontent_worker(chromNameBam, start, end, stepSize,
         if verbose:
             if index % 50000 == 0:
                 endTime = time.time()
-                print("%s processing %d (%.1f per sec) @ %s:%s-%s %s" %
-                      (multiprocessing.current_process().name,
-                       index, index / (endTime - countTime),
-                       chromNameBit, start, end, stepSize))
+                print(
+                    "%s processing %d (%.1f per sec) @ %s:%s-%s %s"
+                    % (
+                        multiprocessing.current_process().name,
+                        index,
+                        index / (endTime - countTime),
+                        chromNameBit,
+                        start,
+                        end,
+                        stepSize,
+                    )
+                )
         c += 1
 
     if verbose:
         endTime = time.time()
-        print("%s processing %d (%.1f per sec) @ %s:%s-%s %s" %
-              (multiprocessing.current_process().name,
-               index, index / (endTime - countTime),
-               chromNameBit, start, end, stepSize))
-        print("%s total time %.1f @ %s:%s-%s %s" % (multiprocessing.current_process().name,
-                                                    (endTime - startTime), chromNameBit, start, end, stepSize))
+        print(
+            "%s processing %d (%.1f per sec) @ %s:%s-%s %s"
+            % (
+                multiprocessing.current_process().name,
+                index,
+                index / (endTime - countTime),
+                chromNameBit,
+                start,
+                end,
+                stepSize,
+            )
+        )
+        print(
+            "%s total time %.1f @ %s:%s-%s %s"
+            % (
+                multiprocessing.current_process().name,
+                (endTime - startTime),
+                chromNameBit,
+                start,
+                end,
+                stepSize,
+            )
+        )
 
     return subN_gc, subF_gc
 
 
-def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
-                      chromSizes, numberOfProcessors=None, verbose=False,
-                      region=None):
+def tabulateGCcontent(
+    fragmentLength,
+    chrNameBitToBam,
+    stepSize,
+    chromSizes,
+    numberOfProcessors=None,
+    verbose=False,
+    region=None,
+):
     r"""
     Subdivides the genome or the reads into chunks to be analyzed in parallel
     using several processors. This codes handles the creation of
@@ -418,20 +488,18 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
            [  0.        ,   0.        ,   1.        ],
            [  0.        ,   0.        ,   1.        ]])
     """
-    global global_vars
-
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.items()])
-    chunkSize = int(min(2e6, 4e5 / global_vars['reads_per_bp']))
+    chunkSize = int(min(2e6, 4e5 / global_vars["reads_per_bp"]))
     chromSizes = [(k, v) for k, v in chromSizes if k in list(chrNameBamToBit.keys())]
 
-    imap_res = mapReduce.mapReduce((stepSize,
-                                    fragmentLength, chrNameBamToBit,
-                                    verbose),
-                                   tabulateGCcontent_wrapper,
-                                   chromSizes,
-                                   genomeChunkLength=chunkSize,
-                                   numberOfProcessors=numberOfProcessors,
-                                   region=region)
+    imap_res = mapReduce.mapReduce(
+        (stepSize, fragmentLength, chrNameBamToBit, verbose),
+        tabulateGCcontent_wrapper,
+        chromSizes,
+        genomeChunkLength=chunkSize,
+        numberOfProcessors=numberOfProcessors,
+        region=region,
+    )
 
     for subN_gc, subF_gc in imap_res:
         try:
@@ -442,20 +510,31 @@ def tabulateGCcontent(fragmentLength, chrNameBitToBam, stepSize,
             N_gc = subN_gc
 
     if sum(F_gc) == 0:
-        sys.exit("No fragments included in the sampling! Consider decreasing (or maybe increasing) the --sampleSize parameter")
+        sys.exit(
+            "No fragments included in the sampling! Consider decreasing (or maybe increasing) the --sampleSize parameter"
+        )
     scaling = float(sum(N_gc)) / float(sum(F_gc))
 
-    R_gc = np.array([float(F_gc[x]) / N_gc[x] * scaling
-                     if N_gc[x] and F_gc[x] > 0 else 1
-                     for x in range(len(F_gc))])
+    R_gc = np.array(
+        [
+            float(F_gc[x]) / N_gc[x] * scaling if N_gc[x] and F_gc[x] > 0 else 1
+            for x in range(len(F_gc))
+        ]
+    )
 
     data = np.transpose(np.vstack((F_gc, N_gc, R_gc)))
     return data
 
 
-def countReadsPerGC(regionSize, chrNameBitToBam, stepSize,
-                    chromSizes, numberOfProcessors=None, verbose=False,
-                    region=None):
+def countReadsPerGC(
+    regionSize,
+    chrNameBitToBam,
+    stepSize,
+    chromSizes,
+    numberOfProcessors=None,
+    verbose=False,
+    region=None,
+):
     r"""
     Computes for a region of size regionSize, the GC of the region
     and the number of reads that overlap it.
@@ -469,19 +548,17 @@ def countReadsPerGC(regionSize, chrNameBitToBam, stepSize,
            [134.        ,   0.43666667],
            [134.        ,   0.44      ]])
     """
-    global global_vars
-
     chrNameBamToBit = dict([(v, k) for k, v in chrNameBitToBam.items()])
-    chunkSize = int(min(2e6, 4e5 / global_vars['reads_per_bp']))
+    chunkSize = int(min(2e6, 4e5 / global_vars["reads_per_bp"]))
 
-    imap_res = mapReduce.mapReduce((stepSize,
-                                    regionSize, chrNameBamToBit,
-                                    verbose),
-                                   countReadsPerGC_wrapper,
-                                   chromSizes,
-                                   genomeChunkLength=chunkSize,
-                                   numberOfProcessors=numberOfProcessors,
-                                   region=region)
+    imap_res = mapReduce.mapReduce(
+        (stepSize, regionSize, chrNameBamToBit, verbose),
+        countReadsPerGC_wrapper,
+        chromSizes,
+        genomeChunkLength=chunkSize,
+        numberOfProcessors=numberOfProcessors,
+        region=region,
+    )
 
     reads_per_gc = []
     for sub_reads_per_gc in imap_res:
@@ -507,7 +584,7 @@ def smooth(x, window_len=3):
         if i < half_width or i + half_width + 1 > len(x):
             continue
         else:
-            y[i] = np.mean(x[i - half_width:i + half_width + 1])
+            y[i] = np.mean(x[i - half_width: i + half_width + 1])
     # clip low values, this avoid problems with zeros
     return y
 
@@ -539,14 +616,44 @@ def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
     import matplotlib.cbook as cbook
 
     fig = go.Figure()
-    fig['layout']['xaxis1'] = dict(domain=[0.0, 1.0], anchor="y1", title="GC fraction")
-    fig['layout']['yaxis1'] = dict(domain=[0.55, 1.0], anchor="x1", title="Number of reads")
-    fig['layout']['xaxis2'] = dict(domain=[0.0, 1.0], anchor="y2", title="GC fraction", range=[0.2, 0.7])
-    fig['layout']['yaxis2'] = dict(domain=[0.0, 0.45], anchor="x2", title="log2(observed/expected)")
+    fig["layout"]["xaxis1"] = dict(domain=[0.0, 1.0], anchor="y1", title="GC fraction")
+    fig["layout"]["yaxis1"] = dict(
+        domain=[0.55, 1.0], anchor="x1", title="Number of reads"
+    )
+    fig["layout"]["xaxis2"] = dict(
+        domain=[0.0, 1.0], anchor="y2", title="GC fraction", range=[0.2, 0.7]
+    )
+    fig["layout"]["yaxis2"] = dict(
+        domain=[0.0, 0.45], anchor="x2", title="log2(observed/expected)"
+    )
     text = "reads per {} base region".format(region_size)
-    annos = [{'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': text, 'y': 1.0, 'x': 0.5, 'font': {'size': 16}, 'showarrow': False}]
+    annos = [
+        {
+            "yanchor": "bottom",
+            "xref": "paper",
+            "xanchor": "center",
+            "yref": "paper",
+            "text": text,
+            "y": 1.0,
+            "x": 0.5,
+            "font": {"size": 16},
+            "showarrow": False,
+        }
+    ]
     text = "normalized observed/expected read counts"
-    annos.append({'yanchor': 'bottom', 'xref': 'paper', 'xanchor': 'center', 'yref': 'paper', 'text': text, 'y': 0.5, 'x': 0.5, 'font': {'size': 16}, 'showarrow': False})
+    annos.append(
+        {
+            "yanchor": "bottom",
+            "xref": "paper",
+            "xanchor": "center",
+            "yref": "paper",
+            "text": text,
+            "y": 0.5,
+            "x": 0.5,
+            "font": {"size": 16},
+            "showarrow": False,
+        }
+    )
 
     # prepare data for boxplot
     reads, GC = reads_per_gc.T
@@ -559,29 +666,58 @@ def plotlyGCbias(file_name, frequencies, reads_per_gc, region_size):
     bins = []
     for b in reads_per_gc:
         s = cbook.boxplot_stats(b)[0]
-        bins.append([s['whislo'], s['q1'], s['q1'], s['med'], s['med'], s['med'], s['q3'], s['q3'], s['whishi']])
+        bins.append(
+            [
+                s["whislo"],
+                s["q1"],
+                s["q1"],
+                s["med"],
+                s["med"],
+                s["med"],
+                s["q3"],
+                s["q3"],
+                s["whishi"],
+            ]
+        )
 
     data = []
 
     # top plot
     for x, y in zip(bin_labels, bins):
-        trace = go.Box(x=x, y=y, xaxis='x1', yaxis='y1', boxpoints='outliers', showlegend=False, name="{}".format(x), line=dict(color='rgb(107,174,214)'))
+        trace = go.Box(
+            x=x,
+            y=y,
+            xaxis="x1",
+            yaxis="y1",
+            boxpoints="outliers",
+            showlegend=False,
+            name="{}".format(x),
+            line=dict(color="rgb(107,174,214)"),
+        )
         data.append(trace)
 
     # bottom plot
     x = np.linspace(0, 1, frequencies.shape[0])
-    trace = go.Scatter(x=x, y=np.log2(frequencies[:, 2]), xaxis='x2', yaxis='y2', showlegend=False, line=dict(color='rgb(107,174,214)'))
+    trace = go.Scatter(
+        x=x,
+        y=np.log2(frequencies[:, 2]),
+        xaxis="x2",
+        yaxis="y2",
+        showlegend=False,
+        line=dict(color="rgb(107,174,214)"),
+    )
     data.append(trace)
     fig.add_traces(data)
-    fig['layout']['annotations'] = annos
+    fig["layout"]["annotations"] = annos
     py.plot(fig, filename=file_name, auto_open=False)
 
 
 def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=None):
     import matplotlib
-    matplotlib.use('Agg')
-    matplotlib.rcParams['pdf.fonttype'] = 42
-    matplotlib.rcParams['svg.fonttype'] = 'none'
+
+    matplotlib.use("Agg")
+    matplotlib.rcParams["pdf.fonttype"] = 42
+    matplotlib.rcParams["svg.fonttype"] = "none"
     import matplotlib.pyplot as plt
 
     # prepare data for boxplot
@@ -594,21 +730,20 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
     title = "reads per regions of {} bp".format(region_size)
     fig = plt.figure(figsize=(6, 8))
     ax1 = fig.add_subplot(211, title=title)
-    ax2 = fig.add_subplot(212,
-                          title='normalized observed/expected read counts')
+    ax2 = fig.add_subplot(212, title="normalized observed/expected read counts")
 
     # make boxplot
 
     bp = ax1.boxplot(reads_per_gc, notch=0, patch_artist=True)
-    plt.setp(bp['boxes'], color='black', facecolor='LightGreen')
-    plt.setp(bp['medians'], color='black')
-    plt.setp(bp['whiskers'], color='black', linestyle='dashed')
-    plt.setp(bp['fliers'], marker='None')
+    plt.setp(bp["boxes"], color="black", facecolor="LightGreen")
+    plt.setp(bp["medians"], color="black")
+    plt.setp(bp["whiskers"], color="black", linestyle="dashed")
+    plt.setp(bp["fliers"], marker="None")
     # get the whisker that spands the most
-    y_max = np.nanmax([x.get_data()[1][1] for x in bp['whiskers']])
+    y_max = np.nanmax([x.get_data()[1][1] for x in bp["whiskers"]])
     ax1.set_ylim(0 - (y_max * 0.05), y_max * 1.05)
-    ax1.set_ylabel('Number of reads')
-    ax1.set_xlabel('GC fraction')
+    ax1.set_ylabel("Number of reads")
+    ax1.set_xlabel("GC fraction")
 
     xticks = [idx for idx, x in enumerate(bin_labels) if int(x * 100) % 10 == 0]
 
@@ -617,12 +752,12 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
 
     x = np.linspace(0, 1, frequencies.shape[0])
     y = np.log2(frequencies[:, 2])
-    ax2.plot(x, y, color='#8c96f0')
-    ax2.set_xlabel('GC fraction')
-    ax2.set_ylabel('log2ratio observed/expected')
+    ax2.plot(x, y, color="#8c96f0")
+    ax2.set_xlabel("GC fraction")
+    ax2.set_ylabel("log2ratio observed/expected")
     ax2.set_xlim(0.2, 0.7)
-    y_max = max(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
-    y_min = min(y[np.where(x >= 0.2)[0][0]:np.where(x <= 0.7)[0][-1] + 1])
+    y_max = max(y[np.where(x >= 0.2)[0][0]: np.where(x <= 0.7)[0][-1] + 1])
+    y_min = min(y[np.where(x >= 0.2)[0][0]: np.where(x <= 0.7)[0][-1] + 1])
     if y_max > 0:
         y_max *= 1.1
     else:
@@ -633,7 +768,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
         y_min *= 0.9
     ax2.set_ylim(y_min, y_max)
     plt.tight_layout()
-    plt.savefig(file_name, bbox_inches='tight', dpi=100, format=image_format)
+    plt.savefig(file_name, bbox_inches="tight", dpi=100, format=image_format)
     plt.close()
 
 
@@ -648,42 +783,49 @@ def main(args=None):
 
     global global_vars
     global_vars = {}
-    global_vars['2bit'] = args.genome
-    global_vars['bam'] = args.bamfile
-    global_vars['filter_out'] = args.blackListFileName
-    global_vars['extra_sampling_file'] = extra_sampling_file
+    global_vars["2bit"] = args.genome
+    global_vars["bam"] = args.bamfile
+    global_vars["filter_out"] = args.blackListFileName
+    global_vars["extra_sampling_file"] = extra_sampling_file
 
-    tbit = py2bit.open(global_vars['2bit'])
-    bam, mapped, unmapped, stats = bamHandler.openBam(global_vars['bam'], returnStats=True, nThreads=args.numberOfProcessors)
+    tbit = py2bit.open(global_vars["2bit"])
+    bam, mapped, unmapped, stats = bamHandler.openBam(
+        global_vars["bam"], returnStats=True, nThreads=args.numberOfProcessors
+    )
 
     if args.fragmentLength:
-        fragment_len_dict = \
-            {'median': args.fragmentLength}
+        fragment_len_dict = {"median": args.fragmentLength}
 
     else:
-        fragment_len_dict, __ = \
-            get_read_and_fragment_length(args.bamfile, None,
-                                         numberOfProcessors=args.numberOfProcessors,
-                                         verbose=args.verbose)
+        fragment_len_dict, __ = get_read_and_fragment_length(
+            args.bamfile,
+            None,
+            numberOfProcessors=args.numberOfProcessors,
+            verbose=args.verbose,
+        )
         if not fragment_len_dict:
-            print("\nPlease provide the fragment length used for the "
-                  "sample preparation.\n")
+            print(
+                "\nPlease provide the fragment length used for the "
+                "sample preparation.\n"
+            )
             exit(1)
 
-        fragment_len_dict = {'median': int(fragment_len_dict['median'])}
+        fragment_len_dict = {"median": int(fragment_len_dict["median"])}
 
     chrNameBitToBam = tbitToBamChrName(list(tbit.chroms().keys()), bam.references)
 
-    global_vars['genome_size'] = sum(tbit.chroms().values())
-    global_vars['total_reads'] = mapped
-    global_vars['reads_per_bp'] = \
-        float(global_vars['total_reads']) / args.effectiveGenomeSize
+    global_vars["genome_size"] = sum(tbit.chroms().values())
+    global_vars["total_reads"] = mapped
+    global_vars["reads_per_bp"] = (
+        float(global_vars["total_reads"]) / args.effectiveGenomeSize
+    )
 
     confidence_p_value = float(1) / args.sampleSize
 
     # chromSizes: list of tuples
-    chromSizes = [(bam.references[i], bam.lengths[i])
-                  for i in range(len(bam.references))]
+    chromSizes = [
+        (bam.references[i], bam.lengths[i]) for i in range(len(bam.references))
+    ]
     chromSizes = [x for x in chromSizes if x[0] in tbit.chroms()]
 
     # use poisson distribution to identify peaks that should be discarted.
@@ -693,107 +835,123 @@ def main(args=None):
     # empirically, a value of at least 4 times as big as the
     # reads_per_bp was found.
     # Similarly for the min value, I divide by 4.
-    global_vars['max_reads'] = poisson(4 * global_vars['reads_per_bp'] * fragment_len_dict['median']).isf(confidence_p_value)
+    global_vars["max_reads"] = poisson(
+        4 * global_vars["reads_per_bp"] * fragment_len_dict["median"]
+    ).isf(confidence_p_value)
     # this may be of not use, unless the depth of sequencing is really high
     # as this value is close to 0
-    global_vars['min_reads'] = poisson(0.25 * global_vars['reads_per_bp'] * fragment_len_dict['median']).ppf(confidence_p_value)
+    global_vars["min_reads"] = poisson(
+        0.25 * global_vars["reads_per_bp"] * fragment_len_dict["median"]
+    ).ppf(confidence_p_value)
 
     for key in global_vars:
         print("{}: {}".format(key, global_vars[key]))
 
     print("computing frequencies")
     # the GC of the genome is sampled each stepSize bp.
-    stepSize = max(int(global_vars['genome_size'] / args.sampleSize), 1)
+    stepSize = max(int(global_vars["genome_size"] / args.sampleSize), 1)
     print("stepSize: {}".format(stepSize))
-    data = tabulateGCcontent(fragment_len_dict,
-                             chrNameBitToBam, stepSize,
-                             chromSizes,
-                             numberOfProcessors=args.numberOfProcessors,
-                             verbose=args.verbose,
-                             region=args.region)
+    data = tabulateGCcontent(
+        fragment_len_dict,
+        chrNameBitToBam,
+        stepSize,
+        chromSizes,
+        numberOfProcessors=args.numberOfProcessors,
+        verbose=args.verbose,
+        region=args.region,
+    )
 
     np.savetxt(args.GCbiasFrequenciesFile.name, data)
 
     if args.biasPlot:
-        reads_per_gc = countReadsPerGC(args.regionSize,
-                                       chrNameBitToBam, stepSize * 10,
-                                       chromSizes,
-                                       numberOfProcessors=args.numberOfProcessors,
-                                       verbose=args.verbose,
-                                       region=args.region)
+        reads_per_gc = countReadsPerGC(
+            args.regionSize,
+            chrNameBitToBam,
+            stepSize * 10,
+            chromSizes,
+            numberOfProcessors=args.numberOfProcessors,
+            verbose=args.verbose,
+            region=args.region,
+        )
         if args.plotFileFormat == "plotly":
             plotlyGCbias(args.biasPlot, data, reads_per_gc, args.regionSize)
         else:
-            plotGCbias(args.biasPlot, data, reads_per_gc, args.regionSize, image_format=args.plotFileFormat)
+            plotGCbias(
+                args.biasPlot,
+                data,
+                reads_per_gc,
+                args.regionSize,
+                image_format=args.plotFileFormat,
+            )
 
 
-class Tester():
+class Tester:
     def __init__(self):
         import os
+
         self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_corrGC/"
         self.tbitFile = self.root + "sequence.2bit"
         self.bamFile = self.root + "test.bam"
         self.mappability = self.root + "mappability.bw"
-        self.chrNameBam = '2L'
-        self.chrNameBit = 'chr2L'
-        bam, mapped, unmapped, stats = bamHandler.openBam(self.bamFile, returnStats=True)
+        self.chrNameBam = "2L"
+        self.chrNameBit = "chr2L"
+        bam, mapped, unmapped, stats = bamHandler.openBam(
+            self.bamFile, returnStats=True
+        )
         tbit = py2bit.open(self.tbitFile)
         global debug
         debug = 0
         global global_vars
-        global_vars = {'2bit': self.tbitFile,
-                       'bam': self.bamFile,
-                       'filter_out': None,
-                       'mappability': self.mappability,
-                       'extra_sampling_file': None,
-                       'max_reads': 5,
-                       'min_reads': 0,
-                       'min_reads': 0,
-                       'reads_per_bp': 0.3,
-                       'total_reads': mapped,
-                       'genome_size': sum(tbit.chroms().values())
-                       }
+        global_vars = {
+            "2bit": self.tbitFile,
+            "bam": self.bamFile,
+            "filter_out": None,
+            "mappability": self.mappability,
+            "extra_sampling_file": None,
+            "max_reads": 5,
+            "min_reads": 0,
+            "min_reads": 0,
+            "reads_per_bp": 0.3,
+            "total_reads": mapped,
+            "genome_size": sum(tbit.chroms().values()),
+        }
 
     def testTabulateGCcontentWorker(self):
         stepSize = 2
-        fragmentLength = {'min': 1, 'median': 3, 'max': 5}
+        fragmentLength = {"min": 1, "median": 3, "max": 5}
         start = 0
         end = 20
-        chrNameBam2bit = {'2L': 'chr2L'}
-        return (self.chrNameBam,
-                start, end, stepSize, fragmentLength, chrNameBam2bit)
+        chrNameBam2bit = {"2L": "chr2L"}
+        return (self.chrNameBam, start, end, stepSize, fragmentLength, chrNameBam2bit)
 
     def set_filter_out_file(self):
-        global global_vars
-        global_vars['filter_out'] = self.root + "filter_out.bed"
+        global_vars["filter_out"] = self.root + "filter_out.bed"
 
     def unset_filter_out_file(self):
-        global global_vars
-        global_vars['filter_out'] = None
+        global_vars["filter_out"] = None
 
     def set_extra_sampling_file(self):
-        global global_vars
-        global_vars['extra_sampling_file'] = self.root + "extra_sampling.bed"
+        global_vars["extra_sampling_file"] = self.root + "extra_sampling.bed"
 
     def testTabulateGCcontent(self):
-        fragmentLength = {'median': 10}
-        chrNameBitToBam = {'chr2L': '2L'}
+        fragmentLength = {"median": 10}
+        chrNameBitToBam = {"chr2L": "2L"}
         stepSize = 1
-        bam = bamHandler.openBam(global_vars['bam'])
-        chromSizes = [(bam.references[i], bam.lengths[i])
-                      for i in range(len(bam.references))]
-        return (fragmentLength,
-                chrNameBitToBam, stepSize, chromSizes, 1)
+        bam = bamHandler.openBam(global_vars["bam"])
+        chromSizes = [
+            (bam.references[i], bam.lengths[i]) for i in range(len(bam.references))
+        ]
+        return (fragmentLength, chrNameBitToBam, stepSize, chromSizes, 1)
 
     def testCountReadsPerGC(self):
         regionSize = 300
-        chrNameBitToBam = {'chr2L': '2L'}
+        chrNameBitToBam = {"chr2L": "2L"}
         stepSize = 1
-        bam = bamHandler.openBam(global_vars['bam'])
-        chromSizes = [(bam.references[i], bam.lengths[i])
-                      for i in range(len(bam.references))]
-        return (regionSize,
-                chrNameBitToBam, stepSize, chromSizes, 1)
+        bam = bamHandler.openBam(global_vars["bam"])
+        chromSizes = [
+            (bam.references[i], bam.lengths[i]) for i in range(len(bam.references))
+        ]
+        return (regionSize, chrNameBitToBam, stepSize, chromSizes, 1)
 
 
 if __name__ == "__main__":

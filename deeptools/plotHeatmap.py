@@ -30,6 +30,8 @@ debug = 0
 old_settings = np.seterr(all='ignore')
 plt.ioff()
 
+import re
+from pdb import set_trace
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
@@ -108,7 +110,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # make height of summary plot
         # proportional to the width of heatmap
         sumplot_height = heatmapwidth
-        spacer_height = heatmapwidth / 8
+        spacer_height = heatmapwidth / 24 # beisi
         # scale height_ratios to convert from row
         # numbers to heatmapheigt fractions
         height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio])
@@ -117,6 +119,21 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
 
     return grids
 
+def autobreaklinetitle(title, sep="[-_,.:]", lmax=15): # beisi
+    outsep = "-"
+    sss = [rr for rr in re.split(sep, title) if len(rr)]
+    newtitle, tmp = "", ""
+    for ss in sss:
+        tmp0 = tmp
+        tmp += ss
+        if len(tmp) > lmax:
+            newtitle += tmp0.strip(outsep) + "\n"
+            tmp = ss
+        else:
+            tmp += outsep
+    newtitle += tmp.strip(outsep)
+    newtitle = "\n" + newtitle
+    return newtitle
 
 def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, wspace, hspace, colorbar_position, label_rotation=0.0):
     """
@@ -146,7 +163,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             else:
                 ax_profile = fig.add_subplot(grids[0, sample_id])
 
-        ax_profile.set_title(title)
+        ax_profile.set_title(autobreaklinetitle(title)) # beisi
         for group in range(iterNum2):
             if perGroup:
                 sub_matrix = hm.matrix.get_matrix(sample_id, group)
@@ -163,7 +180,8 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
         if sample_id > 0 and len(yMin) == 1 and len(yMax) == 1:
             plt.setp(ax_profile.get_yticklabels(), visible=False)
 
-        if sample_id == 0 and yAxisLabel != '':
+        ax_profile.get_yaxis().set_tick_params(direction="in", pad=-22)  # beisi
+        if sample_id == 0 and yAxisLabel != "":
             ax_profile.set_ylabel(yAxisLabel)
         xticks, xtickslabel = hm.getTicks(tickIdx)
         if np.ceil(max(xticks)) != float(sub_matrix['matrix'].shape[1] - 1):
@@ -518,7 +536,7 @@ def plotMatrix(hm, outFileName,
         else:
             total_figwidth += 1 / 2.54
 
-    fig = plt.figure(figsize=(total_figwidth, figheight), constrained_layout=True)
+    fig = plt.figure(figsize=(total_figwidth, figheight), constrained_layout=True) #beisi
     fig.suptitle(plotTitle, y=1 - (0.06 / figheight))
 
     grids = prepare_layout(
@@ -589,10 +607,10 @@ def plotMatrix(hm, outFileName,
             iterNum = hm.matrix.get_num_samples()
             iterNum2 = numgroups
         ax_list = addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType, plot_type, yAxisLabel, color_list, yMin, yMax, None, None, colorbar_position, label_rotation)
-
-        if legend_location != 'none':
-            ax_list[-1].legend(loc=legend_location.replace('-', ' '), ncol=1, prop=fontP,
-                               frameon=False, markerscale=0.5)
+ 
+        if legend_location != "none": #beisi start
+            legend = ax_list[-1].legend(loc='lower right', shadow=False, fontsize='x-large', bbox_to_anchor=(0.75, 1.35, 0.5, .50), ncol=10, frameon=False, prop=fontP)
+            legend.set_in_layout(False) #beisi end
 
     first_group = 0  # helper variable to place the title per sample/group
     for sample in range(hm.matrix.get_num_samples()):
@@ -628,7 +646,7 @@ def plotMatrix(hm, outFileName,
 
             if group == first_group and not showSummaryPlot and not perGroup:
                 title = hm.matrix.sample_labels[sample]
-                ax.set_title(title)
+                ax.set_title(autobreaklinetitle(title)) # beisi
 
             if box_around_heatmaps is False:
                 # Turn off the boxes around the individual heatmaps
@@ -760,7 +778,7 @@ def plotMatrix(hm, outFileName,
         fig.colorbar(img, cax=ax)
 
     if box_around_heatmaps:
-        fig.get_layout_engine().set(wspace=0.10, hspace=0.025, rect=(0.04, 0, 0.96, 0.85))
+        fig.get_layout_engine().set(w_pad=0.04,h_pad=0.01,wspace=0, hspace=0, rect=(0.04, 0, 0.96, 0.95))
     else:
         #  When no box is plotted the space between heatmaps is reduced
         fig.get_layout_engine().set(wspace=0.05, hspace=0.01, rect=(0.04, 0, 0.96, 0.85))

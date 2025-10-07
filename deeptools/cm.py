@@ -30,8 +30,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from matplotlib import colors, colormaps as mpl_cm
-
+from matplotlib import colors
 
 _rocket_lut = [
     [0.01060815, 0.01808215, 0.10018654],
@@ -289,7 +288,7 @@ _rocket_lut = [
     [0.97912374, 0.90313207, 0.83979337],
     [0.979891, 0.90894778, 0.84827858],
     [0.98067764, 0.91476465, 0.85676611],
-    [0.98137749, 0.92061729, 0.86536915]
+    [0.98137749, 0.92061729, 0.86536915],
 ]
 
 
@@ -549,7 +548,7 @@ _mako_lut = [
     [0.84857662, 0.9498573, 0.8776059],
     [0.8564431, 0.95309792, 0.88414253],
     [0.86429066, 0.95635719, 0.89067759],
-    [0.87218969, 0.95960708, 0.89725384]
+    [0.87218969, 0.95960708, 0.89725384],
 ]
 
 
@@ -809,7 +808,7 @@ _vlag_lut = [
     [0.67000176, 0.23511902, 0.24650278],
     [0.66693423, 0.22859879, 0.24124404],
     [0.6638441, 0.22201742, 0.2359961],
-    [0.66080672, 0.21526712, 0.23069468]
+    [0.66080672, 0.21526712, 0.23069468],
 ]
 
 
@@ -1069,12 +1068,24 @@ _icefire_lut = [
     [0.9932672, 0.79848979, 0.63231691],
     [0.99535958, 0.80926704, 0.64687278],
     [0.99740544, 0.82008078, 0.66150571],
-    [0.9992197, 0.83100723, 0.6764127]
+    [0.9992197, 0.83100723, 0.6764127],
 ]
 
 
 _luts = [_rocket_lut, _mako_lut, _vlag_lut, _icefire_lut]
 _names = ["rocket", "mako", "vlag", "icefire"]
+
+
+def mycmregister(name, cmap):
+    import matplotlib
+
+    if hasattr(matplotlib.cm, "register_cmap"):
+        matplotlib.cm.register_cmap(name, cmap)
+    elif hasattr(matplotlib.colors, "register_cmap"):
+        matplotlib.colors.register_cmap(name, cmap)
+    else:
+        matplotlib.colormaps.register(cmap, name=name)
+
 
 for _lut, _name in zip(_luts, _names):
 
@@ -1084,5 +1095,5 @@ for _lut, _name in zip(_luts, _names):
     _cmap_r = colors.ListedColormap(_lut[::-1], _name + "_r")
     locals()[_name + "_r"] = _cmap_r
 
-    mpl_cm.register(_cmap, name=_name)
-    mpl_cm.register(_cmap_r, name=_name + "_r")
+    mycmregister(_name, _cmap)
+    mycmregister(_name + "_r", _cmap_r)

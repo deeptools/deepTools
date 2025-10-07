@@ -1,16 +1,21 @@
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['svg.fonttype'] = 'none'
+
+matplotlib.use("Agg")
+matplotlib.rcParams["pdf.fonttype"] = 42
+matplotlib.rcParams["svg.fonttype"] = "none"
 from deeptools import cm  # noqa: F401
 import matplotlib.colors as pltcolors
 import plotly.graph_objs as go
 
-old_settings = np.seterr(all='ignore')
+old_settings = np.seterr(all="ignore")
+
+debug = 0
+if debug:
+    from ipdb import set_trace
 
 
-def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
+def plot_single(ax, ma, average_type, color, label, plot_type="lines"):
     """
     Adds a line to the plot in the given ax using the specified method
 
@@ -18,7 +23,7 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     ----------
     ax : matplotlib axis
         matplotlib axis
-    ma : numpy array
+    ma : numpy array or list of numpy array(for plot with --repgrplist, take average between replicates )
         numpy array The data on this matrix is summarized according
         to the `average_type` argument.
     average_type : str
@@ -32,7 +37,9 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
         type of plot. Either 'se' for standard error, 'std' for
         standard deviation, 'overlapped_lines' to plot each line of the matrix,
         fill to plot the area between the x axis and the value or any other string to
-        just plot the average line.
+        just plot the average line. When assign samples to replicates group such as
+        '--repgrplist WT WT KO KO' : 'std' would be the standard deviation between replicates groups.
+        'se' for standard error between replicates groups.
 
     Returns
     -------
@@ -63,17 +70,27 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
 
 
     """
-    summary = np.ma.__getattribute__(average_type)(ma, axis=0)
+    if isinstance(ma, list):
+        summary_list = []
+        for ma_each in ma:
+            tmp = np.ma.__getattribute__(average_type)(ma_each, axis=0)
+            summary_list.append(tmp)
+        ma = np.array(summary_list)
+        summary = np.ma.__getattribute__("average")(ma, axis=0)
+    else:
+        summary = np.ma.__getattribute__(average_type)(ma, axis=0)
     # only plot the average profiles without error regions
     x = np.arange(len(summary))
     if isinstance(color, np.ndarray):
         color = pltcolors.to_hex(color, keep_alpha=True)
     ax.plot(x, summary, color=color, label=label, alpha=0.9)
-    if plot_type == 'fill':
-        ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
+    if plot_type == "fill":
+        ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor="none")
 
-    if plot_type in ['se', 'std']:
-        if plot_type == 'se':  # standard error
+    if debug:
+        set_trace()
+    if plot_type in ["se", "std"]:
+        if plot_type == "se":  # standard error
             std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
         else:
             std = np.std(ma, axis=0)
@@ -83,39 +100,49 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
         # between the mean (or median etc.) and the std or se
         f_color = pltcolors.colorConverter.to_rgba(color, alpha)
 
-        ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
-        ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
+        ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor="none")
+        ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor="none")
 
     ax.set_xlim(0, max(x))
 
     return ax
 
 
-def plotly_single(ma, average_type, color, label, plot_type='line'):
+def plotly_single(ma, average_type, color, label, plot_type="line"):
     """A plotly version of plot_single. Returns a list of traces"""
     summary = list(np.ma.__getattribute__(average_type)(ma, axis=0))
     x = list(np.arange(len(summary)))
     if isinstance(color, str):
         color = list(matplotlib.colors.to_rgb(color))
-    traces = [go.Scatter(x=x, y=summary, name=label, line={'color': "rgba({},{},{},0.9)".format(color[0], color[1], color[2])}, showlegend=False)]
-    if plot_type == 'fill':
-        traces[0].update(fill='tozeroy', fillcolor=color)
+    traces = [
+        go.Scatter(
+            x=x,
+            y=summary,
+            name=label,
+            line={"color": "rgba({},{},{},0.9)".format(color[0], color[1], color[2])},
+            showlegend=False,
+        )
+    ]
+    if plot_type == "fill":
+        traces[0].update(fill="tozeroy", fillcolor=color)
 
-    if plot_type in ['se', 'std']:
-        if plot_type == 'se':  # standard error
+    if plot_type in ["se", "std"]:
+        if plot_type == "se":  # standard error
             std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
         else:
             std = np.std(ma, axis=0)
 
         x_rev = x[::-1]
         lower = summary - std
-        trace = go.Scatter(x=x + x_rev,
-                           y=np.concatenate([summary + std, lower[::-1]]),
-                           fill='tozerox',
-                           fillcolor="rgba({},{},{},0.2)".format(color[0], color[1], color[2]),
-                           line=go.Line(color='transparent'),
-                           showlegend=False,
-                           name=label)
+        trace = go.Scatter(
+            x=x + x_rev,
+            y=np.concatenate([summary + std, lower[::-1]]),
+            fill="tozerox",
+            fillcolor="rgba({},{},{},0.2)".format(color[0], color[1], color[2]),
+            line=go.Line(color="transparent"),
+            showlegend=False,
+            name=label,
+        )
         traces.append(trace)
 
     return traces
@@ -133,42 +160,44 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
     As of matplotlib 3.1 there is no longer padding added to all ticks. Reference point ticks will be adjusted by width/2
     or width for spacing and the last half of scaled ticks will be shifed by 1 bin so the ticks are at the beginning of bins.
     """
-    w = hm.parameters['bin size']
-    b = hm.parameters['upstream']
-    a = hm.parameters['downstream']
+    w = hm.parameters["bin size"]
+    b = hm.parameters["upstream"]
+    a = hm.parameters["downstream"]
     if idx is not None:
         w = w[idx]
         b = b[idx]
         a = a[idx]
 
     try:
-        c = hm.parameters['unscaled 5 prime']
+        c = hm.parameters["unscaled 5 prime"]
         if idx is not None:
             c = c[idx]
     except:
         c = 0
     try:
-        d = hm.parameters['unscaled 3 prime']
+        d = hm.parameters["unscaled 3 prime"]
         if idx is not None:
             d = d[idx]
     except:
         d = 0
-    m = hm.parameters['body']
+    m = hm.parameters["body"]
     if idx is not None:
         m = m[idx]
 
     if b < 1e5:
         quotient = 1000
-        symbol = 'Kb'
+        symbol = "Kb"
     else:
         quotient = 1e6
-        symbol = 'Mb'
+        symbol = "Mb"
 
     if m == 0:
         xticks = [(k / w) for k in [0, b - 0.5 * w, b + a - w]]
-        xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
-                       referencePointLabel,
-                       '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+        xtickslabel = [
+            "{0:.1f}".format(-(float(b) / quotient)),
+            referencePointLabel,
+            "{0:.1f}{1}".format(float(a) / quotient, symbol),
+        ]
     else:
         xticks_values = [0]
         xtickslabel = []
@@ -176,7 +205,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         # only if upstream region is set, add a x tick
         if b > 0:
             xticks_values.append(b)
-            xtickslabel.append('{0:.1f}'.format(-(float(b) / quotient)))
+            xtickslabel.append("{0:.1f}".format(-(float(b) / quotient)))
 
         xtickslabel.append(startLabel)
 
@@ -196,7 +225,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
         if a > 0:
             xticks_values.append(b + c + m + d + a - w)
-            xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+            xtickslabel.append("{0:.1f}{1}".format(float(a) / quotient, symbol))
 
         xticks = [(k / w) for k in xticks_values]
         xticks = [max(x, 0) for x in xticks]
