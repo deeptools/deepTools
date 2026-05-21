@@ -379,7 +379,7 @@ def plotlyMatrix(hm,
 
 
 def plotMatrix(hm, outFileName,
-               colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0},
+               colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0, 'plotColors': None},
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -531,13 +531,24 @@ def plotMatrix(hm, outFileName,
         fig
     )
 
-    # color map for the summary plot (profile) on top of the heatmap
-    cmap_plot = plt.get_cmap('jet')
+    # colors for the profile lines in the summary plot above the heatmap
     numgroups = hm.matrix.get_num_groups()
-    if perGroup:
-        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
+    if colorMapDict.get('plotColors'):
+        # user-supplied colors: one per group (or per sample when perGroup),
+        # recycled with modulo if fewer colors are given than lines
+        user_colors = colorMapDict['plotColors']
+        if perGroup:
+            n_lines = hm.matrix.get_num_samples()
+        else:
+            n_lines = numgroups
+        color_list = [user_colors[i % len(user_colors)] for i in range(n_lines)]
     else:
-        color_list = cmap_plot(np.arange(numgroups) / numgroups)
+        # default: evenly-spaced colors from the jet colormap
+        cmap_plot = plt.get_cmap('jet')
+        if perGroup:
+            color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
+        else:
+            color_list = cmap_plot(np.arange(numgroups) / numgroups)
     alpha = colorMapDict['alpha']
     if image_format == 'plotly':
         return plotlyMatrix(hm,
@@ -867,7 +878,8 @@ def main(args=None):
                      'colorList': args.colorList,
                      'colorNumber': args.colorNumber,
                      'missingDataColor': args.missingDataColor,
-                     'alpha': args.alpha}
+                     'alpha': args.alpha,
+                     'plotColors': args.plotColors}
 
     plotMatrix(hm,
                args.outFileName,
