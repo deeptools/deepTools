@@ -2,6 +2,7 @@ import argparse
 import os
 from importlib.metadata import version
 import multiprocessing
+import matplotlib.colors
 
 
 def check_float_0_1(value):
@@ -19,6 +20,15 @@ def check_list_of_comma_values(value):
         if len(foo) < 2:
             raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. "
                                              "Only argument elements of the following form are accepted: 'foo,bar'" % foo)
+    return value
+
+
+def check_color(value):
+    """Validate that a string is a recognised matplotlib color (named or hex)."""
+    if not matplotlib.colors.is_color_like(value):
+        raise argparse.ArgumentTypeError(
+            "'{}' is not a valid matplotlib color. Use a named color "
+            "(e.g. 'red') or a hex value (e.g. '#ff0000').".format(value))
     return value
 
 
@@ -703,6 +713,17 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'between the colors.',
             type=int,
             default=256)
+
+        optional.add_argument(
+            '--plotColors',
+            help='Colors for the profile lines in the summary plot shown above the heatmap. '
+                 'Only applies when --whatToShow is set to "plot, heatmap and colorbar" or '
+                 '"plot and heatmap". One color per group (or per sample when --perGroup is set) '
+                 'can be specified. Colors are recycled if fewer are given than the number of lines. '
+                 'Accepts named matplotlib colors (e.g. red, blue) and hex values (e.g. #ff0000). '
+                 'Example: --plotColors red blue green',
+            type=check_color,
+            nargs='+')
 
         optional.add_argument('--zMin', '-min',
                               default=None,
