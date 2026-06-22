@@ -48,7 +48,7 @@
                 $advancedOpt.perSample
 
                 $advancedOpt.variableScales
-                
+
                 $advancedOpt.perSample
 
                 $advancedOpt.variableScales
@@ -175,7 +175,7 @@
         </data>
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="2">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="BED" value="multiBamSummary_regions.bed,multiBamSummary_regions.bed" ftype="bed" />
             <param name="outRawCounts" value="true" />

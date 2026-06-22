@@ -114,7 +114,7 @@
         </data>
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="3">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <!--param name="outFileFormat" value="png" /-->
             <param name="showAdvancedOpt" value="yes" />
@@ -123,7 +123,7 @@
             <output name="outFileRawCounts" file="plotCoverage_result1.tabular" ftype="tabular" />
             <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="sim_size" delta="2400" />
         </test>
-        <test>
+        <test expect_num_outputs="2">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="plotTitle" value="Test Title from Galaxy" />

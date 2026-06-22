@@ -194,11 +194,11 @@
 
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="1">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <output name="outFileName" file="profiler_result1.png" ftype="png" compare="sim_size" delta="4000" />
         </test>
-        <test>
+        <test expect_num_outputs="2">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="showScaleRegionsOpt" value="yes" />

@@ -1,11 +1,18 @@
 [build-system]
 requires = [
-    "setuptools"
+    "maturin>=1.0,<2.0"
 ]
+build-backend = "maturin"
+
+[tool.maturin]
+python-source = "pydeeptools"
+exclude = ["pydeeptools/deeptools/test/**/*"]
+module-name = "deeptools.hp"
+bindings = "pyo3"
 
 [project]
-name = "deepTools"
-version = "3.5.6"
+name = "deeptools"
+version = "4.0.0"
 authors = [
     {name="Fidel Ramirez"},
     {name="Devon P Ryan"},
@@ -19,17 +26,18 @@ authors = [
     {name="Thomas Manke"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
-requires-python = "> 3.8"
+requires-python = "> 3.9"
 dependencies = [
-    "numpy >= 2.0.0",
-    "scipy >= 0.17.0",
-    "matplotlib >= 3.5.0",
-    "pysam >= 0.14.0",
-    "numpydoc >= 0.5",
-    "pyBigWig >= 0.2.1",
-    "py2bit >= 0.2.0",
-    "plotly >= 4.9",
-    "deeptoolsintervals >= 0.1.8"
+    "numpy >= 2.0",
+    "scipy >= 1.13",
+    "matplotlib >= 3.9",
+    "pysam >= 0.23",
+    "numpydoc >= 1.8",
+    "pyBigWig >= 0.3",
+    "py2bit >= 0.3",
+    "pandas >= 2.2",
+    "scikit-learn >= 1.6",
+    "deeptoolsintervals >= 0.1"
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
@@ -56,19 +64,19 @@ packages = ["deeptools"]
 
 [project.scripts]
 alignmentSieve = "deeptools.alignmentSieve:main"
-bamCompare = "deeptools.bamCompare:main"
-bamCoverage = "deeptools.bamCoverage:main"
+#bamCompare_old = "deeptools.bamCompare:main"
+#bamCoverage_old = "deeptools.bamCoverage:main"
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
 bigwigAverage = "deeptools.bigwigAverage:main"
 bigwigCompare = "deeptools.bigwigCompare:main"
 computeGCBias = "deeptools.computeGCBias:main"
-computeMatrix = "deeptools.computeMatrix:main"
+#computeMatrix_old = "deeptools.computeMatrix:main"
 computeMatrixOperations = "deeptools.computeMatrixOperations:main"
 correctGCBias = "deeptools.correctGCBias:main"
 deeptools = "deeptools.deeptools_list_tools:main"
 estimateReadFiltering = "deeptools.estimateReadFiltering:main"
 estimateScaleFactor = "deeptools.estimateScaleFactor:main"
-multiBamSummary = "deeptools.multiBamSummary:main"
+#multiBamSummary_old = "deeptools.multiBamSummary:main"
 multiBigwigSummary = "deeptools.multiBigwigSummary:main"
 plotCorrelation = "deeptools.plotCorrelation:main"
 plotCoverage = "deeptools.plotCoverage:main"
@@ -77,3 +85,8 @@ plotFingerprint = "deeptools.plotFingerprint:main"
 plotHeatmap = "deeptools.plotHeatmap:main"
 plotPCA = "deeptools.plotPCA:main"
 plotProfile = "deeptools.plotProfile:main"
+bamCoverage = "deeptools.bamCoverage2:main"
+bamCompare = "deeptools.bamCompare2:main"
+computeMatrix = "deeptools.computeMatrix2:main"
+#alignmentSieve = "deeptools.alignmentSieve2:main"
+multiBamSummary = "deeptools.multiBamSummary2:main"

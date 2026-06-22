@@ -4,7 +4,7 @@
         <token name="@BINARY@">correctGCBias</token>
         <import>deepTools_macros.xml</import>
     </macros>
-    <expand macro="requirements" />
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         ln -s '$bamInput' local_bamInput.bam &&
@@ -34,25 +34,25 @@
 ]]>
     </command>
     <inputs>
-        <param argument="--GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" help="" />
+        <param argument="--GCbiasFrequenciesFile" type="data" format="tabular" label="Output of computeGCBias" help=""/>
         <param argument="--bamInput" format="bam,cram" type="data"
-            label="BAM/CRAM file" help="This should be same file that was used for computeGCbias." />
-        <expand macro="reference_genome_source" />
-        <expand macro="effectiveGenomeSize" />
-        <expand macro="region_limit_operation" />
+            label="BAM/CRAM file" help="This should be same file that was used for computeGCbias."/>
+        <expand macro="reference_genome_source"/>
+        <expand macro="effectiveGenomeSize"/>
+        <expand macro="region_limit_operation"/>
     </inputs>
     <outputs>
-        <data format="bam" from_work_dir="corrected.bam" name="outFileName" />
+        <data format="bam" from_work_dir="corrected.bam" name="outFileName"/>
     </outputs>
     <tests>
-        <test>
-            <param name="GCbiasFrequenciesFile" value="computeGCBias_result1.tabular" ftype="tabular" />
-            <param name="bamInput" value="paired_chr2L.bam" ftype="bam" />
-            <param name="ref_source" value="history" />
-            <param name="input1" value="sequence.2bit" />
-            <param name="effectiveGenomeSize_opt" value="specific" />
-            <param name="effectiveGenomeSize" value="10050" />
-            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" lines_diff="200" />
+        <test expect_num_outputs="1">
+            <param name="GCbiasFrequenciesFile" value="computeGCBias_result1.tabular" ftype="tabular"/>
+            <param name="bamInput" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="ref_source" value="history"/>
+            <param name="input1" value="sequence.2bit"/>
+            <param name="effectiveGenomeSize_opt" value="specific"/>
+            <param name="effectiveGenomeSize" value="10050"/>
+            <output name="outFileName" file="correctGCBias_result1.bam" ftype="bam" lines_diff="200"/>
         </test>
     </tests>
     <help>
@@ -79,5 +79,5 @@ Output files
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>

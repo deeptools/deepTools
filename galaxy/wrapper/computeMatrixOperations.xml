@@ -92,13 +92,11 @@
                 <option value="dataRange">Returns the min, max, median, 10th and 90th percentile of the matrix values per sample (dataRange)</option>
             </param>
             <when value="info">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
             </when>
 
             <when value="relabel">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 <param argument="groupLabels" type="text" optional="true" label="New Region/Group Labels."
                     help="If blank, the labels are left unchanged, otherwise they're changed to be those provided here. Multiple labels should be separated by spaces. If you provide labels, you must provide exactly one label for each group of regions."/>
                 <param argument="sampleLabels" type="text" optional="true" label="New Sample Labels."
@@ -106,17 +104,15 @@
             </when>
 
             <when value="subset">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 <param argument="groups" type="text" optional="true" label="Region groups to include."
-                    help="If blank, all region groups are output. Alternatively, one or more groups listed in the output of the 'info' command can be used (separate groups by a space and enclose in quotes if needed)" />
+                    help="If blank, all region groups are output. Alternatively, one or more groups listed in the output of the 'info' command can be used (separate groups by a space and enclose in quotes if needed)"/>
                 <param argument="samples" type="text" optional="true" label="Samples to include."
-                    help="If blank, all samples are output. Alternatively, one or more samples listed in the output of the 'info' command can be used (separate sample names by a space and enclose in quotes if needed)" />
+                    help="If blank, all samples are output. Alternatively, one or more samples listed in the output of the 'info' command can be used (separate sample names by a space and enclose in quotes if needed)"/>
             </when>
 
             <when value="filterStrand">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 <param argument="--strand" type="select" label="Only include regions on this strand."
                     help="Only regions on the desired strand will be included in the output. If you desire to instead remove regions on only one strand (or the . strand), separately run this on the other strand and then use the rbind operation.">
                     <option value="+">+</option>
@@ -126,31 +122,27 @@
             </when>
 
             <when value="filterValues">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 <param argument="--min" type="float" optional="true" label="Minimum value"
-                       help="Exclude any row in the matrix with a value below this. By default there is no minimum value." />
+                       help="Exclude any row in the matrix with a value below this. By default there is no minimum value."/>
                 <param argument="--max" type="float" optional="true" label="Maximum value"
-                       help="Exclude any row in the matrix with a value above this. By default there is no maximum value." />
+                       help="Exclude any row in the matrix with a value above this. By default there is no maximum value."/>
             </when>
 
             <when value="rbind">
                 <repeat name="matrixFiles" title="Matrix files from computeMatrix" min="2">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 </repeat>
             </when>
 
             <when value="cbind">
                 <repeat name="matrixFiles" title="Matrix files from computeMatrix" min="2">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 </repeat>
             </when>
 
             <when value="sort">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
                 <repeat name="regionsFiles" title="BED or GTF files of regions" min="1">
                     <param name="regionsFile" format="bed,gtf" type="data" label="Regions to plot"
                         help="File, in BED format, containing the regions to plot."/>
@@ -158,8 +150,7 @@
             </when>
 
             <when value="dataRange">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-                       label="Matrix file from the computeMatrix tool" help=""/>
+                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
             </when>
         </conditional>
     </inputs>
@@ -180,15 +171,15 @@
         </data>
     </outputs>
     <tests>
-        <test>
-            <param name="command" value="info" />
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileTxt" file="computeMatrixOperations.txt" ftype="txt" />
+        <test expect_num_outputs="1">
+            <param name="command" value="info"/>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
+            <output name="outFileTxt" file="computeMatrixOperations.txt" ftype="txt"/>
         </test>
-        <test>
-            <param name="command" value="rbind" />
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+        <test expect_num_outputs="1">
+            <param name="command" value="rbind"/>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
             <output name="outFileName" file="computeMatrixOperations_result2.mat.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" delta="100"/>
         </test>
     </tests>
@@ -225,5 +216,5 @@ These operations are useful when you want to run computeMatrix on multiple files
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>
