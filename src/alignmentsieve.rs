@@ -1,35 +1,35 @@
+use crate::covcalc::{parse_regions, Region};
+use crate::filehandler::{is_bed_or_gtf, read_bedfile};
+use crate::filtering::Alignmentfilters;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
 use rust_htslib::bam::{self, Header, IndexedReader, Read, Reader, Writer};
-use tempfile::{Builder, TempPath};
 use std::fs::File;
 use std::io::Write;
-use crate::covcalc::{parse_regions, Region};
-use crate::filtering::Alignmentfilters;
-use crate::filehandler::{is_bed_or_gtf, read_bedfile};
+use tempfile::{Builder, TempPath};
 
 #[pyfunction]
 pub fn r_alignmentsieve(
-    bamifile: &str, // input bamfile
-    ofile: &str, // output file
-    nproc: usize, // threads
-    filter_metrics: &str, // filter metrics file.
+    py: Python,
+    bamifile: &str,               // input bamfile
+    ofile: &str,                  // output file
+    nproc: usize,                 // threads
+    filter_metrics: &str,         // filter metrics file.
     filtered_out_readsfile: &str, // filtered_out_reads bam/bedfile.
-    verbose: bool, // verbose
-    shift: Py<PyList>, // python list of the shift to perform.
-    _bed: bool, // output format in BEDPE.
-    filterrnastrand: &str, // "forward", "reverse" or "None".
-    minmappingquality: u8, // minimum mapping quality.
-    samflaginclude: u16, // sam flag include
-    samflagexclude: u16, // sam flag exclude
-    blacklist: &str, // blacklist file name.
-    minfraglen: u32, // minimum fragment length.
-    maxfraglen: u32, // maximum fragment length.
+    verbose: bool,                // verbose
+    shift: Py<PyList>,            // python list of the shift to perform.
+    _bed: bool,                   // output format in BEDPE.
+    filterrnastrand: &str,        // "forward", "reverse" or "None".
+    minmappingquality: u8,        // minimum mapping quality.
+    samflaginclude: u16,          // sam flag include
+    samflagexclude: u16,          // sam flag exclude
+    blacklist: &str,              // blacklist file name.
+    minfraglen: u32,              // minimum fragment length.
+    maxfraglen: u32,              // maximum fragment length.
     _extend_reads: u32,
     _center_reads: bool,
-    
 ) -> PyResult<()> {
     // Input bam file
     let bam = Reader::from_path(bamifile).unwrap();
@@ -40,13 +40,10 @@ pub fn r_alignmentsieve(
     if filtered_out_readsfile != "None" {
         write_filters = true;
     }
-    let mut readshift: Vec<i32> = Vec::new();
-    Python::with_gil(|py| {
-        readshift = shift.extract(py).expect("Failed to extract shift.");
-    });
+    let readshift: Vec<i32> = shift.extract(py).expect("Failed to extract shift");
     // shift is of length 0, 2, or 4.
 
-    // Define regions 
+    // Define regions
     let (regions, chromsizes) = parse_regions("None", vec![bamifile]);
     // If there is a blacklist, read it.
     let mut backlistregions: Option<Vec<Region>> = None;
@@ -56,10 +53,11 @@ pub fn r_alignmentsieve(
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                let (bls, _) =
+                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
                 backlistregions = Some(bls);
-            },
-            _ => panic!("Error: Cannot determine filetype of blacklist file.")
+            }
+            _ => panic!("Error: Cannot determine filetype of blacklist file."),
         }
     }
 
@@ -79,17 +77,29 @@ pub fn r_alignmentsieve(
     );
     let pool = ThreadPoolBuilder::new().num_threads(1).build().unwrap();
     let (sieve, filtersieve, totalreads, filteredreads) = pool.install(|| {
-        regions.par_iter()
-            .map(|i| sieve_bamregion(bamifile, i, &filters, &readshift, write_filters, nproc, verbose))
+        regions
+            .par_iter()
+            .map(|i| {
+                sieve_bamregion(
+                    bamifile,
+                    i,
+                    &filters,
+                    &readshift,
+                    write_filters,
+                    nproc,
+                    verbose,
+                )
+            })
             .reduce(
                 || (Vec::new(), Vec::new(), 0, 0),
-                |(mut _sieve, mut _filtersieve, mut _total, mut _filter), (sieve, filtersieve, total, filter)| {
+                |(mut _sieve, mut _filtersieve, mut _total, mut _filter),
+                 (sieve, filtersieve, total, filter)| {
                     _sieve.extend(sieve);
                     _filtersieve.extend(filtersieve);
                     _total += total;
                     _filter += filter;
                     (_sieve, _filtersieve, _total, _filter)
-                }
+                },
             )
     });
 
@@ -107,7 +117,8 @@ pub fn r_alignmentsieve(
     }
     // write filtered reads if necessary
     if write_filters {
-        let mut ofilterbam = Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
+        let mut ofilterbam =
+            Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
         let _ = ofilterbam.set_threads(nproc);
         for sb in filtersieve.into_iter() {
             if let Some(sb) = sb {
@@ -127,15 +138,33 @@ pub fn r_alignmentsieve(
         // write header
         writeln!(of, "#bamFilterReads --filterMetrics").unwrap();
         writeln!(of, "#File\tReads\tRemaining Total\tInitial Reads").unwrap();
-        writeln!(of, "{}\t{}\t{}", bamifile, totalreads-filteredreads, totalreads).unwrap();
+        writeln!(
+            of,
+            "{}\t{}\t{}",
+            bamifile,
+            totalreads - filteredreads,
+            totalreads
+        )
+        .unwrap();
     }
 
     Ok(())
 }
 
-
-fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters, _shift: &Vec<i32>, write_filters: bool, nproc: usize, verbose: bool) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
-    let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
+fn sieve_bamregion(
+    ibam: &str,
+    regstruct: &Region,
+    alfilters: &Alignmentfilters,
+    _shift: &Vec<i32>,
+    write_filters: bool,
+    nproc: usize,
+    verbose: bool,
+) -> (Vec<Option<TempPath>>, Vec<Option<TempPath>>, u64, u64) {
+    let region = (
+        regstruct.chrom.clone(),
+        regstruct.get_startu(),
+        regstruct.get_endu(),
+    );
     let mut total_reads: u64 = 0;
     let mut filtered_reads: u64 = 0;
     let mut bam = IndexedReader::from_path(ibam).unwrap();
@@ -201,7 +230,7 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
             }
             continue;
         }
-        
+
         // SAM flags
         if alfilters.samflaginclude != 0 && (record.flags() & alfilters.samflaginclude) == 0 {
             filtered_reads += 1;
@@ -223,7 +252,9 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
         // fragment length
         if alfilters.minfraglen != 0 || alfilters.maxfraglen != 0 {
             if record.is_paired() {
-                if record.insert_size().abs() < alfilters.minfraglen as i64 || record.insert_size().abs() > alfilters.maxfraglen as i64 {
+                if record.insert_size().abs() < alfilters.minfraglen as i64
+                    || record.insert_size().abs() > alfilters.maxfraglen as i64
+                {
                     filtered_reads += 1;
                     if let Some(filterbamout) = &mut filterbamout {
                         filterbamout.write(&record).unwrap();
@@ -264,7 +295,7 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
                         }
                         continue;
                     }
-                },
+                }
                 ("forward", false) => {
                     if !(record.flags() & 16 == 16) {
                         filtered_reads += 1;
@@ -274,7 +305,7 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
                         }
                         continue;
                     }
-                },
+                }
                 ("reverse", true) => {
                     if !((record.flags() & 144 == 144) || (record.flags() & 96 == 96)) {
                         filtered_reads += 1;
@@ -284,7 +315,7 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
                         }
                         continue;
                     }
-                },
+                }
                 ("reverse", false) => {
                     if !(record.flags() & 16 == 0) {
                         filtered_reads += 1;
@@ -294,8 +325,8 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
                         }
                         continue;
                     }
-                },
-                _ => {},
+                }
+                _ => {}
             }
         }
         sievebamout.write(&record).unwrap();
@@ -303,18 +334,24 @@ fn sieve_bamregion(ibam: &str, regstruct: &Region, alfilters: &Alignmentfilters,
     }
 
     match (written, filterwritten) {
-        (true, true) => {
-            (vec![Some(sievebam_path)], vec![Some(filterbam_path)], total_reads, filtered_reads)
-        },
-        (true, false) => {
-            (vec![Some(sievebam_path)], vec![None], total_reads, filtered_reads)
-        },
-        (false, true) => {
-            (vec![None], vec![Some(filterbam_path)], total_reads, filtered_reads)
-        },
-        (false, false) => {
-            (vec![None], vec![None], total_reads, filtered_reads)
-        }
+        (true, true) => (
+            vec![Some(sievebam_path)],
+            vec![Some(filterbam_path)],
+            total_reads,
+            filtered_reads,
+        ),
+        (true, false) => (
+            vec![Some(sievebam_path)],
+            vec![None],
+            total_reads,
+            filtered_reads,
+        ),
+        (false, true) => (
+            vec![None],
+            vec![Some(filterbam_path)],
+            total_reads,
+            filtered_reads,
+        ),
+        (false, false) => (vec![None], vec![None], total_reads, filtered_reads),
     }
-
 }

@@ -37,7 +37,8 @@ dependencies = [
     "py2bit >= 0.3",
     "pandas >= 2.2",
     "scikit-learn >= 1.6",
-    "deeptoolsintervals >= 0.1"
+    "deeptoolsintervals >= 0.1",
+    "maturin"
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
@@ -90,3 +91,19 @@ bamCompare = "deeptools.bamCompare2:main"
 computeMatrix = "deeptools.computeMatrix2:main"
 #alignmentSieve = "deeptools.alignmentSieve2:main"
 multiBamSummary = "deeptools.multiBamSummary2:main"
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+[tool.pixi.dependencies]
+libclang = "<22"
+clangdev = "<22"
+#compilers = "*"
+#gcc = "*"
+#gxx = "*"
+htslib = "<=1.19"
+zlib = "*"
+[tool.pixi.pypi-dependencies]
+deeptools = { path = ".", editable = true }
+[tool.pixi.activation.env]
+LIBCLANG_PATH = "$CONDA_PREFIX/lib"
