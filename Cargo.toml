@@ -13,9 +13,9 @@ openssl-sys = { version = "*", features = ["vendored"] }
 pyo3 = { version = "*", features = ["extension-module"] }
 rust-htslib = "*"
 rayon = "*"
+tokio = "*"
 itertools = "*"
 bigtools = "*"
-tokio = "*"
 flate2 = "*"
 tempfile = "*"
 ndarray = "*"
