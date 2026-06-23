@@ -53,7 +53,8 @@ actions = [
     "pytest",
     "twine",
     "build",
-    "planemo"
+    "planemo",
+    "matplotlib == 3.10", # pin matplotlib version to avoid plots changing in pytests (font size defaults etc.)
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
@@ -98,9 +99,6 @@ platforms = ["linux-64", "osx-arm64", "osx-64"]
 [tool.pixi.dependencies]
 libclang = "<22"
 clangdev = "<22"
-#compilers = "*"
-#gcc = "*"
-#gxx = "*"
 htslib = "<=1.19"
 zlib = "*"
 [tool.pixi.pypi-dependencies]
