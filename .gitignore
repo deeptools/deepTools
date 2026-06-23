@@ -70,3 +70,6 @@ target*
 .ipynb_checkpoints
 *.ipynb_checkpoints
 *.ipynb
+
+# pixi
+.pixi*

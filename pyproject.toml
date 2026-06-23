@@ -26,18 +26,18 @@ authors = [
     {name="Thomas Manke"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
-requires-python = "> 3.9"
+requires-python = ">= 3.12"
 dependencies = [
     "numpy >= 2.0",
     "scipy >= 1.13",
     "matplotlib >= 3.9",
     "pysam >= 0.23",
-    "numpydoc >= 1.8",
     "pyBigWig >= 0.3",
     "py2bit >= 0.3",
     "pandas >= 2.2",
     "scikit-learn >= 1.6",
-    "deeptoolsintervals >= 0.1"
+    "deeptoolsintervals >= 0.1",
+    "maturin"
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
@@ -52,7 +52,8 @@ actions = [
     "pytest",
     "twine",
     "build",
-    "planemo"
+    "planemo",
+    "matplotlib == 3.11", # pin matplotlib version to avoid plots changing in pytests (font size defaults etc.)
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
@@ -90,3 +91,16 @@ bamCompare = "deeptools.bamCompare2:main"
 computeMatrix = "deeptools.computeMatrix2:main"
 #alignmentSieve = "deeptools.alignmentSieve2:main"
 multiBamSummary = "deeptools.multiBamSummary2:main"
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+[tool.pixi.dependencies]
+libclang = "<22"
+clangdev = "<22"
+htslib = "<=1.19"
+zlib = "*"
+[tool.pixi.pypi-dependencies]
+deeptools = { path = ".", editable = true, extras = ['actions'] }
+[tool.pixi.activation.env]
+LIBCLANG_PATH = "$CONDA_PREFIX/lib"

@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 mod alignmentsieve;
-mod bamcoverage;
 mod bamcompare;
+mod bamcoverage;
 mod calc;
 mod computematrix;
 mod covcalc;
@@ -13,7 +13,7 @@ mod normalization;
 mod tests;
 
 #[pymodule]
-fn hp(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn hp(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(bamcoverage::r_bamcoverage, m)?)?;
     m.add_function(wrap_pyfunction!(bamcompare::r_bamcompare, m)?)?;
     m.add_function(wrap_pyfunction!(computematrix::r_computematrix, m)?)?;

@@ -1,14 +1,19 @@
 name: tests_rust
-on: [push, pull_request, workflow_dispatch]
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+    schedule:
+        - cron: "0 0 * * 0"
 
 jobs:
-  cargo_test:
-    name: run cargo test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: rustup update stable && rustup default stable
-      - name: cargo build
-        run: cargo build --verbose
-      - name: cargo test
-        run: cargo test --verbose
+    cargo_test:
+        name: run cargo test
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - run: rustup update stable && rustup default stable
+            - name: cargo build
+              run: cargo build --verbose
+            - name: cargo test
+              run: cargo test --verbose
