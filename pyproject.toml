@@ -104,6 +104,6 @@ clangdev = "<22"
 htslib = "<=1.19"
 zlib = "*"
 [tool.pixi.pypi-dependencies]
-deeptools = { path = ".", editable = true }
+deeptools = { path = ".", editable = true, extras = ['actions'] }
 [tool.pixi.activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
