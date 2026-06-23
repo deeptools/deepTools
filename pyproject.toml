@@ -54,7 +54,7 @@ actions = [
     "twine",
     "build",
     "planemo",
-    "matplotlib == 3.10", # pin matplotlib version to avoid plots changing in pytests (font size defaults etc.)
+    "matplotlib == 3.11", # pin matplotlib version to avoid plots changing in pytests (font size defaults etc.)
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
