@@ -391,7 +391,6 @@ def main(args=None):
             parser.print_help()
             return
     args = parser.parse_args(args)
-    print(args)
     fraglengths = {}
     readlengths = {}
     of = None
