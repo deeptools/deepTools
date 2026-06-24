@@ -1,33 +1,33 @@
 name: pypi upload
 
 on:
-  create:
-    tags:
-    - '*'
+    create:
+        tags:
+            - "*"
 
 defaults:
-  run:
-    shell: bash -l {0}
+    run:
+        shell: bash -l {0}
 
 jobs:
-  pypi:
-    if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    name: upload to pypi
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
-    - name: build
-      run: |
-        pip install .[actions]
-        rm -f dist/*
-        python -m build
-    - name: upload
-      env:
-        TWINE_USERNAME: "__token__"
-        TWINE_PASSWORD: ${{ secrets.pypi_password }}
-      run: |
-        twine upload dist/*
+    pypi:
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        name: upload to pypi
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v7
+            - uses: actions/setup-python@v6
+              with:
+                  python-version: "3.12"
+                  cache: "pip"
+            - name: build
+              run: |
+                  pip install .[actions]
+                  rm -f dist/*
+                  python -m build
+            - name: upload
+              env:
+                  TWINE_USERNAME: "__token__"
+                  TWINE_PASSWORD: ${{ secrets.pypi_password }}
+              run: |
+                  twine upload dist/*
