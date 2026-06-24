@@ -1,23 +1,24 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys
 import argparse
 import os.path
-import numpy as np
-from deeptools import parserCommon
-from deeptools.utilities import smartLabels
-import deeptools.getScorePerBigWigBin as score_bw
+import sys
 from importlib.metadata import version
 
-old_settings = np.seterr(all='ignore')
+import numpy as np
+
+import deeptools.getScorePerBigWigBin as score_bw
+from deeptools import parserCommon
+from deeptools.utilities import smartLabels
+
+old_settings = np.seterr(all="ignore")
 
 
 def parse_arguments(args=None):
-    parser = \
-        argparse.ArgumentParser(
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            description="""
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="""
 
 Given typically two or more bigWig files, ``multiBigwigSummary`` computes the average scores for each of the files in every genomic region.
 This analysis is performed for the entire genome by running the program in ``bins`` mode, or for certain user selected regions in ``BED-file``
@@ -33,77 +34,87 @@ A detailed sub-commands help is available by typing:
 
 
 """,
-            epilog='example usage:\n multiBigwigSummary bins '
-                   '-b file1.bw file2.bw -o results.npz\n\n'
-                   'multiBigwigSummary BED-file -b file1.bw file2.bw -o results.npz\n'
-                   '--BED selection.bed'
-                   ' \n\n',
-            conflict_handler='resolve')
+        epilog="example usage:\n multiBigwigSummary bins "
+        "-b file1.bw file2.bw -o results.npz\n\n"
+        "multiBigwigSummary BED-file -b file1.bw file2.bw -o results.npz\n"
+        "--BED selection.bed"
+        " \n\n",
+        conflict_handler="resolve",
+    )
 
-    parser.add_argument('--version', action='version',
-                        version='%(prog)s {}'.format(version('deeptools')))
-    subparsers = parser.add_subparsers(
-        title="commands",
-        dest='command',
-        metavar='')
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="%(prog)s {}".format(version("deeptools")),
+    )
+
+    subparsers = parser.add_subparsers(title="commands", dest="command", metavar="")
 
     parent_parser = parserCommon.getParentArgParse(binSize=False)
 
     # bins mode options
     subparsers.add_parser(
-        'bins',
+        "bins",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[
-            multiBigwigSummaryArgs(case='bins'),
+            multiBigwigSummaryArgs(case="bins"),
             parent_parser,
-            parserCommon.gtf_options(suppress=True)
+            parserCommon.gtf_options(suppress=True),
         ],
         help="The average score is based on equally sized bins "
-             "(10 kilobases by default), which consecutively cover the "
-             "entire genome. The only exception is the last bin of a chromosome, which "
-             "is often smaller. The output of this mode is commonly used to assess the "
-             "overall similarity of different bigWig files.",
+        "(10 kilobases by default), which consecutively cover the "
+        "entire genome. The only exception is the last bin of a chromosome, which "
+        "is often smaller. The output of this mode is commonly used to assess the "
+        "overall similarity of different bigWig files.",
         add_help=False,
-        usage='multiBigwigSummary bins '
-              '-b file1.bw file2.bw '
-              '-o results.npz\n'
-              'help: multiBigwigSummary bins -h / multiBigwigSummary bins --help\n')
+        usage="multiBigwigSummary bins "
+        "-b file1.bw file2.bw "
+        "-o results.npz\n"
+        "help: multiBigwigSummary bins -h / multiBigwigSummary bins --help\n",
+    )
 
     # BED file arguments
     subparsers.add_parser(
-        'BED-file',
+        "BED-file",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         parents=[
-            multiBigwigSummaryArgs(case='BED-file'),
+            multiBigwigSummaryArgs(case="BED-file"),
             parent_parser,
-            parserCommon.gtf_options()
+            parserCommon.gtf_options(),
         ],
         help="The user provides a BED file that contains all regions "
-             "that should be considered for the analysis. A "
-             "common use is to compare scores (e.g. ChIP-seq scores) between "
-             "different samples over a set of pre-defined peak regions.",
-        usage='multiBigwigSummary BED-file '
-              '-b file1.bw file2.bw '
-              '-o results.npz --BED selection.bed\n'
-              'help: multiBigwigSummary BED-file -h / multiBigwigSummary BED-file --help\n',
-        add_help=False)
+        "that should be considered for the analysis. A "
+        "common use is to compare scores (e.g. ChIP-seq scores) between "
+        "different samples over a set of pre-defined peak regions.",
+        usage="multiBigwigSummary BED-file "
+        "-b file1.bw file2.bw "
+        "-o results.npz --BED selection.bed\n"
+        "help: multiBigwigSummary BED-file -h / multiBigwigSummary BED-file --help\n",
+        add_help=False,
+    )
 
     return parser
 
 
 def process_args(args=None):
-    args = parse_arguments().parse_args(args)
 
-    if len(sys.argv) == 1:
-        parse_arguments().print_help()
-        sys.exit()
+    parser = parse_arguments()
+    if args is None:
+        if len(sys.argv) == 1:
+            parser.print_help()
+            return
+    args = parser.parse_args(args)
 
     if not args.labels and args.smartLabels:
         args.labels = smartLabels(args.bwfiles)
     elif not args.labels:
         args.labels = []
         for f in args.bwfiles:
-            if f.startswith("http://") or f.startswith("https://") or f.startswith("ftp://"):
+            if (
+                f.startswith("http://")
+                or f.startswith("https://")
+                or f.startswith("ftp://")
+            ):
                 args.labels.append(f.split("/")[-1])
             else:
                 args.labels.append(os.path.basename(f))
@@ -114,92 +125,116 @@ def process_args(args=None):
     return args
 
 
-def multiBigwigSummaryArgs(case='bins'):
+def multiBigwigSummaryArgs(case="bins"):
     parser = argparse.ArgumentParser(add_help=False)
-    required = parser.add_argument_group('Required arguments')
+    required = parser.add_argument_group("Required arguments")
 
     # define the arguments
-    required.add_argument('--bwfiles', '-b',
-                          metavar='FILE1 FILE2',
-                          help='List of bigWig files, separated by spaces.',
-                          nargs='+',
-                          required=True)
+    required.add_argument(
+        "--bwfiles",
+        "-b",
+        metavar="FILE1 FILE2",
+        help="List of bigWig files, separated by spaces.",
+        nargs="+",
+        required=True,
+    )
 
-    required.add_argument('--outFileName', '-out', '-o',
-                          help='File name to save the compressed matrix file (npz format) '
-                          'needed by the "plotPCA" and "plotCorrelation" tools.',
-                          type=parserCommon.writableFile,
-                          required=True)
+    required.add_argument(
+        "--outFileName",
+        "-out",
+        "-o",
+        help="File name to save the compressed matrix file (npz format) "
+        'needed by the "plotPCA" and "plotCorrelation" tools.',
+        type=parserCommon.writableFile,
+        required=True,
+    )
 
-    optional = parser.add_argument_group('Optional arguments')
+    optional = parser.add_argument_group("Optional arguments")
 
-    optional.add_argument("--help", "-h", action="help",
-                          help="show this help message and exit")
-    optional.add_argument('--labels', '-l',
-                          metavar='sample1 sample2',
-                          help='User defined labels instead of default labels from '
-                          'file names. '
-                          'Multiple labels have to be separated by spaces, e.g., '
-                          '--labels sample1 sample2 sample3',
-                          nargs='+')
-    optional.add_argument('--smartLabels',
-                          action='store_true',
-                          help='Instead of manually specifying labels for the input '
-                          'bigWig files, this causes deepTools to use the file name '
-                          'after removing the path and extension.')
+    optional.add_argument(
+        "--help", "-h", action="help", help="show this help message and exit"
+    )
+    optional.add_argument(
+        "--labels",
+        "-l",
+        metavar="sample1 sample2",
+        help="User defined labels instead of default labels from "
+        "file names. "
+        "Multiple labels have to be separated by spaces, e.g., "
+        "--labels sample1 sample2 sample3",
+        nargs="+",
+    )
+    optional.add_argument(
+        "--smartLabels",
+        action="store_true",
+        help="Instead of manually specifying labels for the input "
+        "bigWig files, this causes deepTools to use the file name "
+        "after removing the path and extension.",
+    )
 
-    optional.add_argument('--chromosomesToSkip',
-                          metavar='chr1 chr2',
-                          help='List of chromosomes that you do not want to be included. '
-                          ' Useful to remove "random" or "extra" chr.',
-                          nargs='+')
+    optional.add_argument(
+        "--chromosomesToSkip",
+        metavar="chr1 chr2",
+        help="List of chromosomes that you do not want to be included. "
+        ' Useful to remove "random" or "extra" chr.',
+        nargs="+",
+    )
 
-    if case == 'bins':
-        optional.add_argument('--binSize', '-bs',
-                              metavar='INT',
-                              help='Size (in bases) of the windows sampled '
-                              'from the genome. (Default: %(default)s)',
-                              default=10000,
-                              type=int)
+    if case == "bins":
+        optional.add_argument(
+            "--binSize",
+            "-bs",
+            metavar="INT",
+            help="Size (in bases) of the windows sampled "
+            "from the genome. (Default: %(default)s)",
+            default=10000,
+            type=int,
+        )
 
-        optional.add_argument('--distanceBetweenBins', '-n',
-                              metavar='INT',
-                              help='By default, multiBigwigSummary considers adjacent '
-                              'bins of the specified --binSize. However, to '
-                              'reduce the computation time, a larger distance '
-                              'between bins can be given. Larger distances '
-                              'results in fewer considered bins. (Default: %(default)s)',
-                              default=0,
-                              type=int)
+        optional.add_argument(
+            "--distanceBetweenBins",
+            "-n",
+            metavar="INT",
+            help="By default, multiBigwigSummary considers adjacent "
+            "bins of the specified --binSize. However, to "
+            "reduce the computation time, a larger distance "
+            "between bins can be given. Larger distances "
+            "results in fewer considered bins. (Default: %(default)s)",
+            default=0,
+            type=int,
+        )
 
-        required.add_argument('--BED',
-                              help=argparse.SUPPRESS,
-                              default=None)
+        required.add_argument("--BED", help=argparse.SUPPRESS, default=None)
     else:
-        optional.add_argument('--binSize', '-bs',
-                              help=argparse.SUPPRESS,
-                              default=10000,
-                              type=int)
+        optional.add_argument(
+            "--binSize", "-bs", help=argparse.SUPPRESS, default=10000, type=int
+        )
 
-        optional.add_argument('--distanceBetweenBins', '-n',
-                              help=argparse.SUPPRESS,
-                              metavar='INT',
-                              default=0,
-                              type=int)
+        optional.add_argument(
+            "--distanceBetweenBins",
+            "-n",
+            help=argparse.SUPPRESS,
+            metavar="INT",
+            default=0,
+            type=int,
+        )
 
-        required.add_argument('--BED',
-                              help='Limits the analysis to '
-                              'the regions specified in this file.',
-                              metavar='file1.bed file2.bed',
-                              nargs='+',
-                              required=True)
+        required.add_argument(
+            "--BED",
+            help="Limits the analysis to the regions specified in this file.",
+            metavar="file1.bed file2.bed",
+            nargs="+",
+            required=True,
+        )
 
-    group = parser.add_argument_group('Output optional options')
+    group = parser.add_argument_group("Output optional options")
 
-    group.add_argument('--outRawCounts',
-                       help='Save average scores per region for each bigWig file to a single tab-delimited file.',
-                       type=parserCommon.writableFile,
-                       metavar='FILE')
+    group.add_argument(
+        "--outRawCounts",
+        help="Save average scores per region for each bigWig file to a single tab-delimited file.",
+        type=parserCommon.writableFile,
+        metavar="FILE",
+    )
 
     return parser
 
@@ -214,15 +249,17 @@ def main(args=None):
     """
     args = process_args(args)
 
-    if 'BED' in args:
+    if "BED" in args:
         bed_regions = args.BED
     else:
         bed_regions = None
 
     if len(args.bwfiles) == 1 and not args.outRawCounts:
-        sys.stderr.write("You've input a single bigWig file and not specified "
-                         "--outRawCounts. The resulting output will NOT be "
-                         "useful with any deepTools program!\n")
+        sys.stderr.write(
+            "You've input a single bigWig file and not specified "
+            "--outRawCounts. The resulting output will NOT be "
+            "useful with any deepTools program!\n"
+        )
 
     num_reads_per_bin = score_bw.getScorePerBin(
         args.bwfiles,
@@ -235,20 +272,20 @@ def main(args=None):
         bedFile=bed_regions,
         chrsToSkip=args.chromosomesToSkip,
         out_file_for_raw_data=args.outRawCounts,
-        allArgs=args)
+        allArgs=args,
+    )
 
-    sys.stderr.write("Number of bins "
-                     "found: {}\n".format(num_reads_per_bin.shape[0]))
+    sys.stderr.write("Number of bins found: {}\n".format(num_reads_per_bin.shape[0]))
 
     if num_reads_per_bin.shape[0] < 2:
-        exit("ERROR: too few non zero bins found.\n"
-             "If using --region please check that this "
-             "region is covered by reads.\n")
+        exit(
+            "ERROR: too few non zero bins found.\n"
+            "If using --region please check that this "
+            "region is covered by reads.\n"
+        )
 
     f = open(args.outFileName, "wb")
-    np.savez_compressed(f,
-                        matrix=num_reads_per_bin,
-                        labels=args.labels)
+    np.savez_compressed(f, matrix=num_reads_per_bin, labels=args.labels)
     f.close()
 
     if args.outRawCounts:
