@@ -15,8 +15,7 @@ import matplotlib.mlab
 import matplotlib.markers
 import matplotlib.colors as pltcolors
 from deeptools.utilities import toString, convertCmap
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from scipy.linalg import svd
 
 class Correlation:
     """
@@ -475,18 +474,31 @@ class Correlation:
         if self.transpose:
             m = m.T
 
-        # Center and scale
-        scaler = StandardScaler()
-        m2 = scaler.fit_transform(m)
+        # Center and scale each column to zero mean and unit variance
+        # (equivalent to sklearn's StandardScaler, using population std/ddof=0).
+        col_mean = m.mean(axis=0)
+        col_std = m.std(axis=0)
+        col_std[col_std == 0] = 1.0
+        m2 = (m - col_mean) / col_std
 
-        # PCA
-        pca = PCA()
-        Wt = pca.fit_transform(m2)
+        # PCA via SVD of the (re-)centered matrix, mirroring sklearn's PCA().
+        n_samples = m2.shape[0]
+        X = m2 - m2.mean(axis=0)
+        U, S, Vt = svd(X, full_matrices=False)
 
-        # % variance, eigenvalues
-        variance = pca.explained_variance_ratio_
+        # Deterministic sign convention (sklearn's svd_flip, u_based_decision).
+        max_abs_cols = np.argmax(np.abs(U), axis=0)
+        signs = np.sign(U[max_abs_cols, range(U.shape[1])])
+        U *= signs
+        Vt *= signs[:, None]
+
+        # Projected coordinates: U * S == X @ V
+        Wt = U * S
+
+        # Eigenvalues and % variance explained.
+        eigenvalues = (S ** 2) / (n_samples - 1)
+        variance = eigenvalues / eigenvalues.sum()
         pvar = variance / variance.sum()
-        eigenvalues = pca.explained_variance_
 
         if self.transpose:
             # Use the projected coordinates for the transposed matrix
