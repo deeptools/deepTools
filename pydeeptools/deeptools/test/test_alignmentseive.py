@@ -37,6 +37,45 @@ def test_minimum_mapping_quality_filter_metric():
     unlink(filter_metric_file)
 
 
+def test_fragment_length_filter_metric():
+    """
+    Test --minFragmentLength / --maxFragmentLength filtering (fragment-size
+    selection, e.g. nucleosome-free vs mono-nucleosome). Only read pairs whose
+    template length falls in [130, 200] are kept.
+    """
+    outfile = '/tmp/test_bam.bam'
+    filter_metric_file = '/tmp/test_metrics.txt'
+    args = "--bam {} -o {} --minFragmentLength 130 --maxFragmentLength 200 --filterMetrics {}".format(BAMFILE_IN, outfile, filter_metric_file).split()
+    aln_seive.main(args)
+
+    _foo = open(filter_metric_file, "r")
+    resp = _foo.readlines()[2]
+    _foo.close()
+    expected = 'paired_chr2L.bam\t7933\t12644\n'
+    assert expected in resp, f"'{expected}' not found in '{resp}'"
+    unlink(outfile)
+    unlink(filter_metric_file)
+
+
+def test_filterRNAstrand_forward_filter_metric():
+    """
+    Test --filterRNAstrand forward (keep only reads matching the forward
+    transcription strand, using paired-end mate orientation).
+    """
+    outfile = '/tmp/test_bam.bam'
+    filter_metric_file = '/tmp/test_metrics.txt'
+    args = "--bam {} -o {} --filterRNAstrand forward --filterMetrics {}".format(BAMFILE_IN, outfile, filter_metric_file).split()
+    aln_seive.main(args)
+
+    _foo = open(filter_metric_file, "r")
+    resp = _foo.readlines()[2]
+    _foo.close()
+    expected = 'paired_chr2L.bam\t6303\t12644\n'
+    assert expected in resp, f"'{expected}' not found in '{resp}'"
+    unlink(outfile)
+    unlink(filter_metric_file)
+
+
 def test_with_bed_output_along_with_shifts():
     """
     Tests Alignment seive with shifts and output BED file
