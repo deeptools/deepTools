@@ -4,10 +4,7 @@ import copy
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.stats
-import matplotlib as mpl
-mpl.use('Agg')
-mpl.rcParams['pdf.fonttype'] = 42
-mpl.rcParams['svg.fonttype'] = 'none'
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker
@@ -247,7 +244,7 @@ class Correlation:
             font_size = 5
         else:
             font_size = int(14 - 0.25 * num_rows)
-        mpl.rcParams.update({'font.size': font_size})
+        matplotlib.rcParams.update({'font.size': font_size})
         # set the minimum and maximum values
         if vmax is None:
             vmax = 1
@@ -349,7 +346,6 @@ class Correlation:
         grids = gridspec.GridSpec(num_samples, num_samples)
         grids.update(wspace=0, hspace=0)
         fig = plt.figure(figsize=(2 * num_samples, 2 * num_samples))
-        plt.rcParams['font.size'] = 8.0
         plt.suptitle(plot_title)
         if log1p is True:
             self.matrix = np.log1p(self.matrix)
