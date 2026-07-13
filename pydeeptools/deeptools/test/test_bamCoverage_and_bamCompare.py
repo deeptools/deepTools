@@ -96,6 +96,43 @@ def test_bam_coverage_skipnas():
         unlink(outfile)
 
 
+def test_bam_coverage_normalizeUsingRPKM():
+    """
+    Test --normalizeUsing RPKM. testB.bam has 4 reads (2 bp genome coverage per
+    read), so each covered read contributes 1e9 / (binLength_kb * totalReads)
+    reads-per-kilobase-per-million.
+    """
+    outfile = '/tmp/test_file.bg'
+    for fname in [BAMFILE_B]:
+        args = "--bam {} -o {} --outFileFormat bedgraph --normalizeUsing RPKM".format(fname, outfile).split()
+        bam_cov.main(args)
+
+        _foo = open(outfile, 'r')
+        resp = _foo.readlines()
+        _foo.close()
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t5000000\n', '3R\t150\t200\t10000000\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_scaleFactor():
+    """
+    Test --scaleFactor. A manual scale factor is applied directly to the raw
+    coverage (and takes precedence over --normalizeUsing).
+    """
+    outfile = '/tmp/test_file.bg'
+    for fname in [BAMFILE_B]:
+        args = "--bam {} -o {} --outFileFormat bedgraph --scaleFactor 2.0".format(fname, outfile).split()
+        bam_cov.main(args)
+
+        _foo = open(outfile, 'r')
+        resp = _foo.readlines()
+        _foo.close()
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t2\n', '3R\t150\t200\t4\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
 # def test_bam_coverage_filtering():
 #     outfile = '/tmp/test_file.bg'
 #     #for fname in [BAMFILE_B, CRAMFILE_B]:

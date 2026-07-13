@@ -34,8 +34,6 @@ dependencies = [
     "pysam >= 0.23",
     "pyBigWig >= 0.3",
     "py2bit >= 0.3",
-    "pandas >= 2.2",
-    "scikit-learn >= 1.6",
     "deeptoolsintervals >= 0.1",
     "maturin"
 ]
@@ -100,7 +98,18 @@ libclang = "<22"
 clangdev = "<22"
 htslib = "<=1.19"
 zlib = "*"
+rust = ">=1.85"
+maturin = ">=1.0,<2.0"
+openssl = "*"
+pkg-config = "*"
 [tool.pixi.pypi-dependencies]
 deeptools = { path = ".", editable = true, extras = ['actions'] }
 [tool.pixi.activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
+# Link conda-forge's OpenSSL instead of building the vendored copy from source
+# (the from-source build needs a full perl toolchain, e.g. FindBin.pm).
+OPENSSL_NO_VENDOR = "1"
+OPENSSL_DIR = "$CONDA_PREFIX"
+[tool.pixi.tasks]
+build = "maturin develop --release"
+test = "pytest pydeeptools/deeptools/test/"

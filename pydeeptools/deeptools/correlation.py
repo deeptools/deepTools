@@ -12,8 +12,7 @@ import matplotlib.mlab
 import matplotlib.markers
 import matplotlib.colors as pltcolors
 from deeptools.utilities import toString, convertCmap
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
+from scipy.linalg import svd
 
 class Correlation:
     """
@@ -450,48 +449,80 @@ class Correlation:
 
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
 
-        # Filter
-        m = self.matrix
+        # Work on a float copy so the transforms below take effect and
+        # self.matrix (which callers may reuse) is left untouched.
+        m = self.matrix.astype(float, copy=True)
+
+        # log2 (if requested). Applied before variance filtering so the
+        # transform actually influences which rows are kept.
+        if self.log2:
+            m = np.log2(m + 0.01)
+
+        # Row center (incompatible with --transpose, enforced by the CLI).
+        if self.rowCenter and not self.transpose:
+            m -= m.mean(axis=1)[:, None]
+
+        # Filter to the most variable rows (variance computed post-transform).
         rvs = m.var(axis=1)
         if self.transpose:
-            m = m[np.nonzero(rvs)[0], :]
-            rvs = rvs[np.nonzero(rvs)[0]]
+            nz = np.nonzero(rvs)[0]
+            m = m[nz, :]
+            rvs = rvs[nz]
         if self.ntop > 0 and m.shape[0] > self.ntop:
-            m = m[np.argpartition(rvs, -self.ntop)[-self.ntop:], :]
-            rvs = rvs[np.argpartition(rvs, -self.ntop)[-self.ntop:]]
+            idx = np.argpartition(rvs, -self.ntop)[-self.ntop:]
+            m = m[idx, :]
+            rvs = rvs[idx]
 
-        # log2 (if requested)
-        if self.log2:
-            self.matrix = np.log2(self.matrix + 0.01)
-
-        # Row center / transpose
-        if self.rowCenter and not self.transpose:
-            _ = self.matrix.mean(axis=1)
-            self.matrix -= _[:, None]
         if self.transpose:
             m = m.T
 
-        # Center and scale
-        scaler = StandardScaler()
-        m2 = scaler.fit_transform(m)
+        # Center and scale each column to zero mean and unit variance
+        # (equivalent to sklearn's StandardScaler, using population std/ddof=0).
+        col_mean = m.mean(axis=0)
+        col_std = m.std(axis=0)
+        col_std[col_std == 0] = 1.0
+        m2 = (m - col_mean) / col_std
 
-        # PCA
-        pca = PCA()
-        Wt = pca.fit_transform(m2)
+        # PCA via SVD of the (re-)centered matrix, mirroring sklearn's PCA().
+        n_samples = m2.shape[0]
+        X = m2 - m2.mean(axis=0)
+        U, S, Vt = svd(X, full_matrices=False)
 
-        # % variance, eigenvalues
-        variance = pca.explained_variance_ratio_
+        # Deterministic sign convention (sklearn's svd_flip, u_based_decision).
+        max_abs_cols = np.argmax(np.abs(U), axis=0)
+        signs = np.sign(U[max_abs_cols, range(U.shape[1])])
+        U *= signs
+        Vt *= signs[:, None]
+
+        # Projected coordinates: U * S == X @ V
+        Wt = U * S
+
+        # Eigenvalues and % variance explained.
+        eigenvalues = (S ** 2) / (n_samples - 1)
+        variance = eigenvalues / eigenvalues.sum()
         pvar = variance / variance.sum()
-        eigenvalues = pca.explained_variance_
 
         if self.transpose:
-            # Use the projected coordinates for the transposed matrix
-            Wt = np.dot(m, Wt.T).T
+            # With samples as observations, U * S already gives each sample's
+            # projection onto the PCs (rows=samples, cols=components). Orient as
+            # (components, samples) to match the indexing used below.
+            Wt = Wt.T
 
         if plot_filename is not None:
             n = n_bars = len(self.labels)
             if eigenvalues.size < n:
                 n_bars = eigenvalues.size
+            # The requested principal components must exist.
+            if max(PCs) > eigenvalues.size:
+                sys.exit("Cannot plot PC{}: only {} principal component(s) are "
+                         "available. Reduce --PCs or increase --ntop.\n".format(max(PCs), eigenvalues.size))
+            # In the untransposed layout each point is a sample indexed along
+            # the component axis, so there must be at least as many components
+            # as samples (i.e. enough usable rows / a large enough --ntop).
+            if not self.transpose and Wt.shape[1] < n:
+                sys.exit("Not enough principal components ({}) to plot {} "
+                         "samples; increase --ntop to at least the sample "
+                         "count.\n".format(Wt.shape[1], n))
             markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
             if cols is not None:
                 colors = itertools.cycle(cols)
