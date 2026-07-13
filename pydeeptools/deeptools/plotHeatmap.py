@@ -5,8 +5,8 @@ from __future__ import division
 import argparse
 from collections import OrderedDict
 import numpy as np
-from deeptools import matplotlib_defaults
 import matplotlib
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
@@ -289,7 +289,7 @@ def plotMatrix(hm, outFileName,
     if not isinstance(yMax, list):
         yMax = [yMax]
     
-    plt.rcParams['font.size'] = matplotlib.rcParams.update['font.size']
+    plt.rcParams['font.size'] = matplotlib.rcParams['font.size']
 
     fontP = FontProperties()
 

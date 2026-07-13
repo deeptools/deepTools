@@ -17,17 +17,6 @@ matplotlib.rcParams.update({
     # Figure defaults
     "figure.dpi": 100,
     "savefig.dpi": 200,
-
-    # Layout
-    #"figure.autolayout": False,
-
-    # Lines
-    #"lines.linewidth": 1.0,
-
-    # Tick appearance
-    #"xtick.direction": "out",
-    #"ytick.direction": "out",
-
 })
 
 
