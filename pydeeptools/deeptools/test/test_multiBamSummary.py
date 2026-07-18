@@ -4,6 +4,7 @@ import numpy.testing as nt
 
 import os.path
 from os import unlink
+import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAM = ROOT + "test1.bam"
@@ -14,7 +15,7 @@ BAMB = ROOT + "testB.bam"
 
 
 def test_multiBamSummary_gtf():
-    outfile = '/tmp/_test.npz'
+    _, outfile = tempfile.mkstemp(suffix=".npz")
     #for fname in [BAM, CRAM]:
     for fname in [BAM]:
         args = 'BED-file --BED {0} -b {1} {1} -o {2}'.format(GTF, fname, outfile).split()
@@ -28,7 +29,7 @@ def test_multiBamSummary_gtf():
 
 
 def test_multiBamSummary_metagene():
-    outfile = '/tmp/_test.npz'
+    _, outfile = tempfile.mkstemp(suffix=".npz")
     #for fname in [BAM, CRAM]:
     for fname in [BAM]:
         args = 'BED-file --BED {0} -b {1} {1} -o {2} --metagene'.format(GTF, fname, outfile).split()
@@ -42,8 +43,8 @@ def test_multiBamSummary_metagene():
 
 
 def test_multiBamSummary_scalingFactors():
-    outfile = '/tmp/test.scalingFactors.txt'
-    outfile2 = '/tmp/_test.npz'
+    _, outfile = tempfile.mkstemp(suffix=".txt")
+    _, outfile2 = tempfile.mkstemp(suffix=".npz")
     args = 'bins --binSize 50 -b {} {} --scalingFactors {} -o {} --verbose'.format(BAMA, BAMB, outfile, outfile2).split()
     mbs.main(args)
     resp = open(outfile).read().strip().split('\n')
