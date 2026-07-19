@@ -112,6 +112,12 @@ def parseArguments():
                            default="None",
                            required=False)
 
+    filtering.add_argument('--ignoreDuplicates',
+                            help='If set, reads that are marked as PCR '
+                            'or optical duplicates (SAM flag 0x400) will '
+                            'be filtered out.',
+                            action='store_true')
+
     filtering.add_argument('--minFragmentLength',
                            help='The minimum fragment length needed for read/pair '
                            'inclusion. This option is primarily useful '
@@ -340,8 +346,11 @@ def main(args=None):
             print("Warning! The --ATACshift option is used, but a --shift option is provided as well. The latter will be ignored in favor of 4 -5 5 -4.")
         args.shift = [4, -5, 5, -4]
 
+    if args.ignoreDuplicates:
+        args.samFlagExclude |= 0x400
+
     # Remove args:
-    # label, smartLabels, genomeChunkLength, ignoreDuplicates.
+    # label, smartLabels, genomeChunkLength.
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_alignmentsieve(
