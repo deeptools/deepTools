@@ -1,14 +1,32 @@
-use crate::covcalc::{parse_regions, Region};
+use crate::covcalc::{Region, parse_regions};
 use crate::filehandler::{is_bed_or_gtf, read_bedfile};
 use crate::filtering::Alignmentfilters;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use rust_htslib::bam::{self, Header, IndexedReader, Read, Reader, Writer};
 use std::fs::File;
 use std::io::Write;
 use tempfile::{Builder, TempPath};
+
+//ignoreDuplicates
+// label
+// smartLabels
+// genomeChunkLength
+// version
+//
+// not functional:
+// shift
+// ATACshift
+// BED
+// processors
+//
+// bugged:
+// samFLAGinclude
+// blacklistFileNAME
+// filterMewtrics
+// filteredoutreads
 
 #[pyfunction]
 pub fn r_alignmentsieve(
