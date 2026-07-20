@@ -1,7 +1,6 @@
 import deeptools.alignmentSieve2 as aln_seive
-
+import tempfile
 import os.path
-from os import unlink
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_IN = ROOT + "paired_chr2L.bam"
@@ -17,8 +16,8 @@ def test_minimum_mapping_quality_filter_metric():
     """
     Test minimal command line args for alignement sieve
     """
-    outfile = '/tmp/test_bam.bam'
-    filter_metric_file = '/tmp/test_metrics.txt'
+    _, outfile = tempfile.mkstemp(suffix=".bam")
+    _, filter_metric_file = tempfile.mkstemp(suffix=".txt")
     args = "--bam {} -o {} --minMappingQuality 10 --filterMetrics {}".format(BAMFILE_IN, outfile, filter_metric_file).split()
     aln_seive.main(args)
 
@@ -33,8 +32,6 @@ def test_minimum_mapping_quality_filter_metric():
     size_tolerance = 5000
     size_difference = abs(bam_file_size - expected_file_size)
     assert size_difference <= size_tolerance, "File size do not match"
-    unlink(outfile)
-    unlink(filter_metric_file)
 
 
 def test_fragment_length_filter_metric():
@@ -43,8 +40,8 @@ def test_fragment_length_filter_metric():
     selection, e.g. nucleosome-free vs mono-nucleosome). Only read pairs whose
     template length falls in [130, 200] are kept.
     """
-    outfile = '/tmp/test_bam.bam'
-    filter_metric_file = '/tmp/test_metrics.txt'
+    _, outfile = tempfile.mkstemp(suffix=".bam")
+    _, filter_metric_file = tempfile.mkstemp(suffix=".txt")
     args = "--bam {} -o {} --minFragmentLength 130 --maxFragmentLength 200 --filterMetrics {}".format(BAMFILE_IN, outfile, filter_metric_file).split()
     aln_seive.main(args)
 
@@ -53,8 +50,6 @@ def test_fragment_length_filter_metric():
     _foo.close()
     expected = 'paired_chr2L.bam\t7933\t12644\n'
     assert expected in resp, f"'{expected}' not found in '{resp}'"
-    unlink(outfile)
-    unlink(filter_metric_file)
 
 
 def test_filterRNAstrand_forward_filter_metric():
@@ -62,8 +57,8 @@ def test_filterRNAstrand_forward_filter_metric():
     Test --filterRNAstrand forward (keep only reads matching the forward
     transcription strand, using paired-end mate orientation).
     """
-    outfile = '/tmp/test_bam.bam'
-    filter_metric_file = '/tmp/test_metrics.txt'
+    _, outfile = tempfile.mkstemp(suffix=".bam")
+    _, filter_metric_file = tempfile.mkstemp(suffix=".txt")
     args = "--bam {} -o {} --filterRNAstrand forward --filterMetrics {}".format(BAMFILE_IN, outfile, filter_metric_file).split()
     aln_seive.main(args)
 
@@ -72,29 +67,26 @@ def test_filterRNAstrand_forward_filter_metric():
     _foo.close()
     expected = 'paired_chr2L.bam\t6303\t12644\n'
     assert expected in resp, f"'{expected}' not found in '{resp}'"
-    unlink(outfile)
-    unlink(filter_metric_file)
 
 
 def test_with_bed_output_along_with_shifts():
     """
     Tests Alignment seive with shifts and output BED file
     """
-    output_bed_file = "/tmp/aln_seive.bed"
+    _, output_bed_file = tempfile.mkstemp(suffix=".bed")
     args = "--bam {} -o {} --minMappingQuality 10 --BED --shift 1 -2 3 -4".format(BAMFILE_IN, output_bed_file).split()
     aln_seive.main(args)
     with open(output_bed_file, "r") as _foo:
         result = len(_foo.readlines())
     _expected = 4261
     assert result == _expected, "No of lines in BED files differ"
-    unlink(output_bed_file)
 
 
 def test_with_bam_output_with_shifts():
     """
     Tests Alignment seive with shifts and output BAM file
     """
-    output_bam_file = "/tmp/aln_seive.bam"
+    _, output_bam_file = tempfile.mkstemp(suffix=".bam")
     args = "--bam {} -o {} --minMappingQuality 10 --shift 1 -2 3 -4".format(BAMFILE_IN, output_bam_file).split()
     aln_seive.main(args)
 
@@ -103,14 +95,13 @@ def test_with_bam_output_with_shifts():
     size_tolerance = 5000
     size_difference = abs(bam_file_size - expected_file_size)
     assert size_difference <= size_tolerance, "File sizes do not match"
-    unlink(output_bam_file)
 
 
 def test_with_cram_output_with_shifts():
     """
     Tests Alignment seive with  CRAM input along with shifts
     """
-    output_bam_file = "/tmp/aln_seive2.bam"
+    _, output_bam_file = tempfile.mkstemp(suffix=".bam")
     args = "--bam {} -o {} --minMappingQuality 10 --shift 1 -2 3 -4".format(BAMFILE_IN, output_bam_file).split()
     aln_seive.main(args)
 
@@ -119,4 +110,3 @@ def test_with_cram_output_with_shifts():
     size_tolerance = 5000
     size_difference = abs(bam_file_size - expected_file_size)
     assert size_difference <= size_tolerance, "File sizes do not match"
-    unlink(output_bam_file)
