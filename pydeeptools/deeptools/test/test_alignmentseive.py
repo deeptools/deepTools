@@ -1,4 +1,4 @@
-import deeptools.alignmentSieve as aln_seive
+import deeptools.alignmentSieve2 as aln_seive
 
 import os.path
 from os import unlink
