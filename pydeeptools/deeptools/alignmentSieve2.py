@@ -43,9 +43,21 @@ def parseArguments():
                          help="The number of entries in total and filtered are saved to this file")
 
     general.add_argument('--filteredOutReads',
-                         metavar="filtered.bam",
-                         default="None",
-                         help="If desired, all reads NOT passing the filtering criteria can be written to this file.")
+                          metavar="filtered.bam",
+                          default="None",
+                          help="If desired, all reads NOT passing the filtering criteria can be written to this file.")
+
+    general.add_argument('--label', '-l',
+                          metavar='sample1',
+                          default="None",
+                          help='User defined label instead of the default label '
+                          '(file name).')
+
+    general.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying a labels for the input '
+                          'file, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
 
     general.add_argument('--verbose', '-v',
                          help='Set to see processing messages.',
@@ -349,9 +361,6 @@ def main(args=None):
     if args.ignoreDuplicates:
         args.samFlagExclude |= 0x400
 
-    # Remove args:
-    # label, smartLabels, genomeChunkLength.
-
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_alignmentsieve(
         args.bam,
@@ -369,4 +378,8 @@ def main(args=None):
         args.blackListFileName,
         args.minFragmentLength,
         args.maxFragmentLength,
+        0,
+        False,
+        args.label,
+        args.smartLabels,
     )
