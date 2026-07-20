@@ -124,7 +124,7 @@ impl Alignmentfilters {
             }
             // samflags
             if self.samflaginclude > 0 {
-                if (rec.flags() & self.samflaginclude) == 0 {
+                if (rec.flags() & self.samflaginclude) != self.samflaginclude {
                     return true;
                 }
             }

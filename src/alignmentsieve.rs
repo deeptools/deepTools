@@ -8,13 +8,13 @@ use rayon::prelude::*;
 use rust_htslib::bam::{self, Header, IndexedReader, Read, Reader, Writer};
 use std::fs::File;
 use std::io::Write;
+use std::path::Path;
 use tempfile::{Builder, TempPath};
 
-//ignoreDuplicates
-// label
-// smartLabels
-// genomeChunkLength
-// version
+// To implement:
+// ignoreDuplicates == DONE
+// label == DONE
+// smartLabels == DONE
 //
 // not functional:
 // shift
@@ -23,10 +23,16 @@ use tempfile::{Builder, TempPath};
 // processors
 //
 // bugged:
-// samFLAGinclude
+// samFLAGinclude == DONE
 // blacklistFileNAME
 // filterMewtrics
 // filteredoutreads
+//
+// testcases to implement:
+// ignoreDuplicates
+// ignoreDuplicates with additional samflagexclude
+// label
+// smartlabels
 
 #[pyfunction]
 pub fn r_alignmentsieve(
@@ -48,6 +54,8 @@ pub fn r_alignmentsieve(
     maxfraglen: u32,              // maximum fragment length.
     _extend_reads: u32,
     _center_reads: bool,
+    label: &str,       // user defined label
+    smartlabels: bool, // derive label from filename
 ) -> PyResult<()> {
     // Input bam file
     let bam = Reader::from_path(bamifile).unwrap();
@@ -152,6 +160,14 @@ pub fn r_alignmentsieve(
     let _ofilterbam = Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap();
 
     if filter_metrics != "None" {
+        let sample_name = if smartlabels {
+            smart_label(bamifile)
+        } else if label != "None" {
+            label.to_string()
+        } else {
+            bamifile.to_string()
+        };
+
         let mut of = File::create(filter_metrics).unwrap();
         // write header
         writeln!(of, "#bamFilterReads --filterMetrics").unwrap();
@@ -159,7 +175,7 @@ pub fn r_alignmentsieve(
         writeln!(
             of,
             "{}\t{}\t{}",
-            bamifile,
+            sample_name,
             totalreads - filteredreads,
             totalreads
         )
@@ -250,7 +266,9 @@ fn sieve_bamregion(
         }
 
         // SAM flags
-        if alfilters.samflaginclude != 0 && (record.flags() & alfilters.samflaginclude) == 0 {
+        if alfilters.samflaginclude != 0
+            && (record.flags() & alfilters.samflaginclude) != alfilters.samflaginclude
+        {
             filtered_reads += 1;
             if let Some(filterbamout) = &mut filterbamout {
                 filterbamout.write(&record).unwrap();
@@ -371,5 +389,21 @@ fn sieve_bamregion(
             filtered_reads,
         ),
         (false, false) => (vec![None], vec![None], total_reads, filtered_reads),
+    }
+}
+
+fn smart_label(label: &str) -> String {
+    let basename = Path::new(label)
+        .file_name()
+        .and_then(|f| f.to_str())
+        .unwrap_or(label);
+    let without_ext = basename
+        .split_once('.')
+        .map(|(name, _)| name)
+        .unwrap_or(basename);
+    if without_ext.is_empty() {
+        basename.to_string()
+    } else {
+        without_ext.to_string()
     }
 }
