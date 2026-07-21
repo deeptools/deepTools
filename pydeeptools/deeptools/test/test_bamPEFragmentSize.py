@@ -1,5 +1,6 @@
 import os.path
 from os import unlink
+import tempfile
 
 from matplotlib.testing.compare import compare_images
 
@@ -12,7 +13,7 @@ def test_bamPEFragmentSize_histogram():
     """
     Test histogram plot for bamPEFragmentSize
     """
-    outfile = "/tmp/test_histogram.png"
+    _, outfile = tempfile.mkstemp(suffix=".png")
     args = "--bamfiles {}/bowtie2_test1.bam --samplesLabel bowtie2_test1.bam --plotFileFormat png --plotTitle Test-Plot --histogram {}".format(
         ROOT, outfile
     ).split()
@@ -27,8 +28,8 @@ def test_bamPEFragmentSize_fr_sizes():
     """
     Test fragment length information for bamPEFragmentSize
     """
-    out_lengths = "/tmp/test_raw_frag_lengths.txt"
-    out_metrics = "/tmp/test_metrics_table.txt"
+    _, out_lengths = tempfile.mkstemp(suffix=".txt")
+    _, out_metrics = tempfile.mkstemp(suffix=".txt")
     args = (
         "--bamfiles {}/bowtie2_test1.bam --outRawFragmentLengths {} --table {}".format(
             ROOT, out_lengths, out_metrics

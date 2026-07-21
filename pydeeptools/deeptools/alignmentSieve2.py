@@ -43,9 +43,21 @@ def parseArguments():
                          help="The number of entries in total and filtered are saved to this file")
 
     general.add_argument('--filteredOutReads',
-                         metavar="filtered.bam",
-                         default="None",
-                         help="If desired, all reads NOT passing the filtering criteria can be written to this file.")
+                          metavar="filtered.bam",
+                          default="None",
+                          help="If desired, all reads NOT passing the filtering criteria can be written to this file.")
+
+    general.add_argument('--label', '-l',
+                          metavar='sample1',
+                          default="None",
+                          help='User defined label instead of the default label '
+                          '(file name).')
+
+    general.add_argument('--smartLabels',
+                          action='store_true',
+                          help='Instead of manually specifying a labels for the input '
+                          'file, this causes deepTools to use the file name '
+                          'after removing the path and extension.')
 
     general.add_argument('--verbose', '-v',
                          help='Set to see processing messages.',
@@ -111,6 +123,12 @@ def parseArguments():
                            nargs="+",
                            default="None",
                            required=False)
+
+    filtering.add_argument('--ignoreDuplicates',
+                            help='If set, reads that are marked as PCR '
+                            'or optical duplicates (SAM flag 0x400) will '
+                            'be filtered out.',
+                            action='store_true')
 
     filtering.add_argument('--minFragmentLength',
                            help='The minimum fragment length needed for read/pair '
@@ -340,8 +358,15 @@ def main(args=None):
             print("Warning! The --ATACshift option is used, but a --shift option is provided as well. The latter will be ignored in favor of 4 -5 5 -4.")
         args.shift = [4, -5, 5, -4]
 
-    # Remove args:
-    # label, smartLabels, genomeChunkLength, ignoreDuplicates.
+    if args.ignoreDuplicates:
+        args.samFlagExclude |= 0x400
+
+    if not args.blackListFileName:
+        args.blackListFileName = "None"
+    elif isinstance(args.blackListFileName, list):
+        if len(args.blackListFileName) != 1:
+            sys.exit("Only one blacklist file is supported when using '--alignmentsieve rust'.")
+        args.blackListFileName = args.blackListFileName[0]
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_alignmentsieve(
@@ -360,4 +385,6 @@ def main(args=None):
         args.blackListFileName,
         args.minFragmentLength,
         args.maxFragmentLength,
+        args.label,
+        args.smartLabels,
     )

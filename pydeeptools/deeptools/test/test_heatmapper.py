@@ -1,5 +1,7 @@
 import os
 import sys
+import subprocess
+import tempfile
 
 import deeptools.computeMatrix2
 import json
@@ -7,6 +9,19 @@ import json
 __author__ = 'Fidel'
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_heatmapper/"
+
+
+def _run_compute_and_compare(cmd_args_str, master_file):
+    _, mat_gz = tempfile.mkstemp(suffix=".mat.gz")
+    args = cmd_args_str.format(ROOT, mat_gz).split()
+    deeptools.computeMatrix2.main(args)
+    subprocess.run(['gunzip', '-f', mat_gz], check=True)
+    mat = mat_gz[:-3]
+    try:
+        assert cmpMatrices(master_file, mat) is True
+    finally:
+        if os.path.exists(mat):
+            os.remove(mat)
 
 
 def cmpMatrices(f1, f2):
@@ -65,99 +80,53 @@ def cmpMatrices(f1, f2):
 
 
 def test_computeMatrix_reference_point():
-    args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
-           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
-    print(args)
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
+           "--outFileName {1}  -bs 1 -p 1", ROOT + 'master.mat')
 
 
 def test_computeMatrix_reference_point_center():
-    args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 --referencePoint center " \
-           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master_center.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 --referencePoint center " \
+           "--outFileName {1}  -bs 1 -p 1", ROOT + 'master_center.mat')
 
 
 def test_computeMatrix_reference_point_tes():
-    args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 --referencePoint TES " \
-           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master_TES.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 --referencePoint TES " \
+           "--outFileName {1}  -bs 1 -p 1", ROOT + 'master_TES.mat')
 
 
 def test_computeMatrix_reference_point_missing_data_as_zero():
-    args = "reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
-           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1 --missingDataAsZero".format(ROOT).split()
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master_nan_to_zero.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("reference-point -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 " \
+           "--outFileName {1}  -bs 1 -p 1 --missingDataAsZero", ROOT + 'master_nan_to_zero.mat')
 
 
 def test_computeMatrix_scale_regions():
-    args = "scale-regions -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 -m 100 " \
-           "--outFileName /tmp/_test2.mat.gz -bs 1 -p 1".format(ROOT).split()
-
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test2.mat.gz')
-    assert cmpMatrices(ROOT + '/master_scale_reg.mat', '/tmp/_test2.mat') is True
-    os.remove('/tmp/_test2.mat')
+    _run_compute_and_compare("scale-regions -R {0}/test2.bed -S {0}/test.bw  -b 100 -a 100 -m 100 " \
+           "--outFileName {1} -bs 1 -p 1", ROOT + 'master_scale_reg.mat')
 
 
 def test_computeMatrix_multiple_bed():
-    args = "reference-point -R {0}/group1.bed {0}/group2.bed -S {0}/test.bw  -b 100 -a 100 " \
-           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("reference-point -R {0}/group1.bed {0}/group2.bed -S {0}/test.bw  -b 100 -a 100 " \
+           "--outFileName {1}  -bs 1 -p 1", ROOT + 'master_multibed.mat')
 
 
 def test_computeMatrix_region_extend_over_chr_end():
-    args = "reference-point -R {0}/group1.bed {0}/group2.bed -S {0}/test.bw  -b 100 -a 500 " \
-           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
-    print(args)
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master_extend_beyond_chr_size.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("reference-point -R {0}/group1.bed {0}/group2.bed -S {0}/test.bw  -b 100 -a 500 " \
+           "--outFileName {1}  -bs 1 -p 1", ROOT + 'master_extend_beyond_chr_size.mat')
 
 
 def test_computeMatrix_unscaled():
-    args = "scale-regions -S {0}/unscaled.bigWig -R {0}/unscaled.bed -a 300 -b 500 --unscaled5prime 100 --unscaled3prime 50 " \
-           "--outFileName /tmp/_test.mat.gz -bs 10 -p 1".format(ROOT).split()
-    print(args)
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test.mat.gz')
-    assert cmpMatrices(ROOT + '/master_unscaled.mat', '/tmp/_test.mat') is True
-    os.remove('/tmp/_test.mat')
+    _run_compute_and_compare("scale-regions -S {0}/unscaled.bigWig -R {0}/unscaled.bed -a 300 -b 500 --unscaled5prime 100 --unscaled3prime 50 " \
+           "--outFileName {1} -bs 10 -p 1", ROOT + 'master_unscaled.mat')
 
 
 def test_computeMatrix_gtf():
-    args = "scale-regions -S {0}../test_data/test1.bw.bw -R {0}../test_data/test.gtf -a 300 -b 500 --unscaled5prime 20 --unscaled3prime 50 " \
-           "--outFileName /tmp/_test_gtf.mat.gz -bs 10 -p 1".format(ROOT).split()
-    print(args)
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test_gtf.mat.gz')
-    assert cmpMatrices(ROOT + '/master_gtf.mat', '/tmp/_test_gtf.mat') is True
-    os.remove('/tmp/_test_gtf.mat')
+    _run_compute_and_compare("scale-regions -S {0}../test_data/test1.bw.bw -R {0}../test_data/test.gtf -a 300 -b 500 --unscaled5prime 20 --unscaled3prime 50 " \
+           "--outFileName {1} -bs 10 -p 1", ROOT + 'master_gtf.mat')
 
 
 def test_computeMatrix_metagene():
-    args = "scale-regions -S {0}../test_data/test1.bw.bw -R {0}../test_data/test.gtf -a 300 -b 500 --unscaled5prime 20 --unscaled3prime 50 " \
-           "--outFileName /tmp/_test_metagene.mat.gz -bs 10 -p 1 --metagene".format(ROOT).split()
-    print(args)
-    deeptools.computeMatrix2.main(args)
-    os.system('gunzip -f /tmp/_test_metagene.mat.gz')
-    assert cmpMatrices(ROOT + '/master_metagene.mat', '/tmp/_test_metagene.mat') is True
-    os.remove('/tmp/_test_metagene.mat')
+    _run_compute_and_compare("scale-regions -S {0}../test_data/test1.bw.bw -R {0}../test_data/test.gtf -a 300 -b 500 --unscaled5prime 20 --unscaled3prime 50 " \
+           "--outFileName {1} -bs 10 -p 1 --metagene", ROOT + 'master_metagene.mat')
 
 
 # def test_chopRegions_body():
