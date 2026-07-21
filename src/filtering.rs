@@ -1,8 +1,8 @@
-use rust_htslib::bam::{Record, ext::BamRecordExtensions, IndexedReader, Read};
-use rayon::prelude::*;
-use rayon::ThreadPoolBuilder;
-use crate::covcalc::Region;
 use crate::calc::median;
+use crate::covcalc::Region;
+use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
+use rust_htslib::bam::{IndexedReader, Read, Record, ext::BamRecordExtensions};
 
 #[derive(Clone)]
 pub struct Alignmentfilters {
@@ -34,7 +34,7 @@ impl Alignmentfilters {
         filterrnastrand: Option<String>,
         extendreads: Option<bool>,
         extendreadslen: Option<u32>,
-        centerreads: Option<bool>
+        centerreads: Option<bool>,
     ) -> Self {
         // Go through the arguments, and if they are not set or have default values, we set a filter boolean to false.
         // Only when filtering needs to happen the filterrecord will be invoked, for performance.
@@ -46,7 +46,7 @@ impl Alignmentfilters {
         let _mifl = minfraglen.unwrap_or(0);
         let _mafl = maxfraglen.unwrap_or(0);
         let _mnase = mnase.unwrap_or(false);
-        let _offset =  offset.unwrap_or((0, 0));
+        let _offset = offset.unwrap_or((0, 0));
         let _frs = filterrnastrand.unwrap_or(String::from("None"));
         let _extend = extendreads.unwrap_or(false);
         let _extendreadslen = extendreadslen.unwrap_or(0);
@@ -58,7 +58,14 @@ impl Alignmentfilters {
         }
 
         // Set the filter bool for a quick escape in case filtering is not needed.
-        if _mmq > 0 || _sfi > 0 || _sfe > 0 || _mifl > 0 || _mafl > 0 || _frs != "None" || blacklist.is_some() {
+        if _mmq > 0
+            || _sfi > 0
+            || _sfe > 0
+            || _mifl > 0
+            || _mafl > 0
+            || _frs != "None"
+            || blacklist.is_some()
+        {
             filter = true;
         }
 
@@ -71,7 +78,7 @@ impl Alignmentfilters {
             maxfraglen: _mafl,
             mnase: _mnase,
             offset: _offset,
-            filterrnastrand: _frs, 
+            filterrnastrand: _frs,
             extendreads: _extend,
             extendreadslen: _extendreadslen,
             centerreads: _center,
@@ -80,7 +87,7 @@ impl Alignmentfilters {
         }
     }
 
-    pub fn set_extendreadslen(&mut self, bamfile: &str, nproc: usize, regions: &Vec<Region> ) {
+    pub fn set_extendreadslen(&mut self, bamfile: &str, nproc: usize, regions: &Vec<Region>) {
         const FREAD: u16 = 0x40;
         let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
         let fraglens: Vec<u32> = pool.install(|| {
@@ -88,12 +95,15 @@ impl Alignmentfilters {
                 .par_iter()
                 .flat_map(|i| {
                     let mut bam = IndexedReader::from_path(bamfile).unwrap();
-                    bam.fetch((i.chrom.as_str(), i.get_startu(), i.get_endu()) )
+                    bam.fetch((i.chrom.as_str(), i.get_startu(), i.get_endu()))
                         .expect(&format!("Error fetching region: {:?}", i));
                     let mut fraglens: Vec<u32> = vec![];
                     for record in bam.records() {
                         let record = record.expect("Error parsing record.");
-                        if record.is_paired() && record.is_proper_pair() && (record.flags() & FREAD != 0) {
+                        if record.is_paired()
+                            && record.is_proper_pair()
+                            && (record.flags() & FREAD != 0)
+                        {
                             fraglens.push(record.insert_size().abs() as u32);
                         }
                     }
@@ -108,7 +118,7 @@ impl Alignmentfilters {
             panic!("No proper pairs found in the given regions. Please check your input.");
         }
     }
-    
+
     pub fn filter_record(&self, rec: &Record, chrom: &str) -> bool {
         // Decides filtering of a record. The bool return is used to 'continue', i.e. skip the record.
         if rec.is_unmapped() {
@@ -136,7 +146,9 @@ impl Alignmentfilters {
             // min/max fraglen
             if self.minfraglen != 0 || self.maxfraglen != 0 {
                 if rec.is_paired() {
-                    if rec.insert_size().abs() < self.minfraglen as i64 || rec.insert_size().abs() > self.maxfraglen as i64 {
+                    if rec.insert_size().abs() < self.minfraglen as i64
+                        || rec.insert_size().abs() > self.maxfraglen as i64
+                    {
                         return true;
                     }
                 } else {
@@ -156,25 +168,28 @@ impl Alignmentfilters {
                         if !((rec.flags() & 144 == 128) || (rec.flags() & 96 == 64)) {
                             return true;
                         }
-                    },
+                    }
                     ("forward", false) => {
                         if !(rec.flags() & 16 == 16) {
                             return true;
                         }
-                    },
+                    }
                     ("reverse", true) => {
                         if !((rec.flags() & 144 == 144) || (rec.flags() & 96 == 96)) {
                             return true;
                         }
-                    },
+                    }
                     ("reverse", false) => {
                         if !(rec.flags() & 16 == 0) {
                             return true;
                         }
-                    },
+                    }
                     _ => {
-                        panic!("filterrnastrand should be either forward or reverse. {:?} is not supported.", self.filterrnastrand)
-                    },
+                        panic!(
+                            "filterrnastrand should be either forward or reverse. {:?} is not supported.",
+                            self.filterrnastrand
+                        )
+                    }
                 }
             }
             if self.blacklist.is_some() {
@@ -189,7 +204,7 @@ impl Alignmentfilters {
         // In general, this is the case for MNase mode, offset, extendreads and centerreads.
         if self.mnase {
             // MNase mode, take only middle bps of the fragment
-            
+
             // only retain proper pairs and forward read.
             let rinsertsize = rec.insert_size().abs() as u32;
             if rec.is_proper_pair() && !rec.is_reverse() && rinsertsize > 1 {
@@ -198,24 +213,18 @@ impl Alignmentfilters {
                 let frag_start = recpos - 1 + rinsertsize / 2;
 
                 if rinsertsize % 2 == 0 {
-                    return Some(
-                        (frag_start..frag_start + 2).collect()
-                    );
+                    return Some((frag_start..frag_start + 2).collect());
                 } else {
-                    return Some(
-                        (frag_start..frag_start+4).collect()
-                    );
+                    return Some((frag_start..frag_start + 4).collect());
                 }
             }
             return None;
         }
         if self.offset != (0, 0) {
-
             let mut blockvec: Vec<u32> = if self.extendreads {
                 self.rec_extension(rec)
             } else {
-                rec
-                    .aligned_blocks()
+                rec.aligned_blocks()
                     .flat_map(|x| x[0] as u32..x[1] as u32)
                     .collect()
             };
@@ -225,7 +234,11 @@ impl Alignmentfilters {
             // Convert potential negative indices to positive indices
             // It could be that for the offset only one value is given, in which case we only use that site
             if self.offset.1 == 0 {
-                let pos = if self.offset.0 < 0 {blocklen + self.offset.0 } else {self.offset.0 - 1};
+                let pos = if self.offset.0 < 0 {
+                    blocklen + self.offset.0
+                } else {
+                    self.offset.0 - 1
+                };
                 if pos < 0 || pos >= blocklen {
                     return None;
                 }
@@ -240,8 +253,16 @@ impl Alignmentfilters {
                     return Some(blockvec);
                 }
             } else {
-                let start = if self.offset.0 < 0 { blocklen + self.offset.0 } else { self.offset.0 -1};
-                let end = if self.offset.1 < 0 { blocklen + self.offset.1 + 1 } else { self.offset.1 };
+                let start = if self.offset.0 < 0 {
+                    blocklen + self.offset.0
+                } else {
+                    self.offset.0 - 1
+                };
+                let end = if self.offset.1 < 0 {
+                    blocklen + self.offset.1 + 1
+                } else {
+                    self.offset.1
+                };
 
                 // if the range falls outside the vec, return none (retain deeptools 3 behavior)
                 if start < 0 || end < 0 || start >= blocklen || end >= blocklen || start >= end {
@@ -261,7 +282,7 @@ impl Alignmentfilters {
         if self.extendreads {
             // Extend reads
             let blockvec = self.rec_extension(rec);
-            return Some(blockvec)
+            return Some(blockvec);
         }
         return None;
     }
@@ -273,14 +294,12 @@ impl Alignmentfilters {
         let mut blockvec: Vec<u32> = Vec::new();
         let mut blocklen: u32 = 0;
 
-        rec
-            .aligned_blocks()
-            .for_each(|x| {
-                let _s = x[0] as u32;
-                let _e = x[1] as u32;
-                blockvec.extend(_s.._e);
-                blocklen += _e - _s;
-            });
+        rec.aligned_blocks().for_each(|x| {
+            let _s = x[0] as u32;
+            let _e = x[1] as u32;
+            blockvec.extend(_s.._e);
+            blocklen += _e - _s;
+        });
 
         if rec.is_proper_pair() {
             // Proper pairs
@@ -296,7 +315,8 @@ impl Alignmentfilters {
                 }
             } else {
                 let ns = rec.reference_end() as u32;
-                let ne: u32 = ns + rec.insert_size().abs() as u32 - rec.seq_len_from_cigar(false) as u32;
+                let ne: u32 =
+                    ns + rec.insert_size().abs() as u32 - rec.seq_len_from_cigar(false) as u32;
                 if ns < ne {
                     blockvec.extend(ns..ne);
                 }
@@ -323,7 +343,7 @@ impl Alignmentfilters {
                 let ns = rec.reference_end() as u32;
                 let ne: u32 = ns + self.extendreadslen - rec.seq_len_from_cigar(false) as u32;
                 if ns < ne {
-                    blockvec.extend(ns..ne );
+                    blockvec.extend(ns..ne);
                 }
             }
         }
@@ -334,7 +354,7 @@ impl Alignmentfilters {
         return blockvec;
     }
 
-    pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str ) -> bool {
+    pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str) -> bool {
         for region in self.blacklist.as_ref().unwrap().iter() {
             if region.chrom == chrom {
                 let pos = rec.pos() as u32;
@@ -349,5 +369,4 @@ impl Alignmentfilters {
         }
         false
     }
-
 }
