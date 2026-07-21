@@ -385,8 +385,6 @@ def main(args=None):
         args.blackListFileName,
         args.minFragmentLength,
         args.maxFragmentLength,
-        0,
-        False,
         args.label,
         args.smartLabels,
     )

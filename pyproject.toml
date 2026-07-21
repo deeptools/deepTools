@@ -62,7 +62,7 @@ repository = "https://github.com/deeptools/deepTools"
 packages = ["deeptools"]
 
 [project.scripts]
-#alignmentSieve = "deeptools.alignmentSieve:main"
+alignmentSieve_old = "deeptools.alignmentSieve:main"
 #bamCompare_old = "deeptools.bamCompare:main"
 #bamCoverage_old = "deeptools.bamCoverage:main"
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
