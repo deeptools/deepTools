@@ -376,7 +376,7 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: Option<u64>) -> O
         return None;
     }
 
-    let tLen = record.insert_size();
+    let tlen = record.insert_size();
     let mut start: i64 = record.pos();
     //  end = start + b.query_alignment_end
     let mut end: i64 = start + query_alignment_end(record);
@@ -386,19 +386,19 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: Option<u64>) -> O
     let is_read2 = !is_read1;
     let is_rev = record.is_reverse();
 
-    let mut deltaTLen: i64 = 0;
+    let delta_tlen: i64;
     if is_rev && is_read1 {
         end -= shift[2] as i64;
-        deltaTLen = shift[3] as i64 - shift[2] as i64;
+        delta_tlen = shift[3] as i64 - shift[2] as i64;
     } else if is_rev && is_read2 {
         end += shift[1] as i64;
-        deltaTLen = shift[1] as i64 - shift[0] as i64;
+        delta_tlen = shift[1] as i64 - shift[0] as i64;
     } else if !is_rev && is_read1 {
         start += shift[0] as i64;
-        deltaTLen = shift[1] as i64 - shift[0] as i64;
+        delta_tlen = shift[1] as i64 - shift[0] as i64;
     } else {
         start -= shift[3] as i64;
-        deltaTLen = shift[3] as i64 - shift[2] as i64;
+        delta_tlen = shift[3] as i64 - shift[2] as i64;
     }
 
     // Sanity check: if end - start < 1
@@ -423,11 +423,10 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: Option<u64>) -> O
 
     let mut newrec = record.clone();
 
-    // Template length: tLen + deltaTLen (or tLen - deltaTLen if tLen < 0)
-    let new_tlen = if tLen < 0 {
-        tLen - deltaTLen
+    let new_tlen = if tlen < 0 {
+        tlen - delta_tlen
     } else {
-        tLen + deltaTLen
+        tlen + delta_tlen
     };
 
     // Build new CIGAR: single Match for fragment span ((0, end-start)).
