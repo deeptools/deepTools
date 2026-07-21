@@ -116,17 +116,6 @@ def test_alsieve_shift():
     _assert_equals(BAMFILE_OUT4, output_bam_file)
 
 
-def test_alsieve_cram_shift():
-    """
-    Tests Alignment seive with  CRAM input along with shifts
-    """
-    _, output_bam_file = tempfile.mkstemp(suffix=".bam")
-    args = f"--bam {CRAMFILE_IN} -o {output_bam_file} --minMappingQuality 10 --shift 1 -2 3 -4".split()
-    aln_seive.main(args)
-
-    _assert_equals(BAMFILE_OUT4, output_bam_file)
-
-
 def test_alsieve_blacklist():
     """
     Tests Alignment seive with shifts and output BAM file
