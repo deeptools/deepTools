@@ -361,6 +361,13 @@ def main(args=None):
     if args.ignoreDuplicates:
         args.samFlagExclude |= 0x400
 
+    if not args.blackListFileName:
+        args.blackListFileName = "None"
+    elif isinstance(args.blackListFileName, list):
+        if len(args.blackListFileName) != 1:
+            sys.exit("Only one blacklist file is supported when using '--alignmentsieve rust'.")
+        args.blackListFileName = args.blackListFileName[0]
+
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_alignmentsieve(
         args.bam,
