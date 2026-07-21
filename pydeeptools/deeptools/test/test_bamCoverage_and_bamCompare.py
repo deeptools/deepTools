@@ -3,6 +3,7 @@ import deeptools.bamCompare2 as bam_comp
 import os.path
 import filecmp
 from os import unlink
+import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_A = ROOT + "testA.bam"
@@ -35,7 +36,7 @@ def test_bam_coverage_arguments():
     """
     Test minimal command line args for bamCoverage
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
         args = "--bam {} -o {} --outFileFormat bedgraph".format(fname, outfile).split()
@@ -50,7 +51,7 @@ def test_bam_coverage_arguments():
 
 
 def test_bam_coverage_extend():
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
         args = "-b {} -o {} --extendReads 100 --outFileFormat bedgraph".format(fname, outfile).split()
@@ -65,7 +66,7 @@ def test_bam_coverage_extend():
 
 def test_bam_coverage_extend_and_normalizeUsingRPGC():
 
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
         args = "-b {} -o {} --normalizeUsing RPGC --effectiveGenomeSize 200 --extendReads 100 --verbose " \
@@ -82,7 +83,7 @@ def test_bam_coverage_extend_and_normalizeUsingRPGC():
 
 
 def test_bam_coverage_skipnas():
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
         args = "--bam {} -o {} --outFileFormat bedgraph --skipNAs".format(fname, outfile).split()
@@ -102,7 +103,7 @@ def test_bam_coverage_normalizeUsingRPKM():
     read), so each covered read contributes 1e9 / (binLength_kb * totalReads)
     reads-per-kilobase-per-million.
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     for fname in [BAMFILE_B]:
         args = "--bam {} -o {} --outFileFormat bedgraph --normalizeUsing RPKM".format(fname, outfile).split()
         bam_cov.main(args)
@@ -120,7 +121,7 @@ def test_bam_coverage_scaleFactor():
     Test --scaleFactor. A manual scale factor is applied directly to the raw
     coverage (and takes precedence over --normalizeUsing).
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     for fname in [BAMFILE_B]:
         args = "--bam {} -o {} --outFileFormat bedgraph --scaleFactor 2.0".format(fname, outfile).split()
         bam_cov.main(args)
@@ -134,7 +135,7 @@ def test_bam_coverage_scaleFactor():
 
 
 # def test_bam_coverage_filtering():
-#     outfile = '/tmp/test_file.bg'
+#     _, outfile = tempfile.mkstemp(suffix=".bg")
 #     #for fname in [BAMFILE_B, CRAMFILE_B]:
 #     for fname in [BAMFILE_B]:
 #         args = "--bam {} -o {} --outFileFormat bedgraph --ignoreDuplicates --verbose".format(fname, outfile).split()
@@ -154,7 +155,7 @@ def test_bam_compare_arguments():
     between the same file is taken, therefore, the expected value
     is 1.0 for all bins.
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
         args = "--bamfile1 {} --bamfile2 {} " \
@@ -173,7 +174,7 @@ def test_bam_compare_diff_files():
     """
     Test with two different files
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract --verbose " \
@@ -192,7 +193,7 @@ def test_bam_compare_pseudocounts():
     """
     Test with different pseudocounts
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
            "--pseudocount 1 0".format(BAMFILE_A, BAMFILE_B, outfile).split()
     bam_comp.main(args)
@@ -209,7 +210,7 @@ def test_bam_compare_ZoverZ():
     """
     Ensure --skipZeroOverZero works in bamCompare
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
            "--skipZeroOverZero --verbose".format(BAMFILE_A, BAMFILE_B, outfile).split()
     bam_comp.main(args)
@@ -260,7 +261,7 @@ def test_bam_compare_diff_files_skipnas():
     Compared to the previous tests, any region that do not have coverage (in either of the bam files)
     is not included in the bedgraph file.
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract " \
@@ -279,7 +280,7 @@ def test_bam_compare_extend():
     """
     Test read extension
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --operation subtract " \
@@ -298,7 +299,7 @@ def test_bam_compare_scale_factors_ratio():
     """
     Test scale factor
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --operation ratio --ignoreForNormalization chr_cigar " \
@@ -339,7 +340,7 @@ def test_bam_compare_scale_factors_subtract():
     """
     Test scale factor
     """
-    outfile = '/tmp/test_file.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
         args = "--bamfile1 {} --bamfile2 {} --operation subtract --ignoreForNormalization chr_cigar " \
@@ -382,7 +383,7 @@ def test_bam_coverage_filter_blacklist():
     """
     Test --samFlagInclude --samFlagExclude --minMappingQuality and --blackListFileName
     """
-    outfile = '/tmp/test_file_filter.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_FILTER1, CRAMFILE_FILTER1]:
     for fname in [BAMFILE_FILTER1]:
         args = "--bam {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
@@ -424,7 +425,7 @@ def test_bam_coverage_offset1():
     """
     Test -bs 1 --Offset 1
     """
-    outfile = '/tmp/test_offset.bw'
+    _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
         args = "--Offset 1 --bam {} -p 1 -bs 1 -o {} -of bedgraph --verbose ".format(fname, outfile)
@@ -453,7 +454,7 @@ def test_bam_coverage_offset1_10():
     """
     Test -bs 1 --Offset 1 10
     """
-    outfile = '/tmp/test_offset.bw'
+    _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
         args = "--Offset 1 10 -b {} -p 1 -bs 1 -of bedgraph -o {}".format(fname, outfile)
@@ -481,7 +482,7 @@ def test_bam_coverage_offset_minus1():
     """
     Test -bs 1 --Offset -1
     """
-    outfile = '/tmp/test_offset.bw'
+    _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
         args = "--Offset -1 -b {} -p 1 -bs 1 -of bedgraph -o {}".format(fname, outfile)
@@ -508,7 +509,7 @@ def test_bam_coverage_offset20_minus4():
     """
     Test -bs 1 --Offset 20 -4
     """
-    outfile = '/tmp/test_offset.bw'
+    _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
         args = "--Offset 20 -4 -b {} -p 1 -bs 1 -of bedgraph -o {}".format(fname, outfile)
@@ -539,7 +540,7 @@ def test_bam_compare_filter_blacklist():
     """
     Test --samFlagInclude --samFlagExclude --minMappingQuality --ignoreDuplicates and --blackListFileName
     """
-    outfile = '/tmp/test_file_filter.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2), (CRAMFILE_FILTER1, CRAMFILE_FILTER2)]:
     for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2)]:
         args = "-b1 {} -b2 {} -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
