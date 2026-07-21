@@ -5,6 +5,7 @@ import deeptools.utilities
 import os.path
 from os import unlink
 import pysam
+import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 
@@ -16,7 +17,7 @@ def test_correctGCBias():
     GCbiasFreq = ROOT + 'computeGCBias_result1.tabular'
     BAM = ROOT + 'paired_chr2L.bam'
     GENOME = ROOT + 'sequence.2bit'
-    outfile = '/tmp/test_correctbias.bam'
+    _, outfile = tempfile.mkstemp(suffix=".bam")
     args = "--GCbiasFrequenciesFile {} --bamfile {} --genome {} --effectiveGenomeSize 10050 --correctedFile {}".format(GCbiasFreq, BAM, GENOME, outfile).split()
     deeptools.correctGCBias.main(args)
 
