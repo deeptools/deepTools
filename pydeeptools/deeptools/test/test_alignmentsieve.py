@@ -18,6 +18,7 @@ BAMFILE_OUT4 = str(ROOT / "alignmentSieve4.bam")
 BAMFILE_OUT5 = str(ROOT / "alignmentSieve5.bam")
 BAMFILE_OUT6 = str(ROOT / "alignmentSieve6.bam")
 BAMFILE_OUT7 = str(ROOT / "alignmentSieve7.bam")
+BAMFILE_OUT8 = str(ROOT / "alignmentSieve8.bam")
 
 def _assert_equals(expected: str, actual: str) -> None:
     if Path(expected).suffix == '.bam':
@@ -145,3 +146,13 @@ def test_alsieve_atacshift():
     aln_seive.main(args)
 
     _assert_equals(BAMFILE_OUT7, output_bam_file)
+
+def test_with_cram_output_with_shifts():
+    """
+    Tests Alignment seive with  CRAM input along with shifts
+    """
+    _, output_bam_file = tempfile.mkstemp(suffix=".bam")
+    args = f"--bam {CRAMFILE_IN} -o {output_bam_file} --minMappingQuality 10 --shift 1 -2 3 -4".split()
+    aln_seive.main(args)
+
+    _assert_equals(BAMFILE_OUT8, output_bam_file)
