@@ -6,9 +6,7 @@ import argparse
 from collections import OrderedDict
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
@@ -290,8 +288,9 @@ def plotMatrix(hm, outFileName,
         yMin = [yMin]
     if not isinstance(yMax, list):
         yMax = [yMax]
+    
+    plt.rcParams['font.size'] = matplotlib.rcParams['font.size']
 
-    plt.rcParams['font.size'] = 8.0
     fontP = FontProperties()
 
     showSummaryPlot = False

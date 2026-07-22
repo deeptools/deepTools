@@ -4,10 +4,7 @@
 import sys
 import argparse
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 

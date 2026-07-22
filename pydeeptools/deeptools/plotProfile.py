@@ -7,10 +7,7 @@ import sys
 import argparse
 import numpy as np
 from math import ceil
-import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties 
 from matplotlib import colors as pltcolors
@@ -178,7 +175,6 @@ class Profile(object):
             cols = self.numplots
         self.grids = gridspec.GridSpec(rows, cols)
 
-        plt.rcParams['font.size'] = 8.0
         self.font_p = FontProperties()
         self.font_p.set_size('small')
 
