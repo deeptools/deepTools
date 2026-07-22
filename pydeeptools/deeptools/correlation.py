@@ -4,10 +4,7 @@ import copy
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.stats
-import matplotlib as mpl
-mpl.use('Agg')
-mpl.rcParams['pdf.fonttype'] = 42
-mpl.rcParams['svg.fonttype'] = 'none'
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker
@@ -246,7 +243,7 @@ class Correlation:
             font_size = 5
         else:
             font_size = int(14 - 0.25 * num_rows)
-        mpl.rcParams.update({'font.size': font_size})
+        matplotlib.rcParams.update({'font.size': font_size})
         # set the minimum and maximum values
         if vmax is None:
             vmax = 1
@@ -276,7 +273,7 @@ class Correlation:
             cmap = pltcolors.LinearSegmentedColormap.from_list(colormap + "clipped",
                                                                cmap(np.linspace(0, 0.9, 10)))
 
-        cmap.set_under((0., 0., 1.))
+        cmap = cmap.with_extremes(under=(0., 0., 1.))
         # Plot distance matrix.
         axmatrix = fig.add_axes([0.12, 0.1, 0.6, 0.7])
         index = z_var['leaves']
@@ -348,7 +345,6 @@ class Correlation:
         grids = gridspec.GridSpec(num_samples, num_samples)
         grids.update(wspace=0, hspace=0)
         fig = plt.figure(figsize=(2 * num_samples, 2 * num_samples))
-        plt.rcParams['font.size'] = 8.0
         plt.suptitle(plot_title)
         if log1p is True:
             self.matrix = np.log1p(self.matrix)
@@ -545,13 +541,13 @@ class Correlation:
                             marker=marker, color=color, alpha=0.7, label=self.labels[i], zorder=i)
                 if add_labels:
                     ax1.text(Wt[PCs[0] - 1, i] * 1.05, Wt[PCs[1] - 1, i] * 1.05, self.labels[i], color="black", fontsize=6, zorder=i)
-            
+
             # set limits
             xmin = np.min(Wt[PCs[0] - 1, :])
             xmax = np.max(Wt[PCs[0] - 1, :])
             ymin = np.min(Wt[PCs[1] - 1, :])
             ymax = np.max(Wt[PCs[1] - 1, :])
-            
+
             # symetric limits
             xabs = max(abs(xmin), abs(xmax))
             yabs = max(abs(ymin), abs(ymax))
@@ -575,7 +571,7 @@ class Correlation:
                 ax1.set_title(plot_title)
             ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
             ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
-            
+
             if not add_labels:
                 if n < 30:
                     ncols = 1
@@ -589,7 +585,7 @@ class Correlation:
 
             # Scree plot
             ind = np.arange(n_bars) + 1 # the x locations for the groups
-            
+
             ax2.plot(ind, pvar, "bo-")
             ax2.set_xlabel('Principal Component')
             ax2.set_title('Scree plot')

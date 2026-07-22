@@ -21,7 +21,6 @@ def test_bamPEFragmentSize_histogram():
 
     res = compare_images(ROOT + "/bamPEFragmentSize_histogram_result1.png", outfile, 10)
     assert res is None, res
-    unlink(outfile)
 
 
 def test_bamPEFragmentSize_fr_sizes():
@@ -51,5 +50,3 @@ def test_bamPEFragmentSize_fr_sizes():
     m.close()
     m_expected = "3\t241.0\t241.5\t244.66666666666666\t242.0\t246.5\t251.0\t4.496912521077347\t1.0\t241.2\t241.4\t241.6\t241.8\t243.8\t245.6\t247.4\t249.2\t250.82\t3\t251.0\t251.0\t251.0\t251.0\t251.0\t251.0\t0.0\t0.0\t251.0\t251.0\t251.0\t251.0\t251.0\t251.0\t251.0\t251.0\t251.0\n"
     assert m_expected in f"{m_resp}"
-    unlink(out_lengths)
-    unlink(out_metrics)
