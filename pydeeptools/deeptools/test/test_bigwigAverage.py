@@ -2,6 +2,7 @@ import deeptools.bigwigAverage as bwAve
 
 import os.path
 from os import unlink
+import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BIGWIG_A = ROOT + "testA_skipNAs.bw"
@@ -35,7 +36,7 @@ testB_skipNas:
 
 
 def test_bigwigAverage():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "--bigwigs {} {} -o {} --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwAve.main(args)
     _foo = open(outfile, 'r')
@@ -47,7 +48,7 @@ def test_bigwigAverage():
 
 
 def test_bigwigAverage_skipnas():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "--bigwigs {} {} -o {} --skipNAs " \
            "--outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwAve.main(args)
@@ -60,7 +61,7 @@ def test_bigwigAverage_skipnas():
 
 
 def test_bigwigAverageWithScale():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "--bigwigs {} {} -o {} --outFileFormat bedgraph --scaleFactors 1:0.5".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwAve.main(args)
     _foo = open(outfile, 'r')
@@ -72,7 +73,7 @@ def test_bigwigAverageWithScale():
 
 
 def test_bigwigAverageThree():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "--bigwigs {} {} {} -o {} --outFileFormat bedgraph --scaleFactors 0.75:0.75:.75".format(BIGWIG_A, BIGWIG_A, BIGWIG_B, outfile).split()
     bwAve.main(args)
     _foo = open(outfile, 'r')

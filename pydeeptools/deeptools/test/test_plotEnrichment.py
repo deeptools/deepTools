@@ -24,8 +24,6 @@ def test_plotEnrichment_default():
 
         if fmat == "bam":
             assert filecmp.cmp(os.path.join(ROOT, 'outRawCounts_default.tabular'), txtfile.name) is True
-        
+
         res = compare_images(ROOT + 'plotEnrichment_defaults.png', plotfile.name, tolerance)
         assert res is None, res
-        os.remove(txtfile.name)
-        os.remove(plotfile.name)

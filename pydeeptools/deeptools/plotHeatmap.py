@@ -6,9 +6,7 @@ import argparse
 from collections import OrderedDict
 import numpy as np
 import matplotlib
-matplotlib.use('Agg')
-matplotlib.rcParams['pdf.fonttype'] = 42
-matplotlib.rcParams['svg.fonttype'] = 'none'
+from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
@@ -30,7 +28,7 @@ plt.ioff()
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(
-        parents=[parserCommon.heatmapperMatrixArgs(), 
+        parents=[parserCommon.heatmapperMatrixArgs(),
                  parserCommon.heatmapperOutputArgs(mode='heatmap'),
                  parserCommon.heatmapperOptionalArgs(mode='heatmap')],
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -89,7 +87,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
     # convert the height_ratio from numpy array back to list
     height_ratio = height_ratio.tolist()
     # the width ratio is equal for all heatmaps
-    width_ratio = [heatmapwidth] * numcols 
+    width_ratio = [heatmapwidth] * numcols
 
     if showColorbar:
         if colorbar_position == 'below':
@@ -109,7 +107,7 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # scale height_ratios to convert from row
         # numbers to heatmapheigt fractions
         spacer_height = spacer_height
-        height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio]) 
+        height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio])
 
     grids = gridspec.GridSpec(numrows, numcols, height_ratios=height_ratio, width_ratios=width_ratio, figure=fig)
 
@@ -144,19 +142,19 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             else:
                 ax_profile = fig.add_subplot(grids[0, sample_id])
 
-        wrapped_title = justify_text(title, 15) 
+        wrapped_title = justify_text(title, 15)
         ax_profile.set_title(wrapped_title, loc="center", multialignment="left", fontsize=8.5)  # Can use "center" or "right" too
-        
+
 
         for group in range(iterNum2):
             if perGroup:
                 sub_matrix = hm.matrix.get_matrix(sample_id, group)
                 line_label = re.sub(r"\.filtered\..*", "", sub_matrix['sample'] )
-                line_label = justify_text(line_label, 15) 
+                line_label = justify_text(line_label, 15)
             else:
                 sub_matrix = hm.matrix.get_matrix(group, sample_id)
                 line_label = sub_matrix['group'].replace('.bed','')
-                line_label = justify_text(line_label, 15) 
+                line_label = justify_text(line_label, 15)
 
             plot_single(ax_profile, sub_matrix['matrix'],
                         averageType,
@@ -228,7 +226,7 @@ def plotMatrix(hm, outFileName,
                label_rotation=45.0,
                dpi=200,
                interpolation_method='auto'):
-    
+
     hm.reference_point_label = hm.parameters['ref point']
     if reference_point_label is not None:
         hm.reference_point_label = [reference_point_label] * hm.matrix.get_num_samples()
@@ -291,7 +289,8 @@ def plotMatrix(hm, outFileName,
     if not isinstance(yMax, list):
         yMax = [yMax]
 
-    plt.rcParams['font.size'] = 8.0
+    plt.rcParams['font.size'] = matplotlib.rcParams['font.size']
+
     fontP = FontProperties()
 
     showSummaryPlot = False
@@ -311,7 +310,7 @@ def plotMatrix(hm, outFileName,
         for color_map in colorMapDict['colorMap']:
             copy_cmp = copy.copy(plt.get_cmap(color_map))
             cmap.append(copy_cmp)
-            cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+            cmap[-1] = cmap[-1].with_extremes(bad=colorMapDict['missingDataColor'])
 
     if colorMapDict['colorList'] and len(colorMapDict['colorList']) > 0:
         # make a cmap for each color list given
@@ -319,7 +318,7 @@ def plotMatrix(hm, outFileName,
         for color_list in colorMapDict['colorList']:
             cmap.append(matplotlib.colors.LinearSegmentedColormap.from_list(
                 'my_cmap', color_list.replace(' ', '').split(","), N=colorMapDict['colorNumber']))
-            cmap[-1].set_bad(colorMapDict['missingDataColor'])  # nans are printed using this color
+            cmap[-1] = cmap[-1].with_extremes(bad=colorMapDict['missingDataColor'])
 
     if len(cmap) > 1 or len(zMin) > 1 or len(zMax) > 1:
         # position color bar below heatmap when more than one
@@ -414,14 +413,14 @@ def plotMatrix(hm, outFileName,
         #                        frameon=False, markerscale=0.5)
 
     # Create a single legend for all subplots at the bottom
- 
-        if legend_location in ['none', 'best']:  
+
+        if legend_location in ['none', 'best']:
             legend_location = 'upper left'  # Choose a valid default location
 
-        legend_location = legend_location.replace('-', ' ')  # Standardize input  
-        ncol_value = int(numsamples / 2) if numsamples > 1 else numsamples  
+        legend_location = legend_location.replace('-', ' ')  # Standardize input
+        ncol_value = int(numsamples / 2) if numsamples > 1 else numsamples
 
-        fig.legend(handles, Labels, loc=legend_location, bbox_to_anchor=(0.1, 0.9),  
+        fig.legend(handles, Labels, loc=legend_location, bbox_to_anchor=(0.1, 0.9),
            ncol=ncol_value, frameon=False, markerscale=0.5)
 
     first_group = 0  # helper variable to place the title per sample/group
@@ -509,7 +508,7 @@ def plotMatrix(hm, outFileName,
             else:
                 ax.axes.get_xaxis().set_visible(False)
                 ax.axes.set_xlabel(xAxisLabel)
-                
+
             ax.axes.set_yticks([])
             if perGroup and group == 0:
                 if numsamples >= 6:
@@ -604,7 +603,7 @@ def plotMatrix(hm, outFileName,
     else:
         #  When no box is plotted the space between heatmaps is reduced
         fig.get_layout_engine().set(wspace=0.05, hspace=0.01, rect=(0.04, 0, 0.96, 0.85))
-    
+
     plt.savefig(outFileName, bbox_inches='tight', pad_inches=0.1, dpi=dpi, format=image_format)
     plt.close()
 
@@ -676,9 +675,9 @@ def main(args=None):
 
     if args.samplesLabel and len(args.samplesLabel):
         hm.matrix.set_sample_labels(args.samplesLabel)
-    
+
     if args.ggplot:
-        plt.style.use('ggplot') 
+        plt.style.use('ggplot')
 
     if args.sortRegions != 'no':
         sortUsingSamples = []
