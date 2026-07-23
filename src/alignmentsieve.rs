@@ -3,8 +3,7 @@ use crate::filtering::Alignmentfilters;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rust_htslib::bam::record::CigarString;
-use rust_htslib::bam::{self, Header, HeaderView, Read, Reader, Writer};
-use std::collections::HashMap;
+use rust_htslib::bam::{self, Header, Read, Reader, Writer};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
@@ -32,8 +31,13 @@ pub fn r_alignmentsieve(
 ) -> PyResult<()> {
     // Open input BAM once and stream through in order
     let mut bam = Reader::from_path(bamifile).unwrap();
+    // Reserve one extra thread for reader if there are enough threads
+    let mut writerthreads = nproc;
+    if nproc > 4 {
+        let _ = bam.set_threads(2);
+        writerthreads = nproc - 2;
+    }
     let header = Header::from_template(bam.header());
-    let header_view = bam.header().clone();
 
     if verbose {
         println!("Opening BAM file: {}", bamifile);
@@ -43,20 +47,20 @@ pub fn r_alignmentsieve(
     let readshift: Vec<i32> = shift.extract(py).expect("Failed to extract shift");
     // shift is of length 0, 2, or 4.
 
-    // Build chrom_sizes from BAM header
-    let chrom_sizes: HashMap<String, u64> = (0..header_view.target_count())
-        .map(|tid| {
-            (
-                String::from_utf8(header_view.tid2name(tid).to_vec()).unwrap(),
-                header_view.target_len(tid).unwrap() as u64,
-            )
-        })
+    // Build chrom_names and chrom_sizes from BAM header — indexed by tid for O(1) lookup, zero allocations per record.
+    let h = bam.header();
+    let ntargets = h.target_count();
+    let chrom_names: Vec<String> = (0..ntargets)
+        .map(|tid| String::from_utf8(h.tid2name(tid).to_vec()).unwrap())
+        .collect();
+    let chrom_sizes: Vec<u64> = (0..ntargets)
+        .map(|tid| h.target_len(tid).unwrap() as u64)
         .collect();
 
     // Load blacklist regions if provided
     let blacklist_regions = if blacklist != "None" {
         let isbed = is_bed_or_gtf(blacklist);
-        let chrom_keys: Vec<&String> = chrom_sizes.keys().collect();
+        let chrom_keys: Vec<&String> = chrom_names.iter().collect();
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
@@ -91,7 +95,7 @@ pub fn r_alignmentsieve(
         None
     };
     if let Some(ref mut w) = obam {
-        let _ = w.set_threads(nproc);
+        let _ = w.set_threads(writerthreads);
     }
     let mut obed = if bed {
         Some(BufWriter::new(File::create(ofile).unwrap()))
@@ -105,7 +109,7 @@ pub fn r_alignmentsieve(
         None
     };
     if let Some(ref mut w) = ofilterbam {
-        let _ = w.set_threads(nproc);
+        let _ = w.set_threads(writerthreads);
     }
     let mut ofilterbed = if write_filters && bed {
         Some(BufWriter::new(
@@ -118,42 +122,60 @@ pub fn r_alignmentsieve(
     let mut total_reads: u64 = 0;
     let mut filtered_reads: u64 = 0;
 
-    for result in bam.records() {
-        let record = result.unwrap();
-        total_reads += 1;
+    // Lift the readshift branch outside the loop — eliminates a per-record branch
+    // prediction target (readshift never changes during iteration).
+    if !readshift.is_empty() {
+        for result in bam.records() {
+            let record = result.unwrap();
+            total_reads += 1;
 
-        let filtered = filter_record(&record, &header_view, &filters);
+            let filtered = filter_record(&record, &chrom_names, &filters, record.tid() as usize);
 
-        if filtered {
-            filtered_reads += 1;
-            if let Some(ref mut w) = ofilterbam {
-                w.write(&record).unwrap();
-            } else if let Some(ref mut bw) = ofilterbed {
-                write_bed_line(&record, &header_view, &chrom_sizes, bw);
+            if filtered {
+                filtered_reads += 1;
+                if let Some(ref mut w) = ofilterbam {
+                    w.write(&record).unwrap();
+                } else if let Some(ref mut bw) = ofilterbed {
+                    let tid = record.tid() as usize;
+                    write_bed_line(&record, &chrom_names[tid], chrom_sizes[tid], bw);
+                }
+                continue;
             }
-            continue;
-        }
 
-        if !readshift.is_empty() {
-            let chrom_name =
-                String::from_utf8(header_view.tid2name(record.tid() as u32).to_vec()).unwrap();
-            if let Some(shifted) =
-                apply_shift(&record, &readshift, chrom_sizes.get(&chrom_name).copied())
-            {
+            let tid = record.tid() as usize;
+            if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid]) {
                 if let Some(ref mut w) = obam {
                     w.write(&shifted).unwrap();
                 } else if let Some(ref mut bw) = obed {
-                    write_bed_line(&shifted, &header_view, &chrom_sizes, bw);
+                    let tid = shifted.tid() as usize;
+                    write_bed_line(&shifted, &chrom_names[tid], chrom_sizes[tid], bw);
                 }
             }
-            continue;
         }
+    } else {
+        for result in bam.records() {
+            let record = result.unwrap();
+            total_reads += 1;
 
-        // No shift — write original record
-        if let Some(ref mut w) = obam {
-            w.write(&record).unwrap();
-        } else if let Some(ref mut bw) = obed {
-            write_bed_line(&record, &header_view, &chrom_sizes, bw);
+            let filtered = filter_record(&record, &chrom_names, &filters, record.tid() as usize);
+
+            if filtered {
+                filtered_reads += 1;
+                if let Some(ref mut w) = ofilterbam {
+                    w.write(&record).unwrap();
+                } else if let Some(ref mut bw) = ofilterbed {
+                    let tid = record.tid() as usize;
+                    write_bed_line(&record, &chrom_names[tid], chrom_sizes[tid], bw);
+                }
+                continue;
+            }
+
+            if let Some(ref mut w) = obam {
+                w.write(&record).unwrap();
+            } else if let Some(ref mut bw) = obed {
+                let tid = record.tid() as usize;
+                write_bed_line(&record, &chrom_names[tid], chrom_sizes[tid], bw);
+            }
         }
     }
 
@@ -201,14 +223,17 @@ pub fn r_alignmentsieve(
 }
 
 /// Determines whether a record should be filtered out.
-/// Returns true if the record fails any filter criterion.
+/// true -> record should be filtered out.
 fn filter_record(
     record: &bam::Record,
-    bam_header: &HeaderView,
+    chrom_names: &[String],
     alfilters: &Alignmentfilters,
+    tid: usize,
 ) -> bool {
+    let flags = record.flags();
+
     // Unmapped reads
-    if record.is_unmapped() {
+    if flags & 4 != 0 {
         return true;
     }
 
@@ -219,13 +244,13 @@ fn filter_record(
 
     // SAM flag include
     if alfilters.samflaginclude != 0
-        && (record.flags() & alfilters.samflaginclude) != alfilters.samflaginclude
+        && (flags & alfilters.samflaginclude) != alfilters.samflaginclude
     {
         return true;
     }
 
     // SAM flag exclude
-    if alfilters.samflagexclude != 0 && (record.flags() & alfilters.samflagexclude) != 0 {
+    if alfilters.samflagexclude != 0 && (flags & alfilters.samflagexclude) != 0 {
         return true;
     }
 
@@ -239,7 +264,7 @@ fn filter_record(
         if alfilters.maxfraglen != 0 && tlen > alfilters.maxfraglen as i64 {
             return true;
         }
-    } else {
+    } else if alfilters.minfraglen != 0 || alfilters.maxfraglen != 0 {
         let mut tlen: u32 = 0;
         for cig in record.cigar().iter() {
             match cig {
@@ -262,22 +287,22 @@ fn filter_record(
     if alfilters.filterrnastrand.as_str() != "None" {
         match (alfilters.filterrnastrand.as_str(), record.is_paired()) {
             ("forward", true) => {
-                if !((record.flags() & 144 == 128) || (record.flags() & 96 == 64)) {
+                if !((flags & 144 == 128) || (flags & 96 == 64)) {
                     return true;
                 }
             }
             ("forward", false) => {
-                if !(record.flags() & 16 == 16) {
+                if !(flags & 16 == 16) {
                     return true;
                 }
             }
             ("reverse", true) => {
-                if !((record.flags() & 144 == 144) || (record.flags() & 96 == 96)) {
+                if !((flags & 144 == 144) || (flags & 96 == 96)) {
                     return true;
                 }
             }
             ("reverse", false) => {
-                if !(record.flags() & 16 == 0) {
+                if !(flags & 16 == 0) {
                     return true;
                 }
             }
@@ -287,9 +312,7 @@ fn filter_record(
 
     // Blacklist filter
     if alfilters.blacklist.is_some() {
-        let chrom_name =
-            String::from_utf8(bam_header.tid2name(record.tid() as u32).to_vec()).unwrap();
-        if alfilters.rec_in_blacklist(record, &chrom_name) {
+        if alfilters.rec_in_blacklist(record, &chrom_names[tid]) {
             return true;
         }
     }
@@ -298,26 +321,24 @@ fn filter_record(
 }
 
 /// Writes a single fragment as a BEDPE line (chrom\tstart\tend) if tlen > 0.
-fn write_bed_line(
-    record: &bam::Record,
-    bam_header: &HeaderView,
-    chrom_sizes: &HashMap<String, u64>,
-    bw: &mut BufWriter<File>,
-) {
-    let tlen: i64 = if record.insert_size().abs() > 0 {
-        record.insert_size()
-    } else {
-        let mut cilen: i64 = 0;
-        for cig in record.cigar().iter() {
-            match cig {
-                bam::record::Cigar::Match(len)
-                | bam::record::Cigar::Del(len)
-                | bam::record::Cigar::Equal(len)
-                | bam::record::Cigar::Diff(len) => cilen += *len as i64,
-                _ => (),
+fn write_bed_line(record: &bam::Record, chrom: &str, chrom_len: u64, bw: &mut BufWriter<File>) {
+    let tlen: i64 = {
+        let ins = record.insert_size();
+        if ins.abs() > 0 {
+            ins
+        } else {
+            let mut cilen: i64 = 0;
+            for cig in record.cigar().iter() {
+                match cig {
+                    bam::record::Cigar::Match(len)
+                    | bam::record::Cigar::Del(len)
+                    | bam::record::Cigar::Equal(len)
+                    | bam::record::Cigar::Diff(len) => cilen += *len as i64,
+                    _ => (),
+                }
             }
+            cilen
         }
-        cilen
     };
 
     // Only emit when tlen > 0 (keeps exactly one record per fragment for PE reads)
@@ -325,14 +346,11 @@ fn write_bed_line(
         return;
     }
 
-    let chrom = String::from_utf8(bam_header.tid2name(record.tid() as u32).to_vec()).unwrap();
     let start = record.pos() as i64;
     let mut end = start + tlen;
 
-    if let Some(&chrom_len) = chrom_sizes.get(&chrom) {
-        if end > chrom_len as i64 {
-            end = chrom_len as i64;
-        }
+    if end > chrom_len as i64 {
+        end = chrom_len as i64;
     }
 
     if end - start < 1 {
@@ -345,9 +363,9 @@ fn write_bed_line(
 // Calculate query_alignment_end: the 0-based end position of the alignment in the query,
 // + excluding trailing soft-clips.
 fn query_alignment_end(record: &bam::Record) -> i64 {
-    let cigar_ops: Vec<bam::record::Cigar> = record.cigar().iter().cloned().collect();
+    let cigar: &[bam::record::Cigar] = &record.cigar().0;
     let mut read_pos: i64 = 0;
-    for op in &cigar_ops {
+    for op in cigar {
         match op {
             bam::record::Cigar::Match(l)
             | bam::record::Cigar::Ins(l)
@@ -358,7 +376,7 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
         }
     }
     // Remove trailing soft-clips
-    for op in cigar_ops.iter().rev() {
+    for op in cigar.iter().rev() {
         if let bam::record::Cigar::SoftClip(l) = op {
             read_pos -= *l as i64;
         } else {
@@ -368,7 +386,7 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
     read_pos
 }
 
-fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: Option<u64>) -> Option<bam::Record> {
+fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<bam::Record> {
     if !record.is_proper_pair() {
         return None;
     }
@@ -412,10 +430,8 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: Option<u64>) -> O
     if start < 0 {
         start = 0;
     }
-    if let Some(len) = chrom_len {
-        if end > len as i64 {
-            end = len as i64;
-        }
+    if end > chrom_len as i64 {
+        end = chrom_len as i64;
     }
     if end - start < 1 {
         return None;
