@@ -409,10 +409,9 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
 
 def process_args(args=None):
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
     args = parser.parse_args(args)
 
     # Ensure before and after region length is positive
@@ -459,27 +458,6 @@ def process_args(args=None):
 def main(args=None):
 
     args = process_args(args)
-
-    parameters = {
-        "upstream": args.beforeRegionStartLength,
-        "downstream": args.afterRegionStartLength,
-        "body": args.regionBodyLength,
-        "bin size": args.binSize,
-        "ref point": args.referencePoint,
-        "verbose": args.verbose,
-        "bin avg type": args.averageTypeBins,
-        "missing data as zero": args.missingDataAsZero,
-        "min threshold": args.minThreshold,
-        "max threshold": args.maxThreshold,
-        "scale": args.scale,
-        "skip zeros": args.skipZeros,
-        "nan after end": args.nanAfterEnd,
-        "proc number": args.numberOfProcessors,
-        "sort regions": args.sortRegions,
-        "sort using": args.sortUsing,
-        "unscaled 5 prime": args.unscaled5prime,
-        "unscaled 3 prime": args.unscaled3prime,
-    }
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_computematrix(
         args.command,
