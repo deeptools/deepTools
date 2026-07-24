@@ -62,20 +62,20 @@ repository = "https://github.com/deeptools/deepTools"
 packages = ["deeptools"]
 
 [project.scripts]
-alignmentSieve = "deeptools.alignmentSieve:main"
-#bamCompare_old = "deeptools.bamCompare:main"
-#bamCoverage_old = "deeptools.bamCoverage:main"
+alignmentSieve_old = "deeptools.alignmentSieve:main"
+bamCompare_old = "deeptools.bamCompare:main"
+bamCoverage_old = "deeptools.bamCoverage:main"
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
 bigwigAverage = "deeptools.bigwigAverage:main"
 bigwigCompare = "deeptools.bigwigCompare:main"
 computeGCBias = "deeptools.computeGCBias:main"
-#computeMatrix_old = "deeptools.computeMatrix:main"
+computeMatrix_old = "deeptools.computeMatrix:main"
 computeMatrixOperations = "deeptools.computeMatrixOperations:main"
 correctGCBias = "deeptools.correctGCBias:main"
 deeptools = "deeptools.deeptools_list_tools:main"
 estimateReadFiltering = "deeptools.estimateReadFiltering:main"
 estimateScaleFactor = "deeptools.estimateScaleFactor:main"
-#multiBamSummary_old = "deeptools.multiBamSummary:main"
+multiBamSummary_old = "deeptools.multiBamSummary:main"
 multiBigwigSummary = "deeptools.multiBigwigSummary:main"
 plotCorrelation = "deeptools.plotCorrelation:main"
 plotCoverage = "deeptools.plotCoverage:main"
@@ -87,7 +87,7 @@ plotProfile = "deeptools.plotProfile:main"
 bamCoverage = "deeptools.bamCoverage2:main"
 bamCompare = "deeptools.bamCompare2:main"
 computeMatrix = "deeptools.computeMatrix2:main"
-#alignmentSieve = "deeptools.alignmentSieve2:main"
+alignmentSieve = "deeptools.alignmentSieve2:main"
 multiBamSummary = "deeptools.multiBamSummary2:main"
 
 [tool.pixi.workspace]
@@ -102,6 +102,7 @@ rust = ">=1.85"
 maturin = ">=1.0,<2.0"
 openssl = "*"
 pkg-config = "*"
+py-spy = "*"
 [tool.pixi.pypi-dependencies]
 deeptools = { path = ".", editable = true, extras = ['actions'] }
 [tool.pixi.activation.env]

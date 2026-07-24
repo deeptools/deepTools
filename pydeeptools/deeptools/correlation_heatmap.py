@@ -1,15 +1,11 @@
-from matplotlib import use as mplt_use
-mplt_use('Agg')
+from deeptools import matplotlib_defaults
 from deeptools import cm  # noqa: F401
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.cluster.hierarchy as sch
-from matplotlib import rcParams
 import matplotlib.colors as pltcolors
 import copy
 
-rcParams['pdf.fonttype'] = 42
-rcParams['svg.fonttype'] = 'none'
 old_settings = np.seterr(all='ignore')
 
 
@@ -26,7 +22,7 @@ def plot_correlation(corr_matrix, labels, plotFileName, vmax=None,
         font_size = 5
     else:
         font_size = int(14 - 0.25 * num_rows)
-    rcParams.update({'font.size': font_size})
+    matplotlib.rcParams.update({'font.size': font_size})
     # set the minimum and maximum values
     if vmax is None:
         vmax = 1

@@ -211,5 +211,5 @@ def main(args=None):
         args.numberOfProcessors, # threads
         args.region, # regions
         args.verbose, # verbose
-        args.no_collapse, 
+        args.no_collapse,
     )

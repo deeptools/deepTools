@@ -26,5 +26,3 @@ def test_plotCoverage_default():
 
         res = compare_images(ROOT + 'plotCoverage_default.png', plotfile.name, tolerance)
         assert res is None, res
-        os.remove(txtfile.name)
-        os.remove(plotfile.name)

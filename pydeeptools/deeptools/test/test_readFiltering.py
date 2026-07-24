@@ -4,6 +4,7 @@ import os.path
 from os import unlink
 import hashlib
 import pysam
+import tempfile
 
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
@@ -16,7 +17,7 @@ def test_estimate_read_filtering_minimal():
     """
     Minimal testing
     """
-    outfile = '/tmp/test_minimal.txt'
+    _, outfile = tempfile.mkstemp(suffix=".txt")
     args = '-b {} -o {}'.format(BAMFILE_FILTER, outfile).split()
     est.main(args)
 
@@ -37,7 +38,7 @@ def test_estimate_read_filtering_params():
     """
     --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl
     """
-    outfile = '/tmp/test_params.txt'
+    _, outfile = tempfile.mkstemp(suffix=".txt")
     args = '-b {} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {} -o {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile).split()
     est.main(args)
 
@@ -58,9 +59,9 @@ def test_sieve():
     """
     Test filtering a BAM file by MAPQ, flag, and blacklist
     """
-    outfile = '/tmp/test_sieve.bam'
-    outfiltered = '/tmp/test_sieveFiltered.bam'
-    outlog = '/tmp/test_sieve.log'
+    _, outfile = tempfile.mkstemp(suffix=".bam")
+    _, outfiltered = tempfile.mkstemp(suffix=".bam")
+    _, outlog = tempfile.mkstemp(suffix=".log")
     args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {} --filteredOutReads {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog, outfiltered).split()
     sieve.main(args)
 
@@ -88,7 +89,7 @@ def test_sieve_BED():
     """
     Test alignmentSieve with the --BED option
     """
-    outfile = '/tmp/test_sieve.bed'
+    _, outfile = tempfile.mkstemp(suffix=".bed")
     args = '-b {} --minMappingQuality 10 --BED -o {}'.format(PAIREDBAMFILE_FILTER, outfile).split()
     sieve.main(args)
 
@@ -130,7 +131,7 @@ def test_sieve_BED_shift():
     """
     Test alignmentSieve --BED --shift
     """
-    outfile = '/tmp/test_sieve_shift.bed'
+    _, outfile = tempfile.mkstemp(suffix=".bed")
     args = '-b {} --minMappingQuality 10 --BED -o {} --shift 1 -2 3 -4'.format(PAIREDBAMFILE_FILTER, outfile).split()
     sieve.main(args)
 

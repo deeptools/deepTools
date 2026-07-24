@@ -5,6 +5,7 @@ import numpy.testing as nt
 
 import os.path
 from os import unlink
+import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BIGWIG_A = ROOT + "testA_skipNAs.bw"
@@ -38,7 +39,7 @@ testB_skipNas:
 
 
 def test_bigwigCompare():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "-b1 {} -b2 {} -o {} --operation add --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwComp.main(args)
     _foo = open(outfile, 'r')
@@ -50,7 +51,7 @@ def test_bigwigCompare():
 
 
 def test_bigwigCompare_skipnas():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "-b1 {} -b2 {} -o {} --operation add --skipNAs " \
            "--outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwComp.main(args)
@@ -63,7 +64,7 @@ def test_bigwigCompare_skipnas():
 
 
 def test_bigwigCompare_skipZeroOverZero():
-    outfile = '/tmp/result.bg"'
+    _, outfile = tempfile.mkstemp(suffix=".bg")
     args = "-b1 {} -b2 {} -o {} --skipZeroOverZero --pseudocount 1 3 --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_A, outfile).split()
     bwComp.main(args)
     _foo = open(outfile, 'r')
@@ -75,7 +76,7 @@ def test_bigwigCompare_skipZeroOverZero():
 
 
 def test_multiBigwigSummary():
-    outfile = '/tmp/result.bg'
+    _, outfile = tempfile.mkstemp(suffix=".npz")
     args = "bins -b {} {} --binSize 50 -o {}".format(BIGWIG_A, BIGWIG_B, outfile).split()
     bwCorr.main(args)
     resp = np.load(outfile)
@@ -93,8 +94,9 @@ def test_multiBigwigSummary_outrawcounts():
     """
     Test multiBigwigSummary raw counts output
     """
-    outfile = '/tmp/result.bg'
-    args = "bins -b {} {} --binSize 50 -o /tmp/null --outRawCounts {} ".format(BIGWIG_A, BIGWIG_B, outfile).split()
+    _, nullfile = tempfile.mkstemp(suffix=".npz")
+    _, outfile = tempfile.mkstemp(suffix=".txt")
+    args = "bins -b {} {} --binSize 50 -o {} --outRawCounts {} ".format(BIGWIG_A, BIGWIG_B, nullfile, outfile).split()
     bwCorr.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.read()
@@ -107,11 +109,11 @@ def test_multiBigwigSummary_outrawcounts():
 """
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
-    unlink("/tmp/null")
+    unlink(nullfile)
 
 
 def test_multiBigwigSummary_gtf():
-    outfile = '/tmp/_test.npz'
+    _, outfile = tempfile.mkstemp(suffix=".npz")
     args = "BED-file -b {0} {0} --BED {1}/test.gtf -o {2}".format(BIGWIG_C, ROOT, outfile).split()
     bwCorr.main(args)
     resp = np.load(outfile)
@@ -124,7 +126,7 @@ def test_multiBigwigSummary_gtf():
 
 
 def test_multiBigwigSummary_metagene():
-    outfile = '/tmp/_test.npz'
+    _, outfile = tempfile.mkstemp(suffix=".npz")
     args = "BED-file --metagene -b {0} {0} --BED {1}/test.gtf -o {2}".format(BIGWIG_C, ROOT, outfile).split()
     bwCorr.main(args)
     resp = np.load(outfile)

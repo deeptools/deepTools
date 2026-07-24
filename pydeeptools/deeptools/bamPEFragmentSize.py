@@ -3,17 +3,11 @@
 
 import argparse
 import sys
-
 import matplotlib
 import numpy as np
-
-matplotlib.use("Agg")
-matplotlib.rcParams["pdf.fonttype"] = 42
-matplotlib.rcParams["svg.fonttype"] = "none"
+from deeptools import matplotlib_defaults
 from importlib.metadata import version
-
 import matplotlib.pyplot as plt
-
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 
 # own tools
