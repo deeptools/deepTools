@@ -6,12 +6,16 @@ pub fn median(mut nvec: Vec<u32>) -> f32 {
     } else if nvec.len() == 1 {
         nvec[0] as f32
     } else {
-        nvec.sort_unstable();
         let len = nvec.len();
         if len % 2 == 1 {
-            nvec[len / 2] as f32
+            let mid = len / 2;
+            nvec.select_nth_unstable(mid);
+            nvec[mid] as f32
         } else {
-            (nvec[len / 2] + nvec[len / 2 - 1]) as f32 / 2.0
+            let m = len / 2;
+            nvec.select_nth_unstable(m - 1);
+            nvec[m..].select_nth_unstable(0);
+            (nvec[m - 1] + nvec[m]) as f32 / 2.0
         }
     }
 }

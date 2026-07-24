@@ -7,7 +7,6 @@ use std::io::{BufWriter, Write};
 use std::cmp::min;
 use std::fmt;
 use ndarray::Array1;
-use std::collections::HashSet;
 use std::fs::OpenOptions;
 use crate::filtering::Alignmentfilters;
 
@@ -140,6 +139,7 @@ pub fn bam_pileup<'a>(
     collapse: bool, // collapse bins with same coverage, should be avoided in bamCompare scenario for example.
     gene_mode: bool, // Gene mode (BED / GTF) or not (bins)
     gather_lengths: bool, // Wether or not to collect frag/read lengths (blows up memory for big bam files in MBS, for example).
+    smoothlength: u32, // Distance in bp for center-weighted smoothing; 0 = no smoothing
 ) -> (
     Vec<TempPath>, // temp bedgraph file.
     u32, // mapped reads
@@ -170,6 +170,9 @@ pub fn bam_pileup<'a>(
     // Counting between the two modes is different. In binsize == 1 we compute pileups
     // for binsize > 1, we count the number of reads that overlap a bin.
 
+    // Open BAM file once per thread, reuse across all regions
+    let mut bam = IndexedReader::from_path(&bam_ifile).unwrap();
+
     for regstruct in regionvec.iter() {
         // There are two options here:
         // either we are supposed to calculate coverage over regions (variable binsize required) gene_mode = true
@@ -182,12 +185,9 @@ pub fn bam_pileup<'a>(
         } else {
             region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
         }
-        //let region = (regstruct.chrom.clone(), regstruct.get_startu(), regstruct.get_endu());
-        // open bam file and fetch proper chrom
-        let mut bam = IndexedReader::from_path(&bam_ifile).unwrap();
         bam.fetch((region.0.as_str(), region.1, region.2))
             .expect(&format!("Error fetching region: {:?}", region));
-        let mut counts: Vec<f32>;
+        let mut counts: Vec<u32>;
         let mut startstr: String = region.1.to_string();
         let mut endstr: String = region.2.to_string();
         if gene_mode {
@@ -195,7 +195,7 @@ pub fn bam_pileup<'a>(
             // In this we need another iter - fetch per regstruct
             match (regstruct.start.clone(), regstruct.end.clone()) {
                 (Revalue::U(start), Revalue::U(end)) => {
-                    counts = vec![0.0; 1];
+                    counts = vec![0u32; 1];
                     for record in bam.records() {
                         let mut record = record.expect("Error parsing record.");
                         if filters.filter {
@@ -220,7 +220,7 @@ pub fn bam_pileup<'a>(
                                 }
                             }
                         }
-                        counts[0] += 1.0;
+                        counts[0] += 1;
                     }
                 },
                 (Revalue::V(starts), Revalue::V(ends)) => {
@@ -228,7 +228,7 @@ pub fn bam_pileup<'a>(
                     startstr = starts.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
                     endstr = ends.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
 
-                    counts = vec![0.0; 1];
+                    counts = vec![0u32; 1];
                     let exons: Vec<(u32, u32)> = starts.iter().zip(ends.iter())
                         .map(|(&s, &e)| (s, e)) 
                         .collect();
@@ -259,7 +259,7 @@ pub fn bam_pileup<'a>(
                                     }
                                 }
                             }
-                            counts[0] += 1.0;
+                            counts[0] += 1;
                         }
                     }
                 },
@@ -267,9 +267,8 @@ pub fn bam_pileup<'a>(
             }
         } else {
             // populate the bg vector with 0 counts over all bins
-            counts = vec![0.0; (region.2 - region.1).div_ceil(*binsize) as usize];
-            // let mut binstart = region.1;
-            let mut binix: u32 = 0;
+            counts = vec![0u32; (region.2 - region.1).div_ceil(*binsize) as usize];
+            let mut bin_indices: Vec<usize> = Vec::with_capacity(512);
 
             for record in bam.records() {
                 let mut record = record.expect("Error parsing record.");
@@ -279,38 +278,45 @@ pub fn bam_pileup<'a>(
                         continue;
                     }
                 }
-                if filters.manipulate {
+                bin_indices.clear();
 
+                if filters.manipulate {
                     let manipulated_blockpos = filters.manipulate_record(&mut record);
                     if manipulated_blockpos.is_none() {
                         continue;
                     }
-                    let indices: HashSet<usize> = manipulated_blockpos
-                        .unwrap()
-                        .into_iter()
-                        .map(|x| ((x - region.1) / binsize) as usize)
-                        .collect();
-
-                    indices.into_iter()
-                        .for_each(|ix| {
-                            if ix < counts.len() {
-                                counts[ix] += 1.0;
-                            }
-                        });
+                    for &x in &manipulated_blockpos.unwrap() {
+                        let ix = ((x - region.1) / binsize) as usize;
+                        if ix < counts.len() {
+                            bin_indices.push(ix);
+                        }
+                    }
                 } else {
-                    let indices: HashSet<usize> = record
-                        .aligned_blocks()
-                        .filter(|x| (x[1] as u32) >= region.1 && (x[1] as u32) <= region.2)
-                        .filter(|x| (x[0] as u32) >= region.1 && (x[0] as u32) <= region.2 )
-                        .flat_map(|x| x[0] as u32..x[1] as u32)
-                        .map(|x| ((x - region.1) / binsize) as usize)
-                        .collect();
-                    indices.into_iter()
-                        .for_each(|ix| {
-                            if ix < counts.len() {
-                                counts[ix] += 1.0;
+                    for x in record.aligned_blocks() {
+                        if (x[1] as u32) >= region.1 && (x[1] as u32) <= region.2
+                            && (x[0] as u32) >= region.1 && (x[0] as u32) <= region.2
+                        {
+                            for pos in x[0] as u32..x[1] as u32 {
+                                let ix = ((pos - region.1) / binsize) as usize;
+                                if ix < counts.len() {
+                                    bin_indices.push(ix);
+                                }
                             }
-                        });
+                        }
+                    }
+                }
+
+                if *binsize == 1 {
+                    // For binsize=1, each bp is its own bin — positions are unique, no dedup needed
+                    for &ix in &bin_indices {
+                        counts[ix] += 1;
+                    }
+                } else {
+                    bin_indices.sort_unstable();
+                    bin_indices.dedup();
+                    for &ix in &bin_indices {
+                        counts[ix] += 1;
+                    }
                 }
 
                 if !ignorechr.contains(&region.0) && gather_lengths {
@@ -329,54 +335,88 @@ pub fn bam_pileup<'a>(
 
             }
         }
-        let file = OpenOptions::new()
-            .append(true)
-            .create(true)
-            .open(&bg)
-            .expect("Error opening tmp file.");
 
-        let mut writer = BufWriter::new(file);
+        // Convert integer counts to f32, then apply smoothing if requested
+        let fcounts: Vec<f32> = counts.into_iter().map(|c| c as f32).collect();
+        let smoothed = if smoothlength > 0 && fcounts.len() > 1 {
+            let n = fcounts.len();
+            let smooth_tiles = (smoothlength / *binsize).max(1) as usize;
+            let mut out = Vec::<f32>::with_capacity(n);
+            let (tiles_left, tiles_right) = if smooth_tiles == 1 {
+                (0, 0)
+            } else {
+                let side = (smooth_tiles - 1) as f64 / 2.0f64;
+                let left = side.ceil() as usize;
+                let right = side.floor() as usize + 1;
+                (left, right)
+            };
+            for i in 0..n {
+                let s = i.saturating_sub(tiles_left);
+                let e = min(i + tiles_right, n);
+                let sum: f32 = fcounts[s..e].iter().sum();
+                out.push(sum / (e - s) as f32);
+            }
+            out
+        } else {
+            fcounts
+        };
+
         // There are two scenarios: 
         // bamCoverage mode -> we can collapse bins with same coverage (collapse = true)
         // bamCompare & others -> We cannot collapse the bins, yet. (collapse = false)
         // Note that collapse can also be passed as a CLI, for those that want that.
-        if counts.len() == 1 {
-            writeln!(writer, "{}\t{}\t{}\t{}", region.0, startstr, endstr, counts[0]).unwrap();
+        let mut outbuf = Vec::with_capacity(smoothed.len().max(1) * 64);
+        let mut push_line = |chrom: &str, s: u32, e: u32, v: f32| {
+            use std::io::Write;
+            writeln!(outbuf, "{}\t{}\t{}\t{}", chrom, s, e, v).unwrap();
+        };
+        if smoothed.len() == 1 {
+            push_line(&region.0, 0, 0, smoothed[0]); // start/end overridden below for gene_mode
+            outbuf.clear();
+            writeln!(outbuf, "{}\t{}\t{}\t{}", region.0, startstr, endstr, smoothed[0]).unwrap();
         } else {
             if collapse {
-                let mut lcov = counts[0];
+                let mut lcov = smoothed[0];
                 let mut lstart = region.1;
                 let mut lend = region.1 + binsize;
                 let mut start = lstart;
                 let mut end = lend;
                 let mut bin: u32 = 0;
-    
-                for (ix, count) in counts.into_iter().skip(1).enumerate() {
+
+                for (ix, count) in smoothed.into_iter().skip(1).enumerate() {
                     bin = (ix + 1) as u32; // offset of 1 due to skip(1)
                     start = (bin * binsize) + region.1;
                     end = min(start + binsize, region.2);
                     if count != lcov {
-                        //bg.push((&region.0, lstart, lend, lcov));
-                        writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
+                        push_line(&region.0, lstart, lend, lcov);
                         lstart = lend;
                         lcov = count;
                     }
                     lend = end;
                 }
-                // write last entry
-                writeln!(writer, "{}\t{}\t{}\t{}", region.0, lstart, lend, lcov).unwrap();
+                push_line(&region.0, lstart, lend, lcov);
             } else {
                 let mut start = region.1;
                 let mut end = region.1 + binsize;
-                writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, counts[0]).unwrap();
-                for (ix, count) in counts.into_iter().skip(1).enumerate() {
+                push_line(&region.0, start, end, smoothed[0]);
+                for (ix, count) in smoothed.into_iter().skip(1).enumerate() {
                     let bin = (ix + 1) as u32;
                     start = (bin * binsize) + region.1;
                     end = min(start + binsize, region.2);
-                    writeln!(writer, "{}\t{}\t{}\t{}", region.0, start, end, count).unwrap();
+                    push_line(&region.0, start, end, count);
                 }
             }
-        }       
+        }
+        if !outbuf.is_empty() {
+            use std::io::Write;
+            let file = OpenOptions::new()
+                .append(true)
+                .create(true)
+                .open(&bg)
+                .expect("Error opening tmp file.");
+            let mut writer = BufWriter::new(file);
+            writer.write_all(&outbuf).unwrap();
+        }
     }
     let bgpath = bg.into_temp_path();
     let tmpvec   = vec![bgpath];

@@ -14,10 +14,16 @@ use crate::calc::{mean_float, median_float, min_float, max_float, sum_float, std
 
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
     let mut bam = Reader::from_path(bam_ifile).unwrap();
+    let mut count = 0;
+    const MAX_READS: usize = 1000;
     for record in bam.records() {
         let record = record.expect("Error parsing record.");
         if record.is_paired() {
             return true;
+        }
+        count += 1;
+        if count >= MAX_READS {
+            break;
         }
     }
     return false;

@@ -3,10 +3,53 @@ use crate::covcalc::Region;
 use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
 use rust_htslib::bam::{IndexedReader, Read, Record, ext::BamRecordExtensions};
+use std::collections::HashMap;
+
+#[derive(Clone)]
+pub struct BlacklistIndex {
+    // Maps chromosome name to sorted list of (start, end) tuples
+    chroms: HashMap<String, Vec<(u32, u32)>>,
+}
+
+impl BlacklistIndex {
+    fn from_regions(regions: &[Region]) -> Self {
+        let mut chroms: HashMap<String, Vec<(u32, u32)>> = HashMap::new();
+        for r in regions {
+            chroms
+                .entry(r.chrom.clone())
+                .or_default()
+                .push((r.get_startu(), r.get_endu()));
+        }
+        for v in chroms.values_mut() {
+            v.sort_unstable_by_key(|&(s, _)| s);
+        }
+        Self { chroms }
+    }
+
+    fn contains(&self, chrom: &str, pos: u32) -> bool {
+        let list = match self.chroms.get(chrom) {
+            Some(l) => l,
+            None => return false,
+        };
+        match list.binary_search_by_key(&pos, |&(s, _)| s) {
+            Ok(ix) => list[ix].1 >= pos,
+            Err(ix) => {
+                if ix > 0 && list[ix - 1].0 <= pos && list[ix - 1].1 >= pos {
+                    return true;
+                }
+                if ix < list.len() && list[ix].0 <= pos && list[ix].1 >= pos {
+                    return true;
+                }
+                false
+            }
+        }
+    }
+}
 
 #[derive(Clone)]
 pub struct Alignmentfilters {
     pub blacklist: Option<Vec<Region>>,
+    blacklist_index: Option<BlacklistIndex>,
     pub minmappingquality: u8,
     pub samflaginclude: u16,
     pub samflagexclude: u16,
@@ -69,7 +112,14 @@ impl Alignmentfilters {
             filter = true;
         }
 
+        let blacklist_index = if blacklist.is_some() {
+            Some(BlacklistIndex::from_regions(blacklist.as_ref().unwrap()))
+        } else {
+            None
+        };
+
         Self {
+            blacklist_index,
             blacklist: blacklist,
             minmappingquality: _mmq,
             samflaginclude: _sfi,
@@ -355,17 +405,14 @@ impl Alignmentfilters {
     }
 
     pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str) -> bool {
-        for region in self.blacklist.as_ref().unwrap().iter() {
-            if region.chrom == chrom {
-                let pos = rec.pos() as u32;
-                if region.get_startu() <= pos as u32 && pos as u32 <= region.get_endu() {
-                    return true;
-                }
-                let end = rec.seq_len_from_cigar(false) as u32 + pos;
-                if region.get_startu() <= end && end <= region.get_endu() {
-                    return true;
-                }
-            }
+        let pos = rec.pos() as u32;
+        let idx = self.blacklist_index.as_ref().unwrap();
+        if idx.contains(chrom, pos) {
+            return true;
+        }
+        let end = rec.seq_len_from_cigar(false) as u32 + pos;
+        if idx.contains(chrom, end) {
+            return true;
         }
         false
     }
