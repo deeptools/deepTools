@@ -242,7 +242,6 @@ def main(args=None):
         blackListFileName=args.blackListFileName,
         extendReads=args.extendReads,
         minMappingQuality=args.minMappingQuality,
-        ignoreDuplicates=args.ignoreDuplicates,
         center_read=args.centerReads,
         samFlag_include=args.samFlagInclude,
         samFlag_exclude=args.samFlagExclude,
