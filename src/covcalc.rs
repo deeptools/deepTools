@@ -549,8 +549,7 @@ impl Region {
         if scale_regions.mode != "reference-point" {
             // scale-regions mode. Assert
             assert!(scale_regions.regionbodylength != 0, "scale-regions mode, but regionbodylength is 0.");
-            if self.regionlength < (scale_regions.unscaled5prime + scale_regions.unscaled3prime) ||
-               self.regionlength - (scale_regions.unscaled5prime + scale_regions.unscaled3prime) < scale_regions.binsize {
+            if self.regionlength - (scale_regions.unscaled5prime + scale_regions.unscaled3prime) < scale_regions.binsize {
                 println!("Warning ! Region {} is shorter than the binsize (potentially after unscaled regions taken into account. Whole region encoded as 0 or NA", self.name);
                 let nbin = scale_regions.cols_expected / scale_regions.bwfiles;
                 for _ in 0..nbin {
@@ -573,7 +572,6 @@ impl Region {
 
                         let mut absstart: i64 = anchorstart as i64 - scale_regions.upstream as i64;
                         let absstop: i64 = anchorstop as i64 + scale_regions.downstream as i64;
-                        println!("+ - U, absstart = {}, anchorstart = {}", absstart, anchorstart);
                         for binix in (absstart..anchorstart as i64).step_by(scale_regions.binsize as usize) {
                             if binix < 0 || binix as u32 > chromend || (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 leftbins.push(Bin::Conbin(0,0));
@@ -697,7 +695,6 @@ impl Region {
                                 rightbins.push(Bin::Conbin(binix as u32, (binix as u32) + scale_regions.binsize));
                             }
                         }
-                        println!("- - U, absstop = {}, anchorstart = {}", absstop, anchorstart);
                         let steps: Vec<_> = (absstop..anchorstart as i64)
                             .step_by(scale_regions.binsize as usize)
                             .collect();
@@ -855,7 +852,7 @@ impl Region {
                         // transcriptlength <= regionbodylength / binsize -> index repetitions with binsize of one.
                         let scaledbinsize = std::cmp::min(std::cmp::max((bodyend - bodystart) / neededbins as u32, 1), scale_regions.binsize);
                         innerbins.extend( Array1::linspace(bodystart as f32, (bodyend - scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x.round() as u32)
+                            .mapv(|x| x.floor() as u32)
                             .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
                             .into_iter()
                             .collect::<Vec<_>>() );
@@ -973,7 +970,7 @@ impl Region {
                         }
 
                         let innerbins = Array1::linspace(0 as f32, ((truebodylength)/scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x.round() as u32)
+                            .mapv(|x| x.floor() as u32)
                             .map(|x| binmap.get(&x).unwrap().clone())
                             .into_iter()
                             .collect::<Vec<Bin>>();
@@ -1025,11 +1022,10 @@ impl Region {
                         // transcriptlength <= regionbodylength / binsize -> index repetitions with binsize of one.
                         let scaledbinsize = std::cmp::min(std::cmp::max((bodyend - bodystart) / neededbins as u32, 1), scale_regions.binsize);
                         innerbins.extend( Array1::linspace(bodystart as f32, (bodyend - scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x.round() as u32)
+                            .mapv(|x| x.floor() as u32)
                             .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
                             .into_iter()
                             .collect::<Vec<_>>() );
-                        println!("");
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
                         if scale_regions.unscaled3prime > 0 {
@@ -1144,7 +1140,7 @@ impl Region {
                         }
 
                         let innerbins = Array1::linspace(0 as f32, ((truebodylength)/scaledbinsize) as f32, neededbins)
-                            .mapv(|x| x.round() as u32)
+                            .mapv(|x| x.floor() as u32)
                             .map(|x| binmap.get(&x).unwrap().clone())
                             .into_iter()
                             .collect::<Vec<Bin>>();
@@ -1404,7 +1400,9 @@ pub struct Scalingregions {
     pub verbose: bool,
     pub proc_number: usize,
     pub regionlabels: Vec<String>,
-    pub bwlabels: Vec<String>
+    pub bwlabels: Vec<String>,
+    pub startlabel: String,
+    pub endlabel: String,
 }
 
 #[derive(Clone)]

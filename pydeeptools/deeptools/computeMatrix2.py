@@ -459,6 +459,14 @@ def main(args=None):
 
     args = process_args(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    # Handle outFileSortedRegions: argparse.FileType("w") opens a file handle,
+    # but Rust handles file writing itself, so pass the filename and close the handle.
+    sorted_regions_file = None
+    if args.outFileSortedRegions is not None:
+        sorted_regions_file = args.outFileSortedRegions.name
+        args.outFileSortedRegions.close()
+
     r_computematrix(
         args.command,
         args.regionsFileName,
@@ -488,4 +496,8 @@ def main(args=None):
         args.numberOfProcessors,
         args.verbose,
         args.outFileName,
+        args.outFileNameMatrix if args.outFileNameMatrix else None,
+        sorted_regions_file,
+        getattr(args, 'startLabel', 'TSS'),
+        getattr(args, 'endLabel', 'TES'),
     )

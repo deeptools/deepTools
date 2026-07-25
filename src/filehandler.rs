@@ -12,6 +12,41 @@ use flate2::Compression;
 use crate::covcalc::{Scalingregions, Gtfparse, Revalue, Region, Bin};
 use crate::calc::{mean_float, median_float, min_float, max_float, sum_float, std_float};
 
+/// Format f32 with 4 significant digits, matching Python's `%.4g`.
+fn format_g4(x: f32) -> String {
+    if x == 0.0 {
+        return "0".to_string();
+    }
+    let abs = x.abs();
+    let exp = abs.log10().floor() as i32;
+    // Decide which format to use
+    if exp >= -4 && exp < 4 {
+        let prec = 4 - exp as usize - 1; // significant digits after decimal = 4 - (digits before decimal)
+        if prec < 0 { return format!("{}", x); }
+        let s = format!("{:.*}", prec, x);
+        // Strip trailing zeros after decimal point
+        if s.contains('.') {
+            s.trim_end_matches('0').trim_end_matches('.').to_string()
+        } else {
+            s
+        }
+    } else {
+        // Use scientific notation
+        let prec = 3; // 4 sig figs = 1 before dot + 3 after
+        let s = format!("{:.*e}", prec, x);
+        // Rust formats as 1.234e+01, normalize to 1.234e+1
+        if let Some(pos) = s.find('e') {
+            let mantissa = &s[..pos];
+            let exp_str = &s[pos + 1..];
+            let exp_val: i32 = exp_str.parse().unwrap_or(0);
+            let sign = if exp_val >= 0 { '+' } else { '-' };
+            format!("{}{}e{}{}", mantissa.trim_end_matches('0').trim_end_matches('.'), sign, exp_val.abs(), "")
+        } else {
+            s
+        }
+    }
+}
+
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
     let mut bam = Reader::from_path(bam_ifile).unwrap();
     let mut count = 0;
@@ -522,7 +557,7 @@ pub fn bwintervals(
     bwvals
 }
 
-pub fn header_matrix(scale_regions: &Scalingregions, regionsizes: HashMap<String, u32>) -> String {
+pub fn header_matrix(scale_regions: &Scalingregions, regionsizes: &HashMap<String, u32>, sortregions: &str, sortusing: &str) -> String {
     // Create the header for the matrix.
     // This is quite ugly, but this is mainly because we need to accomodate delta bwfiles.
     let mut headstr = String::new();
@@ -567,15 +602,19 @@ pub fn header_matrix(scale_regions: &Scalingregions, regionsizes: HashMap<String
         &format!("\"missing data as zero\":{},", scale_regions.missingdata_as_zero)
     );
     // Unimplemented arguments, but they need to be present in header for now anyway.
+    let minthresh_str = if scale_regions.minthresh != 0.0 { format!("{}", scale_regions.minthresh) } else { "null".to_string() };
+    let maxthresh_str = if scale_regions.maxthresh != 0.0 { format!("{}", scale_regions.maxthresh) } else { "null".to_string() };
     headstr.push_str(
-        "\"min threshold\":null,\"max threshold\":null,\"scale\":1,\"skip zeros\":false,\"nan after end\":false,"
+        &format!("\"min threshold\":{},\"max threshold\":{},\"scale\":{},\"skip zeros\":{},\"nan after end\":{},", minthresh_str, maxthresh_str, scale_regions.scale, scale_regions.skipzero, scale_regions.nan_after_end)
     );
     headstr.push_str(
         &format!("\"proc number\":{},", scale_regions.proc_number)
     );
-    // Unimplemented for now...
     headstr.push_str(
-        "\"sort regions\":\"keep\",\"sort using\":\"mean\","
+        &format!("\"sort regions\":\"{}\",\"sort using\":\"{}\",", sortregions, sortusing)
+    );
+    headstr.push_str(
+        &format!("\"startLabel\":\"{}\",\"endLabel\":\"{}\",", scale_regions.startlabel, scale_regions.endlabel)
     );
     headstr.push_str(
         &format!("\"unscaled 5 prime\":[{}],", (0..scale_regions.bwfiles).map(|_| scale_regions.unscaled5prime).collect::<Vec<_>>().into_iter().join(","))
@@ -648,12 +687,16 @@ pub fn write_matrix(
         if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
             continue;
         }
-        // min threshold
-        if scale_regions.minthresh != 0.0 && row.iter().any(|&x| x < scale_regions.minthresh) {
+        // min threshold (Python: coverage.min() <= minThreshold → skip)
+        // Python: if any element is NaN, coverage.min() returns NaN, NaN <= threshold is False → row passes
+        // Rust: NaN <= threshold is False, so NaN is ignored in .any(). To match Python, skip threshold
+        // check entirely if the row contains any NaN values.
+        if scale_regions.minthresh != 0.0 && !row.iter().any(|&x| x.is_nan()) && row.iter().any(|&x| x <= scale_regions.minthresh) {
             continue;
         }
-        // max threshold
-        if scale_regions.maxthresh != 0.0 && row.iter().any(|&x| x > scale_regions.maxthresh) {
+        // max threshold (Python: if max(coverage) >= maxThreshold → skip)
+        // NaN matching: Python's np.min()/np.max() propagate NaN, so NaN comparisons are False. If row contains NaN, skip filtering.
+        if scale_regions.maxthresh != 0.0 && !row.iter().any(|&x| x.is_nan()) && row.iter().any(|&x| x >= scale_regions.maxthresh) {
             continue;
         }
         let mut writerow = format!(
@@ -682,5 +725,86 @@ pub fn write_matrix(
         );
         writerow.push_str("\n");
         encoder.write_all(writerow.as_bytes()).unwrap();
+    }
+}
+
+pub fn write_matrix_values(file_name: &str, mat: &[Vec<f32>], scale_regions: &Scalingregions, regionsizes: &HashMap<String, u32>) {
+    use std::io::Write;
+    let mut fh = File::create(file_name).unwrap();
+    // Header line 1: group labels with region counts
+    let info: Vec<String> = scale_regions.regionlabels.iter()
+        .map(|label| format!("{}:{}", label, regionsizes.get(label).unwrap_or(&0)))
+        .collect();
+    fh.write_all(format!("#{}\n", info.join("\t")).as_bytes()).unwrap();
+    // Header line 2: region dimension parameters
+    let header2 = format!(
+        "#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n",
+        scale_regions.downstream, scale_regions.upstream, scale_regions.regionbodylength,
+        scale_regions.binsize, scale_regions.unscaled5prime, scale_regions.unscaled3prime,
+    );
+    fh.write_all(header2.as_bytes()).unwrap();
+    // Header line 3: sample labels repeated per column
+    let cols_per_sample = scale_regions.cols_expected / scale_regions.bwfiles;
+    let sample_info: Vec<String> = scale_regions.bwlabels.iter()
+        .flat_map(|label| (0..cols_per_sample).map(move |_| label.clone()))
+        .collect();
+    fh.write_all(format!("{}\n", sample_info.join("\t")).as_bytes()).unwrap();
+    fh.flush().unwrap();
+
+    // Reopen in append mode and write matrix data (matches Python np.savetxt fmt="%.4g")
+    let mut fh = std::fs::OpenOptions::new().create(false).append(true).open(file_name).unwrap();
+    for row in mat.iter() {
+        let line = row.iter()
+            .map(|x| if x.is_nan() { "nan".to_string() } else { format_g4(*x) })
+            .collect::<Vec<_>>()
+            .join("\t");
+        writeln!(fh, "{}", line).unwrap();
+    }
+}
+
+pub fn write_sorted_regions_bed(file_name: &str, regions: &[Region], scale_regions: &Scalingregions, regionsizes: &HashMap<String, u32>) {
+    use std::io::Write;
+    let mut fh = File::create(file_name).unwrap();
+    let header = "#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStarts\tdeepTools_group\n";
+    fh.write_all(header.as_bytes()).unwrap();
+    // Build group boundaries from regionsizes (cumulative region counts per group label)
+    let mut group_boundaries: Vec<u32> = vec![0];
+    let mut cumsum: u32 = 0;
+    for label in &scale_regions.regionlabels {
+        cumsum += *regionsizes.get(label).unwrap_or(&0);
+        group_boundaries.push(cumsum);
+    }
+    for (idx, region) in regions.iter().enumerate() {
+        // Find label_idx: last boundary <= idx, matching Python: np.flatnonzero(boundaries <= idx)[-1]
+        let label_idx = group_boundaries.iter()
+            .take_while(|&&b| b <= idx as u32)
+            .count().saturating_sub(1)
+            .min(scale_regions.regionlabels.len() - 1);
+        let start_first = match &region.start {
+            Revalue::U(v) => *v,
+            Revalue::V(vs) => *vs.first().unwrap(),
+        };
+        let end_last = match &region.end {
+            Revalue::U(v) => *v,
+            Revalue::V(vs) => *vs.last().unwrap(),
+        };
+        let (block_count, block_sizes, block_starts) = match (&region.start, &region.end) {
+            (Revalue::U(_), _) => ("1".to_string(), (end_last - start_first).to_string(), "0".to_string()),
+            (Revalue::V(starts), Revalue::V(ends)) => {
+                let bc = starts.len().to_string();
+                let sz: Vec<String> = starts.iter().zip(ends.iter()).map(|(s, e)| (e - s).to_string()).collect();
+                let st: Vec<String> = starts.iter().map(|s| (s - start_first).to_string()).collect();
+                (bc, sz.join(","), st.join(","))
+            }
+            _ => ("1".to_string(), (end_last - start_first).to_string(), "0".to_string()),
+        };
+        let group_label = &scale_regions.regionlabels[label_idx];
+        let line = format!(
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t0\t{}\t{}\t{}\t{}\n",
+            region.chrom, start_first, end_last, region.name, region.score,
+            region.strand, start_first, end_last, block_count, block_sizes,
+            block_starts, group_label,
+        );
+        fh.write_all(line.as_bytes()).unwrap();
     }
 }

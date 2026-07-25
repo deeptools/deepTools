@@ -102,22 +102,23 @@ pub fn sum_float(fvec: Vec<&f32>) -> f32 {
 }
 
 pub fn std_float(fvec: Vec<&f32>) -> f32 {
-    let valid_floats: Vec<f32> = fvec
+    let valid_floats: Vec<f64> = fvec
         .into_iter()
-        .cloned()
+        .copied()
         .filter(|v| v.is_finite())
+        .map(|v| v as f64)
         .collect();
     if valid_floats.is_empty() {
-        0.0
+        0.0f32
     } else {
-        let n = valid_floats.len() as f32;
-        let mean = valid_floats.iter().copied().sum::<f32>() / n;
+        let n = valid_floats.len() as f64;
+        let mean = valid_floats.iter().copied().sum::<f64>() / n;
         let stdsum = valid_floats
             .iter()
             .copied()
-            .map(|val| (val - mean).powi(2) as f64)  // Squared difference from mean
+            .map(|val| (val - mean).powi(2))
             .sum::<f64>();
-        let stdsumnorm = stdsum / (n - 1.0) as f64;
+        let stdsumnorm = stdsum / n;
         let stdsumnormsqrt = stdsumnorm.sqrt();
         stdsumnormsqrt as f32
     }

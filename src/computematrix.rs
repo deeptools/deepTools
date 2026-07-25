@@ -43,6 +43,10 @@ pub fn r_computematrix(
     nproc: usize,         // number of threads.
     verbose: bool,        // verbose output.
     ofile: &str,          // npz file to write to.
+    outfilenamematrix: Option<String>, // optional raw matrix tab output file
+    outfilesortedregions: Option<String>, // optional sorted/filtered BED output file
+    startlabel: Option<String>,  // label for start of region (default "TSS")
+    endlabel: Option<String>,    // label for end of region (default "TES")
 ) -> PyResult<()> {
     // Extract the bed and bigwig files from pyList to Vec.
     let region_files: Vec<String> = regionlis
@@ -73,12 +77,55 @@ pub fn r_computematrix(
         sort_using_samples.len() <= bw_files.len(),
         "Number of samples to sort on is larger than number of bigwig files provided."
     );
-    // Assert that no value in sort_using_samples is larger than bw_files.
     // Get chromosome boundaries from first bigwig file.
     let chromsizes = chrombounds_from_bw(&bw_files.get(0).unwrap());
     // compute number of columns
     let bpsum = &upstream + &downstream + &unscaled5prime + &unscaled3prime + &regionbodylength;
-    // Get the 'basepaths' of the bed files to use as labels later on.
+
+    // Binsize divisibility validation (Feature 11)
+    if regionbodylength % binsize != 0 {
+        eprintln!("The --regionBodyLength has to be a multiple of --binSize.\nCurrently the values are {} and {} for regionsBodyLength and binSize respectively.", regionbodylength, binsize);
+        std::process::exit(1);
+    }
+    if downstream % binsize != 0 {
+        eprintln!("Length of region after the body has to be a multiple of --binSize.\nCurrent value is {}", downstream);
+        std::process::exit(1);
+    }
+    if upstream % binsize != 0 {
+        eprintln!("Length of region before the body has to be a multiple of --binSize.\nCurrent value is {}", upstream);
+        std::process::exit(1);
+    }
+    if unscaled5prime % binsize != 0 {
+        eprintln!("Length of the unscaled 5 prime region has to be a multiple of --binSize.\nCurrent value is {}", unscaled5prime);
+        std::process::exit(1);
+    }
+    if unscaled3prime % binsize != 0 {
+        eprintln!("Length of the unscaled 3 prime region has to be a multiple of --binSize.\nCurrent value is {}", unscaled3prime);
+        std::process::exit(1);
+    }
+    if regionbodylength == 0 && (unscaled5prime > 0 || unscaled3prime > 0) {
+        eprintln!("Unscaled 5- and 3-prime regions only make sense with the scale-regions subcommand.");
+        std::process::exit(1);
+    }
+
+    // Reference-point validation (Feature 12)
+    let valid_referencepoint = if mode == "reference-point" {
+        if !["TSS", "TES", "center"].contains(&referencepoint) {
+            eprintln!("referencepoint must be one of 'TSS', 'TES', or 'center'. Got '{}'", referencepoint);
+            std::process::exit(1);
+        }
+        referencepoint.to_string()
+    } else {
+        String::new()
+    };
+
+    // nanAfterEnd validation (Feature 13): only valid in reference-point mode
+    if mode != "reference-point" && nanafterend {
+        eprintln!("--nanAfterEnd is only valid in reference-point mode.");
+        std::process::exit(1);
+    }
+
+    // Get the 'basepaths' of the bed files to use as labels later on (Feature 8: smartLabels).
     let mut regionlabels: Vec<String> = Vec::new();
     for bed in region_files.iter() {
         let entryname = Path::new(bed)
@@ -89,7 +136,7 @@ pub fn r_computematrix(
         regionlabels.push(entryname);
     }
     if samples_label.is_empty() {
-        // no samples labels provided via CLI, retrieve them from bigwig names.
+        // no samples labels provided via CLI, retrieve them from bigwig names (Feature 8: smartLabels).
         for bw in bw_files.iter() {
             let entryname = Path::new(bw)
                 .file_stem()
@@ -115,7 +162,7 @@ pub fn r_computematrix(
         skipzero: skipzeros,
         minthresh: minthresh,
         maxthresh: maxthresh,
-        referencepoint: referencepoint.to_string(),
+        referencepoint: valid_referencepoint,
         mode: mode.to_string(),
         bwfiles: bw_files.len(),
         avgtype: averagetypebins.to_string(),
@@ -123,6 +170,8 @@ pub fn r_computematrix(
         proc_number: nproc,
         regionlabels: regionlabels,
         bwlabels: samples_label,
+        startlabel: startlabel.unwrap_or_else(|| "TSS".to_string()),
+        endlabel: endlabel.unwrap_or_else(|| "TES".to_string()),
     };
     let gtfparse = Gtfparse {
         metagene: metagene,
@@ -189,6 +238,8 @@ pub fn r_computematrix(
         scale_regions,
         regionsizes,
         ofile,
+        outfilenamematrix,
+        outfilesortedregions,
         verbose,
     );
 
@@ -226,6 +277,8 @@ fn matrix_dump(
     scale_regions: Scalingregions,
     regionsizes: HashMap<String, u32>,
     ofile: &str,
+    outfilenamematrix: Option<String>,
+    outfilesortedregions: Option<String>,
     verbose: bool,
 ) {
     // Takes a pre-computed matrix, resorts it if requested, and writes it to file.
@@ -240,10 +293,11 @@ fn matrix_dump(
         // If sortusingsamples is set, we need a vector to subset the columns of interest
         let mut cols_of_interest: Vec<usize> = Vec::new();
         if !sort_using_samples.is_empty() {
+            let cols_per_sample = scale_regions.cols_expected / scale_regions.bwfiles;
             for sample_ix in sort_using_samples.iter() {
                 // Note that sort_using_samples is assumed to be 1-index. Hence we need to subtract 1.
-                let start = (sample_ix - 1) * scale_regions.bpsum;
-                let end = start + scale_regions.bpsum;
+                let start = (sample_ix - 1) * cols_per_sample as u32;
+                let end = start + cols_per_sample as u32;
                 cols_of_interest.extend(start as usize..end as usize);
             }
         }
@@ -345,22 +399,42 @@ fn matrix_dump(
         );
 
         // Reorder matrix & regions
-        let sortedmatrix = sortedix.iter().map(|ix| matrix[*ix].clone()).collect();
-        let sortedregions = sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
+        let sortedmatrix: Vec<Vec<f32>> = sortedix.iter().map(|ix| matrix[*ix].clone()).collect();
+        let sortedregions: Vec<Region> = sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
         write_matrix(
-            header_matrix(&scale_regions, regionsizes),
-            sortedmatrix,
+            header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
+            sortedmatrix.clone(),
             ofile,
-            sortedregions,
+            sortedregions.clone(),
             &scale_regions,
         );
+
+        // Feature 6: outFileNameMatrix - write raw matrix tab file
+        if let Some(ref matrix_file) = outfilenamematrix {
+            crate::filehandler::write_matrix_values(matrix_file, &sortedmatrix, &scale_regions, &regionsizes);
+        }
+
+        // Feature 7: outFileSortedRegions - write sorted BED file
+        if let Some(ref bed_file) = outfilesortedregions {
+            crate::filehandler::write_sorted_regions_bed(bed_file, &sortedregions, &scale_regions, &regionsizes);
+        }
     } else {
         write_matrix(
-            header_matrix(&scale_regions, regionsizes),
-            matrix,
+            header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
+            matrix.clone(),
             ofile,
-            regions,
+            regions.clone(),
             &scale_regions,
         );
+
+        // Feature 6: outFileNameMatrix - write raw matrix tab file
+        if let Some(ref matrix_file) = outfilenamematrix {
+            crate::filehandler::write_matrix_values(matrix_file, &matrix, &scale_regions, &regionsizes);
+        }
+
+        // Feature 7: outFileSortedRegions - write regions BED file
+        if let Some(ref bed_file) = outfilesortedregions {
+            crate::filehandler::write_sorted_regions_bed(bed_file, &regions, &scale_regions, &regionsizes);
+        }
     }
 }

@@ -46,7 +46,7 @@ def test_r_computematrix_referencePoint():
         mode, regionlis, bwlis, sampleslabel, upstream, downstream, unscaled5prime, unscaled3prime,
         regionbodylength, binsize, missingdatazero, metagene, txnid, exonid, txniddesignator, scale,
         nanafterend, skipzeros, minthresh, maxthresh, averagetypebins, sortregions, sortusing,
-        ortusingsamples, referencepoint, nproc, verbose, ofile
+        ortusingsamples, referencepoint, nproc, verbose, ofile, None, None, None, None
     )
 
 
@@ -55,7 +55,7 @@ def test_r_computematrix_referencePoint():
         file_content = f.read()
         h = hashlib.md5(file_content).hexdigest()
 
-    expectedh = '4f1a2ce422d5b74fb6b75a81916929db'
+    expectedh = 'e38b198c55eba1215d193b315add8c42'
     assert h == expectedh
 
     os.remove(ofile)
@@ -94,7 +94,7 @@ def test_r_computematrix_scale():
         mode, regionlis, bwlis, sampleslabel, upstream, downstream, unscaled5prime, unscaled3prime,
         regionbodylength, binsize, missingdatazero, metagene, txnid, exonid, txniddesignator, scale,
         nanafterend, skipzeros, minthresh, maxthresh, averagetypebins, sortregions, sortusing,
-        ortusingsamples, referencepoint, nproc, verbose, ofile
+        ortusingsamples, referencepoint, nproc, verbose, ofile, None, None, None, None
     )
 
     with gzip.open(ofile, 'rb') as f:
@@ -102,7 +102,7 @@ def test_r_computematrix_scale():
         h = hashlib.md5(file_content).hexdigest()
 
     
-    expectedh = '4f1a2ce422d5b74fb6b75a81916929db'
+    expectedh = '35bfee0b0eb3d25a060382fbea032d30'
     assert h == expectedh
 
     os.remove(ofile)
