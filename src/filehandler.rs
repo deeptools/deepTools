@@ -509,12 +509,12 @@ pub fn bwintervals(
                             .filter_map(|bp| bwhash.get(&bp))
                             .collect();
                         let val = match scale_regions.avgtype.as_str() {
-                            "mean" => mean_float(vals),
-                            "median" => median_float(vals),
-                            "min" => min_float(vals),
-                            "max" => max_float(vals),
-                            "std" => std_float(vals),
-                            "sum" => sum_float(vals),
+                            "mean" => mean_float(&vals),
+                            "median" => median_float(&vals),
+                            "min" => min_float(&vals),
+                            "max" => max_float(&vals),
+                            "std" => std_float(&vals),
+                            "sum" => sum_float(&vals),
                             _ => panic!("Unknown avgtype."),
                         };
                         bwval.push(val);
@@ -531,7 +531,6 @@ pub fn bwintervals(
                                 vals.push(&std::f32::NAN);
                             }
                         } else {
-                            // Get values from the hashmap
                             (*start..*end)
                                 .filter_map(|bp| bwhash.get(&bp))
                                 .for_each(|v| vals.push(v));
@@ -539,12 +538,12 @@ pub fn bwintervals(
                     }
 
                     let val = match scale_regions.avgtype.as_str() {
-                        "mean" => mean_float(vals),
-                        "median" => median_float(vals),
-                        "min" => min_float(vals),
-                        "max" => max_float(vals),
-                        "std" => std_float(vals),
-                        "sum" => sum_float(vals),
+                        "mean" => mean_float(&vals),
+                        "median" => median_float(&vals),
+                        "min" => min_float(&vals),
+                        "max" => max_float(&vals),
+                        "std" => std_float(&vals),
+                        "sum" => sum_float(&vals),
                         _ => panic!("Unknown avgtype."),
                     };
                     bwval.push(val);

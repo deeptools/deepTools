@@ -13,43 +13,43 @@ mod vector_calculations_tests{
     #[test]
     fn test_mean_float() {
         let v: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        assert_eq!(mean_float(v.iter().collect()), 3.0);
+        assert_eq!(mean_float(&v.iter().collect::<Vec<_>>()), 3.0);
     }
 
     #[test]
     fn test_median_float() {
         let v: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        assert_eq!(median_float(v.iter().collect()), 3.0);
+        assert_eq!(median_float(&v.iter().collect::<Vec<_>>()), 3.0);
     }
 
 
     #[test]
     fn test_min_float() {
         let v: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        assert_eq!(min_float(v.iter().collect()), 1.0);
+        assert_eq!(min_float(&v.iter().collect::<Vec<_>>()), 1.0);
     }
 
     #[test]
     fn test_max_float() {
         let v: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        assert_eq!(max_float(v.iter().collect()), 5.0);
+        assert_eq!(max_float(&v.iter().collect::<Vec<_>>()), 5.0);
     }
 
     #[test]
     fn test_sum_float() {
         let v: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        assert_eq!(sum_float(v.iter().collect()), 15.0);
+        assert_eq!(sum_float(&v.iter().collect::<Vec<_>>()), 15.0);
     }
 
     #[test]
     fn test_std_float() {
         let v: Vec<f32> = vec![1.0, 2.0, 3.0, 4.0, 5.0];
-        assert_eq!(std_float(v.iter().collect()), 1.5811388);
+        assert_eq!(std_float(&v.iter().collect::<Vec<_>>()), 1.5811388);
 
         let v: Vec<f32> = vec![1.0, 1.0, 1.0];
-        assert_eq!(std_float(v.iter().collect()), 0.0);
+        assert_eq!(std_float(&v.iter().collect::<Vec<_>>()), 0.0);
 
-        assert_eq!(std_float(vec![]), 0.0);
+        assert_eq!(std_float(&Vec::<&f32>::new()), 0.0);
     }
 }
 

@@ -191,7 +191,23 @@ pub fn r_computematrix(
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
     let mut regions: Vec<Region> = Vec::new();
     let mut regionsizes: HashMap<String, u32> = HashMap::new();
-    region_files.iter()
+    
+    // Pre-allocate capacity for regions to avoid multiple reallocations
+    let total_regions_estimate = region_files.iter()
+        .map(|r| {
+            let ftype = is_bed_or_gtf(r);
+            match ftype.as_str() {
+                "gtf" => 1000, // rough estimate for GTF files
+                "bed" => 1000, // rough estimate for BED files
+                _ => 0,
+            }
+        })
+        .sum::<usize>();
+    
+    regions.reserve(total_regions_estimate);
+    
+    // Collect region data in parallel and then merge
+    let region_data: Vec<(Vec<Region>, (String, u32))> = region_files.par_iter()
         .map(|r| {
             let ftype = is_bed_or_gtf(r);
 
@@ -201,10 +217,13 @@ pub fn r_computematrix(
                 _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
             }
         })
-        .for_each(|(reg, regsize)| {
-            regions.extend(reg);
-            regionsizes.insert(regsize.0, regsize.1);
-        });
+        .collect();
+    
+    // Merge regions and region sizes
+    for (reg, regsize) in region_data.into_iter() {
+        regions.extend(reg);
+        regionsizes.insert(regsize.0, regsize.1);
+    }
     // Define slop regions, which contain the actual 'bins' to query the bigwig files.
     let slopregions = pool.install(|| {
         regions
@@ -360,11 +379,11 @@ fn matrix_dump(
                                     .collect()
                             };
                             let metric = match sortusing {
-                                "mean" => mean_float(subset),
-                                "median" => median_float(subset),
-                                "max" => max_float(subset),
-                                "min" => min_float(subset),
-                                "sum" => sum_float(subset),
+                                "mean" => mean_float(&subset),
+                                "median" => median_float(&subset),
+                                "max" => max_float(&subset),
+                                "min" => min_float(&subset),
+                                "sum" => sum_float(&subset),
                                 _ => panic!("Sortusing should be either mean, median, max, min, sum or region_length. Not {}", sortusing),
                             };
                             (ix + *start, metric)
