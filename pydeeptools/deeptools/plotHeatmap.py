@@ -604,7 +604,7 @@ def plotMatrix(hm, outFileName,
         #  When no box is plotted the space between heatmaps is reduced
         fig.get_layout_engine().set(wspace=0.05, hspace=0.01, rect=(0.04, 0, 0.96, 0.85))
 
-    plt.savefig(outFileName, bbox_inches='tight', pad_inches=0.1, dpi=dpi, format=image_format)
+    plt.savefig(outFileName, dpi=dpi, format=image_format)
     plt.close()
 
 
