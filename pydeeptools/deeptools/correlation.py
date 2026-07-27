@@ -230,10 +230,13 @@ class Correlation:
 
     def plot_correlation(self, plot_filename, plot_title='', vmax=None,
                          vmin=None, colormap='jet', image_format=None,
-                         plot_numbers=False, plotWidth=11, plotHeight=9.5):
+                         plot_numbers=False, plotWidth=11, plotHeight=9.5, ggplot=False):
         """
         plots a correlation using a symmetric heatmap
         """
+        if ggplot:
+            plt.style.use('ggplot')
+            
         num_rows = len(self.labels)
         corr_matrix = self.compute_correlation()
         # set a font size according to figure length
