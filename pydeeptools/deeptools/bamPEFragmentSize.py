@@ -143,7 +143,6 @@ def parse_arguments():
         action="version",
         version="%(prog)s {}".format(version("deeptools")),
     )
-
     return parser
 
 
