@@ -190,6 +190,8 @@ pub fn r_computematrix(
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
     let mut regions: Vec<Region> = Vec::new();
     let mut regionsizes: HashMap<String, u32> = HashMap::new();
+    let mut regionslices: Vec<(usize, usize)> = Vec::new();
+    let mut cursor: usize = 0;
 
     // Pre-allocate capacity for regions to avoid multiple reallocations
     let total_regions_estimate = region_files
@@ -221,8 +223,14 @@ pub fn r_computematrix(
 
     // Merge regions and region sizes
     for (reg, regsize) in region_data.into_iter() {
+        let n = reg.len();
         regions.extend(reg);
-        regionsizes.insert(regsize.0, regsize.1);
+        regionsizes.insert(regsize.0.clone(), regsize.1);
+
+        if n > 0 {
+            regionslices.push((cursor, cursor + n - 1));
+            cursor += n;
+        }
     }
     // Define slop regions, which contain the actual 'bins' to query the bigwig files.
     let slopregions = pool.install(|| {
@@ -253,6 +261,7 @@ pub fn r_computematrix(
         sortusing,
         sort_using_samples,
         regions,
+        regionslices,
         matrix,
         scale_regions,
         regionsizes,
@@ -292,6 +301,7 @@ fn matrix_dump(
     sortusing: &str,
     sort_using_samples: Vec<u32>,
     regions: Vec<Region>,
+    regionslices: Vec<(usize, usize)>,
     matrix: Vec<Vec<f32>>,
     scale_regions: Scalingregions,
     regionsizes: HashMap<String, u32>,
@@ -320,22 +330,39 @@ fn matrix_dump(
                 cols_of_interest.extend(start as usize..end as usize);
             }
         }
-        let mut regionslices: Vec<(usize, usize)> = Vec::new();
-        let mut rstart: usize = 0;
-        let mut rend: usize = 0;
-        let mut lastregion = &regions[0].name;
-        for (ix, region) in regions.iter().enumerate() {
-            if region.name != *lastregion {
-                regionslices.push((rstart, rend));
-                rstart = ix;
-                rend = ix;
-                lastregion = &region.name;
-            }
-            rend = ix;
+        if verbose {
+            println!(
+                "regionslices: {} slices for {} regions",
+                regionslices.len(),
+                regions.len()
+            );
         }
-        regionslices.push((rstart, rend));
         let mut sortedix: Vec<usize>;
-        if sortusing == "region_length" {
+        if sortregions == "no" {
+            if verbose && (sortusing != "mean" || !sort_using_samples.is_empty()) {
+                println!(
+                    "sortRegions is 'no': sorting by genomic coordinates (chrom, start, end). sortUsing/sortUsingSamples are ignored."
+                );
+            }
+            sortedix = regionslices
+                .iter()
+                .flat_map(|(start, end)| {
+                    let rslice = &regions[*start..*end + 1];
+                    rslice
+                        .iter()
+                        .enumerate()
+                        .map(|(ix, region)| (ix + *start, region))
+                        .sorted_by(|a, b| {
+                            a.1.chrom
+                                .cmp(&b.1.chrom)
+                                .then_with(|| a.1.start.start_key().cmp(&b.1.start.start_key()))
+                                .then_with(|| a.1.end.end_key().cmp(&b.1.end.end_key()))
+                        })
+                        .map(|(ix, _)| ix)
+                        .collect::<Vec<usize>>()
+                })
+                .collect();
+        } else if sortusing == "region_length" {
             if !sort_using_samples.is_empty() && verbose {
                 println!(
                     "Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.",

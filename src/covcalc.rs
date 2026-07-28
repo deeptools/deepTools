@@ -1672,6 +1672,21 @@ impl Revalue {
                 .join(","),
         }
     }
+    /// Sort key for a "start"-type value: first element if V, else the U value.
+    pub fn start_key(&self) -> u32 {
+        match self {
+            Revalue::U(v) => *v,
+            Revalue::V(vs) => *vs.first().expect("Revalue::V should not be empty"),
+        }
+    }
+
+    /// Sort key for an "end"-type value: last element if V, else the U value.
+    pub fn end_key(&self) -> u32 {
+        match self {
+            Revalue::U(v) => *v,
+            Revalue::V(vs) => *vs.last().expect("Revalue::V should not be empty"),
+        }
+    }
 }
 
 impl fmt::Debug for Revalue {

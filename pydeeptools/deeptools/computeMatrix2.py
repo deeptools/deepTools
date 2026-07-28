@@ -288,7 +288,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
         "Note that this is only useful if you plan to plot "
         "the results yourself and not, for example, with "
         "plotHeatmap, which will override this. (Default: %(default)s)",
-        choices=["descend", "ascend", "keep"],
+        choices=["descend", "ascend", "keep", "no"],
         default="keep",
     )
 
@@ -449,6 +449,7 @@ def process_args(args=None):
         args.samplesLabel = []
     if not args.sortUsingSamples:
         args.sortUsingSamples = []
+
     if not args.minThreshold:
         args.minThreshold = 0.0
     if not args.maxThreshold:
