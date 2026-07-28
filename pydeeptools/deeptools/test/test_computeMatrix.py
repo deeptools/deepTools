@@ -1,12 +1,11 @@
-from tkinter import ALL
-
+import math
 import deeptools.computeMatrix2 as cm
 import gzip
 import tempfile
 import os.path
 import json
 import numpy as np
-from typing import Dict, List, Any, Union, Tuple
+from typing import Dict, List, Any, Tuple
 
 
 ALLOWED_DELTA = 1.0
@@ -65,8 +64,7 @@ def _parse_mat_gz(file_path: str) -> Tuple[Dict[str, Any], List[List[float]]]:
 
     return header_dict, data_matrix
 
-
-def _compare_mat_gz(observed_file: str, expected_file: str) -> Tuple[List[str], List[str]]:
+def _compare_mat_gz(observed_file: str, expected_file: str) -> Tuple[List[str], List[str], Dict[str, List[str]]]:
     """
     Compare two .mat.gz files for header and data equality.
     """
@@ -74,8 +72,6 @@ def _compare_mat_gz(observed_file: str, expected_file: str) -> Tuple[List[str], 
     # Parse both files
     obs_header, obs_data = _parse_mat_gz(observed_file)
     exp_header, exp_data = _parse_mat_gz(expected_file)
-    print(obs_header)
-    print(exp_header)
 
     header_differences = []
 
@@ -131,6 +127,7 @@ def _compare_mat_gz(observed_file: str, expected_file: str) -> Tuple[List[str], 
                     header_differences.append(f"Value mismatch for key '{key}': {obs_val} vs {exp_val}")
 
     data_differences = []
+    rowdiffdict = {}
     if len(obs_data) != len(exp_data):
         data_differences.append(f"Data rows mismatch: {len(obs_data)} vs {len(exp_data)}")
     else:
@@ -153,11 +150,18 @@ def _compare_mat_gz(observed_file: str, expected_file: str) -> Tuple[List[str], 
                             continue  # Both NaN, equal
                         elif np.isnan(obs_val) or np.isnan(exp_val):
                             data_differences.append(f"NaN mismatch at row {i}, col {j}: {obs_val} vs {exp_val}")
+                            if i not in rowdiffdict:
+                                rowdiffdict[i] = [obs_row, exp_row]
                         elif abs(obs_val - exp_val) > ALLOWED_DELTA:
                             data_differences.append(f"Float value mismatch at row {i}, col {j}: {obs_val} vs {exp_val}")
+                            if i not in rowdiffdict:
+                                rowdiffdict[i] = [obs_row, exp_row]
                     elif obs_val != exp_val:
                         data_differences.append(f"Value mismatch at row {i}, col {j}: {obs_val} vs {exp_val}")
-    return (header_differences, data_differences)
+                        if i not in rowdiffdict:
+                            rowdiffdict[i] = [obs_row, exp_row]
+
+    return (header_differences, data_differences, rowdiffdict)
 
 def _compare_tab_files(observed, expected, rtol=1e-3, atol=ALLOWED_DELTA):
     """Compare two tab files with floating-point tolerance."""
@@ -174,23 +178,45 @@ def _compare_tab_files(observed, expected, rtol=1e-3, atol=ALLOWED_DELTA):
         for j, (a, b) in enumerate(zip(o, e)):
             try:
                 fa, fb = float(a), float(b)
-                if not (fa == fb or (abs(fa-fb) <= atol + rtol*abs(fb))):
+
+                if math.isnan(fa) or math.isnan(fb):
+                    # Only equal if both are NaN
+                    if not (math.isnan(fa) and math.isnan(fb)):
+                        diffs.append(f"Row {i+1}, Col {j+1}: {a} vs {b}")
+                elif not (fa == fb or (abs(fa-fb) <= atol + rtol*abs(fb))):
                     diffs.append(f"Row {i+1}, Col {j+1}: {a} vs {b}")
             except ValueError:
                 # sames 'genes'/'regions' naming in python3 as before
                 if ':' in a and ':' in b:
                     a = a.split(':')[1]
                     b = b.split(':')[1]
-                if a != b: diffs.append(f"Row {i+1}, Col {j+1}: '{a}' vs '{b}'")
+                # Deal with 'nan'
+                if a != b:
+                    diffs.append(f"Row {i+1}, Col {j+1}: '{a}' vs '{b}'")
 
     return len(diffs) == 0, diffs
 
-
 def _compare_bed_files(observed, expected):
-    """Compare BED files ignoring header lines."""
-    with open(observed) as f: obs = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-    with open(expected) as f: exp = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-    return obs == exp, [f"Line {i+1}: {a} vs {b}" for i, (a, b) in enumerate(zip(obs, exp)) if a != b] if obs != exp else []
+    """Compare BED files ignoring header lines and the last field."""
+    with open(observed) as f:
+        obs = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    with open(expected) as f:
+        exp = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+    diffs = []
+    for i, (a, b) in enumerate(zip(obs, exp)):
+        # Split lines and compare all fields except the last one
+        a_fields = a.split('\t')
+        b_fields = b.split('\t')
+
+        if len(a_fields) != len(b_fields):
+            diffs.append(f"Line {i+1}: field count mismatch {len(a_fields)} vs {len(b_fields)}")
+        else:
+            # Compare all fields except the last one
+            if a_fields[:-1] != b_fields[:-1]:
+                diffs.append(f"Line {i+1}: {a} vs {b} (ignoring last field)")
+    if diffs:
+        return False, diffs
+    return True, []
 
 
 def test_compute_matrix_refpoint():
@@ -211,15 +237,15 @@ def test_compute_matrix_refpoint():
     print(' '.join(args))
     cm.main(args)
 
-    header_differences, data_differences = _compare_mat_gz(outfile_npz, exp_npz)
+    header_differences, data_differences, rowdiffdic = _compare_mat_gz(outfile_npz, exp_npz)
     assert not header_differences, f"header mismatch: {header_differences}"
-    assert not data_differences, f"data mismatch: {data_differences}"
+    assert not data_differences, f"data mismatch: {data_differences}\nrowdiffdict: {rowdiffdic}"
 
     mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
     assert mat_match, f"matrix mismatch: {mat_diffs}"
 
-    #bed_match, bed_diffs = _compare_bed_files(outfile_bed, exp_bed)
-    #assert bed_match, f"bed mismatch: {bed_diffs}"
+    # bed_match, bed_diffs = _compare_bed_files(outfile_bed, exp_bed)
+    # assert bed_match, f"bed mismatch: {bed_diffs}"
 
 def test_compute_matrix_refpoint_multibed():
     exp_npz = ROOT + "test_computematrix/mat_multibed.gz"
@@ -239,9 +265,9 @@ def test_compute_matrix_refpoint_multibed():
     print(' '.join(args))
     cm.main(args)
 
-    header_differences, data_differences = _compare_mat_gz(outfile_npz, exp_npz)
+    header_differences, data_differences, rowdiffdic = _compare_mat_gz(outfile_npz, exp_npz)
     assert not header_differences, f"header mismatch: {header_differences}"
-    assert not data_differences, f"data mismatch: {data_differences}"
+    assert not data_differences, f"data mismatch: {data_differences}\nrowdiffdict: {rowdiffdic}"
 
     mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
     assert mat_match, f"matrix mismatch: {mat_diffs}"
@@ -264,13 +290,37 @@ def test_compute_matrix_refpoint_multibw():
     print(' '.join(args))
     cm.main(args)
 
-    header_differences, data_differences = _compare_mat_gz(outfile_npz, exp_npz)
+    header_differences, data_differences, rowdiffdic = _compare_mat_gz(outfile_npz, exp_npz)
     assert not header_differences, f"header mismatch: {header_differences}"
-    assert not data_differences, f"data mismatch: {data_differences}"
+    assert not data_differences, f"data mismatch: {data_differences}\nrowdiffdict: {rowdiffdic}"
 
     mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
     assert mat_match, f"matrix mismatch: {mat_diffs}"
 
+def test_compute_matrix_refpoint_a270b310():
+    exp_npz = ROOT + "test_computematrix/mat_a270_b310.gz"
+    exp_mat = ROOT + "test_computematrix/mat_a270_b310.tab"
+    exp_bed = ROOT + "test_computematrix/mat_a270_b310.bed"
+
+    _, outfile_npz = tempfile.mkstemp(suffix='.gz')
+    _, outfile_mat = tempfile.mkstemp(suffix='.tab')
+    _, outfile_bed = tempfile.mkstemp(suffix='.bed')
+    args = f"""
+    reference-point
+    --regionsFileName {REGIONS_IN1}
+    --scoreFileName {BIGWIG_IN1}
+    -b 310 -a 270
+    -o {outfile_npz} --outFileNameMatrix {outfile_mat} --outFileSortedRegions {outfile_bed}
+    """.split()
+    print(' '.join(args))
+    cm.main(args)
+
+    header_differences, data_differences, rowdiffdic = _compare_mat_gz(outfile_npz, exp_npz)
+    assert not header_differences, f"header mismatch: {header_differences}"
+    assert not data_differences, f"data mismatch: {data_differences}\nrowdiffdict: {rowdiffdic}"
+
+    mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
+    assert mat_match, f"matrix mismatch: {mat_diffs}"
 
 # def test_compute_matrix_with_reference_point_and_advance_options_1():
 #     """

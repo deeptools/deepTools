@@ -263,6 +263,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
         optional.add_argument(
             "--nanAfterEnd",
             action="store_true",
+            default=False,
             help="If set, any values after the region end "
             "are discarded. This is useful to visualize "
             "the region end when not using the "

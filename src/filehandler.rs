@@ -12,49 +12,6 @@ use std::io::prelude::*;
 use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 
-/// Format f32 with 4 significant digits, matching Python's `%.4g`.
-fn format_g4(x: f32) -> String {
-    if x == 0.0 {
-        return "0".to_string();
-    }
-    let abs = x.abs();
-    let exp = abs.log10().floor() as i32;
-    // Decide which format to use
-    if exp >= -4 && exp < 4 {
-        let prec = 4 - exp as usize - 1; // significant digits after decimal = 4 - (digits before decimal)
-        if prec < 0 {
-            return format!("{}", x);
-        }
-        let s = format!("{:.*}", prec, x);
-        // Strip trailing zeros after decimal point
-        if s.contains('.') {
-            s.trim_end_matches('0').trim_end_matches('.').to_string()
-        } else {
-            s
-        }
-    } else {
-        // Use scientific notation
-        let prec = 3; // 4 sig figs = 1 before dot + 3 after
-        let s = format!("{:.*e}", prec, x);
-        // Rust formats as 1.234e+01, normalize to 1.234e+1
-        if let Some(pos) = s.find('e') {
-            let mantissa = &s[..pos];
-            let exp_str = &s[pos + 1..];
-            let exp_val: i32 = exp_str.parse().unwrap_or(0);
-            let sign = if exp_val >= 0 { '+' } else { '-' };
-            format!(
-                "{}{}e{}{}",
-                mantissa.trim_end_matches('0').trim_end_matches('.'),
-                sign,
-                exp_val.abs(),
-                ""
-            )
-        } else {
-            s
-        }
-    }
-}
-
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
     let mut bam = Reader::from_path(bam_ifile).unwrap();
     let mut count = 0;
@@ -546,6 +503,7 @@ pub fn bwintervals(
                     } else {
                         // Get values from the hashmap
                         let vals: Vec<&f32> = (*a..*b).filter_map(|bp| bwhash.get(&bp)).collect();
+
                         let val = match scale_regions.avgtype.as_str() {
                             "mean" => mean_float(&vals),
                             "median" => median_float(&vals),

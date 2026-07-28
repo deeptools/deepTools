@@ -7,20 +7,20 @@ use crate::filehandler::{
 use itertools::Itertools;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
 
 #[pyfunction]
 pub fn r_computematrix(
     py: Python,
-    mode: &str,                   // reference-point or scale-regions
-    regionlis: Py<PyList>,        // python list of region files (bed or gtf)
-    bwlis: Py<PyList>,            // python list of bigwig files
-    sampleslabel: Py<PyList>,     // python list of sample labels, if empty, use bigwig file names.
-    upstream: u32,                // upstream region to consider
-    downstream: u32,              // downstream region to consider
+    mode: &str,                           // reference-point or scale-regions
+    regionlis: Py<PyList>,                // python list of region files (bed or gtf)
+    bwlis: Py<PyList>,                    // python list of bigwig files
+    sampleslabel: Py<PyList>, // python list of sample labels, if empty, use bigwig file names.
+    upstream: u32,            // upstream region to consider
+    downstream: u32,          // downstream region to consider
     unscaled5prime: u32, // unscaled region 5' of the anchorpoint, only used in scale-regions mode.
     unscaled3prime: u32, // unscaled region 3' of the anchorpoint, only used in scale-regions mode.
     regionbodylength: u32, // length of the region body (after scaling), only used in scale-regions mode.
@@ -45,8 +45,8 @@ pub fn r_computematrix(
     ofile: &str,          // npz file to write to.
     outfilenamematrix: Option<String>, // optional raw matrix tab output file
     outfilesortedregions: Option<String>, // optional sorted/filtered BED output file
-    startlabel: Option<String>,  // label for start of region (default "TSS")
-    endlabel: Option<String>,    // label for end of region (default "TES")
+    startlabel: Option<String>, // label for start of region (default "TSS")
+    endlabel: Option<String>, // label for end of region (default "TES")
 ) -> PyResult<()> {
     // Extract the bed and bigwig files from pyList to Vec.
     let region_files: Vec<String> = regionlis
@@ -82,50 +82,49 @@ pub fn r_computematrix(
     // compute number of columns
     let bpsum = &upstream + &downstream + &unscaled5prime + &unscaled3prime + &regionbodylength;
 
-    // Binsize divisibility validation (Feature 11)
-    if regionbodylength % binsize != 0 {
-        eprintln!("The --regionBodyLength has to be a multiple of --binSize.\nCurrently the values are {} and {} for regionsBodyLength and binSize respectively.", regionbodylength, binsize);
-        std::process::exit(1);
-    }
-    if downstream % binsize != 0 {
-        eprintln!("Length of region after the body has to be a multiple of --binSize.\nCurrent value is {}", downstream);
-        std::process::exit(1);
-    }
-    if upstream % binsize != 0 {
-        eprintln!("Length of region before the body has to be a multiple of --binSize.\nCurrent value is {}", upstream);
-        std::process::exit(1);
-    }
-    if unscaled5prime % binsize != 0 {
-        eprintln!("Length of the unscaled 5 prime region has to be a multiple of --binSize.\nCurrent value is {}", unscaled5prime);
-        std::process::exit(1);
-    }
-    if unscaled3prime % binsize != 0 {
-        eprintln!("Length of the unscaled 3 prime region has to be a multiple of --binSize.\nCurrent value is {}", unscaled3prime);
-        std::process::exit(1);
-    }
-    if regionbodylength == 0 && (unscaled5prime > 0 || unscaled3prime > 0) {
-        eprintln!("Unscaled 5- and 3-prime regions only make sense with the scale-regions subcommand.");
-        std::process::exit(1);
-    }
+    // region / binsize divisibility validation
+    assert!(
+        regionbodylength % binsize == 0,
+        "The --regionBodyLength has to be a multiple of --binSize."
+    );
+    assert!(
+        downstream % binsize == 0,
+        "Length of region after the body has to be a multiple of --binSize."
+    );
+    assert!(
+        upstream % binsize == 0,
+        "Length of region before the body has to be a multiple of --binSize."
+    );
+    assert!(
+        unscaled5prime % binsize == 0,
+        "Length of the unscaled 5 prime region has to be a multiple of --binSize."
+    );
+    assert!(
+        unscaled3prime % binsize == 0,
+        "Length of the unscaled 3 prime region has to be a multiple of --binSize."
+    );
 
-    // Reference-point validation (Feature 12)
+    // Reference-point validation
     let valid_referencepoint = if mode == "reference-point" {
-        if !["TSS", "TES", "center"].contains(&referencepoint) {
-            eprintln!("referencepoint must be one of 'TSS', 'TES', or 'center'. Got '{}'", referencepoint);
-            std::process::exit(1);
-        }
+        assert!(
+            ["TSS", "TES", "center"].contains(&referencepoint),
+            "referencepoint must be one of 'TSS', 'TES', or 'center'. Got '{}'",
+            referencepoint
+        );
         referencepoint.to_string()
     } else {
         String::new()
     };
 
-    // nanAfterEnd validation (Feature 13): only valid in reference-point mode
-    if mode != "reference-point" && nanafterend {
-        eprintln!("--nanAfterEnd is only valid in reference-point mode.");
-        std::process::exit(1);
+    // nanAfterEnd validation only valid in reference-point mode
+    if mode != "reference-point" {
+        assert!(
+            !nanafterend,
+            "--nanAfterEnd is only valid in reference-point mode."
+        )
     }
 
-    // Get the 'basepaths' of the bed files to use as labels later on (Feature 8: smartLabels).
+    // Get the 'basepaths' of the bed files to use as labels later on
     let mut regionlabels: Vec<String> = Vec::new();
     for bed in region_files.iter() {
         let entryname = Path::new(bed)
@@ -136,7 +135,7 @@ pub fn r_computematrix(
         regionlabels.push(entryname);
     }
     if samples_label.is_empty() {
-        // no samples labels provided via CLI, retrieve them from bigwig names (Feature 8: smartLabels).
+        // no samples labels provided via CLI, retrieve them from bigwig names
         for bw in bw_files.iter() {
             let entryname = Path::new(bw)
                 .file_stem()
@@ -191,9 +190,10 @@ pub fn r_computematrix(
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
     let mut regions: Vec<Region> = Vec::new();
     let mut regionsizes: HashMap<String, u32> = HashMap::new();
-    
+
     // Pre-allocate capacity for regions to avoid multiple reallocations
-    let total_regions_estimate = region_files.iter()
+    let total_regions_estimate = region_files
+        .iter()
         .map(|r| {
             let ftype = is_bed_or_gtf(r);
             match ftype.as_str() {
@@ -203,9 +203,9 @@ pub fn r_computematrix(
             }
         })
         .sum::<usize>();
-    
+
     regions.reserve(total_regions_estimate);
-    
+
     // Collect region data in parallel and then merge
     let region_data: Vec<(Vec<Region>, (String, u32))> = region_files.par_iter()
         .map(|r| {
@@ -218,7 +218,7 @@ pub fn r_computematrix(
             }
         })
         .collect();
-    
+
     // Merge regions and region sizes
     for (reg, regsize) in region_data.into_iter() {
         regions.extend(reg);
@@ -337,7 +337,10 @@ fn matrix_dump(
         let mut sortedix: Vec<usize>;
         if sortusing == "region_length" {
             if !sort_using_samples.is_empty() && verbose {
-                println!("Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.", sort_using_samples);
+                println!(
+                    "Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.",
+                    sort_using_samples
+                );
             }
             sortedix = regionslices
                 .iter()
@@ -419,7 +422,8 @@ fn matrix_dump(
 
         // Reorder matrix & regions
         let sortedmatrix: Vec<Vec<f32>> = sortedix.iter().map(|ix| matrix[*ix].clone()).collect();
-        let sortedregions: Vec<Region> = sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
+        let sortedregions: Vec<Region> =
+            sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
         write_matrix(
             header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
             sortedmatrix.clone(),
@@ -428,14 +432,24 @@ fn matrix_dump(
             &scale_regions,
         );
 
-        // Feature 6: outFileNameMatrix - write raw matrix tab file
+        // outFileNameMatrix - write raw matrix tab file
         if let Some(ref matrix_file) = outfilenamematrix {
-            crate::filehandler::write_matrix_values(matrix_file, &sortedmatrix, &scale_regions, &regionsizes);
+            crate::filehandler::write_matrix_values(
+                matrix_file,
+                &sortedmatrix,
+                &scale_regions,
+                &regionsizes,
+            );
         }
 
-        // Feature 7: outFileSortedRegions - write sorted BED file
+        // outFileSortedRegions - write sorted BED file
         if let Some(ref bed_file) = outfilesortedregions {
-            crate::filehandler::write_sorted_regions_bed(bed_file, &sortedregions, &scale_regions, &regionsizes);
+            crate::filehandler::write_sorted_regions_bed(
+                bed_file,
+                &sortedregions,
+                &scale_regions,
+                &regionsizes,
+            );
         }
     } else {
         write_matrix(
@@ -446,14 +460,24 @@ fn matrix_dump(
             &scale_regions,
         );
 
-        // Feature 6: outFileNameMatrix - write raw matrix tab file
+        // outFileNameMatrix - write raw matrix tab file
         if let Some(ref matrix_file) = outfilenamematrix {
-            crate::filehandler::write_matrix_values(matrix_file, &matrix, &scale_regions, &regionsizes);
+            crate::filehandler::write_matrix_values(
+                matrix_file,
+                &matrix,
+                &scale_regions,
+                &regionsizes,
+            );
         }
 
-        // Feature 7: outFileSortedRegions - write regions BED file
+        // outFileSortedRegions - write regions BED file
         if let Some(ref bed_file) = outfilesortedregions {
-            crate::filehandler::write_sorted_regions_bed(bed_file, &regions, &scale_regions, &regionsizes);
+            crate::filehandler::write_sorted_regions_bed(
+                bed_file,
+                &regions,
+                &scale_regions,
+                &regionsizes,
+            );
         }
     }
 }
