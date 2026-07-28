@@ -895,13 +895,19 @@ pub fn write_sorted_regions_bed(
             ),
         };
         let group_label = &scale_regions.regionlabels[label_idx];
+        let score_str = region
+            .score
+            .parse::<f64>()
+            .map(|v| format!("{:.1}", v))
+            .unwrap_or_else(|_| region.score.clone());
+
         let line = format!(
             "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t0\t{}\t{}\t{}\t{}\n",
             region.chrom,
             start_first,
             end_last,
             region.name,
-            region.score,
+            score_str,
             region.strand,
             start_first,
             end_last,

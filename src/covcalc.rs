@@ -690,12 +690,12 @@ impl Region {
                                 // Entirely downstream of chromosome end -> invalid
                                 leftbins.push(Bin::Conbin(0, 0));
                             } else if (binix + scale_regions.binsize as i64) as u32 > chromend {
+                                // bin is partially downstream of chromosome end -> keep valid but truncate
                                 let end = min(binix as u32 + scale_regions.binsize, chromend);
                                 let start = max(binix, 0) as u32;
                                 leftbins.push(Bin::Conbin(start, end));
-                            } else if scale_regions.nan_after_end && binix as u32 <= *start {
-                                leftbins.push(Bin::Conbin(0, 0));
                             } else {
+                                // bin is valid -> keep as is
                                 let start = max(binix, 0) as u32;
                                 leftbins.push(Bin::Conbin(
                                     start,
@@ -707,18 +707,23 @@ impl Region {
                         for binix in
                             (anchorstop as i64..absstop).step_by(scale_regions.binsize as usize)
                         {
-                            if binix < 0 || binix as u32 > chromend {
-                                rightbins.push(Bin::Conbin(0, 0));
-                            } else if (binix + scale_regions.binsize as i64) as u32 > chromend {
-                                let end = min(binix as u32 + scale_regions.binsize, chromend);
-                                rightbins.push(Bin::Conbin(binix as u32, end));
-                            } else if scale_regions.nan_after_end && binix as u32 >= *end {
-                                rightbins.push(Bin::Conbin(0, 0));
+                            let upper_bound: u32 = if scale_regions.nan_after_end {
+                                min(chromend, *end)
                             } else {
-                                let start = max(binix, 0) as u32;
+                                chromend
+                            };
+
+                            if binix < 0 || binix as u32 >= upper_bound {
+                                // entire bin at or past the valid region -> fully invalid
+                                rightbins.push(Bin::Conbin(0, 0));
+                            } else if (binix as u32 + scale_regions.binsize) > upper_bound {
+                                // bin straddles the valid boundary -> keep only the valid portion
+                                rightbins.push(Bin::Conbin(binix as u32, upper_bound));
+                            } else {
+                                // fully within bounds
                                 rightbins.push(Bin::Conbin(
-                                    start as u32,
-                                    (binix as u32) + scale_regions.binsize,
+                                    binix as u32,
+                                    binix as u32 + scale_regions.binsize,
                                 ));
                             }
                         }
@@ -821,17 +826,17 @@ impl Region {
                             .step_by(scale_regions.binsize as usize)
                             .collect();
                         for binix in steps.into_iter().rev() {
-                            if binix as u32 > chromend {
+                            if binix < 0 || binix as u32 > chromend {
+                                // entire bin off the chromosome -> invalid
                                 rightbins.push(Bin::Conbin(0, 0));
                             } else if (binix + scale_regions.binsize as i64) as u32 > chromend {
+                                // bin straddles chromend -> truncate
                                 let end = min(binix as u32 + scale_regions.binsize, chromend);
                                 rightbins.push(Bin::Conbin(binix as u32, end));
-                            } else if scale_regions.nan_after_end && binix as u32 >= *end {
-                                rightbins.push(Bin::Conbin(0, 0));
                             } else {
                                 rightbins.push(Bin::Conbin(
                                     binix as u32,
-                                    (binix as u32) + scale_regions.binsize,
+                                    binix as u32 + scale_regions.binsize,
                                 ));
                             }
                         }
@@ -839,18 +844,27 @@ impl Region {
                             .step_by(scale_regions.binsize as usize)
                             .collect();
                         for binix in steps.into_iter().rev() {
-                            if binix + scale_regions.binsize as i64 <= 0 {
-                                // Entirely before position 0 -> invalid
-                                leftbins.push(Bin::Conbin(0, 0));
-                            } else if scale_regions.nan_after_end
-                                && binix >= 0
-                                && binix as u32 + scale_regions.binsize <= *start
-                            {
-                                leftbins.push(Bin::Conbin(0, 0));
+                            let lower_bound: i64 = if scale_regions.nan_after_end {
+                                max(*start as i64, 0)
                             } else {
-                                let start = max(binix, 0) as u32;
-                                let end = (binix + scale_regions.binsize as i64) as u32;
-                                leftbins.push(Bin::Conbin(start, end));
+                                0
+                            };
+
+                            if binix + scale_regions.binsize as i64 <= lower_bound {
+                                // entire bin below the valid range -> invalid
+                                leftbins.push(Bin::Conbin(0, 0));
+                            } else if binix < lower_bound {
+                                // bin straddles the lower boundary -> keep only the valid portion
+                                leftbins.push(Bin::Conbin(
+                                    lower_bound as u32,
+                                    (binix + scale_regions.binsize as i64) as u32,
+                                ));
+                            } else {
+                                // fully within bounds
+                                leftbins.push(Bin::Conbin(
+                                    binix as u32,
+                                    (binix + scale_regions.binsize as i64) as u32,
+                                ));
                             }
                         }
 
