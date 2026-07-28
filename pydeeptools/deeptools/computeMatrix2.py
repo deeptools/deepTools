@@ -433,7 +433,7 @@ def process_args(args=None):
     elif args.command == "reference-point":
         if args.beforeRegionStartLength == 0 and args.afterRegionStartLength == 0:
             sys.exit(
-                "\nUpstrean and downstream regions are both "
+                "\nUpstream and downstream regions are both "
                 "set to 0. Nothing to output. Maybe you want to "
                 "use the scale-regions mode?\n"
             )
