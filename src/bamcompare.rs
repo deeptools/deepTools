@@ -138,7 +138,7 @@ pub fn r_bamcompare(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, alfilter, false, false, true,
+                            bamfile, &i, &binsize, &ispe, &ignorechr, alfilter, false, false, true, 0,
                         )
                     })
                     .reduce(
@@ -188,27 +188,29 @@ pub fn r_bamcompare(
         );
     }
     // Calculate scale factors.
-
-    let mut sf = scale_factor_bamcompare(
-        scalefactorsmethod,
-        covcalcs[0].mapped,
-        covcalcs[1].mapped,
-        binsize,
-        effective_genome_size,
-        norm,
-        covcalcs[0].readlen,
-        covcalcs[1].readlen,
-        covcalcs[0].fraglen,
-        covcalcs[1].fraglen,
-    );
-    if given_sf1 != 0.0 || given_sf2 != 0.0 {
+    let sf = if given_sf1 != 0.0 || given_sf2 != 0.0 {
         if verbose {
             println!("Using given scale factors: {} and {}", given_sf1, given_sf2);
         }
-        sf = (given_sf1, given_sf2);
-    } else if verbose {
-        println!("scale factor1 = {}, scale factor2 = {}", sf.0, sf.1);
-    }
+        (given_sf1, given_sf2)
+    } else {
+        let (sf1, sf2) = scale_factor_bamcompare(
+            scalefactorsmethod,
+            covcalcs[0].mapped,
+            covcalcs[1].mapped,
+            binsize,
+            effective_genome_size,
+            norm,
+            covcalcs[0].readlen,
+            covcalcs[1].readlen,
+            covcalcs[0].fraglen,
+            covcalcs[1].fraglen,
+        );
+        if verbose {
+            println!("scale factor1 = {}, scale factor2 = {}", sf1, sf2);
+        }
+        (sf1, sf2)
+    };
 
     // Extract both vecs of TempPaths into a single vector
     let its = vec![
@@ -219,155 +221,72 @@ pub fn r_bamcompare(
     let zips = TempZip { iterators: its };
     let zips_vec: Vec<_> = zips.collect();
 
-    if collapse {
-        let lines = zips_vec.into_iter().flat_map(|c| {
-            let readers: Vec<_> = c
-                .into_iter()
-                .map(|x| BufReader::new(File::open(x).unwrap()).lines())
-                .collect();
-            let temp_zip = TempZip { iterators: readers };
-            temp_zip
-                .into_iter()
-                .filter_map(|mut _l| {
-                    let lines: Vec<_> = _l
-                        .iter_mut()
-                        .map(|x| x.as_mut().unwrap())
-                        .map(|x| x.split('\t').collect())
-                        .map(|x: Vec<&str>| {
-                            (
-                                x[0].to_string(),
-                                x[1].parse::<u32>().unwrap(),
-                                x[2].parse::<u32>().unwrap(),
-                                x[3].parse::<f32>().unwrap(),
-                            )
-                        })
-                        .collect();
-                    assert_eq!(lines.len(), 2);
-                    assert_eq!(
-                        lines[0].0, lines[1].0,
-                        "Error: Chromosome mismatch in bam files. {} != {}",
-                        lines[0].0, lines[1].0
-                    );
-                    assert_eq!(
-                        lines[0].1, lines[1].1,
-                        "Error: Start position mismatch in bam files. {} != {}",
-                        lines[0].1, lines[1].1
-                    );
-                    assert_eq!(
-                        lines[0].2, lines[1].2,
-                        "Error: End position mismatch in bam files. {} != {}",
-                        lines[0].2, lines[1].2
-                    );
-                    // Calculate the coverage.
-                    if skip_zero_over_zero && lines[0].3 == 0.0 && lines[1].3 == 0.0 {
-                        return None;
-                    } else if skip_non_covered_regions && lines[0].3 == 0.0 {
-                        return None;
-                    } else if skip_non_covered_regions && lines[1].3 == 0.0 {
-                        return None;
-                    } else {
-                        let cov = calc_ratio(
-                            lines[0].3,
-                            lines[1].3,
-                            &sf.0,
-                            &sf.1,
-                            &pseudocount1,
-                            &pseudocount2,
-                            operation,
-                        );
-                        Some((
-                            lines[0].0.clone(),
-                            Value {
-                                start: lines[0].1,
-                                end: lines[0].2,
-                                value: cov,
-                            },
-                        ))
-                    }
-                })
-                .coalesce(|p, c| {
-                    if p.1.value == c.1.value && p.0 == c.0 {
-                        Ok((
-                            p.0,
-                            Value {
-                                start: p.1.start,
-                                end: c.1.end,
-                                value: p.1.value,
-                            },
-                        ))
-                    } else {
-                        Err((p, c))
-                    }
-                })
-        });
-        write_covfile(lines, ofile, ofiletype, chromsizes);
+    let raw_lines = zips_vec.into_iter().flat_map(|c| {
+        let readers: Vec<_> = c
+            .into_iter()
+            .map(|x| BufReader::new(File::open(x).unwrap()).lines())
+            .collect();
+        let temp_zip = TempZip { iterators: readers };
+        temp_zip.into_iter().filter_map(move |_l| {
+            let mut iter = _l.into_iter();
+            let s0 = iter.next().unwrap().unwrap();
+            let s1 = iter.next().unwrap().unwrap();
+
+            let mut p0 = s0.split('\t');
+            let chr0: &str = p0.next().unwrap();
+            let start0: u32 = p0.next().unwrap().parse().unwrap();
+            let end0: u32 = p0.next().unwrap().parse().unwrap();
+            let cov0: f32 = p0.next().unwrap().parse().unwrap();
+
+            let mut p1 = s1.split('\t');
+            let chr1: &str = p1.next().unwrap();
+            let start1: u32 = p1.next().unwrap().parse().unwrap();
+            let end1: u32 = p1.next().unwrap().parse().unwrap();
+            let cov1: f32 = p1.next().unwrap().parse().unwrap();
+
+            assert_eq!(chr0, chr1, "Error: Chromosome mismatch in bam files. {} != {}", chr0, chr1);
+            assert_eq!(start0, start1, "Error: Start position mismatch in bam files. {} != {}", start0, start1);
+            assert_eq!(end0, end1, "Error: End position mismatch in bam files. {} != {}", end0, end1);
+
+            if skip_zero_over_zero && cov0 == 0.0 && cov1 == 0.0 {
+                return None;
+            } else if skip_non_covered_regions && cov0 == 0.0 {
+                return None;
+            } else if skip_non_covered_regions && cov1 == 0.0 {
+                return None;
+            } else {
+                let cov = calc_ratio(cov0, cov1, &sf.0, &sf.1, &pseudocount1, &pseudocount2, operation);
+                Some((
+                    chr0.to_string(),
+                    Value {
+                        start: start0,
+                        end: end0,
+                        value: cov,
+                    },
+                ))
+            }
+        })
+    });
+
+    let lines: Box<dyn Iterator<Item = (String, Value)>> = if collapse {
+        Box::new(raw_lines.coalesce(|p, c| {
+            if p.1.value == c.1.value && p.0 == c.0 {
+                Ok((
+                    p.0,
+                    Value {
+                        start: p.1.start,
+                        end: c.1.end,
+                        value: p.1.value,
+                    },
+                ))
+            } else {
+                Err((p, c))
+            }
+        }))
     } else {
-        let lines = zips_vec.into_iter().flat_map(|c| {
-            let readers: Vec<_> = c
-                .into_iter()
-                .map(|x| BufReader::new(File::open(x).unwrap()).lines())
-                .collect();
-            let temp_zip = TempZip { iterators: readers };
-            temp_zip.into_iter().filter_map(|mut _l| {
-                let lines: Vec<_> = _l
-                    .iter_mut()
-                    .map(|x| x.as_mut().unwrap())
-                    .map(|x| x.split('\t').collect())
-                    .map(|x: Vec<&str>| {
-                        (
-                            x[0].to_string(),
-                            x[1].parse::<u32>().unwrap(),
-                            x[2].parse::<u32>().unwrap(),
-                            x[3].parse::<f32>().unwrap(),
-                        )
-                    })
-                    .collect();
-                assert_eq!(lines.len(), 2);
-                assert_eq!(
-                    lines[0].0, lines[1].0,
-                    "Error: Chromosome mismatch in bam files. {} != {}",
-                    lines[0].0, lines[1].0
-                );
-                assert_eq!(
-                    lines[0].1, lines[1].1,
-                    "Error: Start position mismatch in bam files. {} != {}",
-                    lines[0].1, lines[1].1
-                );
-                assert_eq!(
-                    lines[0].2, lines[1].2,
-                    "Error: End position mismatch in bam files. {} != {}",
-                    lines[0].2, lines[1].2
-                );
-                // Calculate the coverage.
-                if skip_zero_over_zero && lines[0].3 == 0.0 && lines[1].3 == 0.0 {
-                    return None;
-                } else if skip_non_covered_regions && lines[0].3 == 0.0 {
-                    return None;
-                } else if skip_non_covered_regions && lines[1].3 == 0.0 {
-                    return None;
-                } else {
-                    let cov = calc_ratio(
-                        lines[0].3,
-                        lines[1].3,
-                        &sf.0,
-                        &sf.1,
-                        &pseudocount1,
-                        &pseudocount2,
-                        operation,
-                    );
-                    Some((
-                        lines[0].0.clone(),
-                        Value {
-                            start: lines[0].1,
-                            end: lines[0].2,
-                            value: cov,
-                        },
-                    ))
-                }
-            })
-        });
-        write_covfile(lines, ofile, ofiletype, chromsizes);
-    }
+        Box::new(raw_lines)
+    };
+    write_covfile(lines, ofile, ofiletype, chromsizes);
     Ok(())
 }
 

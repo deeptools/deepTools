@@ -263,6 +263,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
         optional.add_argument(
             "--nanAfterEnd",
             action="store_true",
+            default=False,
             help="If set, any values after the region end "
             "are discarded. This is useful to visualize "
             "the region end when not using the "
@@ -287,7 +288,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
         "Note that this is only useful if you plan to plot "
         "the results yourself and not, for example, with "
         "plotHeatmap, which will override this. (Default: %(default)s)",
-        choices=["descend", "ascend", "keep"],
+        choices=["descend", "ascend", "keep", "no"],
         default="keep",
     )
 
@@ -409,10 +410,9 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
 
 def process_args(args=None):
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
     args = parser.parse_args(args)
 
     # Ensure before and after region length is positive
@@ -433,7 +433,7 @@ def process_args(args=None):
     elif args.command == "reference-point":
         if args.beforeRegionStartLength == 0 and args.afterRegionStartLength == 0:
             sys.exit(
-                "\nUpstrean and downstream regions are both "
+                "\nUpstream and downstream regions are both "
                 "set to 0. Nothing to output. Maybe you want to "
                 "use the scale-regions mode?\n"
             )
@@ -449,6 +449,7 @@ def process_args(args=None):
         args.samplesLabel = []
     if not args.sortUsingSamples:
         args.sortUsingSamples = []
+
     if not args.minThreshold:
         args.minThreshold = 0.0
     if not args.maxThreshold:
@@ -459,28 +460,15 @@ def process_args(args=None):
 def main(args=None):
 
     args = process_args(args)
-
-    parameters = {
-        "upstream": args.beforeRegionStartLength,
-        "downstream": args.afterRegionStartLength,
-        "body": args.regionBodyLength,
-        "bin size": args.binSize,
-        "ref point": args.referencePoint,
-        "verbose": args.verbose,
-        "bin avg type": args.averageTypeBins,
-        "missing data as zero": args.missingDataAsZero,
-        "min threshold": args.minThreshold,
-        "max threshold": args.maxThreshold,
-        "scale": args.scale,
-        "skip zeros": args.skipZeros,
-        "nan after end": args.nanAfterEnd,
-        "proc number": args.numberOfProcessors,
-        "sort regions": args.sortRegions,
-        "sort using": args.sortUsing,
-        "unscaled 5 prime": args.unscaled5prime,
-        "unscaled 3 prime": args.unscaled3prime,
-    }
     signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    # Handle outFileSortedRegions: argparse.FileType("w") opens a file handle,
+    # but Rust handles file writing itself, so pass the filename and close the handle.
+    sorted_regions_file = None
+    if args.outFileSortedRegions is not None:
+        sorted_regions_file = args.outFileSortedRegions.name
+        args.outFileSortedRegions.close()
+
     r_computematrix(
         args.command,
         args.regionsFileName,
@@ -510,4 +498,8 @@ def main(args=None):
         args.numberOfProcessors,
         args.verbose,
         args.outFileName,
+        args.outFileNameMatrix if args.outFileNameMatrix else None,
+        sorted_regions_file,
+        getattr(args, 'startLabel', 'TSS'),
+        getattr(args, 'endLabel', 'TES'),
     )

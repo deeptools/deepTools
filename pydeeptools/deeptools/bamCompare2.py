@@ -182,7 +182,7 @@ def main(args=None):
     # Some sanity checks again
     if not args.effectiveGenomeSize:
         args.effectiveGenomeSize = 0
-    # If 
+    # If
     if args.normalizeUsing:
         print("Normalization of the bam files requested, turning off scaling.")
         args.scaleFactorsMethod = 'None'
@@ -234,7 +234,6 @@ def main(args=None):
     else:
         print(f"Pseudocounts should be either one or two values. Not {args.pseudocount}")
         sys.exit()
-    print(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     r_bamcompare(
         args.bamfile1, # bam file 1
