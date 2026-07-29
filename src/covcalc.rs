@@ -674,7 +674,7 @@ impl Region {
         match self.strand.as_str() {
             "+" | "." => {
                 match (&self.start, &self.end) {
-                    (Revalue::U(start), Revalue::U(end)) => {
+                    (Revalue::U(_start), Revalue::U(end)) => {
                         let mut leftbins: Vec<Bin> = Vec::new();
                         let mut rightbins: Vec<Bin> = Vec::new();
 
@@ -815,7 +815,7 @@ impl Region {
             }
             "-" => {
                 match (&self.start, &self.end) {
-                    (Revalue::U(start), Revalue::U(end)) => {
+                    (Revalue::U(start), Revalue::U(_end)) => {
                         let mut leftbins: Vec<Bin> = Vec::new();
                         let mut rightbins: Vec<Bin> = Vec::new();
 
@@ -1620,6 +1620,7 @@ pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct Scalingregions {
     pub upstream: u32,
     pub downstream: u32,

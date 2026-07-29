@@ -1,9 +1,0 @@
-#chrom	start	end	name	score	strand	thickStart	thickEnd	itemRGB	blockCount	blockSizes	blockStart	deepTools_group
-phiX174	1000	1500	CG11023	0.0	+	1000	1500	0	1	500	999	genes
-phiX174	150	1750	cda5	0.0	-	150	1750	0	1	1600	149	genes
-phiX174	150	177	cda8	0.0	-	150	177	0	1	27	149	genes
-phiX174	75	1500	cda9	0.0	+	75	1500	0	1	1425	68	genes
-phiX174	101	175	C11023	0.0	+	101	175	0	1	74	100	genes
-phiX174	125	150	ca5	0.0	-	125	150	0	1	25	124	genes
-phiX174	450	1750	ca8	0.0	+	450	1750	0	1	1300	446	genes
-phiX174	80	1500	cda9_r1	0.0	+	80	1500	0	1	1420	72	genes

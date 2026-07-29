@@ -1,6 +1,6 @@
 #genes:8
 #downstream:20	upstream:20	body:0	bin size:10	unscaled 5 prime:0	unscaled 3 prime:0
-genes:8	bamCoverage_result4	bamCoverage_result4	bamCoverage_result4	bamCoverage_result4
+genes:8	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1
 4.33e+05	4.17e+05	4.491e+05	5.774e+05
 4.17e+05	4.33e+05	5.293e+05	5.774e+05
 2.085e+05	1.989e+05	1.716e+05	1.508e+05
