@@ -234,10 +234,9 @@ def bamcorrelate_args(case="bins"):
 
 def process_args(args=None):
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(0)
     args = parser.parse_args(args)
 
     if args.labels and len(args.bamfiles) != len(args.labels):

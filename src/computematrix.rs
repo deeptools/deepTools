@@ -7,20 +7,20 @@ use crate::filehandler::{
 use itertools::Itertools;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
 
 #[pyfunction]
 pub fn r_computematrix(
     py: Python,
-    mode: &str,                   // reference-point or scale-regions
-    regionlis: Py<PyList>,        // python list of region files (bed or gtf)
-    bwlis: Py<PyList>,            // python list of bigwig files
-    sampleslabel: Py<PyList>,     // python list of sample labels, if empty, use bigwig file names.
-    upstream: u32,                // upstream region to consider
-    downstream: u32,              // downstream region to consider
+    mode: &str,                           // reference-point or scale-regions
+    regionlis: Py<PyList>,                // python list of region files (bed or gtf)
+    bwlis: Py<PyList>,                    // python list of bigwig files
+    sampleslabel: Py<PyList>, // python list of sample labels, if empty, use bigwig file names.
+    upstream: u32,            // upstream region to consider
+    downstream: u32,          // downstream region to consider
     unscaled5prime: u32, // unscaled region 5' of the anchorpoint, only used in scale-regions mode.
     unscaled3prime: u32, // unscaled region 3' of the anchorpoint, only used in scale-regions mode.
     regionbodylength: u32, // length of the region body (after scaling), only used in scale-regions mode.
@@ -43,6 +43,10 @@ pub fn r_computematrix(
     nproc: usize,         // number of threads.
     verbose: bool,        // verbose output.
     ofile: &str,          // npz file to write to.
+    outfilenamematrix: Option<String>, // optional raw matrix tab output file
+    outfilesortedregions: Option<String>, // optional sorted/filtered BED output file
+    startlabel: Option<String>, // label for start of region (default "TSS")
+    endlabel: Option<String>, // label for end of region (default "TES")
 ) -> PyResult<()> {
     // Extract the bed and bigwig files from pyList to Vec.
     let region_files: Vec<String> = regionlis
@@ -73,12 +77,54 @@ pub fn r_computematrix(
         sort_using_samples.len() <= bw_files.len(),
         "Number of samples to sort on is larger than number of bigwig files provided."
     );
-    // Assert that no value in sort_using_samples is larger than bw_files.
     // Get chromosome boundaries from first bigwig file.
     let chromsizes = chrombounds_from_bw(&bw_files.get(0).unwrap());
     // compute number of columns
     let bpsum = &upstream + &downstream + &unscaled5prime + &unscaled3prime + &regionbodylength;
-    // Get the 'basepaths' of the bed files to use as labels later on.
+
+    // region / binsize divisibility validation
+    assert!(
+        regionbodylength % binsize == 0,
+        "The --regionBodyLength has to be a multiple of --binSize."
+    );
+    assert!(
+        downstream % binsize == 0,
+        "Length of region after the body has to be a multiple of --binSize."
+    );
+    assert!(
+        upstream % binsize == 0,
+        "Length of region before the body has to be a multiple of --binSize."
+    );
+    assert!(
+        unscaled5prime % binsize == 0,
+        "Length of the unscaled 5 prime region has to be a multiple of --binSize."
+    );
+    assert!(
+        unscaled3prime % binsize == 0,
+        "Length of the unscaled 3 prime region has to be a multiple of --binSize."
+    );
+
+    // Reference-point validation
+    let valid_referencepoint = if mode == "reference-point" {
+        assert!(
+            ["TSS", "TES", "center"].contains(&referencepoint),
+            "referencepoint must be one of 'TSS', 'TES', or 'center'. Got '{}'",
+            referencepoint
+        );
+        referencepoint.to_string()
+    } else {
+        String::new()
+    };
+
+    // nanAfterEnd validation only valid in reference-point mode
+    if mode != "reference-point" {
+        assert!(
+            !nanafterend,
+            "--nanAfterEnd is only valid in reference-point mode."
+        )
+    }
+
+    // Get the 'basepaths' of the bed files to use as labels later on
     let mut regionlabels: Vec<String> = Vec::new();
     for bed in region_files.iter() {
         let entryname = Path::new(bed)
@@ -89,7 +135,7 @@ pub fn r_computematrix(
         regionlabels.push(entryname);
     }
     if samples_label.is_empty() {
-        // no samples labels provided via CLI, retrieve them from bigwig names.
+        // no samples labels provided via CLI, retrieve them from bigwig names
         for bw in bw_files.iter() {
             let entryname = Path::new(bw)
                 .file_stem()
@@ -115,7 +161,7 @@ pub fn r_computematrix(
         skipzero: skipzeros,
         minthresh: minthresh,
         maxthresh: maxthresh,
-        referencepoint: referencepoint.to_string(),
+        referencepoint: valid_referencepoint,
         mode: mode.to_string(),
         bwfiles: bw_files.len(),
         avgtype: averagetypebins.to_string(),
@@ -123,6 +169,8 @@ pub fn r_computematrix(
         proc_number: nproc,
         regionlabels: regionlabels,
         bwlabels: samples_label,
+        startlabel: startlabel.unwrap_or_else(|| "TSS".to_string()),
+        endlabel: endlabel.unwrap_or_else(|| "TES".to_string()),
     };
     let gtfparse = Gtfparse {
         metagene: metagene,
@@ -142,7 +190,26 @@ pub fn r_computematrix(
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
     let mut regions: Vec<Region> = Vec::new();
     let mut regionsizes: HashMap<String, u32> = HashMap::new();
-    region_files.iter()
+    let mut regionslices: Vec<(usize, usize)> = Vec::new();
+    let mut cursor: usize = 0;
+
+    // Pre-allocate capacity for regions to avoid multiple reallocations
+    let total_regions_estimate = region_files
+        .iter()
+        .map(|r| {
+            let ftype = is_bed_or_gtf(r);
+            match ftype.as_str() {
+                "gtf" => 1000, // rough estimate for GTF files
+                "bed" => 1000, // rough estimate for BED files
+                _ => 0,
+            }
+        })
+        .sum::<usize>();
+
+    regions.reserve(total_regions_estimate);
+
+    // Collect region data in parallel and then merge
+    let region_data: Vec<(Vec<Region>, (String, u32))> = region_files.par_iter()
         .map(|r| {
             let ftype = is_bed_or_gtf(r);
 
@@ -152,10 +219,19 @@ pub fn r_computematrix(
                 _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
             }
         })
-        .for_each(|(reg, regsize)| {
-            regions.extend(reg);
-            regionsizes.insert(regsize.0, regsize.1);
-        });
+        .collect();
+
+    // Merge regions and region sizes
+    for (reg, regsize) in region_data.into_iter() {
+        let n = reg.len();
+        regions.extend(reg);
+        regionsizes.insert(regsize.0.clone(), regsize.1);
+
+        if n > 0 {
+            regionslices.push((cursor, cursor + n - 1));
+            cursor += n;
+        }
+    }
     // Define slop regions, which contain the actual 'bins' to query the bigwig files.
     let slopregions = pool.install(|| {
         regions
@@ -185,10 +261,13 @@ pub fn r_computematrix(
         sortusing,
         sort_using_samples,
         regions,
+        regionslices,
         matrix,
         scale_regions,
         regionsizes,
         ofile,
+        outfilenamematrix,
+        outfilesortedregions,
         verbose,
     );
 
@@ -222,10 +301,13 @@ fn matrix_dump(
     sortusing: &str,
     sort_using_samples: Vec<u32>,
     regions: Vec<Region>,
+    regionslices: Vec<(usize, usize)>,
     matrix: Vec<Vec<f32>>,
     scale_regions: Scalingregions,
     regionsizes: HashMap<String, u32>,
     ofile: &str,
+    outfilenamematrix: Option<String>,
+    outfilesortedregions: Option<String>,
     verbose: bool,
 ) {
     // Takes a pre-computed matrix, resorts it if requested, and writes it to file.
@@ -240,31 +322,52 @@ fn matrix_dump(
         // If sortusingsamples is set, we need a vector to subset the columns of interest
         let mut cols_of_interest: Vec<usize> = Vec::new();
         if !sort_using_samples.is_empty() {
+            let cols_per_sample = scale_regions.cols_expected / scale_regions.bwfiles;
             for sample_ix in sort_using_samples.iter() {
                 // Note that sort_using_samples is assumed to be 1-index. Hence we need to subtract 1.
-                let start = (sample_ix - 1) * scale_regions.bpsum;
-                let end = start + scale_regions.bpsum;
+                let start = (sample_ix - 1) * cols_per_sample as u32;
+                let end = start + cols_per_sample as u32;
                 cols_of_interest.extend(start as usize..end as usize);
             }
         }
-        let mut regionslices: Vec<(usize, usize)> = Vec::new();
-        let mut rstart: usize = 0;
-        let mut rend: usize = 0;
-        let mut lastregion = &regions[0].name;
-        for (ix, region) in regions.iter().enumerate() {
-            if region.name != *lastregion {
-                regionslices.push((rstart, rend));
-                rstart = ix;
-                rend = ix;
-                lastregion = &region.name;
-            }
-            rend = ix;
+        if verbose {
+            println!(
+                "regionslices: {} slices for {} regions",
+                regionslices.len(),
+                regions.len()
+            );
         }
-        regionslices.push((rstart, rend));
         let mut sortedix: Vec<usize>;
-        if sortusing == "region_length" {
+        if sortregions == "no" {
+            if verbose && (sortusing != "mean" || !sort_using_samples.is_empty()) {
+                println!(
+                    "sortRegions is 'no': sorting by genomic coordinates (chrom, start, end). sortUsing/sortUsingSamples are ignored."
+                );
+            }
+            sortedix = regionslices
+                .iter()
+                .flat_map(|(start, end)| {
+                    let rslice = &regions[*start..*end + 1];
+                    rslice
+                        .iter()
+                        .enumerate()
+                        .map(|(ix, region)| (ix + *start, region))
+                        .sorted_by(|a, b| {
+                            a.1.chrom
+                                .cmp(&b.1.chrom)
+                                .then_with(|| a.1.start.start_key().cmp(&b.1.start.start_key()))
+                                .then_with(|| a.1.end.end_key().cmp(&b.1.end.end_key()))
+                        })
+                        .map(|(ix, _)| ix)
+                        .collect::<Vec<usize>>()
+                })
+                .collect();
+        } else if sortusing == "region_length" {
             if !sort_using_samples.is_empty() && verbose {
-                println!("Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.", sort_using_samples);
+                println!(
+                    "Sort using samples is set ({:?}), but is not used when sorting on region_length. It is thus ignored.",
+                    sort_using_samples
+                );
             }
             sortedix = regionslices
                 .iter()
@@ -306,11 +409,11 @@ fn matrix_dump(
                                     .collect()
                             };
                             let metric = match sortusing {
-                                "mean" => mean_float(subset),
-                                "median" => median_float(subset),
-                                "max" => max_float(subset),
-                                "min" => min_float(subset),
-                                "sum" => sum_float(subset),
+                                "mean" => mean_float(&subset),
+                                "median" => median_float(&subset),
+                                "max" => max_float(&subset),
+                                "min" => min_float(&subset),
+                                "sum" => sum_float(&subset),
                                 _ => panic!("Sortusing should be either mean, median, max, min, sum or region_length. Not {}", sortusing),
                             };
                             (ix + *start, metric)
@@ -345,22 +448,63 @@ fn matrix_dump(
         );
 
         // Reorder matrix & regions
-        let sortedmatrix = sortedix.iter().map(|ix| matrix[*ix].clone()).collect();
-        let sortedregions = sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
+        let sortedmatrix: Vec<Vec<f32>> = sortedix.iter().map(|ix| matrix[*ix].clone()).collect();
+        let sortedregions: Vec<Region> =
+            sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
         write_matrix(
-            header_matrix(&scale_regions, regionsizes),
-            sortedmatrix,
+            header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
+            sortedmatrix.clone(),
             ofile,
-            sortedregions,
+            sortedregions.clone(),
             &scale_regions,
         );
+
+        // outFileNameMatrix - write raw matrix tab file
+        if let Some(ref matrix_file) = outfilenamematrix {
+            crate::filehandler::write_matrix_values(
+                matrix_file,
+                &sortedmatrix,
+                &scale_regions,
+                &regionsizes,
+            );
+        }
+
+        // outFileSortedRegions - write sorted BED file
+        if let Some(ref bed_file) = outfilesortedregions {
+            crate::filehandler::write_sorted_regions_bed(
+                bed_file,
+                &sortedregions,
+                &scale_regions,
+                &regionsizes,
+            );
+        }
     } else {
         write_matrix(
-            header_matrix(&scale_regions, regionsizes),
-            matrix,
+            header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
+            matrix.clone(),
             ofile,
-            regions,
+            regions.clone(),
             &scale_regions,
         );
+
+        // outFileNameMatrix - write raw matrix tab file
+        if let Some(ref matrix_file) = outfilenamematrix {
+            crate::filehandler::write_matrix_values(
+                matrix_file,
+                &matrix,
+                &scale_regions,
+                &regionsizes,
+            );
+        }
+
+        // outFileSortedRegions - write regions BED file
+        if let Some(ref bed_file) = outfilesortedregions {
+            crate::filehandler::write_sorted_regions_bed(
+                bed_file,
+                &regions,
+                &scale_regions,
+                &regionsizes,
+            );
+        }
     }
 }

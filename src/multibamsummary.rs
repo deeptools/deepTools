@@ -209,7 +209,7 @@ pub fn r_mbams(
                     .map(|i| {
                         bam_pileup(
                             bamfile, &i, &binsize, &ispe, &ignorechr, filter, false, gene_mode,
-                            false,
+                            false, 0,
                         )
                     })
                     .reduce(

@@ -65,7 +65,6 @@ def test_bam_coverage_extend():
 
 
 def test_bam_coverage_extend_and_normalizeUsingRPGC():
-
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
@@ -530,6 +529,37 @@ def test_bam_coverage_offset20_minus4():
             "chr_cigar\t30\t40\t0\n",
             "chr_cigar\t40\t47\t1\n",
             "chr_cigar\t47\t200\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+
+def test_bam_coverage_smooth():
+    """
+    Test bamcoverage with smoothing
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bw")
+    #for fname in [BAMFILE_A, CRAMFILE_A]:
+    for fname in [BAMFILE_A]:
+        args = f" -b {fname} -p 1 -bs 5 --smoothLength 10 -of bedgraph -o {outfile}"
+        args = args.split()
+        bam_cov.main(args)
+        _foo = open(outfile, 'r')
+        resp = _foo.readlines()
+        _foo.close()
+
+        expected = [
+            "3R\t0\t100\t0\n",
+            "3R\t100\t105\t0.5\n",
+            "3R\t105\t200\t1\n",
+            "chr_cigar\t0\t10\t0\n",
+            "chr_cigar\t10\t15\t0.5\n",
+            "chr_cigar\t15\t30\t1\n",
+            "chr_cigar\t30\t35\t0.5\n",
+            "chr_cigar\t35\t40\t0\n",
+            "chr_cigar\t40\t45\t0.5\n",
+            "chr_cigar\t45\t50\t1\n",
+            "chr_cigar\t50\t55\t0.5\n",
+            "chr_cigar\t55\t200\t0\n"
         ]
 
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
