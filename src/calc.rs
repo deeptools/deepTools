@@ -29,15 +29,16 @@ pub fn mean_float(fvec: &[&f32]) -> f32 {
             count += 1;
         }
     }
-    if count == 0 {
-        0.0
-    } else {
-        sum / count as f32
-    }
+    if count == 0 { 0.0 } else { sum / count as f32 }
 }
 
 pub fn median_float(fvec: &[&f32]) -> f32 {
-    let mut valid_floats: Vec<f32> = fvec.iter().copied().copied().filter(|v| v.is_finite()).collect();
+    let mut valid_floats: Vec<f32> = fvec
+        .iter()
+        .copied()
+        .copied()
+        .filter(|v| v.is_finite())
+        .collect();
     if valid_floats.is_empty() {
         return 0.0;
     }
@@ -59,11 +60,7 @@ pub fn min_float(fvec: &[&f32]) -> f32 {
             }
         }
     }
-    if min_val.is_nan() {
-        0.0
-    } else {
-        min_val
-    }
+    if min_val.is_nan() { 0.0 } else { min_val }
 }
 
 pub fn max_float(fvec: &[&f32]) -> f32 {
@@ -75,11 +72,7 @@ pub fn max_float(fvec: &[&f32]) -> f32 {
             }
         }
     }
-    if max_val.is_nan() {
-        0.0
-    } else {
-        max_val
-    }
+    if max_val.is_nan() { 0.0 } else { max_val }
 }
 
 pub fn sum_float(fvec: &[&f32]) -> f32 {
@@ -91,15 +84,17 @@ pub fn sum_float(fvec: &[&f32]) -> f32 {
             count = true;
         }
     }
-    if count {
-        sum
-    } else {
-        0.0
-    }
+    if count { sum } else { 0.0 }
 }
 
 pub fn std_float(fvec: &[&f32]) -> f32 {
-    let valid_floats: Vec<f64> = fvec.iter().copied().copied().filter(|v| v.is_finite()).map(|v| v as f64).collect();
+    let valid_floats: Vec<f64> = fvec
+        .iter()
+        .copied()
+        .copied()
+        .filter(|v| v.is_finite())
+        .map(|v| v as f64)
+        .collect();
     if valid_floats.is_empty() {
         return 0.0f32;
     }
@@ -110,7 +105,7 @@ pub fn std_float(fvec: &[&f32]) -> f32 {
         .copied()
         .map(|val| (val - mean).powi(2))
         .sum::<f64>();
-    let stdsumnorm = stdsum / (n - 1.0);  // Using n-1 for sample standard deviation
+    let stdsumnorm = stdsum / n; // population std
     stdsumnorm.sqrt() as f32
 }
 
@@ -121,7 +116,7 @@ pub fn calc_ratio(
     sf2: &f32,
     pseudocount1: &f32,
     pseudocount2: &f32,
-    operation: &str
+    operation: &str,
 ) -> f32 {
     // Pseudocounts are only used in log2 and ratio operations
     // First scale factor is applied, then pseudocount, if applicable.
@@ -171,11 +166,11 @@ pub fn deseq_scalefactors(array2: &Array2<f32>) -> Array1<f32> {
     let masked_array = array2.mapv(|x| if x <= 0.0 { f32::NAN } else { x });
     let masked_loggeomeans = loggeomeans.mapv(|x| if x.is_infinite() { f32::NAN } else { x });
     let adjusted_loga = masked_array.mapv(|x| x.ln()).t().to_owned() - &masked_loggeomeans;
-    let medians: Array1<f32> = adjusted_loga.t().axis_iter(Axis(1))
+    let medians: Array1<f32> = adjusted_loga
+        .t()
+        .axis_iter(Axis(1))
         .map(|x| {
-            let vec: Vec<&f32> = x.iter()
-                .filter(|&&x| !x.is_nan())
-                .collect();
+            let vec: Vec<&f32> = x.iter().filter(|&&x| !x.is_nan()).collect();
             median_float(&vec)
         })
         .collect();
