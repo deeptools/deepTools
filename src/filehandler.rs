@@ -495,6 +495,7 @@ pub fn bwintervals(
             match bin {
                 Bin::Conbin(a, b) => {
                     if a == b && *b == 0 {
+                        // This bin is invalid/outside chromosome bounds
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
                         } else {
@@ -503,17 +504,25 @@ pub fn bwintervals(
                     } else {
                         // Get values from the hashmap
                         let vals: Vec<&f32> = (*a..*b).filter_map(|bp| bwhash.get(&bp)).collect();
-
-                        let val = match scale_regions.avgtype.as_str() {
-                            "mean" => mean_float(&vals),
-                            "median" => median_float(&vals),
-                            "min" => min_float(&vals),
-                            "max" => max_float(&vals),
-                            "std" => std_float(&vals),
-                            "sum" => sum_float(&vals),
-                            _ => panic!("Unknown avgtype."),
-                        };
-                        bwval.push(val);
+                        // Handle case where no valid values exist
+                        if vals.is_empty() {
+                            if scale_regions.missingdata_as_zero {
+                                bwval.push(0.0);
+                            } else {
+                                bwval.push(std::f32::NAN);
+                            }
+                        } else {
+                            let val = match scale_regions.avgtype.as_str() {
+                                "mean" => mean_float(&vals),
+                                "median" => median_float(&vals),
+                                "min" => min_float(&vals),
+                                "max" => max_float(&vals),
+                                "std" => std_float(&vals),
+                                "sum" => sum_float(&vals),
+                                _ => panic!("Unknown avgtype."),
+                            };
+                            bwval.push(val);
+                        }
                     }
                 }
                 Bin::Catbin(pairs) => {
@@ -521,6 +530,7 @@ pub fn bwintervals(
 
                     for (start, end) in pairs {
                         if start == end && *end == 0 {
+                            // This bin is invalid/outside chromosome bounds
                             if scale_regions.missingdata_as_zero {
                                 vals.push(&0.0);
                             } else {
@@ -533,16 +543,25 @@ pub fn bwintervals(
                         }
                     }
 
-                    let val = match scale_regions.avgtype.as_str() {
-                        "mean" => mean_float(&vals),
-                        "median" => median_float(&vals),
-                        "min" => min_float(&vals),
-                        "max" => max_float(&vals),
-                        "std" => std_float(&vals),
-                        "sum" => sum_float(&vals),
-                        _ => panic!("Unknown avgtype."),
-                    };
-                    bwval.push(val);
+                    // Handle case where no valid values exist
+                    if vals.is_empty() {
+                        if scale_regions.missingdata_as_zero {
+                            bwval.push(0.0);
+                        } else {
+                            bwval.push(std::f32::NAN);
+                        }
+                    } else {
+                        let val = match scale_regions.avgtype.as_str() {
+                            "mean" => mean_float(&vals),
+                            "median" => median_float(&vals),
+                            "min" => min_float(&vals),
+                            "max" => max_float(&vals),
+                            "std" => std_float(&vals),
+                            "sum" => sum_float(&vals),
+                            _ => panic!("Unknown avgtype."),
+                        };
+                        bwval.push(val);
+                    }
                 }
             }
         }

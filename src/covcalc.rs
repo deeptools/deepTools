@@ -686,12 +686,19 @@ impl Region {
                             if binix + scale_regions.binsize as i64 <= 0 {
                                 // Entirely upstream of chromosome start -> invalid
                                 leftbins.push(Bin::Conbin(0, 0));
+                            } else if binix < 0 && binix + scale_regions.binsize as i64 > 0 {
+                                // starting point is negative, but bin end is positive, keep valid but truncate
+                                let end =
+                                    min((binix + scale_regions.binsize as i64) as u32, chromend);
+                                let start = max(binix, 0) as u32;
+                                leftbins.push(Bin::Conbin(start, end));
                             } else if binix >= 0 && binix as u32 > chromend {
                                 // Entirely downstream of chromosome end -> invalid
                                 leftbins.push(Bin::Conbin(0, 0));
                             } else if (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 // bin is partially downstream of chromosome end -> keep valid but truncate
-                                let end = min(binix as u32 + scale_regions.binsize, chromend);
+                                let end =
+                                    min((binix + scale_regions.binsize as i64) as u32, chromend);
                                 let start = max(binix, 0) as u32;
                                 leftbins.push(Bin::Conbin(start, end));
                             } else {
