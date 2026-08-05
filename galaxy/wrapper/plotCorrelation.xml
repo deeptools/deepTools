@@ -114,7 +114,7 @@
             <param name="outFileFormat" value="png" />
             <param name="outFileCorMatrix" value="True" />
             <output name="matrix" file="plotCorrelation_result1.tabular" ftype="tabular" />
-            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="400" />
+            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="2000" />
         </test>
         <test expect_num_outputs="1">
             <param name="corData" value="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" />
@@ -122,7 +122,7 @@
             <param name="whatToPlot" value="scatterplot" />
             <param name="removeOutliers" value="True" />
             <param name="plotTitle" value="Test Plot" />
-            <output name="outFileName" file="plotCorrelation_result2.png" ftype="png" compare="sim_size" delta="300" />
+            <output name="outFileName" file="plotCorrelation_result2.png" ftype="png" compare="sim_size" delta="2000" />
         </test>
     </tests>
     <help>

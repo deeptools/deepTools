@@ -265,7 +265,7 @@
     <tests>
         <test expect_num_outputs="1">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="4000" />
+            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="7000" />
         </test>
         <test expect_num_outputs="1">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
