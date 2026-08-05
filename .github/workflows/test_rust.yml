@@ -6,12 +6,17 @@ on:
     schedule:
         - cron: "0 0 * * 0"
 
+permissions:
+    contents: read
+
 jobs:
     cargo_test:
         name: run cargo test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v7
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
             - run: rustup update stable && rustup default stable
             - name: cargo build
               run: cargo build --verbose

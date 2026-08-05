@@ -1,6 +1,9 @@
 name: tests_pytest
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+    contents: read
+
 defaults:
     run:
         shell: bash -l {0}
@@ -11,7 +14,9 @@ jobs:
         runs-on: ubuntu-latest
         if: github.base_ref == 'master'
         steps:
-            - uses: actions/checkout@v7
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
             - name: Check path
               run: find /home/runner/work/deepTools/deepTools -name "pyproject.toml"
             - name: Get Version of Deeptools
@@ -43,13 +48,15 @@ jobs:
             matrix:
                 python-version: ["3.12", "3.13", "3.14"]
         steps:
-            - uses: actions/checkout@v7
-            - uses: actions/setup-python@v6
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
               with:
                   python-version: ${{ matrix.python-version }}
                   cache: "pip"
             - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
             - name: build deeptools
               run: |
                   python -m venv venv
@@ -75,13 +82,15 @@ jobs:
             matrix:
                 python-version: ["3.12", "3.13", "3.14"]
         steps:
-            - uses: actions/checkout@v7
-            - uses: actions/setup-python@v6
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
               with:
                   python-version: ${{ matrix.python-version }}
                   cache: "pip"
             - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
+              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
             - name: build deeptools
               run: |
                   python -m venv venv
