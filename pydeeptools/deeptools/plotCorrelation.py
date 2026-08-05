@@ -92,6 +92,10 @@ def plot_correlation_args():
                           'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
 
+    optional.add_argument('--ggplot',
+                          help='Use ggplot theme for figures',
+                          action='store_true')
+    
     optional.add_argument('--plotFileFormat',
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '

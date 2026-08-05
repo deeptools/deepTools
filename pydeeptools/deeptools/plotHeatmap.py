@@ -5,8 +5,8 @@ from __future__ import division
 import argparse
 from collections import OrderedDict
 import numpy as np
-import matplotlib
 from deeptools import matplotlib_defaults
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
