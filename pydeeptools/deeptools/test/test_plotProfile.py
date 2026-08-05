@@ -9,7 +9,10 @@ import deeptools.plotProfile
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotProfile/"
 
-tolerance = 13
+# Headroom for anti-aliasing/text-hinting drift between matplotlib patch
+# versions (e.g. 3.10.x vs 3.11.x render identical plots with slightly
+# different sub-pixel edges); see matplotlib_defaults.py.
+tolerance = 40
 
 
 def run_plotProfile(args):

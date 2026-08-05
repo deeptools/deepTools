@@ -10,7 +10,10 @@ import deeptools.plotHeatmap
 TEST_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_plotHeatmap")
 
-tolerance = 13
+# Headroom for anti-aliasing/text-hinting drift between matplotlib patch
+# versions (e.g. 3.10.x vs 3.11.x render identical plots with slightly
+# different sub-pixel edges); see matplotlib_defaults.py.
+tolerance = 25
 
 
 def run_plotHeatmap(args):

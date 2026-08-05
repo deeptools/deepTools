@@ -8,7 +8,10 @@ import deeptools.bamPEFragmentSize
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data"
 
-tolerance = 10
+# Headroom for anti-aliasing/text-hinting drift between matplotlib patch
+# versions (e.g. 3.10.x vs 3.11.x render identical plots with slightly
+# different sub-pixel edges); see matplotlib_defaults.py.
+tolerance = 15
 
 
 def run_bamPEFragmentSize_histogram(extra_args=None):

@@ -13,7 +13,10 @@ __author__ = 'Bjoern'
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotEnrichment/"
 
-tolerance = 13
+# Headroom for anti-aliasing/text-hinting drift between matplotlib patch
+# versions (e.g. 3.10.x vs 3.11.x render identical plots with slightly
+# different sub-pixel edges); see matplotlib_defaults.py.
+tolerance = 20
 
 
 def run_plotEnrichment(extra_args=None):

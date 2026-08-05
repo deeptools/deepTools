@@ -51,7 +51,12 @@ actions = [
     "twine",
     "build",
     "planemo",
-    "matplotlib == 3.11", # pin matplotlib version to avoid plots changing in pytests (font size defaults etc.)
+    # matplotlib 3.10.0-3.10.4 hit a Path.__deepcopy__ RecursionError on
+    # Python 3.14 for any marker-using plot (fixed upstream in 3.10.5).
+    # Baseline images are pinned against 3.11.0 rendering; image-comparison
+    # tests carry tolerance headroom for anti-aliasing/text-hinting drift
+    # between 3.10.x and 3.11.x point releases (see matplotlib_defaults.py).
+    "matplotlib >= 3.10.5, < 3.12",
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
