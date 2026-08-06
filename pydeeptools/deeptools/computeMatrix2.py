@@ -448,6 +448,8 @@ def process_args(args=None):
         )
     if not args.samplesLabel:
         args.samplesLabel = []
+    else:
+        args.samplesLabel = [i.strip('"').strip("'") for i in args.samplesLabel]
     if not args.sortUsingSamples:
         args.sortUsingSamples = []
 
