@@ -92,6 +92,8 @@ pub fn read_gtffile(
         let mut txn_hash: HashMap<String, Vec<(u32, u32)>> = HashMap::new();
         let mut txn_strand: HashMap<String, String> = HashMap::new();
         let mut txn_chrom: HashMap<String, String> = HashMap::new();
+        // Store transcript-level coordinates as fallback when no exon entries exist.
+        let mut txn_transcript: HashMap<String, (u32, u32)> = HashMap::new();
 
         for line in gtffile.lines() {
             let line = line.unwrap();
@@ -100,42 +102,78 @@ pub fn read_gtffile(
                 continue;
             }
             let fields: Vec<&str> = line.split('\t').collect();
-            if fields[2].to_string() == gtfparse.exonid {
-                let start: u32 = fields[3].parse().unwrap();
-                let end: u32 = fields[4].parse().unwrap();
-                let txnid = fields[8]
-                    .split(';')
-                    .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
-                    .and_then(|x| x.split('"').nth(1))
-                    .map(|s| s.to_string())
-                    .unwrap();
-                if !txnids.contains(&txnid) {
-                    txnids.push(txnid.clone());
+            let feature = fields[2].to_string();
+            let mut start: u32 = fields[3].parse().unwrap();
+            if start >= 1 {
+                start -= 1;
+            }
+            let end: u32 = fields[4].parse().unwrap();
+            let txnid: Option<String> = fields[8]
+                .split(';')
+                .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
+                .and_then(|x| x.split('"').nth(1))
+                .map(|s| s.to_string());
+
+            if feature == gtfparse.exonid {
+                let tid = txnid.unwrap();
+                if !txnids.contains(&tid) {
+                    txnids.push(tid.clone());
                 }
 
-                let txnentry = txn_hash.entry(txnid.clone()).or_insert(Vec::new());
-                // Just to verify all exons are on the same strand.
-                if txn_strand.contains_key(&txnid) {
-                    assert_eq!(txn_strand.get(&txnid).unwrap(), fields[6]);
+                let txnentry = txn_hash.entry(tid.clone()).or_insert(Vec::new());
+                if txn_strand.contains_key(&tid) {
+                    assert_eq!(txn_strand.get(&tid).unwrap(), fields[6]);
                 } else {
-                    txn_strand.insert(txnid.clone(), fields[6].to_string());
+                    txn_strand.insert(tid.clone(), fields[6].to_string());
                 }
-                // Same for chromosome
-                if txn_chrom.contains_key(&txnid) {
-                    assert_eq!(txn_chrom.get(&txnid).unwrap(), fields[0]);
+                if txn_chrom.contains_key(&tid) {
+                    assert_eq!(txn_chrom.get(&tid).unwrap(), fields[0]);
                 } else {
-                    txn_chrom.insert(txnid, fields[0].to_string());
+                    txn_chrom.insert(tid.clone(), fields[0].to_string());
                 }
                 txnentry.push((start, end));
+            } else if feature == gtfparse.txnid {
+                // Store transcript-level coordinates as fallback.
+                if let Some(tid) = txnid {
+                    if !txn_strand.contains_key(&tid) {
+                        txn_strand.insert(tid.clone(), fields[6].to_string());
+                    }
+                    if !txn_chrom.contains_key(&tid) {
+                        txn_chrom.insert(tid.clone(), fields[0].to_string());
+                    }
+                    txn_transcript.insert(tid, (start, end));
+                }
+            }
+        }
+
+        // Also pull in transcript IDs that have no exon entries.
+        for tid in txn_transcript.keys() {
+            if !txnids.contains(tid) {
+                txnids.push(tid.clone());
             }
         }
 
         for txnid in txnids.into_iter() {
-            let txnentry = txn_hash.get_mut(&txnid).unwrap();
-            let length: u32 = txnentry.iter().map(|(s, e)| e - s).sum();
-            txnentry.sort_by(|a, b| a.0.cmp(&b.0));
-            let (starts, ends): (Vec<u32>, Vec<u32>) =
-                txnentry.iter().map(|(s, e)| (*s, *e)).unzip();
+            let has_exons = txn_hash.contains_key(&txnid);
+            let has_transcript = txn_transcript.contains_key(&txnid);
+
+            // Only keep entries that have a 'transcript' feature line.
+            // This mirrors Python behavior: the transcript must exist in the
+            // interval tree for exons to be returned by findOverlaps().
+            if has_exons && !has_transcript {
+                continue;
+            }
+
+            let (starts, ends) = if has_exons {
+                let txnentry = txn_hash.get_mut(&txnid).unwrap();
+                txnentry.sort_by(|a, b| a.0.cmp(&b.0));
+                txnentry.iter().map(|(s, e)| (*s, *e)).unzip()
+            } else {
+                // No exons, fall back to transcript-level coordinates.
+                let (s, e) = txn_transcript.get(&txnid).unwrap();
+                (vec![*s], vec![*e])
+            };
+            let length: u32 = starts.iter().zip(ends.iter()).map(|(s, e)| e - s).sum();
             let chrom = txn_chrom.get(&txnid).unwrap().to_string();
 
             if !chroms.contains(&&chrom.to_string()) {
@@ -145,13 +183,13 @@ pub fn read_gtffile(
                 );
             } else {
                 regions.push(Region {
-                    chrom: txn_chrom.get(&txnid).unwrap().to_string(), //chrom
-                    start: Revalue::V(starts),                         //start
-                    end: Revalue::V(ends),                             //end
-                    score: ".".to_string(),                            //score
-                    strand: txn_strand.get(&txnid).unwrap().to_string(), // strand
+                    chrom,
+                    start: Revalue::V(starts),
+                    end: Revalue::V(ends),
+                    score: ".".to_string(),
+                    strand: txn_strand.get(&txnid).unwrap().to_string(),
                     name: txnid.to_string(),
-                    regionlength: length, // regionlength
+                    regionlength: length,
                 });
                 entries += 1;
             }
@@ -167,7 +205,10 @@ pub fn read_gtffile(
 
             let fields: Vec<&str> = line.split('\t').collect();
             if fields[2].to_string() == gtfparse.txnid {
-                let start: u32 = fields[3].parse().unwrap();
+                let mut start: u32 = fields[3].parse().unwrap();
+                if start >= 1 {
+                    start -= 1;
+                }
                 let end: u32 = fields[4].parse().unwrap();
                 let mut entryname = fields[8]
                     .split(';')
@@ -504,7 +545,8 @@ pub fn bwintervals(
                     } else {
                         let vals: Vec<&f32> = (*a..*b)
                             .filter(|bp| {
-                                blacklist_index.is_none() || !blacklist_index.unwrap().contains(&region.chrom, *bp)
+                                blacklist_index.is_none()
+                                    || !blacklist_index.unwrap().contains(&region.chrom, *bp)
                             })
                             .filter_map(|bp| bwhash.get(&bp))
                             .collect();
@@ -537,7 +579,8 @@ pub fn bwintervals(
                         }
                         (*start..*end)
                             .filter(|bp| {
-                                blacklist_index.is_none() || !blacklist_index.unwrap().contains(&region.chrom, *bp)
+                                blacklist_index.is_none()
+                                    || !blacklist_index.unwrap().contains(&region.chrom, *bp)
                             })
                             .filter_map(|bp| bwhash.get(&bp))
                             .for_each(|v| vals.push(v));
@@ -757,7 +800,7 @@ pub fn write_matrix(
                         // as deepTools 3 encoded nan in matrix.
                         "nan".to_string()
                     } else {
-                        ((scale_regions.scale * x * 100.0).round() / 100.0).to_string()
+                        format!("{:.6}", scale_regions.scale * x)
                     }
                 })
                 .collect::<Vec<String>>()
@@ -822,7 +865,7 @@ pub fn write_matrix_values(
                 if x.is_nan() {
                     "nan".to_string()
                 } else {
-                    format!("{}", *x)
+                    format!("{:.6}", scale_regions.scale * x)
                 }
             })
             .collect::<Vec<_>>()

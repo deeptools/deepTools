@@ -1427,7 +1427,8 @@ fn refpoint_exonwalker(
             Some(i) => {
                 // anchor sits in an exon. Check if anchor + binsize is also in same exon.
                 if anchor + binsize > chromend {
-                    return (Bin::Conbin(0, 0), chromend);
+                    // Bin extends past chromosome end. Clamp to [anchor, chromend).
+                    return (Bin::Conbin(anchor, chromend), chromend);
                 }
                 if anchor + binsize <= exons[i].1 {
                     (Bin::Conbin(anchor, anchor + binsize), anchor + binsize)
@@ -1510,8 +1511,8 @@ fn refpoint_exonwalker(
             Some(i) => {
                 // Run a check to see if binsize > anchor.
                 if anchor < binsize {
-                    // We are at the start of the chromosome. We need to return a Conbin.
-                    return (Bin::Conbin(0, 0), 0);
+                    // We are at the start of the chromosome. Clamp upstream bin to [0, anchor).
+                    return (Bin::Conbin(0, anchor), 0);
                 }
                 // anchor sits in an exon. Check if anchor - binsize is also in same exon.
                 if anchor - binsize >= exons[i].0 {

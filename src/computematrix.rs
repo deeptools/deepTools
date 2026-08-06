@@ -433,7 +433,7 @@ fn matrix_dump(
                 filtered_regions.len()
             );
         }
-        let mut sortedix: Vec<usize>;
+        let sortedix: Vec<usize>;
         if sortregions == "no" {
             if verbose && (sortusing != "mean" || !sort_using_samples.is_empty()) {
                 println!(
