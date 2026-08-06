@@ -222,16 +222,20 @@ pub fn r_computematrix(
         .collect();
 
     // Merge regions and region sizes
-    for (reg, regsize) in region_data.into_iter() {
+    // Track which group (region file) each region belongs to, by index.
+    let mut group_of_region: Vec<usize> = Vec::with_capacity(cursor);
+    for (group_idx, (reg, regsize)) in region_data.into_iter().enumerate() {
         let n = reg.len();
         regions.extend(reg);
         regionsizes.insert(regsize.0.clone(), regsize.1);
 
         if n > 0 {
             regionslices.push((cursor, cursor + n - 1));
+            group_of_region.extend(std::iter::repeat(group_idx).take(n));
             cursor += n;
         }
     }
+
     // Define slop regions, which contain the actual 'bins' to query the bigwig files.
     let slopregions = pool.install(|| {
         regions
@@ -261,10 +265,9 @@ pub fn r_computematrix(
         sortusing,
         sort_using_samples,
         regions,
-        regionslices,
+        group_of_region,
         matrix,
         scale_regions,
-        regionsizes,
         ofile,
         outfilenamematrix,
         outfilesortedregions,
@@ -294,24 +297,86 @@ fn slop_region(
     region.get_anchor_bins(scale_regions, chromend)
 }
 
-#[allow(unused_mut)]
-#[allow(unused_assignments)]
+fn should_skip_row(row: &[f32], scale_regions: &Scalingregions) -> bool {
+    if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
+        return true;
+    }
+    if scale_regions.minthresh != 0.0
+        && !row.iter().any(|&x| x.is_nan())
+        && row.iter().any(|&x| x <= scale_regions.minthresh)
+    {
+        return true;
+    }
+    if scale_regions.maxthresh != 0.0
+        && !row.iter().any(|&x| x.is_nan())
+        && row.iter().any(|&x| x >= scale_regions.maxthresh)
+    {
+        return true;
+    }
+    false
+}
+
+fn recompute_regionsizes(
+    group_of_region: &[usize],
+    scale_regions: &Scalingregions,
+) -> (HashMap<String, u32>, Vec<(usize, usize)>) {
+    let mut filtered_regionsizes: HashMap<String, u32> = HashMap::new();
+    for label in &scale_regions.regionlabels {
+        filtered_regionsizes.insert(label.clone(), 0);
+    }
+    for &group_idx in group_of_region {
+        *filtered_regionsizes
+            .get_mut(&scale_regions.regionlabels[group_idx])
+            .unwrap() += 1;
+    }
+
+    // Build filtered regionslices in label order, matching the sorting logic expectations.
+    let mut slices: Vec<(usize, usize)> = Vec::new();
+    let mut cursor = 0usize;
+    for label in &scale_regions.regionlabels {
+        let count = *filtered_regionsizes.get(label).unwrap() as usize;
+        if count > 0 {
+            slices.push((cursor, cursor + count - 1));
+            cursor += count;
+        }
+    }
+
+    (filtered_regionsizes, slices)
+}
+
 fn matrix_dump(
     sortregions: &str,
     sortusing: &str,
     sort_using_samples: Vec<u32>,
     regions: Vec<Region>,
-    regionslices: Vec<(usize, usize)>,
+    group_of_region: Vec<usize>,
     matrix: Vec<Vec<f32>>,
     scale_regions: Scalingregions,
-    regionsizes: HashMap<String, u32>,
     ofile: &str,
     outfilenamematrix: Option<String>,
     outfilesortedregions: Option<String>,
     verbose: bool,
 ) {
-    // Takes a pre-computed matrix, resorts it if requested, and writes it to file.
-    // Resort the matrix, if this is requested.
+    // Filter rows first (before sorting/header generation) so group_boundaries are correct.
+    let keep_indices: Vec<usize> = (0..matrix.len())
+        .filter(|&i| !should_skip_row(&matrix[i], &scale_regions))
+        .collect();
+
+    if verbose {
+        println!(
+            "Filtering: {} regions -> {} regions",
+            regions.len(),
+            keep_indices.len()
+        );
+    }
+
+    let filtered_matrix: Vec<Vec<f32>> = keep_indices.iter().map(|&i| matrix[i].clone()).collect();
+    let filtered_regions: Vec<Region> = keep_indices.iter().map(|&i| regions[i].clone()).collect();
+    let filtered_group_of_region: Vec<usize> =
+        keep_indices.iter().map(|&i| group_of_region[i]).collect();
+    let (filtered_regionsizes, filtered_regionslices) =
+        recompute_regionsizes(&filtered_group_of_region, &scale_regions);
+
     if sortregions != "keep" {
         if verbose {
             println!(
@@ -319,12 +384,10 @@ fn matrix_dump(
                 sortregions, sortusing
             );
         }
-        // If sortusingsamples is set, we need a vector to subset the columns of interest
         let mut cols_of_interest: Vec<usize> = Vec::new();
         if !sort_using_samples.is_empty() {
             let cols_per_sample = scale_regions.cols_expected / scale_regions.bwfiles;
             for sample_ix in sort_using_samples.iter() {
-                // Note that sort_using_samples is assumed to be 1-index. Hence we need to subtract 1.
                 let start = (sample_ix - 1) * cols_per_sample as u32;
                 let end = start + cols_per_sample as u32;
                 cols_of_interest.extend(start as usize..end as usize);
@@ -333,8 +396,8 @@ fn matrix_dump(
         if verbose {
             println!(
                 "regionslices: {} slices for {} regions",
-                regionslices.len(),
-                regions.len()
+                filtered_regionslices.len(),
+                filtered_regions.len()
             );
         }
         let mut sortedix: Vec<usize>;
@@ -344,10 +407,10 @@ fn matrix_dump(
                     "sortRegions is 'no': sorting by genomic coordinates (chrom, start, end). sortUsing/sortUsingSamples are ignored."
                 );
             }
-            sortedix = regionslices
+            sortedix = filtered_regionslices
                 .iter()
                 .flat_map(|(start, end)| {
-                    let rslice = &regions[*start..*end + 1];
+                    let rslice = &filtered_regions[*start..*end + 1];
                     rslice
                         .iter()
                         .enumerate()
@@ -369,10 +432,10 @@ fn matrix_dump(
                     sort_using_samples
                 );
             }
-            sortedix = regionslices
+            sortedix = filtered_regionslices
                 .iter()
                 .flat_map(|(start, end)| {
-                    let rslice = &regions[*start..*end+1];
+                    let rslice = &filtered_regions[*start..*end+1];
                     let tix = rslice
                         .iter()
                         .enumerate()
@@ -392,10 +455,10 @@ fn matrix_dump(
                 })
                 .collect();
         } else {
-            sortedix = regionslices
+            sortedix = filtered_regionslices
                 .iter()
                 .flat_map(|(start, end)| {
-                    let rslice = &matrix[*start..*end+1];
+                    let rslice = &filtered_matrix[*start..*end+1];
                     let tix = rslice
                         .iter()
                         .enumerate()
@@ -405,7 +468,7 @@ fn matrix_dump(
                             } else {
                                 cols_of_interest
                                     .iter()
-                                    .filter_map(|&index| vals.get(index))  // `vec.get(index)` returns Option<&T>
+                                    .filter_map(|&index| vals.get(index))
                                     .collect()
                             };
                             let metric = match sortusing {
@@ -431,79 +494,88 @@ fn matrix_dump(
                 })
                 .collect();
         }
-        // assert sorted ix length == matrix length == regions length
         assert_eq!(
             sortedix.len(),
-            matrix.len(),
+            filtered_matrix.len(),
             "Length of sorted indices does not match matrix length: {} != {}",
             sortedix.len(),
-            matrix.len()
+            filtered_matrix.len()
         );
         assert_eq!(
             sortedix.len(),
-            regions.len(),
+            filtered_regions.len(),
             "Length of sorted indices does not match regions length: {} ! = {}",
             sortedix.len(),
-            regions.len()
+            filtered_regions.len()
         );
 
-        // Reorder matrix & regions
-        let sortedmatrix: Vec<Vec<f32>> = sortedix.iter().map(|ix| matrix[*ix].clone()).collect();
-        let sortedregions: Vec<Region> =
-            sortedix.into_iter().map(|ix| regions[ix].clone()).collect();
+        let sortedmatrix: Vec<Vec<f32>> = sortedix
+            .iter()
+            .map(|ix| filtered_matrix[*ix].clone())
+            .collect();
+        let sortedregions: Vec<Region> = sortedix
+            .into_iter()
+            .map(|ix| filtered_regions[ix].clone())
+            .collect();
         write_matrix(
-            header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
-            sortedmatrix.clone(),
+            header_matrix(
+                &scale_regions,
+                &filtered_regionsizes,
+                sortregions,
+                sortusing,
+            ),
+            &sortedmatrix,
             ofile,
-            sortedregions.clone(),
+            &sortedregions,
             &scale_regions,
         );
 
-        // outFileNameMatrix - write raw matrix tab file
         if let Some(ref matrix_file) = outfilenamematrix {
             crate::filehandler::write_matrix_values(
                 matrix_file,
                 &sortedmatrix,
                 &scale_regions,
-                &regionsizes,
+                &filtered_regionsizes,
             );
         }
 
-        // outFileSortedRegions - write sorted BED file
         if let Some(ref bed_file) = outfilesortedregions {
             crate::filehandler::write_sorted_regions_bed(
                 bed_file,
                 &sortedregions,
                 &scale_regions,
-                &regionsizes,
+                &filtered_regionsizes,
             );
         }
     } else {
         write_matrix(
-            header_matrix(&scale_regions, &regionsizes, sortregions, sortusing),
-            matrix.clone(),
+            header_matrix(
+                &scale_regions,
+                &filtered_regionsizes,
+                sortregions,
+                sortusing,
+            ),
+            &filtered_matrix,
             ofile,
-            regions.clone(),
+            &filtered_regions,
             &scale_regions,
         );
 
-        // outFileNameMatrix - write raw matrix tab file
         if let Some(ref matrix_file) = outfilenamematrix {
             crate::filehandler::write_matrix_values(
                 matrix_file,
-                &matrix,
+                &filtered_matrix,
                 &scale_regions,
-                &regionsizes,
+                &filtered_regionsizes,
             );
         }
 
-        // outFileSortedRegions - write regions BED file
         if let Some(ref bed_file) = outfilesortedregions {
             crate::filehandler::write_sorted_regions_bed(
                 bed_file,
-                &regions,
+                &filtered_regions,
                 &scale_regions,
-                &regionsizes,
+                &filtered_regionsizes,
             );
         }
     }

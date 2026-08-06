@@ -730,41 +730,17 @@ pub fn header_matrix(
 
 pub fn write_matrix(
     header: String,
-    mat: Vec<Vec<f32>>,
+    mat: &[Vec<f32>],
     ofile: &str,
-    regions: Vec<Region>,
+    regions: &[Region],
     scale_regions: &Scalingregions,
 ) {
     // Write out the matrix to a compressed file.
     let omat = File::create(ofile).unwrap();
     let mut encoder = GzEncoder::new(omat, Compression::default());
     encoder.write_all(header.as_bytes()).unwrap();
-    // Final check to make sure our regions and mat iter are of equal length.
     assert_eq!(regions.len(), mat.len());
-    for (region, row) in regions.into_iter().zip(mat.into_iter()) {
-        // Skipping rules.
-        // skip_zeros
-        if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
-            continue;
-        }
-        // min threshold (Python: coverage.min() <= minThreshold → skip)
-        // Python: if any element is NaN, coverage.min() returns NaN, NaN <= threshold is False → row passes
-        // Rust: NaN <= threshold is False, so NaN is ignored in .any(). To match Python, skip threshold
-        // check entirely if the row contains any NaN values.
-        if scale_regions.minthresh != 0.0
-            && !row.iter().any(|&x| x.is_nan())
-            && row.iter().any(|&x| x <= scale_regions.minthresh)
-        {
-            continue;
-        }
-        // max threshold (Python: if max(coverage) >= maxThreshold → skip)
-        // NaN matching: Python's np.min()/np.max() propagate NaN, so NaN comparisons are False. If row contains NaN, skip filtering.
-        if scale_regions.maxthresh != 0.0
-            && !row.iter().any(|&x| x.is_nan())
-            && row.iter().any(|&x| x >= scale_regions.maxthresh)
-        {
-            continue;
-        }
+    for (region, row) in regions.iter().zip(mat.iter()) {
         let mut writerow = format!(
             "{}\t{}\t{}\t{}\t{}\t{}\t",
             region.chrom,            // Chromosome
