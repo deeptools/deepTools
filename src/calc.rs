@@ -21,15 +21,15 @@ pub fn median(mut nvec: Vec<u32>) -> f32 {
 }
 
 pub fn mean_float(fvec: &[&f32]) -> f32 {
-    let mut sum = 0.0f32;
+    let mut sum = 0.0f64;
     let mut count = 0usize;
     for &&v in fvec {
         if v.is_finite() {
-            sum += v;
+            sum += v as f64;
             count += 1;
         }
     }
-    if count == 0 { 0.0 } else { sum / count as f32 }
+    if count == 0 { 0.0 } else { (sum / count as f64) as f32 }
 }
 
 pub fn median_float(fvec: &[&f32]) -> f32 {
