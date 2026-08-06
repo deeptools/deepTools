@@ -45,28 +45,28 @@ impl BlacklistIndex {
         }
     }
 
-    pub fn overlaps(&self, chrom: &str, start: u32, end: u32) -> bool {
-        // Returns true if any position in [start, end) falls within a blacklisted region.
-        let list = match self.chroms.get(chrom) {
-            Some(l) => l,
-            None => return false,
-        };
-        // Find the first blacklist entry with start >= start (or the one just before it)
-        match list.binary_search_by_key(&start, |&(s, _)| s) {
-            Ok(ix) => list[ix].1 > start,
-            Err(ix) => {
-                // Check the entry just before ix (its start < `start`), see if it extends past `start`
-                if ix > 0 && list[ix - 1].1 > start {
-                    return true;
-                }
-                // Check entries starting from ix onward, as long as their start < end
-                if ix < list.len() && list[ix].0 < end {
-                    return true;
-                }
-                false
-            }
-        }
-    }
+    // pub fn overlaps(&self, chrom: &str, start: u32, end: u32) -> bool {
+    //     // Returns true if any position in [start, end) falls within a blacklisted region.
+    //     let list = match self.chroms.get(chrom) {
+    //         Some(l) => l,
+    //         None => return false,
+    //     };
+    //     // Find the first blacklist entry with start >= start (or the one just before it)
+    //     match list.binary_search_by_key(&start, |&(s, _)| s) {
+    //         Ok(ix) => list[ix].1 > start,
+    //         Err(ix) => {
+    //             // Check the entry just before ix (its start < `start`), see if it extends past `start`
+    //             if ix > 0 && list[ix - 1].1 > start {
+    //                 return true;
+    //             }
+    //             // Check entries starting from ix onward, as long as their start < end
+    //             if ix < list.len() && list[ix].0 < end {
+    //                 return true;
+    //             }
+    //             false
+    //         }
+    //     }
+    // }
 }
 
 #[derive(Clone)]
