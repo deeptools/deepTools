@@ -6,38 +6,37 @@ import os.path
 from os import unlink
 import tempfile
 
-ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
-BAM = ROOT + "test1.bam"
-CRAM = ROOT + "test1.cram"
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_mbs/"
+BAM = ROOT + "test1"
 GTF = ROOT + "test.gtf"
-BAMA = ROOT + "testA.bam"
-BAMB = ROOT + "testB.bam"
+BAMA = ROOT + "testA"
+BAMB = ROOT + "testB"
+
 
 
 def test_multiBamSummary_gtf():
     _, outfile = tempfile.mkstemp(suffix=".npz")
-    #for fname in [BAM, CRAM]:
-    for fname in [BAM]:
-        args = 'BED-file --BED {0} -b {1} {1} -o {2}'.format(GTF, fname, outfile).split()
+    for fname in ['.bam', '.cram']:
+        fname = BAM + fname
+        args = f"BED-file --BED {GTF} -b {fname} {fname} -o {outfile}".split()
         mbs.main(args)
         resp = np.load(outfile)
         matrix = resp['matrix']
 
         nt.assert_allclose(matrix, np.array([[144.0, 144.0],
-                                             [143.0, 143.0]]))
-        unlink(outfile)
+                                                [143.0, 143.0]]))
 
 
 def test_multiBamSummary_metagene():
     _, outfile = tempfile.mkstemp(suffix=".npz")
-    #for fname in [BAM, CRAM]:
-    for fname in [BAM]:
-        args = 'BED-file --BED {0} -b {1} {1} -o {2} --metagene'.format(GTF, fname, outfile).split()
+    for fname in ['.bam', '.cram']:
+        fname = BAM + fname
+        args = f'BED-file --BED {GTF} -b {fname} {fname} -o {outfile} --metagene'.split()
         mbs.main(args)
         resp = np.load(outfile)
         matrix = resp['matrix']
 
-        nt.assert_allclose(matrix, np.array([[24.0, 24.0],
+        nt.assert_allclose(matrix, np.array([[25.0, 25.0],
                                              [31.0, 31.0]]))
         unlink(outfile)
 
@@ -45,10 +44,11 @@ def test_multiBamSummary_metagene():
 def test_multiBamSummary_scalingFactors():
     _, outfile = tempfile.mkstemp(suffix=".txt")
     _, outfile2 = tempfile.mkstemp(suffix=".npz")
-    args = 'bins --binSize 50 -b {} {} --scalingFactors {} -o {} --verbose'.format(BAMA, BAMB, outfile, outfile2).split()
-    mbs.main(args)
-    resp = open(outfile).read().strip().split('\n')
-    assert resp == ["Sample\tscalingFactor", "testA.bam\t1.1892071", "testB.bam\t0.8408964"]
-    nt.assert_equal(resp, ["Sample\tscalingFactor", "testA.bam\t1.1892071", "testB.bam\t0.8408964"])
-    unlink(outfile)
-    unlink(outfile2)
+    for fname in ['.bam', '.cram']:
+        bama = BAMA + fname
+        bamb = BAMB + fname
+        args = f'bins --binSize 50 -b {bama} {bamb} --scalingFactors {outfile} -o {outfile2} --verbose'.split()
+        mbs.main(args)
+        resp = open(outfile).read().strip().split('\n')
+        assert resp == ["Sample\tscalingFactor", f"testA{fname}\t1.1892071", f"testB{fname}\t0.8408964"]
+        nt.assert_equal(resp, ["Sample\tscalingFactor", f"testA{fname}\t1.1892071", f"testB{fname}\t0.8408964"])
