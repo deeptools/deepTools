@@ -4,6 +4,7 @@ use crate::filehandler::{
     bwintervals, chrombounds_from_bw, header_matrix, is_bed_or_gtf, read_bedfile, read_gtffile,
     write_matrix,
 };
+use crate::filtering::BlacklistIndex;
 use itertools::Itertools;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
@@ -11,6 +12,7 @@ use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::Arc;
 
 #[pyfunction]
 pub fn r_computematrix(
@@ -35,6 +37,7 @@ pub fn r_computematrix(
     skipzeros: bool,       // skip regions with all zeros. Default is false.
     minthresh: f32,        // minimum threshold to keep a region. If not set it will equal 0.0
     maxthresh: f32,        // maximum threshold to keep a region. if not set it will equal 0.0
+    blacklist: &str,       // path to blacklist BED file, or "None"
     averagetypebins: &str, // operation to summarize values over bins. Default is mean.
     sortregions: &str, // either ascend, descend or keep. Default is keep (and ignores sortusing).
     sortusing: &str, // metric to sort on. Either mean median max min sum region_length. Default is mean.
@@ -123,6 +126,23 @@ pub fn r_computematrix(
             "--nanAfterEnd is only valid in reference-point mode."
         )
     }
+
+    // If there is a blacklist, read it and build an index.
+    let blacklist_index: Option<Arc<BlacklistIndex>> = if blacklist != "none" {
+        let isbed = is_bed_or_gtf(blacklist);
+        match isbed.as_str() {
+            "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
+            "bed" => {
+                let (bls, _) =
+                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                let idx = BlacklistIndex::from_regions(&bls);
+                Some(Arc::new(idx))
+            }
+            _ => panic!("Error: Cannot determine filetype of blacklist file."),
+        }
+    } else {
+        None
+    };
 
     // Get the 'basepaths' of the bed files to use as labels later on
     let mut regionlabels: Vec<String> = Vec::new();
@@ -249,7 +269,15 @@ pub fn r_computematrix(
     let matrix: Vec<Vec<f32>> = pool.install(|| {
         bw_files
             .par_iter()
-            .map(|i| bwintervals(&i, &regions, &slopregions, &scale_regions))
+            .map(|i| {
+                bwintervals(
+                    &i,
+                    &regions,
+                    &slopregions,
+                    &scale_regions,
+                    blacklist_index.as_deref(),
+                )
+            })
             .reduce(
                 || vec![vec![]; regions.len()],
                 |mut acc, vec_of_vecs| {
@@ -298,6 +326,11 @@ fn slop_region(
 }
 
 fn should_skip_row(row: &[f32], scale_regions: &Scalingregions) -> bool {
+    // Rows with all nan values are skipped.
+    if row.iter().all(|&x| x.is_nan()) {
+        return true;
+    }
+
     if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
         return true;
     }

@@ -445,6 +445,7 @@ pub fn bwintervals(
     regions: &Vec<Region>,
     slopregions: &Vec<Vec<Bin>>,
     scale_regions: &Scalingregions,
+    blacklist_index: Option<&crate::filtering::BlacklistIndex>,
 ) -> Vec<Vec<f32>> {
     // For a given bw file, a vector of slopregions (Bin enum))
     // return a vector with for every region a vector of f64.
@@ -495,16 +496,18 @@ pub fn bwintervals(
             match bin {
                 Bin::Conbin(a, b) => {
                     if a == b && *b == 0 {
-                        // This bin is invalid/outside chromosome bounds
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
                         } else {
                             bwval.push(std::f32::NAN);
                         }
                     } else {
-                        // Get values from the hashmap
-                        let vals: Vec<&f32> = (*a..*b).filter_map(|bp| bwhash.get(&bp)).collect();
-                        // Handle case where no valid values exist
+                        let vals: Vec<&f32> = (*a..*b)
+                            .filter(|bp| {
+                                blacklist_index.is_none() || !blacklist_index.unwrap().contains(&region.chrom, *bp)
+                            })
+                            .filter_map(|bp| bwhash.get(&bp))
+                            .collect();
                         if vals.is_empty() {
                             if scale_regions.missingdata_as_zero {
                                 bwval.push(0.0);
@@ -530,17 +533,14 @@ pub fn bwintervals(
 
                     for (start, end) in pairs {
                         if start == end && *end == 0 {
-                            // This bin is invalid/outside chromosome bounds
-                            if scale_regions.missingdata_as_zero {
-                                vals.push(&0.0);
-                            } else {
-                                vals.push(&std::f32::NAN);
-                            }
-                        } else {
-                            (*start..*end)
-                                .filter_map(|bp| bwhash.get(&bp))
-                                .for_each(|v| vals.push(v));
+                            continue;
                         }
+                        (*start..*end)
+                            .filter(|bp| {
+                                blacklist_index.is_none() || !blacklist_index.unwrap().contains(&region.chrom, *bp)
+                            })
+                            .filter_map(|bp| bwhash.get(&bp))
+                            .for_each(|v| vals.push(v));
                     }
 
                     // Handle case where no valid values exist
