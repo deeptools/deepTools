@@ -1499,7 +1499,7 @@ fn refpoint_exonwalker(
             None => {
                 // our anchor doesn't sit in exons. We just return the anchor + binsize as Bin
                 if anchor + binsize > chromend {
-                    (Bin::Conbin(0, 0), chromend)
+                    (Bin::Conbin(anchor, chromend), chromend)
                 } else {
                     (Bin::Conbin(anchor, anchor + binsize), anchor + binsize)
                 }
@@ -1585,7 +1585,7 @@ fn refpoint_exonwalker(
             None => {
                 // our anchor doesn't sit in exons. We just return the anchor - binsize as Bin
                 if anchor < binsize {
-                    (Bin::Conbin(0, 0), 0)
+                    (Bin::Conbin(0, anchor), 0)
                 } else {
                     (Bin::Conbin(anchor - binsize, anchor), anchor - binsize)
                 }
