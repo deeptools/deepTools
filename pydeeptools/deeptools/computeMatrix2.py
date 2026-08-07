@@ -136,7 +136,7 @@ def computeMatrixOutputArgs(args=None):
         "generate other heatmaps keeping the sorting of the "
         "first heatmap. Example: Heatmap1sortedRegions.bed",
         metavar="BED file",
-        type=argparse.FileType("w"),
+        type=writableFile,
     )
     return parser
 
@@ -462,12 +462,7 @@ def main(args=None):
     args = process_args(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    # Handle outFileSortedRegions: argparse.FileType("w") opens a file handle,
-    # but Rust handles file writing itself, so pass the filename and close the handle.
-    sorted_regions_file = None
-    if args.outFileSortedRegions is not None:
-        sorted_regions_file = args.outFileSortedRegions.name
-        args.outFileSortedRegions.close()
+    sorted_regions_file = args.outFileSortedRegions
 
     r_computematrix(
         args.command,
