@@ -153,6 +153,12 @@ pub fn r_mbams(
         }
     }
 
+    regions.sort_by(|a, b| {
+        a.chrom.cmp(&b.chrom)
+            .then_with(|| a.start.start_key().cmp(&b.start.start_key()))
+            .then_with(|| a.end.end_key().cmp(&b.end.end_key()))
+    });
+
     let filters = Alignmentfilters::new(
         blacklistregions,
         Some(minmappingquality),
