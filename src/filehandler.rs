@@ -662,16 +662,15 @@ pub fn header_matrix(
     // ref point can be empty (for scale_regions, for example).
     // To keep compatibility with deepTools 3 it should be written as null
     let refpointstring = (0..scale_regions.bwfiles)
-        .map(|_| scale_regions.referencepoint.clone())
-        .collect::<Vec<_>>()
-        .into_iter()
-        .join("\",\"");
-
-    if refpointstring.is_empty() {
-        headstr.push_str(&format!("\"ref point\":[null],"));
-    } else {
-        headstr.push_str(&format!("\"ref point\":[\"{}\"],", refpointstring));
-    }
+        .map(|_| {
+            if scale_regions.referencepoint.is_empty() {
+                "null".to_string()
+            } else {
+                format!("\"{}\"", scale_regions.referencepoint)
+            }
+        })
+        .join(",");
+    headstr.push_str(&format!("\"ref point\":[{}],", refpointstring));
 
     headstr.push_str(&format!("\"verbose\":{},", scale_regions.verbose));
     headstr.push_str(&format!("\"bin avg type\":\"{}\",", scale_regions.avgtype));
@@ -820,7 +819,7 @@ pub fn write_matrix_values(
     use std::io::Write;
     let mut fh = File::create(file_name).unwrap();
 
-    // Header line 1: group labels with region counts (this was already correct)
+    // Header line 1: group labels with region counts
     let info: Vec<String> = scale_regions
         .regionlabels
         .iter()
@@ -829,7 +828,7 @@ pub fn write_matrix_values(
     fh.write_all(format!("#{}\n", info.join("\t")).as_bytes())
         .unwrap();
 
-    // Header line 2: region dimension parameters (this was already correct)
+    // Header line 2: region dimension parameters
     let header2 = format!(
         "#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n",
         scale_regions.downstream,
@@ -841,7 +840,7 @@ pub fn write_matrix_values(
     );
     fh.write_all(header2.as_bytes()).unwrap();
 
-    // Header line 3: sample labels repeated per column (this was already correct)
+    // Header line 3: sample labels repeated per column
     let cols_per_sample = scale_regions.cols_expected / scale_regions.bwfiles;
     let sample_info: Vec<String> = scale_regions
         .bwlabels
@@ -852,7 +851,7 @@ pub fn write_matrix_values(
         .unwrap();
     fh.flush().unwrap();
 
-    // Reopen in append mode and write matrix data (matches Python np.savetxt fmt="%.4g")
+    // Reopen in append mode and write matrix data
     let mut fh = std::fs::OpenOptions::new()
         .create(false)
         .append(true)
