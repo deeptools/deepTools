@@ -326,11 +326,6 @@ fn slop_region(
 }
 
 fn should_skip_row(row: &[f32], scale_regions: &Scalingregions) -> bool {
-    // Rows with all nan values are skipped.
-    if row.iter().all(|&x| x.is_nan()) {
-        return true;
-    }
-
     if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
         return true;
     }

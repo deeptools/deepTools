@@ -652,7 +652,9 @@ impl Region {
                 scale_regions.regionbodylength != 0,
                 "scale-regions mode, but regionbodylength is 0."
             );
-            if self.regionlength - (scale_regions.unscaled5prime + scale_regions.unscaled3prime)
+            if self
+                .regionlength
+                .saturating_sub(scale_regions.unscaled5prime + scale_regions.unscaled3prime)
                 < scale_regions.binsize
             {
                 println!(
