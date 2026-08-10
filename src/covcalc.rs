@@ -1025,29 +1025,21 @@ impl Region {
                         }
                         let bodystart = *start + scale_regions.unscaled5prime;
                         let bodyend = *end - scale_regions.unscaled3prime;
-
-                        // Get the bins over the body length. These need to be scaled, so similar to deeptools < 4, linspace is used.
                         let neededbins =
                             (scale_regions.regionbodylength / scale_regions.binsize) as usize;
-                        // There's multiple options here:
-                        // transcriptlength >= regionbodylength -> linspace
-                        // regionbodylength / binsize > transcriptlength <= regionbodylength -> 1 >= binsize > binsize.
-                        // transcriptlength <= regionbodylength / binsize -> index repetitions with binsize of one.
-                        let scaledbinsize = min(
-                            max((bodyend - bodystart) / neededbins as u32, 1),
-                            scale_regions.binsize,
-                        );
-                        innerbins.extend(
-                            Array1::linspace(
-                                bodystart as f32,
-                                (bodyend - scaledbinsize) as f32,
-                                neededbins,
-                            )
-                            .mapv(|x| x.floor() as u32)
-                            .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
-                            .into_iter()
-                            .collect::<Vec<_>>(),
-                        );
+                        let bodylength = (bodyend - bodystart) as f64;
+                        let step = bodylength / neededbins as f64;
+
+                        let mut edges: Vec<u32> = (0..neededbins)
+                            .map(|i| bodystart + (i as f64 * step).floor() as u32)
+                            .collect();
+                        edges.push(bodyend); // include exact endpoint
+
+                        for i in 0..neededbins {
+                            let s = edges[i];
+                            let e = std::cmp::max(edges[i + 1], s + 1);
+                            innerbins.push(Bin::Conbin(s, e));
+                        }
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
                         if scale_regions.unscaled5prime > 0 {
@@ -1067,10 +1059,10 @@ impl Region {
                             .collect();
                         let mut un5bins: Vec<Bin> = Vec::new();
                         let mut un3bins: Vec<Bin> = Vec::new();
+
                         if scale_regions.unscaled5prime > 0 {
                             let mut walked_bps: u32 = 0;
                             let mut lastanchor: u32 = start[0];
-
                             while walked_bps < scale_regions.unscaled5prime {
                                 let (bin, retanch) = refpoint_exonwalker(
                                     &exons,
@@ -1088,7 +1080,6 @@ impl Region {
                         if scale_regions.unscaled3prime > 0 {
                             let mut walked_bps: u32 = 0;
                             let mut lastanchor: u32 = *end.last().unwrap();
-
                             while walked_bps < scale_regions.unscaled3prime {
                                 let (bin, retanch) = refpoint_exonwalker(
                                     &exons,
@@ -1105,79 +1096,28 @@ impl Region {
                         }
                         un3bins.reverse();
 
-                        let bodystart: u32;
-                        let bodyend: u32;
-                        if scale_regions.unscaled5prime > 0 {
-                            bodystart = un5bins.last().unwrap().get_end() - 1;
-                        } else {
-                            bodystart = *start.first().unwrap();
-                        }
-                        if scale_regions.unscaled3prime > 0 {
-                            bodyend = un3bins.first().unwrap().get_start();
-                        } else {
-                            bodyend = *end.last().unwrap();
-                        }
-                        let truebodylength = self.regionlength
-                            - scale_regions.unscaled5prime
-                            - scale_regions.unscaled3prime;
                         let neededbins =
                             (scale_regions.regionbodylength / scale_regions.binsize) as usize;
-                        let scaledbinsize = min(
-                            max(truebodylength / neededbins as u32, 1),
-                            scale_regions.binsize,
+                        let body_exons = chop_exons(
+                            &exons,
+                            scale_regions.unscaled5prime,
+                            scale_regions.unscaled3prime,
                         );
-                        // Things are a bit tricky now, as we can do a linspace over the region, but we don't have a notion of the exons.
-                        // I think easiest is to just pull a hashmap over the entire region, get linspace from hashmap to vec, and be done with it.
-                        // technically we fetch a bunch of regions we don't need, but this operation is not too expensive.
+                        let truebodylength: u32 = body_exons.iter().map(|(s, e)| e - s).sum();
 
-                        let mut binmap: HashMap<u32, Bin> = HashMap::new();
-                        let mut lastanchor: u32 = bodystart;
+                        let step = truebodylength as f64 / neededbins as f64;
+                        let mut edges: Vec<u32> = (0..neededbins)
+                            .map(|i| (i as f64 * step).floor() as u32)
+                            .collect();
+                        edges.push(truebodylength);
 
-                        for ix in 0..((truebodylength / scaledbinsize) + 1) {
-                            let (bin, anchor) = refpoint_exonwalker(
-                                &exons,
-                                lastanchor,
-                                scaledbinsize,
-                                chromend,
-                                scale_regions.nan_after_end,
-                                true,
-                            );
-                            lastanchor = anchor;
-                            match bin {
-                                Bin::Conbin(start, end) => {
-                                    if end > bodyend {
-                                        binmap.insert(ix, Bin::Conbin(start, bodyend));
-                                    } else {
-                                        binmap.insert(ix, Bin::Conbin(start, end));
-                                    }
-                                }
-                                Bin::Catbin(bins) => {
-                                    if bins.last().unwrap().1 > bodyend {
-                                        let mut newbins: Vec<(u32, u32)> = Vec::new();
-                                        for (s, e) in bins.iter() {
-                                            if *e > bodyend {
-                                                newbins.push((*s, bodyend));
-                                            } else {
-                                                newbins.push((*s, *e));
-                                            }
-                                        }
-                                        binmap.insert(ix, Bin::Catbin(newbins));
-                                    } else {
-                                        binmap.insert(ix, Bin::Catbin(bins));
-                                    }
-                                }
-                            }
-                        }
-
-                        let innerbins = Array1::linspace(
-                            0 as f32,
-                            ((truebodylength) / scaledbinsize) as f32,
-                            neededbins,
-                        )
-                        .mapv(|x| x.floor() as u32)
-                        .map(|x| binmap.get(&x).unwrap().clone())
-                        .into_iter()
-                        .collect::<Vec<Bin>>();
+                        let innerbins: Vec<Bin> = (0..neededbins)
+                            .map(|i| {
+                                let rel_start = edges[i];
+                                let rel_end = std::cmp::max(edges[i + 1], rel_start + 1);
+                                exon_relative_bin(&body_exons, rel_start, rel_end)
+                            })
+                            .collect();
 
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
@@ -1228,28 +1168,21 @@ impl Region {
                         let bodystart = *start + scale_regions.unscaled3prime;
                         let bodyend = *end - scale_regions.unscaled5prime;
 
-                        // Get the bins over the body length. These need to be scaled, so similar to deeptools < 4, linspace is used.
                         let neededbins =
                             (scale_regions.regionbodylength / scale_regions.binsize) as usize;
-                        // There's multiple options here:
-                        // transcriptlength >= regionbodylength -> linspace
-                        // regionbodylength / binsize > transcriptlength <= regionbodylength -> 1 >= binsize > binsize.
-                        // transcriptlength <= regionbodylength / binsize -> index repetitions with binsize of one.
-                        let scaledbinsize = min(
-                            max((bodyend - bodystart) / neededbins as u32, 1),
-                            scale_regions.binsize,
-                        );
-                        innerbins.extend(
-                            Array1::linspace(
-                                bodystart as f32,
-                                (bodyend - scaledbinsize) as f32,
-                                neededbins,
-                            )
-                            .mapv(|x| x.floor() as u32)
-                            .map(|x| Bin::Conbin(*x, *x + scaledbinsize))
-                            .into_iter()
-                            .collect::<Vec<_>>(),
-                        );
+                        let bodylength = (bodyend - bodystart) as f64;
+                        let step = bodylength / neededbins as f64;
+
+                        let mut edges: Vec<u32> = (0..neededbins)
+                            .map(|i| bodystart + (i as f64 * step).floor() as u32)
+                            .collect();
+                        edges.push(bodyend);
+
+                        for i in 0..neededbins {
+                            let s = edges[i];
+                            let e = std::cmp::max(edges[i + 1], s + 1);
+                            innerbins.push(Bin::Conbin(s, e));
+                        }
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
                         if scale_regions.unscaled3prime > 0 {
@@ -1269,10 +1202,10 @@ impl Region {
                             .collect();
                         let mut un5bins: Vec<Bin> = Vec::new();
                         let mut un3bins: Vec<Bin> = Vec::new();
+
                         if scale_regions.unscaled5prime > 0 {
                             let mut walked_bps: u32 = 0;
                             let mut lastanchor: u32 = *end.last().unwrap();
-
                             while walked_bps < scale_regions.unscaled5prime {
                                 let (bin, retanch) = refpoint_exonwalker(
                                     &exons,
@@ -1291,7 +1224,6 @@ impl Region {
                         if scale_regions.unscaled3prime > 0 {
                             let mut walked_bps: u32 = 0;
                             let mut lastanchor: u32 = start[0];
-
                             while walked_bps < scale_regions.unscaled3prime {
                                 let (bin, retanch) = refpoint_exonwalker(
                                     &exons,
@@ -1307,79 +1239,28 @@ impl Region {
                             }
                         }
 
-                        let bodystart: u32;
-                        let bodyend: u32;
-                        if scale_regions.unscaled5prime > 0 {
-                            bodyend = un5bins.first().unwrap().get_start();
-                        } else {
-                            bodyend = *start.first().unwrap();
-                        }
-                        if scale_regions.unscaled3prime > 0 {
-                            bodystart = un3bins.last().unwrap().get_end() - 1;
-                        } else {
-                            bodystart = *end.last().unwrap();
-                        }
-                        let truebodylength = self.regionlength
-                            - scale_regions.unscaled5prime
-                            - scale_regions.unscaled3prime;
                         let neededbins =
                             (scale_regions.regionbodylength / scale_regions.binsize) as usize;
-                        let scaledbinsize = min(
-                            max(truebodylength / neededbins as u32, 1),
-                            scale_regions.binsize,
+                        let body_exons = chop_exons(
+                            &exons,
+                            scale_regions.unscaled3prime,
+                            scale_regions.unscaled5prime,
                         );
-                        // Things are a bit tricky now, as we can do a linspace over the region, but we don't have a notion of the exons.
-                        // I think easiest is to just pull a hashmap over the entire region, get linspace from hashmap to vec, and be done with it.
-                        // technically we fetch a bunch of regions we don't need, but this operation is not too expensive.
+                        let truebodylength: u32 = body_exons.iter().map(|(s, e)| e - s).sum();
 
-                        let mut binmap: HashMap<u32, Bin> = HashMap::new();
-                        let mut lastanchor: u32 = bodystart;
+                        let step = truebodylength as f64 / neededbins as f64;
+                        let mut edges: Vec<u32> = (0..neededbins)
+                            .map(|i| (i as f64 * step).floor() as u32)
+                            .collect();
+                        edges.push(truebodylength);
 
-                        for ix in 0..((truebodylength / scaledbinsize) + 1) {
-                            let (bin, anchor) = refpoint_exonwalker(
-                                &exons,
-                                lastanchor,
-                                scaledbinsize,
-                                chromend,
-                                scale_regions.nan_after_end,
-                                true,
-                            );
-                            lastanchor = anchor;
-                            match bin {
-                                Bin::Conbin(start, end) => {
-                                    if end > bodyend {
-                                        binmap.insert(ix, Bin::Conbin(start, bodyend));
-                                    } else {
-                                        binmap.insert(ix, Bin::Conbin(start, end));
-                                    }
-                                }
-                                Bin::Catbin(bins) => {
-                                    if bins.last().unwrap().1 > bodyend {
-                                        let mut newbins: Vec<(u32, u32)> = Vec::new();
-                                        for (s, e) in bins.iter() {
-                                            if *e > bodyend {
-                                                newbins.push((*s, bodyend));
-                                            } else {
-                                                newbins.push((*s, *e));
-                                            }
-                                        }
-                                        binmap.insert(ix, Bin::Catbin(newbins));
-                                    } else {
-                                        binmap.insert(ix, Bin::Catbin(bins));
-                                    }
-                                }
-                            }
-                        }
-
-                        let innerbins = Array1::linspace(
-                            0 as f32,
-                            ((truebodylength) / scaledbinsize) as f32,
-                            neededbins,
-                        )
-                        .mapv(|x| x.floor() as u32)
-                        .map(|x| binmap.get(&x).unwrap().clone())
-                        .into_iter()
-                        .collect::<Vec<Bin>>();
+                        let innerbins: Vec<Bin> = (0..neededbins)
+                            .map(|i| {
+                                let rel_start = edges[i];
+                                let rel_end = std::cmp::max(edges[i + 1], rel_start + 1);
+                                exon_relative_bin(&body_exons, rel_start, rel_end)
+                            })
+                            .collect();
 
                         // Combine the vectors and return
                         let mut combined_bins = Vec::new();
@@ -1625,6 +1506,64 @@ pub fn region_divider(regs: &Vec<Region>) -> Vec<Vec<Region>> {
         blocks.push(tempregionvec.clone());
     }
     blocks
+}
+
+fn chop_exons(exons: &Vec<(u32, u32)>, mut left: u32, mut right: u32) -> Vec<(u32, u32)> {
+    let mut ex: Vec<(u32, u32)> = exons.clone();
+
+    while !ex.is_empty() && left > 0 {
+        let (s, e) = ex[0];
+        let width = e - s;
+        if width <= left {
+            ex.remove(0);
+            left -= width;
+        } else {
+            ex[0] = (s + left, e);
+            left = 0;
+        }
+    }
+
+    while !ex.is_empty() && right > 0 {
+        let (s, e) = *ex.last().unwrap();
+        let width = e - s;
+        if width <= right {
+            ex.pop();
+            right -= width;
+        } else {
+            let n = ex.len();
+            ex[n - 1] = (s, e - right);
+            right = 0;
+        }
+    }
+
+    ex
+}
+
+fn exon_relative_bin(body_exons: &Vec<(u32, u32)>, rel_start: u32, rel_end: u32) -> Bin {
+    let mut segs: Vec<(u32, u32)> = Vec::new();
+    let mut cum: u32 = 0;
+
+    for &(es, ee) in body_exons.iter() {
+        let exon_len = ee - es;
+        let next_cum = cum + exon_len;
+
+        let seg_rel_start = rel_start.max(cum);
+        let seg_rel_end = rel_end.min(next_cum);
+        if seg_rel_start < seg_rel_end {
+            segs.push((es + (seg_rel_start - cum), es + (seg_rel_end - cum)));
+        }
+
+        cum = next_cum;
+        if cum >= rel_end {
+            break;
+        }
+    }
+
+    if segs.len() == 1 {
+        Bin::Conbin(segs[0].0, segs[0].1)
+    } else {
+        Bin::Catbin(segs)
+    }
 }
 
 #[derive(Debug)]
