@@ -9,12 +9,13 @@ import tempfile
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_mbs/"
 BAM = ROOT + "test1"
 GTF = ROOT + "test.gtf"
+BED = ROOT + "test.bed"
 BAMA = ROOT + "testA"
 BAMB = ROOT + "testB"
 
 
 
-def test_multiBamSummary_gtf():
+def test_multiBamSummary_bedmode_gtf():
     _, outfile = tempfile.mkstemp(suffix=".npz")
     for fname in ['.bam', '.cram']:
         fname = BAM + fname
@@ -23,8 +24,37 @@ def test_multiBamSummary_gtf():
         resp = np.load(outfile)
         matrix = resp['matrix']
 
-        nt.assert_allclose(matrix, np.array([[144.0, 144.0],
-                                                [143.0, 143.0]]))
+        nt.assert_allclose(matrix, np.array([[144.0, 144.0],[143.0, 143.0]]))
+
+def test_multiBamSummary_bedmode_bed():
+    _, outfile = tempfile.mkstemp(suffix=".npz")
+    for fname in ['.bam', '.cram']:
+        fname = BAM + fname
+        args = f"BED-file --BED {BED} -b {fname} {fname} -o {outfile}".split()
+        mbs.main(args)
+        resp = np.load(outfile)
+        matrix = resp['matrix']
+
+        nt.assert_allclose(matrix,
+            np.array(
+                [[1.0, 1.0], [144.0, 144.0], [144.0, 144.0], [6.0, 6.0], [143.0, 143.0], [22.0, 22.0], [25.0, 25.0], [1.0, 1.0], [0.0, 0.0]]
+            )
+        )
+
+def test_multiBamSummary_bedmode_multibed():
+    _, outfile = tempfile.mkstemp(suffix=".npz")
+    for fname in ['.bam', '.cram']:
+        fname = BAM + fname
+        args = f"BED-file --BED {BED} {GTF} {BED} -b {fname} {fname} -o {outfile}".split()
+        mbs.main(args)
+        resp = np.load(outfile)
+        matrix = resp['matrix']
+
+        nt.assert_allclose(matrix,
+            np.array(
+                [[144.0, 144.0], [1.0, 1.0], [1.0, 1.0], [144.0, 144.0], [144.0, 144.0], [144.0, 144.0], [144.0, 144.0], [143.0, 143.0], [6.0, 6.0], [6.0, 6.0], [143.0, 143.0], [143.0, 143.0], [22.0, 22.0], [22.0, 22.0], [25.0, 25.0], [25.0, 25.0], [1.0, 1.0], [1.0, 1.0], [0.0, 0.0], [0.0, 0.0]]
+            )
+        )
 
 
 def test_multiBamSummary_metagene():
