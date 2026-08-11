@@ -499,19 +499,31 @@ fn matrix_dump(
                                     .filter_map(|&index| vals.get(index))
                                     .collect()
                             };
-                            let metric = match sortusing {
-                                "mean" => mean_float(&subset),
-                                "median" => median_float(&subset),
-                                "max" => max_float(&subset),
-                                "min" => min_float(&subset),
-                                "sum" => sum_float(&subset),
-                                _ => panic!("Sortusing should be either mean, median, max, min, sum or region_length. Not {}", sortusing),
+                            let all_missing = subset.iter().all(|v| !v.is_finite());
+                            let metric = if all_missing {
+                                f32::NAN
+                            } else {
+                                match sortusing {
+                                    "mean" => mean_float(&subset),
+                                    "median" => median_float(&subset),
+                                    "max" => max_float(&subset),
+                                    "min" => min_float(&subset),
+                                    "sum" => sum_float(&subset),
+                                    _ => panic!("Sortusing should be either mean, median, max, min, sum or region_length. Not {}", sortusing),
+                                }
                             };
                             (ix + *start, metric)
                         })
                         .collect::<Vec<_>>()
                         .iter()
-                        .sorted_by(|ix, metric| ix.1.partial_cmp(&metric.1).unwrap())
+                        .sorted_by(|a, b| match (a.1.is_nan(), b.1.is_nan()) {
+                            (true, true) => std::cmp::Ordering::Equal,
+                            // NaN metrics (all-missing rows) sort last in ascending order,
+                            // matching numpy's argsort behavior for nan-containing arrays.
+                            (true, false) => std::cmp::Ordering::Greater,
+                            (false, true) => std::cmp::Ordering::Less,
+                            (false, false) => a.1.partial_cmp(&b.1).unwrap(),
+                        })
                         .map(|(ix, _)| *ix)
                         .collect::<Vec<usize>>();
                     match sortregions {
