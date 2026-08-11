@@ -1033,7 +1033,7 @@ impl Region {
                         let step = bodylength / neededbins as f64;
 
                         let mut edges: Vec<u32> = (0..neededbins)
-                            .map(|i| bodystart + (i as f64 * step).floor() as u32)
+                            .map(|i| (bodystart as f64 + i as f64 * step).floor() as u32)
                             .collect();
                         edges.push(bodyend); // include exact endpoint
 
@@ -1176,7 +1176,7 @@ impl Region {
                         let step = bodylength / neededbins as f64;
 
                         let mut edges: Vec<u32> = (0..neededbins)
-                            .map(|i| bodystart + (i as f64 * step).floor() as u32)
+                            .map(|i| (bodystart as f64 + i as f64 * step).floor() as u32)
                             .collect();
                         edges.push(bodyend);
 
