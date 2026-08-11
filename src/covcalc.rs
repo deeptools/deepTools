@@ -1,6 +1,5 @@
 use crate::filtering::Alignmentfilters;
 use core::panic;
-use ndarray::Array1;
 use rust_htslib::bam::ext::BamRecordExtensions;
 use rust_htslib::bam::{IndexedReader, Read};
 use std::cmp::{max, min};
@@ -693,7 +692,8 @@ impl Region {
                                 let end =
                                     min((binix + scale_regions.binsize as i64) as u32, chromend);
                                 let start = max(binix, 0) as u32;
-                                leftbins.push(Bin::Conbin(start, end));
+                                let pad = scale_regions.binsize - (end - start);
+                                leftbins.push(Bin::PaddedConbin(start, end, pad));
                             } else if binix >= 0 && binix as u32 > chromend {
                                 // Entirely downstream of chromosome end -> invalid
                                 leftbins.push(Bin::Conbin(0, 0));
@@ -702,7 +702,8 @@ impl Region {
                                 let end =
                                     min((binix + scale_regions.binsize as i64) as u32, chromend);
                                 let start = max(binix, 0) as u32;
-                                leftbins.push(Bin::Conbin(start, end));
+                                let pad = scale_regions.binsize - (end - start);
+                                leftbins.push(Bin::PaddedConbin(start, end, pad));
                             } else {
                                 // bin is valid -> keep as is
                                 let start = max(binix, 0) as u32;
@@ -727,7 +728,8 @@ impl Region {
                                 rightbins.push(Bin::Conbin(0, 0));
                             } else if (binix as u32 + scale_regions.binsize) > upper_bound {
                                 // bin straddles the valid boundary -> keep only the valid portion
-                                rightbins.push(Bin::Conbin(binix as u32, upper_bound));
+                                let pad = scale_regions.binsize - (upper_bound - binix as u32);
+                                rightbins.push(Bin::PaddedConbin(binix as u32, upper_bound, pad));
                             } else {
                                 // fully within bounds
                                 rightbins.push(Bin::Conbin(
@@ -841,7 +843,8 @@ impl Region {
                             } else if (binix + scale_regions.binsize as i64) as u32 > chromend {
                                 // bin straddles chromend -> truncate
                                 let end = min(binix as u32 + scale_regions.binsize, chromend);
-                                rightbins.push(Bin::Conbin(binix as u32, end));
+                                let pad = scale_regions.binsize - (end - binix as u32);
+                                rightbins.push(Bin::PaddedConbin(binix as u32, end, pad));
                             } else {
                                 rightbins.push(Bin::Conbin(
                                     binix as u32,
@@ -864,10 +867,9 @@ impl Region {
                                 leftbins.push(Bin::Conbin(0, 0));
                             } else if binix < lower_bound {
                                 // bin straddles the lower boundary -> keep only the valid portion
-                                leftbins.push(Bin::Conbin(
-                                    lower_bound as u32,
-                                    (binix + scale_regions.binsize as i64) as u32,
-                                ));
+                                let end = (binix + scale_regions.binsize as i64) as u32;
+                                let pad = scale_regions.binsize - (end - lower_bound as u32);
+                                leftbins.push(Bin::PaddedConbin(lower_bound as u32, end, pad));
                             } else {
                                 // fully within bounds
                                 leftbins.push(Bin::Conbin(
@@ -1311,7 +1313,9 @@ fn refpoint_exonwalker(
                 // anchor sits in an exon. Check if anchor + binsize is also in same exon.
                 if anchor + binsize > chromend {
                     // Bin extends past chromosome end. Clamp to [anchor, chromend).
-                    return (Bin::Conbin(anchor, chromend), chromend);
+                    let valid = chromend.saturating_sub(anchor);
+                    let pad = binsize - valid.min(binsize);
+                    return (Bin::PaddedConbin(anchor, chromend, pad), chromend);
                 }
                 if anchor + binsize <= exons[i].1 {
                     (Bin::Conbin(anchor, anchor + binsize), anchor + binsize)
@@ -1382,7 +1386,9 @@ fn refpoint_exonwalker(
             None => {
                 // our anchor doesn't sit in exons. We just return the anchor + binsize as Bin
                 if anchor + binsize > chromend {
-                    (Bin::Conbin(anchor, chromend), chromend)
+                    let valid = chromend.saturating_sub(anchor);
+                    let pad = binsize - valid.min(binsize);
+                    (Bin::PaddedConbin(anchor, chromend, pad), chromend)
                 } else {
                     (Bin::Conbin(anchor, anchor + binsize), anchor + binsize)
                 }
@@ -1395,7 +1401,8 @@ fn refpoint_exonwalker(
                 // Run a check to see if binsize > anchor.
                 if anchor < binsize {
                     // We are at the start of the chromosome. Clamp upstream bin to [0, anchor).
-                    return (Bin::Conbin(0, anchor), 0);
+                    let pad = binsize - anchor.min(binsize);
+                    return (Bin::PaddedConbin(0, anchor, pad), 0);
                 }
                 // anchor sits in an exon. Check if anchor - binsize is also in same exon.
                 if anchor - binsize >= exons[i].0 {
@@ -1468,7 +1475,8 @@ fn refpoint_exonwalker(
             None => {
                 // our anchor doesn't sit in exons. We just return the anchor - binsize as Bin
                 if anchor < binsize {
-                    (Bin::Conbin(0, anchor), 0)
+                    let pad = binsize - anchor.min(binsize);
+                    (Bin::PaddedConbin(0, anchor, pad), 0)
                 } else {
                     (Bin::Conbin(anchor - binsize, anchor), anchor - binsize)
                 }
@@ -1669,18 +1677,21 @@ impl fmt::Display for Revalue {
 pub enum Bin {
     Conbin(u32, u32),
     Catbin(Vec<(u32, u32)>),
+    PaddedConbin(u32, u32, u32),
 }
 
 impl Bin {
     pub fn get_start(&self) -> u32 {
         match self {
             Bin::Conbin(start, _) => *start,
+            Bin::PaddedConbin(start, _, _) => *start,
             Bin::Catbin(starts) => starts.first().unwrap().0,
         }
     }
     pub fn get_end(&self) -> u32 {
         match self {
             Bin::Conbin(_, end) => *end,
+            Bin::PaddedConbin(_, end, _) => *end,
             Bin::Catbin(ends) => ends.last().unwrap().1,
         }
     }

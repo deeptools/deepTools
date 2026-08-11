@@ -512,6 +512,7 @@ pub fn bwintervals(
             .iter()
             .flat_map(|bin| match bin {
                 Bin::Conbin(a, b) => vec![*a, *b],
+                Bin::PaddedConbin(a, b, _) => vec![*a, *b],
                 Bin::Catbin(pairs) => pairs
                     .iter()
                     .flat_map(|(x, y)| vec![*x, *y])
@@ -532,6 +533,23 @@ pub fn bwintervals(
             let val = interval.value as f32;
             bwhash.extend((start..end).map(|bp| (bp, val)));
         }
+        let gather_vals = |a: u32, b: u32, vals: &mut Vec<f32>| {
+            for bp in a..b {
+                if blacklist_index.is_some() && blacklist_index.unwrap().contains(&region.chrom, bp)
+                {
+                    continue;
+                }
+                match bwhash.get(&bp) {
+                    Some(v) => vals.push(*v),
+                    None => {
+                        if scale_regions.missingdata_as_zero {
+                            vals.push(0.0);
+                        }
+                    }
+                }
+            }
+        };
+
         // Now we can iterate over the slopped regions, and get the values from the hashmap.
         for bin in sls {
             match bin {
@@ -543,13 +561,8 @@ pub fn bwintervals(
                             bwval.push(std::f32::NAN);
                         }
                     } else {
-                        let vals: Vec<&f32> = (*a..*b)
-                            .filter(|bp| {
-                                blacklist_index.is_none()
-                                    || !blacklist_index.unwrap().contains(&region.chrom, *bp)
-                            })
-                            .filter_map(|bp| bwhash.get(&bp))
-                            .collect();
+                        let mut vals: Vec<f32> = Vec::new();
+                        gather_vals(*a, *b, &mut vals);
                         if vals.is_empty() {
                             if scale_regions.missingdata_as_zero {
                                 bwval.push(0.0);
@@ -557,33 +570,54 @@ pub fn bwintervals(
                                 bwval.push(std::f32::NAN);
                             }
                         } else {
+                            let valrefs: Vec<&f32> = vals.iter().collect();
                             let val = match scale_regions.avgtype.as_str() {
-                                "mean" => mean_float(&vals),
-                                "median" => median_float(&vals),
-                                "min" => min_float(&vals),
-                                "max" => max_float(&vals),
-                                "std" => std_float(&vals),
-                                "sum" => sum_float(&vals),
+                                "mean" => mean_float(&valrefs),
+                                "median" => median_float(&valrefs),
+                                "min" => min_float(&valrefs),
+                                "max" => max_float(&valrefs),
+                                "std" => std_float(&valrefs),
+                                "sum" => sum_float(&valrefs),
                                 _ => panic!("Unknown avgtype."),
                             };
                             bwval.push(val);
                         }
                     }
                 }
+                Bin::PaddedConbin(a, b, pad) => {
+                    let mut vals: Vec<f32> = Vec::new();
+                    gather_vals(*a, *b, &mut vals);
+                    if scale_regions.missingdata_as_zero && *pad > 0 {
+                        vals.extend(std::iter::repeat(0.0f32).take(*pad as usize));
+                    }
+                    if vals.is_empty() {
+                        if scale_regions.missingdata_as_zero {
+                            bwval.push(0.0);
+                        } else {
+                            bwval.push(std::f32::NAN);
+                        }
+                    } else {
+                        let valrefs: Vec<&f32> = vals.iter().collect();
+                        let val = match scale_regions.avgtype.as_str() {
+                            "mean" => mean_float(&valrefs),
+                            "median" => median_float(&valrefs),
+                            "min" => min_float(&valrefs),
+                            "max" => max_float(&valrefs),
+                            "std" => std_float(&valrefs),
+                            "sum" => sum_float(&valrefs),
+                            _ => panic!("Unknown avgtype."),
+                        };
+                        bwval.push(val);
+                    }
+                }
                 Bin::Catbin(pairs) => {
-                    let mut vals: Vec<&f32> = Vec::new();
+                    let mut vals: Vec<f32> = Vec::new();
 
                     for (start, end) in pairs {
                         if start == end && *end == 0 {
                             continue;
                         }
-                        (*start..*end)
-                            .filter(|bp| {
-                                blacklist_index.is_none()
-                                    || !blacklist_index.unwrap().contains(&region.chrom, *bp)
-                            })
-                            .filter_map(|bp| bwhash.get(&bp))
-                            .for_each(|v| vals.push(v));
+                        gather_vals(*start, *end, &mut vals);
                     }
 
                     // Handle case where no valid values exist
@@ -594,13 +628,14 @@ pub fn bwintervals(
                             bwval.push(std::f32::NAN);
                         }
                     } else {
+                        let valrefs: Vec<&f32> = vals.iter().collect();
                         let val = match scale_regions.avgtype.as_str() {
-                            "mean" => mean_float(&vals),
-                            "median" => median_float(&vals),
-                            "min" => min_float(&vals),
-                            "max" => max_float(&vals),
-                            "std" => std_float(&vals),
-                            "sum" => sum_float(&vals),
+                            "mean" => mean_float(&valrefs),
+                            "median" => median_float(&valrefs),
+                            "min" => min_float(&valrefs),
+                            "max" => max_float(&valrefs),
+                            "std" => std_float(&valrefs),
+                            "sum" => sum_float(&valrefs),
                             _ => panic!("Unknown avgtype."),
                         };
                         bwval.push(val);
