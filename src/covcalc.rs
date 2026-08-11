@@ -1328,6 +1328,7 @@ fn refpoint_exonwalker(
                     let mut remainingbin: u32 = binsize - (exons[i].1 - anchor);
                     let mut lastix: usize = i;
                     let mut lastanchor: u32 = exons[i].1;
+                    let mut pad: u32 = 0;
 
                     while remainingbin != 0 {
                         if lastix + 1 < exons.len() {
@@ -1354,7 +1355,7 @@ fn refpoint_exonwalker(
                             // No next exon available. Remainder can just be genomic.
                             // The last entry here can be changed to include the last part.
                             if nan_after_end {
-                                start_end_vec.push((0, 0));
+                                pad += remainingbin;
                             } else {
                                 let last = start_end_vec.last_mut().unwrap();
                                 assert_eq!(
@@ -1363,6 +1364,7 @@ fn refpoint_exonwalker(
                                 );
                                 // Check we don't fall of the chromosome.
                                 if lastanchor + remainingbin > chromend {
+                                    pad += (lastanchor + remainingbin) - chromend;
                                     last.1 = chromend;
                                     lastanchor = chromend;
                                 } else {
@@ -1376,7 +1378,13 @@ fn refpoint_exonwalker(
                     // We now have a Vec of start - end, we can construct a CatBin.
                     // Note that CatBins are (absstart, absstop, ((intstart1, intstart2), ...))
                     // This seems weird, but makes sure we need to slice the bigwig file only once per bin.
-                    if start_end_vec.len() == 1 {
+                    if pad > 0 {
+                        if start_end_vec.len() == 1 {
+                            (Bin::PaddedConbin(anchor, lastanchor, pad), lastanchor)
+                        } else {
+                            (Bin::PaddedCatbin(start_end_vec, pad), lastanchor)
+                        }
+                    } else if start_end_vec.len() == 1 {
                         (Bin::Conbin(anchor, lastanchor), lastanchor)
                     } else {
                         (Bin::Catbin(start_end_vec), lastanchor)
@@ -1416,6 +1424,7 @@ fn refpoint_exonwalker(
                     let mut remainingbin: u32 = binsize - (anchor - exons[i].0);
                     let mut lastix: usize = i;
                     let mut lastanchor: u32 = exons[i].0;
+                    let mut pad: u32 = 0;
 
                     while remainingbin != 0 {
                         if lastix >= 1 {
@@ -1439,10 +1448,8 @@ fn refpoint_exonwalker(
                                 lastanchor = exons[lastix].0;
                             }
                         } else {
-                            // No previous exon available. Remainder can just be genomic.
-                            // The last entry here can be changed to include the last part.
                             if nan_after_end {
-                                start_end_vec.push((0, 0));
+                                pad += remainingbin;
                             } else {
                                 let last = start_end_vec.last_mut().unwrap();
                                 assert_eq!(
@@ -1451,6 +1458,7 @@ fn refpoint_exonwalker(
                                 );
                                 // Check we don't go in the negative.
                                 if lastanchor < remainingbin {
+                                    pad += remainingbin - lastanchor;
                                     last.0 = 0;
                                     lastanchor = 0;
                                 } else {
@@ -1464,7 +1472,14 @@ fn refpoint_exonwalker(
                     // We now have a Vec of start - end, we can construct a CatBin.
                     // Note that CatBins are (absstart, absstop, ((intstart1, intstart2), ...))
                     // This seems weird, but makes sure we need to slice the bigwig file only once per bin.
-                    if start_end_vec.len() == 1 {
+                    if pad > 0 {
+                        if start_end_vec.len() == 1 {
+                            (Bin::PaddedConbin(lastanchor, anchor, pad), lastanchor)
+                        } else {
+                            start_end_vec.reverse();
+                            (Bin::PaddedCatbin(start_end_vec, pad), lastanchor)
+                        }
+                    } else if start_end_vec.len() == 1 {
                         (Bin::Conbin(lastanchor, anchor), lastanchor)
                     } else {
                         start_end_vec.reverse();
@@ -1678,6 +1693,7 @@ pub enum Bin {
     Conbin(u32, u32),
     Catbin(Vec<(u32, u32)>),
     PaddedConbin(u32, u32, u32),
+    PaddedCatbin(Vec<(u32, u32)>, u32),
 }
 
 impl Bin {
@@ -1686,6 +1702,7 @@ impl Bin {
             Bin::Conbin(start, _) => *start,
             Bin::PaddedConbin(start, _, _) => *start,
             Bin::Catbin(starts) => starts.first().unwrap().0,
+            Bin::PaddedCatbin(starts, _) => starts.first().unwrap().0,
         }
     }
     pub fn get_end(&self) -> u32 {
@@ -1693,6 +1710,7 @@ impl Bin {
             Bin::Conbin(_, end) => *end,
             Bin::PaddedConbin(_, end, _) => *end,
             Bin::Catbin(ends) => ends.last().unwrap().1,
+            Bin::PaddedCatbin(ends, _) => ends.last().unwrap().1,
         }
     }
 }

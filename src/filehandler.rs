@@ -517,6 +517,10 @@ pub fn bwintervals(
                     .iter()
                     .flat_map(|(x, y)| vec![*x, *y])
                     .collect::<Vec<u32>>(),
+                Bin::PaddedCatbin(pairs, _) => pairs
+                    .iter()
+                    .flat_map(|(x, y)| vec![*x, *y])
+                    .collect::<Vec<u32>>(),
             })
             .fold((u32::MAX, u32::MIN), |(min, max), x| {
                 (min.min(x), max.max(x))
@@ -621,6 +625,39 @@ pub fn bwintervals(
                     }
 
                     // Handle case where no valid values exist
+                    if vals.is_empty() {
+                        if scale_regions.missingdata_as_zero {
+                            bwval.push(0.0);
+                        } else {
+                            bwval.push(std::f32::NAN);
+                        }
+                    } else {
+                        let valrefs: Vec<&f32> = vals.iter().collect();
+                        let val = match scale_regions.avgtype.as_str() {
+                            "mean" => mean_float(&valrefs),
+                            "median" => median_float(&valrefs),
+                            "min" => min_float(&valrefs),
+                            "max" => max_float(&valrefs),
+                            "std" => std_float(&valrefs),
+                            "sum" => sum_float(&valrefs),
+                            _ => panic!("Unknown avgtype."),
+                        };
+                        bwval.push(val);
+                    }
+                }
+                Bin::PaddedCatbin(pairs, pad) => {
+                    let mut vals: Vec<f32> = Vec::new();
+
+                    for (start, end) in pairs {
+                        if start == end && *end == 0 {
+                            continue;
+                        }
+                        gather_vals(*start, *end, &mut vals);
+                    }
+                    if scale_regions.missingdata_as_zero && *pad > 0 {
+                        vals.extend(std::iter::repeat(0.0f32).take(*pad as usize));
+                    }
+
                     if vals.is_empty() {
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
