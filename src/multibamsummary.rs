@@ -1,6 +1,8 @@
 use crate::calc::deseq_scalefactors;
 use crate::covcalc::{Gtfparse, Region};
-use crate::covcalc::{TempZip, bam_pileup, parse_regions, region_divider};
+use crate::covcalc::{
+    TempZip, bam_pileup, filter_regions_by_supregion, parse_regions, region_divider,
+};
 use crate::filehandler::{
     bam_ispaired, chrombounds_from_bam, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
@@ -81,9 +83,6 @@ pub fn r_mbams(
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
         }
-        if supregion != "None" {
-            println!("Region supplied in BED-file mode. The region will be ignored.");
-        }
         let gtfparse = Gtfparse {
             metagene: metagene,
             txnid: txnid.to_string(),
@@ -111,6 +110,19 @@ pub fn r_mbams(
                 regions.extend(reg);
                 regionsizes.insert(regsize.0, regsize.1);
             });
+        // Restrict to the user-supplied --region window, if any.
+        if supregion != "None" {
+            let nbefore = regions.len();
+            regions = filter_regions_by_supregion(regions, supregion);
+            if verbose {
+                println!(
+                    "Region {} supplied: {} of {} regions overlap it.",
+                    supregion,
+                    regions.len(),
+                    nbefore
+                );
+            }
+        }
         gene_mode = true;
 
         // If there is a blacklist, read it.
@@ -120,8 +132,7 @@ pub fn r_mbams(
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) =
-                        read_bedfile(&blacklist.to_string(), false, &chromsizes);
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -144,8 +155,7 @@ pub fn r_mbams(
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) =
-                        read_bedfile(&blacklist.to_string(), false, &chromsizes);
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),

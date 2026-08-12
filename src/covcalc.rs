@@ -50,47 +50,42 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
         !validchroms.is_empty(),
         "No chromosomes found that are present in all bam files. Did you mix references ?"
     );
-    // Read header from first bam file
-    let bam = IndexedReader::from_path(bam_ifile[0]).unwrap();
-    let header = bam.header().clone();
-    let mut chromregions: Vec<Region> = Vec::new();
-    let mut chromsizes = HashMap::new();
-    if region == "None" {
-        // if regions is empty, we default to all chromosomes, full length
+    let mut chromsizes: HashMap<String, u32> = HashMap::new();
+    for bam in bam_ifile.iter() {
+        let bam = IndexedReader::from_path(bam).unwrap();
+        let header = bam.header().clone();
         for tid in 0..header.target_count() {
             let chromname = String::from_utf8(header.tid2name(tid).to_vec())
                 .expect("Invalid UTF-8 in chromosome name");
-            let chromlen = header
-                .target_len(tid)
-                .expect("Error retrieving length for chromosome");
-            // If chromname is not in validchroms, skip it.
             if !validchroms.contains(&chromname) {
                 continue;
             }
+            let chromlen = header
+                .target_len(tid)
+                .expect("Error retrieving length for chromosome") as u32;
+            chromsizes
+                .entry(chromname)
+                .and_modify(|len| *len = (*len).min(chromlen))
+                .or_insert(chromlen);
+        }
+    }
+    let mut chromregions: Vec<Region> = Vec::new();
+    if region == "None" {
+        // if regions is empty, we default to all chromosomes, full length
+        for (chromname, chromlen) in chromsizes.iter() {
             let _reg = Region {
                 chrom: chromname.clone(),
                 start: Revalue::U(0),
-                end: Revalue::U(chromlen as u32),
+                end: Revalue::U(*chromlen),
                 score: String::from("."),
                 strand: String::from("."),
                 name: format!("{}:{}-{}", chromname, 0, chromlen),
-                regionlength: chromlen as u32,
+                regionlength: *chromlen,
             };
             chromregions.push(_reg);
-            chromsizes.insert(chromname.to_string(), chromlen as u32);
         }
     } else {
-        // populate chromsizes
-        for tid in 0..header.target_count() {
-            let chromname = String::from_utf8(header.tid2name(tid).to_vec())
-                .expect("Invalid UTF-8 in chromosome name");
-            let chromlen = header
-                .target_len(tid)
-                .expect("Error retrieving length for chromosome");
-            if validchroms.contains(&chromname) {
-                chromsizes.insert(chromname, chromlen as u32);
-            }
-        }
+        // chromsizes is already fully populated above.
         // Either the region is just a chromosome, or it is a 'true region' i.e. chr:start:end
         // first test if the region is a chromosome alone
         let parts = region.split(":").collect::<Vec<&str>>();
@@ -155,6 +150,38 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
             .then(a.get_startu().cmp(&b.get_startu()))
     });
     return (chromregions, chromsizes);
+}
+
+pub fn filter_regions_by_supregion(regions: Vec<Region>, supregion: &str) -> Vec<Region> {
+    if supregion == "None" {
+        return regions;
+    }
+    let parts: Vec<&str> = supregion.split(":").collect();
+    let chromname = parts[0];
+    let bounds: Option<(u32, u32)> = if parts.len() >= 3 {
+        Some((
+            parts[1]
+                .parse::<u32>()
+                .expect("Error reading supplied start position."),
+            parts[2]
+                .parse::<u32>()
+                .expect("Error reading supplied end position."),
+        ))
+    } else {
+        None
+    };
+    regions
+        .into_iter()
+        .filter(|r| {
+            if r.chrom != chromname {
+                return false;
+            }
+            match bounds {
+                Some((start, end)) => r.get_startu() < end && r.get_endu() > start,
+                None => true,
+            }
+        })
+        .collect()
 }
 
 /// Main workhorse for bamCoverage and bamCompare
