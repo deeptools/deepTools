@@ -1,6 +1,6 @@
 use crate::calc::deseq_scalefactors;
-use crate::covcalc::{bam_pileup, parse_regions, region_divider, TempZip};
 use crate::covcalc::{Gtfparse, Region};
+use crate::covcalc::{TempZip, bam_pileup, parse_regions, region_divider};
 use crate::filehandler::{
     bam_ispaired, chrombounds_from_bam, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
@@ -10,8 +10,8 @@ use ndarray::Array2;
 use ndarray_npy::NpzWriter;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -154,7 +154,8 @@ pub fn r_mbams(
     }
 
     regions.sort_by(|a, b| {
-        a.chrom.cmp(&b.chrom)
+        a.chrom
+            .cmp(&b.chrom)
             .then_with(|| a.start.start_key().cmp(&b.start.start_key()))
             .then_with(|| a.end.end_key().cmp(&b.end.end_key()))
     });
@@ -246,7 +247,6 @@ pub fn r_mbams(
         println!("Start iterating through temp coverage files and create output npy.");
     }
     let zips_vec: Vec<_> = zips.collect();
-    println!(" Length of ziperators = {}", zips_vec.len());
 
     let matvec: Vec<_> = pool.install(|| {
         let _m: Vec<_> = zips_vec
