@@ -74,7 +74,7 @@ pub fn r_bamcompare(
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
                 let (bls, _) =
-                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    read_bedfile(&blacklist.to_string(), false, &chromsizes);
                 blacklistregions = Some(bls);
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -138,7 +138,7 @@ pub fn r_bamcompare(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, alfilter, false, false, true, 0,
+                            bamfile, &i, &binsize, &binsize, &ispe, &ignorechr, alfilter, false, false, true, 0,
                         )
                     })
                     .reduce(

@@ -153,15 +153,6 @@ def bamcorrelate_args(case="bins"):
         "after removing the path and extension.",
     )
 
-    optional.add_argument(
-        "--genomeChunkSize",
-        type=int,
-        default=None,
-        help="Manually specify the size of the genome provided to each processor. "
-        "The default value of None specifies that this is determined by read "
-        "density of the BAM file.",
-    )
-
     if case == "bins":
         optional.add_argument(
             "--binSize",

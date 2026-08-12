@@ -701,8 +701,8 @@ def main(args=None):
         hm.save_matrix(args.outFileNameMatrix)
 
     if args.outFileSortedRegions:
-        with open(args.outFileSortedRegions, 'w') as f:
-            hm.save_BED(f)
+        with open(args.outFileSortedRegions, "w") as fh:
+            hm.save_BED(fh)
 
     if not args.label_rotation:
         label_rotation=45.0

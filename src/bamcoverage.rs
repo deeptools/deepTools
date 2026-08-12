@@ -132,7 +132,7 @@ pub fn r_bamcoverage(
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
                 let (bls, _) =
-                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    read_bedfile(&blacklist.to_string(), false, &chromsizes);
                 backlistregions = Some(bls);
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -171,7 +171,7 @@ pub fn r_bamcoverage(
             .par_iter()
             .map(|i| {
                 bam_pileup(
-                    bamifile, &i, &binsize, &ispe, &ignorechr, &filters, collapse, false, true, _smoothlength,
+                    bamifile, &i, &binsize, &binsize, &ispe, &ignorechr, &filters, collapse, false, true, _smoothlength,
                 )
             })
             .reduce(

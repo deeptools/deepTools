@@ -425,5 +425,5 @@ def main(args=None):
         hm.save_matrix_values(args.outFileNameMatrix)
 
     if args.outFileSortedRegions:
-        with open(args.outFileSortedRegions, 'w') as f:
-            hm.save_BED(f)
+        with open(args.outFileSortedRegions, "w") as fh:
+            hm.save_BED(fh)

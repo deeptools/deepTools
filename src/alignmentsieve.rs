@@ -4,6 +4,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rust_htslib::bam::record::CigarString;
 use rust_htslib::bam::{self, Header, Read, Reader, Writer};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
@@ -60,11 +61,15 @@ pub fn r_alignmentsieve(
     // Load blacklist regions if provided
     let blacklist_regions = if blacklist != "None" {
         let isbed = is_bed_or_gtf(blacklist);
-        let chrom_keys: Vec<&String> = chrom_names.iter().collect();
+        let chrom_bounds: HashMap<String, u32> = chrom_names
+            .iter()
+            .cloned()
+            .zip(chrom_sizes.iter().map(|&x| x as u32))
+            .collect();
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) = read_bedfile(&blacklist.to_string(), false, chrom_keys);
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chrom_bounds);
                 Some(bls)
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),

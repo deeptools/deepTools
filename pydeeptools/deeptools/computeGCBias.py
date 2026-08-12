@@ -3,6 +3,7 @@
 
 import time
 
+from pathlib import Path
 import multiprocessing
 import numpy as np
 import argparse
@@ -102,7 +103,7 @@ def getRequiredArgs():
                           help='BED file containing genomic regions for which '
                           'extra sampling is required because they are '
                           'underrepresented in the genome.',
-                          type=parserCommon.readableFile,
+                          type=Path,
                           metavar='BED file')
 
     plot = parser.add_argument_group('Diagnostic plot options')

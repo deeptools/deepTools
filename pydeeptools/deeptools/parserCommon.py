@@ -2,7 +2,7 @@ import argparse
 import os
 from importlib.metadata import version
 import multiprocessing
-
+from pathlib import Path
 
 def check_float_0_1(value):
     v = float(value)
@@ -436,7 +436,7 @@ def heatmapperMatrixArgs(args=None):
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
-                          type=readableFile,
+                          type=Path,
                           )
 
     required.add_argument('--outFileName', '-out', '-o',

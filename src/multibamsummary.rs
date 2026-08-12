@@ -1,6 +1,8 @@
 use crate::calc::deseq_scalefactors;
-use crate::covcalc::{bam_pileup, parse_regions, region_divider, TempZip};
 use crate::covcalc::{Gtfparse, Region};
+use crate::covcalc::{
+    TempZip, bam_pileup, filter_regions_by_supregion, parse_regions, region_divider,
+};
 use crate::filehandler::{
     bam_ispaired, chrombounds_from_bam, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
@@ -10,8 +12,8 @@ use ndarray::Array2;
 use ndarray_npy::NpzWriter;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -81,9 +83,6 @@ pub fn r_mbams(
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
         }
-        if supregion != "None" {
-            println!("Region supplied in BED-file mode. The region will be ignored.");
-        }
         let gtfparse = Gtfparse {
             metagene: metagene,
             txnid: txnid.to_string(),
@@ -103,7 +102,7 @@ pub fn r_mbams(
 
                 match ftype.as_str() {
                     "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
-                    "bed" => read_bedfile(r, metagene, chromsizes.keys().collect()),
+                    "bed" => read_bedfile(r, metagene, &chromsizes),
                     _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
                 }
             })
@@ -111,6 +110,19 @@ pub fn r_mbams(
                 regions.extend(reg);
                 regionsizes.insert(regsize.0, regsize.1);
             });
+        // Restrict to the user-supplied --region window, if any.
+        if supregion != "None" {
+            let nbefore = regions.len();
+            regions = filter_regions_by_supregion(regions, supregion);
+            if verbose {
+                println!(
+                    "Region {} supplied: {} of {} regions overlap it.",
+                    supregion,
+                    regions.len(),
+                    nbefore
+                );
+            }
+        }
         gene_mode = true;
 
         // If there is a blacklist, read it.
@@ -120,8 +132,7 @@ pub fn r_mbams(
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) =
-                        read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -144,14 +155,20 @@ pub fn r_mbams(
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) =
-                        read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),
             }
         }
     }
+
+    regions.sort_by(|a, b| {
+        a.chrom
+            .cmp(&b.chrom)
+            .then_with(|| a.start.start_key().cmp(&b.start.start_key()))
+            .then_with(|| a.end.end_key().cmp(&b.end.end_key()))
+    });
 
     let filters = Alignmentfilters::new(
         blacklistregions,
@@ -191,6 +208,8 @@ pub fn r_mbams(
     // Divide up the regions into regionBlocks
     let regionblocks = region_divider(&regions);
 
+    let binstep = binsize + distance_between_bins;
+
     assert!(regionblocks.len() > 0, "No regions to process. Exiting.");
     if verbose {
         println!(
@@ -208,8 +227,8 @@ pub fn r_mbams(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, filter, false, gene_mode,
-                            false, 0,
+                            bamfile, &i, &binsize, &binstep, &ispe, &ignorechr, filter, false,
+                            gene_mode, false, 0,
                         )
                     })
                     .reduce(
@@ -240,7 +259,6 @@ pub fn r_mbams(
         println!("Start iterating through temp coverage files and create output npy.");
     }
     let zips_vec: Vec<_> = zips.collect();
-    println!(" Length of ziperators = {}", zips_vec.len());
 
     let matvec: Vec<_> = pool.install(|| {
         let _m: Vec<_> = zips_vec
@@ -333,7 +351,7 @@ pub fn r_mbams(
         let sf = deseq_scalefactors(&matarr);
         // save scalefactors to file
         let mut sf_file = File::create(scaling_factors).unwrap();
-        writeln!(sf_file, "Sample\tscalingFactor").unwrap();
+        writeln!(sf_file, "sample\tscalingFactor").unwrap();
         for (sf, label) in sf.iter().zip(bamlabels.iter()) {
             writeln!(sf_file, "{}\t{}", label, sf).unwrap();
         }

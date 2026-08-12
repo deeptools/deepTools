@@ -6,6 +6,7 @@ import shutil
 import time
 import subprocess
 import sys
+from pathlib import Path
 
 import py2bit
 import pysam
@@ -91,7 +92,7 @@ def getRequiredArgs():
                           'computeGCBias containing '
                           'the observed and expected read frequencies per GC-'
                           'content.',
-                          type=parserCommon.readableFile,
+                          type=Path,
                           metavar='FILE',
                           required=True)
 

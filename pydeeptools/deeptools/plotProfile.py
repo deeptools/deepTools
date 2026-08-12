@@ -9,7 +9,7 @@ import numpy as np
 from math import ceil
 from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties 
+from matplotlib.font_manager import FontProperties
 from matplotlib import colors as pltcolors
 import matplotlib.gridspec as gridspec
 
@@ -76,14 +76,14 @@ def process_args(args=None):
         args.plotHeight = 0.5
     elif args.plotHeight > 100:
         args.plotHeight = 100
-    
+
     if not args.label_rotation:
         args.label_rotation=45.0
     else:
         args.label_rotation= args.label_rotation
-    
+
     if args.ggplot:
-        plt.style.use('ggplot') 
+        plt.style.use('ggplot')
 
     return args
 
@@ -628,8 +628,8 @@ def main(args=None):
                                  averagetype=args.averageType)
 
     if args.outFileSortedRegions:
-        with open(args.outFileSortedRegions, 'w') as f:
-            hm.save_BED(f)
+        with open(args.outFileSortedRegions, "w") as fh:
+            hm.save_BED(fh)
 
     prof = Profile(hm, args.outFileName,
                    plot_title=args.plotTitle,
