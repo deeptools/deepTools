@@ -6,6 +6,7 @@ import shutil
 import time
 import subprocess
 import sys
+from pathlib import Path
 
 import py2bit
 import pysam
@@ -91,7 +92,7 @@ def getRequiredArgs():
                           'computeGCBias containing '
                           'the observed and expected read frequencies per GC-'
                           'content.',
-                          type=argparse.FileType('r'),
+                          type=Path,
                           metavar='FILE',
                           required=True)
 
@@ -102,7 +103,7 @@ def getRequiredArgs():
                         'are ".bam", ".bw" for a bigWig file, ".bg" for a '
                         'bedGraph file.',
                         metavar='FILE',
-                        type=argparse.FileType('w'),
+                        type=parserCommon.writableFile,
                         required=True)
 
     # define the optional arguments
@@ -553,7 +554,7 @@ def main(args=None):
     args = process_args(args)
     global F_gc, N_gc, R_gc
 
-    data = np.loadtxt(args.GCbiasFrequenciesFile.name)
+    data = np.loadtxt(args.GCbiasFrequenciesFile)
 
     F_gc = data[:, 0]
     N_gc = data[:, 1]
@@ -623,7 +624,7 @@ def main(args=None):
 
     pool = multiprocessing.Pool(args.numberOfProcessors)
 
-    if args.correctedFile.name.endswith('bam'):
+    if args.correctedFile.endswith('bam'):
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
             print(("using {} processors for {} "
                    "number of tasks".format(args.numberOfProcessors,
@@ -635,12 +636,12 @@ def main(args=None):
             res = list(map(writeCorrectedSam_wrapper, mp_args))
 
         if len(res) == 1:
-            command = "cp {} {}".format(res[0], args.correctedFile.name)
+            command = "cp {} {}".format(res[0], args.correctedFile)
             run_shell_command(command)
         else:
             print("concatenating (sorted) intermediate BAMs")
             header = pysam.Samfile(res[0])
-            of = pysam.Samfile(args.correctedFile.name, "wb", template=header)
+            of = pysam.Samfile(args.correctedFile, "wb", template=header)
             header.close()
             for f in res:
                 f = pysam.Samfile(f)
@@ -650,13 +651,13 @@ def main(args=None):
             of.close()
 
         print("indexing BAM")
-        pysam.index(args.correctedFile.name)
+        pysam.index(args.correctedFile)
 
         for tempFileName in res:
             os.remove(tempFileName)
 
-    if args.correctedFile.name.endswith('bg') or \
-            args.correctedFile.name.endswith('bw'):
+    if args.correctedFile.endswith('bg') or \
+            args.correctedFile.endswith('bw'):
 
         if len(mp_args) > 1 and args.numberOfProcessors > 1:
 
@@ -664,8 +665,7 @@ def main(args=None):
         else:
             res = list(map(writeCorrected_wrapper, mp_args))
 
-        oname = args.correctedFile.name
-        args.correctedFile.close()
+        oname = args.correctedFile
         if oname.endswith('bg'):
             f = open(oname, 'wb')
             for tempFileName in res:

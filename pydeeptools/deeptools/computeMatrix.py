@@ -123,7 +123,7 @@ def computeMatrixOutputArgs(args=None):
                         'generate other heatmaps keeping the sorting of the '
                         'first heatmap. Example: Heatmap1sortedRegions.bed',
                         metavar='BED file',
-                        type=argparse.FileType('w'))
+                        type=writableFile)
     return parser
 
 
@@ -425,4 +425,5 @@ def main(args=None):
         hm.save_matrix_values(args.outFileNameMatrix)
 
     if args.outFileSortedRegions:
-        hm.save_BED(args.outFileSortedRegions)
+        with open(args.outFileSortedRegions, "w") as fh:
+            hm.save_BED(fh)

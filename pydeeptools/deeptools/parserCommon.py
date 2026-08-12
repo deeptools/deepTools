@@ -2,7 +2,7 @@ import argparse
 import os
 from importlib.metadata import version
 import multiprocessing
-
+from pathlib import Path
 
 def check_float_0_1(value):
     v = float(value)
@@ -424,7 +424,7 @@ def heatmapperMatrixArgs(args=None):
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
-                          type=argparse.FileType('r'),
+                          type=Path,
                           )
 
     required.add_argument('--outFileName', '-out', '-o',
@@ -451,7 +451,7 @@ def heatmapperOutputArgs(args=None,
         'generate other heatmaps while keeping the sorting of the '
         'first heatmap. Example: Heatmap1sortedRegions.bed',
         metavar='FILE',
-        type=argparse.FileType('w'))
+        type=writableFile)
 
     if mode == 'heatmap':
         output.add_argument('--outFileNameMatrix',

@@ -1696,6 +1696,7 @@ pub enum Bin {
     PaddedCatbin(Vec<(u32, u32)>, u32),
 }
 
+#[allow(dead_code)]
 impl Bin {
     pub fn get_start(&self) -> u32 {
         match self {
