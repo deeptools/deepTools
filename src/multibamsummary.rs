@@ -349,7 +349,7 @@ pub fn r_mbams(
         let sf = deseq_scalefactors(&matarr);
         // save scalefactors to file
         let mut sf_file = File::create(scaling_factors).unwrap();
-        writeln!(sf_file, "Sample\tscalingFactor").unwrap();
+        writeln!(sf_file, "sample\tscalingFactor").unwrap();
         for (sf, label) in sf.iter().zip(bamlabels.iter()) {
             writeln!(sf_file, "{}\t{}", label, sf).unwrap();
         }
