@@ -361,75 +361,44 @@ impl Alignmentfilters {
     }
 
     pub fn rec_extension(&self, rec: &Record) -> Vec<u32> {
-        // extend the reads. if the read is a proper pair, we get the fragment length from there.
-        // If not (or if se), then extendreadslen is used.
-        // Note that extendsreadslen is already populated at this stage, either by CLI (se) or calculated (pe).
-        let mut blockvec: Vec<u32> = Vec::new();
-        let mut blocklen: u32 = 0;
+        let read_len: i64 = rec.seq_len_from_cigar(false) as i64;
+        if (self.extendreadslen as i64) <= read_len {
+            let mut blockvec: Vec<u32> = Vec::new();
+            rec.aligned_blocks().for_each(|x| {
+                blockvec.extend(x[0] as u32..x[1] as u32);
+            });
+            return blockvec;
+        }
 
-        rec.aligned_blocks().for_each(|x| {
-            let _s = x[0] as u32;
-            let _e = x[1] as u32;
-            blockvec.extend(_s.._e);
-            blocklen += _e - _s;
-        });
-
-        if rec.is_proper_pair() {
-            // Proper pairs
+        let (mut fragment_start, mut fragment_end): (i64, i64) = if rec.is_proper_pair() {
             if rec.is_reverse() {
-                let ns = rec.mpos() as u32;
-                let ne = rec.reference_start() as u32;
-                if ns < ne {
-                    // blockvec.splice(0..0,ns..ne);
-                    let mut new_blockvec = Vec::with_capacity((ne - ns) as usize + blockvec.len());
-                    new_blockvec.extend(ns..ne);
-                    new_blockvec.extend(blockvec);
-                    blockvec = new_blockvec;
-                }
+                (rec.mpos(), rec.reference_end())
             } else {
-                let ns = rec.reference_end() as u32;
-                let ne: u32 =
-                    ns + rec.insert_size().abs() as u32 - rec.seq_len_from_cigar(false) as u32;
-                if ns < ne {
-                    blockvec.extend(ns..ne);
-                }
+                (
+                    rec.reference_start(),
+                    rec.reference_start() + rec.insert_size().abs(),
+                )
             }
+        } else if rec.is_reverse() {
+            (
+                rec.reference_end() - self.extendreadslen as i64,
+                rec.reference_end(),
+            )
         } else {
-            // non proper pairs -> 'se mode'
-            if rec.is_reverse() {
-                let ns: u32;
-                let _rem = self
-                    .extendreadslen
-                    .saturating_sub(rec.seq_len_from_cigar(false) as u32);
-                if _rem > rec.reference_start() as u32 {
-                    ns = 0;
-                } else {
-                    ns = rec.reference_start() as u32 - _rem;
-                }
-                let ne = rec.reference_start() as u32;
-                if ns < ne {
-                    //blockvec.splice(0..0,ns..ne);
-                    let mut new_blockvec = Vec::with_capacity((ne - ns) as usize + blockvec.len());
-                    new_blockvec.extend(ns..ne);
-                    new_blockvec.extend(blockvec);
-                    blockvec = new_blockvec;
-                }
-            } else {
-                let ns = rec.reference_end() as u32;
-                let ne: u32 = ns
-                    + self
-                        .extendreadslen
-                        .saturating_sub(rec.seq_len_from_cigar(false) as u32);
-                if ns < ne {
-                    blockvec.extend(ns..ne);
-                }
-            }
+            (
+                rec.reference_start(),
+                rec.reference_start() + self.extendreadslen as i64,
+            )
+        };
+
+        if self.centerreads && fragment_end > fragment_start {
+            let fragment_center =
+                fragment_end as f64 - (fragment_end - fragment_start) as f64 / 2.0;
+            fragment_start = (fragment_center - read_len as f64 / 2.0).trunc() as i64;
+            fragment_end = fragment_start + read_len;
         }
-        if self.centerreads {
-            let centerpoint = (blockvec.len() as u32 - blocklen) / 2;
-            return blockvec[centerpoint as usize..(centerpoint + blocklen) as usize].to_vec();
-        }
-        return blockvec;
+
+        (fragment_start.max(0) as u32..fragment_end.max(0) as u32).collect()
     }
 
     pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str) -> bool {
