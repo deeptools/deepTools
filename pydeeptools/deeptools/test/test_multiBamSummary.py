@@ -17,6 +17,7 @@ BED12 = ROOT + "bed12.bed"
 BAMA = ROOT + "testA"
 BAMB = ROOT + "testB"
 BLACKLIST = ROOT + "blacklist.bed"
+BLACKLIST_GZ = ROOT + "blacklist.bed.gz"
 GTF2 = ROOT + "test_customids.gtf"
 BED_GZ = ROOT + "test.bed.gz"
 GTF_GZ = ROOT + "test.gtf.gz"
@@ -168,6 +169,21 @@ def test_multiBamSummary_bedmode_blacklist():
     for fname in ['.bam', '.cram']:
         fname = BAM + fname
         args = f"BED-file --BED {BED} -b {fname} {fname} -o {outfile} --blackListFileName {BLACKLIST}".split()
+        mbs.main(args)
+        resp = np.load(outfile)
+        matrix = resp['matrix']
+
+        nt.assert_allclose(matrix,
+            np.array(
+                [[1.0, 1.0], [59.0, 59.0], [59.0, 59.0], [6.0, 6.0], [58.0, 58.0], [16.0, 16.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+            )
+        )
+
+def test_multiBamSummary_bedmode_blacklist_gz():
+    _, outfile = tempfile.mkstemp(suffix=".npz")
+    for fname in ['.bam', '.cram']:
+        fname = BAM + fname
+        args = f"BED-file --BED {BED} -b {fname} {fname} -o {outfile} --blackListFileName {BLACKLIST_GZ}".split()
         mbs.main(args)
         resp = np.load(outfile)
         matrix = resp['matrix']
