@@ -289,6 +289,6 @@ pub fn r_bamcoverage(
         println!("Writing output to: {}", ofile);
     }
 
-    write_covfile(lines, ofile, ofiletype, chromsizes);
+    write_covfile(lines, ofile, ofiletype, chromsizes, nproc);
     Ok(())
 }

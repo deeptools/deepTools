@@ -395,7 +395,7 @@ pub fn r_bamcompare(
     } else {
         Box::new(raw_lines)
     };
-    write_covfile(lines, ofile, ofiletype, chromsizes);
+    write_covfile(lines, ofile, ofiletype, chromsizes, nproc);
     Ok(())
 }
 

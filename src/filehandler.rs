@@ -31,7 +31,13 @@ pub fn bam_ispaired(bam_ifile: &str) -> bool {
     return false;
 }
 
-pub fn write_covfile<LI>(lines: LI, ofile: &str, filetype: &str, chromsizes: HashMap<String, u32>)
+pub fn write_covfile<LI>(
+    lines: LI,
+    ofile: &str,
+    filetype: &str,
+    chromsizes: HashMap<String, u32>,
+    nproc: usize,
+)
 where
     LI: Iterator<Item = (String, Value)>,
 {
@@ -51,12 +57,26 @@ where
         }
     } else {
         let vals = BedParserStreamingIterator::wrap_infallible_iter(lines, false);
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .worker_threads(1)
-            .build()
-            .expect("Unable to create tokio runtime for bw writing.");
-        let writer = BigWigWrite::create_file(ofile, chromsizes)
+        let mut writer = BigWigWrite::create_file(ofile, chromsizes)
             .unwrap_or_else(|e| panic!("Failed to create output bigwig file '{}': {}", ofile, e));
+        // bigtools spawns one async task per chromosome (zoom aggregation + section
+        // encoding) and funnels their output through a single sequential writer task
+        // that owns the actual file handle; the crate's own channels serialize that
+        // hand-off, so raising worker count only widens the per-chromosome encode
+        // stage, it does not add any concurrent writers to `ofile`.
+        // Mirrors bigtools' own bedgraphtobigwig CLI: skip the multi-thread runtime
+        // entirely at nproc == 1, since it would only ever have one consumer.
+        let runtime = if nproc <= 1 {
+            writer.options.channel_size = 0;
+            tokio::runtime::Builder::new_current_thread()
+                .build()
+                .expect("Unable to create tokio runtime for bw writing.")
+        } else {
+            tokio::runtime::Builder::new_multi_thread()
+                .worker_threads(nproc)
+                .build()
+                .expect("Unable to create tokio runtime for bw writing.")
+        };
         let _ = writer.write(vals, runtime);
     }
 }
