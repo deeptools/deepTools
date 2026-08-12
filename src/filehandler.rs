@@ -3,6 +3,7 @@ use crate::covcalc::{Bin, Gtfparse, Region, Revalue, Scalingregions};
 use bigtools::beddata::BedParserStreamingIterator;
 use bigtools::{BigWigRead, BigWigWrite, Value};
 use flate2::Compression;
+use flate2::read::MultiGzDecoder;
 use flate2::write::GzEncoder;
 use itertools::Itertools;
 use rust_htslib::bam::{IndexedReader, Read, Reader};
@@ -55,10 +56,22 @@ where
     }
 }
 
+fn open_bed_or_gtf_reader(fp: &str) -> BufReader<Box<dyn std::io::Read>> {
+    let mut file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
+    let mut magic = [0u8; 2];
+    let n = std::io::Read::read(&mut file, &mut magic).unwrap_or(0);
+    std::io::Seek::seek(&mut file, std::io::SeekFrom::Start(0))
+        .expect(format!("Failed to seek in file: {}", fp).as_str());
+    if n == 2 && magic[0] == 0x1f && magic[1] == 0x8b {
+        BufReader::new(Box::new(MultiGzDecoder::new(file)) as Box<dyn std::io::Read>)
+    } else {
+        BufReader::new(Box::new(file) as Box<dyn std::io::Read>)
+    }
+}
+
 pub fn is_bed_or_gtf(fp: &str) -> String {
     // Check if file is a bed or gtf file.
-    let file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
-    let reader = BufReader::new(file);
+    let reader = open_bed_or_gtf_reader(fp);
     // Get the first line that doesn't start with #
     for line in reader.lines() {
         let line = line.unwrap();
@@ -85,7 +98,7 @@ pub fn read_gtffile(
     let mut entries: u32 = 0;
     let mut txnids: Vec<String> = Vec::new();
 
-    let gtffile = BufReader::new(File::open(gtf_file).unwrap());
+    let gtffile = open_bed_or_gtf_reader(gtf_file);
 
     if gtfparse.metagene {
         // metagene implementation - more work here.
@@ -157,9 +170,6 @@ pub fn read_gtffile(
             let has_exons = txn_hash.contains_key(&txnid);
             let has_transcript = txn_transcript.contains_key(&txnid);
 
-            // Only keep entries that have a 'transcript' feature line.
-            // This mirrors Python behavior: the transcript must exist in the
-            // interval tree for exons to be returned by findOverlaps().
             if has_exons && !has_transcript {
                 continue;
             }
@@ -266,7 +276,7 @@ pub fn read_bedfile(
     let mut nonbed12: bool = false;
     let mut entries: u32 = 0;
 
-    let bedfile = BufReader::new(File::open(bed_file).unwrap());
+    let bedfile = open_bed_or_gtf_reader(bed_file);
 
     for line in bedfile.lines() {
         let line = line.unwrap();
@@ -1011,7 +1021,6 @@ pub fn write_sorted_regions_bed(
         group_boundaries.push(cumsum);
     }
     for (idx, region) in regions.iter().enumerate() {
-        // Find label_idx: last boundary <= idx, matching Python: np.flatnonzero(boundaries <= idx)[-1]
         let label_idx = group_boundaries
             .iter()
             .take_while(|&&b| b <= idx as u32)
