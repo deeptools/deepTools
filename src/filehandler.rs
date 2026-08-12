@@ -256,7 +256,7 @@ pub fn read_gtffile(
 pub fn read_bedfile(
     bed_file: &String,
     metagene: bool,
-    chroms: Vec<&String>,
+    chroms: &HashMap<String, u32>,
 ) -> (Vec<Region>, (String, u32)) {
     // read a provided bed_file into a vec of Region
     // Additional return is the filename and the number of entries (for sorting later on if needed).
@@ -282,13 +282,26 @@ pub fn read_bedfile(
                 let mut entryname = format!("{}:{}-{}", fields[0], fields[1], fields[2]);
                 // Only check for valid chroms, if chroms vec is not empty.
 
-                if !chroms.contains(&&chrom.to_string()) {
+                let chromlen = match chroms.get(chrom) {
+                    Some(len) => *len,
+                    None => {
+                        println!(
+                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
+                            chrom, entryname
+                        );
+                        continue;
+                    }
+                };
+                let start: u32 = fields[1].parse().unwrap();
+                let mut end: u32 = fields[2].parse().unwrap();
+                if start >= chromlen {
                     println!(
-                        "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                        chrom, entryname
+                        "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
+                        entryname, chrom, chromlen
                     );
                     continue;
                 }
+                end = end.min(chromlen);
                 if names.contains_key(&entryname) {
                     let count = names.get_mut(&entryname).unwrap();
                     *count += 1;
@@ -296,8 +309,6 @@ pub fn read_bedfile(
                 } else {
                     names.insert(entryname.clone(), 0);
                 }
-                let start = fields[1].parse().unwrap();
-                let end = fields[2].parse().unwrap();
                 regions.push(Region {
                     chrom: fields[0].to_string(), //chrom
                     start: Revalue::U(start),     //start
@@ -315,15 +326,26 @@ pub fn read_bedfile(
                 }
                 let chrom = fields[0];
                 let mut entryname = fields[3].to_string();
-                if !chroms.contains(&&chrom.to_string()) {
+                let chromlen = match chroms.get(chrom) {
+                    Some(len) => *len,
+                    None => {
+                        println!(
+                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
+                            chrom, entryname
+                        );
+                        continue;
+                    }
+                };
+                let start: u32 = fields[1].parse().unwrap();
+                let mut end: u32 = fields[2].parse().unwrap();
+                if start >= chromlen {
                     println!(
-                        "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                        chrom, entryname
+                        "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
+                        entryname, chrom, chromlen
                     );
                     continue;
                 }
-                let start = fields[1].parse().unwrap();
-                let end = fields[2].parse().unwrap();
+                end = end.min(chromlen);
                 if names.contains_key(&entryname) {
                     let count = names.get_mut(&entryname).unwrap();
                     *count += 1;
@@ -345,10 +367,21 @@ pub fn read_bedfile(
             12 => {
                 let chrom = fields[0];
                 let mut entryname = fields[3].to_string();
-                if !chroms.contains(&&chrom.to_string()) {
+                let chromlen = match chroms.get(chrom) {
+                    Some(len) => *len,
+                    None => {
+                        println!(
+                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
+                            chrom, entryname
+                        );
+                        continue;
+                    }
+                };
+                let feat_start: u32 = fields[1].parse().unwrap();
+                if feat_start >= chromlen {
                     println!(
-                        "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                        chrom, entryname
+                        "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
+                        entryname, chrom, chromlen
                     );
                     continue;
                 }
@@ -360,25 +393,33 @@ pub fn read_bedfile(
                     names.insert(entryname.clone(), 0);
                 }
                 if metagene {
-                    let start: u32 = fields[1].parse().unwrap();
+                    let start: u32 = feat_start;
                     let blocksizes: Vec<u32> = fields[10]
                         .split(',')
                         .filter(|x| !x.is_empty())
                         .map(|x| x.parse().unwrap())
                         .collect();
-                    let length: u32 = blocksizes.iter().sum();
                     let blockstarts: Vec<u32> = fields[11]
                         .split(',')
                         .filter(|x| !x.is_empty())
                         .map(|x| x.parse::<u32>().unwrap() + start)
                         .collect();
 
-                    let (starts, ends) = blocksizes
+                    let (starts, ends): (Vec<u32>, Vec<u32>) = blocksizes
                         .into_iter()
                         .zip(blockstarts.into_iter())
                         .map(|(s, start)| (start, start + s))
                         .into_iter()
                         .unzip();
+                    // Clip exons to the chromosome length: drop any exon that starts
+                    // beyond it, and truncate one that only partially overflows.
+                    let (starts, ends): (Vec<u32>, Vec<u32>) = starts
+                        .into_iter()
+                        .zip(ends.into_iter())
+                        .filter(|&(s, _)| s < chromlen)
+                        .map(|(s, e)| (s, e.min(chromlen)))
+                        .unzip();
+                    let length: u32 = starts.iter().zip(ends.iter()).map(|(s, e)| e - s).sum();
                     regions.push(Region {
                         chrom: fields[0].to_string(),  //chrom
                         start: Revalue::V(starts),     //start
@@ -390,8 +431,8 @@ pub fn read_bedfile(
                     });
                     entries += 1;
                 } else {
-                    let start = fields[1].parse().unwrap();
-                    let end = fields[2].parse().unwrap();
+                    let start = feat_start;
+                    let end: u32 = fields[2].parse::<u32>().unwrap().min(chromlen);
                     regions.push(Region {
                         chrom: fields[0].to_string(),  //chrom
                         start: Revalue::U(start),      //start
@@ -465,17 +506,24 @@ pub fn chrombounds_from_bam(bamfiles: Vec<&str>) -> HashMap<String, u32> {
             );
         }
     }
-    let bam = IndexedReader::from_path(bamfiles[0]).unwrap();
-    let header = bam.header().clone();
-    let mut chromsizes = HashMap::new();
-    for tid in 0..header.target_count() {
-        let chromname = String::from_utf8(header.tid2name(tid).to_vec())
-            .expect("Invalid UTF-8 in chromosome name");
-        let chromlen = header
-            .target_len(tid)
-            .expect("Error retrieving length for chromosome");
-        if validchroms.contains(&chromname) {
-            chromsizes.insert(chromname, chromlen as u32);
+
+    let mut chromsizes: HashMap<String, u32> = HashMap::new();
+    for bamfile in bamfiles.iter() {
+        let bam = IndexedReader::from_path(bamfile).unwrap();
+        let header = bam.header().clone();
+        for tid in 0..header.target_count() {
+            let chromname = String::from_utf8(header.tid2name(tid).to_vec())
+                .expect("Invalid UTF-8 in chromosome name");
+            if !validchroms.contains(&chromname) {
+                continue;
+            }
+            let chromlen = header
+                .target_len(tid)
+                .expect("Error retrieving length for chromosome") as u32;
+            chromsizes
+                .entry(chromname)
+                .and_modify(|len| *len = (*len).min(chromlen))
+                .or_insert(chromlen);
         }
     }
     chromsizes

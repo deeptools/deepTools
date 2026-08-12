@@ -134,7 +134,7 @@ pub fn r_computematrix(
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
                 let (bls, _) =
-                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    read_bedfile(&blacklist.to_string(), false, &chromsizes);
                 let idx = BlacklistIndex::from_regions(&bls);
                 Some(Arc::new(idx))
             }
@@ -235,7 +235,7 @@ pub fn r_computematrix(
 
             match ftype.as_str() {
                 "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
-                "bed" => read_bedfile(r, metagene, chromsizes.keys().collect()),
+                "bed" => read_bedfile(r, metagene, &chromsizes),
                 _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
             }
         })
