@@ -83,6 +83,7 @@ pub struct Alignmentfilters {
     pub filterrnastrand: String,
     pub extendreads: bool,
     pub extendreadslen: u32,
+    pub extendreads_auto: bool,
     pub centerreads: bool,
     pub filter: bool,
     pub manipulate: bool,
@@ -116,6 +117,7 @@ impl Alignmentfilters {
         let _frs = filterrnastrand.unwrap_or(String::from("None"));
         let _extend = extendreads.unwrap_or(false);
         let _extendreadslen = extendreadslen.unwrap_or(0);
+        let _extend_auto = _extend && _extendreadslen == 0;
         let _center = centerreads.unwrap_or(false);
 
         // Set the manipulate bool for a quick escape in case manipulation is not needed.
@@ -154,6 +156,7 @@ impl Alignmentfilters {
             filterrnastrand: _frs,
             extendreads: _extend,
             extendreadslen: _extendreadslen,
+            extendreads_auto: _extend_auto,
             centerreads: _center,
             filter: filter,
             manipulate: manipulate,
@@ -294,13 +297,7 @@ impl Alignmentfilters {
             return None;
         }
         if self.offset != (0, 0) {
-            let mut blockvec: Vec<u32> = if self.extendreads {
-                self.rec_extension(rec)
-            } else {
-                rec.aligned_blocks()
-                    .flat_map(|x| x[0] as u32..x[1] as u32)
-                    .collect()
-            };
+            let mut blockvec: Vec<u32> = self.rec_blocks_for_offset(rec);
 
             let blocklen = blockvec.len() as i32;
 
@@ -337,8 +334,7 @@ impl Alignmentfilters {
                     self.offset.1
                 };
 
-                // if the range falls outside the vec, return none (retain deeptools 3 behavior)
-                if start < 0 || end < 0 || start >= blocklen || end >= blocklen || start >= end {
+                if start < 0 || end < 0 || start >= blocklen || end > blocklen || start >= end {
                     return None;
                 }
                 if rec.is_reverse() {
@@ -360,9 +356,95 @@ impl Alignmentfilters {
         return None;
     }
 
+    fn is_proper_pair_precise(&self, rec: &Record, max_paired_fragment_length: i64) -> bool {
+        if !rec.is_proper_pair() {
+            return false;
+        }
+        if rec.tid() != rec.mtid() {
+            return false;
+        }
+        if rec.insert_size().abs() > max_paired_fragment_length {
+            return false;
+        }
+        if rec.is_reverse() == rec.is_mate_reverse() {
+            return false;
+        }
+        if rec.is_reverse() {
+            rec.pos() >= rec.mpos()
+        } else {
+            rec.pos() <= rec.mpos()
+        }
+    }
+
+    pub fn rec_blocks_for_offset(&self, rec: &Record) -> Vec<u32> {
+        let mut blocks: Vec<(i64, i64)> = rec
+            .aligned_blocks()
+            .map(|x| (x[0] as i64, x[1] as i64))
+            .collect();
+
+        if self.extendreads {
+            let query_len: i64 = rec.seq_len_from_cigar(false) as i64;
+            let max_paired_fragment_length: i64 = if self.maxfraglen > 0 {
+                self.maxfraglen as i64
+            } else {
+                4 * self.extendreadslen as i64
+            };
+            let max_paired_fragment_length = if max_paired_fragment_length <= 0 {
+                1000
+            } else {
+                max_paired_fragment_length
+            };
+
+            if self.is_proper_pair_precise(rec, max_paired_fragment_length) {
+                if rec.is_reverse() {
+                    let foo = (rec.mpos(), rec.reference_start());
+                    if foo.0 < foo.1 {
+                        blocks.insert(0, foo);
+                    }
+                } else {
+                    let foo = (
+                        rec.reference_end(),
+                        rec.reference_end() + rec.insert_size().abs() - query_len,
+                    );
+                    if foo.0 < foo.1 {
+                        blocks.push(foo);
+                    }
+                }
+            } else {
+                if rec.is_reverse() {
+                    let mut start = rec.reference_start() - self.extendreadslen as i64 + query_len;
+                    if start < 0 {
+                        start = 0;
+                    }
+                    let foo = (start, rec.reference_start());
+                    if foo.0 < foo.1 {
+                        blocks.insert(0, foo);
+                    }
+                } else {
+                    let foo = (
+                        rec.reference_end(),
+                        rec.reference_end() + self.extendreadslen as i64 - query_len,
+                    );
+                    if foo.0 < foo.1 {
+                        blocks.push(foo);
+                    }
+                }
+            }
+        }
+
+        let mut stretch: Vec<u32> = Vec::new();
+        for (s, e) in blocks {
+            stretch.extend((s.max(0) as u32)..(e.max(0) as u32));
+        }
+
+        stretch
+    }
+
     pub fn rec_extension(&self, rec: &Record) -> Vec<u32> {
         let read_len: i64 = rec.seq_len_from_cigar(false) as i64;
-        if (self.extendreadslen as i64) <= read_len {
+        let is_pe = rec.is_proper_pair();
+
+        if !self.extendreads_auto && (self.extendreadslen as i64) <= read_len {
             let mut blockvec: Vec<u32> = Vec::new();
             rec.aligned_blocks().for_each(|x| {
                 blockvec.extend(x[0] as u32..x[1] as u32);
@@ -370,7 +452,7 @@ impl Alignmentfilters {
             return blockvec;
         }
 
-        let (mut fragment_start, mut fragment_end): (i64, i64) = if rec.is_proper_pair() {
+        let (mut fragment_start, mut fragment_end): (i64, i64) = if is_pe {
             if rec.is_reverse() {
                 (rec.mpos(), rec.reference_end())
             } else {

@@ -275,10 +275,8 @@ pub fn bam_pileup<'a>(
                     counts = vec![0u32; 1];
                     for record in bam.records() {
                         let mut record = record.expect("Error parsing record.");
-                        if filters.filter {
-                            if filters.filter_record(&record, &region.0.as_str()) {
-                                continue;
-                            }
+                        if filters.filter_record(&record, &region.0.as_str()) {
+                            continue;
                         }
                         if !ignorechr.contains(&region.0) {
                             if record.is_unmapped() {
@@ -352,10 +350,8 @@ pub fn bam_pileup<'a>(
                         }
                         for record in bam.records() {
                             let mut record = record.expect("Error parsing record.");
-                            if filters.filter {
-                                if filters.filter_record(&record, region.0.as_str()) {
-                                    continue;
-                                }
+                            if filters.filter_record(&record, region.0.as_str()) {
+                                continue;
                             }
                             if !ignorechr.contains(&region.0) {
                                 if record.is_unmapped() {
@@ -426,10 +422,8 @@ pub fn bam_pileup<'a>(
             for record in bam.records() {
                 let mut record = record.expect("Error parsing record.");
 
-                if filters.filter {
-                    if filters.filter_record(&record, region.0.as_str()) {
-                        continue;
-                    }
+                if filters.filter_record(&record, region.0.as_str()) {
+                    continue;
                 }
                 bin_indices.clear();
 
