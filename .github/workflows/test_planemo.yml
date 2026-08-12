@@ -13,11 +13,32 @@ defaults:
 
 jobs:
     planemo_test:
-        name: Planemo test
+        name: Planemo test (${{ matrix.tool }})
         runs-on: ubuntu-latest
         strategy:
+            fail-fast: false
             matrix:
-                chunk: [1, 2, 3]
+                tool:
+                    - alignmentSieve
+                    - bamCompare
+                    - bamCoverage
+                    - bamPEFragmentSize
+                    - bigwigCompare
+                    - bigwigAverage
+                    - computeGCBias
+                    - computeMatrix
+                    - computeMatrixOperations
+                    - correctGCBias
+                    - estimateReadFiltering
+                    - multiBamSummary
+                    - multiBigwigSummary
+                    - plotCorrelation
+                    - plotCoverage
+                    - plotEnrichment
+                    - plotFingerprint
+                    - plotHeatmap
+                    - plotPCA
+                    - plotProfiler
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
@@ -33,33 +54,19 @@ jobs:
             - name: pip install
               run: |
                   pip install .[actions]
-            - name: planemo
+            - name: fix test.bw symlink
               run: |
-                  ./.planemo.sh ${{ matrix.chunk }} ${{ env.GALAXY_BRANCH }}
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+                  unlink galaxy/wrapper/test-data/test.bw
+                  cp pydeeptools/deeptools/test/test_heatmapper/test.bw galaxy/wrapper/test-data/test.bw
+            - name: planemo test
+              run: |
+                  planemo test --no_dependency_resolution \
+                      --galaxy_branch ${{ env.GALAXY_BRANCH }} \
+                      --install_galaxy \
+                      galaxy/wrapper/${{ matrix.tool }}.xml
+            - name: upload test report
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
               with:
-                  name: "Tool test output ${{ matrix.chunk }}"
-                  path: upload
-    planemo_combine_outputs:
-        name: Combine chunked test results
-        needs: planemo_test
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-              with:
-                  path: artifacts
-            - name: Combine outputs
-              uses: galaxyproject/planemo-ci-action@823fb30673dde862fcf88fd267c369920675fb53 # v1.0.29
-              id: combine
-              with:
-                  mode: combine
-                  html-report: true
-            - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-              with:
-                  name: "All tool test results"
-                  path: upload
-            - name: Check outputs
-              uses: galaxyproject/planemo-ci-action@823fb30673dde862fcf88fd267c369920675fb53 # v1.0.29
-              id: check
-              with:
-                  mode: check
+                  name: "Tool test output ${{ matrix.tool }}"
+                  path: tool_test_output*
