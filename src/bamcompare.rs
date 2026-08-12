@@ -138,7 +138,7 @@ pub fn r_bamcompare(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, alfilter, false, false, true, 0,
+                            bamfile, &i, &binsize, &binsize, &ispe, &ignorechr, alfilter, false, false, true, 0,
                         )
                     })
                     .reduce(

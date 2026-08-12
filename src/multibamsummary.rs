@@ -208,6 +208,8 @@ pub fn r_mbams(
     // Divide up the regions into regionBlocks
     let regionblocks = region_divider(&regions);
 
+    let binstep = binsize + distance_between_bins;
+
     assert!(regionblocks.len() > 0, "No regions to process. Exiting.");
     if verbose {
         println!(
@@ -225,8 +227,8 @@ pub fn r_mbams(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, filter, false, gene_mode,
-                            false, 0,
+                            bamfile, &i, &binsize, &binstep, &ispe, &ignorechr, filter, false,
+                            gene_mode, false, 0,
                         )
                     })
                     .reduce(

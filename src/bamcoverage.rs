@@ -171,7 +171,7 @@ pub fn r_bamcoverage(
             .par_iter()
             .map(|i| {
                 bam_pileup(
-                    bamifile, &i, &binsize, &ispe, &ignorechr, &filters, collapse, false, true, _smoothlength,
+                    bamifile, &i, &binsize, &binsize, &ispe, &ignorechr, &filters, collapse, false, true, _smoothlength,
                 )
             })
             .reduce(

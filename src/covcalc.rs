@@ -193,6 +193,7 @@ pub fn bam_pileup<'a>(
     bam_ifile: &str,            // the bam file to consider.
     regionvec: &'a Vec<Region>, // Vector with regions to calculate coverage from.
     provbs: &u32, // Provisional bin size, in case we have gene mode later on this gets omitted.
+    binstep: &u32, // Distance from the start of one bin to the start of the next (bins mode only).
     ispe: &bool,  // Wether or not the bam file is paired end or single end.
     ignorechr: &Vec<String>, // chromosomes to ignore for normalization calculation.
     filters: &Alignmentfilters, // a struct with filtering settings.
@@ -398,8 +399,29 @@ pub fn bam_pileup<'a>(
             }
         } else {
             // populate the bg vector with 0 counts over all bins
-            counts = vec![0u32; (region.2 - region.1).div_ceil(*binsize) as usize];
+            let step: u32 = *binstep;
+            let nbins: u32 = if step == *binsize {
+                (region.2 - region.1).div_ceil(*binsize)
+            } else {
+                let span = region.2 - region.1;
+                if span >= *binsize {
+                    (span - *binsize) / step + 1
+                } else {
+                    0
+                }
+            };
+            counts = vec![0u32; nbins as usize];
             let mut bin_indices: Vec<usize> = Vec::with_capacity(512);
+
+            let bin_index_for = |pos: u32| -> Option<usize> {
+                let offset = pos - region.1;
+                let ix = offset / step;
+                if offset - ix * step < *binsize {
+                    Some(ix as usize)
+                } else {
+                    None
+                }
+            };
 
             for record in bam.records() {
                 let mut record = record.expect("Error parsing record.");
@@ -417,9 +439,10 @@ pub fn bam_pileup<'a>(
                         continue;
                     }
                     for &x in &manipulated_blockpos.unwrap() {
-                        let ix = ((x - region.1) / binsize) as usize;
-                        if ix < counts.len() {
-                            bin_indices.push(ix);
+                        if let Some(ix) = bin_index_for(x) {
+                            if ix < counts.len() {
+                                bin_indices.push(ix);
+                            }
                         }
                     }
                 } else {
@@ -430,9 +453,10 @@ pub fn bam_pileup<'a>(
                             && (x[0] as u32) <= region.2
                         {
                             for pos in x[0] as u32..x[1] as u32 {
-                                let ix = ((pos - region.1) / binsize) as usize;
-                                if ix < counts.len() {
-                                    bin_indices.push(ix);
+                                if let Some(ix) = bin_index_for(pos) {
+                                    if ix < counts.len() {
+                                        bin_indices.push(ix);
+                                    }
                                 }
                             }
                         }
@@ -525,7 +549,7 @@ pub fn bam_pileup<'a>(
 
                 for (ix, count) in smoothed.into_iter().skip(1).enumerate() {
                     bin = (ix + 1) as u32; // offset of 1 due to skip(1)
-                    start = (bin * binsize) + region.1;
+                    start = (bin * (*binstep)) + region.1;
                     end = min(start + binsize, region.2);
                     if count != lcov {
                         push_line(&region.0, lstart, lend, lcov);
@@ -541,7 +565,7 @@ pub fn bam_pileup<'a>(
                 push_line(&region.0, start, end, smoothed[0]);
                 for (ix, count) in smoothed.into_iter().skip(1).enumerate() {
                     let bin = (ix + 1) as u32;
-                    start = (bin * binsize) + region.1;
+                    start = (bin * (*binstep)) + region.1;
                     end = min(start + binsize, region.2);
                     push_line(&region.0, start, end, count);
                 }
