@@ -398,7 +398,9 @@ impl Alignmentfilters {
             // non proper pairs -> 'se mode'
             if rec.is_reverse() {
                 let ns: u32;
-                let _rem = self.extendreadslen - rec.seq_len_from_cigar(false) as u32;
+                let _rem = self
+                    .extendreadslen
+                    .saturating_sub(rec.seq_len_from_cigar(false) as u32);
                 if _rem > rec.reference_start() as u32 {
                     ns = 0;
                 } else {
@@ -414,7 +416,10 @@ impl Alignmentfilters {
                 }
             } else {
                 let ns = rec.reference_end() as u32;
-                let ne: u32 = ns + self.extendreadslen - rec.seq_len_from_cigar(false) as u32;
+                let ne: u32 = ns
+                    + self
+                        .extendreadslen
+                        .saturating_sub(rec.seq_len_from_cigar(false) as u32);
                 if ns < ne {
                     blockvec.extend(ns..ne);
                 }

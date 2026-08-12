@@ -253,8 +253,16 @@ pub fn bam_pileup<'a>(
                 regstruct.get_endu(),
             );
         }
-        bam.fetch((region.0.as_str(), region.1, region.2))
-            .expect(&format!("Error fetching region: {:?}", region));
+        if gene_mode && filters.manipulate {
+            let pad = filters.extendreadslen.max(1);
+            let fetch_start = region.1.saturating_sub(pad);
+            let fetch_end = region.2 + pad;
+            bam.fetch((region.0.as_str(), fetch_start, fetch_end))
+                .expect(&format!("Error fetching region: {:?}", region));
+        } else {
+            bam.fetch((region.0.as_str(), region.1, region.2))
+                .expect(&format!("Error fetching region: {:?}", region));
+        }
         let mut counts: Vec<u32>;
         let mut startstr: String = region.1.to_string();
         let mut endstr: String = region.2.to_string();
@@ -291,6 +299,17 @@ pub fn bam_pileup<'a>(
                                 }
                             }
                         }
+                        if filters.manipulate {
+                            let manipulated_blockpos = filters.manipulate_record(&record);
+                            let overlaps = manipulated_blockpos
+                                .map(|positions| {
+                                    positions.iter().any(|&x| x >= region.1 && x < region.2)
+                                })
+                                .unwrap_or(false);
+                            if !overlaps {
+                                continue;
+                            }
+                        }
                         counts[0] += 1;
                     }
                 }
@@ -314,11 +333,22 @@ pub fn bam_pileup<'a>(
                         .map(|(&s, &e)| (s, e))
                         .collect();
                     for exon in exons {
-                        bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
-                            .expect(&format!(
-                                "Error fetching region: {}:{},{}",
-                                regstruct.chrom, exon.0, exon.1
-                            ));
+                        if filters.manipulate {
+                            let pad = filters.extendreadslen.max(1);
+                            let fetch_start = exon.0.saturating_sub(pad);
+                            let fetch_end = exon.1 + pad;
+                            bam.fetch((regstruct.chrom.as_str(), fetch_start, fetch_end))
+                                .expect(&format!(
+                                    "Error fetching region: {}:{},{}",
+                                    regstruct.chrom, exon.0, exon.1
+                                ));
+                        } else {
+                            bam.fetch((regstruct.chrom.as_str(), exon.0, exon.1))
+                                .expect(&format!(
+                                    "Error fetching region: {}:{},{}",
+                                    regstruct.chrom, exon.0, exon.1
+                                ));
+                        }
                         for record in bam.records() {
                             let mut record = record.expect("Error parsing record.");
                             if filters.filter {
@@ -344,6 +374,17 @@ pub fn bam_pileup<'a>(
                                     if gather_lengths {
                                         readlens.push(record.seq_len() as u32);
                                     }
+                                }
+                            }
+                            if filters.manipulate {
+                                let manipulated_blockpos = filters.manipulate_record(&record);
+                                let overlaps = manipulated_blockpos
+                                    .map(|positions| {
+                                        positions.iter().any(|&x| x >= exon.0 && x < exon.1)
+                                    })
+                                    .unwrap_or(false);
+                                if !overlaps {
+                                    continue;
                                 }
                             }
                             counts[0] += 1;
