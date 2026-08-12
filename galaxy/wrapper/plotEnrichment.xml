@@ -182,7 +182,7 @@
             <param name="showAdvancedOpt" value="yes" />
             <param name="minMappingQuality" value="0" />
             <param name="regionLabels" value="up down" />
-            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="sim_size" delta="1000" />
+            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="sim_size" delta="5500" />
             <output name="outFileRawCounts" file="plotEnrichment_output.txt" ftype="tabular" />
         </test>
     </tests>

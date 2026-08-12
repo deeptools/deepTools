@@ -414,6 +414,18 @@ def writableFile(string):
     return string
 
 
+def readableFile(string):
+    """
+    Simple function that tests if a given path is readable
+    """
+    try:
+        open(string, 'r').close()
+    except OSError as e:
+        msg = "{} file can't be opened for reading: {}".format(string, e)
+        raise argparse.ArgumentTypeError(msg)
+    return string
+
+
 """
 Arguments used by heatmapper and profiler
 """

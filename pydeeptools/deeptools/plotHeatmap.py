@@ -5,8 +5,8 @@ from __future__ import division
 import argparse
 from collections import OrderedDict
 import numpy as np
-import matplotlib
 from deeptools import matplotlib_defaults
+import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
@@ -604,7 +604,7 @@ def plotMatrix(hm, outFileName,
         #  When no box is plotted the space between heatmaps is reduced
         fig.get_layout_engine().set(wspace=0.05, hspace=0.01, rect=(0.04, 0, 0.96, 0.85))
 
-    plt.savefig(outFileName, bbox_inches='tight', pad_inches=0.1, dpi=dpi, format=image_format)
+    plt.savefig(outFileName, dpi=dpi, format=image_format)
     plt.close()
 
 
