@@ -31,7 +31,8 @@ pub fn r_alignmentsieve(
     smartlabels: bool,            // derive label from filename
 ) -> PyResult<()> {
     // Open input BAM once and stream through in order
-    let mut bam = Reader::from_path(bamifile).unwrap();
+    let mut bam = Reader::from_path(bamifile)
+        .unwrap_or_else(|e| panic!("Failed to open input BAM file '{}': {}", bamifile, e));
     // Reserve one extra thread for reader if there are enough threads
     let mut writerthreads = nproc;
     if nproc > 4 {
@@ -52,10 +53,24 @@ pub fn r_alignmentsieve(
     let h = bam.header();
     let ntargets = h.target_count();
     let chrom_names: Vec<String> = (0..ntargets)
-        .map(|tid| String::from_utf8(h.tid2name(tid).to_vec()).unwrap())
+        .map(|tid| {
+            String::from_utf8(h.tid2name(tid).to_vec()).unwrap_or_else(|e| {
+                panic!(
+                    "BAM header target name for tid {} in '{}' is not valid UTF-8: {}",
+                    tid, bamifile, e
+                )
+            })
+        })
         .collect();
     let chrom_sizes: Vec<u64> = (0..ntargets)
-        .map(|tid| h.target_len(tid).unwrap() as u64)
+        .map(|tid| {
+            h.target_len(tid).unwrap_or_else(|| {
+                panic!(
+                    "BAM header for '{}' is missing a target length for tid {}",
+                    bamifile, tid
+                )
+            }) as u64
+        })
         .collect();
 
     // Load blacklist regions if provided
@@ -95,7 +110,10 @@ pub fn r_alignmentsieve(
 
     // Open output writers
     let mut obam = if !bed {
-        Some(Writer::from_path(ofile, &header, bam::Format::Bam).unwrap())
+        Some(
+            Writer::from_path(ofile, &header, bam::Format::Bam)
+                .unwrap_or_else(|e| panic!("Failed to create output BAM file '{}': {}", ofile, e)),
+        )
     } else {
         None
     };
@@ -103,13 +121,24 @@ pub fn r_alignmentsieve(
         let _ = w.set_threads(writerthreads);
     }
     let mut obed = if bed {
-        Some(BufWriter::new(File::create(ofile).unwrap()))
+        Some(BufWriter::new(File::create(ofile).unwrap_or_else(|e| {
+            panic!("Failed to create output BED file '{}': {}", ofile, e)
+        })))
     } else {
         None
     };
 
     let mut ofilterbam = if write_filters && !bed {
-        Some(Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap())
+        Some(
+            Writer::from_path(filtered_out_readsfile, &header, bam::Format::Bam).unwrap_or_else(
+                |e| {
+                    panic!(
+                        "Failed to create filtered-out-reads BAM file '{}': {}",
+                        filtered_out_readsfile, e
+                    )
+                },
+            ),
+        )
     } else {
         None
     };
@@ -118,7 +147,12 @@ pub fn r_alignmentsieve(
     }
     let mut ofilterbed = if write_filters && bed {
         Some(BufWriter::new(
-            File::create(filtered_out_readsfile).unwrap(),
+            File::create(filtered_out_readsfile).unwrap_or_else(|e| {
+                panic!(
+                    "Failed to create filtered-out-reads BED file '{}': {}",
+                    filtered_out_readsfile, e
+                )
+            }),
         ))
     } else {
         None
@@ -131,7 +165,12 @@ pub fn r_alignmentsieve(
     // prediction target (readshift never changes during iteration).
     if !readshift.is_empty() {
         for result in bam.records() {
-            let record = result.unwrap();
+            let record = result.unwrap_or_else(|e| {
+                panic!(
+                    "Failed to read a record from BAM file '{}': {}",
+                    bamifile, e
+                )
+            });
             total_reads += 1;
 
             let filtered = filter_record(&record, &chrom_names, &filters, record.tid() as usize);
@@ -139,7 +178,14 @@ pub fn r_alignmentsieve(
             if filtered {
                 filtered_reads += 1;
                 if let Some(ref mut w) = ofilterbam {
-                    w.write(&record).unwrap();
+                    w.write(&record).unwrap_or_else(|e| {
+                        panic!(
+                            "Failed to write record '{}' to filtered-out-reads BAM file '{}': {}",
+                            String::from_utf8_lossy(record.qname()),
+                            filtered_out_readsfile,
+                            e
+                        )
+                    });
                 } else if let Some(ref mut bw) = ofilterbed {
                     let tid = record.tid() as usize;
                     write_bed_line(&record, &chrom_names[tid], chrom_sizes[tid], bw);
@@ -150,7 +196,14 @@ pub fn r_alignmentsieve(
             let tid = record.tid() as usize;
             if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid]) {
                 if let Some(ref mut w) = obam {
-                    w.write(&shifted).unwrap();
+                    w.write(&shifted).unwrap_or_else(|e| {
+                        panic!(
+                            "Failed to write shifted record '{}' to output BAM file '{}': {}",
+                            String::from_utf8_lossy(shifted.qname()),
+                            ofile,
+                            e
+                        )
+                    });
                 } else if let Some(ref mut bw) = obed {
                     let tid = shifted.tid() as usize;
                     write_bed_line(&shifted, &chrom_names[tid], chrom_sizes[tid], bw);
@@ -159,7 +212,12 @@ pub fn r_alignmentsieve(
         }
     } else {
         for result in bam.records() {
-            let record = result.unwrap();
+            let record = result.unwrap_or_else(|e| {
+                panic!(
+                    "Failed to read a record from BAM file '{}': {}",
+                    bamifile, e
+                )
+            });
             total_reads += 1;
 
             let filtered = filter_record(&record, &chrom_names, &filters, record.tid() as usize);
@@ -167,7 +225,14 @@ pub fn r_alignmentsieve(
             if filtered {
                 filtered_reads += 1;
                 if let Some(ref mut w) = ofilterbam {
-                    w.write(&record).unwrap();
+                    w.write(&record).unwrap_or_else(|e| {
+                        panic!(
+                            "Failed to write record '{}' to filtered-out-reads BAM file '{}': {}",
+                            String::from_utf8_lossy(record.qname()),
+                            filtered_out_readsfile,
+                            e
+                        )
+                    });
                 } else if let Some(ref mut bw) = ofilterbed {
                     let tid = record.tid() as usize;
                     write_bed_line(&record, &chrom_names[tid], chrom_sizes[tid], bw);
@@ -176,7 +241,14 @@ pub fn r_alignmentsieve(
             }
 
             if let Some(ref mut w) = obam {
-                w.write(&record).unwrap();
+                w.write(&record).unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to write record '{}' to output BAM file '{}': {}",
+                        String::from_utf8_lossy(record.qname()),
+                        ofile,
+                        e
+                    )
+                });
             } else if let Some(ref mut bw) = obed {
                 let tid = record.tid() as usize;
                 write_bed_line(&record, &chrom_names[tid], chrom_sizes[tid], bw);
@@ -186,10 +258,16 @@ pub fn r_alignmentsieve(
 
     // Flush writers
     if let Some(mut w) = obed {
-        w.flush().unwrap();
+        w.flush()
+            .unwrap_or_else(|e| panic!("Failed to flush output BED file '{}': {}", ofile, e));
     }
     if let Some(mut w) = ofilterbed {
-        w.flush().unwrap();
+        w.flush().unwrap_or_else(|e| {
+            panic!(
+                "Failed to flush filtered-out-reads BED file '{}': {}",
+                filtered_out_readsfile, e
+            )
+        });
     }
 
     // Write filter metrics
@@ -202,9 +280,24 @@ pub fn r_alignmentsieve(
             bamifile.to_string()
         };
 
-        let mut of = File::create(filter_metrics).unwrap();
-        writeln!(of, "#bamFilterReads --filterMetrics").unwrap();
-        writeln!(of, "#File\tReads Remaining\tTotal Initial Reads").unwrap();
+        let mut of = File::create(filter_metrics).unwrap_or_else(|e| {
+            panic!(
+                "Failed to create filter metrics file '{}': {}",
+                filter_metrics, e
+            )
+        });
+        writeln!(of, "#bamFilterReads --filterMetrics").unwrap_or_else(|e| {
+            panic!(
+                "Failed to write to filter metrics file '{}': {}",
+                filter_metrics, e
+            )
+        });
+        writeln!(of, "#File\tReads Remaining\tTotal Initial Reads").unwrap_or_else(|e| {
+            panic!(
+                "Failed to write to filter metrics file '{}': {}",
+                filter_metrics, e
+            )
+        });
         writeln!(
             of,
             "{}\t{}\t{}",
@@ -212,7 +305,12 @@ pub fn r_alignmentsieve(
             total_reads - filtered_reads,
             total_reads
         )
-        .unwrap();
+        .unwrap_or_else(|e| {
+            panic!(
+                "Failed to write to filter metrics file '{}': {}",
+                filter_metrics, e
+            )
+        });
     }
 
     if verbose {

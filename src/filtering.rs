@@ -137,8 +137,8 @@ impl Alignmentfilters {
             filter = true;
         }
 
-        let blacklist_index = if blacklist.is_some() {
-            Some(BlacklistIndex::from_regions(blacklist.as_ref().unwrap()))
+        let blacklist_index = if let Some(bl) = blacklist.as_ref() {
+            Some(BlacklistIndex::from_regions(bl))
         } else {
             None
         };
@@ -165,12 +165,17 @@ impl Alignmentfilters {
 
     pub fn set_extendreadslen(&mut self, bamfile: &str, nproc: usize, regions: &Vec<Region>) {
         const FREAD: u16 = 0x40;
-        let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+        let pool = ThreadPoolBuilder::new()
+            .num_threads(nproc)
+            .build()
+            .unwrap_or_else(|e| panic!("Failed to build a thread pool with {} threads: {}", nproc, e));
         let fraglens: Vec<u32> = pool.install(|| {
             regions
                 .par_iter()
                 .flat_map(|i| {
-                    let mut bam = IndexedReader::from_path(bamfile).unwrap();
+                    let mut bam = IndexedReader::from_path(bamfile).unwrap_or_else(|e| {
+                        panic!("Failed to open indexed BAM file '{}': {}", bamfile, e)
+                    });
                     bam.fetch((i.chrom.as_str(), i.get_startu(), i.get_endu()))
                         .expect(&format!("Error fetching region: {:?}", i));
                     let mut fraglens: Vec<u32> = vec![];
@@ -485,7 +490,10 @@ impl Alignmentfilters {
 
     pub fn rec_in_blacklist(&self, rec: &Record, chrom: &str) -> bool {
         let pos = rec.pos() as u32;
-        let idx = self.blacklist_index.as_ref().unwrap();
+        let idx = self
+            .blacklist_index
+            .as_ref()
+            .expect("rec_in_blacklist called but no blacklist_index was set");
         if idx.contains(chrom, pos) {
             return true;
         }

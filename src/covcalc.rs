@@ -16,19 +16,26 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
     // Finally, a Vec with chromsizes is returned as well.
     let mut found_chroms: HashMap<String, usize> = HashMap::new();
     for bam in bam_ifile.iter() {
-        let bam = IndexedReader::from_path(bam).unwrap();
-        let chroms: Vec<String> = bam
+        let bamreader = IndexedReader::from_path(bam)
+            .unwrap_or_else(|e| panic!("Failed to open indexed BAM file '{}': {}", bam, e));
+        let chroms: Vec<String> = bamreader
             .header()
             .target_names()
             .iter()
-            .map(|x| String::from_utf8(x.to_vec()).unwrap())
+            .map(|x| {
+                String::from_utf8(x.to_vec()).unwrap_or_else(|e| {
+                    panic!("BAM header for '{}' has a non-UTF-8 chromosome name: {}", bam, e)
+                })
+            })
             .collect();
         for chrom in chroms.iter() {
             // if it's not in the hashmap, add it, else increment count
             if !found_chroms.contains_key(chrom) {
                 found_chroms.insert(chrom.clone(), 1);
             } else {
-                let count = found_chroms.get_mut(chrom).unwrap();
+                let count = found_chroms
+                    .get_mut(chrom)
+                    .expect("Chromosome key vanished from found_chroms map between check and update");
                 *count += 1;
             }
         }
@@ -52,8 +59,9 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
     );
     let mut chromsizes: HashMap<String, u32> = HashMap::new();
     for bam in bam_ifile.iter() {
-        let bam = IndexedReader::from_path(bam).unwrap();
-        let header = bam.header().clone();
+        let bamreader = IndexedReader::from_path(bam)
+            .unwrap_or_else(|e| panic!("Failed to open indexed BAM file '{}': {}", bam, e));
+        let header = bamreader.header().clone();
         for tid in 0..header.target_count() {
             let chromname = String::from_utf8(header.tid2name(tid).to_vec())
                 .expect("Invalid UTF-8 in chromosome name");
@@ -97,7 +105,9 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
                 "Supplied chromosome {} is not found.",
                 chromname
             );
-            let chromlen = chromsizes.get(&chromname).unwrap();
+            let chromlen = chromsizes
+                .get(&chromname)
+                .unwrap_or_else(|| panic!("Chromosome '{}' not found in chromsizes map", chromname));
             let _reg = Region {
                 chrom: chromname.to_string(),
                 start: Revalue::U(0),
@@ -123,7 +133,9 @@ pub fn parse_regions(region: &str, bam_ifile: Vec<&str>) -> (Vec<Region>, HashMa
                 "Supplied chromosome {} is not found.",
                 chromname
             );
-            let chromlen = chromsizes.get(&chromname).unwrap();
+            let chromlen = chromsizes
+                .get(&chromname)
+                .unwrap_or_else(|| panic!("Chromosome '{}' not found in chromsizes map", chromname));
             assert!(
                 end <= *chromlen,
                 "Suplied region end goes beyond chromosome boundary. {} > {}",
@@ -232,7 +244,8 @@ pub fn bam_pileup<'a>(
     // for binsize > 1, we count the number of reads that overlap a bin.
 
     // Open BAM file once per thread, reuse across all regions
-    let mut bam = IndexedReader::from_path(&bam_ifile).unwrap();
+    let mut bam = IndexedReader::from_path(&bam_ifile)
+        .unwrap_or_else(|e| panic!("Failed to open indexed BAM file '{}': {}", bam_ifile, e));
 
     for regstruct in regionvec.iter() {
         // There are two options here:
@@ -429,10 +442,11 @@ pub fn bam_pileup<'a>(
 
                 if filters.manipulate {
                     let manipulated_blockpos = filters.manipulate_record(&mut record);
-                    if manipulated_blockpos.is_none() {
-                        continue;
-                    }
-                    for &x in &manipulated_blockpos.unwrap() {
+                    let manipulated_blockpos = match manipulated_blockpos {
+                        Some(blockpos) => blockpos,
+                        None => continue,
+                    };
+                    for &x in &manipulated_blockpos {
                         if let Some(ix) = bin_index_for(x) {
                             if ix < counts.len() {
                                 bin_indices.push(ix);
@@ -521,7 +535,8 @@ pub fn bam_pileup<'a>(
         let mut outbuf = Vec::with_capacity(smoothed.len().max(1) * 64);
         let mut push_line = |chrom: &str, s: u32, e: u32, v: f32| {
             use std::io::Write;
-            writeln!(outbuf, "{}\t{}\t{}\t{}", chrom, s, e, v).unwrap();
+            writeln!(outbuf, "{}\t{}\t{}\t{}", chrom, s, e, v)
+                .expect("Failed to write bedgraph line to in-memory buffer");
         };
         if smoothed.len() == 1 {
             push_line(&region.0, 0, 0, smoothed[0]); // start/end overridden below for gene_mode
@@ -531,7 +546,7 @@ pub fn bam_pileup<'a>(
                 "{}\t{}\t{}\t{}",
                 region.0, startstr, endstr, smoothed[0]
             )
-            .unwrap();
+            .expect("Failed to write bedgraph line to in-memory buffer");
         } else {
             if collapse {
                 let mut lcov = smoothed[0];
@@ -573,7 +588,13 @@ pub fn bam_pileup<'a>(
                 .open(&bg)
                 .expect("Error opening tmp file.");
             let mut writer = BufWriter::new(file);
-            writer.write_all(&outbuf).unwrap();
+            writer.write_all(&outbuf).unwrap_or_else(|e| {
+                panic!(
+                    "Failed to write coverage data to temp bedgraph file '{}': {}",
+                    bg.path().display(),
+                    e
+                )
+            });
         }
     }
     let bgpath = bg.into_temp_path();
@@ -637,7 +658,9 @@ impl Region {
                 },
                 "-" => match &self.end {
                     Revalue::U(end) => *end,
-                    Revalue::V(ends) => *ends.last().unwrap(),
+                    Revalue::V(ends) => *ends.last().unwrap_or_else(|| {
+                        panic!("Region '{}' has an empty exon-end vector", self.name)
+                    }),
                 },
                 _ => panic!(
                     "Strand should either be + or - or . {:?} is not supported.",
@@ -647,7 +670,9 @@ impl Region {
             "TES" => match self.strand.as_str() {
                 "+" | "." => match &self.end {
                     Revalue::U(end) => *end,
-                    Revalue::V(ends) => *ends.last().unwrap(),
+                    Revalue::V(ends) => *ends.last().unwrap_or_else(|| {
+                        panic!("Region '{}' has an empty exon-end vector", self.name)
+                    }),
                 },
                 "-" => match &self.start {
                     Revalue::U(start) => *start,
@@ -718,8 +743,12 @@ impl Region {
                     anchorstop = *end;
                 }
                 (Revalue::V(start), Revalue::V(end)) => {
-                    anchorstart = *start.first().unwrap();
-                    anchorstop = *end.last().unwrap();
+                    anchorstart = *start
+                        .first()
+                        .unwrap_or_else(|| panic!("Region '{}' has an empty exon-start vector", self.name));
+                    anchorstop = *end
+                        .last()
+                        .unwrap_or_else(|| panic!("Region '{}' has an empty exon-end vector", self.name));
                 }
                 _ => panic!(
                     "Start and End are not either both u32, or Vecs. This means your regions file is ill-defined. Fix {}.",
@@ -1068,14 +1097,18 @@ impl Region {
     pub fn get_endu(&self) -> u32 {
         match &self.end {
             Revalue::U(end) => *end,
-            Revalue::V(ends) => *ends.last().unwrap(),
+            Revalue::V(ends) => *ends
+                .last()
+                .unwrap_or_else(|| panic!("Region '{}' has an empty exon-end vector", self.name)),
         }
     }
 
     pub fn get_startu(&self) -> u32 {
         match &self.start {
             Revalue::U(start) => *start,
-            Revalue::V(starts) => *starts.first().unwrap(),
+            Revalue::V(starts) => *starts
+                .first()
+                .unwrap_or_else(|| panic!("Region '{}' has an empty exon-start vector", self.name)),
         }
     }
 
@@ -1169,7 +1202,9 @@ impl Region {
                         }
                         if scale_regions.unscaled3prime > 0 {
                             let mut walked_bps: u32 = 0;
-                            let mut lastanchor: u32 = *end.last().unwrap();
+                            let mut lastanchor: u32 = *end
+                                .last()
+                                .unwrap_or_else(|| panic!("Region '{}' has an empty exon-end vector", self.name));
                             while walked_bps < scale_regions.unscaled3prime {
                                 let (bin, retanch) = refpoint_exonwalker(
                                     &exons,
@@ -1295,7 +1330,9 @@ impl Region {
 
                         if scale_regions.unscaled5prime > 0 {
                             let mut walked_bps: u32 = 0;
-                            let mut lastanchor: u32 = *end.last().unwrap();
+                            let mut lastanchor: u32 = *end
+                                .last()
+                                .unwrap_or_else(|| panic!("Region '{}' has an empty exon-end vector", self.name));
                             while walked_bps < scale_regions.unscaled5prime {
                                 let (bin, retanch) = refpoint_exonwalker(
                                     &exons,
@@ -1443,7 +1480,9 @@ fn refpoint_exonwalker(
                             if nan_after_end {
                                 pad += remainingbin;
                             } else {
-                                let last = start_end_vec.last_mut().unwrap();
+                                let last = start_end_vec.last_mut().expect(
+                                    "start_end_vec is empty while extending the last exon/genomic block",
+                                );
                                 assert_eq!(
                                     last.1, lastanchor,
                                     "In the exon - genomic walk, our coordinates are not contiguous"
@@ -1537,7 +1576,9 @@ fn refpoint_exonwalker(
                             if nan_after_end {
                                 pad += remainingbin;
                             } else {
-                                let last = start_end_vec.last_mut().unwrap();
+                                let last = start_end_vec.last_mut().expect(
+                                    "start_end_vec is empty while extending the last exon/genomic block",
+                                );
                                 assert_eq!(
                                     last.0, lastanchor,
                                     "In the exon - genomic walk (reverse), our coordinates are not contiguous"
@@ -1635,7 +1676,9 @@ fn chop_exons(exons: &Vec<(u32, u32)>, mut left: u32, mut right: u32) -> Vec<(u3
     }
 
     while !ex.is_empty() && right > 0 {
-        let (s, e) = *ex.last().unwrap();
+        let (s, e) = *ex
+            .last()
+            .expect("chop_exons: ex became empty despite the !ex.is_empty() loop guard");
         let width = e - s;
         if width <= right {
             ex.pop();
@@ -1788,16 +1831,22 @@ impl Bin {
         match self {
             Bin::Conbin(start, _) => *start,
             Bin::PaddedConbin(start, _, _) => *start,
-            Bin::Catbin(starts) => starts.first().unwrap().0,
-            Bin::PaddedCatbin(starts, _) => starts.first().unwrap().0,
+            Bin::Catbin(starts) => {
+                starts.first().expect("Bin::Catbin has an empty start vector").0
+            }
+            Bin::PaddedCatbin(starts, _) => {
+                starts.first().expect("Bin::PaddedCatbin has an empty start vector").0
+            }
         }
     }
     pub fn get_end(&self) -> u32 {
         match self {
             Bin::Conbin(_, end) => *end,
             Bin::PaddedConbin(_, end, _) => *end,
-            Bin::Catbin(ends) => ends.last().unwrap().1,
-            Bin::PaddedCatbin(ends, _) => ends.last().unwrap().1,
+            Bin::Catbin(ends) => ends.last().expect("Bin::Catbin has an empty end vector").1,
+            Bin::PaddedCatbin(ends, _) => {
+                ends.last().expect("Bin::PaddedCatbin has an empty end vector").1
+            }
         }
     }
 }
