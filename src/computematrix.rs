@@ -273,28 +273,45 @@ pub fn r_computematrix(
 
     // Discriminate between reference-point and scale-regions mode.
 
-    let matrix: Vec<Vec<f32>> = pool.install(|| {
-        bw_files
+    // bwintervals is single-threaded per bigwig file (BigWigRead::get_interval takes
+    // &mut self, so one reader can't be shared across threads). Parallelizing only
+    // across bw_files.par_iter() therefore leaves most of a reserved node idle whenever
+    // there are fewer tracks than threads, which is the common case. Add a second
+    // parallelism axis by also chunking the region list per file, mirroring the
+    // "open one reader per worker, reuse across a chunk of regions" pattern bam_pileup
+    // already uses for BAM reading. Chunk count in one dimension is intentionally
+    // rounded up so busy still finishes at nproc-ish task count even with 1 bigwig file.
+    let chunks_per_file = (nproc / bw_files.len().max(1)).max(1);
+    let region_chunks = chunk_ranges(regions.len(), chunks_per_file);
+    let tasks: Vec<(usize, usize, usize)> = (0..bw_files.len())
+        .flat_map(|fi| region_chunks.iter().map(move |&(s, e)| (fi, s, e)))
+        .collect();
+
+    // rayon's par_iter().collect() on an indexed source (a Vec, here) is
+    // order-preserving: `results[k]` always corresponds to `tasks[k]`, regardless of
+    // which task finishes first. That lets the merge below stay a plain sequential
+    // walk instead of needing its own bookkeeping to figure out where each chunk goes.
+    let results: Vec<Vec<Vec<f32>>> = pool.install(|| {
+        tasks
             .par_iter()
-            .map(|i| {
+            .map(|&(fi, s, e)| {
                 bwintervals(
-                    &i,
-                    &regions,
-                    &slopregions,
+                    &bw_files[fi],
+                    &regions[s..e],
+                    &slopregions[s..e],
                     &scale_regions,
                     blacklist_index.as_deref(),
                 )
             })
-            .reduce(
-                || vec![vec![]; regions.len()],
-                |mut acc, vec_of_vecs| {
-                    for (i, inner_vec) in vec_of_vecs.into_iter().enumerate() {
-                        acc[i].extend(inner_vec);
-                    }
-                    acc
-                },
-            )
+            .collect()
     });
+
+    let mut matrix: Vec<Vec<f32>> = vec![Vec::new(); regions.len()];
+    for (&(_fi, s, e), chunk_result) in tasks.iter().zip(results.into_iter()) {
+        for (local_ix, region_ix) in (s..e).enumerate() {
+            matrix[region_ix].extend(chunk_result[local_ix].iter().copied());
+        }
+    }
     matrix_dump(
         sortregions,
         sortusing,
@@ -310,6 +327,27 @@ pub fn r_computematrix(
     );
 
     Ok(())
+}
+
+/// Split `[0, n)` into up to `k` contiguous, roughly-equal ranges. Returns a single
+/// `(0, n)` range if `n == 0` or `k <= 1`, so callers never need to special-case
+/// "no chunking" separately from "one chunk".
+fn chunk_ranges(n: usize, k: usize) -> Vec<(usize, usize)> {
+    if n == 0 || k <= 1 {
+        return vec![(0, n)];
+    }
+    let k = k.min(n);
+    let base = n / k;
+    let rem = n % k;
+    let mut ranges = Vec::with_capacity(k);
+    let mut start = 0;
+    for i in 0..k {
+        let len = base + if i < rem { 1 } else { 0 };
+        let end = start + len;
+        ranges.push((start, end));
+        start = end;
+    }
+    ranges
 }
 
 fn slop_region(
