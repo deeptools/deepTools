@@ -185,7 +185,10 @@ pub fn r_mbams(
         Some(centerreads),
     );
 
-    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(nproc)
+        .build()
+        .unwrap_or_else(|e| panic!("Failed to build a thread pool with {} threads: {}", nproc, e));
 
     // Zip together bamfiles and ispe into a vec of tuples.
     let bampfiles: Vec<_> = bamfiles.into_iter().zip(ispe.into_iter()).collect();
@@ -266,7 +269,16 @@ pub fn r_mbams(
             .flat_map(|c| {
                 let readers: Vec<_> = c
                     .par_iter()
-                    .map(|x| BufReader::new(File::open(x).unwrap()).lines())
+                    .map(|x| {
+                        BufReader::new(File::open(x).unwrap_or_else(|e| {
+                            panic!(
+                                "Failed to open internal temp bedgraph file '{}': {}",
+                                x.display(),
+                                e
+                            )
+                        }))
+                        .lines()
+                    })
                     .collect();
                 let mut _matvec: Vec<Vec<f32>> = Vec::new();
                 let mut _regions: Vec<(String, String, String)> = Vec::new();
@@ -274,14 +286,19 @@ pub fn r_mbams(
                     // unwrap all lines in _l
                     let lines: Vec<_> = _l
                         .par_iter_mut()
-                        .map(|x| x.as_mut().unwrap())
+                        .map(|x| {
+                            x.as_mut()
+                                .expect("Failed to read a line from internal temp bedgraph file")
+                        })
                         .map(|x| x.split('\t').collect())
                         .map(|x: Vec<&str>| {
                             (
                                 x[0].to_string(),
                                 x[1].to_string(),
                                 x[2].to_string(),
-                                x[3].parse::<f32>().unwrap(),
+                                x[3].parse::<f32>().unwrap_or_else(|e| {
+                                    panic!("Failed to parse coverage value '{}': {}", x[3], e)
+                                }),
                             )
                         })
                         .collect();
@@ -309,14 +326,18 @@ pub fn r_mbams(
         if verbose {
             println!("Writing raw counts to disk.");
         }
-        let mut cfile = BufWriter::new(File::create(out_raw_counts).unwrap());
+        let mut cfile = BufWriter::new(File::create(out_raw_counts).unwrap_or_else(|e| {
+            panic!("Failed to create raw counts output file '{}': {}", out_raw_counts, e)
+        }));
         // Write the header to the file.
         let mut headstr = String::new();
         headstr.push_str("#\'chr\'\t\'start\'\t\'end\'");
         for label in bamlabels.iter() {
             headstr.push_str(&format!("\t\'{}\'", label));
         }
-        writeln!(cfile, "{}", headstr).unwrap();
+        writeln!(cfile, "{}", headstr).unwrap_or_else(|e| {
+            panic!("Failed to write header to raw counts file '{}': {}", out_raw_counts, e)
+        });
         let outlines: Vec<String> = pool.install(|| {
             regions
                 .par_iter()
@@ -332,16 +353,24 @@ pub fn r_mbams(
                 .collect()
         });
         for line in outlines {
-            writeln!(cfile, "{}", line).unwrap();
+            writeln!(cfile, "{}", line).unwrap_or_else(|e| {
+                panic!("Failed to write line to raw counts file '{}': {}", out_raw_counts, e)
+            });
         }
     }
 
     // Create 2darray from matvec
+    let (matvec_rows, matvec_cols) = (matvec.len(), matvec[0].len());
     let matarr: Array2<f32> = Array2::from_shape_vec(
-        (matvec.len(), matvec[0].len()),
+        (matvec_rows, matvec_cols),
         matvec.into_iter().flatten().collect(),
     )
-    .unwrap();
+    .unwrap_or_else(|e| {
+        panic!(
+            "Failed to build the {}x{} coverage matrix (ragged rows?): {}",
+            matvec_rows, matvec_cols, e
+        )
+    });
 
     // If scalefactors are required, calc and save them now.
     if scaling_factors != "None" {
@@ -350,20 +379,31 @@ pub fn r_mbams(
         }
         let sf = deseq_scalefactors(&matarr);
         // save scalefactors to file
-        let mut sf_file = File::create(scaling_factors).unwrap();
-        writeln!(sf_file, "sample\tscalingFactor").unwrap();
+        let mut sf_file = File::create(scaling_factors).unwrap_or_else(|e| {
+            panic!("Failed to create scaling factors file '{}': {}", scaling_factors, e)
+        });
+        writeln!(sf_file, "sample\tscalingFactor").unwrap_or_else(|e| {
+            panic!("Failed to write header to scaling factors file '{}': {}", scaling_factors, e)
+        });
         for (sf, label) in sf.iter().zip(bamlabels.iter()) {
-            writeln!(sf_file, "{}\t{}", label, sf).unwrap();
+            writeln!(sf_file, "{}\t{}", label, sf).unwrap_or_else(|e| {
+                panic!("Failed to write to scaling factors file '{}': {}", scaling_factors, e)
+            });
         }
     }
 
     if verbose {
         println!("Writing matrix to disk.");
     }
-    let mut npz = NpzWriter::new_compressed(File::create(ofile).unwrap());
-    npz.add_array("matrix", &matarr).unwrap();
-    npz.add_array("labels", &bamlabels_arr).unwrap();
-    npz.finish().unwrap();
+    let mut npz = NpzWriter::new_compressed(
+        File::create(ofile).unwrap_or_else(|e| panic!("Failed to create output npz file '{}': {}", ofile, e)),
+    );
+    npz.add_array("matrix", &matarr)
+        .unwrap_or_else(|e| panic!("Failed to write 'matrix' array to npz file '{}': {}", ofile, e));
+    npz.add_array("labels", &bamlabels_arr)
+        .unwrap_or_else(|e| panic!("Failed to write 'labels' array to npz file '{}': {}", ofile, e));
+    npz.finish()
+        .unwrap_or_else(|e| panic!("Failed to finalize npz file '{}': {}", ofile, e));
     if verbose {
         println!("Matrix written.");
     }

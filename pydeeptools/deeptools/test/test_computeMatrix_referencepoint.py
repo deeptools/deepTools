@@ -13,6 +13,8 @@ ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_computematr
 REGIONS_IN1 = ROOT + "input_computeMatrix_regions1.bed"
 REGIONS_IN2 = ROOT + "input_computeMatrix_regions2.bed"
 REGIONS_GTF = ROOT + "input_computeMatrix_regions3.gtf"
+REGIONS_IN1_GZ = ROOT + "input_computeMatrix_regions1.bed.gz"
+REGIONS_GTF_GZ = ROOT + "input_computeMatrix_regions3.gtf.gz"
 REGIONS_BED12 = ROOT + "input_computeMatrix_regions4bed12.bed"
 BL = ROOT + "input_computeMatrix_blacklist.bed"
 BIGWIG_IN1 = ROOT + "input_computeMatrix_bw1.bw"
@@ -233,6 +235,28 @@ def test_compute_matrix_refpoint():
     args = f"""
     reference-point
     --regionsFileName {REGIONS_IN1}
+    --scoreFileName {BIGWIG_IN1}
+    -b 20 -a 20
+    -o {outfile_npz} --outFileNameMatrix {outfile_mat}
+    """.split()
+    cm.main(args)
+
+    header_differences, data_differences, rowdiffdic = _compare_mat_gz(outfile_npz, exp_npz)
+    assert not header_differences, f"header mismatch: {header_differences}"
+    assert not data_differences, f"data mismatch: {data_differences}\nrowdiffdict: {rowdiffdic}"
+
+    mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
+    assert mat_match, f"matrix mismatch: {mat_diffs}"
+
+def test_compute_matrix_refpoint_bed_gz():
+    exp_npz = ROOT + "mat.gz"
+    exp_mat = ROOT + "mat.tab"
+
+    _, outfile_npz = tempfile.mkstemp(suffix='.gz')
+    _, outfile_mat = tempfile.mkstemp(suffix='.tab')
+    args = f"""
+    reference-point
+    --regionsFileName {REGIONS_IN1_GZ}
     --scoreFileName {BIGWIG_IN1}
     -b 20 -a 20
     -o {outfile_npz} --outFileNameMatrix {outfile_mat}
@@ -945,6 +969,28 @@ def test_compute_matrix_refpoint_gtf():
     args = f"""
     reference-point
     --regionsFileName {REGIONS_GTF}
+    --scoreFileName {BIGWIG_IN1} {BIGWIG_IN2} {BIGWIG_IN3}
+    -b 30 -a 30 --binSize 30
+    -o {outfile_npz} --outFileNameMatrix {outfile_mat}
+    """.split()
+    cm.main(args)
+
+    header_differences, data_differences, rowdiffdic = _compare_mat_gz(outfile_npz, exp_npz)
+    assert not header_differences, f"header mismatch: {header_differences}"
+    assert not data_differences, f"data mismatch: {data_differences}\nrowdiffdict: {rowdiffdic}"
+
+    mat_match, mat_diffs = _compare_tab_files(outfile_mat, exp_mat)
+    assert mat_match, f"matrix mismatch: {mat_diffs}"
+
+def test_compute_matrix_refpoint_gtf_gz():
+    exp_npz = ROOT + "mat_gtf.gz"
+    exp_mat = ROOT + "mat_gtf.tab"
+
+    _, outfile_npz = tempfile.mkstemp(suffix='.gz')
+    _, outfile_mat = tempfile.mkstemp(suffix='.tab')
+    args = f"""
+    reference-point
+    --regionsFileName {REGIONS_GTF_GZ}
     --scoreFileName {BIGWIG_IN1} {BIGWIG_IN2} {BIGWIG_IN3}
     -b 30 -a 30 --binSize 30
     -o {outfile_npz} --outFileNameMatrix {outfile_mat}

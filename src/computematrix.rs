@@ -81,7 +81,11 @@ pub fn r_computematrix(
         "Number of samples to sort on is larger than number of bigwig files provided."
     );
     // Get chromosome boundaries from first bigwig file.
-    let chromsizes = chrombounds_from_bw(&bw_files.get(0).unwrap());
+    let chromsizes = chrombounds_from_bw(
+        bw_files
+            .get(0)
+            .expect("No bigwig files were provided to computeMatrix"),
+    );
     // compute number of columns
     let bpsum = &upstream + &downstream + &unscaled5prime + &unscaled3prime + &regionbodylength;
 
@@ -149,7 +153,7 @@ pub fn r_computematrix(
     for bed in region_files.iter() {
         let entryname = Path::new(bed)
             .file_stem()
-            .unwrap()
+            .unwrap_or_else(|| panic!("Could not determine a file stem/label for region file '{}'", bed))
             .to_string_lossy()
             .into_owned();
         regionlabels.push(entryname);
@@ -159,7 +163,7 @@ pub fn r_computematrix(
         for bw in bw_files.iter() {
             let entryname = Path::new(bw)
                 .file_stem()
-                .unwrap()
+                .unwrap_or_else(|| panic!("Could not determine a file stem/label for bigwig file '{}'", bw))
                 .to_string_lossy()
                 .into_owned();
             samples_label.push(entryname);
@@ -204,7 +208,10 @@ pub fn r_computematrix(
         println!("Samples labels: {:?}", scale_regions.bwlabels);
         println!("Sort using samples: {:?}", &sort_using_samples);
     }
-    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(nproc)
+        .build()
+        .unwrap_or_else(|e| panic!("Failed to build a thread pool with {} threads: {}", nproc, e));
 
     // Parse regions from bed files. Note that we retain the name of the bed file (in case there are more then 1)
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
@@ -320,7 +327,12 @@ fn slop_region(
     // Get the chromosome end for a specific region, and assert that the region stays within the chromosome boundary.
     // Note that only a right check is needed, as positions are u32.
     // Note that we know &region.chrom is inside chromsizes already, since this filtering is done at the region reading stage.
-    let chromend: u32 = *chromsizes.get(&region.chrom).unwrap();
+    let chromend: u32 = *chromsizes.get(&region.chrom).unwrap_or_else(|| {
+        panic!(
+            "Region on chromosome '{}' has no matching entry in the bigwig chromosome sizes",
+            region.chrom
+        )
+    });
     region.assert_end(chromend);
     region.get_anchor_bins(scale_regions, chromend)
 }
@@ -355,14 +367,22 @@ fn recompute_regionsizes(
     for &group_idx in group_of_region {
         *filtered_regionsizes
             .get_mut(&scale_regions.regionlabels[group_idx])
-            .unwrap() += 1;
+            .unwrap_or_else(|| {
+                panic!(
+                    "Region group label '{}' not found in filtered_regionsizes map",
+                    scale_regions.regionlabels[group_idx]
+                )
+            }) += 1;
     }
 
     // Build filtered regionslices in label order, matching the sorting logic expectations.
     let mut slices: Vec<(usize, usize)> = Vec::new();
     let mut cursor = 0usize;
     for label in &scale_regions.regionlabels {
-        let count = *filtered_regionsizes.get(label).unwrap() as usize;
+        let count = *filtered_regionsizes
+            .get(label)
+            .unwrap_or_else(|| panic!("Region label '{}' not found in filtered_regionsizes map", label))
+            as usize;
         if count > 0 {
             slices.push((cursor, cursor + count - 1));
             cursor += count;
@@ -472,7 +492,14 @@ fn matrix_dump(
                         })
                         .collect::<Vec<_>>()
                         .iter()
-                        .sorted_by(|ix, metric| ix.1.partial_cmp(&metric.1).unwrap())
+                        .sorted_by(|ix, metric| {
+                            ix.1.partial_cmp(&metric.1).unwrap_or_else(|| {
+                                panic!(
+                                    "Cannot compare region lengths {} and {} for sorting (unexpected NaN?)",
+                                    ix.1, metric.1
+                                )
+                            })
+                        })
                         .map(|(ix, _)| *ix)
                         .collect::<Vec<usize>>();
                     match sortregions {
@@ -522,7 +549,12 @@ fn matrix_dump(
                             // matching numpy's argsort behavior for nan-containing arrays.
                             (true, false) => std::cmp::Ordering::Greater,
                             (false, true) => std::cmp::Ordering::Less,
-                            (false, false) => a.1.partial_cmp(&b.1).unwrap(),
+                            (false, false) => a.1.partial_cmp(&b.1).unwrap_or_else(|| {
+                                panic!(
+                                    "Cannot compare sort metrics {} and {} (unexpected NaN despite is_nan check)",
+                                    a.1, b.1
+                                )
+                            }),
                         })
                         .map(|(ix, _)| *ix)
                         .collect::<Vec<usize>>();
