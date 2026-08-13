@@ -4,6 +4,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyList;
 use rust_htslib::bam::record::CigarString;
 use rust_htslib::bam::{self, Header, Read, Reader, Writer};
+use rust_htslib::tpool::ThreadPool;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -108,7 +109,13 @@ pub fn r_alignmentsieve(
         None,
     );
 
-    // Open output writers
+    // Open output writers. When both the main and filtered-out BAM writers are active,
+    // give them a single shared htslib thread pool instead of calling `set_threads` on
+    // each independently: `set_threads` spins up its own private pool per call, so two
+    // independent calls with `writerthreads` each would request `2 * writerthreads` BGZF
+    // compression threads total, oversubscribing the `writerthreads` budget we intended.
+    let writer_pool = ThreadPool::new(writerthreads as u32).ok();
+
     let mut obam = if !bed {
         Some(
             Writer::from_path(ofile, &header, bam::Format::Bam)
@@ -118,7 +125,14 @@ pub fn r_alignmentsieve(
         None
     };
     if let Some(ref mut w) = obam {
-        let _ = w.set_threads(writerthreads);
+        match &writer_pool {
+            Some(pool) => {
+                let _ = w.set_thread_pool(pool);
+            }
+            None => {
+                let _ = w.set_threads(writerthreads);
+            }
+        }
     }
     let mut obed = if bed {
         Some(BufWriter::new(File::create(ofile).unwrap_or_else(|e| {
@@ -143,7 +157,14 @@ pub fn r_alignmentsieve(
         None
     };
     if let Some(ref mut w) = ofilterbam {
-        let _ = w.set_threads(writerthreads);
+        match &writer_pool {
+            Some(pool) => {
+                let _ = w.set_thread_pool(pool);
+            }
+            None => {
+                let _ = w.set_threads(writerthreads);
+            }
+        }
     }
     let mut ofilterbed = if write_filters && bed {
         Some(BufWriter::new(
