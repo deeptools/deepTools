@@ -49,6 +49,7 @@ jobs:
                   conda-remove-defaults: true
                   auto-activate: true
                   python-version: "3.12"
+                  channels: conda-forge,bioconda
             - name: get samtools
               run: |
                   conda install -c conda-forge -c bioconda samtools
