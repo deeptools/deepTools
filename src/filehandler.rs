@@ -1,6 +1,8 @@
 use crate::calc::{max_float, mean_float, median_float, min_float, std_float, sum_float};
 use crate::covcalc::{Bin, Gtfparse, Region, Revalue, Scalingregions};
-use bigtools::beddata::BedParserStreamingIterator;
+use bigtools::bed::bedparser::parse_bedgraph;
+use bigtools::bed::indexer::index_chroms;
+use bigtools::beddata::{BedParserParallelStreamingIterator, BedParserStreamingIterator};
 use bigtools::{BigWigRead, BigWigWrite, Value};
 use flate2::Compression;
 use flate2::read::MultiGzDecoder;
@@ -11,7 +13,8 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use tempfile::Builder;
 
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
     let mut bam = Reader::from_path(bam_ifile)
@@ -55,29 +58,98 @@ where
             )
             .unwrap_or_else(|e| panic!("Failed to write bedgraph line to '{}': {}", ofile, e));
         }
-    } else {
+    } else if nproc <= 1 {
+        // No point spooling to disk just to read it back sequentially: this is
+        // the base case bigtools' own bedgraphtobigwig CLI special-cases too
+        // (current_thread runtime, channel_size = 0, since there's only ever
+        // one consumer), and wrap_infallible_iter drives BigWigWrite directly
+        // off the in-memory iterator with zero disk round-trip.
         let vals = BedParserStreamingIterator::wrap_infallible_iter(lines, false);
         let mut writer = BigWigWrite::create_file(ofile, chromsizes)
             .unwrap_or_else(|e| panic!("Failed to create output bigwig file '{}': {}", ofile, e));
-        // bigtools spawns one async task per chromosome (zoom aggregation + section
-        // encoding) and funnels their output through a single sequential writer task
-        // that owns the actual file handle; the crate's own channels serialize that
-        // hand-off, so raising worker count only widens the per-chromosome encode
-        // stage, it does not add any concurrent writers to `ofile`.
-        // Mirrors bigtools' own bedgraphtobigwig CLI: skip the multi-thread runtime
-        // entirely at nproc == 1, since it would only ever have one consumer.
-        let runtime = if nproc <= 1 {
-            writer.options.channel_size = 0;
-            tokio::runtime::Builder::new_current_thread()
-                .build()
-                .expect("Unable to create tokio runtime for bw writing.")
-        } else {
-            tokio::runtime::Builder::new_multi_thread()
-                .worker_threads(nproc)
-                .build()
-                .expect("Unable to create tokio runtime for bw writing.")
-        };
+        writer.options.channel_size = 0;
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .expect("Unable to create tokio runtime for bw writing.");
         let _ = writer.write(vals, runtime);
+    } else {
+        // nproc > 1: only worth spooling to a merged temp file at all if there's
+        // a chance of using bigtools' indexed parallel reader
+        // (BedParserParallelStreamingIterator), the same path bigtools' own
+        // bedgraphtobigwig CLI uses, which reads and encodes multiple
+        // chromosomes concurrently straight off disk instead of the single
+        // sequential stream wrap_infallible_iter/BedParserStreamingIterator
+        // produce. index_chroms() needs a real sorted file on disk to build its
+        // byte-offset index, so this path unavoidably costs one extra write
+        // pass over the in-memory path used at nproc <= 1.
+        let merged = Builder::new()
+            .prefix("deeptoolstmp_merged_")
+            .suffix(".bedgraph")
+            .tempfile()
+            .expect("Failed to create merged temp bedgraph file.");
+        {
+            let mut mergedwriter = BufWriter::new(merged.reopen().unwrap());
+            for (chrom, val) in lines {
+                writeln!(
+                    mergedwriter,
+                    "{}\t{}\t{}\t{}",
+                    chrom, val.start, val.end, val.value
+                )
+                .unwrap();
+            }
+        }
+        let mergedpath = merged.into_temp_path();
+
+        let writer = BigWigWrite::create_file(ofile, chromsizes).unwrap();
+        // bigtools spawns one async task per chromosome (zoom aggregation and
+        // section encoding) and funnels their output through a single
+        // sequential writer task that owns the actual file handle; the
+        // crate's own channels serialize that hand-off, so raising worker
+        // count only widens the per-chromosome encode stage, it does not add
+        // any concurrent writers to `ofile`.
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(nproc)
+            .build()
+            .expect("Unable to create tokio runtime for bw writing.");
+
+        // Raven 24-thread benchmarks (see PR discussion) showed the parallel
+        // indexed-read path below is a real win on chip/rna-scale outputs (up
+        // to ~3.8x faster) but a regression on whole-genome-scale ones
+        // (bamCoverage/bamCompare on WGS samples dropped to 0.78-0.85x), even
+        // though memory stayed flat in both cases. index_chroms() does one
+        // full linear scan of the merged bedgraph to build its byte-offset
+        // index before BedParserParallelStreamingIterator does its own
+        // per-chromosome reads; on small/medium files that extra pass is
+        // cheap relative to the parse-time it saves, but on multi-hundred-MB
+        // WGS bedgraphs the extra full-file read starts to dominate. This
+        // mirrors the size-based gate bigtools' own bedgraphtobigwig CLI uses
+        // (auto-enables parallel above ~200MB), just inverted: our data says
+        // to prefer the parallel path *below* a size threshold, not above it.
+        const PARALLEL_READ_SIZE_THRESHOLD_BYTES: u64 = 200_000_000;
+        let merged_size = std::fs::metadata(&mergedpath).map(|m| m.len()).unwrap_or(0);
+        let chrom_indices = if merged_size < PARALLEL_READ_SIZE_THRESHOLD_BYTES {
+            let infile = File::open(&mergedpath).expect("Failed to reopen merged bedgraph.");
+            index_chroms(infile).expect("Failed to index merged bedgraph.")
+        } else {
+            None
+        };
+
+        match chrom_indices {
+            Some(chrom_indices) => {
+                let data = BedParserParallelStreamingIterator::new(
+                    chrom_indices,
+                    false,
+                    PathBuf::from(&mergedpath),
+                    parse_bedgraph,
+                );
+                let _ = writer.write(data, runtime);
+            }
+            None => {
+                let infile = File::open(&mergedpath).expect("Failed to reopen merged bedgraph.");
+                let vals = BedParserStreamingIterator::from_bedgraph_file(infile, false);
+                let _ = writer.write(vals, runtime);
+            }
+        }
     }
 }
 
@@ -677,8 +749,8 @@ pub fn chrombounds_from_bam(bamfiles: Vec<&str>) -> HashMap<String, u32> {
 
 pub fn bwintervals(
     bwfile: &str,
-    regions: &Vec<Region>,
-    slopregions: &Vec<Vec<Bin>>,
+    regions: &[Region],
+    slopregions: &[Vec<Bin>],
     scale_regions: &Scalingregions,
     blacklist_index: Option<&crate::filtering::BlacklistIndex>,
 ) -> Vec<Vec<f32>> {
