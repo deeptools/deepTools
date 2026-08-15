@@ -9,7 +9,7 @@ import numpy as np
 from math import ceil
 from deeptools import matplotlib_defaults
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties 
+from matplotlib.font_manager import FontProperties
 from matplotlib import colors as pltcolors
 import matplotlib.gridspec as gridspec
 
@@ -76,14 +76,14 @@ def process_args(args=None):
         args.plotHeight = 0.5
     elif args.plotHeight > 100:
         args.plotHeight = 100
-    
+
     if not args.label_rotation:
         args.label_rotation=45.0
     else:
         args.label_rotation= args.label_rotation
-    
+
     if args.ggplot:
-        plt.style.use('ggplot') 
+        plt.style.use('ggplot')
 
     return args
 
@@ -597,9 +597,7 @@ class Profile(object):
 def main(args=None):
     args = process_args(args)
     hm = heatmapper.heatmapper()
-    matrix_file = args.matrixFile.name
-    args.matrixFile.close()
-    hm.read_matrix_file(matrix_file)
+    hm.read_matrix_file(args.matrixFile)
 
     if hm.parameters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
         filterHeatmapValues(hm, hm.parameters['min threshold'], hm.parameters['max threshold'])
@@ -630,7 +628,8 @@ def main(args=None):
                                  averagetype=args.averageType)
 
     if args.outFileSortedRegions:
-        hm.save_BED(args.outFileSortedRegions)
+        with open(args.outFileSortedRegions, "w") as fh:
+            hm.save_BED(fh)
 
     prof = Profile(hm, args.outFileName,
                    plot_title=args.plotTitle,

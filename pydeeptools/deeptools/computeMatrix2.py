@@ -136,7 +136,7 @@ def computeMatrixOutputArgs(args=None):
         "generate other heatmaps keeping the sorting of the "
         "first heatmap. Example: Heatmap1sortedRegions.bed",
         metavar="BED file",
-        type=argparse.FileType("w"),
+        type=writableFile,
     )
     return parser
 
@@ -369,6 +369,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
         "-bl",
         help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
         metavar="BED file",
+        default='none',
         required=False,
     )
 
@@ -447,6 +448,8 @@ def process_args(args=None):
         )
     if not args.samplesLabel:
         args.samplesLabel = []
+    else:
+        args.samplesLabel = [i.strip('"').strip("'") for i in args.samplesLabel]
     if not args.sortUsingSamples:
         args.sortUsingSamples = []
 
@@ -461,13 +464,7 @@ def main(args=None):
 
     args = process_args(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-    # Handle outFileSortedRegions: argparse.FileType("w") opens a file handle,
-    # but Rust handles file writing itself, so pass the filename and close the handle.
-    sorted_regions_file = None
-    if args.outFileSortedRegions is not None:
-        sorted_regions_file = args.outFileSortedRegions.name
-        args.outFileSortedRegions.close()
+    sorted_regions_file = args.outFileSortedRegions
 
     r_computematrix(
         args.command,
@@ -481,7 +478,7 @@ def main(args=None):
         args.regionBodyLength,
         args.binSize,
         args.missingDataAsZero,
-        args.keepExons,  # --metagene or not.
+        args.keepExons,
         args.transcriptID,
         args.exonID,
         args.transcript_id_designator,
@@ -490,6 +487,7 @@ def main(args=None):
         args.skipZeros,
         args.minThreshold,
         args.maxThreshold,
+        args.blackListFileName,
         args.averageTypeBins,
         args.sortRegions,
         args.sortUsing,

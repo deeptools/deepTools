@@ -1,6 +1,8 @@
 use crate::calc::deseq_scalefactors;
-use crate::covcalc::{bam_pileup, parse_regions, region_divider, TempZip};
 use crate::covcalc::{Gtfparse, Region};
+use crate::covcalc::{
+    TempZip, bam_pileup, filter_regions_by_supregion, parse_regions, region_divider,
+};
 use crate::filehandler::{
     bam_ispaired, chrombounds_from_bam, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
@@ -10,8 +12,8 @@ use ndarray::Array2;
 use ndarray_npy::NpzWriter;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::prelude::*;
@@ -81,9 +83,6 @@ pub fn r_mbams(
         if verbose {
             println!("BED file mode. with files: {:?}", bedfiles);
         }
-        if supregion != "None" {
-            println!("Region supplied in BED-file mode. The region will be ignored.");
-        }
         let gtfparse = Gtfparse {
             metagene: metagene,
             txnid: txnid.to_string(),
@@ -103,7 +102,7 @@ pub fn r_mbams(
 
                 match ftype.as_str() {
                     "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
-                    "bed" => read_bedfile(r, metagene, chromsizes.keys().collect()),
+                    "bed" => read_bedfile(r, metagene, &chromsizes),
                     _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
                 }
             })
@@ -111,6 +110,19 @@ pub fn r_mbams(
                 regions.extend(reg);
                 regionsizes.insert(regsize.0, regsize.1);
             });
+        // Restrict to the user-supplied --region window, if any.
+        if supregion != "None" {
+            let nbefore = regions.len();
+            regions = filter_regions_by_supregion(regions, supregion);
+            if verbose {
+                println!(
+                    "Region {} supplied: {} of {} regions overlap it.",
+                    supregion,
+                    regions.len(),
+                    nbefore
+                );
+            }
+        }
         gene_mode = true;
 
         // If there is a blacklist, read it.
@@ -120,8 +132,7 @@ pub fn r_mbams(
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) =
-                        read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -144,14 +155,20 @@ pub fn r_mbams(
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) =
-                        read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),
             }
         }
     }
+
+    regions.sort_by(|a, b| {
+        a.chrom
+            .cmp(&b.chrom)
+            .then_with(|| a.start.start_key().cmp(&b.start.start_key()))
+            .then_with(|| a.end.end_key().cmp(&b.end.end_key()))
+    });
 
     let filters = Alignmentfilters::new(
         blacklistregions,
@@ -168,7 +185,10 @@ pub fn r_mbams(
         Some(centerreads),
     );
 
-    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(nproc)
+        .build()
+        .unwrap_or_else(|e| panic!("Failed to build a thread pool with {} threads: {}", nproc, e));
 
     // Zip together bamfiles and ispe into a vec of tuples.
     let bampfiles: Vec<_> = bamfiles.into_iter().zip(ispe.into_iter()).collect();
@@ -191,6 +211,8 @@ pub fn r_mbams(
     // Divide up the regions into regionBlocks
     let regionblocks = region_divider(&regions);
 
+    let binstep = binsize + distance_between_bins;
+
     assert!(regionblocks.len() > 0, "No regions to process. Exiting.");
     if verbose {
         println!(
@@ -208,8 +230,8 @@ pub fn r_mbams(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, filter, false, gene_mode,
-                            false, 0,
+                            bamfile, &i, &binsize, &binstep, &ispe, &ignorechr, filter, false,
+                            gene_mode, false, 0,
                         )
                     })
                     .reduce(
@@ -240,7 +262,6 @@ pub fn r_mbams(
         println!("Start iterating through temp coverage files and create output npy.");
     }
     let zips_vec: Vec<_> = zips.collect();
-    println!(" Length of ziperators = {}", zips_vec.len());
 
     let matvec: Vec<_> = pool.install(|| {
         let _m: Vec<_> = zips_vec
@@ -248,7 +269,16 @@ pub fn r_mbams(
             .flat_map(|c| {
                 let readers: Vec<_> = c
                     .par_iter()
-                    .map(|x| BufReader::new(File::open(x).unwrap()).lines())
+                    .map(|x| {
+                        BufReader::new(File::open(x).unwrap_or_else(|e| {
+                            panic!(
+                                "Failed to open internal temp bedgraph file '{}': {}",
+                                x.display(),
+                                e
+                            )
+                        }))
+                        .lines()
+                    })
                     .collect();
                 let mut _matvec: Vec<Vec<f32>> = Vec::new();
                 let mut _regions: Vec<(String, String, String)> = Vec::new();
@@ -256,14 +286,19 @@ pub fn r_mbams(
                     // unwrap all lines in _l
                     let lines: Vec<_> = _l
                         .par_iter_mut()
-                        .map(|x| x.as_mut().unwrap())
+                        .map(|x| {
+                            x.as_mut()
+                                .expect("Failed to read a line from internal temp bedgraph file")
+                        })
                         .map(|x| x.split('\t').collect())
                         .map(|x: Vec<&str>| {
                             (
                                 x[0].to_string(),
                                 x[1].to_string(),
                                 x[2].to_string(),
-                                x[3].parse::<f32>().unwrap(),
+                                x[3].parse::<f32>().unwrap_or_else(|e| {
+                                    panic!("Failed to parse coverage value '{}': {}", x[3], e)
+                                }),
                             )
                         })
                         .collect();
@@ -291,14 +326,18 @@ pub fn r_mbams(
         if verbose {
             println!("Writing raw counts to disk.");
         }
-        let mut cfile = BufWriter::new(File::create(out_raw_counts).unwrap());
+        let mut cfile = BufWriter::new(File::create(out_raw_counts).unwrap_or_else(|e| {
+            panic!("Failed to create raw counts output file '{}': {}", out_raw_counts, e)
+        }));
         // Write the header to the file.
         let mut headstr = String::new();
         headstr.push_str("#\'chr\'\t\'start\'\t\'end\'");
         for label in bamlabels.iter() {
             headstr.push_str(&format!("\t\'{}\'", label));
         }
-        writeln!(cfile, "{}", headstr).unwrap();
+        writeln!(cfile, "{}", headstr).unwrap_or_else(|e| {
+            panic!("Failed to write header to raw counts file '{}': {}", out_raw_counts, e)
+        });
         let outlines: Vec<String> = pool.install(|| {
             regions
                 .par_iter()
@@ -314,16 +353,24 @@ pub fn r_mbams(
                 .collect()
         });
         for line in outlines {
-            writeln!(cfile, "{}", line).unwrap();
+            writeln!(cfile, "{}", line).unwrap_or_else(|e| {
+                panic!("Failed to write line to raw counts file '{}': {}", out_raw_counts, e)
+            });
         }
     }
 
     // Create 2darray from matvec
+    let (matvec_rows, matvec_cols) = (matvec.len(), matvec[0].len());
     let matarr: Array2<f32> = Array2::from_shape_vec(
-        (matvec.len(), matvec[0].len()),
+        (matvec_rows, matvec_cols),
         matvec.into_iter().flatten().collect(),
     )
-    .unwrap();
+    .unwrap_or_else(|e| {
+        panic!(
+            "Failed to build the {}x{} coverage matrix (ragged rows?): {}",
+            matvec_rows, matvec_cols, e
+        )
+    });
 
     // If scalefactors are required, calc and save them now.
     if scaling_factors != "None" {
@@ -332,20 +379,31 @@ pub fn r_mbams(
         }
         let sf = deseq_scalefactors(&matarr);
         // save scalefactors to file
-        let mut sf_file = File::create(scaling_factors).unwrap();
-        writeln!(sf_file, "Sample\tscalingFactor").unwrap();
+        let mut sf_file = File::create(scaling_factors).unwrap_or_else(|e| {
+            panic!("Failed to create scaling factors file '{}': {}", scaling_factors, e)
+        });
+        writeln!(sf_file, "sample\tscalingFactor").unwrap_or_else(|e| {
+            panic!("Failed to write header to scaling factors file '{}': {}", scaling_factors, e)
+        });
         for (sf, label) in sf.iter().zip(bamlabels.iter()) {
-            writeln!(sf_file, "{}\t{}", label, sf).unwrap();
+            writeln!(sf_file, "{}\t{}", label, sf).unwrap_or_else(|e| {
+                panic!("Failed to write to scaling factors file '{}': {}", scaling_factors, e)
+            });
         }
     }
 
     if verbose {
         println!("Writing matrix to disk.");
     }
-    let mut npz = NpzWriter::new_compressed(File::create(ofile).unwrap());
-    npz.add_array("matrix", &matarr).unwrap();
-    npz.add_array("labels", &bamlabels_arr).unwrap();
-    npz.finish().unwrap();
+    let mut npz = NpzWriter::new_compressed(
+        File::create(ofile).unwrap_or_else(|e| panic!("Failed to create output npz file '{}': {}", ofile, e)),
+    );
+    npz.add_array("matrix", &matarr)
+        .unwrap_or_else(|e| panic!("Failed to write 'matrix' array to npz file '{}': {}", ofile, e));
+    npz.add_array("labels", &bamlabels_arr)
+        .unwrap_or_else(|e| panic!("Failed to write 'labels' array to npz file '{}': {}", ofile, e));
+    npz.finish()
+        .unwrap_or_else(|e| panic!("Failed to finalize npz file '{}': {}", ofile, e));
     if verbose {
         println!("Matrix written.");
     }

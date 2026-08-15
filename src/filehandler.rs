@@ -3,6 +3,7 @@ use crate::covcalc::{Bin, Gtfparse, Region, Revalue, Scalingregions};
 use bigtools::beddata::BedParserStreamingIterator;
 use bigtools::{BigWigRead, BigWigWrite, Value};
 use flate2::Compression;
+use flate2::read::MultiGzDecoder;
 use flate2::write::GzEncoder;
 use itertools::Itertools;
 use rust_htslib::bam::{IndexedReader, Read, Reader};
@@ -13,7 +14,8 @@ use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 
 pub fn bam_ispaired(bam_ifile: &str) -> bool {
-    let mut bam = Reader::from_path(bam_ifile).unwrap();
+    let mut bam = Reader::from_path(bam_ifile)
+        .unwrap_or_else(|e| panic!("Failed to open BAM file '{}': {}", bam_ifile, e));
     let mut count = 0;
     const MAX_READS: usize = 1000;
     for record in bam.records() {
@@ -35,14 +37,16 @@ where
 {
     if filetype == "bedgraph" {
         // write output file, bedgraph
-        let mut writer = BufWriter::new(File::create(ofile).unwrap());
+        let mut writer = BufWriter::new(
+            File::create(ofile).unwrap_or_else(|e| panic!("Failed to create output file '{}': {}", ofile, e)),
+        );
         for (chrom, val) in lines {
             writeln!(
                 writer,
                 "{}\t{}\t{}\t{}",
                 chrom, val.start, val.end, val.value
             )
-            .unwrap();
+            .unwrap_or_else(|e| panic!("Failed to write bedgraph line to '{}': {}", ofile, e));
         }
     } else {
         let vals = BedParserStreamingIterator::wrap_infallible_iter(lines, false);
@@ -50,18 +54,31 @@ where
             .worker_threads(1)
             .build()
             .expect("Unable to create tokio runtime for bw writing.");
-        let writer = BigWigWrite::create_file(ofile, chromsizes).unwrap();
+        let writer = BigWigWrite::create_file(ofile, chromsizes)
+            .unwrap_or_else(|e| panic!("Failed to create output bigwig file '{}': {}", ofile, e));
         let _ = writer.write(vals, runtime);
+    }
+}
+
+fn open_bed_or_gtf_reader(fp: &str) -> BufReader<Box<dyn std::io::Read>> {
+    let mut file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
+    let mut magic = [0u8; 2];
+    let n = std::io::Read::read(&mut file, &mut magic).unwrap_or(0);
+    std::io::Seek::seek(&mut file, std::io::SeekFrom::Start(0))
+        .expect(format!("Failed to seek in file: {}", fp).as_str());
+    if n == 2 && magic[0] == 0x1f && magic[1] == 0x8b {
+        BufReader::new(Box::new(MultiGzDecoder::new(file)) as Box<dyn std::io::Read>)
+    } else {
+        BufReader::new(Box::new(file) as Box<dyn std::io::Read>)
     }
 }
 
 pub fn is_bed_or_gtf(fp: &str) -> String {
     // Check if file is a bed or gtf file.
-    let file = File::open(fp).expect(format!("Failed to open file: {}", fp).as_str());
-    let reader = BufReader::new(file);
+    let reader = open_bed_or_gtf_reader(fp);
     // Get the first line that doesn't start with #
     for line in reader.lines() {
-        let line = line.unwrap();
+        let line = line.unwrap_or_else(|e| panic!("Failed to read a line from '{}': {}", fp, e));
         if !line.starts_with('#') {
             let fields: Vec<&str> = line.split('\t').collect();
             if fields.len() == 9 {
@@ -85,58 +102,119 @@ pub fn read_gtffile(
     let mut entries: u32 = 0;
     let mut txnids: Vec<String> = Vec::new();
 
-    let gtffile = BufReader::new(File::open(gtf_file).unwrap());
+    let gtffile = open_bed_or_gtf_reader(gtf_file);
 
     if gtfparse.metagene {
         // metagene implementation - more work here.
         let mut txn_hash: HashMap<String, Vec<(u32, u32)>> = HashMap::new();
         let mut txn_strand: HashMap<String, String> = HashMap::new();
         let mut txn_chrom: HashMap<String, String> = HashMap::new();
+        // Store transcript-level coordinates as fallback when no exon entries exist.
+        let mut txn_transcript: HashMap<String, (u32, u32)> = HashMap::new();
 
         for line in gtffile.lines() {
-            let line = line.unwrap();
+            let line = line.unwrap_or_else(|e| panic!("Failed to read a line from '{}': {}", gtf_file, e));
             // skip comments
             if line.starts_with('#') {
                 continue;
             }
             let fields: Vec<&str> = line.split('\t').collect();
-            if fields[2].to_string() == gtfparse.exonid {
-                let start: u32 = fields[3].parse().unwrap();
-                let end: u32 = fields[4].parse().unwrap();
-                let txnid = fields[8]
-                    .split(';')
-                    .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
-                    .and_then(|x| x.split('"').nth(1))
-                    .map(|s| s.to_string())
-                    .unwrap();
-                if !txnids.contains(&txnid) {
-                    txnids.push(txnid.clone());
+            let feature = fields[2].to_string();
+            let mut start: u32 = fields[3]
+                .parse()
+                .unwrap_or_else(|e| panic!("Failed to parse start position in GTF line '{}': {}", line, e));
+            if start >= 1 {
+                start -= 1;
+            }
+            let end: u32 = fields[4]
+                .parse()
+                .unwrap_or_else(|e| panic!("Failed to parse end position in GTF line '{}': {}", line, e));
+            let txnid: Option<String> = fields[8]
+                .split(';')
+                .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
+                .and_then(|x| x.split('"').nth(1))
+                .map(|s| s.to_string());
+
+            if feature == gtfparse.exonid {
+                let tid = txnid.unwrap_or_else(|| {
+                    panic!(
+                        "GTF line has an exon feature but no transcript id (attribute '{}') was found: '{}'",
+                        gtfparse.txniddesignator, line
+                    )
+                });
+                if !txnids.contains(&tid) {
+                    txnids.push(tid.clone());
                 }
 
-                let txnentry = txn_hash.entry(txnid.clone()).or_insert(Vec::new());
-                // Just to verify all exons are on the same strand.
-                if txn_strand.contains_key(&txnid) {
-                    assert_eq!(txn_strand.get(&txnid).unwrap(), fields[6]);
+                let txnentry = txn_hash.entry(tid.clone()).or_insert(Vec::new());
+                if txn_strand.contains_key(&tid) {
+                    assert_eq!(
+                        txn_strand
+                            .get(&tid)
+                            .expect("Transcript id vanished from txn_strand map between check and get"),
+                        fields[6]
+                    );
                 } else {
-                    txn_strand.insert(txnid.clone(), fields[6].to_string());
+                    txn_strand.insert(tid.clone(), fields[6].to_string());
                 }
-                // Same for chromosome
-                if txn_chrom.contains_key(&txnid) {
-                    assert_eq!(txn_chrom.get(&txnid).unwrap(), fields[0]);
+                if txn_chrom.contains_key(&tid) {
+                    assert_eq!(
+                        txn_chrom
+                            .get(&tid)
+                            .expect("Transcript id vanished from txn_chrom map between check and get"),
+                        fields[0]
+                    );
                 } else {
-                    txn_chrom.insert(txnid, fields[0].to_string());
+                    txn_chrom.insert(tid.clone(), fields[0].to_string());
                 }
                 txnentry.push((start, end));
+            } else if feature == gtfparse.txnid {
+                // Store transcript-level coordinates as fallback.
+                if let Some(tid) = txnid {
+                    if !txn_strand.contains_key(&tid) {
+                        txn_strand.insert(tid.clone(), fields[6].to_string());
+                    }
+                    if !txn_chrom.contains_key(&tid) {
+                        txn_chrom.insert(tid.clone(), fields[0].to_string());
+                    }
+                    txn_transcript.insert(tid, (start, end));
+                }
+            }
+        }
+
+        // Also pull in transcript IDs that have no exon entries.
+        for tid in txn_transcript.keys() {
+            if !txnids.contains(tid) {
+                txnids.push(tid.clone());
             }
         }
 
         for txnid in txnids.into_iter() {
-            let txnentry = txn_hash.get_mut(&txnid).unwrap();
-            let length: u32 = txnentry.iter().map(|(s, e)| e - s).sum();
-            txnentry.sort_by(|a, b| a.0.cmp(&b.0));
-            let (starts, ends): (Vec<u32>, Vec<u32>) =
-                txnentry.iter().map(|(s, e)| (*s, *e)).unzip();
-            let chrom = txn_chrom.get(&txnid).unwrap().to_string();
+            let has_exons = txn_hash.contains_key(&txnid);
+            let has_transcript = txn_transcript.contains_key(&txnid);
+
+            if has_exons && !has_transcript {
+                continue;
+            }
+
+            let (starts, ends) = if has_exons {
+                let txnentry = txn_hash
+                    .get_mut(&txnid)
+                    .expect("Transcript id vanished from txn_hash map between check and get");
+                txnentry.sort_by(|a, b| a.0.cmp(&b.0));
+                txnentry.iter().map(|(s, e)| (*s, *e)).unzip()
+            } else {
+                // No exons, fall back to transcript-level coordinates.
+                let (s, e) = txn_transcript
+                    .get(&txnid)
+                    .expect("Transcript id vanished from txn_transcript map between check and get");
+                (vec![*s], vec![*e])
+            };
+            let length: u32 = starts.iter().zip(ends.iter()).map(|(s, e)| e - s).sum();
+            let chrom = txn_chrom
+                .get(&txnid)
+                .unwrap_or_else(|| panic!("Transcript '{}' has no chromosome recorded", txnid))
+                .to_string();
 
             if !chroms.contains(&&chrom.to_string()) {
                 println!(
@@ -145,13 +223,16 @@ pub fn read_gtffile(
                 );
             } else {
                 regions.push(Region {
-                    chrom: txn_chrom.get(&txnid).unwrap().to_string(), //chrom
-                    start: Revalue::V(starts),                         //start
-                    end: Revalue::V(ends),                             //end
-                    score: ".".to_string(),                            //score
-                    strand: txn_strand.get(&txnid).unwrap().to_string(), // strand
+                    chrom,
+                    start: Revalue::V(starts),
+                    end: Revalue::V(ends),
+                    score: ".".to_string(),
+                    strand: txn_strand
+                        .get(&txnid)
+                        .unwrap_or_else(|| panic!("Transcript '{}' has no strand recorded", txnid))
+                        .to_string(),
                     name: txnid.to_string(),
-                    regionlength: length, // regionlength
+                    regionlength: length,
                 });
                 entries += 1;
             }
@@ -159,7 +240,7 @@ pub fn read_gtffile(
     } else {
         // Take fields with col 3 == gtfparse.txnid, start, end
         for line in gtffile.lines() {
-            let line = line.unwrap();
+            let line = line.unwrap_or_else(|e| panic!("Failed to read a line from '{}': {}", gtf_file, e));
             // skip comments
             if line.starts_with('#') {
                 continue;
@@ -167,8 +248,15 @@ pub fn read_gtffile(
 
             let fields: Vec<&str> = line.split('\t').collect();
             if fields[2].to_string() == gtfparse.txnid {
-                let start: u32 = fields[3].parse().unwrap();
-                let end: u32 = fields[4].parse().unwrap();
+                let mut start: u32 = fields[3]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse start position in GTF line '{}': {}", line, e));
+                if start >= 1 {
+                    start -= 1;
+                }
+                let end: u32 = fields[4]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse end position in GTF line '{}': {}", line, e));
                 let mut entryname = fields[8]
                     .split(';')
                     .find(|x| x.trim().starts_with(gtfparse.txniddesignator.as_str()))
@@ -177,7 +265,9 @@ pub fn read_gtffile(
                     .unwrap_or_else(|| format!("{}:{}-{}", fields[0], fields[1], fields[2]));
 
                 if names.contains_key(&entryname) {
-                    let count = names.get_mut(&entryname).unwrap();
+                    let count = names
+                        .get_mut(&entryname)
+                        .expect("Entry name vanished from names map between check and get");
                     *count += 1;
                     entryname = format!("{}_r{}", entryname, count);
                 } else {
@@ -205,7 +295,7 @@ pub fn read_gtffile(
     }
     let filename = Path::new(gtf_file)
         .file_stem()
-        .unwrap()
+        .unwrap_or_else(|| panic!("Could not determine a file stem/label for GTF file '{}'", gtf_file))
         .to_string_lossy()
         .into_owned();
 
@@ -215,7 +305,7 @@ pub fn read_gtffile(
 pub fn read_bedfile(
     bed_file: &String,
     metagene: bool,
-    chroms: Vec<&String>,
+    chroms: &HashMap<String, u32>,
 ) -> (Vec<Region>, (String, u32)) {
     // read a provided bed_file into a vec of Region
     // Additional return is the filename and the number of entries (for sorting later on if needed).
@@ -225,10 +315,10 @@ pub fn read_bedfile(
     let mut nonbed12: bool = false;
     let mut entries: u32 = 0;
 
-    let bedfile = BufReader::new(File::open(bed_file).unwrap());
+    let bedfile = open_bed_or_gtf_reader(bed_file);
 
     for line in bedfile.lines() {
-        let line = line.unwrap();
+        let line = line.unwrap_or_else(|e| panic!("Failed to read a line from '{}': {}", bed_file, e));
         let fields: Vec<&str> = line.split('\t').collect();
         // Depending on bedfile, we have either BED3, BED6 or BED12
         // Note that this approach could allow somebody to have a 'mixed' bedfile, why not.
@@ -241,22 +331,39 @@ pub fn read_bedfile(
                 let mut entryname = format!("{}:{}-{}", fields[0], fields[1], fields[2]);
                 // Only check for valid chroms, if chroms vec is not empty.
 
-                if !chroms.contains(&&chrom.to_string()) {
+                let chromlen = match chroms.get(chrom) {
+                    Some(len) => *len,
+                    None => {
+                        println!(
+                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
+                            chrom, entryname
+                        );
+                        continue;
+                    }
+                };
+                let start: u32 = fields[1]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse start position in BED line '{}': {}", line, e));
+                let mut end: u32 = fields[2]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse end position in BED line '{}': {}", line, e));
+                if start >= chromlen {
                     println!(
-                        "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                        chrom, entryname
+                        "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
+                        entryname, chrom, chromlen
                     );
                     continue;
                 }
+                end = end.min(chromlen);
                 if names.contains_key(&entryname) {
-                    let count = names.get_mut(&entryname).unwrap();
+                    let count = names
+                        .get_mut(&entryname)
+                        .expect("Entry name vanished from names map between check and get");
                     *count += 1;
                     entryname = format!("{}_r{}", entryname, count);
                 } else {
                     names.insert(entryname.clone(), 0);
                 }
-                let start = fields[1].parse().unwrap();
-                let end = fields[2].parse().unwrap();
                 regions.push(Region {
                     chrom: fields[0].to_string(), //chrom
                     start: Revalue::U(start),     //start
@@ -274,17 +381,34 @@ pub fn read_bedfile(
                 }
                 let chrom = fields[0];
                 let mut entryname = fields[3].to_string();
-                if !chroms.contains(&&chrom.to_string()) {
+                let chromlen = match chroms.get(chrom) {
+                    Some(len) => *len,
+                    None => {
+                        println!(
+                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
+                            chrom, entryname
+                        );
+                        continue;
+                    }
+                };
+                let start: u32 = fields[1]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse start position in BED line '{}': {}", line, e));
+                let mut end: u32 = fields[2]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse end position in BED line '{}': {}", line, e));
+                if start >= chromlen {
                     println!(
-                        "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                        chrom, entryname
+                        "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
+                        entryname, chrom, chromlen
                     );
                     continue;
                 }
-                let start = fields[1].parse().unwrap();
-                let end = fields[2].parse().unwrap();
+                end = end.min(chromlen);
                 if names.contains_key(&entryname) {
-                    let count = names.get_mut(&entryname).unwrap();
+                    let count = names
+                        .get_mut(&entryname)
+                        .expect("Entry name vanished from names map between check and get");
                     *count += 1;
                     entryname = format!("{}_r{}", entryname, count);
                 } else {
@@ -304,40 +428,70 @@ pub fn read_bedfile(
             12 => {
                 let chrom = fields[0];
                 let mut entryname = fields[3].to_string();
-                if !chroms.contains(&&chrom.to_string()) {
+                let chromlen = match chroms.get(chrom) {
+                    Some(len) => *len,
+                    None => {
+                        println!(
+                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
+                            chrom, entryname
+                        );
+                        continue;
+                    }
+                };
+                let feat_start: u32 = fields[1]
+                    .parse()
+                    .unwrap_or_else(|e| panic!("Failed to parse start position in BED12 line '{}': {}", line, e));
+                if feat_start >= chromlen {
                     println!(
-                        "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                        chrom, entryname
+                        "Warning, region {} lies entirely beyond the end of {} ({}bp). Skipping.",
+                        entryname, chrom, chromlen
                     );
                     continue;
                 }
                 if names.contains_key(&entryname) {
-                    let count = names.get_mut(&entryname).unwrap();
+                    let count = names
+                        .get_mut(&entryname)
+                        .expect("Entry name vanished from names map between check and get");
                     *count += 1;
                     entryname = format!("{}_r{}", entryname, count);
                 } else {
                     names.insert(entryname.clone(), 0);
                 }
                 if metagene {
-                    let start: u32 = fields[1].parse().unwrap();
+                    let start: u32 = feat_start;
                     let blocksizes: Vec<u32> = fields[10]
                         .split(',')
                         .filter(|x| !x.is_empty())
-                        .map(|x| x.parse().unwrap())
+                        .map(|x| {
+                            x.parse()
+                                .unwrap_or_else(|e| panic!("Failed to parse blockSizes in BED12 line '{}': {}", line, e))
+                        })
                         .collect();
-                    let length: u32 = blocksizes.iter().sum();
                     let blockstarts: Vec<u32> = fields[11]
                         .split(',')
                         .filter(|x| !x.is_empty())
-                        .map(|x| x.parse::<u32>().unwrap() + start)
+                        .map(|x| {
+                            x.parse::<u32>().unwrap_or_else(|e| {
+                                panic!("Failed to parse blockStarts in BED12 line '{}': {}", line, e)
+                            }) + start
+                        })
                         .collect();
 
-                    let (starts, ends) = blocksizes
+                    let (starts, ends): (Vec<u32>, Vec<u32>) = blocksizes
                         .into_iter()
                         .zip(blockstarts.into_iter())
                         .map(|(s, start)| (start, start + s))
                         .into_iter()
                         .unzip();
+                    // Clip exons to the chromosome length: drop any exon that starts
+                    // beyond it, and truncate one that only partially overflows.
+                    let (starts, ends): (Vec<u32>, Vec<u32>) = starts
+                        .into_iter()
+                        .zip(ends.into_iter())
+                        .filter(|&(s, _)| s < chromlen)
+                        .map(|(s, e)| (s, e.min(chromlen)))
+                        .unzip();
+                    let length: u32 = starts.iter().zip(ends.iter()).map(|(s, e)| e - s).sum();
                     regions.push(Region {
                         chrom: fields[0].to_string(),  //chrom
                         start: Revalue::V(starts),     //start
@@ -349,8 +503,11 @@ pub fn read_bedfile(
                     });
                     entries += 1;
                 } else {
-                    let start = fields[1].parse().unwrap();
-                    let end = fields[2].parse().unwrap();
+                    let start = feat_start;
+                    let end: u32 = fields[2]
+                        .parse::<u32>()
+                        .unwrap_or_else(|e| panic!("Failed to parse end position in BED12 line '{}': {}", line, e))
+                        .min(chromlen);
                     regions.push(Region {
                         chrom: fields[0].to_string(),  //chrom
                         start: Revalue::U(start),      //start
@@ -369,7 +526,7 @@ pub fn read_bedfile(
 
     let filename = Path::new(bed_file)
         .file_stem()
-        .unwrap()
+        .unwrap_or_else(|| panic!("Could not determine a file stem/label for BED file '{}'", bed_file))
         .to_string_lossy()
         .into_owned();
 
@@ -384,8 +541,9 @@ pub fn read_bedfile(
 pub fn chrombounds_from_bw(bwfile: &str) -> HashMap<String, u32> {
     // define chromsizes hashmap
     let mut chromsizes: HashMap<String, u32> = HashMap::new();
-    let bwf = File::open(bwfile).expect("Failed to open bw file.");
-    let reader = BigWigRead::open(bwf).unwrap();
+    let bwf = File::open(bwfile).unwrap_or_else(|e| panic!("Failed to open bigwig file '{}': {}", bwfile, e));
+    let reader = BigWigRead::open(bwf)
+        .unwrap_or_else(|e| panic!("Failed to parse bigwig file '{}': {}", bwfile, e));
     for chrom in reader.chroms() {
         chromsizes.insert(chrom.name.clone(), chrom.length);
     }
@@ -395,19 +553,26 @@ pub fn chrombounds_from_bw(bwfile: &str) -> HashMap<String, u32> {
 pub fn chrombounds_from_bam(bamfiles: Vec<&str>) -> HashMap<String, u32> {
     let mut found_chroms: HashMap<String, usize> = HashMap::new();
     for bam in bamfiles.iter() {
-        let bam = IndexedReader::from_path(bam).unwrap();
-        let chroms: Vec<String> = bam
+        let bamreader = IndexedReader::from_path(bam)
+            .unwrap_or_else(|e| panic!("Failed to open indexed BAM file '{}': {}", bam, e));
+        let chroms: Vec<String> = bamreader
             .header()
             .target_names()
             .iter()
-            .map(|x| String::from_utf8(x.to_vec()).unwrap())
+            .map(|x| {
+                String::from_utf8(x.to_vec()).unwrap_or_else(|e| {
+                    panic!("BAM header for '{}' has a non-UTF-8 chromosome name: {}", bam, e)
+                })
+            })
             .collect();
         for chrom in chroms.iter() {
             // if it's not in the hashmap, add it, else increment count
             if !found_chroms.contains_key(chrom) {
                 found_chroms.insert(chrom.clone(), 1);
             } else {
-                let count = found_chroms.get_mut(chrom).unwrap();
+                let count = found_chroms
+                    .get_mut(chrom)
+                    .expect("Chromosome key vanished from found_chroms map between check and update");
                 *count += 1;
             }
         }
@@ -424,17 +589,25 @@ pub fn chrombounds_from_bam(bamfiles: Vec<&str>) -> HashMap<String, u32> {
             );
         }
     }
-    let bam = IndexedReader::from_path(bamfiles[0]).unwrap();
-    let header = bam.header().clone();
-    let mut chromsizes = HashMap::new();
-    for tid in 0..header.target_count() {
-        let chromname = String::from_utf8(header.tid2name(tid).to_vec())
-            .expect("Invalid UTF-8 in chromosome name");
-        let chromlen = header
-            .target_len(tid)
-            .expect("Error retrieving length for chromosome");
-        if validchroms.contains(&chromname) {
-            chromsizes.insert(chromname, chromlen as u32);
+
+    let mut chromsizes: HashMap<String, u32> = HashMap::new();
+    for bamfile in bamfiles.iter() {
+        let bamreader = IndexedReader::from_path(bamfile)
+            .unwrap_or_else(|e| panic!("Failed to open indexed BAM file '{}': {}", bamfile, e));
+        let header = bamreader.header().clone();
+        for tid in 0..header.target_count() {
+            let chromname = String::from_utf8(header.tid2name(tid).to_vec())
+                .expect("Invalid UTF-8 in chromosome name");
+            if !validchroms.contains(&chromname) {
+                continue;
+            }
+            let chromlen = header
+                .target_len(tid)
+                .expect("Error retrieving length for chromosome") as u32;
+            chromsizes
+                .entry(chromname)
+                .and_modify(|len| *len = (*len).min(chromlen))
+                .or_insert(chromlen);
         }
     }
     chromsizes
@@ -445,6 +618,7 @@ pub fn bwintervals(
     regions: &Vec<Region>,
     slopregions: &Vec<Vec<Bin>>,
     scale_regions: &Scalingregions,
+    blacklist_index: Option<&crate::filtering::BlacklistIndex>,
 ) -> Vec<Vec<f32>> {
     // For a given bw file, a vector of slopregions (Bin enum))
     // return a vector with for every region a vector of f64.
@@ -458,8 +632,9 @@ pub fn bwintervals(
 
     // Define return vector, set up bw reader.
     let mut bwvals: Vec<Vec<f32>> = Vec::new();
-    let bwf = File::open(bwfile).expect("Failed to open bw file.");
-    let mut reader = BigWigRead::open(bwf).unwrap();
+    let bwf = File::open(bwfile).unwrap_or_else(|e| panic!("Failed to open bigwig file '{}': {}", bwfile, e));
+    let mut reader = BigWigRead::open(bwf)
+        .unwrap_or_else(|e| panic!("Failed to parse bigwig file '{}': {}", bwfile, e));
 
     // Iterate over regions and slopregions synchronously.
     for (sls, region) in slopregions.iter().zip(regions.iter()) {
@@ -470,7 +645,12 @@ pub fn bwintervals(
             .iter()
             .flat_map(|bin| match bin {
                 Bin::Conbin(a, b) => vec![*a, *b],
+                Bin::PaddedConbin(a, b, _) => vec![*a, *b],
                 Bin::Catbin(pairs) => pairs
+                    .iter()
+                    .flat_map(|(x, y)| vec![*x, *y])
+                    .collect::<Vec<u32>>(),
+                Bin::PaddedCatbin(pairs, _) => pairs
                     .iter()
                     .flat_map(|(x, y)| vec![*x, *y])
                     .collect::<Vec<u32>>(),
@@ -480,16 +660,43 @@ pub fn bwintervals(
             });
         let binvals = reader
             .get_interval(&region.chrom, min as u32, max as u32)
-            .unwrap();
+            .unwrap_or_else(|e| {
+                panic!(
+                    "Failed to query bigwig '{}' for interval {}:{}-{}: {}",
+                    bwfile, region.chrom, min, max, e
+                )
+            });
         // since binvals (can) be over binsizes, we expand them to bp and push them to a hashmap
         let mut bwhash: HashMap<u32, f32> = HashMap::new();
         for interval in binvals {
-            let interval = interval.unwrap();
+            let interval = interval.unwrap_or_else(|e| {
+                panic!("Failed to read an interval from bigwig '{}': {}", bwfile, e)
+            });
             let start = interval.start as u32;
             let end = interval.end as u32;
             let val = interval.value as f32;
             bwhash.extend((start..end).map(|bp| (bp, val)));
         }
+        let gather_vals = |a: u32, b: u32, vals: &mut Vec<f32>| {
+            for bp in a..b {
+                if blacklist_index.is_some()
+                    && blacklist_index
+                        .expect("blacklist_index vanished between is_some() check and use")
+                        .contains(&region.chrom, bp)
+                {
+                    continue;
+                }
+                match bwhash.get(&bp) {
+                    Some(v) => vals.push(*v),
+                    None => {
+                        if scale_regions.missingdata_as_zero {
+                            vals.push(0.0);
+                        }
+                    }
+                }
+            }
+        };
+
         // Now we can iterate over the slopped regions, and get the values from the hashmap.
         for bin in sls {
             match bin {
@@ -501,48 +708,118 @@ pub fn bwintervals(
                             bwval.push(std::f32::NAN);
                         }
                     } else {
-                        // Get values from the hashmap
-                        let vals: Vec<&f32> = (*a..*b).filter_map(|bp| bwhash.get(&bp)).collect();
-
+                        let mut vals: Vec<f32> = Vec::new();
+                        gather_vals(*a, *b, &mut vals);
+                        if vals.is_empty() {
+                            if scale_regions.missingdata_as_zero {
+                                bwval.push(0.0);
+                            } else {
+                                bwval.push(std::f32::NAN);
+                            }
+                        } else {
+                            let valrefs: Vec<&f32> = vals.iter().collect();
+                            let val = match scale_regions.avgtype.as_str() {
+                                "mean" => mean_float(&valrefs),
+                                "median" => median_float(&valrefs),
+                                "min" => min_float(&valrefs),
+                                "max" => max_float(&valrefs),
+                                "std" => std_float(&valrefs),
+                                "sum" => sum_float(&valrefs),
+                                _ => panic!("Unknown avgtype."),
+                            };
+                            bwval.push(val);
+                        }
+                    }
+                }
+                Bin::PaddedConbin(a, b, pad) => {
+                    let mut vals: Vec<f32> = Vec::new();
+                    gather_vals(*a, *b, &mut vals);
+                    if scale_regions.missingdata_as_zero && *pad > 0 {
+                        vals.extend(std::iter::repeat(0.0f32).take(*pad as usize));
+                    }
+                    if vals.is_empty() {
+                        if scale_regions.missingdata_as_zero {
+                            bwval.push(0.0);
+                        } else {
+                            bwval.push(std::f32::NAN);
+                        }
+                    } else {
+                        let valrefs: Vec<&f32> = vals.iter().collect();
                         let val = match scale_regions.avgtype.as_str() {
-                            "mean" => mean_float(&vals),
-                            "median" => median_float(&vals),
-                            "min" => min_float(&vals),
-                            "max" => max_float(&vals),
-                            "std" => std_float(&vals),
-                            "sum" => sum_float(&vals),
+                            "mean" => mean_float(&valrefs),
+                            "median" => median_float(&valrefs),
+                            "min" => min_float(&valrefs),
+                            "max" => max_float(&valrefs),
+                            "std" => std_float(&valrefs),
+                            "sum" => sum_float(&valrefs),
                             _ => panic!("Unknown avgtype."),
                         };
                         bwval.push(val);
                     }
                 }
                 Bin::Catbin(pairs) => {
-                    let mut vals: Vec<&f32> = Vec::new();
+                    let mut vals: Vec<f32> = Vec::new();
 
                     for (start, end) in pairs {
                         if start == end && *end == 0 {
-                            if scale_regions.missingdata_as_zero {
-                                vals.push(&0.0);
-                            } else {
-                                vals.push(&std::f32::NAN);
-                            }
-                        } else {
-                            (*start..*end)
-                                .filter_map(|bp| bwhash.get(&bp))
-                                .for_each(|v| vals.push(v));
+                            continue;
                         }
+                        gather_vals(*start, *end, &mut vals);
                     }
 
-                    let val = match scale_regions.avgtype.as_str() {
-                        "mean" => mean_float(&vals),
-                        "median" => median_float(&vals),
-                        "min" => min_float(&vals),
-                        "max" => max_float(&vals),
-                        "std" => std_float(&vals),
-                        "sum" => sum_float(&vals),
-                        _ => panic!("Unknown avgtype."),
-                    };
-                    bwval.push(val);
+                    // Handle case where no valid values exist
+                    if vals.is_empty() {
+                        if scale_regions.missingdata_as_zero {
+                            bwval.push(0.0);
+                        } else {
+                            bwval.push(std::f32::NAN);
+                        }
+                    } else {
+                        let valrefs: Vec<&f32> = vals.iter().collect();
+                        let val = match scale_regions.avgtype.as_str() {
+                            "mean" => mean_float(&valrefs),
+                            "median" => median_float(&valrefs),
+                            "min" => min_float(&valrefs),
+                            "max" => max_float(&valrefs),
+                            "std" => std_float(&valrefs),
+                            "sum" => sum_float(&valrefs),
+                            _ => panic!("Unknown avgtype."),
+                        };
+                        bwval.push(val);
+                    }
+                }
+                Bin::PaddedCatbin(pairs, pad) => {
+                    let mut vals: Vec<f32> = Vec::new();
+
+                    for (start, end) in pairs {
+                        if start == end && *end == 0 {
+                            continue;
+                        }
+                        gather_vals(*start, *end, &mut vals);
+                    }
+                    if scale_regions.missingdata_as_zero && *pad > 0 {
+                        vals.extend(std::iter::repeat(0.0f32).take(*pad as usize));
+                    }
+
+                    if vals.is_empty() {
+                        if scale_regions.missingdata_as_zero {
+                            bwval.push(0.0);
+                        } else {
+                            bwval.push(std::f32::NAN);
+                        }
+                    } else {
+                        let valrefs: Vec<&f32> = vals.iter().collect();
+                        let val = match scale_regions.avgtype.as_str() {
+                            "mean" => mean_float(&valrefs),
+                            "median" => median_float(&valrefs),
+                            "min" => min_float(&valrefs),
+                            "max" => max_float(&valrefs),
+                            "std" => std_float(&valrefs),
+                            "sum" => sum_float(&valrefs),
+                            _ => panic!("Unknown avgtype."),
+                        };
+                        bwval.push(val);
+                    }
                 }
             }
         }
@@ -600,16 +877,15 @@ pub fn header_matrix(
     // ref point can be empty (for scale_regions, for example).
     // To keep compatibility with deepTools 3 it should be written as null
     let refpointstring = (0..scale_regions.bwfiles)
-        .map(|_| scale_regions.referencepoint.clone())
-        .collect::<Vec<_>>()
-        .into_iter()
-        .join("\",\"");
-
-    if refpointstring.is_empty() {
-        headstr.push_str(&format!("\"ref point\":[null],"));
-    } else {
-        headstr.push_str(&format!("\"ref point\":[\"{}\"],", refpointstring));
-    }
+        .map(|_| {
+            if scale_regions.referencepoint.is_empty() {
+                "null".to_string()
+            } else {
+                format!("\"{}\"", scale_regions.referencepoint)
+            }
+        })
+        .join(",");
+    headstr.push_str(&format!("\"ref point\":[{}],", refpointstring));
 
     headstr.push_str(&format!("\"verbose\":{},", scale_regions.verbose));
     headstr.push_str(&format!("\"bin avg type\":\"{}\",", scale_regions.avgtype));
@@ -668,7 +944,9 @@ pub fn header_matrix(
     groupbounds.push(0);
     let mut cumsum: u32 = 0;
     for regionlabel in scale_regions.regionlabels.iter() {
-        cumsum += regionsizes.get(regionlabel).unwrap();
+        cumsum += regionsizes
+            .get(regionlabel)
+            .unwrap_or_else(|| panic!("Region label '{}' not found in regionsizes map", regionlabel));
         groupbounds.push(cumsum);
     }
     let groupbounds = format!(
@@ -711,41 +989,19 @@ pub fn header_matrix(
 
 pub fn write_matrix(
     header: String,
-    mat: Vec<Vec<f32>>,
+    mat: &[Vec<f32>],
     ofile: &str,
-    regions: Vec<Region>,
+    regions: &[Region],
     scale_regions: &Scalingregions,
 ) {
     // Write out the matrix to a compressed file.
-    let omat = File::create(ofile).unwrap();
+    let omat = File::create(ofile).unwrap_or_else(|e| panic!("Failed to create output matrix file '{}': {}", ofile, e));
     let mut encoder = GzEncoder::new(omat, Compression::default());
-    encoder.write_all(header.as_bytes()).unwrap();
-    // Final check to make sure our regions and mat iter are of equal length.
+    encoder
+        .write_all(header.as_bytes())
+        .unwrap_or_else(|e| panic!("Failed to write header to matrix file '{}': {}", ofile, e));
     assert_eq!(regions.len(), mat.len());
-    for (region, row) in regions.into_iter().zip(mat.into_iter()) {
-        // Skipping rules.
-        // skip_zeros
-        if scale_regions.skipzero && row.iter().all(|&x| x == 0.0) {
-            continue;
-        }
-        // min threshold (Python: coverage.min() <= minThreshold → skip)
-        // Python: if any element is NaN, coverage.min() returns NaN, NaN <= threshold is False → row passes
-        // Rust: NaN <= threshold is False, so NaN is ignored in .any(). To match Python, skip threshold
-        // check entirely if the row contains any NaN values.
-        if scale_regions.minthresh != 0.0
-            && !row.iter().any(|&x| x.is_nan())
-            && row.iter().any(|&x| x <= scale_regions.minthresh)
-        {
-            continue;
-        }
-        // max threshold (Python: if max(coverage) >= maxThreshold → skip)
-        // NaN matching: Python's np.min()/np.max() propagate NaN, so NaN comparisons are False. If row contains NaN, skip filtering.
-        if scale_regions.maxthresh != 0.0
-            && !row.iter().any(|&x| x.is_nan())
-            && row.iter().any(|&x| x >= scale_regions.maxthresh)
-        {
-            continue;
-        }
+    for (region, row) in regions.iter().zip(mat.iter()) {
         let mut writerow = format!(
             "{}\t{}\t{}\t{}\t{}\t{}\t",
             region.chrom,            // Chromosome
@@ -762,14 +1018,16 @@ pub fn write_matrix(
                         // as deepTools 3 encoded nan in matrix.
                         "nan".to_string()
                     } else {
-                        ((scale_regions.scale * x * 100.0).round() / 100.0).to_string()
+                        format!("{:.6}", scale_regions.scale * x)
                     }
                 })
                 .collect::<Vec<String>>()
                 .join("\t"),
         );
         writerow.push_str("\n");
-        encoder.write_all(writerow.as_bytes()).unwrap();
+        encoder
+            .write_all(writerow.as_bytes())
+            .unwrap_or_else(|e| panic!("Failed to write row to matrix file '{}': {}", ofile, e));
     }
 }
 
@@ -780,18 +1038,19 @@ pub fn write_matrix_values(
     regionsizes: &HashMap<String, u32>,
 ) {
     use std::io::Write;
-    let mut fh = File::create(file_name).unwrap();
+    let mut fh = File::create(file_name)
+        .unwrap_or_else(|e| panic!("Failed to create matrix values file '{}': {}", file_name, e));
 
-    // Header line 1: group labels with region counts (this was already correct)
+    // Header line 1: group labels with region counts
     let info: Vec<String> = scale_regions
         .regionlabels
         .iter()
         .map(|label| format!("{}:{}", label, regionsizes.get(label).unwrap_or(&0)))
         .collect();
     fh.write_all(format!("#{}\n", info.join("\t")).as_bytes())
-        .unwrap();
+        .unwrap_or_else(|e| panic!("Failed to write header to matrix values file '{}': {}", file_name, e));
 
-    // Header line 2: region dimension parameters (this was already correct)
+    // Header line 2: region dimension parameters
     let header2 = format!(
         "#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n",
         scale_regions.downstream,
@@ -801,9 +1060,10 @@ pub fn write_matrix_values(
         scale_regions.unscaled5prime,
         scale_regions.unscaled3prime,
     );
-    fh.write_all(header2.as_bytes()).unwrap();
+    fh.write_all(header2.as_bytes())
+        .unwrap_or_else(|e| panic!("Failed to write header line 2 to matrix values file '{}': {}", file_name, e));
 
-    // Header line 3: sample labels repeated per column (this was already correct)
+    // Header line 3: sample labels repeated per column
     let cols_per_sample = scale_regions.cols_expected / scale_regions.bwfiles;
     let sample_info: Vec<String> = scale_regions
         .bwlabels
@@ -811,15 +1071,16 @@ pub fn write_matrix_values(
         .flat_map(|label| (0..cols_per_sample).map(move |_| label.clone()))
         .collect();
     fh.write_all(format!("{}\t{}\n", info.join("\t"), sample_info.join("\t")).as_bytes())
-        .unwrap();
-    fh.flush().unwrap();
+        .unwrap_or_else(|e| panic!("Failed to write header line 3 to matrix values file '{}': {}", file_name, e));
+    fh.flush()
+        .unwrap_or_else(|e| panic!("Failed to flush matrix values file '{}': {}", file_name, e));
 
-    // Reopen in append mode and write matrix data (matches Python np.savetxt fmt="%.4g")
+    // Reopen in append mode and write matrix data
     let mut fh = std::fs::OpenOptions::new()
         .create(false)
         .append(true)
         .open(file_name)
-        .unwrap();
+        .unwrap_or_else(|e| panic!("Failed to reopen matrix values file '{}' for appending: {}", file_name, e));
     for row in mat.iter() {
         let line = row
             .iter()
@@ -827,12 +1088,13 @@ pub fn write_matrix_values(
                 if x.is_nan() {
                     "nan".to_string()
                 } else {
-                    format!("{}", *x)
+                    format!("{:.6}", scale_regions.scale * x)
                 }
             })
             .collect::<Vec<_>>()
             .join("\t");
-        writeln!(fh, "{}", line).unwrap();
+        writeln!(fh, "{}", line)
+            .unwrap_or_else(|e| panic!("Failed to write matrix row to '{}': {}", file_name, e));
     }
 }
 
@@ -843,9 +1105,11 @@ pub fn write_sorted_regions_bed(
     regionsizes: &HashMap<String, u32>,
 ) {
     use std::io::Write;
-    let mut fh = File::create(file_name).unwrap();
+    let mut fh = File::create(file_name)
+        .unwrap_or_else(|e| panic!("Failed to create sorted regions BED file '{}': {}", file_name, e));
     let header = "#chrom\tstart\tend\tname\tscore\tstrand\tthickStart\tthickEnd\titemRGB\tblockCount\tblockSizes\tblockStarts\tdeepTools_group\n";
-    fh.write_all(header.as_bytes()).unwrap();
+    fh.write_all(header.as_bytes())
+        .unwrap_or_else(|e| panic!("Failed to write header to sorted regions BED file '{}': {}", file_name, e));
     // Build group boundaries from regionsizes (cumulative region counts per group label)
     let mut group_boundaries: Vec<u32> = vec![0];
     let mut cumsum: u32 = 0;
@@ -854,7 +1118,6 @@ pub fn write_sorted_regions_bed(
         group_boundaries.push(cumsum);
     }
     for (idx, region) in regions.iter().enumerate() {
-        // Find label_idx: last boundary <= idx, matching Python: np.flatnonzero(boundaries <= idx)[-1]
         let label_idx = group_boundaries
             .iter()
             .take_while(|&&b| b <= idx as u32)
@@ -863,11 +1126,15 @@ pub fn write_sorted_regions_bed(
             .min(scale_regions.regionlabels.len() - 1);
         let start_first = match &region.start {
             Revalue::U(v) => *v,
-            Revalue::V(vs) => *vs.first().unwrap(),
+            Revalue::V(vs) => *vs
+                .first()
+                .unwrap_or_else(|| panic!("Region '{}' has an empty exon-start vector", region.name)),
         };
         let end_last = match &region.end {
             Revalue::U(v) => *v,
-            Revalue::V(vs) => *vs.last().unwrap(),
+            Revalue::V(vs) => *vs
+                .last()
+                .unwrap_or_else(|| panic!("Region '{}' has an empty exon-end vector", region.name)),
         };
         let (block_count, block_sizes, block_starts) = match (&region.start, &region.end) {
             (Revalue::U(_), _) => (
@@ -916,6 +1183,7 @@ pub fn write_sorted_regions_bed(
             block_starts,
             group_label,
         );
-        fh.write_all(line.as_bytes()).unwrap();
+        fh.write_all(line.as_bytes())
+            .unwrap_or_else(|e| panic!("Failed to write line to sorted regions BED file '{}': {}", file_name, e));
     }
 }

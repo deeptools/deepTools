@@ -3,6 +3,7 @@
 
 import time
 
+from pathlib import Path
 import multiprocessing
 import numpy as np
 import argparse
@@ -78,7 +79,7 @@ def getRequiredArgs():
                           'the observed and expected read frequencies per %%GC-'
                           'content. This file is needed to run the '
                           'correctGCBias tool. This is a text file.',
-                          type=argparse.FileType('w'),
+                          type=parserCommon.writableFile,
                           metavar='FILE',
                           required=True)
 
@@ -102,7 +103,7 @@ def getRequiredArgs():
                           help='BED file containing genomic regions for which '
                           'extra sampling is required because they are '
                           'underrepresented in the genome.',
-                          type=argparse.FileType('r'),
+                          type=Path,
                           metavar='BED file')
 
     plot = parser.add_argument_group('Diagnostic plot options')
@@ -640,11 +641,7 @@ def plotGCbias(file_name, frequencies, reads_per_gc, region_size, image_format=N
 def main(args=None):
     args = parse_arguments().parse_args(args)
 
-    if args.extraSampling:
-        extra_sampling_file = args.extraSampling.name
-        args.extraSampling.close()
-    else:
-        extra_sampling_file = None
+    extra_sampling_file = args.extraSampling if args.extraSampling else None
 
     global global_vars
     global_vars = {}
@@ -712,7 +709,7 @@ def main(args=None):
                              verbose=args.verbose,
                              region=args.region)
 
-    np.savetxt(args.GCbiasFrequenciesFile.name, data)
+    np.savetxt(args.GCbiasFrequenciesFile, data)
 
     if args.biasPlot:
         reads_per_gc = countReadsPerGC(args.regionSize,

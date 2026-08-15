@@ -256,3 +256,45 @@ def test_plotPCA_log2_and_rowCenter_affect_output():
     rowcenter = _run_pca(["--rowCenter"])
     assert not np.allclose(default[:, -1], log2[:, -1]), "--log2 was a no-op"
     assert not np.allclose(default[:, -1], rowcenter[:, -1]), "--rowCenter was a no-op"
+
+
+def test_plotPCA_ggplot():
+    """Image comparison test for --ggplot output."""
+
+    plotfile = NamedTemporaryFile(
+        suffix='.png',
+        prefix='deeptools_testfile_',
+        delete=False
+    )
+
+    tsvfile = NamedTemporaryFile(
+        suffix='.tsv',
+        prefix='deeptools_testfile_',
+        delete=False
+    )
+
+    args = (
+        "-in {0}test_samples.npz "
+        "-o {1} "
+        "--outFileNameData {2} "
+        "--ggplot"
+    ).format(
+        TEST_DATA,
+        plotfile.name,
+        tsvfile.name
+    ).split()
+
+    try:
+        deeptools.plotPCA.main(args)
+
+        res = compare_images(
+            ROOT + "test_plotPCA_ggplot.png",
+            plotfile.name,
+            tolerance
+        )
+
+        assert res is None, res
+
+    finally:
+        os.remove(plotfile.name)
+        os.remove(tsvfile.name)

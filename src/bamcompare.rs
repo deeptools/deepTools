@@ -1,5 +1,5 @@
 use crate::calc::{calc_ratio, median};
-use crate::covcalc::{bam_pileup, parse_regions, region_divider, Region, TempZip};
+use crate::covcalc::{Region, TempZip, bam_pileup, parse_regions, region_divider};
 use crate::filehandler::{bam_ispaired, is_bed_or_gtf, read_bedfile, write_covfile};
 use crate::filtering::Alignmentfilters;
 use crate::normalization::scale_factor_bamcompare;
@@ -7,11 +7,11 @@ use bigtools::Value;
 use itertools::Itertools;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::fs::File;
-use std::io::prelude::*;
 use std::io::BufReader;
+use std::io::prelude::*;
 use tempfile::TempPath;
 
 #[pyfunction]
@@ -73,8 +73,7 @@ pub fn r_bamcompare(
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) =
-                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                 blacklistregions = Some(bls);
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -98,10 +97,14 @@ pub fn r_bamcompare(
     );
     let mut filter2 = filter1.clone();
     if filter1.extendreads && filter1.extendreadslen == 0 && !ispe1 {
-        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+        panic!(
+            "Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter."
+        );
     }
     if filter2.extendreads && filter2.extendreadslen == 0 && !ispe2 {
-        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+        panic!(
+            "Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter."
+        );
     }
     if filter1.extendreads && filter1.extendreadslen == 0 && ispe1 {
         // We need a pass over the bamfile already to get the mean fragment length.
@@ -124,7 +127,15 @@ pub fn r_bamcompare(
         }
     }
 
-    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(nproc)
+        .build()
+        .unwrap_or_else(|e| {
+            panic!(
+                "Failed to build a thread pool with {} threads: {}",
+                nproc, e
+            )
+        });
 
     // Set up the bam files in a Vec.
     let bamfiles: Vec<(&str, bool, &Alignmentfilters)> =
@@ -138,7 +149,8 @@ pub fn r_bamcompare(
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
-                            bamfile, &i, &binsize, &ispe, &ignorechr, alfilter, false, false, true, 0,
+                            bamfile, &i, &binsize, &binsize, &ispe, &ignorechr, alfilter, false,
+                            false, true, 0,
                         )
                     })
                     .reduce(
@@ -224,29 +236,118 @@ pub fn r_bamcompare(
     let raw_lines = zips_vec.into_iter().flat_map(|c| {
         let readers: Vec<_> = c
             .into_iter()
-            .map(|x| BufReader::new(File::open(x).unwrap()).lines())
+            .map(|x| {
+                BufReader::new(File::open(&x).unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to open internal temp bedgraph file '{}': {}",
+                        x.display(),
+                        e
+                    )
+                }))
+                .lines()
+            })
             .collect();
         let temp_zip = TempZip { iterators: readers };
         temp_zip.into_iter().filter_map(move |_l| {
             let mut iter = _l.into_iter();
-            let s0 = iter.next().unwrap().unwrap();
-            let s1 = iter.next().unwrap().unwrap();
+            let s0 = iter
+                .next()
+                .expect("Internal temp bedgraph zip is missing a line for bam file 1")
+                .expect("Failed to read a line from bam file 1's internal temp bedgraph");
+            let s1 = iter
+                .next()
+                .expect("Internal temp bedgraph zip is missing a line for bam file 2")
+                .expect("Failed to read a line from bam file 2's internal temp bedgraph");
 
             let mut p0 = s0.split('\t');
-            let chr0: &str = p0.next().unwrap();
-            let start0: u32 = p0.next().unwrap().parse().unwrap();
-            let end0: u32 = p0.next().unwrap().parse().unwrap();
-            let cov0: f32 = p0.next().unwrap().parse().unwrap();
+            let chr0: &str = p0
+                .next()
+                .unwrap_or_else(|| panic!("Malformed internal bedgraph line (no chrom): '{}'", s0));
+            let start0: u32 = p0
+                .next()
+                .unwrap_or_else(|| panic!("Malformed internal bedgraph line (no start): '{}'", s0))
+                .parse()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to parse start position in bedgraph line '{}': {}",
+                        s0, e
+                    )
+                });
+            let end0: u32 = p0
+                .next()
+                .unwrap_or_else(|| panic!("Malformed internal bedgraph line (no end): '{}'", s0))
+                .parse()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to parse end position in bedgraph line '{}': {}",
+                        s0, e
+                    )
+                });
+            let cov0: f32 = p0
+                .next()
+                .unwrap_or_else(|| {
+                    panic!("Malformed internal bedgraph line (no coverage): '{}'", s0)
+                })
+                .parse()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to parse coverage value in bedgraph line '{}': {}",
+                        s0, e
+                    )
+                });
 
             let mut p1 = s1.split('\t');
-            let chr1: &str = p1.next().unwrap();
-            let start1: u32 = p1.next().unwrap().parse().unwrap();
-            let end1: u32 = p1.next().unwrap().parse().unwrap();
-            let cov1: f32 = p1.next().unwrap().parse().unwrap();
+            let chr1: &str = p1
+                .next()
+                .unwrap_or_else(|| panic!("Malformed internal bedgraph line (no chrom): '{}'", s1));
+            let start1: u32 = p1
+                .next()
+                .unwrap_or_else(|| panic!("Malformed internal bedgraph line (no start): '{}'", s1))
+                .parse()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to parse start position in bedgraph line '{}': {}",
+                        s1, e
+                    )
+                });
+            let end1: u32 = p1
+                .next()
+                .unwrap_or_else(|| panic!("Malformed internal bedgraph line (no end): '{}'", s1))
+                .parse()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to parse end position in bedgraph line '{}': {}",
+                        s1, e
+                    )
+                });
+            let cov1: f32 = p1
+                .next()
+                .unwrap_or_else(|| {
+                    panic!("Malformed internal bedgraph line (no coverage): '{}'", s1)
+                })
+                .parse()
+                .unwrap_or_else(|e| {
+                    panic!(
+                        "Failed to parse coverage value in bedgraph line '{}': {}",
+                        s1, e
+                    )
+                });
 
-            assert_eq!(chr0, chr1, "Error: Chromosome mismatch in bam files. {} != {}", chr0, chr1);
-            assert_eq!(start0, start1, "Error: Start position mismatch in bam files. {} != {}", start0, start1);
-            assert_eq!(end0, end1, "Error: End position mismatch in bam files. {} != {}", end0, end1);
+            assert_eq!(
+                chr0, chr1,
+                "Error: Chromosome mismatch in bam files. {} != {}",
+                chr0, chr1
+            );
+            assert_eq!(
+                start0, start1,
+                "Error: Start position mismatch in bam files. {} != {}",
+                start0, start1
+            );
+            assert_eq!(
+                end0, end1,
+                "Error: End position mismatch in bam files. {} != {}",
+                end0, end1
+            );
 
             if skip_zero_over_zero && cov0 == 0.0 && cov1 == 0.0 {
                 return None;
@@ -255,7 +356,15 @@ pub fn r_bamcompare(
             } else if skip_non_covered_regions && cov1 == 0.0 {
                 return None;
             } else {
-                let cov = calc_ratio(cov0, cov1, &sf.0, &sf.1, &pseudocount1, &pseudocount2, operation);
+                let cov = calc_ratio(
+                    cov0,
+                    cov1,
+                    &sf.0,
+                    &sf.1,
+                    &pseudocount1,
+                    &pseudocount2,
+                    operation,
+                );
                 Some((
                     chr0.to_string(),
                     Value {

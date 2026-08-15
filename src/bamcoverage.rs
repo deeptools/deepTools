@@ -1,5 +1,5 @@
 use crate::calc::median;
-use crate::covcalc::{bam_pileup, parse_regions, region_divider, Region};
+use crate::covcalc::{Region, bam_pileup, parse_regions, region_divider};
 use crate::filehandler::{bam_ispaired, is_bed_or_gtf, read_bedfile, write_covfile};
 use crate::filtering::Alignmentfilters;
 use crate::normalization::scale_factor;
@@ -7,11 +7,11 @@ use bigtools::Value;
 use core::panic;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use rayon::prelude::*;
 use rayon::ThreadPoolBuilder;
+use rayon::prelude::*;
 use std::fs::File;
-use std::io::prelude::*;
 use std::io::BufReader;
+use std::io::prelude::*;
 
 #[pyfunction]
 pub fn r_bamcoverage(
@@ -34,7 +34,7 @@ pub fn r_bamcoverage(
     blacklist: &str,     // path to blacklist filename, or 'None'
     _ignorechr: Py<PyList>, // list of chromosomes to ignore. Is empty if none.
     skipnoncovregions: bool,
-    _smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
+    smoothlength: u32, // 0 = no smoothing, else it's a strictly larger then binsize
     binsize: u32,
     // filtering options
     minmappingquality: u8, //
@@ -70,7 +70,10 @@ pub fn r_bamcoverage(
         panic!("Error: Effective genome size is required for RPGC normalization.");
     }
     if norm != "None" && scalefactor != 1.0 {
-        println!("Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used", norm);
+        println!(
+            "Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used",
+            norm
+        );
     }
     if mnase && offset != (0, 0) {
         println!("Warning: Both MNase and offset are set. The offset will be ignored !");
@@ -81,10 +84,14 @@ pub fn r_bamcoverage(
         }
     }
     if extendreads && extendreadslen == 0 && !ispe {
-        panic!("Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter.");
+        panic!(
+            "Error: Extendreads is set, but not to a specific length (and library is single end). Specify the length with the --extendReads parameter."
+        );
     }
     if centerreads && !extendreads {
-        println!("Warning: Centerreads is set, but extendreads is not. Centering will do nothing in this case.");
+        println!(
+            "Warning: Centerreads is set, but extendreads is not. Centering will do nothing in this case."
+        );
     }
 
     if verbose {
@@ -131,8 +138,7 @@ pub fn r_bamcoverage(
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) =
-                    read_bedfile(&blacklist.to_string(), false, chromsizes.keys().collect());
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
                 backlistregions = Some(bls);
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -165,13 +171,31 @@ pub fn r_bamcoverage(
         }
     }
 
-    let pool = ThreadPoolBuilder::new().num_threads(nproc).build().unwrap();
+    let pool = ThreadPoolBuilder::new()
+        .num_threads(nproc)
+        .build()
+        .unwrap_or_else(|e| {
+            panic!(
+                "Failed to build a thread pool with {} threads: {}",
+                nproc, e
+            )
+        });
     let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
         regionblocks
             .par_iter()
             .map(|i| {
                 bam_pileup(
-                    bamifile, &i, &binsize, &ispe, &ignorechr, &filters, collapse, false, true, _smoothlength,
+                    bamifile,
+                    &i,
+                    &binsize,
+                    &binsize,
+                    &ispe,
+                    &ignorechr,
+                    &filters,
+                    collapse,
+                    false,
+                    true,
+                    smoothlength,
                 )
             })
             .reduce(
@@ -219,9 +243,15 @@ pub fn r_bamcoverage(
 
     // Create output stream
     let lines = bg.into_iter().flat_map(|bg| {
-        let reader = BufReader::new(File::open(bg).unwrap());
+        let reader = BufReader::new(File::open(&bg).unwrap_or_else(|e| {
+            panic!(
+                "Failed to open internal temp bedgraph file '{}': {}",
+                bg.display(),
+                e
+            )
+        }));
         reader.lines().filter_map(|l| {
-            let l = l.unwrap();
+            let l = l.expect("Failed to read a line from internal temp bedgraph file");
             let fields: Vec<&str> = l.split('\t').collect();
             if skipnoncovregions && fields[3] == "0" {
                 None
@@ -229,9 +259,27 @@ pub fn r_bamcoverage(
                 Some((
                     fields[0].to_string(),
                     Value {
-                        start: fields[1].parse::<u32>().unwrap(),
-                        end: fields[2].parse::<u32>().unwrap(),
-                        value: (fields[3].parse::<f32>().unwrap() * sf * 100.0).round() / 100.0,
+                        start: fields[1].parse::<u32>().unwrap_or_else(|e| {
+                            panic!(
+                                "Failed to parse start position in bedgraph line '{}': {}",
+                                l, e
+                            )
+                        }),
+                        end: fields[2].parse::<u32>().unwrap_or_else(|e| {
+                            panic!(
+                                "Failed to parse end position in bedgraph line '{}': {}",
+                                l, e
+                            )
+                        }),
+                        value: (fields[3].parse::<f32>().unwrap_or_else(|e| {
+                            panic!(
+                                "Failed to parse coverage value in bedgraph line '{}': {}",
+                                l, e
+                            )
+                        }) * sf
+                            * 100.0)
+                            .round()
+                            / 100.0,
                     },
                 ))
             }
