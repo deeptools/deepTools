@@ -460,3 +460,26 @@ def test_bam_compare_filter_blacklist():
                     '3R\t1050\t1500\t0\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
+
+
+def test_bam_compare_ZoverZ_interior_bins():
+    """
+    --skipZeroOverZero must not shift the coordinates of the bins that follow
+    a skipped (zero-over-zero) bin. test_filtering.bam has no reads between
+    positions 57 and 78, so with 10-bp bins the bin 60-70 is skipped while
+    bins on both sides are written. The --operation first output must equal
+    the bamCoverage track of the same file with the zero bins removed.
+    """
+    outfile = '/tmp/test_file_zz.bg'
+    reference = '/tmp/test_file_cov.bg'
+    args = "--bamfile1 {0} --bamfile2 {0} --outFileFormat bedgraph --scaleFactors 1:1 --operation first " \
+           "--binSize 10 --region 3R:0:200 -o {1} --skipZeroOverZero".format(BAMFILE_FILTER1, outfile).split()
+    bam_comp.main(args)
+    args = "--bam {} -o {} --outFileFormat bedgraph --binSize 10 --region 3R:0:200".format(BAMFILE_FILTER1, reference).split()
+    bam_cov.main(args)
+    resp = open(outfile).readlines()
+    expected = [x for x in open(reference).readlines() if not x.rstrip("\n").endswith("\t0")]
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    assert '3R\t60\t70\t0\n' not in resp
+    unlink(outfile)
+    unlink(reference)

@@ -1,3 +1,6 @@
+unreleased
+* bamCompare --skipZeroOverZero no longer shifts the coordinates of the bins following a skipped bin (issues #1108, #1130)
+
 3.5.5
 * drop support for python 3.7
 * doc fixes (argparse properly displayed, minor changes in installation instructions)

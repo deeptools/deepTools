@@ -232,6 +232,7 @@ class WriteBedGraph(cr.CountReadsPerBin):
 
         _file = open(utilities.getTempFileName(suffix='.bg'), 'w')
         previous_value = None
+        writeStart = writeEnd = None
         line_string = "{}\t{}\t{}\t{:g}\n"
         for tileIndex in range(coverage.shape[0]):
 
@@ -244,6 +245,13 @@ class WriteBedGraph(cr.CountReadsPerBin):
             else:
                 tileCoverage = coverage[tileIndex, :]
             if self.skipZeroOverZero and np.sum(tileCoverage) == 0:
+                # Flush the current run and start a new one after the gap:
+                # the coordinates of the next interval are derived from
+                # writeEnd, so a silently skipped bin would shift every
+                # later interval of this chunk to the left (issue #1108).
+                if previous_value is not None and not np.isnan(previous_value):
+                    _file.write(line_string.format(chrom, writeStart, writeEnd, previous_value))
+                previous_value = None
                 continue
 
             value = func_to_call(tileCoverage, func_args)
