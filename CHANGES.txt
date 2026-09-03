@@ -1,3 +1,6 @@
+unreleased
+* computeMatrix (and computeMatrixOperations sort) no longer crash with `TypeError: startswith first arg must be bytes` when the regions file is gzipped; loadBED now decodes the lines it reads, as loadGTF already did. #1423
+
 3.5.5
 * drop support for python 3.7
 * doc fixes (argparse properly displayed, minor changes in installation instructions)

@@ -163,3 +163,23 @@ class TestComputeMatrixOperations(object):
         expectedh = '10ea07d1aa58f44625abe2142ef76094'
         assert f'{h}' == f'{expectedh}'
         os.remove(oname)
+
+    def testsortGzippedBED(self):
+        """
+        computeMatrixOperations sort with a gzipped BED (issue #1423)
+        """
+        bedgz = "/tmp/computeMatrixOperations.bed.gz"
+        with open(self.bed, "rb") as fin, gzip.open(bedgz, "wb") as fout:
+            fout.write(fin.read())
+        oname = "/tmp/sorted_gz.mat.gz"
+        args = "sort -m {} -o {} -R {}".format(self.matrix, oname, bedgz)
+        args = args.split()
+        cmo.main(args)
+        f = gzip.GzipFile(oname)
+        getHeader(f)  # Skip the header, which can be in a different order
+        h = hashlib.md5(f.read()).hexdigest()
+        f.close()
+        expectedh = '10ea07d1aa58f44625abe2142ef76094'
+        assert f'{h}' == f'{expectedh}'
+        os.remove(oname)
+        os.remove(bedgz)

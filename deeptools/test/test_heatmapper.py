@@ -1,3 +1,4 @@
+import gzip
 import os
 import sys
 
@@ -101,6 +102,22 @@ def test_computeMatrix_multiple_bed():
     os.system('gunzip -f /tmp/_test.mat.gz')
     assert cmpMatrices(ROOT + '/master_multibed.mat', '/tmp/_test.mat') is True
     os.remove('/tmp/_test.mat')
+
+
+def test_computeMatrix_gzipped_bed():
+    """
+    A gzipped BED must give the same matrix as the plain one (issue #1423):
+    the default --sortRegions keep re-reads the regions file in sortMatrix.
+    """
+    with open(ROOT + '/test2.bed', 'rb') as fin, gzip.open('/tmp/_test2.bed.gz', 'wb') as fout:
+        fout.write(fin.read())
+    args = "reference-point -R /tmp/_test2.bed.gz -S {0}/test.bw  -b 100 -a 100 " \
+           "--outFileName /tmp/_test.mat.gz  -bs 1 -p 1".format(ROOT).split()
+    deeptools.computeMatrix.main(args)
+    os.system('gunzip -f /tmp/_test.mat.gz')
+    assert cmpMatrices(ROOT + '/master.mat', '/tmp/_test.mat') is True
+    os.remove('/tmp/_test.mat')
+    os.remove('/tmp/_test2.bed.gz')
 
 
 def test_computeMatrix_region_extend_over_chr_end():

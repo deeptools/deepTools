@@ -595,6 +595,8 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
     localRegions[name] = len(localRegions)
 
     for line in fp:
+        if not isinstance(line, str):
+            line = line.decode('ascii')
         if line.startswith("#") and labelColumn is None:
             if len(localRegions) > 0:
                 label = line[1:].strip()
