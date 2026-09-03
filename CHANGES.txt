@@ -1,8 +1,8 @@
 4.0.0
 * new Rust-backed core for bamCoverage, bamCompare, computeMatrix, alignmentSieve and multiBamSummary (rayon multithreading, bigtools-based bigWig I/O), replacing the pure-Python implementations for these five tools; the previous Python implementations remain available as bamCoverage_old, bamCompare_old, computeMatrix_old, alignmentSieve_old and multiBamSummary_old during the transition, but will be removed in a future release
-* gtf, bed and blacklist can be compressed in mbs, computematrix, alsieve, bamcompare and bamcoverage
+* gzipped GTF/BED region files are now supported in multiBamSummary, computeMatrix and alignmentSieve; gzipped blacklist files are supported in all five Rust-backed tools (multiBamSummary, computeMatrix, alignmentSieve, bamCompare, bamCoverage)
 * --exactScaling is removed as this is the only scaling option available with the new backend
-* --ignoreDuplicates has been deprecated from the bamCoverage and bamCompare tools. Duplicate reads can be removed via the --samFlagExclude option (assuming the provided BAM file has duplicate reads marked)
+* --ignoreDuplicates has been removed from the bamCoverage and bamCompare tools. Duplicate reads can be removed via the --samFlagExclude option (assuming the provided BAM file has duplicate reads marked)
 * plotPCA re-implemented with a lightweight scipy/numpy SVD backend. Proper handling of --transpose, --log2/--rowCenter and --ntop options.
 * plotly backend from plotCorrelation, plotPCA, plotHeatmap, plotProfile and plotEnrichment in favor of matplotlib, with a new optional --ggplot theme
 * removed the standalone cm.py colormap module; colormap handling now lives in the plotting tools directly
@@ -10,11 +10,11 @@
 * prebuilt wheels now cover Linux manylinux_2_28 and musllinux_1_2 (x86_64 + aarch64) and macOS (Intel + Apple Silicon), built via maturin
 * CI overhauled: pytest/rust/planemo test workflows split up (test_pytest.yml, test_rust.yml, test_planemo.yml), zizmor hardening for GitHub Actions, dependabot enabled
 * extensive new pytest/cargo test coverage across the Rust-backed tools and plotCorrelation/plotPCA/plotFingerprint data outputs
-* nanafterend doesn't rescale inner region anymore in reference-point mode
+* --nanAfterEnd doesn't rescale the inner region anymore in reference-point mode
 * BED output doesn't show wrong blockstart values anymore
 * blacklist filtering is done at bp level instead of genome chunk level for rewritten tools
-* alignmentsieve output order matches input order exactly
-* missingdataszero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
+* alignmentSieve output order matches input order exactly
+* --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
 
 3.5.6
