@@ -30,7 +30,7 @@ requires-python = ">= 3.12"
 dependencies = [
     "numpy >= 2.0",
     "scipy >= 1.13",
-    "matplotlib >= 3.9",
+    "matplotlib >= 3.10",
     "pysam >= 0.23",
     "pyBigWig >= 0.3",
     "py2bit >= 0.3",
@@ -51,12 +51,12 @@ actions = [
     "twine",
     "build",
     "planemo",
-    # matplotlib 3.10.0-3.10.4 hit a Path.__deepcopy__ RecursionError on
-    # Python 3.14 for any marker-using plot (fixed upstream in 3.10.5).
-    # Baseline images are pinned against 3.11.0 rendering; image-comparison
-    # tests carry tolerance headroom for anti-aliasing/text-hinting drift
-    # between 3.10.x and 3.11.x point releases (see matplotlib_defaults.py).
-    "matplotlib >= 3.10.5, < 3.12",
+]
+docs = [
+    "sphinx >= 7.2.6",
+    "mock >= 5.1.0",
+    "sphinx_rtd_theme >= 2.0.0",
+    "sphinx-argparse >= 0.4.0",
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
@@ -109,7 +109,7 @@ openssl = "*"
 pkg-config = "*"
 py-spy = "*"
 [tool.pixi.pypi-dependencies]
-deeptools = { path = ".", editable = true, extras = ['actions'] }
+deeptools = { path = ".", editable = true, extras = ['actions', 'docs'] }
 [tool.pixi.activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
 # Link conda-forge's OpenSSL instead of building the vendored copy from source
@@ -119,3 +119,4 @@ OPENSSL_DIR = "$CONDA_PREFIX"
 [tool.pixi.tasks]
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
+docs = "sphinx-build -b html docs docs/_build/html -W --keep-going"
