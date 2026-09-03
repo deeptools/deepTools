@@ -1,3 +1,5 @@
+:orphan:
+
 bamCoverage
 ===========
 
@@ -9,7 +11,7 @@ bamCoverage
 If you are not familiar with BAM, bedGraph and bigWig formats, you can read up on that in our :doc:`../help_glossary`
 
 .. argparse::
-   :ref: deeptools.bamCoverage.parseArguments
+   :ref: deeptools.bamCoverage2.parseArguments
    :prog: bamCoverage
    :nodefault:
 

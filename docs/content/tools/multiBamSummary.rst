@@ -1,3 +1,5 @@
+:orphan:
+
 multiBamSummary
 ================
 
@@ -5,7 +7,7 @@ multiBamSummary
     :local:
 
 .. argparse::
-   :ref: deeptools.multiBamSummary.parse_arguments
+   :ref: deeptools.multiBamSummary2.parse_arguments
    :prog: multiBamSummary
    :nodefault:
 

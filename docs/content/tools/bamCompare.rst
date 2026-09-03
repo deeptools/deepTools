@@ -1,3 +1,5 @@
+:orphan:
+
 bamCompare
 ===========
 
@@ -22,6 +24,6 @@ The basic algorithm works proceeds in two steps:
 
 
 .. argparse::
-   :ref: deeptools.bamCompare.parseArguments
+   :ref: deeptools.bamCompare2.parseArguments
    :prog: bamCompare
    :nodefault:

@@ -1,3 +1,5 @@
+:orphan:
+
 computeMatrix
 =============
 
@@ -5,7 +7,7 @@ computeMatrix
     :local:
 
 .. argparse::
-   :ref: deeptools.computeMatrix.parse_arguments
+   :ref: deeptools.computeMatrix2.parse_arguments
    :prog: computeMatrix
    :nodefault:
 

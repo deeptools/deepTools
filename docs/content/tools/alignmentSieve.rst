@@ -1,3 +1,5 @@
+:orphan:
+
 alignmentSieve
 ==============
 
@@ -5,7 +7,7 @@ alignmentSieve
     :local:
 
 .. argparse::
-   :ref: deeptools.alignmentSieve.parseArguments
+   :ref: deeptools.alignmentSieve2.parseArguments
    :prog: alignmentSieve
    :nodefault:
 

@@ -1,3 +1,5 @@
+:orphan:
+
 Effective Genome Size
 =====================
 
