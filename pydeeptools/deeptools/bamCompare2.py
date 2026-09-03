@@ -215,7 +215,7 @@ def main(args=None):
     if args.scaleFactors:
         if len(args.scaleFactors.split(":")) == 2:
             args.sf1 = float(args.scaleFactors.split(":")[0])
-            args.sf2 = float(args.scaleFactors.split(":")[0])
+            args.sf2 = float(args.scaleFactors.split(":")[1])
         elif len(args.scaleFactors.split(":")) == 1:
             args.sf1 = float(args.scaleFactors.split(":")[0])
             args.sf2 = float(args.scaleFactors.split(":")[0])

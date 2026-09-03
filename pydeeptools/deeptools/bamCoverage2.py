@@ -110,18 +110,6 @@ def get_optional_args():
 
     return parser
 
-def scaleFactor(string):
-    try:
-        scalefactor1, scalefactor2 = string.split(":")
-        scalefactors = (float(scalefactor1), float(scalefactor2))
-    except:
-        raise argparse.ArgumentTypeError(
-            "Format of scaleFactors is factor1:factor2. "
-            "The value given ( {} ) is not valid".format(string))
-
-    return scalefactors
-
-
 def process_args(args=None):
     args = parseArguments().parse_args(args)
     if not args.smoothLength:
