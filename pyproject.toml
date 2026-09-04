@@ -124,7 +124,7 @@ deeptools = { path = ".", editable = true, extras = ['actions', 'docs'] }
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
 OPENSSL_NO_VENDOR = "1"
 OPENSSL_DIR = "$CONDA_PREFIX"
-RUST_MIN_STACK = "16777216"
+RUST_MIN_STACK = "50000000"
 [tool.pixi.tasks]
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
