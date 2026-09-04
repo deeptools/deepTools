@@ -122,10 +122,9 @@ py-spy = "*"
 deeptools = { path = ".", editable = true, extras = ['actions', 'docs'] }
 [tool.pixi.activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
-# Link conda-forge's OpenSSL instead of building the vendored copy from source
-# (the from-source build needs a full perl toolchain, e.g. FindBin.pm).
 OPENSSL_NO_VENDOR = "1"
 OPENSSL_DIR = "$CONDA_PREFIX"
+RUST_MIN_STACK = "16777216"
 [tool.pixi.tasks]
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
