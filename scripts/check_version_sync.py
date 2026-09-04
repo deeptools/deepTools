@@ -69,10 +69,11 @@ def cargo_rust_version() -> str:
 def pixi_rust_version() -> str:
     data = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
     spec = data["tool"]["pixi"]["dependencies"]["rust"]
-    match = re.fullmatch(r">=\s*([\d.]+)", spec)
+    match = re.fullmatch(r">=\s*([\d.]+)(?:\s*,\s*<\s*[\d.]+)?", spec)
     if not match:
         sys.exit(f"pyproject.toml: unexpected [tool.pixi.dependencies] rust spec {spec!r}, "
-                  "expected '>=X.Y' so it can be compared to Cargo.toml's rust-version")
+                  "expected '>=X.Y' or '>=X.Y,<A.B' so the lower bound can be compared to "
+                  "Cargo.toml's rust-version")
     return match.group(1)
 
 

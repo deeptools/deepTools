@@ -1,6 +1,4 @@
-name: build wheels
-# maturin generate-ci github > .github/workflows/maturin.yml
-# Also, see: https://github.com/jackh726/bigtools/blob/master/.github/workflows/release-python.yml
+name: build_wheels
 
 on:
     push:
@@ -103,41 +101,6 @@ jobs:
                   name: wheels-musllinux-${{ matrix.platform.target }}
                   path: dist
 
-    # windows:
-    #   runs-on: ${{ matrix.platform.runner }}
-    #   strategy:
-    #     matrix:
-    #       platform:
-    #         - runner: windows-latest
-    #           target: x64
-    #         - runner: windows-latest
-    #           target: x86
-    #   steps:
-    #     - uses: actions/checkout@v4
-    #     - uses: actions/setup-python@v5
-    #       with:
-    #         python-version: 3.x
-    #         architecture: ${{ matrix.platform.target }}
-    #     - name: Install And Configure Dependencies
-    #       env:
-    #         VCPKG_DEFAULT_TRIPLET: ${{ matrix.platform.target }}-windows
-    #         OPENSSL_DIR: ${{ github.workspace }}/vcpkg/installed/${{ matrix.platform.target }}-windows
-    #         OPENSSL_ROOT: ${{ github.workspace }}/vcpkg/installed/${{ matrix.platform.target }}-windows
-    #         LZMA_ROOT: ${{ github.workspace }}/vcpkg/installed/${{ matrix.platform.target }}-windows
-    #       run: |
-    #         vcpkg install openssl liblzma
-    #     - name: Build wheels
-    #       uses: PyO3/maturin-action@v1
-    #       with:
-    #         target: ${{ matrix.platform.target }}
-    #         args: --release --out dist --find-interpreter
-    #         # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
-    #     - name: Upload wheels
-    #       uses: actions/upload-artifact@v4
-    #       with:
-    #         name: wheels-windows-${{ matrix.platform.target }}
-    #         path: dist
-
     macos:
         runs-on: ${{ matrix.platform.runner }}
         strategy:
@@ -159,7 +122,6 @@ jobs:
               with:
                   target: ${{ matrix.platform.target }}
                   args: --release --out dist --find-interpreter
-                  # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
             - name: Upload wheels
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
@@ -177,7 +139,6 @@ jobs:
               with:
                   command: sdist
                   args: --out dist
-                  # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
             - name: Upload sdist
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:

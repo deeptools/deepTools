@@ -112,7 +112,9 @@ libclang = "<22"
 clangdev = "<22"
 htslib = "<=1.19"
 zlib = "*"
-rust = ">=1.87"
+# conda-forge's rust 1.98.0 build segfaults in LLVM target init on osx-arm64
+# (reproducible even after a clean env reinstall); capped until that's fixed upstream.
+rust = ">=1.87,<1.98"
 maturin = ">=1.0,<2.0"
 pip = "*"
 openssl = "*"
@@ -124,7 +126,6 @@ deeptools = { path = ".", editable = true, extras = ['actions', 'docs'] }
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
 OPENSSL_NO_VENDOR = "1"
 OPENSSL_DIR = "$CONDA_PREFIX"
-RUST_MIN_STACK = "100000000"
 [tool.pixi.tasks]
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
