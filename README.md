@@ -1,9 +1,12 @@
 # deepTools
-[![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](http://deeptools.readthedocs.org/) 
+[![Documentation Status](https://readthedocs.org/projects/deeptools/badge/)](https://deeptools.readthedocs.io/) 
 [![PyPI Version](https://img.shields.io/pypi/v/deeptools.svg?style=plastic)](https://pypi.org/project/deepTools/) 
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/deeptools/README.html)
 [![European Galaxy server](https://img.shields.io/badge/usegalaxy-.eu-brightgreen?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAASCAYAAABB7B6eAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAACXBIWXMAAAsTAAALEwEAmpwYAAACC2lUWHRYTUw6Y29tLmFkb2JlLnhtcAAAAAAAPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iWE1QIENvcmUgNS40LjAiPgogICA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPgogICAgICA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIgogICAgICAgICAgICB4bWxuczp0aWZmPSJodHRwOi8vbnMuYWRvYmUuY29tL3RpZmYvMS4wLyI+CiAgICAgICAgIDx0aWZmOlJlc29sdXRpb25Vbml0PjI8L3RpZmY6UmVzb2x1dGlvblVuaXQ+CiAgICAgICAgIDx0aWZmOkNvbXByZXNzaW9uPjE8L3RpZmY6Q29tcHJlc3Npb24+CiAgICAgICAgIDx0aWZmOk9yaWVudGF0aW9uPjE8L3RpZmY6T3JpZW50YXRpb24+CiAgICAgICAgIDx0aWZmOlBob3RvbWV0cmljSW50ZXJwcmV0YXRpb24+MjwvdGlmZjpQaG90b21ldHJpY0ludGVycHJldGF0aW9uPgogICAgICA8L3JkZjpEZXNjcmlwdGlvbj4KICAgPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KD0UqkwAAAn9JREFUOBGlVEuLE0EQruqZiftwDz4QYT1IYM8eFkHFw/4HYX+GB3/B4l/YP+CP8OBNTwpCwFMQXAQPKtnsg5nJZpKdni6/6kzHvAYDFtRUT71f3UwAEbkLch9ogQxcBwRKMfAnM1/CBwgrbxkgPAYqlBOy1jfovlaPsEiWPROZmqmZKKzOYCJb/AbdYLso9/9B6GppBRqCrjSYYaquZq20EUKAzVpjo1FzWRDVrNay6C/HDxT92wXrAVCH3ASqq5VqEtv1WZ13Mdwf8LFyyKECNbgHHAObWhScf4Wnj9CbQpPzWYU3UFoX3qkhlG8AY2BTQt5/EA7qaEPQsgGLWied0A8VKrHAsCC1eJ6EFoUd1v6GoPOaRAtDPViUr/wPzkIFV9AaAZGtYB568VyJfijV+ZBzlVZJ3W7XHB2RESGe4opXIGzRTdjcAupOK09RA6kzr1NTrTj7V1ugM4VgPGWEw+e39CxO6JUw5XhhKihmaDacU2GiR0Ohcc4cZ+Kq3AjlEnEeRSazLs6/9b/kh4eTC+hngE3QQD7Yyclxsrf3cpxsPXn+cFdenF9aqlBXMXaDiEyfyfawBz2RqC/O9WF1ysacOpytlUSoqNrtfbS642+4D4CS9V3xb4u8P/ACI4O810efRu6KsC0QnjHJGaq4IOGUjWTo/YDZDB3xSIxcGyNlWcTucb4T3in/3IaueNrZyX0lGOrWndstOr+w21UlVFokILjJLFhPukbVY8OmwNQ3nZgNJNmKDccusSb4UIe+gtkI+9/bSLJDjqn763f5CQ5TLApmICkqwR0QnUPKZFIUnoozWcQuRbC0Km02knj0tPYx63furGs3x/iPnz83zJDVNtdP3QAAAABJRU5ErkJggg==)](https://usegalaxy.eu/root?tool_id=deeptools_compute_matrix)
-![test](https://github.com/deeptools/deepTools/actions/workflows/test.yml/badge.svg)
+![pytest](https://github.com/deeptools/deepTools/actions/workflows/test_pytest.yml/badge.svg)
+![docs](https://github.com/deeptools/deepTools/actions/workflows/test_docs.yml/badge.svg)
+![rust](https://github.com/deeptools/deepTools/actions/workflows/test_rust.yml/badge.svg)
+![planemo](https://github.com/deeptools/deepTools/actions/workflows/test_planemo.yml/badge.svg)
 
 
 ## User-friendly tools for exploring deep-sequencing data
@@ -19,10 +22,10 @@ Ramírez F, Ryan DP, Grüning B, Bhardwaj V, Kilpert F, Richter AS, Heyne S, Dü
 
 ### Documentation:
 
-Our [documentation](https://deeptools.readthedocs.org/) contains more details on the [individual tool scopes and usages](https://deeptools.readthedocs.org/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](https://deeptools.readthedocs.org/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](https://deeptools.readthedocs.org/en/latest/content/example_usage.html).
+Our [documentation](https://deeptools.readthedocs.io/) contains more details on the [individual tool scopes and usages](https://deeptools.readthedocs.io/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](https://deeptools.readthedocs.io/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](https://deeptools.readthedocs.io/en/latest/content/example_usage.html).
 
->Please see also the [FAQ](https://deeptools.readthedocs.org/en/latest/content/help_faq.html), which we update regularly.
-Our [Gallery](https://deeptools.readthedocs.org/en/latest/content/example_gallery.html) may give you some more ideas about the scope of deepTools.
+>Please see also the [FAQ](https://deeptools.readthedocs.io/en/latest/content/help_faq.html), which we update regularly.
+Our [Gallery](https://deeptools.readthedocs.io/en/latest/content/example_gallery.html) may give you some more ideas about the scope of deepTools.
 
 
 -------------------------------------------------------------------------------------------------------------------
@@ -34,23 +37,39 @@ deepTools are available for:
 * Command line usage (via pip / conda / github)
 * Integration into Galaxy servers (via toolshed/API/web-browser)
 
-There are many easy ways to install deepTools. More details can be found [here](https://deeptools.readthedocs.io/en/latest/content/installation.html).
+There are many ways to install deepTools. More details can be found [here](https://deeptools.readthedocs.io/en/latest/content/installation.html).
 
-In Brief:
+In Brief, to install stable released version:
 
-**Install through pypi**
+**Install via pip**
 
 	$ pip install deeptools
 
 **Install via conda**
 
-	$ conda install -c bioconda deeptools
+	$ conda install -c conda-forge -c bioconda deeptools
+
+**Install via uv / pipx / pixi**
+
+	$ uv tool install deeptools
+	$ pipx install deeptools
+	$ pixi global install -c conda-forge -c bioconda deeptools
+
+You can also install the latest development version (if you want to contribute or have the latest features).
+The easiest way to do this is clone the repository and install with pixi (which will take care of the system dependencies via conda for you):
 
 **Install by cloning the repository**
 
 	$ git clone https://github.com/deeptools/deepTools
 	$ cd deepTools
-	$ pip install .
+	$ pixi install
+
+`pixi install` pins the whole build toolchain (Rust, `maturin`, `libclang`, HTSlib, ...) via
+conda -- see [`pyproject.toml`](pyproject.toml)'s `[tool.pixi.dependencies]` for exactly what's
+pinned. Building without pixi (via uv / pip / pipx) is possible too, but then you're responsible
+for providing that same toolchain yourself; see the ["Building from
+source"](https://deeptools.readthedocs.io/en/latest/content/installation.html#building-from-source)
+section of the docs.
 
 <a name="galaxy"/></a>
 ### Galaxy Installation
@@ -59,4 +78,4 @@ deepTools can be easily integrated into [Galaxy](https://galaxyproject.org). Ple
 
 ------------------------------------
 
-[Documentation](https://deeptools.readthedocs.org/en/latest/index.html) | [FAQ](https://deeptools.readthedocs.org/en/latest/content/help_faq.html)
+[Documentation](https://deeptools.readthedocs.io/en/latest/index.html) | [FAQ](https://deeptools.readthedocs.io/en/latest/content/help_faq.html)

@@ -52,7 +52,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics"
 ]
-readme = "README.rst"
+readme = "README.md"
 [project.optional-dependencies]
 actions = [
     "flake8",

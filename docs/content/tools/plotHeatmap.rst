@@ -74,7 +74,7 @@ As mentioned above, ``plotHeatmap`` has many options, including the ability to d
 
 .. image:: ../../images/test_plots/ExampleHeatmap2.png
 
-.. tip:: **More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
+.. tip:: **More examples** can be found in our `Gallery <https://deeptools.readthedocs.io/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
 
 
 Multiple colors for heatmaps
@@ -121,4 +121,4 @@ we combine different colormap colors, different scales and the new  `--boxAround
 
 .. image:: ../../images/test_plots/ExampleHeatmap4.png
 
-.. tip:: **More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
+.. tip:: **More examples** can be found in our `Gallery <https://deeptools.readthedocs.io/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.

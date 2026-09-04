@@ -133,4 +133,4 @@ The groups of regions supplied by two individual files will be merged into one:
     #genes_chr19_secondHalf
     
     
-.. tip:: **More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
+.. tip:: **More examples** can be found in our `Gallery <https://deeptools.readthedocs.io/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
