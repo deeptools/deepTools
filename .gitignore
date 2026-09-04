@@ -59,7 +59,6 @@ tool_test*
 env.yml
 
 # Rust stuff
-Cargo.lock
 target*
 
 # snakemake
