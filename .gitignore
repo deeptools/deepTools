@@ -72,3 +72,5 @@ target*
 
 # pixi
 .pixi*
+
+.venv
