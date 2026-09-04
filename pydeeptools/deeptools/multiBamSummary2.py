@@ -7,14 +7,8 @@ import signal
 import sys
 from importlib.metadata import version
 
-import numpy as np
-
-import deeptools.countReadsPerBin as countR
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
-
-old_settings = np.seterr(all="ignore")
-
 from deeptools.hp import r_mbams
 
 

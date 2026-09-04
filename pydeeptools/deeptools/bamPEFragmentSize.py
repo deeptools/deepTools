@@ -49,7 +49,7 @@ def parse_arguments():
         help="Image format type. If given, this option "
         "overrides the image format based on the plotFile "
         "ending. The available options are: png, "
-        "eps, pdf, svg and plotly.",
+        "eps, pdf and svg.",
         default=None,
         choices=["png", "pdf", "svg", "eps"],
     )

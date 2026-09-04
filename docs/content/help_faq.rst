@@ -288,7 +288,7 @@ Use ``genomeCoverageBed``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``genomeCoverageBed`` from the BEDtools suite can be used to calculate the number of bases in the genome for which 0 overlapping reads can be found.
-As described on the `BEDtools website <http://bedtools.readthedocs.org/en/latest/content/tools/genomecov.html>`__ (go to genomeCov description), you need:
+As described on the `BEDtools website <https://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html>`__ (go to genomeCov description), you need:
 
 * a file with the chromosome sizes of your sample's organism
 * a position-sorted BAM file

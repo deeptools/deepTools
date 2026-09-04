@@ -14,23 +14,32 @@ bindings = "pyo3"
 name = "deeptools"
 version = "4.0.0"
 authors = [
-    {name="Fidel Ramirez"},
-    {name="Devon P Ryan"},
-    {name="Björn Grüning"},
-    {name="Friederike Dündar"},
-    {name="Sarah Diehl"},
     {name="Vivek Bhardwaj"},
-    {name="Fabian Kilpert"},
-    {name="Andreas S Richter"},
+    {name="Ward Deboutte"},
+    {name="Lucille Delisle"},
+    {name="Sarah Diehl"},
+    {name="Galina Erikson"},
+    {name="Friederike Dündar"},
+    {name="Björn Grüning"},
     {name="Steffen Heyne"},
+    {name="Fabian Kilpert"},
+    {name="Wolfgang Maier"},
     {name="Thomas Manke"},
+    {name="Saim Momin"},
+    {name="Mohit Navander"},
+    {name="Juan Perez Caballero"},
+    {name="Fidel Ramirez"},
+    {name="Adrian Salatino"},
+    {name="Andreas S Richter"},
+    {name="Devon P Ryan"},
+    {name="Pavankumar Videm"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
 requires-python = ">= 3.12"
 dependencies = [
     "numpy >= 2.0",
     "scipy >= 1.13",
-    "matplotlib >= 3.9",
+    "matplotlib >= 3.10",
     "pysam >= 0.23",
     "pyBigWig >= 0.3",
     "py2bit >= 0.3",
@@ -43,7 +52,7 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics"
 ]
-readme = "README.rst"
+readme = "README.md"
 [project.optional-dependencies]
 actions = [
     "flake8",
@@ -51,12 +60,12 @@ actions = [
     "twine",
     "build",
     "planemo",
-    # matplotlib 3.10.0-3.10.4 hit a Path.__deepcopy__ RecursionError on
-    # Python 3.14 for any marker-using plot (fixed upstream in 3.10.5).
-    # Baseline images are pinned against 3.11.0 rendering; image-comparison
-    # tests carry tolerance headroom for anti-aliasing/text-hinting drift
-    # between 3.10.x and 3.11.x point releases (see matplotlib_defaults.py).
-    "matplotlib >= 3.10.5, < 3.12",
+]
+docs = [
+    "sphinx >= 7.2.6",
+    "mock >= 5.1.0",
+    "sphinx_rtd_theme >= 2.0.0",
+    "sphinx-argparse >= 0.4.0",
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
@@ -103,19 +112,33 @@ libclang = "<22"
 clangdev = "<22"
 htslib = "<=1.19"
 zlib = "*"
-rust = ">=1.85"
+# conda-forge's rust 1.98.0 build segfaults in LLVM target init on osx-arm64
+# (reproducible even after a clean env reinstall); capped until that's fixed upstream.
+rust = ">=1.87,<1.98"
 maturin = ">=1.0,<2.0"
+pip = "*"
 openssl = "*"
 pkg-config = "*"
 py-spy = "*"
 [tool.pixi.pypi-dependencies]
-deeptools = { path = ".", editable = true, extras = ['actions'] }
+deeptools = { path = ".", editable = true, extras = ['actions', 'docs'] }
 [tool.pixi.activation.env]
 LIBCLANG_PATH = "$CONDA_PREFIX/lib"
-# Link conda-forge's OpenSSL instead of building the vendored copy from source
-# (the from-source build needs a full perl toolchain, e.g. FindBin.pm).
 OPENSSL_NO_VENDOR = "1"
 OPENSSL_DIR = "$CONDA_PREFIX"
 [tool.pixi.tasks]
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
+docs = "sphinx-build -b html docs docs/_build/html -W --keep-going"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+[tool.pixi.feature.py314.dependencies]
+python = "3.14.*"
+
+[tool.pixi.environments]
+py312 = ["py312"]
+py313 = ["py313"]
+py314 = ["py314"]

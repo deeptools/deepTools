@@ -62,22 +62,21 @@ def get_read_and_fragment_length(bamFile, return_lengths=False, blackListFileNam
     """
     Estimates the fragment length and read length through sampling
 
-    Parameters
-    ----------
-    bamFile : str
-        BAM file name
-    return_lengths : bool
-    numberOfProcessors : int
-    verbose : bool
-    binSize : int
-    distanceBetweenBins : int
-
-    Returns
-    -------
-    d : dict
-        tuple of two dictionaries, one for the fragment length and the other
-for the read length. The dictionaries summarise the mean, median etc. values
-
+    :param bamFile: BAM file name
+    :type bamFile: str
+    :param return_lengths:
+    :type return_lengths: bool
+    :param numberOfProcessors:
+    :type numberOfProcessors: int
+    :param verbose:
+    :type verbose: bool
+    :param binSize:
+    :type binSize: int
+    :param distanceBetweenBins:
+    :type distanceBetweenBins: int
+    :returns: tuple of two dictionaries, one for the fragment length and the other
+        for the read length. The dictionaries summarise the mean, median etc. values
+    :rtype: dict
     """
 
     bam_handle = bamHandler.openBam(bamFile)

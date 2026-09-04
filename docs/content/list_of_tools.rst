@@ -54,8 +54,8 @@ A typical deepTools command could look like this:
     $ bamCoverage --bam myAlignedReads.bam \
     --outFileName myCoverageFile.bigWig \
     --outFileFormat bigwig \
-    --fragmentLength 200 \
-    --ignoreDuplicates \
+    --extendReads 200 \
+    --samFlagExclude 1024 \
     --scaleFactor 0.5
 
 You can always see all available command-line options via --help or -h:
@@ -95,16 +95,16 @@ Filtering BAMs while processing
 Several deepTools modules allow for efficient processing of BAM files, e.g. ``bamCoverage`` and ``bamCompare``.
 We offer several ways to filter those BAM files on the fly so that you don't need to pre-process them using other tools such as `samtools <http://www.htslib.org/>`_
 
--  ``ignoreDuplicates`` 
-    Reads with the same orientation and start position will be considered only once. If reads are paired, the mate is also evaluated
 -  ``minMappingQuality``
      Only reads with a mapping quality score of at least this are considered
 -  ``samFlagInclude``
     Include reads based on the SAM flag, e.g. ``--samFlagInclude 64`` gets reads that are first in a pair. For translating SAM flags into English, go to: `https://broadinstitute.github.io/picard/explain-flags.html <https://broadinstitute.github.io/picard/explain-flags.html>`_
--  `        `samFlagExclude``
-    Exclude reads based on the SAM flags - see previous explanation.
+-  ``samFlagExclude``
+    Exclude reads based on the SAM flags - see previous explanation. E.g. ``--samFlagExclude 1024`` excludes reads marked as duplicates.
 
 These parameters are optional and available throughout deepTools.
+
+.. note:: ``ignoreDuplicates`` is still available in tools that were not rewritten in 4.0.0 (e.g. ``plotCoverage``, ``estimateReadFiltering``), but was removed from ``bamCoverage`` and ``bamCompare``. For those two tools, use ``--samFlagExclude`` against a BAM file with duplicates marked instead.
 
 .. note::  In version 2.3 we introduced a sampling method to correct the effect of filtering when normalizing using ``bamCoverage`` or ``bamCompare``. For previous versions, if you know that your files will be strongly affected by  the filtering  of duplicates or reads of low quality then consider removing  those reads *before* using ``bamCoverage`` or ``bamCompare``, as the filtering  by deepTools is done *after* the scaling factors are calculated!
 
