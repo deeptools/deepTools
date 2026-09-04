@@ -4,7 +4,7 @@
 * --exactScaling is removed as this is the only scaling option available with the new backend
 * --ignoreDuplicates has been removed from the bamCoverage and bamCompare tools. Duplicate reads can be removed via the --samFlagExclude option (assuming the provided BAM file has duplicate reads marked)
 * plotPCA re-implemented with a lightweight scipy/numpy SVD backend. Proper handling of --transpose, --log2/--rowCenter and --ntop options.
-* plotly backend from plotCorrelation, plotPCA, plotHeatmap, plotProfile and plotEnrichment in favor of matplotlib, with a new optional --ggplot theme
+* plotly backend removed entirely; plotCorrelation, plotPCA, plotHeatmap, plotProfile and plotEnrichment now use matplotlib, with a new optional --ggplot theme, and computeGCBias's --plotFileFormat plotly option has also been removed
 * removed the standalone cm.py colormap module; colormap handling now lives in the plotting tools directly
 * plot labels now show sample names only per default (dropped .filtered.bam/.bed suffixes)
 * prebuilt wheels now cover Linux manylinux_2_28 and musllinux_1_2 (x86_64 + aarch64) and macOS (Intel + Apple Silicon), built via maturin

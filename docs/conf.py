@@ -20,7 +20,7 @@ import tomllib
 import mock
 
 # MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
-MOCK_MODULES = ['pyBigWig', 'py2bit', 'plotly', 'plotly.offline', 'plotly.graph_objs', 'plotly.figure_factory']
+MOCK_MODULES = ['pyBigWig', 'py2bit']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()

@@ -11,6 +11,8 @@ computeMatrix
    :prog: computeMatrix
    :nodefault:
 
+.. note:: As of deepTools 4.0.0, ``computeMatrix`` uses a new Rust-backed core. Region files (BED/GTF) and ``--blackListFileName`` may be gzip-compressed, and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. The previous pure-Python implementation is still available as ``computeMatrix_old`` during the transition period, but will be removed in a future release.
+
 Details
 ^^^^^^^
 

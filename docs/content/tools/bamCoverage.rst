@@ -26,9 +26,9 @@ Usage hints
   Other data, e.g. Chip-seq, where fragments are known to map contiguously, should be processed with read extension (``--extendReads [INTEGER]``).
 * For paired-end data, the fragment length is generally defined by the two read mates. The user provided fragment length is only used as a fallback for singletons or mate reads that map too far apart (with a distance greater than four times the fragment length or are located on different chromosomes).
 
-.. warning:: If you already normalized for GC bias using ``correctGCbias``, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
-
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output via ``--outFileFormat``.
+
+.. note:: As of deepTools 4.0.0, ``bamCoverage`` uses a new Rust-backed core. ``--blackListFileName`` may be gzip-compressed and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. ``--ignoreDuplicates`` has been removed; use ``--samFlagExclude`` against a BAM file with duplicates marked instead. The previous pure-Python implementation is still available as ``bamCoverage_old`` during the transition period, but will be removed in a future release.
 
 Usage example for ChIP-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

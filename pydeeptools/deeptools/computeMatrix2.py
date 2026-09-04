@@ -367,7 +367,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
     optional.add_argument(
         "--blackListFileName",
         "-bl",
-        help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
+        help="A BED file (optionally gzip-compressed) containing regions that should be excluded from all analyses. Filtering is performed at base-pair resolution, so only the portion of a region that overlaps a blacklisted region is excluded.",
         metavar="BED file",
         default='none',
         required=False,
@@ -385,7 +385,7 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
 
     optional.add_argument(
         "--verbose",
-        help="Being VERY verbose in the status messages. --quiet will disable this.",
+        help="Being VERY verbose in the status messages.",
         action="store_true",
     )
 

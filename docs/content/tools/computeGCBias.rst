@@ -11,7 +11,6 @@ computeGCBias
    :prog: computeGCBias
    :nodefault:
 
-
 Background
 ^^^^^^^^^^^
 
