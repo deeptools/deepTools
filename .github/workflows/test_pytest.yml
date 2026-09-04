@@ -4,10 +4,6 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
     contents: read
 
-defaults:
-    run:
-        shell: bash -l {0}
-
 jobs:
     check_versions_matches:
         name: Check deeptools/galaxy/Rust versions stay in sync
@@ -26,66 +22,40 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                python-version: ["3.12", "3.13", "3.14"]
+                pixi-env: [py312, py313, py314]
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                 persist-credentials: false
-            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
               with:
-                  python-version: ${{ matrix.python-version }}
-                  cache: "pip"
-            - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
+                  environments: ${{ matrix.pixi-env }}
             - name: build deeptools
-              run: |
-                  python -m venv venv
-                  source venv/bin/activate
-                  pip install maturin
-                  maturin develop --release --extras actions
+              run: pixi run -e ${{ matrix.pixi-env }} build
             - name: test deeptools
-              run: |
-                  source venv/bin/activate
-                  pytest -v
+              run: pixi run -e ${{ matrix.pixi-env }} test -v
             - name: build wheel
-              run: |
-                  source venv/bin/activate
-                  python -m build
+              run: pixi run -e ${{ matrix.pixi-env }} python -m build
             - name: test wheel
-              run: |
-                  source venv/bin/activate
-                  pip install dist/*whl
+              run: pixi run -e ${{ matrix.pixi-env }} bash -c "pip install dist/*.whl"
     build-osx:
         name: Test on OSX
         runs-on: macOS-latest
         strategy:
             matrix:
-                python-version: ["3.12", "3.13", "3.14"]
+                pixi-env: [py312, py313, py314]
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                 persist-credentials: false
-            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
               with:
-                  python-version: ${{ matrix.python-version }}
-                  cache: "pip"
-            - name: Install Rust
-              uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
+                  environments: ${{ matrix.pixi-env }}
             - name: build deeptools
-              run: |
-                  python -m venv venv
-                  source venv/bin/activate
-                  pip install maturin
-                  maturin develop --release --extras actions
+              run: pixi run -e ${{ matrix.pixi-env }} build
             - name: test deeptools
-              run: |
-                  source venv/bin/activate
-                  pytest -v
+              run: pixi run -e ${{ matrix.pixi-env }} test -v
             - name: build wheel
-              run: |
-                  source venv/bin/activate
-                  python -m build
+              run: pixi run -e ${{ matrix.pixi-env }} python -m build
             - name: test wheel
-              run: |
-                  source venv/bin/activate
-                  pip install dist/*whl
+              run: pixi run -e ${{ matrix.pixi-env }} bash -c "pip install dist/*.whl"

@@ -129,3 +129,15 @@ OPENSSL_DIR = "$CONDA_PREFIX"
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
 docs = "sphinx-build -b html docs docs/_build/html -W --keep-going"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+[tool.pixi.feature.py314.dependencies]
+python = "3.14.*"
+
+[tool.pixi.environments]
+py312 = ["py312"]
+py313 = ["py313"]
+py314 = ["py314"]
