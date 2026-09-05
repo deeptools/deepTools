@@ -497,19 +497,22 @@ class Correlation:
         U *= signs
         Vt *= signs[:, None]
 
-        # Projected coordinates: U * S == X @ V
-        Wt = U * S
-
         # Eigenvalues and % variance explained.
         eigenvalues = (S ** 2) / (n_samples - 1)
         variance = eigenvalues / eigenvalues.sum()
         pvar = variance / variance.sum()
 
         if self.transpose:
-            # With samples as observations, U * S already gives each sample's
+            # Samples are the observations: U * S == X @ V gives each sample's
             # projection onto the PCs (rows=samples, cols=components). Orient as
             # (components, samples) to match the indexing used below.
-            Wt = Wt.T
+            Wt = (U * S).T
+        else:
+            # Samples are the variables: what is written and plotted per sample
+            # is its loading on each component, i.e. the rows of V^T
+            # (components, samples). U * S would be the scores of the rows
+            # (bins) of the matrix, one per selected bin, not per sample.
+            Wt = Vt
 
         if plot_filename is not None:
             n = n_bars = len(self.labels)
@@ -519,13 +522,6 @@ class Correlation:
             if max(PCs) > eigenvalues.size:
                 sys.exit("Cannot plot PC{}: only {} principal component(s) are "
                          "available. Reduce --PCs or increase --ntop.\n".format(max(PCs), eigenvalues.size))
-            # In the untransposed layout each point is a sample indexed along
-            # the component axis, so there must be at least as many components
-            # as samples (i.e. enough usable rows / a large enough --ntop).
-            if not self.transpose and Wt.shape[1] < n:
-                sys.exit("Not enough principal components ({}) to plot {} "
-                         "samples; increase --ntop to at least the sample "
-                         "count.\n".format(Wt.shape[1], n))
             markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
             if cols is not None:
                 colors = itertools.cycle(cols)
