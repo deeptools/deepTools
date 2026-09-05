@@ -1,14 +1,17 @@
-name: build_wheels
+name: build_wheels_preview
 
 on:
-    push:
     pull_request:
+        types: [opened, synchronize, reopened]
+        branches:
+            - master
 
 permissions:
     contents: read
 
 jobs:
     linux:
+        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ${{ matrix.platform.runner }}
         strategy:
             matrix:
@@ -24,12 +27,25 @@ jobs:
             - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
               with:
                   python-version: 3.x
+            - name: Set preview version
+              env:
+                  RUN_ID: ${{ github.run_id }}
+              run: |
+                  python3 <<'PYEOF'
+                  import os, re
+                  path = "pyproject.toml"
+                  text = open(path).read()
+                  m = re.search(r'^version = "(.*)"', text, flags=re.M)
+                  preview = f'{m.group(1)}.dev{os.environ["RUN_ID"]}'
+                  text = text[: m.start()] + f'version = "{preview}"' + text[m.end() :]
+                  open(path, "w").write(text)
+                  print("preview version:", preview)
+                  PYEOF
             - name: Build wheels
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
                   target: ${{ matrix.platform.target }}
                   args: --release --out dist --find-interpreter
-                  # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
                   manylinux: 2_28
                   before-script-linux: |
                       set -ex
@@ -39,27 +55,13 @@ jobs:
                         dnf install -y epel-release && dnf update -y
                         dnf install -y gcc gcc-c++ make perl curl clang xz-devel pkgconfig
                         ## we've vendored openssl via Cargo.toml anyway, so this part is no longer used...
-                        # dnf install -y openssl-devel
-                        # export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
-                        # export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
-                        # export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
                       elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
                         # cross-compiling on Ubuntu 22.04
                         ## We're vendoring openssl because libssl-dev:aarch64 is not available!
                         apt-get update
                         apt-get install -y build-essential perl curl clang liblzma-dev pkg-config \
                           gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross crossbuild-essential-arm64
-                        # export OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu
-                        # export OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu
-                        # export OPENSSL_DIR=/usr/lib/aarch64-linux-gnu
-                        # export OPENSSL_NO_VENDOR=1
                       fi
-                      # export OPENSSL_NO_VENDOR=1
-                      # if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
-                      #     echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
-                      #     exit 1
-                      # fi
-                      # env | grep SSL  # for debugging when rust crate fails to find headers
             - name: Upload wheels
               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
               with:
@@ -67,6 +69,7 @@ jobs:
                   path: dist
 
     musllinux:
+        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ${{ matrix.platform.runner }}
         strategy:
             matrix:
@@ -82,12 +85,25 @@ jobs:
             - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
               with:
                   python-version: 3.x
+            - name: Set preview version
+              env:
+                  RUN_ID: ${{ github.run_id }}
+              run: |
+                  python3 <<'PYEOF'
+                  import os, re
+                  path = "pyproject.toml"
+                  text = open(path).read()
+                  m = re.search(r'^version = "(.*)"', text, flags=re.M)
+                  preview = f'{m.group(1)}.dev{os.environ["RUN_ID"]}'
+                  text = text[: m.start()] + f'version = "{preview}"' + text[m.end() :]
+                  open(path, "w").write(text)
+                  print("preview version:", preview)
+                  PYEOF
             - name: Build wheels
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
                   target: ${{ matrix.platform.target }}
                   args: --release --out dist --find-interpreter
-                  # sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
                   manylinux: musllinux_1_2
                   before-script-linux: |
                       apt-get update
@@ -102,6 +118,7 @@ jobs:
                   path: dist
 
     macos:
+        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ${{ matrix.platform.runner }}
         strategy:
             matrix:
@@ -117,6 +134,20 @@ jobs:
             - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
               with:
                   python-version: 3.x
+            - name: Set preview version
+              env:
+                  RUN_ID: ${{ github.run_id }}
+              run: |
+                  python3 <<'PYEOF'
+                  import os, re
+                  path = "pyproject.toml"
+                  text = open(path).read()
+                  m = re.search(r'^version = "(.*)"', text, flags=re.M)
+                  preview = f'{m.group(1)}.dev{os.environ["RUN_ID"]}'
+                  text = text[: m.start()] + f'version = "{preview}"' + text[m.end() :]
+                  open(path, "w").write(text)
+                  print("preview version:", preview)
+                  PYEOF
             - name: Build wheels
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
@@ -129,11 +160,29 @@ jobs:
                   path: dist
 
     sdist:
+        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
               with:
                 persist-credentials: false
+            - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+              with:
+                  python-version: 3.x
+            - name: Set preview version
+              env:
+                  RUN_ID: ${{ github.run_id }}
+              run: |
+                  python3 <<'PYEOF'
+                  import os, re
+                  path = "pyproject.toml"
+                  text = open(path).read()
+                  m = re.search(r'^version = "(.*)"', text, flags=re.M)
+                  preview = f'{m.group(1)}.dev{os.environ["RUN_ID"]}'
+                  text = text[: m.start()] + f'version = "{preview}"' + text[m.end() :]
+                  open(path, "w").write(text)
+                  print("preview version:", preview)
+                  PYEOF
             - name: Build sdist
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
@@ -145,29 +194,21 @@ jobs:
                   name: wheels-sdist
                   path: dist
 
-    release:
-        name: Release
+    publish-testpypi:
+        name: Publish preview to TestPyPI
         runs-on: ubuntu-latest
-        if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
+        if: github.event.pull_request.head.repo.full_name == github.repository
         needs: [linux, musllinux, macos, sdist]
-        permissions:
-            id-token: write
-            contents: write
-            attestations: write
         steps:
             - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
               with:
                   pattern: wheels-*
                   path: dist
                   merge-multiple: true
-            - name: Generate artifact attestation
-              uses: actions/attest-build-provenance@ef244123eb79f2f7a7e75d99086184180e6d0018 # v1.4.4
-              with:
-                  subject-path: "dist/*"
-            - name: Publish to PyPI
-              if: ${{ startsWith(github.ref, 'refs/tags/') }}
+            - name: Publish to TestPyPI
               uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
               with:
-                  password: ${{ secrets.PYPI_API_TOKEN }}
+                  repository-url: https://test.pypi.org/legacy/
+                  password: ${{ secrets.TESTPYPI_API_TOKEN }}
                   packages-dir: dist
                   skip-existing: true
