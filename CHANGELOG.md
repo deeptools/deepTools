@@ -17,6 +17,32 @@
 * --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
 
+## [4.0.1](https://github.com/deeptools/deepTools/compare/4.0.0...4.0.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* 1159 ([eddb56e](https://github.com/deeptools/deepTools/commit/eddb56e84bc55b7eda85cce7473e44264070c85b))
+* 671, need to add some documentation though ([101188e](https://github.com/deeptools/deepTools/commit/101188ec707a5c0727c17ce0e88a7e6977503261))
+* 692, add . to the list of acceptable characters ([1fc9ddf](https://github.com/deeptools/deepTools/commit/1fc9ddfe176bfb6ab65812937a9b62fbc37d9dfe))
+* 693, allow mixing --Offset and --centerReads in bamCoverage ([db79867](https://github.com/deeptools/deepTools/commit/db798675120b3491437f97d62da402f2c2026378))
+* 709 again and remove some matplotlib warnings ([#752](https://github.com/deeptools/deepTools/issues/752)) ([52707c9](https://github.com/deeptools/deepTools/commit/52707c94b39acad8f3dfbccca72b7460192ee15e))
+* 714 ([77039c8](https://github.com/deeptools/deepTools/commit/77039c8ea14a48ae62b9c6116f661b275d4e2d33))
+* 720, put the fat kid on a serious diet ([d2b5155](https://github.com/deeptools/deepTools/commit/d2b51559c4d00268c283bc8ea89f90a4c81dbfd5))
+* 727 ([25df3a4](https://github.com/deeptools/deepTools/commit/25df3a4fb351b9507a59e86b5fce6a72c1b36b4c))
+* 738 ([dc3f6e4](https://github.com/deeptools/deepTools/commit/dc3f6e4cc1c9f10c37a2c6fc010e76b3c7298d78))
+* 742 ([e048833](https://github.com/deeptools/deepTools/commit/e04883310483e935e4230223b5855c09785fa541))
+* 755 and fix [#754](https://github.com/deeptools/deepTools/issues/754) ([#758](https://github.com/deeptools/deepTools/issues/758)) ([eebb8b2](https://github.com/deeptools/deepTools/commit/eebb8b2810a64171f1cee763e7ccecd1e4ca1111))
+* 766 ([#767](https://github.com/deeptools/deepTools/issues/767)) ([d2edde3](https://github.com/deeptools/deepTools/commit/d2edde3c3dafcc0e33d11d82b5aebb1f57a92642))
+* 797, scrap sharing axes and manually attend to scaling the axes … ([#808](https://github.com/deeptools/deepTools/issues/808)) ([03ceb5c](https://github.com/deeptools/deepTools/commit/03ceb5c63c599c8598ea46fd4b834e51c55a95be))
+* 822 ([#826](https://github.com/deeptools/deepTools/issues/826)) ([5aee08f](https://github.com/deeptools/deepTools/commit/5aee08fc3576a29546f0efd544a2cd44524b9e2d))
+* 969 ([#970](https://github.com/deeptools/deepTools/issues/970)) ([b1e1d20](https://github.com/deeptools/deepTools/commit/b1e1d20e7cbe6fd487abce16ac45feb5d3a01d2e))
+
+
+### Documentation
+
+* GLIBC info ([b3a1533](https://github.com/deeptools/deepTools/commit/b3a1533666668c79394d7bb041d82aaee170bc0d))
+
 ## 3.5.6
 * minimal supported python version raised to 3.9 (numpy >= 2 support); NaN handling switched to np.nan
 * drop conda usage in pypi/test/planemo CI in favor of pip installs; samtools now pulled from conda-forge/bioconda where still needed in CI
