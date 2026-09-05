@@ -1,4 +1,4 @@
-4.0.0
+## 4.0.0
 * new Rust-backed core for bamCoverage, bamCompare, computeMatrix, alignmentSieve and multiBamSummary (rayon multithreading, bigtools-based bigWig I/O), replacing the pure-Python implementations for these five tools; the previous Python implementations remain available as bamCoverage_old, bamCompare_old, computeMatrix_old, alignmentSieve_old and multiBamSummary_old during the transition, but will be removed in a future release
 * gzipped GTF/BED region files are now supported in multiBamSummary, computeMatrix and alignmentSieve; gzipped blacklist files are supported in all five Rust-backed tools (multiBamSummary, computeMatrix, alignmentSieve, bamCompare, bamCoverage)
 * --exactScaling is removed as this is the only scaling option available with the new backend
@@ -17,7 +17,7 @@
 * --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
 
-3.5.6
+## 3.5.6
 * minimal supported python version raised to 3.9 (numpy >= 2 support); NaN handling switched to np.nan
 * drop conda usage in pypi/test/planemo CI in favor of pip installs; samtools now pulled from conda-forge/bioconda where still needed in CI
 * include GRCm39 in the effective genome size docs
@@ -25,7 +25,7 @@
 * computeMatrix: ensure --beforeRegionStartLength/-b and --afterRegionStartLength/-a are always treated as positive values
 * minor --version output fixes in plotCoverage and multiBigwigSummary
 
-3.5.5
+## 3.5.5
 * drop support for python 3.7
 * doc fixes (argparse properly displayed, minor changes in installation instructions)
 * deepblue support stops
@@ -35,13 +35,13 @@
 * Try to get the number of processors from sched_getaffinity, to avoid using to many in job submissions for example. #1199
 * Fix typo in estimateScaleFactor that fixes broken argparsing. #1286
 
-3.5.4
+## 3.5.4
 * error handling and cases for bwAverage with >2 samples
 * Tick.label deprecation for mpl 3.8
 * minimal mpl version is 3.5
 * cicd update for pypi push
 
-3.5.3
+## 3.5.3
 * requirement cap for matplotlib lifted (changes in plotting can occur)
 * nose has been deprecated in favor of pytests
 * pytests run with python 3.7 - 3.11
@@ -51,7 +51,7 @@
 * deprecation of np types for builtin types
 * stricter label checks and validator in galaxy
 
-3.5.2
+## 3.5.2
 * new subcommand: Bigwig average #1169
 * dendogram of plotCorrelation now matches each cell correctly
 * Fix label options
@@ -69,7 +69,7 @@
 * suppress lack of index warnings from pysam
 * fixedStep in bedGraph output to avoid merging bins with equal values
 
-3.5.1
+## 3.5.1
 * cmp usage is updated to fit the recent mpl updates.
 * The requirements.txt is updated.
 * "NA" occurences in plotFingerprint.py have been replaced by numpy.NAN (PR #1002)
@@ -80,7 +80,7 @@
 * A bug is taken care of in computeMatrixOperations.py / dataRange
 * in plotProfile.py legen location is changed from auto to best (issue #1042)
 
-3.5.0
+## 3.5.0
 
  * Fixed a small issue in computeGCBias (issue #969)
  * Added dataRange to computeMatricOperation to return min,max,median and 10th and 90th percentile.
@@ -90,26 +90,26 @@
  * Added the `auto` option to the zMin and zMax of plotHeatmap. (issue #908)
  * Added `--sortUsingSamples` and `--clusterUsingSamples` to the plotHeatmap galaxy wrapper. (issue #976)
 
-3.4.3
+## 3.4.3
 
  * Changed iteritems() in estimateEscaleFactor to its python3 compatible items().
  * Added the missing argument (--clusterUsingSamples) to plotProfile.
 
-3.4.2
+## 3.4.2
 
  * Programmed around a bug in matplotlib that prevented the plotCorrelation scatter plot from working. See https://bioinformatics.stackexchange.com/questions/12830/plot-correlation-between-several-bam-files/12831
 
-3.4.1
+## 3.4.1
 
  * Prevented temporary bedGraph files from being written to (possibly small) shared-memory drives even when TMPDIR is set to somewhere else. Now shared memory is only used if requested by setting TMPDIR (or other appropriate environment variables) to `/dev/shm`.
  * Fixed a bug in bamPEFragmentSize that caused incompatibility with newer matplotlib releases. (issue #928)
 
-3.4.0
+## 3.4.0
 
  * Fixed a bug in one of the Galaxy wrappers.
  * Added the `--lineAtTickMarks` option to `plotHeatmap` so that there are dashed vertical lines for each tick mark in the plot. (issue #924)
 
-3.3.2
+## 3.3.2
 
  * Fixed --yAxisLabel in plotProfile (issue #889)
  * Fixed a small X-axis tick offset issue. This caused the location of tick marks in profile plots to be shifted to the left by 0.5 to 1 bin. This was generally not notable, only really appearing when very few bins (e.g., 4) were used. The issue was mostly that the end tick would appear after the end of the plot, since its coordinate was the end of the bin. (issue #888)
@@ -119,7 +119,7 @@
  * Fixed an issue with the `--Offset` option, where a single negative value wouldn't include only a single position, but rather that base through the end of the read. (stems from issue #902)
  * Clustered output from plotHeatmap and plotProfile now allow computing the silhouette score of each row. This is printed in the returned BED file as the last column.
 
-3.3.1
+## 3.3.1
 
  * Fixed `--plotNumbers` not working in `plotCorrelation`. This was issue #838.
  * Fixed compatibility with matplotlib 3 and restrict to at least that version.
@@ -128,20 +128,20 @@
  * Various documentation updates (issues #868, #867 and #851).
  * Increased support for BED files with track header lines (issue #866).
 
-3.3.0
+## 3.3.0
 
  * `plotCoverage` now has a `--BED` option, to restrict plots and output to apply to a specific set of regions given by a BED or GTF file or files (issue #829).
  * `plotCoverage` now has a `--DepthSummary` option, which produces a summary similar to GATK's DepthOfCoverage (issue #828).
  * `plotCoverage` is now able to compute coverage metrics for arbitrary coverage thresholds using multiples of the `-ct` option (e.g., `-ct 0 -ct 10 -ct 20 -ct 30`).
 
-3.2.1
+## 3.2.1
 
  * Changed a bug in `estimateReadFiltering` where the estimated number of filtered reads was typically too low.
  * Made an internal change that should drastically reduce the memory requirements of many tools. This slightly increases run time, but as the resulting resource usage is much more attractive this is judged worthwhile.
  * An informative error message is now produced with `bamCoverage` if RPGC normalization is requested but no effective genome size is provided (issue #815).
  * Fixes some issues with y-axis scaling (issue #822)
 
-3.2.0
+## 3.2.0
 
  * Added access in the Galaxy wrapper to the `--labels` option in most tools (issue #738)
  * Added the `std` plot type to plotProfile in Galaxy (issue #782)
@@ -150,25 +150,25 @@
  * `multiBamSummary` now has a `--scaleFactors` option, which computes scale factors in the same manner as DESeq2 to a file. Note that the produced scaling factors are meant to be used with `bamCoverage`. If you want to use them directly in DESeq2 (or a similar package) you will need to invert them (take 1/scale factor). (issue #800)
  * Fixed an issue with large numbers of samples and small genome sizes sometimes causing nothing to be processed. (issue #801)
 
-3.1.3
+## 3.1.3
 
  * Added the `--legendLocation` option in the Galaxy wrappers for plotProfile and plotHeatmap
  * More thoroughly checked that output files can be written (issue #764).
  * `bamCompare` and `bigwigCompare` can now take two pseudocounts, in case you want a different value for the numerator and the denominator (issue #784)
 
-3.1.2
+## 3.1.2
 
  * Added a `--markers` option to `plotPCA`, courtesy of @sklasfeld.
  * `computeMatrixOperations rbind` now properly supports multiple region groups (issue #742)
  * Fixed the usage of `--xRange` and `--yRange` with `plotCorrelation` (issue #709)
 
-3.1.1
+## 3.1.1
 
  * Fixed the `--outFileNameData` option in `plotProfile` when `computeMatrix reference-point --referencePoint center` was used. This caused an error previously. (issue #727)
  * RPGC normalization and the `--scaleFactor` option in `bamCoverage` are no longer mutually exclusive.
  * Increased the default plot width in plotPCA (issue #738)
 
-3.1.0
+## 3.1.0
 
  * The `--centerReads` option in `bamCoverage` is now compatible with `--Offset` (previously `--centerReads` was silently ignored if `--Offset` was specified). (issue #693)
  * `bamCoverage` and `bamCompare` now have an `--exactScaling` option. Instead of using a random sample of alignment to compute the scaling factor, this causes all reads in the file to be used. This is significantly slower, but helpful in situations where reads that should be excluded clump together on the genome (i.e., when sampling based on location is likely to be inaccurate).
@@ -181,7 +181,7 @@
  * Related to the last point, setting `--normalizeUsing` to anything other than `None` will result in an error unless `--scaleFactorsMethod None` is also used. This is to prevent people from accidentally getting unintended normalization.
  * bamPEFragmentSize no longer exploids its memory use with multiple large BAM/CRAM files (#720). Many other tools will also benefit from this change.
 
-3.0.2
+## 3.0.2
 
  * Fixed an issue regarding under sampling alignments in some cases with computing scaling factors. This was issue #690. The resolution isn't perfect, it's hard to know how many reads really need to be sampled for things like RNA-seq.
  * `computeMatrix` now has a `--verbose` option. Setting this will drastically increase the verbosity of the messages sent to the screen. Only do this for debugging. `--quiet` will disable this completely (as well as all other messages printed to screen).
@@ -189,12 +189,12 @@
  * The reference point label specified by `computeMatrix reference-point` is now respected by plotHeatmap and plotProfile. So if you used `computeMatrix reference-point --referencePointLabel center` then 'center' will now appear as the tick label in your heatmaps and profiles automatically. (issues #606 and #683)
  * Enabled using regions with a `.` in the chromosome name in the Galaxy wrappers (issue #692)
 
-3.0.1
+## 3.0.1
 
  * Fixed the `--perGroup` option in plotProfile and plotHeatmap when multiple groups were being used. In version 3.0.0, this would typically cause an error and deepTools to crash. (issue #673)
  * Fixed a few issues with the Galaxy wrappers. Thanks to Ralf Gilsbach, Claudia Keller, and @bgruening (e.g., issue #678)
 
-3.0.0
+## 3.0.0
 
  * plotCorrelation` now has `--log1p` and `--maxRange` options if a scatter plot is produced. `--log1p` plots the natural log of the values (plus 1). `--maxRange` sets the maximum X and Y axis ranges. If they would normally be below this value then they are left unchanged. (issue #536)
  * The PCA plot now includes "% of var. explained" in the top axis labels. (issue #547)
@@ -230,29 +230,29 @@
  * `bamCoverage` is a bit more efficient with small BAM files now due to underlying algorithmic changes. Relatedely, bamCoverage will skip some unnecessary estimation steps if you are not filtering reads, further speeding processing a bit. (issue #662)
  * Added support for CRAM files. This requires pysam > 0.13.0 (issue #619).
 
-2.5.7
+## 2.5.7
 
  * Fixed a small bug that caused computation to stop. This was related to a change made for release 2.5.5.
 
-2.5.6
+## 2.5.6
 
  * Fixed a bug where deepTools in python3 can't handle npz file labels created under python 2.
 
-2.5.5
+## 2.5.5
 
  * Updated blacklist handling such that an error is thrown on overlapping regions.
 
-2.5.4
+## 2.5.4
 
  * Fixed issue #612, which only occurs when unaligned reads have a position assigned to them.
  * Ticks in the profile plot at the top of the output of `plotHeatmap` should now always line up properly. (issue #616)
 
-2.5.3
+## 2.5.3
 
  * Fixed a bug in `plotEnrichment`, the `--keepExons` option with a BED12 file would cause an error. (issue #559)
  * `bamCoverage` now doesn't cause and error to be thrown by `sort` in there are "/spaces in quoted path/". (issue #558)
 
-2.5.2
+## 2.5.2
 
  * Fixed a bug in `bamCoverage` that can cause crashes when python3 is used.
  * Fixed a bug in the multiBigwigSummary Galaxy wrapper.
@@ -260,7 +260,7 @@
  * `plotFingerprint` no longer tries to use illegal line designators (issue #538)
  * Various documentation fixes
 
-2.5.1
+## 2.5.1
 
  * Added universal new line support to deeptoolsintervals (issue #506).
  * Fixed a few issues with correctGCBias under python 3.5 (thanks to @drakeeee)
@@ -273,7 +273,7 @@
  * If you use `plotFingerprint` with the `--JSDsample` option and forget to list that file under `--bamfiles` it will be added automatically and the file name added to the labels if needed (issue #527)
  * Various Galaxy wrapper fixes
 
-2.5.0
+## 2.5.0
 
  * Fix a bug where using regions with the same name in multiple BED files in computeMatrix caused downstream problems in plotHeatmap/plotProfile (issue #477).
  * If computeMatrix/plotHeatmap/plotProfile is asked to sort the output matrix, it now does so by ignoring NaN values. Previously, any row with an NaN was placed at the top of the output (issue #447).
@@ -286,18 +286,18 @@
  * The `--minFragmentLength` and `--maxFragmentLength` options now respect single-end reads. For SE reads, these parameters refer to the number of aligned bases (i.e., splicing is ignored). This was issue #489.
  * `--yMin` and `--yMax` can now be lists of values in `plotHeatmap`. This was issue #487. Note that the plots are not perfectly aligned if you do this.
 
-2.4.3
+## 2.4.3
 
  * Fixed incorrect label ordering in the `plotCorrelation` command with the `--outFileCorMatrix` options.
  * Fixed bug #491, which involved python 3 and bamCoverage.
 
-2.4.2
+## 2.4.2
 
  * Fixed an issue where `computeMatrix reference-point --referencePoint center` would break if 1-base regions were used. This was bug #456.
  * `plotCorrelation` with `--outFileCorMatrix` now works with `--labels` again (thanks to @sklasfeld for supplying the patch).
  * `bigwigCompare` and `bamCompare` can now return the average (mean) of two input files (issue #467).
 
-2.4.1
+## 2.4.1
 
  * Setting --zMin to the same value as --zMax, whether intentionally or because the --zMax value computed by deepTools happens to be now larger than the desired value, will result in the maximum value in the dataset being used (internally, --zMax gets set to None).
  * Scale factor is now set to 1 in bamCoverage if no normalization is used. The fact that this wasn't being done previously was a bug.
@@ -305,7 +305,7 @@
  * Fixed a bug where some matrices produced with `computeMatrixOperations cbind` would result in the right-most samples sometimes getting squished due to having ticks outside of their graph bounds. Ticks are now scaled if they don't match the data range (issue #452).
  * In plotFingerprint, the number of reads per-bin are no longer used. Instead, the sum of the per-base coverage (or signal if bigWig input is used) is used. This leads to more similar metrics produced by us and others regarding things like Jensen-Shannon metrics. For those just interested in the plots, there's little effective change here.
 
-2.4.0
+## 2.4.0
 
  * The --Offset option to bamCoverage can now take two values, which can be used to specify a range within each alignment of bases to use. As an example, `--Offset 5 -1` will use ignore the first 4 bases of an alignment (accounting for orientation) and use only the 5th through last base. This can be useful for things like ATACseq (see #370).
  * Read extension can now be used in conjunction with --Offset in bamCoverage.
@@ -322,35 +322,35 @@
  * Values stored in bedGraph files (and therefore placed into bigWig files) now use python's "general" format with 6 digits of precision. This tends to produce slightly larger files, but with less loss for values near 0 (see #438).
  * Corrected how computeGCBias determines the lambda parameter, which should only really affect very atypical experiments (i.e., correctGCBias would have crashed is this greatly affected you).
 
-2.3.6
+## 2.3.6
 
  * multiBamSummary will now not automatically append .npz to the output file name if it's not present. This was bug #436
  * Fixed a bug with plotHeatmap where --yMin and --yMax didn't work
 
-2.3.5
+## 2.3.5
 
  * Various Galaxy wrapper fixes (e.g., issue #415 and #417)
  * Fixed issue #413, wherein the --nanAfterEnd option sometimes causes computeMatrix to throw an error.
  * Fixed issue #416, wherein --outRawCounts in multiBamSummary and multiBigwigSummary would cause an error if python3 was being used.
 
-2.3.4
+## 2.3.4
 
  * Fixed bug #405, which dealt with the SES normalization in bamCompare (it was producing an error and terminating the program).
  * Fixed bug #407, which dealt with multiBamSummary or multiBigwigSummary bins and saving the raw data. This was causing an error and the program to terminate.
 
-2.3.3
+## 2.3.3
 
  * Fixed a bug wherein proper pairs where being incorrectly called improper pairs, thereby causing slightly incorrect read extension.
 
-2.3.2
+## 2.3.2
 
  * The deeptoolsinterval module was modified to speed up plotEnrichment, which was taking forever to finish.
 
-2.3.1
+## 2.3.1
 
  * This release has no real code changes, the 2.3.0 release on pypi was missing files.
 
-2.3.0
+## 2.3.0
 
  * Modified how normalization is done when filtering is used. Previously, the filtering wasn't taken into account when computing the total number of alignments. That is now being done. Note that this uses sampling and will try to sample at least 100000 alignments and see what fraction of them are filtered. The total number of aligned reads is then scaled accordingly (#309).
  * Modified how normalization is done when a blacklist is used. Previously, the number of alignments overlapping a blacklisted region was subtracted from the total number of alignments in the file. This decreased things a bit too much, since only alignments falling completely within a blacklisted region are actually excluded completely (#312).
@@ -371,27 +371,27 @@
  * There is now an --Offset option to bamCoverage, which allows having the signal at a single base. This is useful for things like RiboSeq or GROseq, where the goal is to get focal peaks at single bases/codons/etc.
  * The --MNase option to `bamCoverage` now respects --minFragmentLength and --maxFragmentLength, with defaults set to 130 and 200.
 
-2.2.4
+## 2.2.4
 
  * Fix the incorrectly oriented dendrogram in plotCorrelation (issue #350). Relatedly, we're bumping the minimum version of scipy required to one where this is correct.
 
-2.2.3
+## 2.2.3
 
  * Fixed issue #334, where computeGCBias wasn't properly handling the black list option.
 
-2.2.2
+## 2.2.2
 
  * Fixed labels when hierarchical clustering is used (they were off by one previously).
  * Fixed a bug wherein bamCompare couldn't work with a blacklist
  * Fixed yet another change in pysam, though at least in this case is was fixing a previous problem
 
-2.2.1
+## 2.2.1
 
  * Fixed a bug introduced in version 2.2.0 wherein sometimes a pre-2.2.0 produced matrix file could no longer be used with plotHeatmap or plotProfile (this only happened when --outFileNameData was then used).
  * Finally suppressed all of the runtime warnings that numpy likes to randomly throw.
  * Worked around an undocumented change in pysam-0.9.0 that tended to break things.
 
-2.2.0
+## 2.2.0
 
  * plotFingerprint now iterates through line styles as well as colors. This allows up to 35 samples per plot without repeating (not that that many would ever be recommended). This was issue #80.
  * Fixed a number of Galaxy wrappers, which were rendered incorrectly due to including a section title of "Background".
@@ -403,14 +403,14 @@
  * bamCoverage now has a `--filterRNAstrand` option, that will produce coverage for only a single strand. Note that the strand referred to is the DNA strand and not sense/anti-sense.
  * Issues with plotHeatmap x-axis labels were fixed (issue #301).
 
-2.1.1
+## 2.1.1
 
  * Fixed a how the --hclust option was handled in plotHeatmap/plotProfile. This gets around a quirk in scipy.
  * A bug involving processing comment lines in BED files was corrected (issue #288)
  * The Galaxy wrappers are now automatically tested with each modification.
  * plotCoverage and plotFingerprint in Galaxy now accept 1 or more BAM files rather than at least 2 files.
 
-2.1.0
+## 2.1.0
 
  * Updates to many of the Galaxy wrappers and associated documentation.
  * A bug was fixed in how chromosome names were dealt with in bigWig files. If you ever received errors due to illegal intervals then that should now be fixed. This was issue #250
@@ -423,7 +423,7 @@
  * bamPEFragmentSize now accepts single-end files.
  * The --hclust option to plotProfile and plotHeatmap continues even if one of the groups is too small for plotting (matplotlib will produce a warning that you can ignore). This was issue #280.
 
-2.0.1
+## 2.0.1
 
  * A critical bug that prevented plotPCA from running was fixed.
  * multiBamCoverage was renamed to multiBamSummary, to be in better alignment with multiBigwigSummary.
@@ -431,7 +431,7 @@
  * multiBigwigSummary and multiBamSummary can accept a single bigWig/BAM input file, though one should use the
    --outRawCounts argument.
 
-2.0.0
+## 2.0.0
 
  * Documentation improved and migrated to http://deeptools.readthedocs.org The API to use deepTools modules is now
    part of the documentation and includes a tutorial.
