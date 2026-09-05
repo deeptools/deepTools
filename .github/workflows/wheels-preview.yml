@@ -1,17 +1,16 @@
 name: build_wheels_preview
 
 on:
-    pull_request:
-        types: [opened, synchronize, reopened]
+    push:
         branches:
             - master
+    workflow_dispatch:
 
 permissions:
     contents: read
 
 jobs:
     linux:
-        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ${{ matrix.platform.runner }}
         strategy:
             matrix:
@@ -69,7 +68,6 @@ jobs:
                   path: dist
 
     musllinux:
-        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ${{ matrix.platform.runner }}
         strategy:
             matrix:
@@ -118,7 +116,6 @@ jobs:
                   path: dist
 
     macos:
-        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ${{ matrix.platform.runner }}
         strategy:
             matrix:
@@ -160,7 +157,6 @@ jobs:
                   path: dist
 
     sdist:
-        if: github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -197,7 +193,6 @@ jobs:
     publish-testpypi:
         name: Publish preview to TestPyPI
         runs-on: ubuntu-latest
-        if: github.event.pull_request.head.repo.full_name == github.repository
         needs: [linux, musllinux, macos, sdist]
         steps:
             - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
