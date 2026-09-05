@@ -134,14 +134,15 @@ pub fn calc_ratio(
             return (fcov * 100.0).round() / 100.0;
         }
         "reciprocal_ratio" => {
+            // a/b if a/b >= 1, else -b/a (negative fold change), as in the
+            // --operation help and the 3.5.x implementation.
             let num: f32 = (cov1 * *sf1) + *pseudocount1;
             let den: f32 = (cov2 * *sf2) + *pseudocount2;
             let ratio: f32 = num / den;
             if ratio >= 1.0 {
-                let fcov: f32 = den / num;
-                return (fcov * 100.0).round() / 100.0;
+                return (ratio * 100.0).round() / 100.0;
             } else {
-                let fcov: f32 = -num / den;
+                let fcov: f32 = -den / num;
                 return (fcov * 100.0).round() / 100.0;
             }
         }
@@ -151,12 +152,27 @@ pub fn calc_ratio(
             let fcov: f32 = num - den;
             return (fcov * 100.0).round() / 100.0;
         }
-        _ => {
-            // No operation is never allowed (on the py arg level, so just default to log2)
-            let num: f32 = (cov1 * *sf1) + *pseudocount1;
-            let den: f32 = (cov2 * *sf2) + *pseudocount2;
-            let fcov: f32 = (num / den).log2();
+        // The remaining operations output the scaled signal(s) without any
+        // pseudocount (the --pseudocount help: only used with log2 / ratio).
+        "first" => {
+            let fcov: f32 = cov1 * *sf1;
             return (fcov * 100.0).round() / 100.0;
+        }
+        "second" => {
+            let fcov: f32 = cov2 * *sf2;
+            return (fcov * 100.0).round() / 100.0;
+        }
+        "add" => {
+            let fcov: f32 = (cov1 * *sf1) + (cov2 * *sf2);
+            return (fcov * 100.0).round() / 100.0;
+        }
+        "mean" => {
+            let fcov: f32 = ((cov1 * *sf1) + (cov2 * *sf2)) / 2.0;
+            return (fcov * 100.0).round() / 100.0;
+        }
+        _ => {
+            // The CLI restricts --operation to the eight choices above.
+            panic!("Unknown bamCompare operation '{}'", operation);
         }
     }
 }
