@@ -606,3 +606,28 @@ def test_bam_compare_filter_blacklist():
         ]
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
+
+
+def test_bam_compare_operations_first_second_add_mean_reciprocal():
+    """
+    Every --operation must compute what it names. With --scaleFactors 1:1 the
+    per-bin signals of testA/testB are A: 0,1,1,1 and B: 0,1,1,2 over the four
+    50-bp bins (see the read layout at the top of this file); the default
+    pseudocount (1) only enters reciprocal_ratio.
+    """
+    expected = {
+        'first': ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n'],
+        'second': ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n'],
+        'add': ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n'],
+        'mean': ['3R\t0\t50\t0\n', '3R\t50\t100\t0.5\n', '3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n'],
+        # (A+1)/(B+1): 1, 1/2 -> -2, 1, 2/3 -> -1.5
+        'reciprocal_ratio': ['3R\t0\t50\t1\n', '3R\t50\t100\t-2\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1.5\n'],
+    }
+    for op, exp in expected.items():
+        _, outfile = tempfile.mkstemp(suffix=".bg")
+        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation {} " \
+               "-o {} -p 1 --outFileFormat bedgraph".format(BAMFILE_A, BAMFILE_B, op, outfile).split()
+        bam_comp.main(args)
+        resp = open(outfile, 'r').readlines()
+        assert resp == exp, "--operation {}: {} != {}".format(op, resp, exp)
+        unlink(outfile)

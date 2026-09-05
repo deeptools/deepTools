@@ -16,6 +16,7 @@
 * alignmentSieve output order matches input order exactly
 * --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
+* bamCompare --operation first, second, add and mean output what they name (the Rust backend wrote the log2 ratio for all four), and reciprocal_ratio is a/b for a/b >= 1 and -b/a otherwise, as documented (it was inverted)
 
 3.5.6
 * minimal supported python version raised to 3.9 (numpy >= 2 support); NaN handling switched to np.nan

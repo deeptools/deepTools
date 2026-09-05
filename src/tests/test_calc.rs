@@ -76,8 +76,41 @@ mod scalefactor_calculations_tests {
         let r4 = calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, subtract);
         assert_eq!(r1, -1.87);
         assert_eq!(r2, 0.27);
-        assert_eq!(r3, -0.27);
+        // 6/22 < 1, so the reciprocal ratio is -22/6
+        assert_eq!(r3, -3.67);
         assert_eq!(r4, -16.0);
+    }
+
+    #[test]
+    fn test_calc_ratio_reciprocal_ratio_sign_and_orientation() {
+        // a/b if a/b >= 1 else -b/a (the 3.5.x getRatio doctest values)
+        let one: f32 = 1.0;
+        let zero: f32 = 0.0;
+        assert_eq!(calc_ratio(2.0, 1.0, &one, &one, &zero, &zero, "reciprocal_ratio"), 2.0);
+        assert_eq!(calc_ratio(1.0, 2.0, &one, &one, &zero, &zero, "reciprocal_ratio"), -2.0);
+        assert_eq!(calc_ratio(1.0, 1.0, &one, &one, &zero, &zero, "reciprocal_ratio"), 1.0);
+        assert_eq!(calc_ratio(3.0, 2.0, &one, &one, &zero, &zero, "reciprocal_ratio"), 1.5);
+        assert_eq!(calc_ratio(2.0, 3.0, &one, &one, &zero, &zero, "reciprocal_ratio"), -1.5);
+    }
+
+    #[test]
+    fn test_calc_ratio_first_second_add_mean() {
+        // The scaled signals themselves, without pseudocounts.
+        let cov1: f32 = 5.0;
+        let cov2: f32 = 10.0;
+        let sf1: f32 = 1.0;
+        let sf2: f32 = 2.0;
+        let pc1: f32 = 1.0;
+        let pc2: f32 = 2.0;
+        assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "first"), 5.0);
+        assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "second"), 20.0);
+        assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "add"), 25.0);
+        assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "mean"), 12.5);
+        // and none of them is the log2 ratio
+        let l2 = calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "log2");
+        for op in ["first", "second", "add", "mean"] {
+            assert_ne!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, op), l2);
+        }
     }
 
     #[test]
