@@ -606,3 +606,22 @@ def test_bam_compare_filter_blacklist():
         ]
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
+
+
+def test_bam_coverage_MNase_odd_fragment_length():
+    """
+    --MNase counts the two central bases of an even-length fragment and the
+    three central bases of an odd-length one. test_paired2.bam has proper
+    pairs of template length 147 (x2, start 5000384), 166 (start 5001010)
+    and 154 (x2, start 5001115) inside the default 130-200 window.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = "--bam {} -o {} --MNase --binSize 1 --outFileFormat bedgraph --region chr2:5000000:5002000".format(
+        ROOT + "test_paired2.bam", outfile).split()
+    bam_cov.main(args)
+    resp = open(outfile).readlines()
+    expected = ['chr2\t5000000\t5000456\t0\n', 'chr2\t5000456\t5000459\t2\n', 'chr2\t5000459\t5001092\t0\n',
+                'chr2\t5001092\t5001094\t1\n', 'chr2\t5001094\t5001191\t0\n', 'chr2\t5001191\t5001193\t2\n',
+                'chr2\t5001193\t5002000\t0\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)

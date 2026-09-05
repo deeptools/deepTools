@@ -242,3 +242,52 @@ mod alignmentfilters_new_tests {
         assert!(af.filter);
     }
 }
+
+mod mnase_centre_tests {
+    use super::*;
+    use rust_htslib::bam::record::{Cigar, CigarString, Record};
+
+    fn mnase_filters() -> Alignmentfilters {
+        Alignmentfilters::new(
+            None, None, None, None, None, None,
+            Some(true), // MNase mode
+            None, None, None, None, None,
+        )
+    }
+
+    fn proper_pair_forward_read(pos: i64, insert_size: i64) -> Record {
+        let mut rec = Record::new();
+        rec.set(
+            b"frag",
+            Some(&CigarString(vec![Cigar::Match(50)])),
+            &[b'A'; 50],
+            &[30u8; 50],
+        );
+        rec.set_tid(0);
+        rec.set_pos(pos);
+        rec.set_flags(99); // paired, proper pair, mate reverse, first in pair
+        rec.set_mtid(0);
+        rec.set_mpos(pos + insert_size - 50);
+        rec.set_insert_size(insert_size);
+        rec
+    }
+
+    #[test]
+    fn test_mnase_even_fragment_two_central_bases() {
+        // fragment [100, 250): central bases 174 and 175
+        let af = mnase_filters();
+        let rec = proper_pair_forward_read(100, 150);
+        assert_eq!(af.manipulate_record(&rec), Some(vec![174, 175]));
+    }
+
+    #[test]
+    fn test_mnase_odd_fragment_three_central_bases() {
+        // fragment [100, 249): centre 174, documented bases 173, 174, 175
+        let af = mnase_filters();
+        let rec = proper_pair_forward_read(100, 149);
+        assert_eq!(af.manipulate_record(&rec), Some(vec![173, 174, 175]));
+        // fragment [1000, 1131): centre 1065
+        let rec = proper_pair_forward_read(1000, 131);
+        assert_eq!(af.manipulate_record(&rec), Some(vec![1064, 1065, 1066]));
+    }
+}
