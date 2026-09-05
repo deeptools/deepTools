@@ -79,16 +79,17 @@
             <param name="outFileNameData" value="True" />
             <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="sim_size" delta="12000" />
             <output name="output_outFileNameData" ftype="tabular">
-                <!-- The duplicate-sample column is mathematically zero, so it comes
-                     out as tiny BLAS-dependent noise (~1e-18) that varies across
-                     platforms. Assert structure, the stable PC1 coordinates (sign
-                     may flip across BLAS, hence -?), and the leading eigenvalue;
-                     do not pin the degenerate zero column or eigenvalue. -->
+                <!-- The two samples are the same file, so PC1 loads both equally
+                     (+-1/sqrt(2)) with eigenvalue 3 and PC2 is degenerate: its
+                     loadings and eigenvalue (~1e-35) are BLAS-dependent noise.
+                     Assert structure, the stable PC1 loadings (sign may flip
+                     across BLAS, hence -?), and the leading eigenvalue; do not pin
+                     the degenerate second component. -->
                 <assert_contents>
                     <has_n_columns n="4" />
                     <has_line_matching expression="Component\tbowtie2-test1.bam\tbowtie2-test1.bam\tEigenvalue" />
-                    <has_line_matching expression="1\t-?1\.99949\d*\t.*\t2\.9999\d*" />
-                    <has_line_matching expression="2\t-?0\.96079\d*\t.*" />
+                    <has_line_matching expression="1\t-?0\.70710\d*\t-?0\.70710\d*\t2\.9999\d*" />
+                    <has_line_matching expression="2\t-?\d.*\t-?\d.*\t.*" />
                 </assert_contents>
             </output>
         </test>
