@@ -1,4 +1,5 @@
 *.tar.gz
+*.npz
 *.py[cod]
 
 # C extensions
@@ -53,3 +54,23 @@ _sources
 
 # Planemo
 tool_test*
+
+# local conda env folder
+env.yml
+
+# Rust stuff
+target*
+
+# snakemake
+.snakemake
+*.smk
+
+# jupyter notebooks
+.ipynb_checkpoints
+*.ipynb_checkpoints
+*.ipynb
+
+# pixi
+.pixi*
+
+.venv

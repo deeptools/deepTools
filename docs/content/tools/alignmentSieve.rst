@@ -1,3 +1,5 @@
+:orphan:
+
 alignmentSieve
 ==============
 
@@ -5,9 +7,11 @@ alignmentSieve
     :local:
 
 .. argparse::
-   :ref: deeptools.alignmentSieve.parseArguments
+   :ref: deeptools.alignmentSieve2.parseArguments
    :prog: alignmentSieve
    :nodefault:
+
+.. note:: As of deepTools 4.0.0, ``alignmentSieve`` uses a new Rust-backed core. Region files (BED/GTF) and ``--blackListFileName`` may be gzip-compressed, blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks, output order now exactly matches input order, and ``--genomeChunkLength`` has been removed. The previous pure-Python implementation is still available as ``alignmentSieve_old`` during the transition period, but will be removed in a future release.
 
 
 Background

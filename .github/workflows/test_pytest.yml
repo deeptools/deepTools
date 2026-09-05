@@ -1,0 +1,61 @@
+name: tests_pytest
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+    contents: read
+
+jobs:
+    check_versions_matches:
+        name: Check deeptools/galaxy/Rust versions stay in sync
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+              with:
+                  python-version: "3.x"
+            - name: Check version sync
+              run: python3 scripts/check_version_sync.py
+    build-linux:
+        name: Test on Linux
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                pixi-env: [py312, py313, py314]
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
+            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+              with:
+                  environments: ${{ matrix.pixi-env }}
+            - name: build deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} build
+            - name: test deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} test -v
+            - name: build wheel
+              run: pixi run -e ${{ matrix.pixi-env }} python -m build
+            - name: test wheel
+              run: pixi run -e ${{ matrix.pixi-env }} bash -c "pip install dist/*.whl"
+    build-osx:
+        name: Test on OSX
+        runs-on: macOS-latest
+        strategy:
+            matrix:
+                pixi-env: [py312, py313, py314]
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
+            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+              with:
+                  environments: ${{ matrix.pixi-env }}
+            - name: build deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} build
+            - name: test deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} test -v
+            - name: build wheel
+              run: pixi run -e ${{ matrix.pixi-env }} python -m build
+            - name: test wheel
+              run: pixi run -e ${{ matrix.pixi-env }} bash -c "pip install dist/*.whl"

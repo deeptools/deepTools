@@ -1,4 +1,3 @@
-#plotCorrelation --outFileCorMatrix
 	'bowtie2 test1.bam'	'bowtie2 test1.bam'
 'bowtie2 test1.bam'	1.0000	1.0000
 'bowtie2 test1.bam'	1.0000	1.0000

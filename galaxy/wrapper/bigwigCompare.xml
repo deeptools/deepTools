@@ -41,8 +41,8 @@
 ]]>
     </command>
     <inputs>
-        <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file" />
-        <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file" />
+        <param name="bigwigFile1" format="bigwig" type="data" label="Treatment bigwig file"/>
+        <param name="bigwigFile2" format="bigwig" type="data" label="bigWig file"/>
 
         <conditional name="comparison">
             <param name="comparison_select" type="select"
@@ -62,18 +62,18 @@
                 <option value="second">Returns the scaled value of the second bigWig file</option>
             </param>
             <when value="log2">
-                <expand macro="pseudocount" />
+                <expand macro="pseudocount"/>
             </when>
             <when value="ratio">
-                <expand macro="pseudocount" />
+                <expand macro="pseudocount"/>
             </when>
-            <when value="subtract" />
-            <when value="add" />
-            <when value="mean" />
-            <when value="first" />
-            <when value="second" />
+            <when value="subtract"/>
+            <when value="add"/>
+            <when value="mean"/>
+            <when value="first"/>
+            <when value="second"/>
             <when value="reciprocal_ratio">
-                <expand macro="pseudocount" />
+                <expand macro="pseudocount"/>
             </when>
         </conditional>
 
@@ -82,53 +82,53 @@
             <option value="bedgraph">bedgraph</option>
         </param>
 
-        <expand macro="region_limit_operation" />
+        <expand macro="region_limit_operation"/>
 
         <conditional name="advancedOpt">
             <param name="showAdvancedOpt" type="select" label="Show advanced options" >
                 <option value="no" selected="true">no</option>
                 <option value="yes">yes</option>
             </param>
-            <when value="no" />
+            <when value="no"/>
             <when value="yes">
                 <param argument="--binSize" type="integer" value="50" min="1"
                     label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
                     help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
 
-                <expand macro="skipNAs" />
-                <expand macro="skipZeroOverZero" />
-                <expand macro="scaleFactors" />
-                <expand macro="plotTitle" />
-                <expand macro="blacklist" />
+                <expand macro="skipNAs"/>
+                <expand macro="skipZeroOverZero"/>
+                <expand macro="scaleFactors"/>
+                <expand macro="plotTitle"/>
+                <expand macro="blacklist"/>
             </when>
         </conditional>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
             <change_format>
-                <when input="outFileFormat" value="bigwig" format="bigwig" />
-                <when input="outFileFormat" value="bedgraph" format="bedgraph" />
+                <when input="outFileFormat" value="bigwig" format="bigwig"/>
+                <when input="outFileFormat" value="bedgraph" format="bedgraph"/>
             </change_format>
         </data>
     </outputs>
     <tests>
-        <test>
-            <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
-            <param name="bigwigFile2" value="test.bw" ftype="bigwig" />
-            <param name="showAdvancedOpt" value="no" />
-            <param name="outFileFormat" value="bigwig" />
-            <param name="binSize" value="5" />
-            <param name="comparison_select" value="ratio" />
-            <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" compare="sim_size" />
+        <test expect_num_outputs="1">
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
+            <param name="showAdvancedOpt" value="no"/>
+            <param name="outFileFormat" value="bigwig"/>
+            <param name="binSize" value="5"/>
+            <param name="comparison_select" value="ratio"/>
+            <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" compare="sim_size"/>
         </test>
-        <test>
-            <param name="bigwigFile1" value="test.bw" ftype="bigwig" />
-            <param name="bigwigFile2" value="test.bw" ftype="bigwig" />
-            <param name="showAdvancedOpt" value="no" />
-            <param name="outFileFormat" value="bedgraph" />
-            <param name="binSize" value="10" />
-            <param name="comparison_select" value="ratio" />
-            <output name="outFileName" file="bigwigCompare_result2.bg" sort="true" ftype="bedgraph" />
+        <test expect_num_outputs="1">
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
+            <param name="showAdvancedOpt" value="no"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="10"/>
+            <param name="comparison_select" value="ratio"/>
+            <output name="outFileName" file="bigwigCompare_result2.bg" sort="true" ftype="bedgraph"/>
         </test>
     </tests>
     <help>
@@ -153,5 +153,5 @@ Note that you can actually produce a human-readable bedGraph format instead of t
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>

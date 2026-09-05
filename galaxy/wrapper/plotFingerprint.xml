@@ -114,13 +114,13 @@
         </data>
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="1">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="no" />
             <param name="showOutputSettings" value="no" />
             <output name="outFileName" file="plotFingerprint_result1.png" ftype="png" compare="sim_size" />
         </test>
-        <test>
+        <test expect_num_outputs="3">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="showOutputSettings" value="yes" />

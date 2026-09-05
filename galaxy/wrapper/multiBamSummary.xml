@@ -97,13 +97,13 @@
         </data>
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="1">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="modeOpt" value="bins" />
             <param name="binSize" value="10" />
             <output name="outFile" file="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
-        <test>
+        <test expect_num_outputs="1">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="modeOpt" value="BED-file" />
             <param name="region_file" value="multiBamSummary_regions.bed" />

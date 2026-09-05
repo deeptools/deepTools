@@ -1,3 +1,5 @@
+:orphan:
+
 computeMatrix
 =============
 
@@ -5,9 +7,11 @@ computeMatrix
     :local:
 
 .. argparse::
-   :ref: deeptools.computeMatrix.parse_arguments
+   :ref: deeptools.computeMatrix2.parse_arguments
    :prog: computeMatrix
    :nodefault:
+
+.. note:: As of deepTools 4.0.0, ``computeMatrix`` uses a new Rust-backed core. Region files (BED/GTF) and ``--blackListFileName`` may be gzip-compressed, and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. The previous pure-Python implementation is still available as ``computeMatrix_old`` during the transition period, but will be removed in a future release.
 
 Details
 ^^^^^^^
@@ -129,4 +133,4 @@ The groups of regions supplied by two individual files will be merged into one:
     #genes_chr19_secondHalf
     
     
-.. tip:: **More examples** can be found in our `Gallery <http://deeptools.readthedocs.org/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.
+.. tip:: **More examples** can be found in our `Gallery <https://deeptools.readthedocs.io/en/latest/content/example_gallery.html#normalized-chip-seq-signals-and-peak-regions>`_.

@@ -1,35 +1,50 @@
 [build-system]
 requires = [
-    "setuptools"
+    "maturin>=1.0,<2.0"
 ]
+build-backend = "maturin"
+
+[tool.maturin]
+python-source = "pydeeptools"
+exclude = ["pydeeptools/deeptools/test/**/*"]
+module-name = "deeptools.hp"
+bindings = "pyo3"
 
 [project]
-name = "deepTools"
-version = "3.5.6"
+name = "deeptools"
+version = "4.0.0"
 authors = [
-    {name="Fidel Ramirez"},
-    {name="Devon P Ryan"},
-    {name="Björn Grüning"},
-    {name="Friederike Dündar"},
-    {name="Sarah Diehl"},
     {name="Vivek Bhardwaj"},
-    {name="Fabian Kilpert"},
-    {name="Andreas S Richter"},
+    {name="Ward Deboutte"},
+    {name="Lucille Delisle"},
+    {name="Sarah Diehl"},
+    {name="Galina Erikson"},
+    {name="Friederike Dündar"},
+    {name="Björn Grüning"},
     {name="Steffen Heyne"},
+    {name="Fabian Kilpert"},
+    {name="Wolfgang Maier"},
     {name="Thomas Manke"},
+    {name="Saim Momin"},
+    {name="Mohit Navander"},
+    {name="Juan Perez Caballero"},
+    {name="Fidel Ramirez"},
+    {name="Adrian Salatino"},
+    {name="Andreas S Richter"},
+    {name="Devon P Ryan"},
+    {name="Pavankumar Videm"},
     {email="bioinfo-core@ie-freiburg.mpg.de"}
 ]
-requires-python = "> 3.8"
+requires-python = ">= 3.12"
 dependencies = [
-    "numpy >= 2.0.0",
-    "scipy >= 0.17.0",
-    "matplotlib >= 3.5.0",
-    "pysam >= 0.14.0",
-    "numpydoc >= 0.5",
-    "pyBigWig >= 0.2.1",
-    "py2bit >= 0.2.0",
-    "plotly >= 4.9",
-    "deeptoolsintervals >= 0.1.8"
+    "numpy >= 2.0",
+    "scipy >= 1.13",
+    "matplotlib >= 3.10",
+    "pysam >= 0.23",
+    "pyBigWig >= 0.3",
+    "py2bit >= 0.3",
+    "deeptoolsintervals >= 0.1",
+    "maturin"
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
@@ -37,14 +52,20 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics"
 ]
-readme = "README.rst"
+readme = "README.md"
 [project.optional-dependencies]
 actions = [
     "flake8",
     "pytest",
     "twine",
     "build",
-    "planemo"
+    "planemo",
+]
+docs = [
+    "sphinx >= 7.2.6",
+    "mock >= 5.1.0",
+    "sphinx_rtd_theme >= 2.0.0",
+    "sphinx-argparse >= 0.4.0",
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
@@ -55,20 +76,20 @@ repository = "https://github.com/deeptools/deepTools"
 packages = ["deeptools"]
 
 [project.scripts]
-alignmentSieve = "deeptools.alignmentSieve:main"
-bamCompare = "deeptools.bamCompare:main"
-bamCoverage = "deeptools.bamCoverage:main"
+alignmentSieve_old = "deeptools.alignmentSieve:main"
+bamCompare_old = "deeptools.bamCompare:main"
+bamCoverage_old = "deeptools.bamCoverage:main"
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
 bigwigAverage = "deeptools.bigwigAverage:main"
 bigwigCompare = "deeptools.bigwigCompare:main"
 computeGCBias = "deeptools.computeGCBias:main"
-computeMatrix = "deeptools.computeMatrix:main"
+computeMatrix_old = "deeptools.computeMatrix:main"
 computeMatrixOperations = "deeptools.computeMatrixOperations:main"
 correctGCBias = "deeptools.correctGCBias:main"
 deeptools = "deeptools.deeptools_list_tools:main"
 estimateReadFiltering = "deeptools.estimateReadFiltering:main"
 estimateScaleFactor = "deeptools.estimateScaleFactor:main"
-multiBamSummary = "deeptools.multiBamSummary:main"
+multiBamSummary_old = "deeptools.multiBamSummary:main"
 multiBigwigSummary = "deeptools.multiBigwigSummary:main"
 plotCorrelation = "deeptools.plotCorrelation:main"
 plotCoverage = "deeptools.plotCoverage:main"
@@ -77,3 +98,47 @@ plotFingerprint = "deeptools.plotFingerprint:main"
 plotHeatmap = "deeptools.plotHeatmap:main"
 plotPCA = "deeptools.plotPCA:main"
 plotProfile = "deeptools.plotProfile:main"
+bamCoverage = "deeptools.bamCoverage2:main"
+bamCompare = "deeptools.bamCompare2:main"
+computeMatrix = "deeptools.computeMatrix2:main"
+alignmentSieve = "deeptools.alignmentSieve2:main"
+multiBamSummary = "deeptools.multiBamSummary2:main"
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "bioconda"]
+platforms = ["linux-64", "osx-arm64", "osx-64"]
+[tool.pixi.dependencies]
+libclang = "<22"
+clangdev = "<22"
+htslib = "<=1.19"
+zlib = "*"
+# conda-forge's rust 1.98.0 build segfaults in LLVM target init on osx-arm64
+# (reproducible even after a clean env reinstall); capped until that's fixed upstream.
+rust = ">=1.87,<1.98"
+maturin = ">=1.0,<2.0"
+pip = "*"
+openssl = "*"
+pkg-config = "*"
+py-spy = "*"
+[tool.pixi.pypi-dependencies]
+deeptools = { path = ".", editable = true, extras = ['actions', 'docs'] }
+[tool.pixi.activation.env]
+LIBCLANG_PATH = "$CONDA_PREFIX/lib"
+OPENSSL_NO_VENDOR = "1"
+OPENSSL_DIR = "$CONDA_PREFIX"
+[tool.pixi.tasks]
+build = "maturin develop --release"
+test = "pytest pydeeptools/deeptools/test/"
+docs = "sphinx-build -b html docs docs/_build/html -W --keep-going"
+
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+[tool.pixi.feature.py314.dependencies]
+python = "3.14.*"
+
+[tool.pixi.environments]
+py312 = ["py312"]
+py313 = ["py313"]
+py314 = ["py314"]

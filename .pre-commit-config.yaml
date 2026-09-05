@@ -1,0 +1,13 @@
+repos:
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.11.0
+    hooks:
+      - id: zizmor
+  - repo: local
+    hooks:
+      - id: check-version-sync
+        name: check Rust versions (docs - toml) and deeptools versions (toml - galaxy) to stay in sync
+        entry: python3 scripts/check_version_sync.py
+        language: system
+        files: ^(Cargo\.toml|pyproject\.toml|\.readthedocs\.yaml|galaxy/wrapper/deepTools_macros\.xml)$
+        pass_filenames: false

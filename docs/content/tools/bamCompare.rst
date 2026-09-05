@@ -1,3 +1,5 @@
+:orphan:
+
 bamCompare
 ===========
 
@@ -11,7 +13,7 @@ The basic algorithm works proceeds in two steps:
 
 1. Per-sample scaling / depth Normalization:
 
-   - If scaling is used (using the SES or read counts method), appropriate scaling
+   - If scaling is used (via the read counts method), appropriate scaling
      factors are determined to account for sequencing depth differences.
    - Optionally scaling can be turned off and individual samples normalized using the
      RPKM, BPM or CPM methods (or no normalization at all)
@@ -22,6 +24,8 @@ The basic algorithm works proceeds in two steps:
 
 
 .. argparse::
-   :ref: deeptools.bamCompare.parseArguments
+   :ref: deeptools.bamCompare2.parseArguments
    :prog: bamCompare
    :nodefault:
+
+.. note:: As of deepTools 4.0.0, ``bamCompare`` uses a new Rust-backed core. ``--blackListFileName`` may be gzip-compressed and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. The SES scaling method and ``--ignoreDuplicates`` have both been removed; for duplicate removal use ``--samFlagExclude`` against a BAM file with duplicates marked. The previous pure-Python implementation is still available as ``bamCompare_old`` during the transition period, but will be removed in a future release.

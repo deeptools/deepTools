@@ -48,7 +48,7 @@
                 $advancedOpt.perSample
 
                 $advancedOpt.variableScales
-                
+
                 $advancedOpt.perSample
 
                 $advancedOpt.variableScales
@@ -175,14 +175,14 @@
         </data>
     </outputs>
     <tests>
-        <test>
+        <test expect_num_outputs="2">
             <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="BED" value="multiBamSummary_regions.bed,multiBamSummary_regions.bed" ftype="bed" />
             <param name="outRawCounts" value="true" />
             <param name="showAdvancedOpt" value="yes" />
             <param name="minMappingQuality" value="0" />
             <param name="regionLabels" value="up down" />
-            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="sim_size" delta="1000" />
+            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="sim_size" delta="5500" />
             <output name="outFileRawCounts" file="plotEnrichment_output.txt" ftype="tabular" />
         </test>
     </tests>

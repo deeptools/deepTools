@@ -1,0 +1,74 @@
+name: tests_planemo
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+    contents: read
+
+env:
+    GALAXY_BRANCH: release_26.0
+
+defaults:
+    run:
+        shell: bash -l {0}
+
+jobs:
+    planemo_test:
+        name: Planemo test (${{ matrix.tool }})
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                tool:
+                    - alignmentSieve
+                    - bamCompare
+                    - bamCoverage
+                    - bamPEFragmentSize
+                    - bigwigCompare
+                    - bigwigAverage
+                    - computeGCBias
+                    - computeMatrix
+                    - computeMatrixOperations
+                    - correctGCBias
+                    - estimateReadFiltering
+                    - multiBamSummary
+                    - multiBigwigSummary
+                    - plotCorrelation
+                    - plotCoverage
+                    - plotEnrichment
+                    - plotFingerprint
+                    - plotHeatmap
+                    - plotPCA
+                    - plotProfiler
+        steps:
+            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+              with:
+                persist-credentials: false
+            - uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 # v4.0.1
+              with:
+                  miniconda-version: "latest"
+                  conda-remove-defaults: true
+                  auto-activate: true
+                  python-version: "3.12"
+                  channels: conda-forge,bioconda
+            - name: get samtools
+              run: |
+                  conda install -c conda-forge -c bioconda samtools
+            - name: pip install
+              run: |
+                  pip install .[actions]
+            - name: fix test.bw symlink
+              run: |
+                  unlink galaxy/wrapper/test-data/test.bw
+                  cp pydeeptools/deeptools/test/test_heatmapper/test.bw galaxy/wrapper/test-data/test.bw
+            - name: planemo test
+              run: |
+                  planemo test --no_dependency_resolution \
+                      --galaxy_branch ${{ env.GALAXY_BRANCH }} \
+                      --install_galaxy \
+                      galaxy/wrapper/${{ matrix.tool }}.xml
+            - name: upload test report
+              if: always()
+              uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+              with:
+                  name: "Tool test output ${{ matrix.tool }}"
+                  path: tool_test_output*
