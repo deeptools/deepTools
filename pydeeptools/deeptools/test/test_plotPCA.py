@@ -158,22 +158,21 @@ def test_plotPCA_ntop_zero_uses_all_rows():
 
 def test_plotPCA_ntop_smaller_than_samples():
     """When --ntop is below the sample count the table is truncated to the
-    number of retained components (rows)."""
-    # plot=False: the numeric table is well-defined even with 2 features.
-    data = _run_pca(["--ntop", "2"], plot=False)
-    assert data.shape == (2, 4)
+    number of retained components (rows); every row still holds one loading
+    per sample, so the plot of PC1 vs PC2 is well-defined."""
+    data = _run_pca(["--ntop", "2"])
+    assert data.shape == (2, 8)
     np.testing.assert_array_equal(data[:, 0], np.arange(1, 3))
     # First component carries all the variance for the 2-feature case.
     np.testing.assert_allclose(data[0, -1], 12.0, rtol=1e-6)
     assert abs(data[1, -1]) < 1e-6
 
 
-def test_plotPCA_ntop_below_samples_plot_errors_cleanly():
-    """Plotting with fewer retained components than samples cannot lay out the
-    scatter; the tool must exit with a clear message rather than crash with an
-    IndexError (previously a bug at correlation.py's scatter loop)."""
+def test_plotPCA_requested_PC_beyond_ntop_errors_cleanly():
+    """Asking for a component that the retained rows cannot provide must exit
+    with a clear message rather than crash with an IndexError."""
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    args = "-in {0}test_samples.npz -o {1} --ntop 2".format(TEST_DATA, plotfile.name).split()
+    args = "-in {0}test_samples.npz -o {1} --ntop 2 --PCs 1 3".format(TEST_DATA, plotfile.name).split()
     try:
         with pytest.raises(SystemExit) as exc:
             deeptools.plotPCA.main(args)
@@ -181,6 +180,25 @@ def test_plotPCA_ntop_below_samples_plot_errors_cleanly():
     finally:
         if os.path.exists(plotfile.name):
             os.remove(plotfile.name)
+
+
+def test_plotPCA_default_table_holds_sample_loadings():
+    """In the default (untransposed) layout the table row for component i is
+    the loading of every sample on PC i, i.e. row i of V^T from the SVD of the
+    standardised (ntop rows x samples) matrix: the rows are orthonormal and
+    equal, up to the per-component sign, to a numpy PCA on the same rows.
+    (The bin scores U*S, one row per selected bin, are neither.)"""
+    data = _run_pca()
+    W = data[:, 1:7]
+    np.testing.assert_allclose(W @ W.T, np.eye(6), atol=1e-6)
+
+    mat = np.load(TEST_DATA + "test_samples.npz")["matrix"].astype(float)
+    m = mat[np.argpartition(mat.var(axis=1), -500)[-500:]]
+    m = (m - m.mean(axis=0)) / m.std(axis=0)
+    _, _, Vt = np.linalg.svd(m - m.mean(axis=0), full_matrices=False)
+    # PC1 dominates and is well separated, so its loadings are stable
+    # across BLAS backends; compare it sign-invariantly.
+    np.testing.assert_allclose(_sign_fix(W[:1].T)[:, 0], _sign_fix(Vt[:1].T)[:, 0], rtol=1e-5, atol=1e-8)
 
 
 def test_plotPCA_PCs_selection_does_not_change_table():
