@@ -115,9 +115,12 @@ Building from source
 --------------------
 
 Installs from `pypi <https://pypi.org/>`_ (``pip``, ``uv``, ``pipx``) use a prebuilt wheel
-when one is available for your platform, so **no compiler is needed**. deepTools is only
-built from source when no matching wheel exists (an unsupported platform, or a git
-checkout / source distribution). In that case its Rust extension has to be compiled, which
+when one is available for your platform, so **no compiler is needed**. Prebuilt wheels are
+provided for Linux x86_64/aarch64 (glibc >= 2.28, e.g. Debian 10+/Ubuntu 18.04+/RHEL 8+ --
+built against ``manylinux_2_28``; also musllinux_1_2 wheels for musl-libc distros such as
+Alpine) and macOS (Intel + Apple Silicon). deepTools is only built from source when no
+matching wheel exists (an older glibc, an unsupported platform, or a git checkout / source
+distribution). In that case its Rust extension has to be compiled, which
 needs a build toolchain: Rust (see ``Cargo.toml``'s ``rust-version`` for the minimum
 supported version), ``maturin``, ``libclang``, ``pkg-config``, ``perl`` (to build the
 vendored OpenSSL) and the usual HTSlib system libraries (``zlib``, ``bzip2``, ``liblzma``,
