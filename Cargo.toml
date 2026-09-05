@@ -12,11 +12,11 @@ crate-type = ["cdylib"]
 [dependencies]
 openssl-sys = { version = "0.9.117", features = ["vendored"] }
 pyo3 = { version = ">= 0.28.2", features = ["extension-module"] }
+bigtools = { version = "0.5.8", default-features = false, features = ["read", "write"] }
 rust-htslib = "1.0.1"
 rayon = "1.12.0"
 tokio = "1.53.0"
 itertools = "0.15.0"
-bigtools = "0.5.8"
 flate2 = "1.1.9"
 tempfile = "3.27.0"
 ndarray = "0.17.2"
