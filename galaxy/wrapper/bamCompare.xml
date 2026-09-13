@@ -30,11 +30,7 @@
 
             --binSize $binSize
 
-            #if $scaling.method == 'SES':
-                --scaleFactorsMethod SES
-                --sampleLength $scaling.sampleLength
-                --numberOfSamples $scaling.numberOfSamples
-            #elif $scaling.method == 'readCount':
+            #if $scaling.method == 'readCount':
                 --scaleFactorsMethod readCount
             #elif $scaling.method == 'own':
                 --scaleFactors '$scaling.scaleFactor1:$scaling.scaleFactor2'
@@ -46,26 +42,26 @@
             #end if
 
             --operation $comparison.type
-            $exactScaling
 
-            #if $comparison.type in ['ratio','log2']:
+            #if $comparison.type in ['ratio','log2','reciprocal_ratio']:
                 --pseudocount $comparison.pseudocount
             #end if
 
-            #if str($region).strip() != '':
+            #if $region:
                 --region '$region'
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 #if $advancedOpt.smoothLength:
-                    --smoothLength '$advancedOpt.smoothLength'
+                    --smoothLength $advancedOpt.smoothLength
                 #end if
 
                 @ADVANCED_OPTS_READ_PROCESSING@
+                $advancedOpt.no_collapse
                 $advancedOpt.skipNAs
                 $advancedOpt.skipZeroOverZero
 
-                #if str($advancedOpt.ignoreForNormalization).strip() != '':
+                #if $advancedOpt.ignoreForNormalization:
                     --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
                 #end if
 
@@ -84,17 +80,9 @@
             <param name="method" type="select"
                 label="Method to use for scaling the largest sample to the smallest">
                 <option value="readCount" selected="true">read count</option>
-                <option value="SES">signal extraction scaling (SES), check with plotFingerprint before using it!</option>
                 <option value="own">enter own scaling factors</option>
                 <option value="None">Don't scale reads. Samples can instead be normalized using one of the normalization methods</option>
             </param>
-            <when value="SES">
-                <param argument="--sampleLength" type="integer" value="1000" min="10"
-                    label="Length in bases used to sample the genome and compute the size or scaling factors."
-                    help="The default is fine. Only change it if you know what you are doing."/>
-                <param argument="--numberOfSamples" type="integer" value="100000" min="0"
-                    label="Number of samplings taken from the genome to compute the scaling factors"/>
-            </when>
             <when value="readCount"/>
             <when value="own">
                 <expand macro="scaleFactors"/>
@@ -142,34 +130,26 @@
             </when>
         </conditional>
 
-        <expand macro="exactScaling"/>
         <param name="outFileFormat" type="select" label="Coverage file format">
             <option value="bigwig" selected="true">bigwig</option>
             <option value="bedgraph">bedgraph</option>
         </param>
         <expand macro="region_limit_operation"/>
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no"/>
-            <when value="yes">
-                <expand macro="smoothLength"/>
-                <expand macro="read_processing_options"/>
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="smoothLength"/>
+            <expand macro="read_processing_options"/>
+            <expand macro="no_collapse"/>
+            <expand macro="skipNAs"/>
+            <expand macro="skipZeroOverZero"/>
 
-                <expand macro="skipNAs"/>
-                <expand macro="skipZeroOverZero"/>
-
-                <param argument="--ignoreForNormalization" type="text" value="" size="50"
-                    label="regions that should be excluded for calculating the scaling factor"
-                    help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.
-                        For example, if you know of copy number variations between samples then you may want to exclude these.
-                        Another typical example is the difference in chromosome X copies between males and females in many species.
-                        Example inputs are chrX,chrY,chr3 or chr10:12220-128932"/>
-                <expand macro="blacklist"/>
-            </when>
-        </conditional>
+            <param argument="--ignoreForNormalization" type="text" value="" size="50" optional="true"
+                label="regions that should be excluded for calculating the scaling factor"
+                help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.
+                    For example, if you know of copy number variations between samples then you may want to exclude these.
+                    Another typical example is the difference in chromosome X copies between males and females in many species.
+                    Example inputs are chrX,chrY,chr3 or chr10:12220-128932"/>
+            <expand macro="blacklist"/>
+        </expand>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
@@ -183,19 +163,20 @@
         <test expect_num_outputs="1">
             <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>
-            <param name="showAdvancedOpt" value="no"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
             <param name="outFileFormat" value="bedgraph"/>
             <param name="binSize" value="5"/>
-            <param name="type" value="ratio"/>
+            <param name="comparison|type" value="ratio"/>
             <output name="outFileName" file="bamCompare_result1.bg" ftype="bedgraph"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bigwig"/>
             <param name="binSize" value="10"/>
-            <param name="type" value="ratio"/>
+            <param name="comparison|type" value="ratio"/>
+            <param name="advancedOpt|no_collapse" value="false"/>
             <output name="outFileName" file="bamCompare_result2.bw" ftype="bigwig"/>
         </test>
         <!-- Test with BAM and CRAM file as input
@@ -232,11 +213,12 @@
         <test expect_num_outputs="1">
             <param name="bamFile1" value="testA.bam" ftype="bam"/>
             <param name="bamFile2" value="testB.bam" ftype="bam"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bedgraph"/>
             <param name="binSize" value="10"/>
-            <param name="type" value="ratio"/>
-            <param name="pseudocount" value="1 1"/>
+            <param name="advancedOpt|no_collapse" value="false"/>
+            <param name="comparison|type" value="ratio"/>
+            <param name="comparison|pseudocount" value="1 1"/>
             <output name="outFileName" ftype="bedgraph">
                 <assert_contents>
                     <has_text_matching expression="3R\t0\t50\t1"/>
@@ -250,16 +232,16 @@
         <test expect_num_outputs="1">
             <param name="bamFile1" value="testA.bam" ftype="bam"/>
             <param name="bamFile2" value="testB.bam" ftype="bam"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bedgraph"/>
             <param name="binSize" value="10"/>
-            <param name="type" value="ratio"/>
-            <param name="skipZeroOverZero" value="--skipZeroOverZero"/>
+            <param name="comparison|type" value="ratio"/>
+            <param name="advancedOpt|skipZeroOverZero" value="--skipZeroOverZero"/>
             <output name="outFileName" ftype="bedgraph">
                 <assert_contents>
-                    <has_text_matching expression="3R\t50\t100\t0.67"/>
-                    <has_text_matching expression="3R\t100\t150\t1.33"/>
-                    <has_text_matching expression="3R\t150\t200\t1"/>
+                    <has_text_matching expression="3R\t90\t100\t0.67"/>
+                    <has_text_matching expression="3R\t140\t150\t1.33"/>
+                    <has_text_matching expression="3R\t190\t200\t1"/>
                 </assert_contents>
             </output>
         </test>
@@ -267,11 +249,11 @@
         <test expect_num_outputs="1">
             <param name="bamFile1" value="testA.bam" ftype="bam"/>
             <param name="bamFile2" value="testB.bam" ftype="bam"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="binSize" value="10"/>
-            <param name="type" value="ratio"/>
-            <param name="skipNAs" value="true"/>
+            <param name="binSize" value="50"/>
+            <param name="comparison|type" value="ratio"/>
+            <param name="advancedOpt|skipNAs" value="true"/>
             <output name="outFileName" ftype="bedgraph">
                 <assert_contents>
                     <has_text_matching expression="3R\t100\t150\t1.33"/>

@@ -14,7 +14,7 @@
             --outFileName "$outFileName"
 
             #if $output.showOutputSettings == "yes"
-                --plotFileFormat $output.outFileFormat
+                --plotFileFormat '$output.outFileFormat'
 
                 #if $output.dpi:
                     --dpi '$output.dpi'
@@ -27,162 +27,77 @@
                 --plotFileFormat 'png'
             #end if
 
-            #if $scaleRegions.showScaleRegionsOpt == "yes":
-                --startLabel '$scaleRegions.startLabel'
-                --endLabel '$scaleRegions.endLabel'
-            #end if
-
             #if $advancedOpt.showAdvancedOpt == "yes":
                 #if $advancedOpt.averageType:
                     --averageType '$advancedOpt.averageType'
                 #end if
-                --plotHeight $advancedOpt.plotHeight
-                --plotWidth $advancedOpt.plotWidth
-                --plotType $advancedOpt.plotType
-                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel $advancedOpt.samplesLabel
-                #end if
-
-                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel $advancedOpt.regionsLabel
-                #end if
-
-                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle).strip() != "":
-                    --plotTitle '$advancedOpt.plotTitle'
-                #end if
+                @PLOTWIDTHHEIGHT@
+                --plotType '$advancedOpt.plotType'
 
                 #if str($advancedOpt.colors).strip() != "":
                     --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
                 #end if
 
-                --legendLocation '$advancedOpt.legendLocation'
-
-                --labelRotation '$advancedOpt.labelRotation'
-
-                $advancedOpt.perGroup
-
-                #if str($advancedOpt.yMin):
-                    --yMin $advancedOpt.yMin
-                #end if
-                #if str($advancedOpt.yMax):
-                    --yMax $advancedOpt.yMax
-                #end if
+                --numPlotsPerRow $advancedOpt.numPlotsPerRow
 
                 #if $advancedOpt.outFileNameData:
                     --outFileNameData '$output_outFileNameData'
                 #end if
 
-                @KMEANS_CLUSTERING@
+                @HEATMAP_PROFILER_PARAMS@
 
             #end if
 ]]>
     </command>
     <inputs>
-        <param argument="--matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
-        <conditional name="scaleRegions">
-            <param name="showScaleRegionsOpt" type="select" label="The input matrix was computed in scale-regions mode">
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <param argument="--startLabel" type="text" value="TSS" size="10"
-                    label="Label for the region start"
-                    help ="Label shown in the plot
-                    for the start of the region. Default is TSS (transcription start site),
-                    but could be changed to anything, e.g. &quot;peak start&quot;." />
-                <param argument="--endLabel" type="text" value="TES" size="10"
-                    label="Label for the region end"
-                    help="Label shown in the plot for the region end. Default is TES (transcription end site)."/>
-            </when>
-        </conditional>
+        <expand macro="matrixFile" />
 
         <expand macro="input_graphic_output_settings">
             <expand macro="input_image_file_format" />
             <expand macro="output_dpi" />
         </expand>
 
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="heatmap_profiler_params" />
+            <param name="averageType" type="select" label="Define the type of statistic that should be used for the profile.">
+                <option value="mean" selected="true">mean</option>
+                <option value="median">median</option>
+                <option value="min">min</option>
+                <option value="max">max</option>
+                <option value="sum">sum</option>
+                <option value="std">std</option>
             </param>
-            <when value="no" />
-            <when value="yes">
-                <param name="averageType" type="select" label="Define the type of statistic that should be used for the profile.">
-                    <option value="mean" selected="true">mean</option>
-                    <option value="median">median</option>
-                    <option value="min">min</option>
-                    <option value="max">max</option>
-                    <option value="sum">sum</option>
-                    <option value="std">std</option>
-                </param>
-                <param argument="--plotHeight" type="integer" value="5" min="3"
-                    label="Plot height"
-                    help="Height in cm. The default for the plot height is 5 centimeters. The minimum value is 3 cm." />
+            <expand macro="plotWidthHeight" PLOTWIDTH="7.0" PLOTHEIGHT="11.0" />
 
-                <param argument="--plotWidth" type="integer" value="11" min="1"
-                    label="Plot width"
-                    help="Width in cm. The default value is 11 centimeters. The minimum value is 1 cm." />
+            <param argument="--plotType" type="select" label="Plot type"
+                help="The &quot;lines&quot; option will
+                plot the profile line based on the average type selected. The &quot;fill&quot;
+                option fills the region between zero and the profile curve. The filled in color is
+                semi-transparent. The &quot;add standard error&quot;
+                option colors the region between the profile and the standard error of the data.
+                As in the case of fill, a semi-transparent color is used.
+                The option &quot;overlapped_lines&quot; plots each region's value, one on top of
+                the other.">
+                <option value="lines" selected="true">lines</option>
+                <option value="fill">fill</option>
+                <option value="se">add standard error</option>
+                <option value="std">add standard deviation</option>
+                <option value="overlapped_lines">overlapped lines</option>
+                <option value="heatmap">heatmap</option>
+            </param>
+            <param argument="--colors" type="text" value="" size="40"
+                label="List of colors to use for the plotted lines"
+                help="Color names and html hex strings (e.g. #eeff22) are accepted.
+                The color names should be separated by spaces. (--colors red blue green)">
+                <validator type="expression"
+                    message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
+            </param>
+            <param argument="--numPlotsPerRow" type="integer" value="8" min="1"
+                label="Number of plots per row" help="" />
 
-                <param argument="--plotType" type="select" label="Plot type"
-                    help="The &quot;lines&quot; option will
-                    plot the profile line based on the average type selected. The &quot;fill&quot;
-                    option fills the region between zero and the profile curve. The filled in color is
-                    semi-transparent. The &quot;add standard error&quot;
-                    option colors the region between the profile and the standard error of the data.
-                    As in the case of fill, a semi-transparent color is used.
-                    The option &quot;overlapped_lines&quot; plots each region's value, one on top of
-                    the other.">
-                    <option value="lines" selected="true">lines</option>
-                    <option value="fill">fill</option>
-                    <option value="se">add standard error</option>
-                    <option value="std">add standard deviation</option>
-                    <option value="overlapped_lines">overlapped lines</option>
-                    <option value="heatmap">heatmap</option>
-                </param>
-                <param argument="--samplesLabel" type="text" size="30"
-                    label="Labels for the samples (each bigwig) plotted"
-                    help="The default is to use the file name of the sample. The sample labels should be separated by
-                    spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;">
-                    <sanitizer>
-                        <valid initial="string.printable">
-                        </valid>
-                    </sanitizer>
-                </param>
-                <param argument="--regionsLabel" type="text" size="30"
-                    label="Labels for the regions plotted in the heatmap"
-                    help="If more than one region is being plotted a list of labels separated by space is required.
-                          If a label itself contains a space, then quotes are needed.
-                          For example, label_1 &quot;label 2&quot;" />
-
-                <expand macro="plotTitle" />
-                <param argument="--colors" type="text" value="" size="40"
-                    label="List of colors to use for the plotted lines"
-                    help="Color names and html hex strings (e.g. #eeff22) are accepted.
-                    The color names should be separated by spaces. (--colors red blue green)">
-                    <validator type="expression"
-                        message="Only numbers, digits, '#' and spaces are allowed.">all(c in ' #abcdefghijklmnopqrstuvwxyz0123456789' for c in value)</validator>
-                </param>
-                <expand macro="legendLocation" />
-                <expand macro="labelRotation" />
-
-                <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
-                    label="Make one plot per group of regions"
-                    help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions. " />
-
-                <param argument="--outFileNameData" type="boolean" label="Save the data underlying the average profile"
-                    help="This option will create an additional output file." />
-
-                <param argument="--yMin" type="float" value="" size="3" optional="true"
-                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values"/>
-                <param argument="--yMax" type="float" value="" size="3" optional="true"
-                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" />
-
-                <expand macro="kmeans_clustering" />
-
-            </when>
-        </conditional>
+            <param argument="--outFileNameData" type="boolean" label="Save the data underlying the average profile"
+                help="This option will create an additional output file." />
+        </expand>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format" />
@@ -194,17 +109,20 @@
 
     </outputs>
     <tests>
-        <test expect_num_outputs="1">
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileName" file="profiler_result1.png" ftype="png" compare="sim_size" delta="4000" />
-        </test>
         <test expect_num_outputs="2">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="showScaleRegionsOpt" value="yes" />
-            <param name="outFileNameData" value="True" />
-            <output name="outFileName" file="profiler_result2.png" ftype="png" compare="sim_size" delta="4000" />
-            <output name="output_outFileNameData" file="profiler_result2.tabular" ftype="tabular" />
+            <param name="advancedOpt|showAdvancedOpt" value="yes" />
+            <param name="advancedOpt|outFileNameData" value="True" />
+            <param name="advancedOpt|startLabel" value="TSS" />
+            <param name="advancedOpt|endLabel" value="TES" />
+            <output name="outFileName" file="profiler_result1.png" ftype="png" compare="image_diff" eps="0.1" />
+            <output name="output_outFileNameData" file="profiler_result1.tabular" ftype="tabular" />
+        </test>
+        <test expect_num_outputs="1">
+            <param name="matrixFile" value="computeMatrix_result2.gz" ftype="deeptools_compute_matrix_archive" />
+            <param name="advancedOpt|showAdvancedOpt" value="yes" />
+            <param name="advancedOpt|refPointLabel" value="REF" />
+            <output name="outFileName" file="profiler_result2.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
     </tests>
     <help>

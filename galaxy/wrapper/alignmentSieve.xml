@@ -63,7 +63,7 @@
             --filteredOutReads '$outFileFiltered'
         #end if
 
-        #if str($shift) != "":
+        #if $shift:
             #set shifts = " ".join(["'{}'".format(x) for x in $shift.split(" ")])
             --shift $shifts
         #elif $ATACshift:
@@ -72,7 +72,7 @@
         #if $BED:
             --BED
             -o '$outFile'
-        #elif str($shift) != "" or $ATACshift:
+        #elif $shift or $ATACshift:
             -o foo.bam &&
             samtools sort -o '$outFile' -T foo.tmp -@ "\${GALAXY_SLOTS:-4}" foo.bam &&
             rm foo.bam
@@ -85,7 +85,7 @@
     <inputs>
         <param name="bamfile" format="bam,cram" type="data" label="BAM file"/>
         <param argument="--BED" type="boolean" label="Output in BEDPE format?" help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format."/>
-        <param argument="--shift" type="text" label="Amount to shift fragments" value=""
+        <param argument="--shift" type="text" label="Amount to shift fragments" value="" optional="true" size="30"
             help="Shift the left and right end of a fragment. A positive
                   value shift an end to the right (on the + strand) and
                   a negative value shifts a fragment to the left. Either

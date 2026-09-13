@@ -24,7 +24,7 @@
 
             --plotFileFormat '$outFileFormat'
 
-            #if str($region).strip() != "":
+            #if $region:
                 --region '$region'
             #end if
 
@@ -33,15 +33,11 @@
                     --attributeKey '$advancedOpt.attributeKey'
                 #end if
 
-                #if $advancedOpt.labels and str($advancedOpt.labels).strip() != "":
-                    --labels $advancedOpt.labels
+                #if $advancedOpt.labels:
+                    --labels '$advancedOpt.labels'
                 #end if
 
-                #if $advancedOpt.regionLabels and str($advancedOpt.regionLabels).strip() != "":
-                    --regionLabels $advancedOpt.regionLabels
-                #end if
-
-                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
+                #if $advancedOpt.plotTitle:
                     --plotTitle '$advancedOpt.plotTitle'
                 #end if
 
@@ -49,26 +45,22 @@
 
                 $advancedOpt.variableScales
 
-                $advancedOpt.perSample
+                @PLOTWIDTHHEIGHT@
 
-                $advancedOpt.variableScales
-
-                --plotWidth '$advancedOpt.plotWidth'
-
-                --plotHeight '$advancedOpt.plotHeight'
-
-                #if str($advancedOpt.colors).strip() != "":
+                #if $advancedOpt.colors:
                     --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
                 #end if
 
-                --numPlotsPerRow '$advancedOpt.numPlotsPerRow'
+                --numPlotsPerRow $advancedOpt.numPlotsPerRow
 
-                --alpha '$advancedOpt.alpha'
+                --alpha $advancedOpt.alpha
+
+                $advancedOpt.ggplot
 
                 @ADVANCED_OPTS_READ_PROCESSING@
 
                 #if $advancedOpt.Offset:
-                    --Offset $advancedOpt.Offset
+                    --Offset '$advancedOpt.Offset'
                 #end if
 
                 @blacklist@
@@ -93,13 +85,7 @@
                 attribute key. For example, the gene_biotype. Note that 'None' is used for BED files
                 or entries where the attributeKey is not found." />
 
-            <param argument="--plotHeight" type="integer" value="20" min="3"
-                label="Plot height"
-                help="Height in cm. The default for the plot height is 20 centimeters. The minimum value is 3 cm." />
-
-            <param argument="--plotWidth" type="integer" value="20" min="1"
-                label="Plot width"
-                help="Width in cm. The default value is 20 centimeters. The minimum value is 1 cm." />
+            <expand macro="plotWidthHeight" PLOTWIDTH="20" PLOTHEIGHT="20" />
 
             <param argument="--labels" type="text" size="30"
                 label="Labels for the samples (each BAM file) plotted"
@@ -141,13 +127,15 @@
                 label="Number of plots/row"
                 help="" />
 
+            <expand macro="ggplot" />
+
             <expand macro="read_processing_options" />
 
             <param argument="--keepExons" type="boolean" truevalue="--keepExons" falsevalue=""
                 label="Include BED12 exons"
                 help="Only for BED12 files, include columns 10-12 rather than just 2 and 3." />
 
-            <param argument="--Offset" type="text"  value="" optional="True"
+            <param argument="--Offset" type="text"  value="" optional="true"
                 label="Offset inside each alignment to use for the signal location."
                 help="Uses this offset inside of each read as the signal. This is useful in
                     cases like RiboSeq or GROseq, where only the 12th, 15th or 1st base aligned
@@ -162,10 +150,9 @@
                     is equivalent to trimming 4 bases from the 5-prime end of alignments." />
 
             <expand macro="blacklist" />
-
         </expand>
 
-        <param argument="--outRawCounts" type="boolean" label="Save percentages to a file" help=""/>
+        <expand macro="outRawCounts" />
 
     </inputs>
     <outputs>
@@ -176,13 +163,14 @@
     </outputs>
     <tests>
         <test expect_num_outputs="2">
-            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="multibam_conditional|orderMatters" value="No" />
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="BED" value="multiBamSummary_regions.bed,multiBamSummary_regions.bed" ftype="bed" />
             <param name="outRawCounts" value="true" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="minMappingQuality" value="0" />
-            <param name="regionLabels" value="up down" />
-            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="sim_size" delta="5500" />
+            <param name="advancedOpt|showAdvancedOpt" value="yes" />
+            <param name="advancedOpt|minMappingQuality" value="0" />
+            <param name="advancedOpt|regionLabels" value="up down" />
+            <output name="outFileName" file="plotEnrichment_output.png" ftype="png" compare="image_diff" eps="0.1" />
             <output name="outFileRawCounts" file="plotEnrichment_output.txt" ftype="tabular" />
         </test>
     </tests>

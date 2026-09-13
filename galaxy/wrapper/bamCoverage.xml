@@ -41,7 +41,6 @@
             #if str($region).strip() != '':
                 --region '$region'
             #end if
-            $exactScaling
 
             #if $advancedOpt.showAdvancedOpt == "yes":
                 #if str($advancedOpt.scaleFactor).strip() != '':
@@ -96,58 +95,50 @@
             <option value="bigwig" selected="true">bigwig</option>
             <option value="bedgraph">bedgraph</option>
         </param>
-        <expand macro="exactScaling"/>
         <expand macro="region_limit_operation"/>
 
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="scaleFactor"/>
+            <expand macro="smoothLength"/>
+
+            <param argument="ignoreForNormalization" type="text" value=""
+                label="Regions that should be excluded for normalization"
+                help="A list of chromosome names separated by spaces
+                    containing those chromosomes that should be excluded
+                    during normalization. This is useful when
+                    considering samples with unequal coverage across
+                    chromosomes, like male and female samples. Example: chrX chrM"/>
+
+            <expand macro="skipNAs"/>
+            <expand macro="read_processing_options"/>
+
+            <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
+                label="Determine nucleosome positions from MNase-seq data"
+                help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data. By default, only fragments between 130 and 200 bases will be used, though this can be changed with the --minFragmentLength and --maxFragmentLength options."/>
+
+            <param argument="--Offset" type="text"  value="" optional="true"
+                label="Offset inside each alignment to use for the signal location."
+                help="Uses this offset inside of each read as the signal. This is useful in
+                    cases like RiboSeq or GROseq, where only the 12th, 15th or 1st base aligned
+                    should be used to denote where the signal is (rather than the span of the
+                    whole alignment). This can be paired with the --filterRNAstrand option. Note
+                    that negative values indicate offsets from the end of each read. A value of
+                    1 indicates the first base of the alignment (taking alignment orientation
+                    into account). Likewise, a value of -1 is the last base of the alignment. An
+                    offset of 0 is not permitted. If two values (separated by spaces) are specified, then they will be
+                    used to specify a range of positions. Note that specifying something like
+                    --Offset 5 -1 will result in the 5th through last position being used, which
+                    is equivalent to trimming 4 bases from the 5-prime end of alignments."/>
+
+            <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
+                help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
+                        Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
                 <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
+                <option value="forward">forward</option>
+                <option value="reverse">reverse</option>
             </param>
-            <when value="no"/>
-            <when value="yes">
-                <expand macro="scaleFactor"/>
-                <expand macro="smoothLength"/>
-
-                <param argument="ignoreForNormalization" type="text" value=""
-                    label="Regions that should be excluded for normalization"
-                    help="A list of chromosome names separated by spaces
-                        containing those chromosomes that should be excluded
-                        during normalization. This is useful when
-                        considering samples with unequal coverage across
-                        chromosomes, like male and female samples. Example: chrX chrM"/>
-
-                <expand macro="skipNAs"/>
-                <expand macro="read_processing_options"/>
-
-                <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
-                    label="Determine nucleosome positions from MNase-seq data"
-                    help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data. By default, only fragments between 130 and 200 bases will be used, though this can be changed with the --minFragmentLength and --maxFragmentLength options."/>
-
-                <param argument="--Offset" type="text"  value="" optional="True"
-                    label="Offset inside each alignment to use for the signal location."
-                    help="Uses this offset inside of each read as the signal. This is useful in
-                        cases like RiboSeq or GROseq, where only the 12th, 15th or 1st base aligned
-                        should be used to denote where the signal is (rather than the span of the
-                        whole alignment). This can be paired with the --filterRNAstrand option. Note
-                        that negative values indicate offsets from the end of each read. A value of
-                        1 indicates the first base of the alignment (taking alignment orientation
-                        into account). Likewise, a value of -1 is the last base of the alignment. An
-                        offset of 0 is not permitted. If two values (separated by spaces) are specified, then they will be
-                        used to specify a range of positions. Note that specifying something like
-                        --Offset 5 -1 will result in the 5th through last position being used, which
-                        is equivalent to trimming 4 bases from the 5-prime end of alignments."/>
-
-                <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
-                    help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
-                          Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
-                    <option value="no" selected="true">no</option>
-                    <option value="forward">forward</option>
-                    <option value="reverse">reverse</option>
-                </param>
-                <expand macro="blacklist"/>
-            </when>
-        </conditional>
+            <expand macro="blacklist"/>
+        </expand>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
@@ -162,8 +153,8 @@
         <test expect_num_outputs="1">
             <param name="bamInput" value="testA.bam" ftype="bam"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="showAdvancedOpt" value="no"/>
-            <param name="type" value="no"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
+            <param name="scaling|type" value="no"/>
             <output name="outFileName" ftype="bedgraph">
                 <assert_contents>
                     <has_text_matching expression="3R\t0\t100\t0"/>
@@ -174,19 +165,16 @@
             </output>
         </test>
 
-        <!-- Test skipNAs for bamCoverage-->
+<!-- Test skipNAs for bamCoverage-->
         <test expect_num_outputs="1">
             <param name="bamInput" value="testA.bam" ftype="bam"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="showAdvancedOpt" value="no"/>
-            <param name="type" value="no"/>
-            <param name="skipNAs" value="true"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|skipNAs" value="true"/>
             <output name="outFileName" ftype="bedgraph">
                 <assert_contents>
-                    <has_text_matching expression="3R\t0\t100\t0"/>
-                    <has_text_matching expression="3R\t100\t200\t1"/>
-                    <has_text_matching expression="chr_cigar\t0\t50\t1"/>
-                    <has_text_matching expression="chr_cigar\t50\t200\t0"/>
+                    <has_text_matching expression="3R\t100\t200\t17903410"/>
+                    <has_text_matching expression="chr_cigar\t0\t50\t17903410"/>
                 </assert_contents>
             </output>
         </test>
@@ -194,78 +182,78 @@
         <test expect_num_outputs="1">
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="showAdvancedOpt" value="no"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
             <param name="binSize" value="10"/>
-            <param name="type" value="no"/>
+            <param name="scaling|type" value="no"/>
             <output name="outFileName" file="bamCoverage_result1.bw" ftype="bigwig"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="showAdvancedOpt" value="no"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="2451960000"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize" value="2451960000"/>
             <param name="binSize" value="10"/>
             <output name="outFileName" file="bamCoverage_result2.bw" ftype="bigwig"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="showAdvancedOpt" value="no"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="2451960000"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize" value="2451960000"/>
             <param name="binSize" value="10"/>
             <output name="outFileName" file="bamCoverage_result3.bg" ftype="bedgraph"/>
         </test>
         <test>
             <param name="bamInput" value="phiX.bam" ftype="bam"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="showAdvancedOpt" value="no"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="2451960000"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize" value="2451960000"/>
             <param name="binSize" value="10"/>
             <output name="outFileName" file="bamCoverage_result4.bw" ftype="bigwig"/>
         </test>
         <test>
             <param name="bamInput" value="phiX.bam" ftype="bam"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="showAdvancedOpt" value="yes"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="2451960000"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize" value="2451960000"/>
             <param name="binSize" value="10"/>
             <output name="outFileName" file="bamCoverage_result4.bg" ftype="bedgraph"/>
         </test>
         <test>
             <param name="bamInput" value="phiX.bam" ftype="bam"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="showAdvancedOpt" value="yes"/>
-            <param name="filterRNAstrand" value="reverse"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="2451960000"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|filterRNAstrand" value="reverse"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize" value="2451960000"/>
             <param name="binSize" value="10"/>
             <output name="outFileName" file="bamCoverage_result5.bw" ftype="bigwig"/>
         </test>
         <test>
             <param name="bamInput" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="binSize" value="10"/>
-            <param name="Offset" value="-4 -1"/>
-            <param name="doExtend" value="yes"/>
-            <param name="minMappingQuality" value="0"/>
-            <param name="type" value="no"/>
+            <param name="advancedOpt|Offset" value="-4 -1"/>
+            <param name="advancedOpt|doExtendCustom|doExtend" value="yes"/>
+            <param name="advancedOpt|minMappingQuality" value="0"/>
+            <param name="scaling|type" value="no"/>
             <output name="outFileName" file="bamCoverage_result6.bw" ftype="bigwig"/>
         </test>
 
         <!-- Test bamCoverage with filter blacklist-->
         <test expect_num_outputs="1">
             <param name="bamInput" value="coverage_filtering.bam" ftype="bam"/>
-            <param name="blackListFileName" value="coverage_filtering.blacklist.bed"/>
+            <param name="advancedOpt|blackListFileName" value="coverage_filtering.blacklist.bed"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="showAdvancedOpt" value="yes"/>
-            <param name="type" value="1x"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="1400"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
+            <param name="scaling|type" value="1x"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="scaling|effectiveGenomeSize|effectiveGenomeSize" value="1400"/>
             <output name="outFileName" file="coverage_filtered.bg" ftype="bedgraph"></output>
         </test>
     </tests>

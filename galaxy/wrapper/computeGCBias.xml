@@ -17,7 +17,7 @@
         @BINARY@
             @THREADS@
             --bamfile local_bamInput.bam
-            --GCbiasFrequenciesFile $outFileName
+            --GCbiasFrequenciesFile '$outFileName'
 
             #if $fragmentLength != "":
                 --fragmentLength $fragmentLength
@@ -31,23 +31,23 @@
                 --effectiveGenomeSize $effectiveGenomeSize.effectiveGenomeSize_opt
             #end if
 
-            #if str($region).strip() != '':
+            #if $region:
                 --region '$region'
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
-                --sampleSize '$advancedOpt.sampleSize'
-                --regionSize '$advancedOpt.regionSize'
+                --sampleSize $advancedOpt.sampleSize
+                --regionSize $advancedOpt.regionSize
 
                 #if $advancedOpt.extraSampling:
-                    --extraSampling $advancedOpt.extraSampling
+                    --extraSampling '$advancedOpt.extraSampling'
                 #end if
 
                 @blacklist@
             #end if
 
-            #if str($image_format) != 'none':
-                --biasPlot $outImageName
+            #if $image_format != 'none':
+                --biasPlot '$outImageName'
                 --plotFileFormat $image_format
             #end if
 ]]>
@@ -60,28 +60,21 @@
         <expand macro="effectiveGenomeSize"/>
         <expand macro="fragmentLength"/>
         <expand macro="region_limit_operation"/>
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no"/>
-            <when value="yes">
-                <param name="sampleSize" type="integer" value="50000000" min="1"
-                    label="Number of sampling points to consider" help="(--sampleSize)"/>
-                <param name="regionSize" type="integer" value="300" min="1"
-                    label="Region size"
-                    help ="To plot the reads per GC over a region, the size of the region is
-                    required (see below for more details about the method). By default, the bin size
-                    is set to 300 bases, which is close to the standard fragment size of many sequencing
-                    applications. However, if the depth of sequencing is low, a larger bin size will
-                    be required, otherwise many bins will not overlap with any read. (--regionSize)"/>
-                <param name="extraSampling" type="data" format="bed" optional="true"
-                    label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
-                    help="(--extraSampling)"/>
-                <expand macro="blacklist"/>
-            </when>
-        </conditional>
+        <expand macro="advancedOpt_scaffold">
+            <param name="sampleSize" type="integer" value="50000000" min="1"
+                label="Number of sampling points to consider" help="(--sampleSize)"/>
+            <param name="regionSize" type="integer" value="300" min="1"
+                label="Region size"
+                help ="To plot the reads per GC over a region, the size of the region is
+                required (see below for more details about the method). By default, the bin size
+                is set to 300 bases, which is close to the standard fragment size of many sequencing
+                applications. However, if the depth of sequencing is low, a larger bin size will
+                be required, otherwise many bins will not overlap with any read. (--regionSize)"/>
+            <param name="extraSampling" type="data" format="bed" optional="true"
+                label="BED file containing genomic regions for which extra sampling is required because they are underrepresented in the genome"
+                help="(--extraSampling)"/>
+            <expand macro="blacklist"/>
+        </expand>
         <param name="image_format" type="select"
             label="GC bias plot"
             help="If given, a diagnostic image summarizing the GC bias found on the sample will be created. (--plotFileFormat)">
@@ -90,7 +83,6 @@
             <option value="pdf">Image in pdf format</option>
             <option value="svg">Image in svg format</option>
             <option value="eps">Image in eps format</option>
-            <option value="plotly">HTML page rendered with plotly</option>
         </param>
     </inputs>
     <outputs>
@@ -105,7 +97,6 @@
                 <when input="image_format" value="pdf" format="pdf"/>
                 <when input="image_format" value="svg" format="svg"/>
                 <when input="image_format" value="eps" format="eps"/>
-                <when input="image_format" value="plotly" format="html"/>
             </change_format>
         </data>
     </outputs>
@@ -113,13 +104,13 @@
         <test expect_num_outputs="1">
             <param name="bamInput" value="paired_chr2L.bam" ftype="bam"/>
             <param name="image_format" value="png"/>
-            <param name="showAdvancedOpt" value="yes"/>
-            <param name="regionSize" value="1"/>
-            <param name="ref_source" value="history"/>
-            <param name="input1" value="sequence.2bit"/>
-            <param name="sampleSize" value="10"/>
-            <param name="effectiveGenomeSize_opt" value="specific"/>
-            <param name="effectiveGenomeSize" value="10050"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|regionSize" value="1"/>
+            <param name="source|ref_source" value="history"/>
+            <param name="source|input1" value="sequence.2bit"/>
+            <param name="advancedOpt|sampleSize" value="10"/>
+            <param name="effectiveGenomeSize|effectiveGenomeSize_opt" value="specific"/>
+            <param name="effectiveGenomeSize|effectiveGenomeSize" value="10050"/>
             <param name="region" value="chr2L"/>
             <param name="image_format" value="none"/>
             <param name="fragmentLength" value="300"/>

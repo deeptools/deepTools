@@ -28,6 +28,7 @@
             #else
                 --plotFileFormat 'png'
             #end if
+            --interpolationMethod '$interpolationMethod'
 
             #if $advancedOpt.showAdvancedOpt == "yes"
                 #if $advancedOpt.sortRegions:
@@ -60,29 +61,20 @@
                     --colorMap #echo " ".join($colorMap)#
                 #end if
 
-                --alpha '$advancedOpt.alpha'
-                #if str($advancedOpt.colorList).strip() != "":
-                    --colorList $advancedOpt.colorList
+                --alpha $advancedOpt.alpha
+                #if $advancedOpt.colorList:
+                    --colorList '$advancedOpt.colorList'
                 #end if
 
-                #if str($advancedOpt.zMin).strip() != "":
+                #if $advancedOpt.zMin:
                     --zMin $advancedOpt.zMin
                 #end if
-                #if str($advancedOpt.zMax).strip() != "":
+                #if $advancedOpt.zMax:
                     --zMax $advancedOpt.zMax
                 #end if
 
-                #if str($advancedOpt.yMin).strip() != "":
-                    --yMin $advancedOpt.yMin
-                #end if
-                #if str($advancedOpt.yMax).strip() != "":
-                    --yMax $advancedOpt.yMax
-                #end if
-                #if str($advancedOpt.sortUsingSamples).strip() != "":
-                    --sortUsingSamples $advancedOpt.sortUsingSamples
-                #end if
-                #if str($advancedOpt.clusterUsingSamples).strip() != "":
-                    --clusterUsingSamples $advancedOpt.clusterUsingSamples
+                #if $advancedOpt.sortUsingSamples:
+                    --sortUsingSamples '$advancedOpt.sortUsingSamples'
                 #end if
 
                 --xAxisLabel '$advancedOpt.xAxisLabel'
@@ -91,171 +83,95 @@
                 --heatmapWidth $advancedOpt.heatmapWidth
                 --heatmapHeight $advancedOpt.heatmapHeight
 
+                $advancedOpt.boxAroundHeatmaps
                 --whatToShow '$advancedOpt.whatToShow'
 
-                --startLabel '$advancedOpt.startLabel'
-                --endLabel '$advancedOpt.endLabel'
-
-                --refPointLabel '$advancedOpt.referencePointLabel'
-
-                #if $advancedOpt.samplesLabel and str($advancedOpt.samplesLabel).strip() != "":
-                    --samplesLabel $advancedOpt.samplesLabel
-                #end if
-
-                #if $advancedOpt.regionsLabel and str($advancedOpt.regionsLabel).strip() != "":
-                    --regionsLabel $advancedOpt.regionsLabel
-                #end if
-
-                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
-                    --plotTitle '$advancedOpt.plotTitle'
-                #end if
-
-                --legendLocation '$advancedOpt.legendLocation'
-
-                --labelRotation '$advancedOpt.labelRotation'
-
-                $advancedOpt.perGroup
-
-                @KMEANS_CLUSTERING@
-
+                @HEATMAP_PROFILER_PARAMS@
             #end if
 ]]>
     </command>
     <inputs>
-        <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data"
-               label="Matrix file from the computeMatrix tool" help=""/>
+        <expand macro="matrixFile" />
 
         <expand macro="input_graphic_output_settings">
             <expand macro="input_image_file_format" />
             <expand macro="output_dpi" />
             <expand macro="input_save_matrix_values" />
         </expand>
-
-        <conditional name="advancedOpt" >
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
+        <param argument="--interpolationMethod" type="select" label="Interpolation method for heatmap"
+            help="By default, plotHeatmap uses the method `nearest` if the number of columns is 1000 or less. See https://matplotlib.org/examples/images_contours_and_fields/interpolation_methods.html more info." >
+            <option value="auto" selected="true">auto</option>
+            <option value="nearest">nearest</option>
+            <option value="bilinear">bilinear</option>
+            <option value="bicubic">bicubic</option>
+            <option value="gaussian">gaussian</option>
+        </param>
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="sortRegions" />
+            <expand macro="sortUsing" />
+            <expand macro="sortUsingSamples" />
+            <param argument="--linesAtTickMarks" type="boolean" truevalue="--linesAtTickMarks" falsevalue=""
+                label="Draw dashed lines in heatmap above all tick marks?" />
+            <param argument="--averageTypeSummaryPlot" type="select"
+                label="Type of statistic that should be plotted in the summary image above the heatmap"
+                help="">
+                <option value="mean" selected="true">mean</option>
+                <option value="median">median</option>
+                <option value="min">min</option>
+                <option value="max">max</option>
+                <option value="sum">sum</option>
+                <option value="std">std</option>
             </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="sortRegions" />
-                <expand macro="sortUsing" />
-                <param argument="--sortUsingSamples" type="text"
-                    label="List of samples to be used for sorting"
-                    help="List of sample numbers (order as in matrix), which are used by --sortUsing for sorting.
-                    If no value is set, it uses all samples. Example: 1 3 (space separated!)">
-                    <sanitizer>
-                        <valid initial="string.printable">
-                            <add value=" "/>
-                        </valid>
-                    </sanitizer>
-                </param>
-                <param argument="--linesAtTickMarks" type="boolean" truevalue="--linesAtTickMarks" falsevalue=""
-                    label="Draw dashed lines in heatmap above all tick marks?" />
-                <param argument="--averageTypeSummaryPlot" type="select"
-                    label="Type of statistic that should be plotted in the summary image above the heatmap"
-                    help="">
-                    <option value="mean" selected="true">mean</option>
-                    <option value="median">median</option>
-                    <option value="min">min</option>
-                    <option value="max">max</option>
-                    <option value="sum">sum</option>
-                    <option value="std">std</option>
-                </param>
-                <param argument="--plotType" type="select" label="Type of summary plot">
-                    <option value="lines">plot the profile line based on the statistic selected above.</option>
-                    <option value="fill">fills the region between zero and the profile.</option>
-                    <option value="se">color the region between the profile and the standard error.</option>
-                    <option value="std">color the region between the profile and the standard deviation.</option>
-                </param>
-                <param argument="--missingDataColor" type="text" value="black" optional="true" label="Missing data color"
-                    help="If 'Represent missing data as zero' is not set, such cases will be colored in black by default.
-                    By using this parameter a different color can be set. A value between 0 and 1 will be used for a gray scale (black is 0).
-                    Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html.
-                    Alternatively colors can be specified using the #rrggbb notation." />
+            <param argument="--plotType" type="select" label="Type of summary plot">
+                <option value="lines">plot the profile line based on the statistic selected above.</option>
+                <option value="fill">fills the region between zero and the profile.</option>
+                <option value="se">color the region between the profile and the standard error.</option>
+                <option value="std">color the region between the profile and the standard deviation.</option>
+            </param>
+            <param argument="--missingDataColor" type="text" value="black" optional="true" label="Missing data color"
+                help="If 'Represent missing data as zero' is not set, such cases will be colored in black by default.
+                By using this parameter a different color can be set. A value between 0 and 1 will be used for a gray scale (black is 0).
+                Also color names can be used, see a list here: http://packages.python.org/ete2/reference/reference_svgcolors.html.
+                Alternatively colors can be specified using the #rrggbb notation." />
 
-                <repeat name="colorMapRepeat" title="Colormap to use for each sample"
-                    help="A different colormap can be applied to each column of the heatmap. If you select fewer colormaps than you have samples in your matrix, then the select colormap(s) will be repeated (e.g., if you select one colormap then it will be applied to all samples).">
-                    <expand macro="colorMap" />
-                </repeat>
-                <param argument="--alpha" type="float" value="1.0" min="0.0"
-                    max="1.0" optional="True"
-                    label="Alpha channel (transparency)"
-                    help="The alpha channel (transparency) to use for the heatmaps. The default is 1.0 and values must
-                    be between 0 and 1. A value of 0.0 would be fully transparent." />
+            <repeat name="colorMapRepeat" title="Colormap to use for each sample"
+                help="A different colormap can be applied to each column of the heatmap. If you select fewer colormaps than you have samples in your matrix, then the select colormap(s) will be repeated (e.g., if you select one colormap then it will be applied to all samples).">
+                <expand macro="colorMap" />
+            </repeat>
+            <param argument="--alpha" type="float" value="1.0" min="0.0"
+                max="1.0" optional="true"
+                label="Alpha channel (transparency)"
+                help="The alpha channel (transparency) to use for the heatmaps. The default is 1.0 and values must
+                be between 0 and 1. A value of 0.0 would be fully transparent." />
 
-                <param argument="--colorList" type="text" value="" optional="True"
-                    label="List of colors for each heatmap. Separate lists by spaces and the colors in the list by comas"
-                    help="The color of the heatmaps can be specified as a list of colors separated by comas with
-                    not space in between. For example: white,blue white,green will set a color map from white
-                    to blue for the first heatmap and for white to green for the next heatmap."/>
-                <expand macro="zMin_zMax" />
-                <param argument="--yMin" type="float" value="" optional="True"
-                    label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help=""/>
-                <param argument="--yMax" type="float" value="" optional="True"
-                    label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help=""/>
-                <param argument="--xAxisLabel" type="text" value="distance from TSS (bp)"
-                    label="The x-axis label" help="" />
-                <param argument="--yAxisLabel" type="text" value="genes"
-                    label="The y-axis label for the top panel" help="" />
+            <param argument="--colorList" type="text" value="" optional="true"
+                label="List of colors for each heatmap. Separate lists by spaces and the colors in the list by comas"
+                help="The color of the heatmaps can be specified as a list of colors separated by comas with
+                not space in between. For example: white,blue white,green will set a color map from white
+                to blue for the first heatmap and for white to green for the next heatmap."/>
+            <expand macro="zMin_zMax" />
+            <param argument="--xAxisLabel" type="text" value="distance from TSS (bp)"
+                label="The x-axis label" help="" />
+            <param argument="--yAxisLabel" type="text" value="genes"
+                label="The y-axis label for the top panel" help="" />
 
-                <param argument="--heatmapWidth" type="float" value="7.5" min="1" max="100"
-                    label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
-                <param argument="--heatmapHeight" type="float" value="25" min="3" max="100"
-                    label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
+            <param argument="--heatmapWidth" type="float" value="7.5" min="1" max="100"
+                label="Heatmap width in cm" help="The minimum value is 1 and the maximum is 100."/>
+            <param argument="--heatmapHeight" type="float" value="25" min="3" max="100"
+                label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
 
-                <param argument="--whatToShow" type="select" label="What to show"
-                    help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
-                    <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
-                    <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
-                    <option value="heatmap and colorbar">heatmap and colorbar</option>
-                </param>
+            <param argument="--boxAroundHeatmaps" type="boolean" truevalue="--boxAroundHeatmaps" falsevalue="" checked="true"
+                label="Plot black boxes around the heatmaps" help="The default is to not plot black boxes around the heatmaps. Choosing this option will plot black boxes around the heatmaps."/>
 
-                <param argument="--startLabel" type="text" value="TSS"
-                    label="Label for the region start"
-                    help ="Only for scale-regions mode. Label shown in the plot for the start of the region. Default is TSS (transcription start site), but could be changed to anything, e.g. &quot;peak start&quot;." />
-                <param argument="--endLabel" type="text" value="TES"
-                    label="Label for the region end"
-                    help="Only for scale-regions mode. Label shown in the plot for the region end. Default is TES (transcription end site)."/>
+            <param argument="--whatToShow" type="select" label="What to show"
+                help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
+                <option value="plot, heatmap and colorbar" selected="true">summary plot, heatmap and colorbar</option>
+                <option value="plot and heatmap">summary plot and heatmap (no colorbar)</option>
+                <option value="heatmap and colorbar">heatmap and colorbar</option>
+            </param>
 
-                <param argument="--referencePointLabel" type="text" value="TSS"
-                    label="Reference point label"
-                    help ="Label shown in the plot for the reference-point. Default is the same as the reference point selected (e.g. TSS), but could be anything, e.g. &quot;peak start&quot; etc." />
-                <param argument="--samplesLabel" type="text"
-                    label="Labels for the samples (each bigwig) plotted"
-                    help="The default is to use the file name of the sample. The sample labels should be separated by
-                    spaces and quoted if a label itself contains a space E.g. label-1 &quot;label 2&quot;">
-                    <sanitizer>
-                        <valid initial="string.printable">
-                        </valid>
-                    </sanitizer>
-                </param>
-                <param argument="--regionsLabel" type="text"
-                    label="Labels for the regions plotted in the heatmap"
-                    help="If more than one region is being plotted a list of labels separated by space is required.
-                          If a label itself contains a space, then quotes are needed.
-                          For example, label_1 &quot;label 2&quot;" />
-
-                <expand macro="plotTitle" />
-                <expand macro="legendLocation" />
-                <expand macro="labelRotation" />
-                <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
-                    label="Make one plot per group of regions"
-                    help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions."/>
-
-                <expand macro="kmeans_clustering" />
-                <param argument="--clusterUsingSamples" type="text"
-                    label="List of samples to be used for clustering"
-                    help="List of sample numbers (order as in matrix), which are used by --kmeans or --hclust for clustering.
-                    If no value is set, it uses all samples. Example: 1 3 (space separated!)">
-                    <sanitizer>
-                        <valid initial="string.printable">
-                            <add value=" "/>
-                        </valid>
-                    </sanitizer>
-                </param>
-            </when>
-        </conditional>
+            <expand macro="heatmap_profiler_params" />
+        </expand>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format" />
@@ -265,13 +181,19 @@
     <tests>
         <test expect_num_outputs="1">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="sim_size" delta="10000" />
+            <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
         <test expect_num_outputs="1">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
-            <param name="showAdvancedOpt" value="yes" />
-            <param name="whatToShow" value="heatmap and colorbar" />
-            <output name="outFileName" file="heatmapper_result2.png" ftype="png" compare="sim_size" delta="11000" />
+            <param name="advancedOpt|showAdvancedOpt" value="yes" />
+            <param name="advancedOpt|boxAroundHeatmaps" value="false" />
+            <param name="advancedOpt|whatToShow" value="heatmap and colorbar" />
+            <output name="outFileName" file="heatmapper_result2.png" ftype="png" compare="image_diff" eps="0.1" />
+        </test>
+        <test expect_num_outputs="1">
+            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
+            <param name="interpolationMethod" value="gaussian" />
+            <output name="outFileName" file="heatmapper_result3.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
     </tests>
     <help>

@@ -16,15 +16,15 @@
         --bamfiles #echo " ".join($files)#
         --sampleLabels #echo " ".join($labels)#
 
-        -bs '$binSize'
-        --distanceBetweenBins '$distanceBetweenBins'
+        -bs $binSize
+        --distanceBetweenBins $distanceBetweenBins
 
         #if str($filterRNAstrand) != 'no':
             --filterRNAstrand '$filterRNAstrand'
         #end if
         $ignoreDuplicates
         #if $minMappingQuality:
-            --minMappingQuality '$minMappingQuality'
+            --minMappingQuality $minMappingQuality
         #end if
         #if $samFlagInclude:
             --samFlagInclude $samFlagInclude
@@ -51,10 +51,7 @@
         <param name="binSize" type="integer" value="1000000" min="1"
             label="Bin size in bp"
             help="Length in bases of the window used to sample the genome. (--binSize)"/>
-        <param argument="--distanceBetweenBins" type="integer" value="10000" min="0"
-            label="Distance between bins"
-            help="To reduce the computation time, not every possible genomic bin is sampled. This option allows you to set the distance between bins actually sampled from. Larger numbers are sufficient for high coverage samples, while smaller values are useful for lower coverage samples. Note that if you specify a value that results in too few (&lt;1000) reads sampled, the value will be decreased." />
-
+        <expand macro="distanceBetweenBins" DISTANCE="10000"/>
         <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand." 
             help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                   Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
@@ -73,7 +70,8 @@
     </outputs>
     <tests>
         <test>
-            <param name="bamfiles" value="paired_chr2L.bam,paired_chr2L.bam" ftype="bam" />
+            <param name="multibam_conditional|orderMatters" value="No" />
+            <param name="multibam_conditional|bamfiles" value="paired_chr2L.bam,paired_chr2L.bam" ftype="bam" />
             <param name="minMappingQuality" value="10" />
             <output name="outFileName" file="estimateReadFiltering.txt" ftype="tabular" />
         </test>

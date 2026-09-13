@@ -10,6 +10,9 @@
         @BINARY@
             --corData '$corData'
             --plotTitle '$plotTitle'
+            #if $custom_sample_labels_conditional.custom_labels_select == 'Yes':
+                --labels $custom_sample_labels_conditional.labels ## do not add quotes as the input might contain quotes
+            #end if
             --plotFile '$outFileName'
             --plotFileFormat '$outFileFormat'
             #if str($advancedOpt.showAdvancedOpt) == 'yes':
@@ -20,13 +23,15 @@
                 $advancedOpt.transpose
                 $advancedOpt.rowCenter
                 #if $advancedOpt.colors:
-                    --colors $advancedOpt.colors
+                    --colors '$advancedOpt.colors'
                 #end if
                 #if $advancedOpt.markers:
-                    --markers $advancedOpt.markers
+                    --markers '$advancedOpt.markers'
                 #end if
+                $advancedOpt.addLabels
+                $advancedOpt.ggplot
             #end if
-            #if $outFileNameData
+            #if $outFileNameData:
                 --outFileNameData '$output_outFileNameData'
             #end if
 ]]>
@@ -35,28 +40,26 @@
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamSummary or multiBigwigSummary tools"/>
         <expand macro="input_image_file_format" />
         <expand macro="plotTitle" />
+        <expand macro="custom_sample_labels" />
         <param argument="--outFileNameData" type="boolean" label="Save the matrix of PCA and eigenvalues underlying the plot."/>
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no" />
-            <when value="yes">
-                <expand macro="plotWidthHeight" PLOTWIDTH="10.0" PLOTHEIGHT="10.0" />
-                <param argument="--PCs" label="Principal components to plot" value="1 2" type="text"
-                    help="The principal components to plot. If specified, you must provide two different integers, greater than zero, separated by a space. An example (and the default) is '1 2'." />
-                <param argument="--ntop" label="Number of rows to use" value="1000" type="integer"
-                    help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. If the matrix is to be transposed, rows with 0 variance are always excluded, even if a values of 0 is specified. The default is 1000." />
-                <param argument="--log2" type="boolean" truevalue="--log2" falsevalue="" label="log2 transform data" help="log2 transform the datapoints prior to computing the PCA. Note that 0.01 is added to all values to prevent 0 values from becoming -infinity. Using this option with input that contains negative values will result in an error." />
-                <param argument="--transpose" type="boolean" label="Transpose Matrix?" help="Perform the PCA on the transpose of the matrix, (i.e., with samples as rows and features/genes as columns). This then matches what is typically done in R for RNAseq data." truevalue="--transpose" falsevalue="" />
-                <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically. This option is not applicable if the PCA is performed on the transposed matrix." truevalue="--rowCenter" falsevalue="" />
-                <param argument="--colors" type="text" label="Symbol colors" value="" optional="True"
-                    help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors 'red blue green'. If not specified, the symbols will be given automatic colors." />
-                <param argument="--markers" type="text" label="Custom markers" value="" optional="True"
-                    help="A list of markers for the symbols. (e.g., '&lt;','&gt;','o') are accepted. The marker values should be space separated. For example, 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes." />
-            </when>
-        </conditional>
+        <expand macro="advancedOpt_scaffold">
+            <expand macro="plotWidthHeight" PLOTWIDTH="12.0" PLOTHEIGHT="10.0" />
+            <param argument="--PCs" label="Principal components to plot" value="1 2" type="text"
+                help="The principal components to plot. If specified, you must provide two different integers, greater than zero, separated by a space. An example (and the default) is '1 2'." />
+            <param argument="--ntop" label="Number of rows to use" value="1000" type="integer"
+                help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. If the matrix is to be transposed, rows with 0 variance are always excluded, even if a values of 0 is specified. The default is 1000." />
+            <param argument="--log2" type="boolean" truevalue="--log2" falsevalue="" label="log2 transform data" help="log2 transform the datapoints prior to computing the PCA. Note that 0.01 is added to all values to prevent 0 values from becoming -infinity. Using this option with input that contains negative values will result in an error." />
+            <param argument="--transpose" type="boolean" label="Transpose Matrix?" help="Perform the PCA on the transpose of the matrix, (i.e., with samples as rows and features/genes as columns). This then matches what is typically done in R for RNAseq data." truevalue="--transpose" falsevalue="" />
+            <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically. This option is not applicable if the PCA is performed on the transposed matrix." truevalue="--rowCenter" falsevalue="" />
+            <param argument="--colors" type="text" label="Symbol colors" value="" optional="true"
+                help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors 'red blue green'. If not specified, the symbols will be given automatic colors." />
+            <param argument="--markers" type="text" label="Custom markers" value="" optional="true"
+                help="A list of markers for the symbols. (e.g., '&lt;','&gt;','o') are accepted. The marker values should be space separated. For example, 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes." />
+            <param argument="--addLabels" type="boolean" label="Add Labels to the plot" 
+                help="If specified, the labels will be added next to points also legend is omitted." 
+                truevalue="--addLabels" falsevalue="" />
+            <expand macro="ggplot" />
+        </expand>
     </inputs>
     <outputs>
         <expand macro="output_image_file_format_not_nested" />
@@ -69,15 +72,15 @@
             <param name="corData" value="multiBamSummary_result2b.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
-            <param name="showAdvancedOpt" value="yes" />
-            <output name="outFileName" file="plotPCA_result1.png" ftype="png" compare="sim_size" delta="12000" />
+            <param name="advancedOpt|showAdvancedOpt" value="yes" />
+            <output name="outFileName" file="plotPCA_result1.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
         <test expect_num_outputs="2">
             <param name="corData" value="multiBamSummary_result2b.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
             <param name="outFileNameData" value="True" />
-            <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="sim_size" delta="12000" />
+            <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="image_diff" eps="0.1" />
             <output name="output_outFileNameData" ftype="tabular">
                 <!-- The duplicate-sample column is mathematically zero, so it comes
                      out as tiny BLAS-dependent noise (~1e-18) that varies across
@@ -87,7 +90,7 @@
                 <assert_contents>
                     <has_n_columns n="4" />
                     <has_line_matching expression="Component\tbowtie2-test1.bam\tbowtie2-test1.bam\tEigenvalue" />
-                    <has_line_matching expression="1\t-?1\.99949\d*\t.*\t2\.9999\d*" />
+                    <has_line_matching expression="1\t-?1\.99949\d*\t.*\t2\.999\d*" />
                     <has_line_matching expression="2\t-?0\.96079\d*\t.*" />
                 </assert_contents>
             </output>

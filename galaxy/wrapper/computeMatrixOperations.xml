@@ -8,74 +8,80 @@
     <command>
 <![CDATA[
         @BINARY@
-            #if $submodule.command == "info":
-                info
-                -m $submodule.matrixFile
-                > $outFileTxt
-            #else if $submodule.command == "relabel":
-                relabel
-                -m $submodule.matrixFile
-                #if $submodule.groupLabels is not None and str($submodule.groupLabels) != '':
-                    --groupLabels $submodule.groupLabels
-                #end if
-                #if $submodule.sampleLabels is not None and str($submodule.sampleLabels) != '':
-                    --sampleLabels $submodule.sampleLabels
-                #end if
-            #else if $submodule.command == "subset":
-                subset
-                -m $submodule.matrixFile
-                #if $submodule.groups is not None and str($submodule.groups) != '':
-                    --groups $submodule.groups
-                #end if
-                #if $submodule.samples is not None and str($submodule.samples) != '':
-                    --samples $submodule.samples
-                #end if
-                -o $outFileName
-            #else if $submodule.command == "filterStrand":
-                filterStrand
-                -m $submodule.matrixFile
-                --strand $submodule.strand
-                -o $outFileName
-            #else if $submodule.command == "filterValues":
-                filterValues
-                -m $submodule.matrixFile
-                #if $submodule.minValue is not None and str($submodule.minValue) != '':
-                    --min $submodule.minValue
-                #end if
-                #if $submodule.maxValue is not None and str($submodule.maxValue) != '':
-                    --max $submodule.maxValue
-                #end if
-                -o $outFileName
-            #else if $submodule.command == "rbind":
-                #set $files=[]
-                #for $f in $submodule.matrixFiles:
-                    #silent $files.append(str($f.matrixFile))
-                #end for
-                rbind
-                -m '#echo "' '".join($files)#'
-                -o $outFileName
-            #else if $submodule.command == "cbind":
-                cbind
-                #set $files=[]
-                #for $f in $submodule.matrixFiles:
-                    #silent $files.append(str($f.matrixFile))
-                #end for
-                -m '#echo "' '".join($files)#'
-                -o $outFileName
-            #else if $submodule.command == "sort":
-                sort
-                #set $files=[]
-                #for $f in $submodule.regionsFiles:
-                    #silent $files.append(str($f.regionsFile))
-                #end for
-                -m $submodule.matrixFile
-                -R '#echo "' '".join($files)#'
-                -o $outFileName
-            #else if $submodule.command == "dataRange":
-                dataRange
-                -m $submodule.matrixFile
-                > $outFileTxt
+        #if $submodule.command == "info":
+            info
+            -m '$submodule.matrixFile'
+        #else if $submodule.command == "relabel":
+            relabel
+            -m '$submodule.matrixFile'
+            #if $submodule.groupLabels:
+                --groupLabels '$submodule.groupLabels'
             #end if
+            #if $submodule.sampleLabels:
+                --sampleLabels '$submodule.sampleLabels'
+            #end if
+        #else if $submodule.command == "subset":
+            subset
+            -m '$submodule.matrixFile'
+            #if $submodule.groups:
+                --groups '$submodule.groups'
+            #end if
+            #if $submodule.samples:
+                --samples '$submodule.samples'
+            #end if
+        #else if $submodule.command == "filterStrand":
+            filterStrand
+            -m '$submodule.matrixFile'
+            #if $submodule.strand:
+                --strand '$submodule.strand'
+            #end if
+        #else if $submodule.command == "filterValues":
+            filterValues
+            -m '$submodule.matrixFile'
+            #if $submodule.min:
+                --min $submodule.min
+            #end if
+            #if $submodule.max:
+                --max $submodule.max
+            #end if
+        #else if $submodule.command == "rbind":
+            #set $files=[]
+            #for $f in $submodule.matrixFiles:
+                #silent $files.append(str($f.matrixFile))
+            #end for
+            rbind
+            -m '#echo "' '".join($files)#'
+        #else if $submodule.command == "cbind":
+            cbind
+            #set $files=[]
+            #for $f in $submodule.matrixFiles:
+                #silent $files.append(str($f.matrixFile))
+            #end for
+            -m '#echo "' '".join($files)#'
+        #else if $submodule.command == "sort":
+            sort
+            #set $files=[]
+            #for $f in $submodule.regionsFiles:
+                #silent $files.append(str($f.regionsFile))
+            #end for
+            -m '$submodule.matrixFile'
+            -R '#echo "' '".join($files)#'
+            #if $submodule.transcriptID:
+                --transcriptID '$submodule.transcriptID'
+            #end if
+            #if $submodule.transcript_id_designator:
+                --transcript_id_designator '$submodule.transcript_id_designator'
+            #end if
+        #else if $submodule.command == "dataRange":
+            dataRange
+            -m '$submodule.matrixFile'
+        #end if
+
+        #if $submodule.command == "info" or $submodule.command == "dataRange":
+            > '$outFileTxt'
+        #else:
+            -o '$outFileName'
+        #end if
 ]]>
     </command>
     <inputs>
@@ -92,11 +98,11 @@
                 <option value="dataRange">Returns the min, max, median, 10th and 90th percentile of the matrix values per sample (dataRange)</option>
             </param>
             <when value="info">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
             </when>
 
             <when value="relabel">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
                 <param argument="groupLabels" type="text" optional="true" label="New Region/Group Labels."
                     help="If blank, the labels are left unchanged, otherwise they're changed to be those provided here. Multiple labels should be separated by spaces. If you provide labels, you must provide exactly one label for each group of regions."/>
                 <param argument="sampleLabels" type="text" optional="true" label="New Sample Labels."
@@ -104,7 +110,7 @@
             </when>
 
             <when value="subset">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
                 <param argument="groups" type="text" optional="true" label="Region groups to include."
                     help="If blank, all region groups are output. Alternatively, one or more groups listed in the output of the 'info' command can be used (separate groups by a space and enclose in quotes if needed)"/>
                 <param argument="samples" type="text" optional="true" label="Samples to include."
@@ -112,7 +118,7 @@
             </when>
 
             <when value="filterStrand">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
                 <param argument="--strand" type="select" label="Only include regions on this strand."
                     help="Only regions on the desired strand will be included in the output. If you desire to instead remove regions on only one strand (or the . strand), separately run this on the other strand and then use the rbind operation.">
                     <option value="+">+</option>
@@ -122,7 +128,7 @@
             </when>
 
             <when value="filterValues">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
                 <param argument="--min" type="float" optional="true" label="Minimum value"
                        help="Exclude any row in the matrix with a value below this. By default there is no minimum value."/>
                 <param argument="--max" type="float" optional="true" label="Maximum value"
@@ -131,26 +137,35 @@
 
             <when value="rbind">
                 <repeat name="matrixFiles" title="Matrix files from computeMatrix" min="2">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                    <expand macro="matrixFile" />
                 </repeat>
             </when>
 
             <when value="cbind">
                 <repeat name="matrixFiles" title="Matrix files from computeMatrix" min="2">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                    <expand macro="matrixFile" />
                 </repeat>
             </when>
 
             <when value="sort">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
                 <repeat name="regionsFiles" title="BED or GTF files of regions" min="1">
                     <param name="regionsFile" format="bed,gtf" type="data" label="Regions to plot"
                         help="File, in BED format, containing the regions to plot."/>
                 </repeat>
+                <param argument="--transcriptID" optional="true" value="transcript" type="text"
+                    label="transcript designator"
+                    help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as transcripts. Default: transcript"/>
+                <param argument="--transcript_id_designator" optional="true" value="transcript_id" type="text"
+                    label="transcriptID key designator"
+                    help="Each region has an ID (e.g., ACTB) assigned to it, which for BED files is either column 4 (if it exists)
+                        or the interval bounds. For GTF files this is instead stored in the last column as a key:value pair (e.g.,
+                        as 'transcript_id ACTB', for a key of transcript_id and a value of ACTB). In some cases it can be
+                        convenient to use a different identifier. To do so, set this to the desired key. Default: transcript_id"/>
             </when>
 
             <when value="dataRange">
-                <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+                <expand macro="matrixFile" />
             </when>
         </conditional>
     </inputs>
@@ -158,29 +173,39 @@
         <data format="deeptools_compute_matrix_archive" name="outFileName" label="${tool.name} ${submodule.command} on ${on_string}">
             <filter>
             ((
-                submodule['command'] != "info"
+                submodule['command'] != "info" and submodule['command'] != "dataRange"
             ))
             </filter>
         </data>
         <data format="txt" name="outFileTxt" label="${tool.name} info on ${on_string}">
             <filter>
             ((
-                submodule['command'] == "info"
+                submodule['command'] == "info" or submodule['command'] == "dataRange"
             ))
             </filter>
         </data>
     </outputs>
     <tests>
         <test expect_num_outputs="1">
-            <param name="command" value="info"/>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
+            <param name="submodule|command" value="info"/>
+            <param name="submodule|matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
             <output name="outFileTxt" file="computeMatrixOperations.txt" ftype="txt"/>
         </test>
         <test expect_num_outputs="1">
-            <param name="command" value="rbind"/>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
-            <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
+            <param name="submodule|command" value="rbind"/>
+            <param name="submodule|matrixFiles_0|matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
+            <param name="submodule|matrixFiles_1|matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
             <output name="outFileName" file="computeMatrixOperations_result2.mat.gz" ftype="deeptools_compute_matrix_archive" compare="sim_size" delta="100"/>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="submodule|command" value="dataRange"/>
+            <param name="submodule|matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive"/>
+            <output name="outFileTxt">
+                <assert_contents>
+                    <has_line_matching expression="Samples\tMin\tMax\tMedian\t10th\t90th"/>
+                    <has_line_matching expression="bamCoverage_result4_bw_0\t1122690.0\t5292690.0\t1884522.5\t1419407.0\t4410575.0"/>
+                </assert_contents>
+            </output>
         </test>
     </tests>
     <help>

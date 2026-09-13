@@ -11,6 +11,9 @@
             --corData '$corData'
             --plotFile '$outFileName'
             --corMethod '$corMethod'
+            #if $custom_sample_labels_conditional.custom_labels_select == 'Yes':
+                --labels $custom_sample_labels_conditional.labels ## do not add quotes as the input might contain quotes
+            #end if
             --whatToPlot '$plotting_type.whatToPlot'
             #if str($plotting_type.whatToPlot) == 'heatmap':
                 @HEATMAP_OPTIONS@
@@ -32,16 +35,16 @@
             #if $outFileCorMatrix:
                 --outFileCorMatrix '$matrix'
             #end if
-
+            $ggplot
 ]]>
     </command>
     <inputs>
         <param name="corData" format="deeptools_coverage_matrix" type="data" label="Matrix file from the multiBamSummary tool"/>
         <expand macro="corMethod" />
-
+        <expand macro="custom_sample_labels" />
         <conditional name="plotting_type" >
             <param argument="--whatToPlot" type="select" label="Plotting type">
-                <option value="heatmap" selected="True">Heatmap</option>
+                <option value="heatmap" selected="true">Heatmap</option>
                 <option value="scatterplot">Scatterplot</option>
             </param>
             <when value="heatmap">
@@ -52,7 +55,7 @@
                 <expand macro="plotTitle" />
                 <conditional name="xrange_conditional">
                     <param type="select" name="xrange_select" label="Manually set X axis range?">
-                        <option value="no" selected="True">No</option>
+                        <option value="no" selected="true">No</option>
                         <option value="yes">Yes</option>
                     </param>
                     <when value="yes">
@@ -65,7 +68,7 @@
                 </conditional>
                 <conditional name="yrange_conditional">
                     <param type="select" name="yrange_select" label="Manually set Y axis range?">
-                        <option value="no" selected="True">No</option>
+                        <option value="no" selected="true">No</option>
                         <option value="yes">Yes</option>
                     </param>
                     <when value="yes">
@@ -100,6 +103,7 @@
                 unusually high counts."/>
 
         <param name="outFileCorMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
+        <expand macro="ggplot" />
 
     </inputs>
     <outputs>
@@ -112,17 +116,17 @@
         <test expect_num_outputs="2">
             <param name="corData" value="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" />
             <param name="outFileFormat" value="png" />
-            <param name="outFileCorMatrix" value="True" />
+            <param name="outFileCorMatrix" value="true" />
             <output name="matrix" file="plotCorrelation_result1.tabular" ftype="tabular" />
-            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="sim_size" delta="2000" />
+            <output name="outFileName" file="plotCorrelation_result1.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
         <test expect_num_outputs="1">
             <param name="corData" value="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" />
             <param name="outFileFormat" value="png" />
-            <param name="whatToPlot" value="scatterplot" />
-            <param name="removeOutliers" value="True" />
-            <param name="plotTitle" value="Test Plot" />
-            <output name="outFileName" file="plotCorrelation_result2.png" ftype="png" compare="sim_size" delta="2000" />
+            <param name="plotting_type|whatToPlot" value="scatterplot" />
+            <param name="removeOutliers" value="true" />
+            <param name="plotting_type|plotTitle" value="Test Plot" />
+            <output name="outFileName" file="plotCorrelation_result2.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
     </tests>
     <help>

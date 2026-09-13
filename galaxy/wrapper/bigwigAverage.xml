@@ -16,18 +16,15 @@
             --outFileName '$outFileName'
             --outFileFormat '$outFileFormat'
 
-            #if str($region).strip() != '':
+            #if $region:
                 --region '$region'
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
-
               $advancedOpt.skipNAs
               --scaleFactors '$advancedOpt.scaleFactors'
               --binSize $advancedOpt.binSize
-
                 @blacklist@
-
             #end if
 ]]>
     </command>
@@ -38,22 +35,15 @@
             <option value="bedgraph">bedgraph</option>
         </param>
         <expand macro="region_limit_operation"/>
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options">
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no"/>
-            <when value="yes">
-                <param argument="--binSize" type="integer" value="50" min="1"
-                    label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
-                    help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
+        <expand macro="advancedOpt_scaffold">
+            <param argument="--binSize" type="integer" value="50" min="1"
+                label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
+                help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
 
-                <expand macro="skipNAs"/>
-                <param name="scaleFactors" type="text" value="1" label="Scale factors (one per bigwig separated by ':')"/>
-                <expand macro="blacklist"/>
-            </when>
-        </conditional>
+            <expand macro="skipNAs"/>
+            <param name="scaleFactors" type="text" value="1" label="Scale factors (one per bigwig separated by ':')"/>
+            <expand macro="blacklist"/>
+        </expand>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
@@ -66,33 +56,33 @@
     <tests>
         <test expect_num_outputs="1">
             <param name="bigwigs" value="test.bw" ftype="bigwig"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="binSize" value="5"/>
+            <param name="advancedOpt|binSize" value="5"/>
             <output name="outFileName" file="test_compated.bw" ftype="bigwig" compare="sim_size" delta="500"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bigwigs" value="test.bw" ftype="bigwig"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="binSize" value="5"/>
-            <param name="scaleFactors" value="0.5"/>
+            <param name="advancedOpt|binSize" value="5"/>
+            <param name="advancedOpt|scaleFactors" value="0.5"/>
             <output name="outFileName" file="test_half.bw" ftype="bigwig" compare="sim_size" delta="500"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bigwigs" value="test.bw,test_half.bw" ftype="bigwig"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="binSize" value="5"/>
-            <param name="scaleFactors" value="0.5"/>
+            <param name="advancedOpt|binSize" value="5"/>
+            <param name="advancedOpt|scaleFactors" value="0.5"/>
             <output name="outFileName" file="bigwigAverage2.bw" ftype="bigwig" compare="sim_size" delta="500"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bigwigs" value="test.bw,test_half.bw" ftype="bigwig"/>
-            <param name="showAdvancedOpt" value="yes"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="binSize" value="5"/>
-            <param name="scaleFactors" value="1:2"/>
+            <param name="advancedOpt|binSize" value="5"/>
+            <param name="advancedOpt|scaleFactors" value="1:2"/>
             <output name="outFileName" file="test_compated.bw" ftype="bigwig" compare="sim_size" delta="500"/>
         </test>
     </tests>

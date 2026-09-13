@@ -12,78 +12,33 @@
 
         @multiple_input_bams@
         @BINARY@
-            $mode.modeOpt
-            @THREADS@
+        $mode.modeOpt
+        @THREADS@
+        --bamfiles #echo ' '.join($files)#
 
-            --outFileName '$outFile'
-            --bamfiles #echo " ".join($files)#
-            --labels #echo " ".join($labels)#
-
-            #if $outRawCounts:
-                --outRawCounts '$outFileRawCounts'
-            #end if
-
-            #if $scalingFactors:
-                --scalingFactors '$scalingFactorsFile'
-            #end if
-
-            #if $mode.modeOpt == "bins":
-                --binSize '$mode.binSize'
-                --distanceBetweenBins '$mode.distanceBetweenBins'
-            #else:
-                --BED $mode.region_file
-            #end if
-
-            #if str($region).strip() != '':
-                --region '$region'
-            #end if
-
-            #if $advancedOpt.showAdvancedOpt == "yes":
-                @ADVANCED_OPTS_READ_PROCESSING@
-                @ADVANCED_OPTS_GTF@
-                @blacklist@
-            #end if
+        @MULTISUMMARY_COMMON_PARAMS@
+        
+        #if $scalingFactors:
+            --scalingFactors '$scalingFactorsFile'
+        #end if
+        
+        #if $advancedOpt.showAdvancedOpt == "yes":
+            @ADVANCED_OPTS_READ_PROCESSING@
+            @ADVANCED_OPTS_GTF@
+            @blacklist@
+        #end if
 ]]>
     </command>
 
     <inputs>
         <expand macro="multiple_input_bams" MIN="2"/>
-        <expand macro="custom_sample_labels" />
-
-        <conditional name="mode">
-            <param name="modeOpt" type="select" label="Choose computation mode"
-                    help="In the bins mode, the coverage is computed for equally
-                    sized bins. \nIn BED file mode, a list of genomic regions
-                    in BED or INTERVAL format has to be given. For each region
-                    in the BED file, the number of overlapping reads from each BAM file is counted.
-                    ">
-                <option value="bins" selected="true">Bins</option>
-                <option value="BED-file">Limit calculation to certain regions (BED file)</option>
-            </param>
-            <when value="bins">
-                <param name="binSize" type="integer" value="10000" min="1"
-                    label="Bin size in bp"
-                    help="Length in bases of the window used to sample the genome. (--binSize)"/>
-
-                <expand macro="distanceBetweenBins" />
-
-            </when>
-            <when value="BED-file">
-                <param name="region_file" type="data" format="bed,gtf"
-                    label="Region file in BED or INTERVAL format"
-                    help="Coverage is computed for the number of reads that overlap such regions."/>
-            </when>
-        </conditional>
-
-        <expand macro="region_limit_operation" />
-
+        <expand macro="multiSummary_common_params" />
         <expand macro="advancedOpt_scaffold">
             <expand macro="read_processing_options" />
             <expand macro="gtf_options" />
             <expand macro="blacklist" />
         </expand>
 
-        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help=""/>
         <param argument="--scalingFactors" type="boolean" label="Save scaling factors" help="Scaling factors calculated as in DESeq2 and made directly compatible with bamCoverage."/>
 
     </inputs>
@@ -98,15 +53,17 @@
     </outputs>
     <tests>
         <test expect_num_outputs="1">
-            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
-            <param name="modeOpt" value="bins" />
-            <param name="binSize" value="10" />
+            <param name="multibam_conditional|orderMatters" value="No" />
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="mode|modeOpt" value="bins" />
+            <param name="mode|binSize" value="10" />
             <output name="outFile" file="multiBamSummary_result1.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
         <test expect_num_outputs="1">
-            <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
-            <param name="modeOpt" value="BED-file" />
-            <param name="region_file" value="multiBamSummary_regions.bed" />
+            <param name="multibam_conditional|orderMatters" value="No" />
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
+            <param name="mode|modeOpt" value="BED-file" />
+            <param name="mode|region_file" value="multiBamSummary_regions.bed" />
             <output name="outFile" file="multiBamSummary_result2.npz" ftype="deeptools_coverage_matrix" compare="sim_size" />
         </test>
 

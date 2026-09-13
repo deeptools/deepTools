@@ -21,22 +21,17 @@
                 --pseudocount $comparison.pseudocount
             #end if
 
-            #if str($region).strip() != '':
+            #if $region:
                 --region '$region'
             #end if
 
             #if $advancedOpt.showAdvancedOpt == "yes":
-
               $advancedOpt.skipNAs
+              $advancedOpt.fixedStep
               $advancedOpt.skipZeroOverZero
               --scaleFactors '$advancedOpt.scaleFactor1:$advancedOpt.scaleFactor2'
               --binSize $advancedOpt.binSize
-
-                #if $advancedOpt.plotTitle and str($advancedOpt.plotTitle.value) != "":
-                    --plotTitle '$advancedOpt.plotTitle'
-                #end if
-                @blacklist@
-
+              @blacklist@
             #end if
 ]]>
     </command>
@@ -84,24 +79,17 @@
 
         <expand macro="region_limit_operation"/>
 
-        <conditional name="advancedOpt">
-            <param name="showAdvancedOpt" type="select" label="Show advanced options" >
-                <option value="no" selected="true">no</option>
-                <option value="yes">yes</option>
-            </param>
-            <when value="no"/>
-            <when value="yes">
-                <param argument="--binSize" type="integer" value="50" min="1"
-                    label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
-                    help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
-
-                <expand macro="skipNAs"/>
-                <expand macro="skipZeroOverZero"/>
-                <expand macro="scaleFactors"/>
-                <expand macro="plotTitle"/>
-                <expand macro="blacklist"/>
-            </when>
-        </conditional>
+        <expand macro="advancedOpt_scaffold">
+            <param argument="--binSize" type="integer" value="50" min="1"
+                label="Length, in bases, of the non-overlapping bins used for averaging the score over the regions length"
+                help="Size of the bins in bases for the output of the bigwig/bedgraph file."/>
+            <expand macro="skipNAs"/>
+            <expand macro="skipZeroOverZero"/>
+                <param argument="--fixedStep" type="boolean" truevalue="--fixedStep" falsevalue=""
+                    label ="Write out all bins instead of merging neighbouring bins with equal values"/>
+            <expand macro="scaleFactors"/>
+            <expand macro="blacklist"/>
+        </expand>
     </inputs>
     <outputs>
         <data format="bigwig" name="outFileName">
@@ -115,21 +103,31 @@
         <test expect_num_outputs="1">
             <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
             <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
-            <param name="showAdvancedOpt" value="no"/>
+            <param name="advancedOpt|showAdvancedOpt" value="no"/>
             <param name="outFileFormat" value="bigwig"/>
-            <param name="binSize" value="5"/>
-            <param name="comparison_select" value="ratio"/>
+            <param name="comparison|comparison_select" value="ratio"/>
             <output name="outFileName" file="bigwigCompare_result1.bw" ftype="bigwig" compare="sim_size"/>
         </test>
         <test expect_num_outputs="1">
             <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
             <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
-            <param name="showAdvancedOpt" value="no"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
             <param name="outFileFormat" value="bedgraph"/>
-            <param name="binSize" value="10"/>
-            <param name="comparison_select" value="ratio"/>
+            <param name="advancedOpt|binSize" value="10"/>
+            <param name="comparison|comparison_select" value="ratio"/>
             <output name="outFileName" file="bigwigCompare_result2.bg" sort="true" ftype="bedgraph"/>
         </test>
+        <test expect_num_outputs="1">
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
+            <param name="advancedOpt|showAdvancedOpt" value="yes"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="advancedOpt|fixedStep" value="true" />
+            <param name="advancedOpt|binSize" value="10"/>
+            <param name="comparison|comparison_select" value="ratio"/>
+            <output name="outFileName" file="bigwigCompare_result3.bg" sort="true" ftype="bedgraph"/>
+        </test>
+        
     </tests>
     <help>
 <![CDATA[

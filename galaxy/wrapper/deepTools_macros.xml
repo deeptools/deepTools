@@ -5,8 +5,8 @@
     <token name="@GALAXY_VERSION@">23.2</token>
     <xml name="requirements">
         <requirements>
-            <!-- <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement> -->
-            <requirement type="package" version="1.21">samtools</requirement>
+            <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement>
+            <requirement type="package" version="1.24">samtools</requirement>
         </requirements>
         <expand macro="stdio"/>
         <version_command>@BINARY@ --version</version_command>
@@ -26,8 +26,8 @@
     </xml>
 
     <token name="@PLOTWIDTHHEIGHT@">
-        --plotWidth '$advancedOpt.plotWidth'
-        --plotHeight '$advancedOpt.plotHeight'
+        --plotWidth $advancedOpt.plotWidth
+        --plotHeight $advancedOpt.plotHeight
     </token>
 
     <xml name="plotWidthHeight" tokens="PLOTWIDTH,PLOTHEIGHT">
@@ -46,7 +46,6 @@
         #else if $advancedOpt.doExtendCustom.doExtend == 'yes':
             --extendReads
         #end if
-        $advancedOpt.ignoreDuplicates
         $advancedOpt.centerReads
         #if $advancedOpt.minMappingQuality:
             --minMappingQuality $advancedOpt.minMappingQuality
@@ -68,13 +67,13 @@
     <token name="@ADVANCED_OPTS_GTF@">
         $advancedOpt.metagene
         #if $advancedOpt.transcriptID:
-            --transcriptID $advancedOpt.transcriptID
+            --transcriptID '$advancedOpt.transcriptID'
         #end if
         #if $advancedOpt.exonID:
-            --exonID $advancedOpt.exonID
+            --exonID '$advancedOpt.exonID'
         #end if
         #if $advancedOpt.transcript_id_designator:
-            --transcript_id_designator $advancedOpt.transcript_id_designator
+            --transcript_id_designator '$advancedOpt.transcript_id_designator'
         #end if
     </token>
 
@@ -86,10 +85,10 @@
     </xml>
 
     <token name="@HEATMAP_OPTIONS@">
-        #if str($plotting_type.zMin) != "":
+        #if $plotting_type.zMin:
             --zMin $plotting_type.zMin
         #end if
-        #if str($plotting_type.zMax) != "":
+        #if $plotting_type.zMax:
             --zMax $plotting_type.zMax
         #end if
         --colorMap '$plotting_type.colorMap'
@@ -112,7 +111,7 @@
     </xml>
 
     <xml name="region_limit_operation">
-        <param argument="--region" type="text" value=""
+        <param argument="--region" type="text" value="" optional="true"
             label="Region of the genome to limit the operation to"
             help="This is useful when testing parameters to reduce the time required. The format is chr:start:end, for example &quot;chr10&quot; or &quot;chr10:456700:891000&quot;.">
             <sanitizer>
@@ -126,93 +125,31 @@
     </xml>
 
     <xml name="smoothLength">
-        <param argument="--smoothLength" type="integer" value="" optional="True" min="1"
+        <param argument="--smoothLength" type="integer" value="" optional="true" min="1"
             label="Smooth values using the following length (in bases)"
             help ="The smooth length defines a window, larger than the bin size, over which the number of reads is to be averaged. For example, if the bin size is set to 20 and the smooth length is 60, then, for each bin, its value is set to the average of it and its left and right neighbors. Any value smaller than the bin size will be ignored and no smoothing will be applied."/>
     </xml>
 
-
-    <xml name="kmeans_clustering">
-        <conditional name="used_multiple_regions">
-            <param name="used_multiple_regions_options" type="select"
-                label="Did you compute the matrix with more than one groups of regions?"
-                help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
-                <option value="yes">Yes, I used multiple groups of regions</option>
-                <option value="no">No, I used only one group</option>
-            </param>
-            <when value="no">
-                <conditional name="clustering">
-                    <param name="clustering_options" type="select" label="Clustering algorithm">
-                        <option value="none">No clustering</option>
-                        <option value="kmeans">Kmeans clustering</option>
-                        <option value="hclust">Hierarchical clustering</option>
-                    </param>
-                    <when value="kmeans">
-                        <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
-                            help="When this option is set, the matrix is split into clusters using the k-means algorithm.
-                            This only works for data that is not grouped, otherwise only the first group will be clustered.
-                            If more specific clustering methods are required it is advisable to save the underlying matrix and
-                            run the clustering using other software."/>
-                    </when>
-                    <when value="hclust">
-                        <param name="n_hclust" type="integer" value="0" label="number of clusters to compute."
-                            help="WARNING: This option causes the tool to run for a very long time! When this option is
-                            set, the matrix is split into clusters using the hierarchical clustering algorithm, using ward linkage.
-                            This only works for data that is not grouped, otherwise only the first group will be clustered.
-                            Note that you must have used the '--missingDataAsZero' option within computeMatrix!
-                            If more specific clustering methods are required it is advisable to save the underlying matrix and
-                            run the clustering using other software."/>
-                    </when>
-                    <when value="none"/>
-                </conditional>
-                <param argument="--silhouette" type="boolean" truevalue="--silhouette" falsevalue=""
-                    label="Compute the silhouette score for each region"
-                    help="Compute the silhouette score for regions. This is only applicable if clustering has been performed.
-                    The silhouette score is a measure of how similar a region is to other regions in the same cluster as
-                    opposed to those in other clusters. It will be reported in the final column of the BED file with regions.
-                    The silhouette evaluation can be very slow when you have more than 100 000 regions."/>
-            </when>
-            <when value="yes"/>
-        </conditional>
-    </xml>
-
-    <token name="@KMEANS_CLUSTERING@">
-        #if $advancedOpt.used_multiple_regions.used_multiple_regions_options == 'no':
-            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
-                #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
-                    --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
-                #end if
-            #end if
-            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'hclust':
-                #if int($advancedOpt.used_multiple_regions.clustering.n_hclust) > 0:
-                    --hclust $advancedOpt.used_multiple_regions.clustering.n_hclust
-                #end if
-            #end if
-            $advancedOpt.used_multiple_regions.silhouette
-        #end if
-    </token>
-
     <xml name="samFlags">
-        <param argument="--samFlagInclude" type="integer" optional="True" value=""
+        <param argument="--samFlagInclude" type="integer" optional="true" value=""
             label="Include reads based on the SAM flag"
             help= "For example, to get only reads that are the first mate use a flag of 64. This is useful to count properly paired reads only once, otherwise the second mate will be also considered for the coverage."/>
-        <param argument="--samFlagExclude" type="integer" optional="True" value=""
+        <param argument="--samFlagExclude" type="integer" optional="true" value=""
             label="Exclude reads based on the SAM flag"
             help= "For example, to get only reads that map to the forward strand, use --samFlagExclude 16, where 16 is the SAM flag for reads that map to the reverse strand."/>
     </xml>
 
     <xml name="fragLength">
-        <param argument="--minFragmentLength" type="integer" optional="True" value="0" min="0"
+        <param argument="--minFragmentLength" type="integer" optional="true" value="0" min="0"
             label="Minimum fragment length for inclusion."
             help="This is primarily useful in things like ATACseq, where one would like to look specifically at mono- or di-nucleosome fragments."/>
-        <param argument="--maxFragmentLength" type="integer" optional="True" value="0" min="0"
+        <param argument="--maxFragmentLength" type="integer" optional="true" value="0" min="0"
             label="Maximum fragment length for inclusion."
             help="A value of 0 (the default) is equivalent to no maximum."/>
     </xml>
 
     <xml name="read_processing_options">
         <expand macro="extendReads"/>
-        <expand macro="ignoreDuplicates"/>
         <expand macro="centerReads"/>
         <expand macro="minMappingQuality"/>
         <expand macro="samFlags"/>
@@ -223,13 +160,13 @@
         <param argument="--metagene" type="boolean" truevalue="--metagene" falsevalue=""
             label="Use a metagene model"
             help="If set and a BED12 or GTF file or files is used to provide regions, only exons will be used. This is convenient for looking at coverage over mature mRNA transcripts or similar uses where introns should be ignored."/>
-        <param argument="--transcriptID" optional="True" value="transcript" type="text"
+        <param argument="--transcriptID" optional="true" value="transcript" type="text"
             label="transcript designator"
             help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as transcripts. Default: transcript"/>
-        <param argument="--exonID" optional="True" value="exon" type="text"
+        <param argument="--exonID" optional="true" value="exon" type="text"
             label="exon designator"
             help="When a GTF file is used to provide regions, only entries with this value as their feature (column 3) will be processed as exons. CDS would be another common value for this. Default: exon"/>
-        <param argument="--transcript_id_designator" optional="True" value="transcript_id" type="text"
+        <param argument="--transcript_id_designator" optional="true" value="transcript_id" type="text"
             label="transcriptID key designator"
             help="Each region has an ID (e.g., ACTB) assigned to it, which for BED files is either column 4 (if it exists)
                   or the interval bounds. For GTF files this is instead stored in the last column as a key:value pair (e.g.,
@@ -253,7 +190,7 @@
                      Unmated reads, mate reads that map to different chromosomes or too far apart are extended to the given value.
                      Reads are only extended if --extendReads is set to a value greater than the read length. *NOTE*: For spliced-read data, this option is not
                      recommended as it will extend reads over skipped regions, e.g. introns in RNA-seq data.">
-                <option value="no" selected="True">No extension. The default value and most typically appropriate.</option>
+                <option value="no" selected="true">No extension. The default value and most typically appropriate.</option>
                 <option value="yes">Paired-end extension. Suitable only for paired-end datasets.</option>
                 <option value="custom">A custom length, which will be applied to ALL reads.</option>
             </param>
@@ -269,13 +206,13 @@
 
     <xml name="corMethod">
         <param argument="--corMethod" type="select" label="Correlation method">
-            <option value="spearman" selected="True">Spearman</option>
+            <option value="spearman" selected="true">Spearman</option>
             <option value="pearson">Pearson</option>
         </param>
     </xml>
 
-    <xml name="distanceBetweenBins">
-        <param argument="--distanceBetweenBins" type="integer" value="0" min="0"
+    <xml name="distanceBetweenBins" tokens="DISTANCE">
+        <param argument="--distanceBetweenBins" type="integer" value="@DISTANCE@" min="0"
             label="Distance between bins"
             help="By default, multiBamSummary considers consecutive bins of
                 the specified 'Bin size'. However, to reduce the
@@ -305,6 +242,19 @@
             <option value="max">max</option>
             <option value="sum">sum</option>
             <option value="region_length">region length</option>
+        </param>
+    </xml>
+    
+    <xml name="sortUsingSamples">
+        <param argument="--sortUsingSamples" type="text"
+            label="List of samples to be used for sorting"
+            help="List of sample numbers (order as in matrix), which are used by --sortUsing for sorting.
+            If no value is set, it uses all samples. Example: 1 3 (space separated!)">
+            <sanitizer>
+                <valid initial="string.printable">
+                    <add value=" "/>
+                </valid>
+            </sanitizer>
         </param>
     </xml>
 
@@ -369,29 +319,67 @@
     <xml name="pseudocount">
         <param argument="--pseudocount" type="text" value="1 1" label="Pseudocount" help="Small number to avoid dividing by zero. You can specify separate values for the pseudocount added to the numerator and denominator by providing two values separated by a space."/>
     </xml>
-    <token name="@REFERENCES@">
 
-.. class:: infomark
-
-For more information on the tools, please visit our `help site`_.
-
-For support or questions please post to `Biostars`_. For bug reports and feature requests please open an issue `on github`_.
-
-This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
-
-.. _Biostars: http://biostars.org
-.. _on github: http://github.com
-.. _Bioinformatics and Deep-Sequencing Unit: http://www.ie-freiburg.mpg.de/bioinformaticsfac
-.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
-.. _help site: https://deeptools.readthedocs.org/
-
-    </token>
-    <xml name="citations">
-        <citations>
-            <citation type="doi">10.1093/nar/gkw257</citation>
-            <yield/>
-        </citations>
+    <xml name="ggplot">
+        <param argument="--ggplot" type="boolean" truevalue="--ggplot" falsevalue=""
+            label ="Use ggplot theme for figures" />
     </xml>
+
+    <xml name="region_file">
+        <param name="region_file" type="data" format="bed,gtf" 
+        label="Region file in BED or INTERVAL format"
+        help="Coverage is computed for the number of reads that overlap such regions."/>
+    </xml>
+
+    <xml name="outRawCounts">
+        <param argument="--outRawCounts" type="boolean" label="Save raw counts (coverages) to file" help="" />
+    </xml>
+
+    <xml name="multiSummary_common_params">
+        <expand macro="custom_sample_labels" />
+        <conditional name="mode">
+            <param name="modeOpt" type="select" label="Choose computation mode"
+                help="In the bins mode, the correlation is computed using equally sized bins.
+                In the BED file mode, a list of genomic regions in BED format has to be given.
+                For each region in the BED file, the number of overlapping reads is counted in
+                each of the BAM/BigWig files. Then the correlation is computed.">
+                <option value="bins" selected="true">Bins</option>
+                <option value="BED-file">Limit correlation to certain regions (BED file)</option>
+            </param>
+            <when value="bins">
+                <param name="binSize" type="integer" value="10000" min="1"
+                    label="Bin size in bp"
+                    help="Length in bases for a window used to sample the genome. (--binSize)"/>
+
+                <expand macro="distanceBetweenBins" DISTANCE="0"/>
+            </when>
+            <when value="BED-file">
+                <expand macro="region_file" />
+            </when>
+        </conditional>
+        <expand macro="region_limit_operation" />
+        <expand macro="outRawCounts" />
+    </xml>
+
+    <token name="@MULTISUMMARY_COMMON_PARAMS@">
+        --outFileName '$outFile'
+        --labels #echo " ".join($labels)#
+
+        #if $outRawCounts:
+            --outRawCounts '$outFileRawCounts'
+        #end if
+
+        #if $mode.modeOpt == "bins":
+            --binSize $mode.binSize
+            --distanceBetweenBins $mode.distanceBetweenBins
+        #else:
+            --BED '$mode.region_file'
+        #end if
+
+        #if $region:
+            --region '$region'
+        #end if
+    </token>
 
     <xml name="multiple_input_bams" tokens="MIN">
         <conditional name="multibam_conditional">
@@ -432,56 +420,34 @@ is vital to you, select Yes below.">
         </conditional>
     </xml>
 
+
     <xml name="custom_sample_labels">
-	<conditional name="custom_sample_labels_conditional">
-        <param name="custom_labels_select" type="select" label="Would you like custom sample labels?" help="By default, the names of the samples in your history are used.">
-	    <option value="No" selected="true">No, use sample names in the history</option>
-	    <option value="Yes">Yes, I want to specify new labels</option>
-	</param>
-	<when value="No">
-	</when>
-	<when value="Yes">
-	    <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &apos;sample 1&apos;; &apos;sample 2&apos;)">
-            <sanitizer>
-                <valid initial="string.letters,string.digits,string.whitespace">
-                    <add value="&apos;"/>
-                    <add value="_"/>
-                </valid>
-            </sanitizer>
-            <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
-        </param>
-	</when>
-        </conditional>
+        <conditional name="custom_sample_labels_conditional">
+            <param name="custom_labels_select" type="select" label="Would you like custom sample labels?" help="By default, the names of the samples in your history are used.">
+                <option value="No" selected="true">No, use sample names in the history</option>
+                <option value="Yes">Yes, I want to specify new labels</option>
+            </param>
+            <when value="No">
+            </when>
+            <when value="Yes">
+                <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &apos;sample 1&apos;; &apos;sample 2&apos;)">
+                    <sanitizer>
+                        <valid initial="string.letters,string.digits,string.whitespace">
+                            <add value="&apos;"/>
+                            <add value="_"/>
+                        </valid>
+                    </sanitizer>
+                    <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
+                </param>
+            </when>
+            </conditional>
     </xml>
 
     <xml name="plotTitle">
-        <param argument="--plotTitle" type="text" value="" size="30" optional="True"
+        <param argument="--plotTitle" type="text" value="" size="30" optional="true"
             label="Title of the plot"
             help="Title of the plot, to be printed on top of the generated image."/>
     </xml>
-
-    <xml name="legendLocation">
-        <param argument="--legendLocation" type="select" label="Legend location" help="Location for the legend in the summary plot. Note that none cannot be used in plotProfile.">
-            <option value="best" selected="true">Best (automatic)</option>
-            <option value="upper-right">upper-right</option>
-            <option value="upper-left">upper-left</option>
-            <option value="upper-center">upper-center</option>
-            <option value="lower-right">lower-right</option>
-            <option value="lower-left">lower-left</option>
-            <option value="lower-center">lower-center</option>
-            <option value="center-right">center-right</option>
-            <option value="center-left">center-left</option>
-            <option value="center">center</option>
-            <option value="none">none (only works for heatmaps</option>
-        </param>
-    </xml>
-
-    <xml name="labelRotation">
-        <param argument="--labelRotation" type="integer" value="0"
-            label="Rotation of the X-axis labels (in degrees)"
-            help="The rotation of things like TSS or TES on the X-axis of profile plots in both plotHeatmap and plotProfile. The default is 0, positive values denome a counter-clockwise rotation."/>
-    </xml>
-
 
     <token name="@multiple_input_bams@">
 <![CDATA[
@@ -587,7 +553,12 @@ is vital to you, select Yes below.">
         #end for
         #if len($files) > 0:
             --BED #echo ' '.join($files)#
-            --regionLabels #echo ' '.join($labels)#
+            --regionLabels
+            #if $advancedOpt.regionLabels:
+                $advancedOpt.regionLabels
+            #else:
+                #echo ' '.join($labels)#
+            #end if
         #end if
 ]]>
     </token>
@@ -614,7 +585,7 @@ is vital to you, select Yes below.">
 
     <token name="@reference_genome_source@">
     #if $source.ref_source=="history":
-        --genome $source.input1
+        --genome '$source.input1'
     #else:
         --genome '$source.input1_2bit.fields.path'
     #end if
@@ -670,18 +641,6 @@ is vital to you, select Yes below.">
         </param>
     </xml>
 
-    <xml name="exactScaling">
-        <param argument="--exactScaling" type="boolean" truevalue="--exactScaling" falsevalue="" checked="False"
-            label="Compute an exact scaling factor"
-            help="Compute an exact scaling factor rather than one based on
-                  sampled reads. This is only useful in cases where you are
-                  filtering some alignments out AND this are both rare and
-                  tend to clump together in the genome. In such cases the
-                  region-based sampling employed by deepTools would produce
-                  inaccurate scaling factors. Note that this option results
-                  in the process taking significantly more time to complete."/>
-    </xml>
-
     <xml name="input_save_matrix_values">
         <param argument="--saveMatrix" type="boolean" label="Save the matrix of values underlying the heatmap"/>
     </xml>
@@ -706,17 +665,16 @@ is vital to you, select Yes below.">
 
 
     <xml name="input_image_file_format">
-        <param argument="--outFileFormat" type="select" label="Image file format" help="Note that the plotly output can be very large and not all options are supported.">
+        <param argument="--outFileFormat" type="select" label="Image file format">
             <option value="png" selected="true">png</option>
             <option value="pdf">pdf</option>
             <option value="svg">svg</option>
             <option value="eps">eps</option>
-            <option value="plotly">plotly</option>
         </param>
     </xml>
 
     <xml name="output_dpi">
-        <param argument="--dpi" type="integer" value="200" size="3" optional="True"
+        <param argument="--dpi" type="integer" value="200" size="3" optional="true"
             label="Image dpi" help=""/>
     </xml>
 
@@ -726,7 +684,6 @@ is vital to you, select Yes below.">
                 <when input="output.outFileFormat" value="pdf" format="pdf"/>
                 <when input="output.outFileFormat" value="svg" format="svg"/>
                 <when input="output.outFileFormat" value="eps" format="eps"/>
-                <when input="output.outFileFormat" value="plotly" format="html"/>
             </change_format>
         </data>
     </xml>
@@ -737,11 +694,14 @@ is vital to you, select Yes below.">
                 <when input="outFileFormat" value="pdf" format="pdf"/>
                 <when input="outFileFormat" value="svg" format="svg"/>
                 <when input="outFileFormat" value="eps" format="eps"/>
-                <when input="outFileFormat" value="plotly" format="html"/>
             </change_format>
         </data>
     </xml>
 
+    <xml name="matrixFile">
+        <param argument="matrixFile" format="deeptools_compute_matrix_archive" type="data" label="Matrix file from the computeMatrix tool"/>
+    </xml>
+    
     <xml name="output_save_matrix_values">
         <data format="tabular" name="outFileNameMatrix" label="${tool.name} on ${on_string}: Heatmap values">
             <filter>
@@ -941,6 +901,191 @@ is vital to you, select Yes below.">
             <option value="vlag_r">vlag reversed</option>
         </param>
 
+    </xml>
+
+    <xml name="no_collapse">
+        <param argument="--no_collapse" type="boolean" truevalue="--no_collapse" falsevalue="" checked="true"
+            label="Adjacent bins that have the same value are collapsed"
+            help="This reduces the size of the output file (drastically)"/>
+    </xml>
+
+
+    <token name="@HEATMAP_PROFILER_PARAMS@">
+        #if $advancedOpt.plotTitle:
+            --plotTitle '$advancedOpt.plotTitle'
+        #end if
+        $advancedOpt.perGroup
+        #if $advancedOpt.samplesLabel:
+            --samplesLabel '$advancedOpt.samplesLabel'
+        #end if
+        #if $advancedOpt.startLabel:
+            --startLabel '$advancedOpt.startLabel'
+        #end if
+        #if $advancedOpt.endLabel:
+            --endLabel '$advancedOpt.endLabel'
+        #end if
+        #if $advancedOpt.refPointLabel:
+            --refPointLabel '$advancedOpt.refPointLabel'
+        #end if
+          #if $advancedOpt.regionsLabel:
+            --regionsLabel '$advancedOpt.regionsLabel'
+        #end if
+        #if $advancedOpt.yMin:
+            --yMin $advancedOpt.yMin
+        #end if
+        #if $advancedOpt.yMax:
+            --yMax $advancedOpt.yMax
+        #end if
+        --legendLocation '$advancedOpt.legendLocation'
+        --labelRotation '$advancedOpt.labelRotation'
+        $advancedOpt.ggplot
+        #if $advancedOpt.used_multiple_regions.used_multiple_regions_options == 'no':
+            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'kmeans':
+                #if int($advancedOpt.used_multiple_regions.clustering.k_kmeans) > 0:
+                    --kmeans $advancedOpt.used_multiple_regions.clustering.k_kmeans
+                #end if
+            #end if
+            #if $advancedOpt.used_multiple_regions.clustering.clustering_options == 'hclust':
+                #if int($advancedOpt.used_multiple_regions.clustering.n_hclust) > 0:
+                    --hclust $advancedOpt.used_multiple_regions.clustering.n_hclust
+                #end if
+            #end if
+            $advancedOpt.used_multiple_regions.silhouette
+        #end if
+        #if $advancedOpt.clusterUsingSamples:
+            --clusterUsingSamples '$advancedOpt.clusterUsingSamples'
+        #end if
+    </token>
+
+    <xml name="heatmap_profiler_params">
+        <expand macro="plotTitle" />
+        <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
+            label="Make one plot per group of regions"
+            help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions. " />
+        <param argument="--samplesLabel" type="text"
+            label="Labels for the samples (each bigwig) plotted"
+            help="The default is to use the file name of the sample. The sample labels should be separated by
+            spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;">
+            <sanitizer>
+                <valid initial="string.printable">
+                </valid>
+            </sanitizer>
+        </param>
+        <param argument="--startLabel" type="text" value="TSS" optional="true"
+            label="Label shown in the plot for the start of the region"
+            help ="Only for scale-regions mode. Default is TSS (transcription start site),
+            but could be changed to anything, e.g. &quot;peak start&quot;." />
+        <param argument="--endLabel" type="text" value="TES" optional="true"
+            label="Label shown in the plot for the region end"
+            help="Only for scale-regions mode. Default is TES (transcription end site)."/>
+        <param argument="--refPointLabel" type="text" optional="true" value=""
+            label="Label shown in the plot for the reference-point"
+            help ="only for reference-point mode. Default is the same as the reference point selected (e.g. TSS), 
+            but could be anything, e.g. &quot;peak start&quot; etc." />
+        <param argument="--regionsLabel" type="text"
+            label="Labels for the regions plotted in the heatmap"
+            help="If more than one region is being plotted a list of labels separated by space is required.
+                    If a label itself contains a space, then quotes are needed.
+                    For example, label_1 &quot;label 2&quot;" />
+
+        <param argument="--yMin" type="float" value="" optional="true"
+            label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help=""/>
+        <param argument="--yMax" type="float" value="" optional="true"
+            label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help=""/>
+        <param argument="--legendLocation" type="select" label="Legend location" help="Location for the legend in the summary plot. Note that none cannot be used in plotProfile.">
+            <option value="best" selected="true">Best (automatic)</option>
+            <option value="upper-right">upper-right</option>
+            <option value="upper-left">upper-left</option>
+            <option value="upper-center">upper-center</option>
+            <option value="lower-right">lower-right</option>
+            <option value="lower-left">lower-left</option>
+            <option value="lower-center">lower-center</option>
+            <option value="center-right">center-right</option>
+            <option value="center-left">center-left</option>
+            <option value="center">center</option>
+            <option value="none">none (only works for heatmaps)</option>
+        </param>
+        <param argument="--labelRotation" type="integer" value="0"
+            label="Rotation of the X-axis labels (in degrees)"
+            help="The rotation of things like TSS or TES on the X-axis of profile plots in both plotHeatmap and plotProfile. The default is 0, positive values denome a counter-clockwise rotation."/>
+        <expand macro="ggplot" />
+
+        <!--clustering params-->
+        <conditional name="used_multiple_regions">
+            <param name="used_multiple_regions_options" type="select"
+                label="Did you compute the matrix with more than one groups of regions?"
+                help="Would you like to cluster the regions according to the similarity of the signal distribution? This is only possible if you used computeMatrix on only one group of regions.">
+                <option value="yes">Yes, I used multiple groups of regions</option>
+                <option value="no">No, I used only one group</option>
+            </param>
+            <when value="no">
+                <conditional name="clustering">
+                    <param name="clustering_options" type="select" label="Clustering algorithm">
+                        <option value="none">No clustering</option>
+                        <option value="kmeans">Kmeans clustering</option>
+                        <option value="hclust">Hierarchical clustering</option>
+                    </param>
+                    <when value="kmeans">
+                        <param name="k_kmeans" type="integer" value="0" label="Number of clusters to compute"
+                            help="When this option is set, the matrix is split into clusters using the k-means algorithm.
+                            This only works for data that is not grouped, otherwise only the first group will be clustered.
+                            If more specific clustering methods are required it is advisable to save the underlying matrix and
+                            run the clustering using other software."/>
+                    </when>
+                    <when value="hclust">
+                        <param name="n_hclust" type="integer" value="0" label="number of clusters to compute."
+                            help="WARNING: This option causes the tool to run for a very long time! When this option is
+                            set, the matrix is split into clusters using the hierarchical clustering algorithm, using ward linkage.
+                            This only works for data that is not grouped, otherwise only the first group will be clustered.
+                            Note that you must have used the '--missingDataAsZero' option within computeMatrix!
+                            If more specific clustering methods are required it is advisable to save the underlying matrix and
+                            run the clustering using other software."/>
+                    </when>
+                    <when value="none"/>
+                </conditional>
+                <param argument="--silhouette" type="boolean" truevalue="--silhouette" falsevalue=""
+                    label="Compute the silhouette score for each region"
+                    help="Compute the silhouette score for regions. This is only applicable if clustering has been performed.
+                    The silhouette score is a measure of how similar a region is to other regions in the same cluster as
+                    opposed to those in other clusters. It will be reported in the final column of the BED file with regions.
+                    The silhouette evaluation can be very slow when you have more than 100 000 regions."/>
+            </when>
+            <when value="yes"/>
+        </conditional>
+        <param argument="--clusterUsingSamples" type="text"
+            label="List of samples to be used for clustering"
+            help="List of sample numbers (order as in matrix), which are used by --kmeans or --hclust for clustering.
+            If no value is set, it uses all samples. Example: 1 3 (space separated!)">
+            <sanitizer>
+                <valid initial="string.printable">
+                    <add value=" "/>
+                </valid>
+            </sanitizer>
+        </param>
+    </xml>
+
+    <token name="@REFERENCES@">
+
+.. class:: infomark
+
+For more information on the tools, please visit our `help site`_.
+
+For support or questions please post to `Biostars`_. For bug reports and feature requests please open an issue `on github`_.
+
+This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the `Max Planck Institute for Immunobiology and Epigenetics`_.
+
+.. _Biostars: http://biostars.org
+.. _on github: http://github.com
+.. _Bioinformatics and Deep-Sequencing Unit: http://www.ie-freiburg.mpg.de/bioinformaticsfac
+.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
+.. _help site: https://deeptools.readthedocs.org/
+
+    </token>
+    <xml name="citations">
+        <citations>
+            <citation type="doi">10.1093/nar/gkw257</citation>
+            <yield/>
+        </citations>
     </xml>
 
 </macros>
