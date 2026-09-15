@@ -16,7 +16,19 @@ jobs:
               with:
                   python-version: "3.x"
             - name: Check version sync
-              run: python3 scripts/check_version_sync.py
+              run: python scripts/check_version_sync.py
+    check_galaxy_wrapper_args:
+        name: Check galaxy wrapper args against Python CLI
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+              with:
+                  python-version: "3.x"
+            - name: Check galaxy wrapper arguments
+              run: python scripts/check_galaxy_wrapper_args.py
     build-linux:
         name: Test on Linux
         runs-on: ubuntu-latest
