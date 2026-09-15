@@ -66,6 +66,7 @@ docs = [
     "mock >= 5.1.0",
     "sphinx_rtd_theme >= 2.0.0",
     "sphinx-argparse >= 0.4.0",
+    "myst-parser >= 3.0.0",
 ]
 [project.urls]
 homepage = "https://pypi.python.org/pypi/deepTools/"
