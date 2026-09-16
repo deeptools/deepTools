@@ -7,7 +7,15 @@ repos:
     hooks:
       - id: check-version-sync
         name: check Rust versions (docs - toml) and deeptools versions (toml - galaxy) to stay in sync
-        entry: python3 scripts/check_version_sync.py
+        entry: python scripts/check_version_sync.py
         language: system
         files: ^(Cargo\.toml|pyproject\.toml|\.readthedocs\.yaml|galaxy/wrapper/deepTools_macros\.xml)$
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: check-galaxy-wrapper-args
+        name: check galaxy wrapper args against Python CLI
+        entry: python scripts/check_galaxy_wrapper_args.py
+        language: system
+        files: ^(galaxy/wrapper/deepTools_.*\.xml)$
         pass_filenames: false
