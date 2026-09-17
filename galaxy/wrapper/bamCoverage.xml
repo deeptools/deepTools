@@ -305,9 +305,6 @@ Usage hints
   Other data, e.g. ChIP-seq, where fragments are known to map contiuously, should be processed with read extension (``--extendReads [INT]``).
 * For paired-end data, the fragment length is generally defined by the two read mates. The user-provided fragment length is only used as a fallback for singletons or mate reads that map too far apart (with a distance greater than four times the fragment length or if the mates are located on different chromosomes).
 
-WARNING: If you already normalized for GC bias using ``correctGCbias``, you should absolutely **NOT** set the parameter ``--ignoreDuplicates``!
-
-
 -----
 
 @REFERENCES@

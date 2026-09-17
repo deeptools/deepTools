@@ -42,7 +42,6 @@ dependencies = [
     "matplotlib >= 3.10",
     "pysam >= 0.23",
     "pyBigWig >= 0.3",
-    "py2bit >= 0.3",
     "deeptoolsintervals >= 0.1",
     "maturin"
 ]
@@ -83,10 +82,8 @@ bamCoverage_old = "deeptools.bamCoverage:main"
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
 bigwigAverage = "deeptools.bigwigAverage:main"
 bigwigCompare = "deeptools.bigwigCompare:main"
-computeGCBias = "deeptools.computeGCBias:main"
 computeMatrix_old = "deeptools.computeMatrix:main"
 computeMatrixOperations = "deeptools.computeMatrixOperations:main"
-correctGCBias = "deeptools.correctGCBias:main"
 deeptools = "deeptools.deeptools_list_tools:main"
 estimateReadFiltering = "deeptools.estimateReadFiltering:main"
 estimateScaleFactor = "deeptools.estimateScaleFactor:main"

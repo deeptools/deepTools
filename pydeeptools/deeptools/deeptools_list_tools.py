@@ -29,7 +29,6 @@ Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
 [ Tools for BAM and bigWig file processing ]
     multiBamSummary         compute read coverages over bam files. Output used for plotCorrelation or plotPCA
     multiBigwigSummary      extract scores from bigwig files. Output used for plotCorrelation or plotPCA
-    correctGCBias           corrects GC bias from bam file. Don't use it with ChIP data
     bamCoverage             computes read coverage per bins or regions
     bamCompare              computes log2 ratio and other operations of read coverage of two samples per bins or regions
     bigwigCompare           computes log2 ratio and other operations from bigwig scores of two samples per bins or regions
@@ -43,7 +42,6 @@ Data Analysis." Nucleic Acids Research, April. doi:10.1093/nar/gkw257.
     plotPCA                 plots PCA
     plotFingerprint         plots the distribution of enriched regions
     bamPEFragmentSize       returns the read length and paired-end distance from a bam file
-    computeGCBias           computes and plots the GC bias of a sample
     plotCoverage            plots a histogram of read coverage
     estimateReadFiltering   estimates the number of reads that will be filtered from a BAM file or files given certain criteria
 
