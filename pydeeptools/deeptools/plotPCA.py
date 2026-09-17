@@ -15,7 +15,7 @@ def parse_arguments(args=None):
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="""
 Tool for generating a principal component analysis (PCA)
-plot from multiBamSummary or multiBigwigSummary output. By default, the loadings for each sample in each principal component is plotted. If the data is transposed, the projections of each sample on the requested principal components is plotted instead.
+plot from multiBamSummary or multiBigwigSummary output. Each sample is plotted at its score (projection) on the requested principal components.
 
 Detailed help:
 
@@ -87,19 +87,16 @@ def plotCorrelationArgs():
                           metavar='file.tab',
                           type=writableFile,
                           help='File name to which the data underlying the plot '
-                          'should be saved, such as myPCA.tab. For untransposed '
-                          'data, this is the loading per-sample and PC as well '
-                          'as the eigenvalues. For transposed data, this is the '
-                          'rotation per-sample and PC and the eigenvalues. The '
-                          'projections are truncated to the number of '
-                          'eigenvalues for transposed data.')
+                          'should be saved, such as myPCA.tab. Rows are principal '
+                          'components and columns are each sample\'s score '
+                          '(projection) on that component, followed by a column '
+                          'of eigenvalues.')
 
     optional.add_argument('--ntop',
                           help='Use only the top N most variable rows in the '
                           'original matrix. Specifying 0 will result in all '
-                          'rows being used. If the matrix is to be transposed, '
-                          'rows with 0 variance are always excluded, even if a '
-                          'values of 0 is specified. The default is 500. (Default: %(default)s)',
+                          'rows being used. The default is 500. '
+                          '(Default: %(default)s)',
                           type=int,
                           default=500)
 
@@ -151,23 +148,6 @@ def plotCorrelationArgs():
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(version('deeptools')))
 
-    optionalEx = optional.add_mutually_exclusive_group()
-    optionalEx.add_argument('--transpose',
-                            help='Perform the PCA on the transposed matrix, (i.e., on the '
-                            'matrix where rows are samples and columns are '
-                            'bins/features. This then matches what is typically '
-                            'done in R.',
-                            action='store_true')
-
-    optionalEx.add_argument('--rowCenter',
-                            help='When specified, each row (bin, gene, etc.) '
-                            'in the matrix is centered at 0 before the PCA is '
-                            'computed. This is useful only if you have a strong '
-                            'bin/gene/etc. correlation and the resulting '
-                            'principal component has samples stacked vertically. '
-                            'This option is not applicable if --transpose is specified.',
-                            action='store_true')
-    
     optional.add_argument('--ggplot',
                           help='Use the ggplot theme for figures.',
                           action='store_true')
@@ -193,8 +173,6 @@ def main(args=None):
     corr = Correlation(args.corData,
                        labels=args.labels,)
 
-    corr.rowCenter = args.rowCenter
-    corr.transpose = args.transpose
     corr.ntop = args.ntop
     corr.log2 = args.log2
 
