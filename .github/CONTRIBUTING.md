@@ -6,14 +6,16 @@ for contributing to the repository :**
 ## Adding features or fixing bugs
 
 * Fork the repo
-* Check out a feature or bug branch the you want to work on (for adding new
-    features, use the develop branch)
+* Check out a feature or bug branch the you want to work on
 * Add your changes
 * Update README when needed
 * Submit a pull request to upstream repo
 * Add description of your changes
+* Make sure your PR follows the [Conventional Commits](https://www.conventionalcommits.org/) format
+* do NOT make changes to CHANGELOG.md, release-please will handle that
 * Ensure tests are passing
 * Ensure branch is mergable
+* Note that your PR will be squash-merged
 
 ## Testing
 
