@@ -17,10 +17,6 @@ The tools
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/plotFingerprint`         | QC               | 2 BAM                               | 1 diagnostic plot                          | assess enrichment strength of a ChIP sample                                       |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
-|:doc:`tools/computeGCBias`           | QC               | 1 BAM                               | 2 diagnostic plots                         | calculate the exp. and obs. GC distribution of reads                              |
-+-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
-|:doc:`tools/correctGCBias`           | QC               | 1 BAM, output from computeGCbias    | 1 GC-corrected BAM                         | obtain a BAM file with reads distributed according to the genome’s GC content     |
-+-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/bamCoverage`             | normalization    | BAM                                 | bedGraph or bigWig                         | obtain the normalized read coverage of a single BAM file                          |
 +-------------------------------------+------------------+-------------------------------------+--------------------------------------------+-----------------------------------------------------------------------------------+
 |:doc:`tools/bamCompare`              | normalization    | 2 BAM                               | bedGraph or bigWig                         | normalize 2 files to each other (e.g. log2ratio, difference)                      |
@@ -116,8 +112,6 @@ Tools for BAM and bigWig file processing
 """"""""""""""""""""""""""""
 :doc:`tools/multiBigwigSummary`
 """""""""""""""""""""""""""""""
-:doc:`tools/correctGCBias`
-""""""""""""""""""""""""""
 :doc:`tools/bamCoverage`
 """"""""""""""""""""""""
 :doc:`tools/bamCompare`
@@ -142,8 +136,6 @@ Tools for QC
 """"""""""""""""""""""""""""
 :doc:`tools/bamPEFragmentSize`
 """"""""""""""""""""""""""""""
-:doc:`tools/computeGCBias`
-""""""""""""""""""""""""""
 :doc:`tools/plotCoverage`
 """""""""""""""""""""""""
 

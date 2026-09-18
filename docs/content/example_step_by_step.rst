@@ -51,26 +51,6 @@ The `ENCODE consortium recommends <http://genome.ucsc.edu/ENCODE/protocols/dataS
 
 -----------------------------------------
 
-How do I know whether my sample is GC biased? And if it is, how do I correct for it?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* input: :ref:`BAM` file 
-* use the tool :doc:`tools/computeGCBias` on that BAM file (default settings, just **make sure your reference genome and genome size are matching**)
-
-.. image:: ../images/GalHow_computeGCbias.png
-
-
-* have a look at the image that is produced and compare it to the examples :ref:`here <computeGCBias_example_image>`
-* if your sample shows an almost linear increase in exp/obs coverage (on the log scale of the lower plot), then you should consider correcting the GC bias - *if* you think that the biological interpretation of this data would otherwise be compromised (e.g. by comparing it to another sample that does not have an inherent GC bias)
-
-    + the GC bias can be corrected with the tool :doc:`tools/correctGCBias` using the second output of the computeGCbias tool that you had to run anyway
-
-.. image:: ../images/GalHow_correctGCbias.png
-
-.. warning:: ``correctGCbias`` will add reads to otherwise depleted regions (typically GC-poor regions), that means that you should **not** remove duplicates in any downstream analyses based on the GC-corrected BAM file. We therefore recommend removing duplicates before doing the correction so that only those duplicate reads are kept that were produced by the GC correction procedure.
-
------------------------------------------
-
 How do I get an input-normalized ChIP-seq coverage file?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

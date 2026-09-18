@@ -20,7 +20,7 @@ import tomllib
 import mock
 
 # MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
-MOCK_MODULES = ['pyBigWig', 'py2bit']
+MOCK_MODULES = ['pyBigWig']
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
