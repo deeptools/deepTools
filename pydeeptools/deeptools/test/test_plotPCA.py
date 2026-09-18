@@ -18,8 +18,8 @@ def _run_pca(extra=None, plot=True):
     """Run plotPCA over the shared test matrix and return the parsed
     --outFileNameData table (header stripped). ``extra`` is a list of extra
     CLI tokens. When ``plot`` is True a plot file is also requested so the
-    full plotting path runs; set it False to exercise only the numeric output
-    (e.g. small --ntop values whose plotting path is separately broken)."""
+    full plotting path runs; set it False to exercise only the numeric
+    output."""
     tsvfile = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
     args = "-in {0}test_samples.npz --outFileNameData {1}".format(
         TEST_DATA, tsvfile.name).split()
@@ -37,38 +37,26 @@ def _run_pca(extra=None, plot=True):
     return data
 
 
-def _sign_fix(coords, component_axis=1):
-    """PCA eigenvector signs are arbitrary: they flip across BLAS/platforms and
-    between implementations (e.g. sklearn vs a scipy/SVD rewrite). The sign
-    freedom is per principal component, so normalize each component's vector to
-    have a positive largest-magnitude entry.
-
-    ``component_axis`` says which axis indexes the principal components:
-    in the untransposed --outFileNameData table components are the columns
-    (axis=1); in the transposed table they are the rows (axis=0)."""
+def _sign_fix(coords):
     coords = np.array(coords, dtype=float)
-    if component_axis == 1:
-        for j in range(coords.shape[1]):
-            i = np.argmax(np.abs(coords[:, j]))
-            if coords[i, j] < 0:
-                coords[:, j] = -coords[:, j]
-    else:
-        for i in range(coords.shape[0]):
-            j = np.argmax(np.abs(coords[i, :]))
-            if coords[i, j] < 0:
-                coords[i, :] = -coords[i, :]
+    for i in range(coords.shape[0]):
+        j = np.argmax(np.abs(coords[i, :]))
+        if coords[i, j] < 0:
+            coords[i, :] = -coords[i, :]
     return coords
 
-
-# Golden eigenvalues captured from the sklearn-backed implementation over
-# test_samples.npz with the default --ntop 500. Eigenvalues are the portable
-# invariant (stable across BLAS backends and across the scipy/SVD rewrite);
-# untransposed per-feature coordinates are not (see test_plotPCA_default_eigenvalues).
-_GOLDEN_DEFAULT_EIGENVALUES = np.array([
-    5.807692278756, 0.074230288836, 0.048971777735,
-    0.036809415525, 0.026706723301, 0.017613563943,
+_GOLDEN_DEFAULT_COORDS = np.array([
+    [8.096369192617, 27.65422672360, -1.598082844166, -15.48892072797, -18.49767188707, -0.1659204570140],
+    [3.552671394141, -4.837722476763, 20.02992087542, 0.4882670876827, -7.713434681130, -11.51970219935],
+    [10.09925342625, -9.161879672887, 1.351881375625, -11.06368229223, -0.2099739792611, 8.984401142503],
+    [-11.75933735644, 2.772538322120, 7.637287613484, -8.588903203498, 5.490108421837, 4.448306202499],
+    [4.468893041249, 2.035996403779, -1.674415783401, -5.444924755301, 9.786060422166, -9.171609328491],
+    [3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15],
 ])
-
+_GOLDEN_DEFAULT_EIGENVALUES = np.array([
+    282.9918757435, 125.9323562327, 78.18623219731,
+    65.59902453902, 47.29051128753, 1.388013416800e-29,
+])
 
 def test_plotPCA_default():
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
@@ -78,7 +66,6 @@ def test_plotPCA_default():
 
     res = compare_images(ROOT + 'test_plotPCA_default.png', plotfile.name, tolerance)
     assert res is None, res
-    #assert filecmp.cmp(os.path.join(ROOT, 'test_plotPCA_default.tsv'), tsvfile.name) is True
 
     os.remove(plotfile.name)
     os.remove(tsvfile.name)
@@ -102,33 +89,26 @@ def test_plotPCA_outFileNameData():
     # Component index column
     np.testing.assert_array_equal(data[:, 0], np.arange(1, 7))
     eigenvalues = data[:, -1]
-    expected_eigenvalues = np.array([
-        5.807692278755936, 0.07423028883557825, 0.04897177773493676,
-        0.03680941552538939, 0.026706723301448194, 0.017613563942900697,
-    ])
-    np.testing.assert_allclose(eigenvalues, expected_eigenvalues, rtol=1e-5)
+    np.testing.assert_allclose(eigenvalues, _GOLDEN_DEFAULT_EIGENVALUES, rtol=1e-4, atol=1e-6)
 
     os.remove(plotfile.name)
     os.remove(tsvfile.name)
 
 
 def test_plotPCA_default_eigenvalues():
-    """Regression on the untransposed eigenvalues, the portable numeric
-    invariant of this path.
-
-    We deliberately do NOT assert the projected coordinates here. After PC1
-    the eigenvalues are tiny and near-degenerate (~0.07, 0.05, 0.04, ...), so
-    the corresponding eigenvectors are free to rotate within that subspace,
-    and the top-``ntop`` row selection (np.argpartition) breaks variance ties
-    differently across BLAS backends (Linux OpenBLAS vs macOS Accelerate).
-    The resulting per-feature coordinates are therefore not reproducible
-    across platforms/implementations. Coordinate-level regression is covered
-    by test_plotPCA_transpose, whose components are well separated and stable.
-    The default plot itself is still pinned by test_plotPCA_default (image
-    comparison)."""
+    """Regression on the default (scores) eigenvalues and per-sample
+    coordinates. Components are well separated and stable on this synthetic
+    wt/kd matrix, so both are safe to pin sign-invariantly; the last
+    component is a numerical-zero residual so we skip its unstable sign."""
     data = _run_pca()
+    assert data.shape == (6, 8)
     np.testing.assert_array_equal(data[:, 0], np.arange(1, 7))
-    np.testing.assert_allclose(data[:, -1], _GOLDEN_DEFAULT_EIGENVALUES, rtol=1e-5)
+    # Components are rows -> sign-fix per row (axis=0).
+    coords = _sign_fix(data[:, 1:7])
+    golden = _sign_fix(_GOLDEN_DEFAULT_COORDS)
+    # Compare the informative components; the final ~1e-15 residual row is noise.
+    np.testing.assert_allclose(coords[:-1], golden[:-1], rtol=1e-4, atol=1e-6)
+    np.testing.assert_allclose(data[:, -1], _GOLDEN_DEFAULT_EIGENVALUES, rtol=1e-4, atol=1e-6)
 
 
 def test_plotPCA_variance_matches_eigenvalues():
@@ -139,8 +119,9 @@ def test_plotPCA_variance_matches_eigenvalues():
     assert np.all(np.diff(eig) <= 1e-9), "eigenvalues must be non-increasing"
     pvar = eig / eig.sum()
     np.testing.assert_allclose(pvar.sum(), 1.0, rtol=1e-9)
-    # PC1 dominates on this synthetic wt/kd matrix.
-    assert pvar[0] > 0.9
+    # PC1 explains the largest (though not overwhelming) share of the
+    # per-sample variance on this synthetic wt/kd matrix.
+    assert pvar[0] > 0.4
 
 
 def test_plotPCA_ntop_zero_uses_all_rows():
@@ -157,27 +138,32 @@ def test_plotPCA_ntop_zero_uses_all_rows():
 
 
 def test_plotPCA_ntop_smaller_than_samples():
-    """When --ntop is below the sample count the table is truncated to the
-    number of retained components (rows)."""
-    # plot=False: the numeric table is well-defined even with 2 features.
+    """When --ntop selects fewer bins than there are samples, the number of
+    components is capped at the bin count (k = min(n_samples, n_bins)), so
+    the table is truncated to that many rows; all 6 samples still appear as
+    columns."""
     data = _run_pca(["--ntop", "2"], plot=False)
-    assert data.shape == (2, 4)
+    assert data.shape == (2, 8)
     np.testing.assert_array_equal(data[:, 0], np.arange(1, 3))
-    # First component carries all the variance for the 2-feature case.
-    np.testing.assert_allclose(data[0, -1], 12.0, rtol=1e-6)
-    assert abs(data[1, -1]) < 1e-6
+    eig = data[:, -1]
+    assert np.all(np.diff(eig) <= 1e-9), "eigenvalues must be non-increasing"
+    assert np.all(eig >= -1e-9), "eigenvalues must be non-negative"
+    # With exactly 2 standardized (unit population-variance) bins, the 2
+    # components capture all the sample variance: sum of eigenvalues (which
+    # use the n-1 denominator) equals 2 * n/(n-1) for n=6 samples.
+    np.testing.assert_allclose(eig.sum(), 2 * 6 / 5, rtol=1e-6)
 
 
-def test_plotPCA_ntop_below_samples_plot_errors_cleanly():
-    """Plotting with fewer retained components than samples cannot lay out the
-    scatter; the tool must exit with a clear message rather than crash with an
-    IndexError (previously a bug at correlation.py's scatter loop)."""
+def test_plotPCA_ntop_below_samples_plots_successfully():
+    """Plotting with fewer retained bins than samples still works: the number
+    of available components is simply capped below the sample count
+    (previously this crashed with an IndexError at correlation.py's scatter
+    loop, which assumed one component per sample)."""
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
     args = "-in {0}test_samples.npz -o {1} --ntop 2".format(TEST_DATA, plotfile.name).split()
     try:
-        with pytest.raises(SystemExit) as exc:
-            deeptools.plotPCA.main(args)
-        assert "principal component" in str(exc.value)
+        deeptools.plotPCA.main(args)
+        assert os.path.exists(plotfile.name) and os.path.getsize(plotfile.name) > 0
     finally:
         if os.path.exists(plotfile.name):
             os.remove(plotfile.name)
@@ -214,48 +200,12 @@ def test_plotPCA_requires_an_output():
     assert "must be specified" in str(exc.value)
 
 
-# Golden values for the transposed PCA (samples as observations, so each row
-# of the table is a component's projection across the six samples). Captured
-# after fixing the projection bug; stored raw (components are rows -> axis=0).
-_GOLDEN_TRANSPOSE_COORDS = np.array([
-    [8.096369192617, 27.65422672360, -1.598082844166, -15.48892072797, -18.49767188707, -0.1659204570140],
-    [3.552671394141, -4.837722476763, 20.02992087542, 0.4882670876827, -7.713434681130, -11.51970219935],
-    [10.09925342625, -9.161879672887, 1.351881375625, -11.06368229223, -0.2099739792611, 8.984401142503],
-    [-11.75933735644, 2.772538322120, 7.637287613484, -8.588903203498, 5.490108421837, 4.448306202499],
-    [4.468893041249, 2.035996403779, -1.674415783401, -5.444924755301, 9.786060422166, -9.171609328491],
-    [3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15, 3.400996688227e-15],
-])
-_GOLDEN_TRANSPOSE_EIGENVALUES = np.array([
-    282.9918757435, 125.9323562327, 78.18623219731,
-    65.59902453902, 47.29051128753, 1.388013416800e-29,
-])
-
-
-def test_plotPCA_transpose():
-    """--transpose runs (previously crashed) and projects each sample onto the
-    PCs. Coordinates are compared sign-invariantly; the last component is a
-    numerical-zero residual so we skip its unstable sign."""
-    data = _run_pca(["--transpose"])
-    assert data.shape == (6, 8)
-    np.testing.assert_array_equal(data[:, 0], np.arange(1, 7))
-    # Transposed table: components are rows -> sign-fix per row (axis=0).
-    coords = _sign_fix(data[:, 1:7], component_axis=0)
-    golden = _sign_fix(_GOLDEN_TRANSPOSE_COORDS, component_axis=0)
-    # Compare the informative components; the final ~1e-15 residual row is noise.
-    np.testing.assert_allclose(coords[:-1], golden[:-1], rtol=1e-4, atol=1e-6)
-    np.testing.assert_allclose(data[:, -1], _GOLDEN_TRANSPOSE_EIGENVALUES, rtol=1e-4, atol=1e-6)
-    # Transposed eigenvalues differ from the untransposed layout.
-    assert not np.allclose(data[:, -1], _GOLDEN_DEFAULT_EIGENVALUES)
-
-
-def test_plotPCA_log2_and_rowCenter_affect_output():
-    """--log2 and --rowCenter now actually transform the data before the PCA,
-    so each changes the result relative to the default."""
+def test_plotPCA_log2_affects_output():
+    """--log2 transforms the data before the PCA, so it changes the result
+    relative to the default."""
     default = _run_pca()
     log2 = _run_pca(["--log2"])
-    rowcenter = _run_pca(["--rowCenter"])
     assert not np.allclose(default[:, -1], log2[:, -1]), "--log2 was a no-op"
-    assert not np.allclose(default[:, -1], rowcenter[:, -1]), "--rowCenter was a no-op"
 
 
 def test_plotPCA_ggplot():

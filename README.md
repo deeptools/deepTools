@@ -7,6 +7,7 @@
 ![docs](https://github.com/deeptools/deepTools/actions/workflows/test_docs.yml/badge.svg)
 ![rust](https://github.com/deeptools/deepTools/actions/workflows/test_rust.yml/badge.svg)
 ![planemo](https://github.com/deeptools/deepTools/actions/workflows/test_planemo.yml/badge.svg)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3234455.svg)](https://doi.org/10.5281/zenodo.3234455)
 
 
 ## User-friendly tools for exploring deep-sequencing data

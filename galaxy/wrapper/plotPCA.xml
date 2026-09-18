@@ -20,8 +20,6 @@
                 $advancedOpt.log2
                 --PCs $advancedOpt.PCs
                 --ntop $advancedOpt.ntop
-                $advancedOpt.transpose
-                $advancedOpt.rowCenter
                 #if $advancedOpt.colors:
                     --colors '$advancedOpt.colors'
                 #end if
@@ -47,16 +45,14 @@
             <param argument="--PCs" label="Principal components to plot" value="1 2" type="text"
                 help="The principal components to plot. If specified, you must provide two different integers, greater than zero, separated by a space. An example (and the default) is '1 2'." />
             <param argument="--ntop" label="Number of rows to use" value="1000" type="integer"
-                help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. If the matrix is to be transposed, rows with 0 variance are always excluded, even if a values of 0 is specified. The default is 1000." />
+                help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. The default is 1000." />
             <param argument="--log2" type="boolean" truevalue="--log2" falsevalue="" label="log2 transform data" help="log2 transform the datapoints prior to computing the PCA. Note that 0.01 is added to all values to prevent 0 values from becoming -infinity. Using this option with input that contains negative values will result in an error." />
-            <param argument="--transpose" type="boolean" label="Transpose Matrix?" help="Perform the PCA on the transpose of the matrix, (i.e., with samples as rows and features/genes as columns). This then matches what is typically done in R for RNAseq data." truevalue="--transpose" falsevalue="" />
-            <param argument="--rowCenter" type="boolean" label="Center Rows?" help="When specified, each row (bin, gene, etc.) in the matrix is centered at 0 before the PCA is computed. This is useful only if you have a strong bin/gene/etc. correlation and the resulting principal component has samples stacked vertically. This option is not applicable if the PCA is performed on the transposed matrix." truevalue="--rowCenter" falsevalue="" />
             <param argument="--colors" type="text" label="Symbol colors" value="" optional="true"
                 help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors 'red blue green'. If not specified, the symbols will be given automatic colors." />
             <param argument="--markers" type="text" label="Custom markers" value="" optional="true"
                 help="A list of markers for the symbols. (e.g., '&lt;','&gt;','o') are accepted. The marker values should be space separated. For example, 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes." />
-            <param argument="--addLabels" type="boolean" label="Add Labels to the plot" 
-                help="If specified, the labels will be added next to points also legend is omitted." 
+            <param argument="--addLabels" type="boolean" label="Add Labels to the plot"
+                help="If specified, the labels will be added next to points also legend is omitted."
                 truevalue="--addLabels" falsevalue="" />
             <expand macro="ggplot" />
         </expand>
@@ -69,29 +65,24 @@
     </outputs>
     <tests>
         <test expect_num_outputs="1">
-            <param name="corData" value="multiBamSummary_result2b.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamSummary_pca.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
             <param name="advancedOpt|showAdvancedOpt" value="yes" />
             <output name="outFileName" file="plotPCA_result1.png" ftype="png" compare="image_diff" eps="0.1" />
         </test>
         <test expect_num_outputs="2">
-            <param name="corData" value="multiBamSummary_result2b.npz" ftype="deeptools_coverage_matrix" />
+            <param name="corData" value="multiBamSummary_pca.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />
             <param name="outFileFormat" value="png" />
             <param name="outFileNameData" value="True" />
             <output name="outFileName" file="plotPCA_result2.png" ftype="png" compare="image_diff" eps="0.1" />
             <output name="output_outFileNameData" ftype="tabular">
-                <!-- The duplicate-sample column is mathematically zero, so it comes
-                     out as tiny BLAS-dependent noise (~1e-18) that varies across
-                     platforms. Assert structure, the stable PC1 coordinates (sign
-                     may flip across BLAS, hence -?), and the leading eigenvalue;
-                     do not pin the degenerate zero column or eigenvalue. -->
                 <assert_contents>
-                    <has_n_columns n="4" />
-                    <has_line_matching expression="Component\tbowtie2-test1.bam\tbowtie2-test1.bam\tEigenvalue" />
-                    <has_line_matching expression="1\t-?1\.99949\d*\t.*\t2\.999\d*" />
-                    <has_line_matching expression="2\t-?0\.96079\d*\t.*" />
+                    <has_n_columns n="5" />
+                    <has_line_matching expression="Component\talignmentSieve.bam\talignmentSieve3.bam\talignmentSieve4.bam\tEigenvalue" />
+                    <has_line_matching expression="1\t-?16\.92016\d*\t.*\t748\.5500\d*" />
+                    <has_line_matching expression="2\t-?1\.174202\d*\t.*" />
                 </assert_contents>
             </output>
         </test>
@@ -109,7 +100,7 @@ Output
 
 The result is a panel of two plots:
 
-1. Either the loadings (default) or the projections (``--transpose``) of the samples on the desired **two principal components**.
+1. The projection (score) of each sample on the desired **two principal components**.
 2. The **Scree plot** for principal components where the bars represent the eigenvalues the red line traces the amount of variability is explained by the individual components in a cumulative manner.
 
 Example plot
