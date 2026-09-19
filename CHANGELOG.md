@@ -17,6 +17,22 @@
 * --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
 
+## [4.1.0](https://github.com/deeptools/deepTools/compare/4.0.0...4.1.0) (2026-09-19)
+
+
+### Features
+
+* deprecate *_old entrypoints ([#1473](https://github.com/deeptools/deepTools/issues/1473)) ([dfbf3e6](https://github.com/deeptools/deepTools/commit/dfbf3e6483ce0440003e51751b6fd37ce13339c5))
+* deprecate compute/correctGCbias ([#1471](https://github.com/deeptools/deepTools/issues/1471)) ([ec4fbc8](https://github.com/deeptools/deepTools/commit/ec4fbc8018434f2cf04353d3b58116f09175de00))
+* PCA drop --transpose/--centerRows as scores are default now in plotPCA ([#1472](https://github.com/deeptools/deepTools/issues/1472)) ([0604617](https://github.com/deeptools/deepTools/commit/060461736e573252f2d00099481086a0279ce7e1))
+
+
+### Documentation
+
+* include release DOI in README ([0604617](https://github.com/deeptools/deepTools/commit/060461736e573252f2d00099481086a0279ce7e1))
+* make contribution.md a bit more verbose ([0604617](https://github.com/deeptools/deepTools/commit/060461736e573252f2d00099481086a0279ce7e1))
+* make sure changelog in docs reflects changelog in repo ([#1469](https://github.com/deeptools/deepTools/issues/1469)) ([51e50dd](https://github.com/deeptools/deepTools/commit/51e50dd0543a84392ebec09ac090f95da56577fc))
+
 ## 3.5.6
 * minimal supported python version raised to 3.9 (numpy >= 2 support); NaN handling switched to np.nan
 * drop conda usage in pypi/test/planemo CI in favor of pip installs; samtools now pulled from conda-forge/bioconda where still needed in CI
