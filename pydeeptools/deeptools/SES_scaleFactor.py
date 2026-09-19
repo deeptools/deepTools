@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 import numpy as np
 
@@ -33,9 +30,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
         number of sites to sample from the genome. For more info see
         the documentation of the CountReadsPerBin class
     normalizationLength : int
-        length, in bp, to normalize the data.
-        For a value of 1, on average
-        1 read per base pair is found
+        DEPRECATED: accepted for backward compatibility but currently
+        has no effect on the computed scale factors.
     avg_method : str
         defines how the different values are to be summarized.
         The options are 'mean' and 'median'

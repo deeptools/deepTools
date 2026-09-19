@@ -1,7 +1,6 @@
 import deeptools.bamCoverage2 as bam_cov
 import deeptools.bamCompare2 as bam_comp
 import os.path
-import filecmp
 from os import unlink
 import tempfile
 

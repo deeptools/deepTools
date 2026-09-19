@@ -4,14 +4,14 @@ import copy
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.stats
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker
 import matplotlib.mlab
 import matplotlib.markers
 import matplotlib.colors as pltcolors
-from deeptools.utilities import toString, convertCmap
+from deeptools.utilities import toString
 from scipy.linalg import svd
 
 class Correlation:

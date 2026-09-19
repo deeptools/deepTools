@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import argparse
 import sys
 
@@ -48,12 +45,10 @@ def parseArguments(args=None):
                         type=int)
 
     parser.add_argument('--normalizationLength', '-nl',
-                        help='By default, data is normalized to 1 '
-                        'fragment per 100 bases. The expected value is an '
-                        'integer. For example, if normalizationLength '
-                        'is 1000, then the resulting scaling factor '
-                        'will cause the average coverage of the BAM file to '
-                        'have on  average 1 fragment per kilobase',
+                        help='DEPRECATED: this option is accepted for '
+                        'backward compatibility but currently has no '
+                        'effect on the computed scale factors, and will '
+                        'be removed in a future release.',
                         type=int,
                         default=10)
 
@@ -102,6 +97,13 @@ def main(args=None):
     if len(args.bamfiles) > 2:
         print("SES method to estimate scale factors only works for two samples")
         exit(0)
+
+    if args.normalizationLength != 10:
+        sys.stderr.write(
+            "WARNING: --normalizationLength/-nl has no effect on the computed "
+            "scale factors; it is accepted for backward compatibility and will "
+            "be removed in a future release.\n"
+        )
 
     sys.stderr.write("{:,} number of samples will be computed.\n".format(args.numberOfSamples))
     sizeFactorsDict = estimateScaleFactor(args.bamfiles, args.sampleWindowLength,

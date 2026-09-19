@@ -1,5 +1,4 @@
 import os
-import filecmp
 import numpy as np
 import pytest
 from matplotlib.testing.compare import compare_images

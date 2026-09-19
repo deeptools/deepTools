@@ -720,9 +720,6 @@ class CountReadsPerBin(object):
 
         return coverages
 
-    def getReadLength(self, read):
-        return len(read)
-
     @staticmethod
     def is_proper_pair(read, maxPairedFragmentLength):
         """

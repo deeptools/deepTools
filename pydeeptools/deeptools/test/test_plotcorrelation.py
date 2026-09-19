@@ -1,7 +1,6 @@
 import deeptools.plotCorrelation as pc
 
 import os.path
-from os import unlink
 from matplotlib.testing.compare import compare_images
 import tempfile
 import pytest

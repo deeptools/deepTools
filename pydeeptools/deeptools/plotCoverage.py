@@ -1,11 +1,8 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 import sys
 import argparse
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.pyplot as plt
 from importlib.metadata import version
 import deeptools.countReadsPerBin as countR
@@ -100,7 +97,7 @@ def required_args():
     optional.add_argument('--ggplot',
                           help='Use ggplot theme for figures',
                           action='store_true')
-    
+
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
                           'that have zero or nan values in _all_ samples '
@@ -257,7 +254,6 @@ def main(args=None):
     # the current implementation aims to find the y_value for which 50% of the reads >= x (coverage) and
     # sets that as the x_axis range.
     y_max = []
-    data = []
     # We need to manually set the line colors so they're shared between the two plots.
     for idx, col in enumerate(num_reads_per_bin.T):
         if args.plotFile:

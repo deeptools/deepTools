@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import sys
 import argparse
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.pyplot as plt
 from scipy import interpolate
 from scipy.stats import poisson
@@ -122,11 +119,11 @@ def get_optional_args():
                           help='Title of the plot, to be printed on top of '
                           'the generated image. Leave blank for no title. (Default: %(default)s)',
                           default='')
-    
+
     optional.add_argument('--ggplot',
                           help='Use ggplot theme for figures',
                           action='store_true')
-    
+
     optional.add_argument('--skipZeros',
                           help='If set, then regions with zero overlapping reads'
                           'for *all* given BAM files are ignored. This '
@@ -414,7 +411,7 @@ def main(args=None):
             count = count / count[-1]  # to normalize y from 0 to 1
             j = i % len(pyplot_line_styles)
             plt.plot(x, count, label=args.labels[i], linestyle=pyplot_line_styles[j])
-        
+
         plt.xlabel('rank')
         plt.ylabel('fraction w.r.t. bin with highest coverage')
         plt.legend(loc='upper left')

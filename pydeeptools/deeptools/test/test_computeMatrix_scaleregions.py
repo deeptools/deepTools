@@ -1,10 +1,7 @@
 import deeptools.computeMatrix2 as cm
 import tempfile
 import os.path
-import json
-import numpy as np
-from typing import Dict, List, Any, Tuple
-from .test_computeMatrix_referencepoint import _parse_mat_gz, _compare_mat_gz, _compare_tab_files,_compare_bed_files
+from .test_computeMatrix_referencepoint import _compare_mat_gz, _compare_tab_files,_compare_bed_files
 
 ALLOWED_DELTA = 1.0
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_computematrix/"

@@ -1,9 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import sys
 import argparse
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 from importlib.metadata import version
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile, expand_list
@@ -139,7 +136,7 @@ def plotCorrelationArgs():
                           "[s, s, s, o, o, o] values. "
                           "If not specified, the symbols will be only filled circles ('o').",
                           default=['o'])
-    
+
     optional.add_argument('--addLabels',
                           help='Add labels to the plot. If specified, the labels will be added next '
                           'to points also legend is ommited.',

@@ -146,24 +146,6 @@ def getCommonChrNames(bamFileHandles, verbose=True):
     return chr_sizes, non_common_chr
 
 
-def copyFileInMemory(filePath, suffix=''):
-    """
-    copies a file into the special /dev/shm device which
-    moves the file into memory.
-    This process speeds ups the multiprocessor access to such files
-    """
-
-    # fallback for windows users
-    if os.name == 'nt':
-        return filePath
-
-    memFileName = getTempFileName(suffix=suffix)
-    import shutil
-    shutil.copyfile(filePath, memFileName)
-
-    return memFileName
-
-
 def getTempFileName(suffix=''):
     """
     Return a temporary file name. The calling function is responsible for
@@ -247,17 +229,6 @@ def mungeChromosome(chrom, chromList):
 
     # This shouldn't actually happen
     return None
-
-
-def bam_total_reads(bam_handle, chroms_to_ignore, stats):
-    """
-    Count the total number of mapped reads in a BAM file, filtering
-    the chromosome given in chroms_to_ignore list
-    """
-    if chroms_to_ignore:
-        return sum([s[0] for k, s in stats.items() if k not in chroms_to_ignore])
-    else:
-        return sum([s[0] for s in stats.values()])
 
 
 def bam_blacklisted_worker(args):

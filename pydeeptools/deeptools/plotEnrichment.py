@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import sys
 import argparse
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
@@ -186,7 +183,7 @@ def plot_enrichment_args():
     bed12.add_argument('--keepExons',
                        help="For BED12 files, use each exon as a region, rather than columns 2/3",
                        action="store_true")
-    
+
 
     optional.add_argument('--ggplot',
                       help='Enables the ggplot theme for the plot (Default: None)',
@@ -303,8 +300,6 @@ def getEnrichment_worker(arglist):
 
         chrom = mungeChromosome(chrom, fh.references)
 
-        lpos = None
-        prev_pos = set()
         for read in fh.fetch(chrom, start, end):
             # Filter
             if read.pos < start:
@@ -369,8 +364,6 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
     elif len(args.colors) < barsPerPlot:
         sys.exit("Error: {0} colors were requested, but {1} were needed!".format(len(args.colors), barsPerPlot))
 
-    data = []
-    
     grids = gridspec.GridSpec(rows, cols)
     plt.rcParams['font.size'] = 10.0
 
@@ -460,7 +453,7 @@ def main(args=None):
         sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
 
     if args.ggplot:
-        plt.style.use('ggplot') 
+        plt.style.use('ggplot')
 
     # Ensure that if we're given an attributeKey that it's not empty
     if args.attributeKey and args.attributeKey == "":

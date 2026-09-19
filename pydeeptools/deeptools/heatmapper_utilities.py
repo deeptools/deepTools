@@ -1,5 +1,5 @@
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.colors as pltcolors
 import textwrap
 
@@ -174,17 +174,16 @@ def justify_text(text, line_width):
     Ex. If xticks label is longer, then user specify the line width for the text.
 
     """
-    words = text.split()
     lines = textwrap.wrap(text, width=line_width)
     justified_lines = []
-    
+
     for line in lines:
         words_in_line = line.split()
         if len(words_in_line) > 1:
             spaces_needed = line_width - sum(len(w) for w in words_in_line)
             space_between = spaces_needed // (len(words_in_line) - 1)
             extra_spaces = spaces_needed % (len(words_in_line) - 1)
-            
+
             justified_line = ""
             for i, word in enumerate(words_in_line):
                 justified_line += word
@@ -193,5 +192,5 @@ def justify_text(text, line_width):
             justified_lines.append(justified_line)
         else:
             justified_lines.append(line)
-    
+
     return "\n".join(justified_lines)

@@ -1,6 +1,5 @@
 import sys
 import gzip
-from collections import OrderedDict
 import numpy as np
 from copy import deepcopy
 
@@ -138,36 +137,6 @@ def chopRegionsFromMiddle(exonsInput, left=0, right=0):
         padRight = right - rSum
 
     return leftBins, rightBins, padLeft, padRight
-
-
-def trimZones(zones, maxLength, binSize, padRight):
-    """
-    Given a (variable length) list of lists of (start, end) tuples, trim/remove and tuple that extends past maxLength (e.g., the end of a chromosome)
-
-    Returns the trimmed zones and padding
-    """
-    output = []
-    for zone, nbins in zones:
-        outZone = []
-        changed = False
-        for reg in zone:
-            if reg[0] >= maxLength:
-                changed = True
-                padRight += reg[1] - reg[0]
-                continue
-
-            if reg[1] > maxLength:
-                changed = True
-                padRight += reg[1] - maxLength
-                reg = (reg[0], maxLength)
-            if reg[1] > reg[0]:
-                outZone.append(reg)
-        if changed:
-            nBins = sum(x[1] - x[0] for x in outZone) // binSize
-        else:
-            nBins = nbins
-        output.append((outZone, nBins))
-    return output, padRight
 
 
 def compute_sub_matrix_wrapper(args):
@@ -742,13 +711,6 @@ class heatmapper(object):
         else:
             return avg
 
-    def matrix_from_dict(self, matrixDict, regionsDict, parameters):
-        self.regionsDict = regionsDict
-        self.matrixDict = matrixDict
-        self.parameters = parameters
-        self.lengthDict = OrderedDict()
-        self.matrixAvgsDict = OrderedDict()
-
     def read_matrix_file(self, matrix_file):
         # reads a bed file containing the position
         # of genomic intervals
@@ -960,34 +922,6 @@ class heatmapper(object):
                     values = [str(x) for x in np.ma.__getattribute__(averagetype)(sub_matrix['matrix'], axis=0)]
                     fh.write("{}\t{}\t{}\n".format(sub_matrix['sample'], sub_matrix['group'], "\t".join(values)))
 
-    def save_matrix_values(self, file_name):
-        # print a header telling the group names and their length
-        fh = open(file_name, 'wb')
-        info = []
-        groups_len = np.diff(self.matrix.group_boundaries)
-        for i in range(len(self.matrix.group_labels)):
-            info.append("{}:{}".format(self.matrix.group_labels[i],
-                                       groups_len[i]))
-        fh.write(toBytes("#{}\n".format("\t".join(info))))
-        # add to header the x axis values
-        fh.write(toBytes("#downstream:{}\tupstream:{}\tbody:{}\tbin size:{}\tunscaled 5 prime:{}\tunscaled 3 prime:{}\n".format(
-                 self.parameters['downstream'],
-                 self.parameters['upstream'],
-                 self.parameters['body'],
-                 self.parameters['bin size'],
-                 self.parameters.get('unscaled 5 prime', 0),
-                 self.parameters.get('unscaled 3 prime', 0))))
-        sample_len = np.diff(self.matrix.sample_boundaries)
-        for i in range(len(self.matrix.sample_labels)):
-            info.extend([self.matrix.sample_labels[i]] * sample_len[i])
-        fh.write(toBytes("{}\n".format("\t".join(info))))
-
-        fh.close()
-        # reopen again using append mode
-        fh = open(file_name, 'ab')
-        np.savetxt(fh, self.matrix.matrix, fmt="%.4g", delimiter="\t")
-        fh.close()
-
     def save_BED(self, file_handle):
         boundaries = np.array(self.matrix.group_boundaries)
         # Add a header
@@ -1025,25 +959,6 @@ class heatmapper(object):
                 file_handle.write("\t{}".format(self.matrix.silhouette[idx]))
             file_handle.write("\n")
         file_handle.close()
-
-    @staticmethod
-    def matrix_avg(matrix, avgType='mean'):
-        matrix = np.ma.masked_invalid(matrix)
-        return np.ma.__getattribute__(avgType)(matrix, axis=0)
-
-    def get_individual_matrices(self, matrix):
-        """In case multiple matrices are saved one after the other
-        this method splits them appart.
-        Returns a list containing the matrices
-        """
-        num_cols = matrix.shape[1]
-        num_ind_cols = self.get_num_individual_matrix_cols()
-        matrices_list = []
-        for i in range(0, num_cols, num_ind_cols):
-            if i + num_ind_cols > num_cols:
-                break
-            matrices_list.append(matrix[:, i:i + num_ind_cols])
-        return matrices_list
 
     def get_num_individual_matrix_cols(self):
         """

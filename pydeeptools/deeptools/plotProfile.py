@@ -1,13 +1,9 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
 import sys
 
 import argparse
 import numpy as np
 from math import ceil
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.pyplot as plt
 from matplotlib.font_manager import FontProperties
 from matplotlib import colors as pltcolors
@@ -333,7 +329,6 @@ class Profile(object):
 
 
     def plot_heatmap(self):
-        label_rotation = 45
         cmap = ['RdYlBu_r']
         if self.color_list is not None:  # check the length to be equal to the numebr of plots otherwise multiply it!
             cmap = self.color_list

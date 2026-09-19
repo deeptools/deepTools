@@ -1,14 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 from __future__ import division
 
 import argparse
-from collections import OrderedDict
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
 import matplotlib.gridspec as gridspec
 from matplotlib import ticker
 import copy
@@ -18,9 +14,8 @@ import sys
 from deeptools import parserCommon
 from deeptools import heatmapper
 from deeptools.heatmapper_utilities import plot_single, justify_text
-from deeptools.utilities import convertCmap
 from deeptools.computeMatrixOperations import filterHeatmapValues
-import textwrap, re
+import re
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -290,8 +285,6 @@ def plotMatrix(hm, outFileName,
         yMax = [yMax]
 
     plt.rcParams['font.size'] = matplotlib.rcParams['font.size']
-
-    fontP = FontProperties()
 
     showSummaryPlot = False
     showColorbar = False
@@ -606,42 +599,6 @@ def plotMatrix(hm, outFileName,
 
     plt.savefig(outFileName, dpi=dpi, format=image_format)
     plt.close()
-
-
-def mergeSmallGroups(matrixDict):
-    group_lengths = [len(x) for x in matrixDict.values()]
-    min_group_length = sum(group_lengths) * 0.01
-
-    to_merge = []
-    i = 0
-    _mergedHeatMapDict = OrderedDict()
-
-    for label, ma in matrixDict.items():
-        # merge small groups together
-        # otherwise visualization is impaired
-        if group_lengths[i] > min_group_length:
-            if len(to_merge):
-                to_merge.append(label)
-                new_label = " ".join(to_merge)
-                new_ma = np.concatenate([matrixDict[item]
-                                        for item in to_merge], axis=0)
-            else:
-                new_label = label
-                new_ma = matrixDict[label]
-
-            _mergedHeatMapDict[new_label] = new_ma
-            to_merge = []
-        else:
-            to_merge.append(label)
-        i += 1
-    if len(to_merge) > 1:
-        new_label = " ".join(to_merge)
-        new_ma = np.array()
-        for item in to_merge:
-            new_ma = np.concatenate([new_ma, matrixDict[item]])
-        _mergedHeatMapDict[new_label] = new_ma
-
-    return _mergedHeatMapDict
 
 
 def main(args=None):

@@ -1,10 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import sys
 import argparse
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 import matplotlib.pyplot as plt
 from importlib.metadata import version
 from deeptools.correlation import Correlation
@@ -95,7 +92,7 @@ def plot_correlation_args():
     optional.add_argument('--ggplot',
                           help='Use ggplot theme for figures',
                           action='store_true')
-    
+
     optional.add_argument('--plotFileFormat',
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '

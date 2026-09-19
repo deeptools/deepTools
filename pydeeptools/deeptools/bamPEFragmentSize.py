@@ -1,16 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import argparse
 import sys
-import matplotlib
 import numpy as np
-from deeptools import matplotlib_defaults
+from deeptools import matplotlib_defaults  # noqa: F401
 from importlib.metadata import version
 import matplotlib.pyplot as plt
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 
-# own tools
 from deeptools.parserCommon import writableFile
 
 
@@ -412,15 +407,10 @@ def main(args=None):
             labels = list(fraglengths.keys())
 
         i = 0
-        data = []
         for bam in fraglengths.keys():
             d = fraglengths[bam]
             if d is None:
                 d = readlengths[bam]
-            if args.maxFragmentLength > 0:
-                maxVal = args.maxFragmentLength
-            else:
-                maxVal = d["mean"] * 2
 
             plt.bar(
                 d["lengths"][1][:-1],
