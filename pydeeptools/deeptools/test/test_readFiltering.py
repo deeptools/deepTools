@@ -1,5 +1,5 @@
 import deeptools.estimateReadFiltering as est
-import deeptools.alignmentSieve as sieve
+import deeptools.alignmentSieve2 as sieve
 import os.path
 from os import unlink
 import hashlib
@@ -80,7 +80,7 @@ def test_sieve():
     unlink(outfile)
 
     h1 = hashlib.md5(pysam.view(outfiltered).encode('utf-8')).hexdigest()
-    expectedh = 'b90befdd5f073f14acb9a38661f301ad'
+    expectedh = '98e56d349ca4231bef54fd7c97622bd2'
     assert f"{h1}" == f"{expectedh}"
     unlink(outfiltered)
 
