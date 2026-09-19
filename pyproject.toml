@@ -54,7 +54,7 @@ classifiers = [
 readme = "README.md"
 [project.optional-dependencies]
 actions = [
-    "flake8",
+    "ruff",
     "pytest",
     "twine",
     "build",
@@ -74,6 +74,9 @@ repository = "https://github.com/deeptools/deepTools"
 
 [tool.setuptools]
 packages = ["deeptools"]
+
+[tool.ruff]
+target-version = "py312"
 
 [project.scripts]
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
@@ -123,6 +126,7 @@ OPENSSL_DIR = "$CONDA_PREFIX"
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
 docs = "sphinx-build -b html docs docs/_build/html -W --keep-going"
+lint = "ruff check pydeeptools/"
 
 [tool.pixi.feature.py312.dependencies]
 python = "3.12.*"
