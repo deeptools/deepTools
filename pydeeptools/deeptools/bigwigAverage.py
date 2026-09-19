@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import argparse
 import sys
 
@@ -66,7 +65,7 @@ def getType(fname):
     """
     Tries to determine if a file is a wiggle, a bedgraph, or a bigWig file.
     """
-    if fname.endswith(".wig") or fname.endswith(".wiggle"):
+    if fname.endswith((".wig", ".wiggle")):
         return "wiggle"
     elif fname.lower().endswith(".bedgraph") or fname.endswith(".bdg"):
         return "bedgraph"
@@ -100,10 +99,9 @@ def average(tileCoverage, args):
 
 def main(args=None):
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        return
     args = parser.parse_args(args)
 
     nFiles = len(args.bigwigs)

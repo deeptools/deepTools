@@ -6,7 +6,7 @@ from deeptools.mapReduce import mapReduce
 
 
 def countReadsInInterval(args):
-    chrom, start, end, fname, toEOF = args
+    chrom, start, end, fname, _toEOF = args
 
     bam = openBam(fname)
     mapped = 0
@@ -66,21 +66,19 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
 
     Returns either the file handle or a tuple as described in returnStats
     """
-    format_options = ["required_fields=0x1FF"]
-    if sys.version_info.major >= 3:
-        format_options = [b"required_fields=0x1FF"]
+    format_options = [b"required_fields=0x1FF"]
     if not minimalDecoding:
         format_options = None
     try:
         bam = pysam.Samfile(bamFile, 'rb', format_options=format_options)
     except OSError:
         sys.exit(f"The file '{bamFile}' does not exist")
-    except:
+    except Exception:
         sys.exit(f"The file '{bamFile}' does not have BAM or CRAM format ")
 
     try:
         assert bam.check_index() is not False
-    except:
+    except Exception:
         sys.exit(f"'{bamFile}' does not appear to have an index. You MUST index the file first!")
 
     if bam.is_cram and returnStats:
@@ -93,11 +91,10 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
         if returnStats:
             stats = {chrom.contig: [chrom.mapped, chrom.unmapped] for chrom in bam.get_index_statistics()}
 
-    if bam.is_bam or (bam.is_cram and returnStats):
-        if mapped == 0:
-            sys.stderr.write(f"WARNING! '{bamFile}' does not have any mapped reads. Please "
-                             "check that the file is properly indexed and "
-                             "that it contains mapped reads.\n")
+    if (bam.is_bam or (bam.is_cram and returnStats)) and mapped == 0:
+        sys.stderr.write(f"WARNING! '{bamFile}' does not have any mapped reads. Please "
+                         "check that the file is properly indexed and "
+                         "that it contains mapped reads.\n")
 
     if returnStats:
         return bam, mapped, unmapped, stats

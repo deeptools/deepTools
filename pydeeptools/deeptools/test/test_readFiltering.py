@@ -22,9 +22,8 @@ def test_estimate_read_filtering_minimal():
     args = f'-b {BAMFILE_FILTER} -o {outfile}'.split()
     est.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['Sample\tTotal Reads\tMapped Reads\tAlignments in blacklisted regions\tEstimated mapped reads filtered\tBelow MAPQ\tMissing Flags\tExcluded Flags\tInternally-determined Duplicates\tMarked Duplicates\tSingletons\tWrong strand\n',
                 'test_filtering.bam\t193\t193\t0\t0.0\t0.0\t0.0\t0.0\t0.0\t0.0\t0.0\t0.0\n']
     # strip the path from the output
@@ -43,9 +42,8 @@ def test_estimate_read_filtering_params():
     args = f'-b {BAMFILE_FILTER} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {BEDFILE_FILTER} -o {outfile}'.split()
     est.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     # strip the path from the output
     _ = resp[1].split("\t")
     _[0] = os.path.basename(_[0])
@@ -66,9 +64,8 @@ def test_sieve():
     args = f'-b {BAMFILE_FILTER} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {BEDFILE_FILTER} -o {outfile} --filterMetrics {outlog} --filteredOutReads {outfiltered}'.split()
     sieve.main(args)
 
-    _foo = open(outlog, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outlog, 'r') as _foo:
+        resp = _foo.readlines()
 
     expected = ['#bamFilterReads --filterMetrics\n',
                 '#File\tReads Remaining\tTotal Initial Reads\n',
@@ -94,9 +91,8 @@ def test_sieve_BED():
     args = f'-b {PAIREDBAMFILE_FILTER} --minMappingQuality 10 --BED -o {outfile}'.split()
     sieve.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
 
     expected = ['chr2\t5000026\t5000390\n',
                 'chr2\t5000303\t5000711\n',
@@ -136,9 +132,8 @@ def test_sieve_BED_shift():
     args = f'-b {PAIREDBAMFILE_FILTER} --minMappingQuality 10 --BED -o {outfile} --shift 1 -2 3 -4'.split()
     sieve.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
 
     expected = ['chr2\t5000027\t5000388\n',
                 'chr2\t5000307\t5000708\n',

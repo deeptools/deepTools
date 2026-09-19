@@ -1,5 +1,5 @@
 import os
-from subprocess import PIPE, run
+from subprocess import run
 
 try:
     import tomllib
@@ -17,11 +17,11 @@ def test_tools():
     """
     with open(TOMLFILE, 'rb') as f:
         _toml = tomllib.load(f)
-    for _p in _toml['project']['scripts'].keys():
+    for _p in _toml['project']['scripts']:
         _res = run(
             [_p, "--version"],
-            stdout=PIPE,
-            stderr=PIPE
+            capture_output=True,
+            check=False
         )
         _version = _res.stdout.decode().splitlines()[0]
         e_ver = _p + " " + _toml['project']['version']

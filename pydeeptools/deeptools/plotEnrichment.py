@@ -261,7 +261,7 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead, offset=None):
             stretch = stretch[::-1]
         try:
             foo = stretch[offset[0]:offset[1]]
-        except:
+        except Exception:
             return rv
 
         if len(foo) == 0:
@@ -296,7 +296,7 @@ def getEnrichment_worker(arglist):
     olist = []
     total = [0] * len(args.bamfiles)
     for idx, f in enumerate(args.bamfiles):
-        odict = dict()
+        odict = {}
         for x in gtf.features:
             odict[x] = 0
         fh = openBam(f)
@@ -380,12 +380,12 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
 
         if args.perSample:
             xlabels = [item.replace('.bam', '').replace('.bed', '') for item in features ]
-            ylabel = "% alignments in {0}".format( [ylab.split('/')[-1] for ylab in args.labels][i])
+            ylabel = "% alignments in {}".format( [ylab.split('/')[-1] for ylab in args.labels][i])
             vals = [featureCounts[i][foo] for foo in features]
             vals = 100 * np.array(vals, dtype='float64') / totalCounts[i]
         else:
             xlabels = [x.split('/')[-1] for x in args.labels]
-            ylabel = "% {0}".format(features[i].replace('.bed',''))
+            ylabel = "% {}".format(features[i].replace('.bed',''))
             vals = [foo[features[i]] for foo in featureCounts]
             vals = 100 * np.array(vals, dtype='float64') / np.array(totalCounts, dtype='float64')
 
@@ -415,7 +415,7 @@ def getChunkLength(args, chromSize):
     """
 
     if args.region:
-        chromSize, region_start, region_end, genomeChunkLength = getUserRegion(chromSize, args.region)
+        chromSize, region_start, region_end, _genomeChunkLength = getUserRegion(chromSize, args.region)
         rv = np.ceil((region_start - region_end) / float(4 * args.numberOfProcessors)).astype(int)
         return max(1, rv)
 
@@ -469,7 +469,7 @@ def main(args=None):
 
     # Get fragment size and chromosome dict
     fhs = [openBam(x) for x in args.bamfiles]
-    chromSize, non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
+    chromSize, _non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
     for fh in fhs:
         fh.close()
 
@@ -487,7 +487,7 @@ def main(args=None):
                 sys.exit("*ERROR*: library is not paired-end. Please provide an extension length.")
             if args.verbose:
                 print("Fragment length based on paired en data "
-                      "estimated to be {0}".format(frag_len_dict['median']))
+                      "estimated to be {}".format(frag_len_dict['median']))
         elif args.extendReads < read_len_dict['median']:
             sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
                              "Reads will not be extended.\n".format(int(read_len_dict['median'])))
@@ -515,7 +515,7 @@ def main(args=None):
     features = res[0][1]
     featureCounts = []
     for i in list(range(len(args.bamfiles))):
-        d = dict()
+        d = {}
         for x in features:
             d[x] = 0
         featureCounts.append(d)
@@ -535,11 +535,10 @@ def main(args=None):
 
     # Raw counts
     if args.outRawCounts:
-        of = open(args.outRawCounts, "w")
-        of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
-        for i, x in enumerate(args.labels):
-            x = x.split('/')[-1]
-            for k, v in featureCounts[i].items():
-                print(x)
-                of.write(f"{x}\t{k}\t{(100.0 * v) / totalCounts[i]:5.2f}\t{v}\t{totalCounts[i]}\n")
-        of.close()
+        with open(args.outRawCounts, "w") as of:
+            of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
+            for i, x in enumerate(args.labels):
+                x = x.split('/')[-1]
+                for k, v in featureCounts[i].items():
+                    print(x)
+                    of.write(f"{x}\t{k}\t{(100.0 * v) / totalCounts[i]:5.2f}\t{v}\t{totalCounts[i]}\n")

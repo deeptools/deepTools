@@ -112,13 +112,13 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         c = hm.parameters['unscaled 5 prime']
         if idx is not None:
             c = c[idx]
-    except:
+    except Exception:
         c = 0
     try:
         d = hm.parameters['unscaled 3 prime']
         if idx is not None:
             d = d[idx]
-    except:
+    except Exception:
         d = 0
     m = hm.parameters['body']
     if idx is not None:

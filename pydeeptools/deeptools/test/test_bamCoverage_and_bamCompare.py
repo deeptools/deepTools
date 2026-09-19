@@ -42,9 +42,8 @@ def test_bam_coverage_arguments():
         args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph".split()
         bam_cov.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -56,9 +55,8 @@ def test_bam_coverage_extend():
     for fname in [BAMFILE_B]:
         args = f"-b {fname} -o {outfile} --extendReads 100 --outFileFormat bedgraph".split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t150\t1\n', '3R\t150\t200\t3\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -71,9 +69,8 @@ def test_bam_coverage_extend_and_normalizeUsingRPGC():
         args = f"-b {fname} -o {outfile} --normalizeUsing RPGC --effectiveGenomeSize 200 --extendReads 100 --verbose " \
                "--outFileFormat bedgraph".split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         # the scale factor should be 0.5, thus the result is similar to
         # that of the previous test divided by 0.5
         expected = ['3R\t0\t150\t0.5\n', '3R\t150\t200\t1.5\n']
@@ -88,9 +85,8 @@ def test_bam_coverage_skipnas():
         args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --skipNAs".split()
         bam_cov.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -107,9 +103,8 @@ def test_bam_coverage_normalizeUsingRPKM():
         args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --normalizeUsing RPKM".split()
         bam_cov.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t5000000\n', '3R\t150\t200\t10000000\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -125,9 +120,8 @@ def test_bam_coverage_scaleFactor():
         args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --scaleFactor 2.0".split()
         bam_cov.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t2\n', '3R\t150\t200\t4\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -161,9 +155,8 @@ def test_bam_compare_arguments():
                f"-o {outfile} -p 1 --outFileFormat bedgraph --operation ratio".split()
         bam_comp.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t200\t1\n']
         assert resp == expected, f"{resp} != {expected}"
         unlink(outfile)
@@ -180,9 +173,8 @@ def test_bam_compare_diff_files():
                f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
         bam_comp.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
         assert resp == expected, f"{resp} != {expected}"
         unlink(outfile)
@@ -197,9 +189,8 @@ def test_bam_compare_pseudocounts():
            "--pseudocount 1 0".split()
     bam_comp.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['3R\t0\t50\tinf\n', '3R\t50\t100\t0\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
     assert resp == expected, f"{resp} != {expected}"
     unlink(outfile)
@@ -214,9 +205,8 @@ def test_bam_compare_ZoverZ():
            "--skipZeroOverZero --verbose".split()
     bam_comp.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-0.58\n']
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
@@ -267,9 +257,8 @@ def test_bam_compare_diff_files_skipnas():
                f"-o {outfile} -p 1 --outFileFormat bedgraph --skipNAs".split()
         bam_comp.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -286,9 +275,8 @@ def test_bam_compare_extend():
                f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
         bam_comp.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = ['3R\t0\t100\t-1\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1\n']
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
@@ -307,9 +295,8 @@ def test_bam_compare_scale_factors_ratio():
 
         # The scale factors are [ 1.   0.5] because BAMFILE_B has double the amount of reads (4) compared to BAMFILE_A
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         """
         The distribution of reads for the bam file is:
@@ -348,9 +335,8 @@ def test_bam_compare_scale_factors_subtract():
 
         # The scale factors are [ 1.   0.5] because BAMFILE_B has dowble the amount of reads (4) compared to BAMFILE_A
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         """
         The distribution of reads for the bam file is:
@@ -391,9 +377,8 @@ def test_bam_coverage_filter_blacklist():
         args = args.split()
         bam_cov.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         expected = [
             "3R\t0\t100\t0\n",
@@ -431,9 +416,8 @@ def test_bam_coverage_offset1():
         print(args)
         args = args.split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         expected = [
             "3R\t0\t100\t0\n",
@@ -459,9 +443,8 @@ def test_bam_coverage_offset1_10():
         args = f"--Offset 1 10 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         expected = [
             "3R\t0\t100\t0\n",
@@ -487,9 +470,8 @@ def test_bam_coverage_offset_minus1():
         args = f"--Offset -1 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         expected = [
             "3R\t0\t149\t0\n",
@@ -514,9 +496,8 @@ def test_bam_coverage_offset20_minus4():
         args = f"--Offset 20 -4 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         expected = [
             "3R\t0\t119\t0\n",
@@ -543,9 +524,8 @@ def test_bam_coverage_smooth():
         args = f" -b {fname} -p 1 -bs 5 --smoothLength 10 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
 
         expected = [
             "3R\t0\t100\t0\n",
@@ -580,9 +560,8 @@ def test_bam_compare_filter_blacklist():
         args = args.split()
         bam_comp.main(args)
 
-        _foo = open(outfile, 'r')
-        resp = _foo.readlines()
-        _foo.close()
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
         expected = [
             "3R\t0\t100\t0\n",
             "3R\t100\t150\t-0.13\n",

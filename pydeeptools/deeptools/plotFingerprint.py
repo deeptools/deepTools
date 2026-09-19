@@ -1,4 +1,6 @@
 import argparse
+import functools
+import operator
 import sys
 
 import matplotlib.pyplot as plt
@@ -387,14 +389,13 @@ def main(args=None):
 
     num_reads_per_bin = cr.run()
     if num_reads_per_bin.sum() == 0:
-        import sys
         sys.stderr.write(
             f"\nNo reads were found in {num_reads_per_bin.shape[0]} regions sampled. Check that the\n"
             "min mapping quality is not overly high and that the \n"
             "chromosome names between bam files are consistent.\n"
             "For small genomes, decrease the --numberOfSamples.\n"
             "\n")
-        exit(1)
+        sys.exit(1)
 
     if args.skipZeros:
         num_reads_per_bin = countR.remove_row_of_zeros(num_reads_per_bin)
@@ -408,7 +409,7 @@ def main(args=None):
 
         i = 0
         # matplotlib won't iterate through line styles by itself
-        pyplot_line_styles = sum([7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
+        pyplot_line_styles = functools.reduce(operator.iadd, [7 * ["-"], 7 * ["--"], 7 * ["-."], 7 * [":"]], [])
         for i, reads in enumerate(num_reads_per_bin.T):
             count = np.cumsum(np.sort(reads))
             count = count / count[-1]  # to normalize y from 0 to 1

@@ -1,3 +1,4 @@
+import contextlib
 import multiprocessing
 import os
 import shutil
@@ -167,7 +168,7 @@ class CountReadsPerBin:
                  blackListFileName=None,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
-                 chrsToSkip=[],
+                 chrsToSkip=None,
                  stepSize=None,
                  center_read=False,
                  samFlag_include=None,
@@ -179,9 +180,15 @@ class CountReadsPerBin:
                  maxFragmentLength=0,
                  out_file_for_raw_data=None,
                  bed_and_bin=False,
-                 statsList=[],
-                 mappedList=[]):
+                 statsList=None,
+                 mappedList=None):
 
+        if mappedList is None:
+            mappedList = []
+        if statsList is None:
+            statsList = []
+        if chrsToSkip is None:
+            chrsToSkip = []
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
@@ -204,7 +211,7 @@ class CountReadsPerBin:
                 if frag_len_dict:
                     self.defaultFragmentLength = int(frag_len_dict['median'])
                 else:
-                    exit("*ERROR*: library is not paired-end. Please provide an extension length.")
+                    sys.exit("*ERROR*: library is not paired-end. Please provide an extension length.")
                 if verbose:
                     print("Fragment length based on paired en data "
                           "estimated to be {}".format(frag_len_dict['median']))
@@ -215,7 +222,7 @@ class CountReadsPerBin:
                 self.defaultFragmentLength = 'read length'
 
             elif extendReads > 2000:
-                exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {extendReads} ")
+                sys.exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {extendReads} ")
             else:
                 self.defaultFragmentLength = int(extendReads)
 
@@ -259,11 +266,11 @@ class CountReadsPerBin:
         if len(self.mappedList) == 0:
             try:
                 for fname in self.bamFilesList:
-                    bam, mapped, unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
+                    bam, mapped, _unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
                     self.mappedList.append(mapped)
                     self.statsList.append(stats)
                     bam.close()
-            except:
+            except Exception:
                 self.mappedList = []
                 self.statsList = []
 
@@ -278,7 +285,7 @@ class CountReadsPerBin:
             else:
                 # compute the step size, based on the number of samples
                 # and the length of the region studied
-                (chrom, start, end) = mapReduce.getUserRegion(chromSizes, self.region)[:3]
+                (_chrom, start, end) = mapReduce.getUserRegion(chromSizes, self.region)[:3]
                 self.stepSize = max(int(float(end - start) / self.numberOfSamples), 1)
 
         # number of samples is better if large
@@ -314,7 +321,7 @@ class CountReadsPerBin:
                 y = bamHandler.openBam(x)
             except SystemExit:
                 sys.exit(sys.exc_info()[1])
-            except:
+            except Exception:
                 y = pyBigWig.open(x)
             bamFilesHandles.append(y)
 
@@ -372,16 +379,13 @@ class CountReadsPerBin:
                                  "the chromosomes that were not common between the bigwig files\n")
 
             # concatenate intermediary bedgraph files
-            ofile = open(self.out_file_for_raw_data, "w")
-            for _values, tempFileName in imap_res:
-                if tempFileName:
-                    # concatenate all intermediate tempfiles into one
-                    _foo = open(tempFileName, 'r')
-                    shutil.copyfileobj(_foo, ofile)
-                    _foo.close()
-                    os.remove(tempFileName)
-
-            ofile.close()
+            with open(self.out_file_for_raw_data, "w") as ofile:
+                for _values, tempFileName in imap_res:
+                    if tempFileName:
+                        # concatenate all intermediate tempfiles into one
+                        with open(tempFileName, 'r') as _foo:
+                            shutil.copyfileobj(_foo, ofile)
+                        os.remove(tempFileName)
 
         try:
             num_reads_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
@@ -449,7 +453,7 @@ class CountReadsPerBin:
         """
 
         if start > end:
-            raise NameError("start %d bigger that end %d" % (start, end))
+            raise NameError(f"start {start} bigger that end {end}")
 
         if self.stepSize is None and bed_regions_list is None:
             raise ValueError("stepSize is not set!")
@@ -464,7 +468,7 @@ class CountReadsPerBin:
                 bam_handles.append(bamHandler.openBam(fname))
             except SystemExit:
                 sys.exit(sys.exc_info()[1])
-            except:
+            except Exception:
                 bam_handles.append(pyBigWig.open(fname))
 
         blackList = None
@@ -489,49 +493,47 @@ class CountReadsPerBin:
                         continue
                     transcriptsToConsider.append([(i, i + self.binLength)])
 
-        if self.save_data:
-            _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-            _file_name = _file.name
-        else:
-            _file_name = ''
+        with contextlib.ExitStack() as stack:
+            if self.save_data:
+                _file = stack.enter_context(open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t'))
+                _file_name = _file.name
+            else:
+                _file_name = ''
 
-        for bam in bam_handles:
-            for trans in transcriptsToConsider:
-                tcov = self.get_coverage_of_region(bam, chrom, trans)
-                if bed_regions_list is not None and not self.bed_and_bin:
-                    subnum_reads_per_bin.append(np.sum(tcov))
-                else:
-                    subnum_reads_per_bin.extend(tcov)
+            for bam in bam_handles:
+                for trans in transcriptsToConsider:
+                    tcov = self.get_coverage_of_region(bam, chrom, trans)
+                    if bed_regions_list is not None and not self.bed_and_bin:
+                        subnum_reads_per_bin.append(np.sum(tcov))
+                    else:
+                        subnum_reads_per_bin.extend(tcov)
 
-        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(-1, len(self.bamFilesList), order='F')
+            subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(-1, len(self.bamFilesList), order='F')
 
-        if self.save_data:
-            idx = 0
-            for i, trans in enumerate(transcriptsToConsider):
-                if len(trans[0]) != 3:
-                    starts = ",".join([str(x[0]) for x in trans])
-                    ends = ",".join([str(x[1]) for x in trans])
-                    _file.write("\t".join([chrom, starts, ends]) + "\t")
-                    _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[i, :]]) + "\n")
-                else:
-                    for exon in trans:
-                        for startPos in range(exon[0], exon[1], exon[2]):
-                            if idx >= subnum_reads_per_bin.shape[0]:
-                                # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
-                                # Counts there are added to the bin before them, but range() will still try to include them.
-                                break
-                            _file.write(f"{chrom}\t{startPos}\t{min(startPos + exon[2], exon[1])}\t")
-                            _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[idx, :]]) + "\n")
-                            idx += 1
-            _file.close()
+            if self.save_data:
+                idx = 0
+                for i, trans in enumerate(transcriptsToConsider):
+                    if len(trans[0]) != 3:
+                        starts = ",".join([str(x[0]) for x in trans])
+                        ends = ",".join([str(x[1]) for x in trans])
+                        _file.write(f'{chrom}\t{starts}\t{ends}' + "\t")
+                        _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[i, :]]) + "\n")
+                    else:
+                        for exon in trans:
+                            for startPos in range(exon[0], exon[1], exon[2]):
+                                if idx >= subnum_reads_per_bin.shape[0]:
+                                    # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
+                                    # Counts there are added to the bin before them, but range() will still try to include them.
+                                    break
+                                _file.write(f"{chrom}\t{startPos}\t{min(startPos + exon[2], exon[1])}\t")
+                                _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[idx, :]]) + "\n")
+                                idx += 1
 
         if self.verbose:
             endTime = time.time()
             rows = subnum_reads_per_bin.shape[0]
-            print("%s countReadsInRegions_worker: processing %d "
-                  "(%.1f per sec) @ %s:%s-%s" %
-                  (multiprocessing.current_process().name,
-                   rows, rows / (endTime - start_time), chrom, start, end))
+            print(f"{multiprocessing.current_process().name} countReadsInRegions_worker: processing {rows} "
+                  f"({rows / (endTime - start_time):.1f} per sec) @ {chrom}:{start}-{end}")
 
         return subnum_reads_per_bin, _file_name
 
@@ -706,8 +708,7 @@ class CountReadsPerBin:
 
             if self.verbose:
                 endTime = time.time()
-                print("%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
-                    multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1]))
+                print(f"{multiprocessing.current_process().name},  processing {c} ({c / (endTime - start_time):.1f} per sec) reads @ {chrom}:{reg[0]}-{reg[1]}")
 
             vector_start += nRegBins
 
@@ -1017,11 +1018,11 @@ class Tester:
         """
         bam = bamHandler.openBam(self.bamFile_PE)
         if readType == 'paired-reverse':
-            read = [x for x in bam.fetch('chr2', 5000081, 5000082)][0]
+            read = next(iter(bam.fetch('chr2', 5000081, 5000082)))
         elif readType == 'single-forward':
-            read = [x for x in bam.fetch('chr2', 5001491, 5001492)][0]
+            read = next(iter(bam.fetch('chr2', 5001491, 5001492)))
         elif readType == 'single-reverse':
-            read = [x for x in bam.fetch('chr2', 5001700, 5001701)][0]
+            read = next(iter(bam.fetch('chr2', 5001700, 5001701)))
         else:  # by default a forward paired read is returned
-            read = [x for x in bam.fetch('chr2', 5000027, 5000028)][0]
+            read = next(iter(bam.fetch('chr2', 5000027, 5000028)))
         return read

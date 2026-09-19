@@ -88,7 +88,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                 # BAM input
                 if chrom not in bamHandle.references:
                     raise NameError(f"chromosome {chrom} not found in bam file")
-            except:
+            except Exception:
                 # bigWig input, as used by plotFingerprint
                 if bamHandle.chroms(chrom):
                     _ = np.array(bamHandle.stats(chrom, regStart, regEnd, type="mean", nBins=nRegBins), dtype=float)
@@ -200,8 +200,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
 
             if self.verbose:
                 endTime = time.time()
-                print("%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
-                    multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1]))
+                print(f"{multiprocessing.current_process().name},  processing {c} ({c / (endTime - start_time):.1f} per sec) reads @ {chrom}:{reg[0]}-{reg[1]}")
 
             vector_start += nRegBins
 

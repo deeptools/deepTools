@@ -18,7 +18,7 @@ tolerance = 25
 def run_plotHeatmap(args):
     """Run plotHeatmap and return generated output file."""
 
-    fd, plotfile = tempfile.mkstemp(suffix=".png")
+    _fd, plotfile = tempfile.mkstemp(suffix=".png")
     # os.close(fd)
 
     args = args + [

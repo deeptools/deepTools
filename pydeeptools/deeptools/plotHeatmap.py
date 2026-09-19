@@ -46,9 +46,9 @@ def process_args(args=None):
     args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and args.heatmapHeight <= 100 else 10
 
     if not matplotlib.colors.is_color_like(args.missingDataColor):
-        exit(f"The value {args.missingDataColor}  for --missingDataColor is not valid")
+        sys.exit(f"The value {args.missingDataColor}  for --missingDataColor is not valid")
 
-    args.boxAroundHeatmaps = True if args.boxAroundHeatmaps == 'yes' else False
+    args.boxAroundHeatmaps = args.boxAroundHeatmaps == 'yes'
 
     return args
 
@@ -100,9 +100,6 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # proportional to the width of heatmap
         sumplot_height = heatmapwidth
         spacer_height = heatmapwidth / 8
-        # scale height_ratios to convert from row
-        # numbers to heatmapheigt fractions
-        spacer_height = spacer_height
         height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio])
 
     grids = gridspec.GridSpec(numrows, numcols, height_ratios=height_ratio, width_ratios=width_ratio, figure=fig)
@@ -203,7 +200,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
 
 
 def plotMatrix(hm, outFileName,
-               colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0},
+               colorMapDict=None,
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -223,6 +220,8 @@ def plotMatrix(hm, outFileName,
                dpi=200,
                interpolation_method='auto'):
 
+    if colorMapDict is None:
+        colorMapDict = {'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0}
     hm.reference_point_label = hm.parameters['ref point']
     if reference_point_label is not None:
         hm.reference_point_label = [reference_point_label] * hm.matrix.get_num_samples()
@@ -642,7 +641,7 @@ def main(args=None):
                 if (i > 0 and i <= hm.matrix.get_num_samples()):
                     sortUsingSamples.append(i - 1)
                 else:
-                    exit(f"The value {args.sortUsingSamples} for --sortSamples is not valid. Only values from 1 to {hm.matrix.get_num_samples()} are allowed.")
+                    sys.exit(f"The value {args.sortUsingSamples} for --sortSamples is not valid. Only values from 1 to {hm.matrix.get_num_samples()} are allowed.")
             print('Samples used for ordering within each group: ', sortUsingSamples)
 
         hm.matrix.sort_groups(sort_using=args.sortUsing,

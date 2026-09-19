@@ -65,7 +65,8 @@ def getTLen(read, notAbs=False):
         for op, opLen in read.cigartuples:
             if op == 0 or op == 2 or op == 7 or op == 8:
                 tlen += opLen
-    except:
+    except TypeError:
+        # read.cigartuples is None for unmapped reads / reads without CIGAR info
         pass
 
     return tlen
@@ -91,7 +92,7 @@ def getCommonChrNames(bamFileHandles, verbose=True):
         try:
             # BAM file
             return [(x, y) for x, y in zip(bam_handler.references, bam_handler.lengths)]
-        except:
+        except Exception:
             return [(k, v) for k, v in bam_handler.chroms().items()]
 
     def print_chr_names_and_size(chr_set):
@@ -121,7 +122,7 @@ def getCommonChrNames(bamFileHandles, verbose=True):
                 sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
                                  f"lengths from file\n{bamFileHandles.name}\n")
                 print_chr_names_and_size(_names_and_size)
-                exit(1)
+                sys.exit(1)
             else:
                 _names_and_size = _corr_names_size
 
@@ -148,12 +149,10 @@ def getTempFileName(suffix=''):
     deleting this upon completion.
     """
     import tempfile
-    _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                            suffix=suffix,
-                                            delete=False)
-
-    memFileName = _tempFile.name
-    _tempFile.close()
+    with tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                     suffix=suffix,
+                                     delete=False) as _tempFile:
+        memFileName = _tempFile.name
     return memFileName
 
 
@@ -181,8 +180,6 @@ def toString(s):
     if isinstance(s, str):
         return s
     if isinstance(s, bytes):
-        if sys.version_info[0] == 2:
-            return str(s)
         return s.decode('ascii')
     if isinstance(s, list):
         return [toString(x) for x in s]
@@ -193,8 +190,6 @@ def toBytes(s):
     """
     Like toString, but for functions requiring bytes in python3
     """
-    if sys.version_info[0] == 2:
-        return s
     if isinstance(s, bytes):
         return s
     if isinstance(s, str):

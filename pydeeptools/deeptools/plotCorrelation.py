@@ -213,16 +213,15 @@ def main(args=None):
                        remove_outliers=args.removeOutliers,
                        skip_zeros=args.skipZeros)
 
-    if args.corMethod == 'pearson':
+    if (args.corMethod == 'pearson') and (len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0):
         # test if there are outliers and write a message recommending the removal
-        if len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0:
-            if args.removeOutliers:
-                sys.stderr.write("\nOutliers were detected in the data. They "
+        if args.removeOutliers:
+            sys.stderr.write("\nOutliers were detected in the data. They "
                                  "will be removed to avoid bias "
                                  "in the pearson correlation.\n")
 
-            else:
-                sys.stderr.write("\nOutliers were detected in the data. Consider "
+        else:
+            sys.stderr.write("\nOutliers were detected in the data. Consider "
                                  "using the --removeOutliers parameter to avoid a bias "
                                  "in the pearson correlation.\n")
 
@@ -232,7 +231,7 @@ def main(args=None):
         except ValueError as error:
             sys.stderr.write(
                 f"A problem was found. Message: {error}\n")
-            exit()
+            sys.exit()
 
     if args.plotFile is not None:
         if args.whatToPlot == 'scatterplot':

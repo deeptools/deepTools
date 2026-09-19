@@ -199,27 +199,25 @@ def main(args=None):
 
     if args.outCoverageMetrics and args.coverageThresholds:
         args.coverageThresholds.sort()  # Galaxy in particular tends to give things in a weird order
-        of = open(args.outCoverageMetrics, "w")
-        of.write("Sample\tThreshold\tPercent\n")
-        nbins = float(num_reads_per_bin.shape[0])
-        for thresh in args.coverageThresholds:
-            vals = np.sum(num_reads_per_bin >= thresh, axis=0)
-            of.writelines(f"{lab}\t{thresh}\t{100. * val / nbins:6.3f}\n" for lab, val in zip(args.labels, vals))
-        of.close()
+        with open(args.outCoverageMetrics, "w") as of:
+            of.write("Sample\tThreshold\tPercent\n")
+            nbins = float(num_reads_per_bin.shape[0])
+            for thresh in args.coverageThresholds:
+                vals = np.sum(num_reads_per_bin >= thresh, axis=0)
+                of.writelines(f"{lab}\t{thresh}\t{100. * val / nbins:6.3f}\n" for lab, val in zip(args.labels, vals))
 
     if args.outRawCounts:
         # append to the generated file the
         # labels
         header = "#plotCoverage --outRawCounts\n#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        f = open(args.outRawCounts, 'r+')
-        content = f.read()
-        f.seek(0, 0)
-        f.write(header + content)
-        f.close()
+        with open(args.outRawCounts, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header + content)
 
     if num_reads_per_bin.shape[0] < 2:
-        exit("ERROR: too few non-zero bins found.\n"
+        sys.exit("ERROR: too few non-zero bins found.\n"
              "If using --region please check that this "
              "region is covered by reads.\n")
 
@@ -230,7 +228,7 @@ def main(args=None):
         if args.ggplot:
             plt.style.use('ggplot')
 
-        fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
+        _fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
         plt.suptitle(args.plotTitle)
 
     # plot up to two std from mean

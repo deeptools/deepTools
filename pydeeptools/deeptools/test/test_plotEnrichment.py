@@ -22,33 +22,33 @@ tolerance = 20
 def run_plotEnrichment(extra_args=None):
     """Run plotEnrichment and return generated plot and count files."""
 
-    plotfile = NamedTemporaryFile(
-        suffix='.png',
-        prefix='deeptools_testfile_',
-        delete=False
-    )
+    with (
+        NamedTemporaryFile(
+            suffix='.png',
+            prefix='deeptools_testfile_',
+            delete=False
+        ) as plotfile,
+        NamedTemporaryFile(
+            suffix='.tab',
+            prefix='deeptools_testfile_',
+            delete=False
+        ) as txtfile,
+    ):
+        args = (
+            f"--bamfiles {TEST_DATA}test1.bam "
+            f"{TEST_DATA}test2.bam "
+            f"--BED {TEST_DATA}test.gtf "
+            f"--plotFile {plotfile.name} "
+            f"--plotFileFormat png "
+            f"--outRawCounts {txtfile.name}"
+        ).split()
 
-    txtfile = NamedTemporaryFile(
-        suffix='.tab',
-        prefix='deeptools_testfile_',
-        delete=False
-    )
+        if extra_args:
+            args.extend(extra_args)
 
-    args = (
-        f"--bamfiles {TEST_DATA}test1.bam "
-        f"{TEST_DATA}test2.bam "
-        f"--BED {TEST_DATA}test.gtf "
-        f"--plotFile {plotfile.name} "
-        f"--plotFileFormat png "
-        f"--outRawCounts {txtfile.name}"
-    ).split()
+        deeptools.plotEnrichment.main(args)
 
-    if extra_args:
-        args.extend(extra_args)
-
-    deeptools.plotEnrichment.main(args)
-
-    return plotfile.name, txtfile.name
+        return plotfile.name, txtfile.name
 
 
 def cleanup(*files):

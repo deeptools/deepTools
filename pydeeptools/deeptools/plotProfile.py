@@ -48,11 +48,11 @@ def process_args(args=None):
     # Ensure that yMin/yMax are there and a list
     try:
         assert args.yMin is not None
-    except:
+    except Exception:
         args.yMin = [None]
     try:
         assert args.yMax is not None
-    except:
+    except Exception:
         args.yMax = [None]
 
     # Sometimes Galaxy sends --yMax '' and --yMin ''
@@ -283,7 +283,7 @@ class Profile:
                 try:
                     # matplotlib 2.0
                     ax.set_facecolor('black')
-                except:
+                except Exception:
                     # matplotlib <2.0
                     ax.set_axis_bgcolor('black')
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
@@ -547,20 +547,8 @@ class Profile:
 
             if first and self.y_axis_label != '':
                 ax.set_ylabel(self.y_axis_label)
-            if first and self.plot_type not in ['heatmap', 'overlapped_lines']:
-                # if self.per_group:
-                #     # ax.legend(loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0, 0),
-                #     #       ncol=2, prop={'size':4},
-                #     #       frameon=True, markerscale=0.5, borderaxespad=0.)
-                #     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2, frameon=False, prop={'size': 5})
-
-                # else:
-                #     # ax.legend(loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.1),
-                #     #       ncol=1, prop={'size':8},
-                #     #       frameon=False, markerscale=0.5)
-                #ax.legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.1, 1.2), ncol=1, frameon=False, prop={'size': 6})
-                if len(self.y_min) == 1 and len(self.y_max) == 1:
-                    first = False
+            if first and (self.plot_type not in ['heatmap', 'overlapped_lines']) and (len(self.y_min) == 1) and (len(self.y_max) == 1):
+                first = False
             ax_list.append(ax)
 
         ax_list[-1].legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.18), ncol=1, frameon=False, prop={'size': 7})

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 import os
 import signal
@@ -225,7 +223,7 @@ def process_args(args=None):
 
     if args.labels and len(args.bamfiles) != len(args.labels):
         print("The number of labels does not match the number of bam files.")
-        exit(0)
+        sys.exit(0)
     if not args.labels:
         if args.smartLabels:
             args.labels = smartLabels(args.bamfiles)
@@ -233,7 +231,7 @@ def process_args(args=None):
             args.labels = [os.path.basename(x) for x in args.bamfiles]
     if not args.outFileName:
         print("Please provide an output file name.")
-        exit(0)
+        sys.exit(0)
     if not args.BED:
         args.BED = []
     if not args.region:

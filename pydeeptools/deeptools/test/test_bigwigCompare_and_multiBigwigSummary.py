@@ -43,9 +43,8 @@ def test_bigwigCompare():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     args = f"-b1 {BIGWIG_A} -b2 {BIGWIG_B} -o {outfile} --operation add --outFileFormat bedgraph".split()
     bwComp.main(args)
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n']
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
@@ -56,9 +55,8 @@ def test_bigwigCompare_skipnas():
     args = f"-b1 {BIGWIG_A} -b2 {BIGWIG_B} -o {outfile} --operation add --skipNAs " \
            "--outFileFormat bedgraph".split()
     bwComp.main(args)
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['3R\t100\t150\t2\n', '3R\t150\t200\t3\n']
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
@@ -68,9 +66,8 @@ def test_bigwigCompare_skipZeroOverZero():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     args = f"-b1 {BIGWIG_A} -b2 {BIGWIG_A} -o {outfile} --skipZeroOverZero --pseudocount 1 3 --outFileFormat bedgraph".split()
     bwComp.main(args)
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['3R\t100\t200\t-1\n']
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
@@ -99,9 +96,8 @@ def test_multiBigwigSummary_outrawcounts():
     _, outfile = tempfile.mkstemp(suffix=".txt")
     args = f"bins -b {BIGWIG_A} {BIGWIG_B} --binSize 50 -o {nullfile} --outRawCounts {outfile} ".split()
     bwCorr.main(args)
-    _foo = open(outfile, 'r')
-    resp = _foo.read()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.read()
     expected = """#'chr'	'start'	'end'	'testA_skipNAs.bw'	'testB_skipNAs.bw'
 3R	0	50	nan	nan
 3R	50	100	nan	1.0

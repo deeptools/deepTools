@@ -198,8 +198,8 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
         else:
             chromUse = "chr" + chrom
         if chromUse not in list(chrom_sizes.keys()):
-            raise NameError("Unknown chromosome: %s\nKnown "
-                            "chromosomes are: %s " % (chrom, list(chrom_sizes.keys())))
+            raise NameError(f"Unknown chromosome: {chrom}\nKnown "
+                            f"chromosomes are: {list(chrom_sizes.keys())} ")
         chrom = chromUse
     try:
         region_start = int(region[1])

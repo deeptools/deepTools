@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 
@@ -14,7 +15,7 @@ debug = 0
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                         normalizationLength,
                         avg_method='median', blackListFileName=None, numberOfProcessors=1,
-                        verbose=False, chrsToSkip=[], mappingStatsList=[]):
+                        verbose=False, chrsToSkip=None, mappingStatsList=None):
     r"""
     Subdivides the genome into chunks to be analyzed in parallel
     using several processors. The code handles the creation of
@@ -74,6 +75,10 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     array([1. , 0.5])
     """
 
+    if mappingStatsList is None:
+        mappingStatsList = []
+    if chrsToSkip is None:
+        chrsToSkip = []
     assert len(bamFilesList) == 2, "SES scale factors are only defined for 2 files"
 
     if len(mappingStatsList) == len(bamFilesList):
@@ -99,7 +104,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     try:
         num_reads_per_bin = cr.run()
     except Exception as detail:
-        exit(f"*ERROR*: {detail}")
+        sys.exit(f"*ERROR*: {detail}")
 
     sitesSampled = len(num_reads_per_bin)
 
@@ -165,7 +170,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
     if min(median) == 0:
         idx_zero = [ix + 1 for ix, value in enumerate(median) if value == 0]
-        exit(f"\n*ERROR*: The median coverage computed is zero for sample(s) #{idx_zero}\n"
+        sys.exit(f"\n*ERROR*: The median coverage computed is zero for sample(s) #{idx_zero}\n"
              "Try selecting a larger sample size or a region with coverage\n")
 
     sizeFactor = sizeFactorsSES

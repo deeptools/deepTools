@@ -28,9 +28,8 @@ def test_correlation_plot_with_minimal_options():
     args = f"--corData {COR_DATA_IN1} -p heatmap -c pearson -o {out_png}  --outFileCorMatrix {out_matrix}".split()
     pc.main(args)
 
-    _foo = open(out_matrix, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(out_matrix, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = "'bowtie2 test1.bam'\t1.0000\t1.0000\n"
     assert expected in resp, f"'{expected}' not found in '{resp}'"
 
@@ -58,9 +57,8 @@ def test_correlation_plot_with_minimal_options_ggplot():
     args = f"--corData {COR_DATA_IN1} -p heatmap -c pearson -o {out_png_gg}  --outFileCorMatrix {out_matrix_gg} --ggplot".split()
     pc.main(args)
 
-    _foo = open(out_matrix_gg, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(out_matrix_gg, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = "'bowtie2 test1.bam'\t1.0000\t1.0000\n"
     assert expected in resp, f"'{expected}' not found in '{resp}'"
 

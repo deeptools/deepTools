@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 import shutil
 import sys
@@ -75,65 +73,60 @@ def writeBedGraph_worker(
                     tileSize, missingDataAsZero))
             bigwigHandle.close()
 
-    _file = tempfile.NamedTemporaryFile(delete=False)
+    with tempfile.NamedTemporaryFile(delete=False) as _file:
+        previousValue = None
+        lengthCoverage = len(coverage[0])
+        for tileIndex in range(lengthCoverage):
 
-    previousValue = None
-    lengthCoverage = len(coverage[0])
-    for tileIndex in range(lengthCoverage):
+            tileCoverage = []
+            for index in range(len(bamOrBwFileList)):
+                if smoothLength > 0:
+                    vectorStart, vectorEnd = getSmoothRange(
+                        tileIndex, tileSize, smoothLength, lengthCoverage)
+                    tileCoverage.append(
+                        np.mean(coverage[index][vectorStart:vectorEnd]))
+                else:
+                    try:
+                        tileCoverage.append(coverage[index][tileIndex])
+                    except IndexError:
+                        sys.exit(f"Chromosome {chrom} probably not in one of the bigwig "
+                                 "files. Remove this chromosome from the bigwig file "
+                                 "to continue")
 
-        tileCoverage = []
-        for index in range(len(bamOrBwFileList)):
-            if smoothLength > 0:
-                vectorStart, vectorEnd = getSmoothRange(
-                    tileIndex, tileSize, smoothLength, lengthCoverage)
-                tileCoverage.append(
-                    np.mean(coverage[index][vectorStart:vectorEnd]))
-            else:
-                try:
-                    tileCoverage.append(coverage[index][tileIndex])
-                except IndexError:
-                    sys.exit(f"Chromosome {chrom} probably not in one of the bigwig "
-                             "files. Remove this chromosome from the bigwig file "
-                             "to continue")
+            if skipZeroOverZero and np.sum(tileCoverage) == 0:
+                previousValue = None
+                continue
 
-        if skipZeroOverZero and np.sum(tileCoverage) == 0:
-            previousValue = None
-            continue
+            value = func(tileCoverage, funcArgs)
 
-        value = func(tileCoverage, funcArgs)
-
-        if fixedStep:
-            writeStart = start + tileIndex * tileSize
-            writeEnd = min(writeStart + tileSize, end)
-            try:
-                _file.write(toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{value:g}\n"))
-            except TypeError:
-                _file.write(toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{value}\n"))
-        else:
-            if previousValue is None:
+            if fixedStep:
                 writeStart = start + tileIndex * tileSize
                 writeEnd = min(writeStart + tileSize, end)
-                previousValue = value
+                try:
+                    _file.write(toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{value:g}\n"))
+                except TypeError:
+                    _file.write(toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{value}\n"))
+            else:
+                if previousValue is None:
+                    writeStart = start + tileIndex * tileSize
+                    writeEnd = min(writeStart + tileSize, end)
+                    previousValue = value
 
-            elif previousValue == value:
-                writeEnd = min(writeEnd + tileSize, end)
+                elif previousValue == value:
+                    writeEnd = min(writeEnd + tileSize, end)
 
-            elif previousValue != value:
-                if not np.isnan(previousValue):
-                    _file.write(
-                        toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{previousValue:g}\n"))
-                previousValue = value
-                writeStart = writeEnd
-                writeEnd = min(writeStart + tileSize, end)
+                elif previousValue != value:
+                    if not np.isnan(previousValue):
+                        _file.write(
+                            toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{previousValue:g}\n"))
+                    previousValue = value
+                    writeStart = writeEnd
+                    writeEnd = min(writeStart + tileSize, end)
 
-    if not fixedStep:
-        # write remaining value if not a nan
-        if previousValue and writeStart != end and \
-                not np.isnan(previousValue):
+        if (not fixedStep) and previousValue and (writeStart != end) and (not np.isnan(previousValue)):
             _file.write(toBytes(f"{chrom}\t{writeStart}\t{end}\t{previousValue:g}\n"))
 
-    tempFileName = _file.name
-    _file.close()
+        tempFileName = _file.name
     return chrom, start, end, tempFileName
 
 
@@ -154,7 +147,7 @@ def writeBedGraph(
     mappedList = []
     for indexedFile, fileFormat in bamOrBwFileList:
         if fileFormat == 'bam':
-            bam, mapped, unmapped, stats = bamHandler.openBam(indexedFile, returnStats=True, nThreads=numberOfProcessors)
+            bam, mapped, _unmapped, _stats = bamHandler.openBam(indexedFile, returnStats=True, nThreads=numberOfProcessors)
             bamHandles.append(bam)
             mappedList.append(mapped)
 
@@ -213,20 +206,18 @@ def writeBedGraph(
                               verbose=verbose)
 
     # Determine the sorted order of the temp files
-    chrom_order = dict()
+    chrom_order = {}
     for i, _ in enumerate(chromNamesAndSize):
         chrom_order[_[0]] = i
     res = [[chrom_order[x[0]], x[1], x[2], x[3]] for x in res]
     res.sort()
 
     if format == 'bedgraph':
-        of = open(outputFileName, 'wb')
-        for r in res:
-            if r is not None:
-                _ = open(r[3], 'rb')
-                shutil.copyfileobj(_, of)
-                _.close()
-                os.remove(r[3])
-        of.close()
+        with open(outputFileName, 'wb') as of:
+            for r in res:
+                if r is not None:
+                    with open(r[3], 'rb') as _:
+                        shutil.copyfileobj(_, of)
+                    os.remove(r[3])
     else:
         bedGraphToBigWig(chromNamesAndSize, [x[3] for x in res], outputFileName)

@@ -170,11 +170,9 @@ class Correlation:
         self.labels = [toString(x) for x in self.labels]
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
-        i = 0
-        for row in self.corr_matrix:
+        for i, row in enumerate(self.corr_matrix):
             file_handle.write(
-                "'%s'\t" % self.labels[i] + fmt % tuple(row))
-            i += 1
+                f"'{self.labels[i]}'\t" + fmt % tuple(row))
 
     def compute_correlation(self):
         """
@@ -440,17 +438,19 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False, ggplot=False):
+    def plot_pca(self, plot_filename=None, PCs=None, plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False, ggplot=False):
         """
         Plot the PCA of a matrix: each sample is plotted at its score
         (projection) onto the requested principal components.
 
         Returns the matrix of plotted values.
         """
+        if PCs is None:
+            PCs = [1, 2]
         if ggplot:
             plt.style.use('ggplot')
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
+        _fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
 
         m = self.matrix.astype(float, copy=True)
 

@@ -1,5 +1,5 @@
-#!/usr/bin/env python
 import argparse
+import contextlib
 import sys
 from importlib.metadata import version
 
@@ -265,112 +265,106 @@ def main(args=None):
         sys.stderr.write("\nError: --sampleLabels specified but it doesn't match the number of BAM files!\n")
         sys.exit(1)
 
-    if args.outFile is None:
-        of = sys.stdout
-    else:
-        of = open(args.outFile, "w")
+    with contextlib.ExitStack() as stack:
+        of = stack.enter_context(open(args.outFile, "w")) if args.outFile is not None else sys.stdout
+        bhs = [bamHandler.openBam(x, returnStats=True, nThreads=args.numberOfProcessors) for x in args.bamfiles]
+        mapped = [x[1] for x in bhs]
+        unmappedList = [x[2] for x in bhs]
+        bhs = [x[0] for x in bhs]
 
-    bhs = [bamHandler.openBam(x, returnStats=True, nThreads=args.numberOfProcessors) for x in args.bamfiles]
-    mapped = [x[1] for x in bhs]
-    unmappedList = [x[2] for x in bhs]
-    bhs = [x[0] for x in bhs]
-
-    # Get the reads in blacklisted regions
-    if args.blackListFileName:
-        blacklisted = []
-        for bh in bhs:
-            blacklisted.append(utilities.bam_blacklisted_reads(bh, None, args.blackListFileName, args.numberOfProcessors))
-    else:
-        blacklisted = [0] * len(bhs)
-
-    # Get the total and mapped reads
-    total = [x + y for x, y in list(zip(mapped, unmappedList))]
-
-    chrom_sizes = list(zip(bhs[0].references, bhs[0].lengths))
-    for x in bhs:
-        x.close()
-
-    # Get the remaining metrics
-    res = mapReduce([args],
-                    getFiltered_worker,
-                    chrom_sizes,
-                    genomeChunkLength=args.binSize + args.distanceBetweenBins,
-                    blackListFileName=args.blackListFileName,
-                    numberOfProcessors=args.numberOfProcessors,
-                    verbose=args.verbose)
-
-    totals = [0] * len(args.bamfiles)
-    nFiltered = [0] * len(args.bamfiles)
-    MAPQs = [0] * len(args.bamfiles)
-    flagIncludes = [0] * len(args.bamfiles)
-    flagExcludes = [0] * len(args.bamfiles)
-    internalDupes = [0] * len(args.bamfiles)
-    externalDupes = [0] * len(args.bamfiles)
-    singletons = [0] * len(args.bamfiles)
-    rnaStrand = [0] * len(args.bamfiles)
-    for x in res:
-        for idx, r in enumerate(x):
-            totals[idx] += r[0]
-            nFiltered[idx] += r[1]
-            MAPQs[idx] += r[2]
-            flagIncludes[idx] += r[3]
-            flagExcludes[idx] += r[4]
-            internalDupes[idx] += r[5]
-            externalDupes[idx] += r[6]
-            singletons[idx] += r[7]
-            rnaStrand[idx] += r[8]
-
-    # Print some output
-    of.write("Sample\tTotal Reads\tMapped Reads\tAlignments in blacklisted regions\tEstimated mapped reads filtered\tBelow MAPQ\tMissing Flags\tExcluded Flags\tInternally-determined Duplicates\tMarked Duplicates\tSingletons\tWrong strand\n")
-    for idx, _ in enumerate(args.bamfiles):
-        if args.sampleLabels:
-            of.write(args.sampleLabels[idx])
+        # Get the reads in blacklisted regions
+        if args.blackListFileName:
+            blacklisted = []
+            for bh in bhs:
+                blacklisted.append(utilities.bam_blacklisted_reads(bh, None, args.blackListFileName, args.numberOfProcessors))
         else:
-            of.write(args.bamfiles[idx])
-        of.write(f"\t{total[idx]}\t{mapped[idx]}\t{blacklisted[idx]}")
-        # nFiltered
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # MAPQ
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(MAPQs[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # samFlagInclude
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(flagIncludes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # samFlagExclude
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(flagExcludes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # Internally determined duplicates
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(internalDupes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # Externally marked duplicates
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(externalDupes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # Singletons
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(singletons[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        # filterRNAstrand
-        metric = 0.0
-        if totals[idx] > 0:
-            metric = float(rnaStrand[idx]) / float(totals[idx]) * mapped[idx]
-        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
-        of.write("\n")
+            blacklisted = [0] * len(bhs)
 
-    if args.outFile is not None:
-        of.close()
+        # Get the total and mapped reads
+        total = [x + y for x, y in list(zip(mapped, unmappedList))]
+
+        chrom_sizes = list(zip(bhs[0].references, bhs[0].lengths))
+        for x in bhs:
+            x.close()
+
+        # Get the remaining metrics
+        res = mapReduce([args],
+                        getFiltered_worker,
+                        chrom_sizes,
+                        genomeChunkLength=args.binSize + args.distanceBetweenBins,
+                        blackListFileName=args.blackListFileName,
+                        numberOfProcessors=args.numberOfProcessors,
+                        verbose=args.verbose)
+
+        totals = [0] * len(args.bamfiles)
+        nFiltered = [0] * len(args.bamfiles)
+        MAPQs = [0] * len(args.bamfiles)
+        flagIncludes = [0] * len(args.bamfiles)
+        flagExcludes = [0] * len(args.bamfiles)
+        internalDupes = [0] * len(args.bamfiles)
+        externalDupes = [0] * len(args.bamfiles)
+        singletons = [0] * len(args.bamfiles)
+        rnaStrand = [0] * len(args.bamfiles)
+        for x in res:
+            for idx, r in enumerate(x):
+                totals[idx] += r[0]
+                nFiltered[idx] += r[1]
+                MAPQs[idx] += r[2]
+                flagIncludes[idx] += r[3]
+                flagExcludes[idx] += r[4]
+                internalDupes[idx] += r[5]
+                externalDupes[idx] += r[6]
+                singletons[idx] += r[7]
+                rnaStrand[idx] += r[8]
+
+        # Print some output
+        of.write("Sample\tTotal Reads\tMapped Reads\tAlignments in blacklisted regions\tEstimated mapped reads filtered\tBelow MAPQ\tMissing Flags\tExcluded Flags\tInternally-determined Duplicates\tMarked Duplicates\tSingletons\tWrong strand\n")
+        for idx, _ in enumerate(args.bamfiles):
+            if args.sampleLabels:
+                of.write(args.sampleLabels[idx])
+            else:
+                of.write(args.bamfiles[idx])
+            of.write(f"\t{total[idx]}\t{mapped[idx]}\t{blacklisted[idx]}")
+            # nFiltered
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # MAPQ
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(MAPQs[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # samFlagInclude
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(flagIncludes[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # samFlagExclude
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(flagExcludes[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # Internally determined duplicates
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(internalDupes[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # Externally marked duplicates
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(externalDupes[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # Singletons
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(singletons[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            # filterRNAstrand
+            metric = 0.0
+            if totals[idx] > 0:
+                metric = float(rnaStrand[idx]) / float(totals[idx]) * mapped[idx]
+            of.write(f"\t{min(round(metric, 1), mapped[idx])}")
+            of.write("\n")
 
     return 0

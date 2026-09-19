@@ -48,9 +48,8 @@ def test_alsieve_minmapq():
     args = f"--bam {BAMFILE_IN} -o {outfile} --minMappingQuality 10 --filteredOutReads {filtered_bamfile} --filterMetrics {filter_metric_file}".split()
     aln_seive.main(args)
 
-    _foo = open(filter_metric_file, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(filter_metric_file, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = 'paired_chr2L.bam\t8440\t12644\n'
     assert expected in resp, f"'{expected}' not found in '{resp}'"
 
@@ -68,9 +67,8 @@ def test_alsieve_fraglen():
     args = f"--bam {BAMFILE_IN} -o {outfile} --minFragmentLength 130 --maxFragmentLength 200 --filterMetrics {filter_metric_file}".split()
     aln_seive.main(args)
 
-    _foo = open(filter_metric_file, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(filter_metric_file, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = 'paired_chr2L.bam\t7933\t12644\n'
     assert expected in resp, f"'{expected}' not found in '{resp}'"
     _assert_equals(BAMFILE_OUT2, outfile)
@@ -86,9 +84,8 @@ def test_alsieve_rnastrand():
     args = f"--bam {BAMFILE_IN} -o {outfile} --filterRNAstrand forward --filterMetrics {filter_metric_file}".split()
     aln_seive.main(args)
 
-    _foo = open(filter_metric_file, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(filter_metric_file, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = 'paired_chr2L.bam\t6303\t12644\n'
     assert expected in resp, f"'{expected}' not found in '{resp}'"
     _assert_equals(BAMFILE_OUT3, outfile)

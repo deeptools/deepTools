@@ -97,7 +97,7 @@ def main(args=None):
     args = parseArguments(args)
     if len(args.bamfiles) > 2:
         print("SES method to estimate scale factors only works for two samples")
-        exit(0)
+        sys.exit(0)
 
     if args.normalizationLength != 10:
         sys.stderr.write(

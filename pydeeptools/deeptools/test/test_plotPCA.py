@@ -1,3 +1,4 @@
+import contextlib
 import os
 from tempfile import NamedTemporaryFile
 
@@ -21,19 +22,20 @@ def _run_pca(extra=None, plot=True):
     CLI tokens. When ``plot`` is True a plot file is also requested so the
     full plotting path runs; set it False to exercise only the numeric
     output."""
-    tsvfile = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
-    args = f"-in {TEST_DATA}test_samples.npz --outFileNameData {tsvfile.name}".split()
-    plotfile = None
-    if plot:
-        plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-        args += ["-o", plotfile.name]
-    if extra:
-        args += extra
-    deeptools.plotPCA.main(args)
-    data = np.loadtxt(tsvfile.name, skiprows=1)
-    os.remove(tsvfile.name)
-    if plotfile is not None:
-        os.remove(plotfile.name)
+    with contextlib.ExitStack() as stack:
+        tsvfile = stack.enter_context(NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False))
+        args = f"-in {TEST_DATA}test_samples.npz --outFileNameData {tsvfile.name}".split()
+        plotfile = None
+        if plot:
+            plotfile = stack.enter_context(NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False))
+            args += ["-o", plotfile.name]
+        if extra:
+            args += extra
+        deeptools.plotPCA.main(args)
+        data = np.loadtxt(tsvfile.name, skiprows=1)
+        os.remove(tsvfile.name)
+        if plotfile is not None:
+            os.remove(plotfile.name)
     return data
 
 
@@ -59,16 +61,18 @@ _GOLDEN_DEFAULT_EIGENVALUES = np.array([
 ])
 
 def test_plotPCA_default():
-    plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    tsvfile  = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
-    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --outFileNameData {tsvfile.name}".split()
-    deeptools.plotPCA.main(args)
+    with (
+        NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False) as plotfile,
+        NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False) as tsvfile,
+    ):
+        args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --outFileNameData {tsvfile.name}".split()
+        deeptools.plotPCA.main(args)
 
-    res = compare_images(ROOT + 'test_plotPCA_default.png', plotfile.name, tolerance)
-    assert res is None, res
+        res = compare_images(ROOT + 'test_plotPCA_default.png', plotfile.name, tolerance)
+        assert res is None, res
 
-    os.remove(plotfile.name)
-    os.remove(tsvfile.name)
+        os.remove(plotfile.name)
+        os.remove(tsvfile.name)
 
 
 def test_plotPCA_outFileNameData():
@@ -78,21 +82,23 @@ def test_plotPCA_outFileNameData():
     sign-independent eigenvalue column and the table shape rather than the
     projected coordinates.
     """
-    plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    tsvfile = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
-    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --outFileNameData {tsvfile.name}".split()
-    deeptools.plotPCA.main(args)
+    with (
+        NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False) as plotfile,
+        NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False) as tsvfile,
+    ):
+        args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --outFileNameData {tsvfile.name}".split()
+        deeptools.plotPCA.main(args)
 
-    # Columns: Component, wt1, wt2, wt3, kd1, kd2, kd3, Eigenvalue
-    data = np.loadtxt(tsvfile.name, skiprows=1)
-    assert data.shape == (6, 8), f"unexpected shape {data.shape}"
-    # Component index column
-    np.testing.assert_array_equal(data[:, 0], np.arange(1, 7))
-    eigenvalues = data[:, -1]
-    np.testing.assert_allclose(eigenvalues, _GOLDEN_DEFAULT_EIGENVALUES, rtol=1e-4, atol=1e-6)
+        # Columns: Component, wt1, wt2, wt3, kd1, kd2, kd3, Eigenvalue
+        data = np.loadtxt(tsvfile.name, skiprows=1)
+        assert data.shape == (6, 8), f"unexpected shape {data.shape}"
+        # Component index column
+        np.testing.assert_array_equal(data[:, 0], np.arange(1, 7))
+        eigenvalues = data[:, -1]
+        np.testing.assert_allclose(eigenvalues, _GOLDEN_DEFAULT_EIGENVALUES, rtol=1e-4, atol=1e-6)
 
-    os.remove(plotfile.name)
-    os.remove(tsvfile.name)
+        os.remove(plotfile.name)
+        os.remove(tsvfile.name)
 
 
 def test_plotPCA_default_eigenvalues():
@@ -159,14 +165,14 @@ def test_plotPCA_ntop_below_samples_plots_successfully():
     of available components is simply capped below the sample count
     (previously this crashed with an IndexError at correlation.py's scatter
     loop, which assumed one component per sample)."""
-    plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --ntop 2".split()
-    try:
-        deeptools.plotPCA.main(args)
-        assert os.path.exists(plotfile.name) and os.path.getsize(plotfile.name) > 0
-    finally:
-        if os.path.exists(plotfile.name):
-            os.remove(plotfile.name)
+    with NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False) as plotfile:
+        args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --ntop 2".split()
+        try:
+            deeptools.plotPCA.main(args)
+            assert os.path.exists(plotfile.name) and os.path.getsize(plotfile.name) > 0
+        finally:
+            if os.path.exists(plotfile.name):
+                os.remove(plotfile.name)
 
 
 def test_plotPCA_PCs_selection_does_not_change_table():
@@ -183,15 +189,15 @@ def test_plotPCA_PCs_selection_does_not_change_table():
     (["--ntop", "-1"], "must be >= 0"),
 ])
 def test_plotPCA_invalid_arguments_exit(extra, msg):
-    plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name}".split() + extra
-    try:
-        with pytest.raises(SystemExit) as exc:
-            deeptools.plotPCA.main(args)
-        assert msg in str(exc.value)
-    finally:
-        if os.path.exists(plotfile.name):
-            os.remove(plotfile.name)
+    with NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False) as plotfile:
+        args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name}".split() + extra
+        try:
+            with pytest.raises(SystemExit) as exc:
+                deeptools.plotPCA.main(args)
+            assert msg in str(exc.value)
+        finally:
+            if os.path.exists(plotfile.name):
+                os.remove(plotfile.name)
 
 
 def test_plotPCA_requires_an_output():
@@ -211,36 +217,36 @@ def test_plotPCA_log2_affects_output():
 def test_plotPCA_ggplot():
     """Image comparison test for --ggplot output."""
 
-    plotfile = NamedTemporaryFile(
-        suffix='.png',
-        prefix='deeptools_testfile_',
-        delete=False
-    )
+    with (
+        NamedTemporaryFile(
+            suffix='.png',
+            prefix='deeptools_testfile_',
+            delete=False
+        ) as plotfile,
+        NamedTemporaryFile(
+            suffix='.tsv',
+            prefix='deeptools_testfile_',
+            delete=False
+        ) as tsvfile,
+    ):
+        args = (
+            f"-in {TEST_DATA}test_samples.npz "
+            f"-o {plotfile.name} "
+            f"--outFileNameData {tsvfile.name} "
+            "--ggplot"
+        ).split()
 
-    tsvfile = NamedTemporaryFile(
-        suffix='.tsv',
-        prefix='deeptools_testfile_',
-        delete=False
-    )
+        try:
+            deeptools.plotPCA.main(args)
 
-    args = (
-        f"-in {TEST_DATA}test_samples.npz "
-        f"-o {plotfile.name} "
-        f"--outFileNameData {tsvfile.name} "
-        "--ggplot"
-    ).split()
+            res = compare_images(
+                ROOT + "test_plotPCA_ggplot.png",
+                plotfile.name,
+                tolerance
+            )
 
-    try:
-        deeptools.plotPCA.main(args)
+            assert res is None, res
 
-        res = compare_images(
-            ROOT + "test_plotPCA_ggplot.png",
-            plotfile.name,
-            tolerance
-        )
-
-        assert res is None, res
-
-    finally:
-        os.remove(plotfile.name)
-        os.remove(tsvfile.name)
+        finally:
+            os.remove(plotfile.name)
+            os.remove(tsvfile.name)

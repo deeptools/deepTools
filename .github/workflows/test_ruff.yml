@@ -1,0 +1,19 @@
+name: tests_ruff
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+    contents: read
+
+jobs:
+    ruff:
+        name: Lint with ruff
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+              with:
+                  environments: default
+            - name: ruff check
+              run: pixi run ruff

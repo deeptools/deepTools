@@ -8,7 +8,7 @@ from pathlib import Path
 def check_float_0_1(value):
     v = float(value)
     if v < 0.0 or v > 1.0:
-        raise argparse.ArgumentTypeError("%s is an invalid floating point value. It must be between 0.0 and 1.0" % value)
+        raise argparse.ArgumentTypeError(f"{value} is an invalid floating point value. It must be between 0.0 and 1.0")
     return v
 
 
@@ -18,8 +18,8 @@ def check_list_of_comma_values(value):
     for foo in value:
         foo = value.split(",")
         if len(foo) < 2:
-            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. "
-                                             "Only argument elements of the following form are accepted: 'foo,bar'" % foo)
+            raise argparse.ArgumentTypeError(f"{foo} is an invalid element of a list of comma separated values. "
+                                             "Only argument elements of the following form are accepted: 'foo,bar'")
     return value
 
 
@@ -393,7 +393,7 @@ def genomicRegion(string):
     # N.B., the syntax for translate() differs between python 2 and 3
     try:
         region = region.translate(None, ",;|!{}()").replace("-", ":")
-    except:
+    except Exception:
         region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
         raise argparse.ArgumentTypeError(
@@ -408,7 +408,7 @@ def writableFile(string):
     try:
         open(string, 'w').close()
         os.remove(string)
-    except:
+    except Exception:
         msg = f"{string} file can't be opened for writing"
         raise argparse.ArgumentTypeError(msg)
     return string

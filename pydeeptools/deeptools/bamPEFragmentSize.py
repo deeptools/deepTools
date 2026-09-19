@@ -1,4 +1,5 @@
 import argparse
+import contextlib
 import sys
 from importlib.metadata import version
 
@@ -148,7 +149,7 @@ def getDensity(lengths, minVal, maxVal):
     This is essentially computing what hist() in matplotlib is doing and returning the results.
     This then allows us to free up the memory consumed by each sample rather than returning it all back to main() for plotting.
     """
-    n, bins, patches = plt.hist(lengths, bins=100, range=(minVal, maxVal), density=True)
+    n, bins, _patches = plt.hist(lengths, bins=100, range=(minVal, maxVal), density=True)
     plt.clf()
     return (n, bins)
 
@@ -181,9 +182,9 @@ def getFragSize(bam, args, idx, outRawFrags):
             cnts = np.bincount(
                 read_len_dict["lengths"], minlength=int(read_len_dict["max"]) + 1
             )
-        for idx, v in enumerate(cnts):
+        for i, v in enumerate(cnts):
             if v > 0:
-                outRawFrags.write(f"{idx}\t{v}\t{label}\n")
+                outRawFrags.write(f"{i}\t{v}\t{label}\n")
 
     if args.samplesLabel and idx < len(args.samplesLabel):
         print(f"\n\nSample label: {args.samplesLabel[idx]}")
@@ -291,29 +292,60 @@ def printTable(args, fragDict, readDict):
     """
     Print the read and fragment dictionary in more easily parsable tabular format to a file.
     """
-    of = open(args.table, "w")
-    of.write("\tFrag. Sampled")
-    of.write(
-        "\tFrag. Len. Min.\tFrag. Len. 1st. Qu.\tFrag. Len. Mean\tFrag. Len. Median\tFrag. Len. 3rd Qu.\tFrag. Len. Max\tFrag. Len. Std."
-    )
-    of.write(
-        "\tFrag. Med. Abs. Dev.\tFrag. Len. 10%\tFrag. Len. 20%\tFrag. Len. 30%\tFrag. Len. 40%\tFrag. Len. 60%\tFrag. Len. 70%\tFrag. Len. 80%\tFrag. Len. 90%\tFrag. Len. 99%"
-    )
-    of.write("\tReads Sampled")
-    of.write(
-        "\tRead Len. Min.\tRead Len. 1st. Qu.\tRead Len. Mean\tRead Len. Median\tRead Len. 3rd Qu.\tRead Len. Max\tRead Len. Std."
-    )
-    of.write(
-        "\tRead Med. Abs. Dev.\tRead Len. 10%\tRead Len. 20%\tRead Len. 30%\tRead Len. 40%\tRead Len. 60%\tRead Len. 70%\tRead Len. 80%\tRead Len. 90%\tRead Len. 99%\n"
-    )
+    with open(args.table, "w") as of:
+        of.write("\tFrag. Sampled")
+        of.write(
+            "\tFrag. Len. Min.\tFrag. Len. 1st. Qu.\tFrag. Len. Mean\tFrag. Len. Median\tFrag. Len. 3rd Qu.\tFrag. Len. Max\tFrag. Len. Std."
+        )
+        of.write(
+            "\tFrag. Med. Abs. Dev.\tFrag. Len. 10%\tFrag. Len. 20%\tFrag. Len. 30%\tFrag. Len. 40%\tFrag. Len. 60%\tFrag. Len. 70%\tFrag. Len. 80%\tFrag. Len. 90%\tFrag. Len. 99%"
+        )
+        of.write("\tReads Sampled")
+        of.write(
+            "\tRead Len. Min.\tRead Len. 1st. Qu.\tRead Len. Mean\tRead Len. Median\tRead Len. 3rd Qu.\tRead Len. Max\tRead Len. Std."
+        )
+        of.write(
+            "\tRead Med. Abs. Dev.\tRead Len. 10%\tRead Len. 20%\tRead Len. 30%\tRead Len. 40%\tRead Len. 60%\tRead Len. 70%\tRead Len. 80%\tRead Len. 90%\tRead Len. 99%\n"
+        )
 
-    for idx, bam in enumerate(args.bamfiles):
-        if args.samplesLabel and idx < len(args.samplesLabel):
-            of.write(args.samplesLabel[idx])
-        else:
-            of.write(bam)
-        if fragDict is not None and fragDict[bam] is not None:
-            d = fragDict[bam]
+        for idx, bam in enumerate(args.bamfiles):
+            if args.samplesLabel and idx < len(args.samplesLabel):
+                of.write(args.samplesLabel[idx])
+            else:
+                of.write(bam)
+            if fragDict is not None and fragDict[bam] is not None:
+                d = fragDict[bam]
+                of.write("\t{}".format(d["sample_size"]))
+                of.write(
+                    "\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
+                        d["min"],
+                        d["qtile25"],
+                        d["mean"],
+                        d["median"],
+                        d["qtile75"],
+                        d["max"],
+                        d["std"],
+                    )
+                )
+                of.write(
+                    "\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
+                        d["mad"],
+                        d["qtile10"],
+                        d["qtile20"],
+                        d["qtile30"],
+                        d["qtile40"],
+                        d["qtile60"],
+                        d["qtile70"],
+                        d["qtile80"],
+                        d["qtile90"],
+                        d["qtile99"],
+                    )
+                )
+            else:
+                of.write("\t0")
+                of.write("\t0\t0\t0\t0\t0\t0\t0")
+                of.write("\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0")
+            d = readDict[bam]
             of.write("\t{}".format(d["sample_size"]))
             of.write(
                 "\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
@@ -327,7 +359,7 @@ def printTable(args, fragDict, readDict):
                 )
             )
             of.write(
-                "\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
+                "\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
                     d["mad"],
                     d["qtile10"],
                     d["qtile20"],
@@ -340,57 +372,25 @@ def printTable(args, fragDict, readDict):
                     d["qtile99"],
                 )
             )
-        else:
-            of.write("\t0")
-            of.write("\t0\t0\t0\t0\t0\t0\t0")
-            of.write("\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0")
-        d = readDict[bam]
-        of.write("\t{}".format(d["sample_size"]))
-        of.write(
-            "\t{}\t{}\t{}\t{}\t{}\t{}\t{}".format(
-                d["min"],
-                d["qtile25"],
-                d["mean"],
-                d["median"],
-                d["qtile75"],
-                d["max"],
-                d["std"],
-            )
-        )
-        of.write(
-            "\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(
-                d["mad"],
-                d["qtile10"],
-                d["qtile20"],
-                d["qtile30"],
-                d["qtile40"],
-                d["qtile60"],
-                d["qtile70"],
-                d["qtile80"],
-                d["qtile90"],
-                d["qtile99"],
-            )
-        )
-    of.close()
 
 
 def main(args=None):
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        return
     args = parser.parse_args(args)
     fraglengths = {}
     readlengths = {}
-    of = None
-    if args.outRawFragmentLengths is not None:
-        of = open(args.outRawFragmentLengths, "w")
-        of.write("#bamPEFragmentSize\nSize\tOccurrences\tSample\n")
-    for idx, bam in enumerate(args.bamfiles):
-        f, r = getFragSize(bam, args, idx, of)
-        fraglengths[bam] = f
-        readlengths[bam] = r
+    with contextlib.ExitStack() as stack:
+        of = None
+        if args.outRawFragmentLengths is not None:
+            of = stack.enter_context(open(args.outRawFragmentLengths, "w"))
+            of.write("#bamPEFragmentSize\nSize\tOccurrences\tSample\n")
+        for idx, bam in enumerate(args.bamfiles):
+            f, r = getFragSize(bam, args, idx, of)
+            fraglengths[bam] = f
+            readlengths[bam] = r
 
     if args.table is not None:
         printTable(args, fraglengths, readlengths)
@@ -407,9 +407,7 @@ def main(args=None):
         else:
             labels = list(fraglengths.keys())
 
-        i = 0
-        for bam in fraglengths:
-            d = fraglengths[bam]
+        for i, (bam, d) in enumerate(fraglengths.items()):
             if d is None:
                 d = readlengths[bam]
 
@@ -422,7 +420,6 @@ def main(args=None):
                 alpha=0.5,
                 label=labels[i],
             )
-            i += 1
 
         plt.xlabel("Fragment Length")
         plt.ylabel("Frequency")
