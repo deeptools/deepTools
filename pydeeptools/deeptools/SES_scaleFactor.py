@@ -1,9 +1,11 @@
 import os
+
 import numpy as np
+
+import deeptools.countReadsPerBin as countR
 
 # own packages
 from deeptools import bamHandler
-import deeptools.countReadsPerBin as countR
 
 old_settings = np.seterr(all='ignore')
 debug = 0
@@ -97,7 +99,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     try:
         num_reads_per_bin = cr.run()
     except Exception as detail:
-        exit("*ERROR*: {}".format(detail))
+        exit(f"*ERROR*: {detail}")
 
     sitesSampled = len(num_reads_per_bin)
 
@@ -163,8 +165,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
     if min(median) == 0:
         idx_zero = [ix + 1 for ix, value in enumerate(median) if value == 0]
-        exit("\n*ERROR*: The median coverage computed is zero for sample(s) #{}\n"
-             "Try selecting a larger sample size or a region with coverage\n".format(idx_zero))
+        exit(f"\n*ERROR*: The median coverage computed is zero for sample(s) #{idx_zero}\n"
+             "Try selecting a larger sample size or a region with coverage\n")
 
     sizeFactor = sizeFactorsSES
     return {'size_factors': sizeFactor,
@@ -180,7 +182,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
             'sites_sampled': sitesSampled}
 
 
-class Tester(object):
+class Tester:
 
     def __init__(self):
         self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"

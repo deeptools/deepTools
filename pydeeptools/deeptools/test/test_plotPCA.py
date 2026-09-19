@@ -1,8 +1,10 @@
 import os
+from tempfile import NamedTemporaryFile
+
 import numpy as np
 import pytest
 from matplotlib.testing.compare import compare_images
-from tempfile import NamedTemporaryFile
+
 import deeptools.plotPCA
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
@@ -20,8 +22,7 @@ def _run_pca(extra=None, plot=True):
     full plotting path runs; set it False to exercise only the numeric
     output."""
     tsvfile = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
-    args = "-in {0}test_samples.npz --outFileNameData {1}".format(
-        TEST_DATA, tsvfile.name).split()
+    args = f"-in {TEST_DATA}test_samples.npz --outFileNameData {tsvfile.name}".split()
     plotfile = None
     if plot:
         plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
@@ -60,7 +61,7 @@ _GOLDEN_DEFAULT_EIGENVALUES = np.array([
 def test_plotPCA_default():
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
     tsvfile  = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
-    args = "-in {0}test_samples.npz -o {1} --outFileNameData {2}".format(TEST_DATA, plotfile.name, tsvfile.name).split()
+    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --outFileNameData {tsvfile.name}".split()
     deeptools.plotPCA.main(args)
 
     res = compare_images(ROOT + 'test_plotPCA_default.png', plotfile.name, tolerance)
@@ -79,7 +80,7 @@ def test_plotPCA_outFileNameData():
     """
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
     tsvfile = NamedTemporaryFile(suffix='.tsv', prefix='deeptools_testfile_', delete=False)
-    args = "-in {0}test_samples.npz -o {1} --outFileNameData {2}".format(TEST_DATA, plotfile.name, tsvfile.name).split()
+    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --outFileNameData {tsvfile.name}".split()
     deeptools.plotPCA.main(args)
 
     # Columns: Component, wt1, wt2, wt3, kd1, kd2, kd3, Eigenvalue
@@ -159,7 +160,7 @@ def test_plotPCA_ntop_below_samples_plots_successfully():
     (previously this crashed with an IndexError at correlation.py's scatter
     loop, which assumed one component per sample)."""
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    args = "-in {0}test_samples.npz -o {1} --ntop 2".format(TEST_DATA, plotfile.name).split()
+    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name} --ntop 2".split()
     try:
         deeptools.plotPCA.main(args)
         assert os.path.exists(plotfile.name) and os.path.getsize(plotfile.name) > 0
@@ -183,7 +184,7 @@ def test_plotPCA_PCs_selection_does_not_change_table():
 ])
 def test_plotPCA_invalid_arguments_exit(extra, msg):
     plotfile = NamedTemporaryFile(suffix='.png', prefix='deeptools_testfile_', delete=False)
-    args = "-in {0}test_samples.npz -o {1}".format(TEST_DATA, plotfile.name).split() + extra
+    args = f"-in {TEST_DATA}test_samples.npz -o {plotfile.name}".split() + extra
     try:
         with pytest.raises(SystemExit) as exc:
             deeptools.plotPCA.main(args)
@@ -195,7 +196,7 @@ def test_plotPCA_invalid_arguments_exit(extra, msg):
 
 def test_plotPCA_requires_an_output():
     with pytest.raises(SystemExit) as exc:
-        deeptools.plotPCA.main("-in {0}test_samples.npz".format(TEST_DATA).split())
+        deeptools.plotPCA.main(f"-in {TEST_DATA}test_samples.npz".split())
     assert "must be specified" in str(exc.value)
 
 
@@ -223,14 +224,10 @@ def test_plotPCA_ggplot():
     )
 
     args = (
-        "-in {0}test_samples.npz "
-        "-o {1} "
-        "--outFileNameData {2} "
+        f"-in {TEST_DATA}test_samples.npz "
+        f"-o {plotfile.name} "
+        f"--outFileNameData {tsvfile.name} "
         "--ggplot"
-    ).format(
-        TEST_DATA,
-        plotfile.name,
-        tsvfile.name
     ).split()
 
     try:

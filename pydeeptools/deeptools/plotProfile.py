@@ -1,20 +1,21 @@
-import sys
-
 import argparse
-import numpy as np
+import sys
 from math import ceil
-from deeptools import matplotlib_defaults  # noqa: F401
+
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
+import numpy as np
 from matplotlib import colors as pltcolors
-import matplotlib.gridspec as gridspec
+from matplotlib import gridspec
+from matplotlib.font_manager import FontProperties
 
 # own modules
-from deeptools import parserCommon
-from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, getProfileTicks, justify_text
+from deeptools import (
+    heatmapper,
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.computeMatrixOperations import filterHeatmapValues
-
+from deeptools.heatmapper_utilities import getProfileTicks, justify_text, plot_single
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -83,7 +84,7 @@ def process_args(args=None):
 
     return args
 
-class Profile(object):
+class Profile:
 
     def __init__(self, hm, out_file_name,
                  plot_title='', y_axis_label='',
@@ -248,10 +249,8 @@ class Profile(object):
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
                 img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1)
                 _vmin, _vmax = img.get_clim()
-                if _vmin < vmin:
-                    vmin = _vmin
-                if _vmax > vmax:
-                    vmax = _vmax
+                vmin = min(vmin, _vmin)
+                vmax = max(vmax, _vmax)
 
                 if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
                     localYMin = self.y_min[col % len(self.y_min)]
@@ -461,12 +460,12 @@ class Profile(object):
         if (self.numlines > 1 and len(self.color_list) < self.numlines) or\
            (self.numlines == 1 and len(self.color_list) < self.numplots):
             sys.exit("\nThe given list of colors is too small, "
-                     "at least {} colors are needed\n".format(self.numlines))
+                     f"at least {self.numlines} colors are needed\n")
         for color in self.color_list:
             if not pltcolors.is_color_like(color):
-                sys.exit("\nThe color name {} is not valid. Check "
+                sys.exit(f"\nThe color name {color} is not valid. Check "
                          "the name or try with a html hex string "
-                         "for example #eeff22".format(color))
+                         "for example #eeff22")
         first = True
         ax_list = []
         globalYmin = np.inf
@@ -581,7 +580,7 @@ class Profile(object):
                 lims = (lims[0], float(localYMax))
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
-            ax_list[sample_id].set_ylim(lims)
+            subplot.set_ylim(lims)
 
         # plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.subplots_adjust(wspace=0.2, hspace=0.6)
@@ -608,7 +607,7 @@ def main(args=None):
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / float(len(hm.matrix.regions))
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
-        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. \n".format(hm.matrix.group_labels[problem[0]]))
+        sys.stderr.write(f"WARNING: Group '{hm.matrix.group_labels[problem[0]]}' is too small for plotting, you might want to remove it. \n")
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)

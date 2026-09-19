@@ -1,14 +1,13 @@
-import sys
 import gzip
-import numpy as np
+import sys
 from copy import deepcopy
 
+import numpy as np
 import pyBigWig
-from deeptools import getScorePerBigWigBin
-from deeptools import mapReduce
-from deeptools.utilities import toString, toBytes, smartLabels
-from deeptools.heatmapper_utilities import getProfileTicks
 
+from deeptools import getScorePerBigWigBin, mapReduce
+from deeptools.heatmapper_utilities import getProfileTicks
+from deeptools.utilities import smartLabels, toBytes, toString
 
 old_settings = np.seterr(all='ignore')
 
@@ -143,7 +142,7 @@ def compute_sub_matrix_wrapper(args):
     return heatmapper.compute_sub_matrix_worker(*args)
 
 
-class heatmapper(object):
+class heatmapper:
     """
     Class to handle the reading and
     plotting of matrices.
@@ -269,13 +268,11 @@ class heatmapper(object):
             file_type = 'bigwig' if score_file_list[0].endswith(".bw") else "BAM"
             prcnt = 100 * float(regions_no_score) / len(regions)
             sys.stderr.write(
-                "\n\nWarning: {0:.2f}% of regions are *not* associated\n"
-                "to any score in the given {1} file. Check that the\n"
+                f"\n\nWarning: {prcnt:.2f}% of regions are *not* associated\n"
+                f"to any score in the given {file_type} file. Check that the\n"
                 "chromosome names from the BED file are consistent with\n"
-                "the chromosome names in the given {2} file and that both\n"
-                "files refer to the same species\n\n".format(prcnt,
-                                                             file_type,
-                                                             file_type))
+                f"the chromosome names in the given {file_type} file and that both\n"
+                "files refer to the same species\n\n")
 
         self.parameters = parameters
 
@@ -328,7 +325,7 @@ class heatmapper(object):
             A numpy matrix that contains per each row the values found per each of the regions given
         """
         if parameters['verbose']:
-            sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
+            sys.stderr.write(f"Processing {chrom}:{start}-{end}\n")
 
         # read BAM or scores file
         score_file_handles = []
@@ -521,9 +518,7 @@ class heatmapper(object):
                 if not self.quiet:
                     sys.stderr.write(
                         "No data was found for region "
-                        "{0} {1}:{2}-{3}. Skipping...\n".format(
-                            feature_name, feature_chrom,
-                            feature_start, feature_end))
+                        f"{feature_name} {feature_chrom}:{feature_start}-{feature_end}. Skipping...\n")
 
                 coverage = np.zeros(matrix_cols)
                 if not parameters['missing data as zero']:
@@ -536,10 +531,7 @@ class heatmapper(object):
                 if not self.quiet:
                     sys.stderr.write(
                         "No scores defined for region "
-                        "{0} {1}:{2}-{3}. Skipping...\n".format(feature_name,
-                                                                feature_chrom,
-                                                                feature_start,
-                                                                feature_end))
+                        f"{feature_name} {feature_chrom}:{feature_start}-{feature_end}. Skipping...\n")
                 coverage = np.zeros(matrix_cols)
                 if not parameters['missing data as zero']:
                     coverage[:] = np.nan
@@ -567,7 +559,7 @@ class heatmapper(object):
         try:
             valuesArray[0]
         except (IndexError, TypeError) as detail:
-            sys.stderr.write("{0}\nvalues array value: {1}, zones {2}\n".format(detail, valuesArray, zones))
+            sys.stderr.write(f"{detail}\nvalues array value: {valuesArray}, zones {zones}\n")
 
         cvglist = []
         zoneEnd = 0
@@ -595,7 +587,7 @@ class heatmapper(object):
                     try:
                         counts_list.append(heatmapper.my_average(valuesArray[idxStart:idxEnd], avgType))
                     except Exception as detail:
-                        sys.stderr.write("Exception found: {0}\n".format(detail))
+                        sys.stderr.write(f"Exception found: {detail}\n")
                     idx += 1
                 cvglist.append(np.array(counts_list))
 
@@ -665,7 +657,7 @@ class heatmapper(object):
                     sys.stderr.write("Warning: Your chromosome names do not match.\nPlease check that the "
                                      "chromosome names in your BED file\ncorrespond to the names in your "
                                      "bigWig file.\nAn empty line will be added to your heatmap.\nThe problematic "
-                                     "chromosome name is {0}\n\n".format(unmod_name))
+                                     f"chromosome name is {unmod_name}\n\n")
 
                 # return empty nan array
                 return heatmapper.coverage_from_array(values_array, zones, binSize, avgType)
@@ -771,7 +763,6 @@ class heatmapper(object):
             h[k] = v
         self.parameters = h
 
-        return
 
     def save_matrix(self, file_name):
         """
@@ -817,20 +808,13 @@ class heatmapper(object):
                 float(score_list[idx])
             matrix_values = "\t".join(
                 np.char.mod('%f', self.matrix.matrix[idx, :]))
-            starts = ["{0}".format(x[0]) for x in region[1]]
-            ends = ["{0}".format(x[1]) for x in region[1]]
+            starts = [f"{x[0]}" for x in region[1]]
+            ends = [f"{x[1]}" for x in region[1]]
             starts = ",".join(starts)
             ends = ",".join(ends)
             # BEDish format (we don't currently store the score)
             fh.write(
-                toBytes('{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\n'.format(
-                        region[0],
-                        starts,
-                        ends,
-                        region[2],
-                        region[5],
-                        region[4],
-                        matrix_values)))
+                toBytes(f'{region[0]}\t{starts}\t{ends}\t{region[2]}\t{region[5]}\t{region[4]}\t{matrix_values}\n'))
         fh.close()
 
     def save_tabulated_values(self, file_handle, reference_point_label='TSS', start_label='TSS', end_label='TES', averagetype='mean'):
@@ -869,8 +853,8 @@ class heatmapper(object):
                 if len(xticks):
                     last = xticks[-1]
                 xticks.extend([last + (k / w[idx]) for k in [w[idx], b[idx], b[idx] + a[idx]]])
-                xtickslabel.extend(['{0:.1f}{1}'.format(-(float(b[idx]) / quotient), symbol), reference_point_label,
-                                    '{0:.1f}{1}'.format(float(a[idx]) / quotient, symbol)])
+                xtickslabel.extend([f'{-(float(b[idx]) / quotient):.1f}{symbol}', reference_point_label,
+                                    f'{float(a[idx]) / quotient:.1f}{symbol}'])
 
             else:
                 xticks_values = [w[idx]]
@@ -878,7 +862,7 @@ class heatmapper(object):
                 # only if upstream region is set, add a x tick
                 if b[idx] > 0:
                     xticks_values.append(b[idx])
-                    xtickslabel.append('{0:.1f}{1}'.format(-(float(b[idx]) / quotient), symbol))
+                    xtickslabel.append(f'{-(float(b[idx]) / quotient):.1f}{symbol}')
 
                 xtickslabel.append(start_label)
 
@@ -895,7 +879,7 @@ class heatmapper(object):
 
                 if a[idx] > 0:
                     xticks_values.append(b[idx] + c[idx] + m[idx] + d[idx] + a[idx])
-                    xtickslabel.append('{0:.1f}{1}'.format(float(a[idx]) / quotient, symbol))
+                    xtickslabel.append(f'{float(a[idx]) / quotient:.1f}{symbol}')
 
                 last = 0
                 if len(xticks):
@@ -937,8 +921,8 @@ class heatmapper(object):
             # for index 5, the label is 'a', for
             # index 10, the label is 'b' etc
             label_idx = np.flatnonzero(boundaries <= idx)[-1]
-            starts = ["{0}".format(x[0]) for x in region[1]]
-            ends = ["{0}".format(x[1]) for x in region[1]]
+            starts = [f"{x[0]}" for x in region[1]]
+            ends = [f"{x[1]}" for x in region[1]]
             starts = ",".join(starts)
             ends = ",".join(ends)
             file_handle.write(
@@ -956,7 +940,7 @@ class heatmapper(object):
                     ",".join([str(int(x) - int(starts[0])) for x, y in region[1]]),
                     self.matrix.group_labels[label_idx]))
             if self.matrix.silhouette is not None:
-                file_handle.write("\t{}".format(self.matrix.silhouette[idx]))
+                file_handle.write(f"\t{self.matrix.silhouette[idx]}")
             file_handle.write("\n")
         file_handle.close()
 
@@ -991,7 +975,7 @@ def computeSilhouetteScore(d, idx, labels):
     return (inter - intra) / max(inter, intra)
 
 
-class _matrix(object):
+class _matrix:
     """
     class to hold heatmapper matrices
     The base data is a large matrix
@@ -1023,7 +1007,7 @@ class _matrix(object):
         self.silhouette = None
 
         if group_labels is None:
-            self.group_labels = ['group {}'.format(x)
+            self.group_labels = [f'group {x}'
                                  for x in range(len(group_boundaries) - 1)]
         else:
             assert len(group_labels) == len(group_boundaries) - 1, \
@@ -1031,7 +1015,7 @@ class _matrix(object):
             self.group_labels = group_labels
 
         if sample_labels is None:
-            self.sample_labels = ['sample {}'.format(x)
+            self.sample_labels = [f'sample {x}'
                                   for x in range(len(sample_boundaries) - 1)]
         else:
             assert len(sample_labels) == len(sample_boundaries) - 1, \
@@ -1130,9 +1114,7 @@ class _matrix(object):
             for x in self.regions:
                 matrix_avgs.append(np.sum([bar[1] - bar[0] for bar in x[1]]))
             matrix_avgs = np.array(matrix_avgs)
-        elif sort_using == 'mean':
-            matrix_avgs = np.nanmean(matrix, axis=1)
-        elif sort_using == 'mean':
+        elif sort_using == 'mean' or sort_using == 'mean':
             matrix_avgs = np.nanmean(matrix, axis=1)
         elif sort_using == 'median':
             matrix_avgs = np.nanmedian(matrix, axis=1)
@@ -1143,7 +1125,7 @@ class _matrix(object):
         elif sort_using == 'sum':
             matrix_avgs = np.nansum(matrix, axis=1)
         else:
-            sys.exit("{} is an unsupported sorting method".format(sort_using))
+            sys.exit(f"{sort_using} is an unsupported sorting method")
 
         # order per group
         _sorted_regions = []
@@ -1172,8 +1154,8 @@ class _matrix(object):
                 "all indices should be bigger than or equal to 1."
             assert all(i <= len(self.sample_labels) for i in
                        clustering_samples), \
-                "each index should be smaller than or equal to {}(total "\
-                "number of samples.)".format(len(self.sample_labels))
+                f"each index should be smaller than or equal to {len(self.sample_labels)}(total "\
+                "number of samples.)"
 
             clustering_samples = np.asarray(clustering_samples) - 1
 
@@ -1189,7 +1171,7 @@ class _matrix(object):
             matrix_to_cluster[np.isnan(matrix_to_cluster)] = 0
 
         if method == 'kmeans':
-            from scipy.cluster.vq import vq, kmeans
+            from scipy.cluster.vq import kmeans, vq
 
             centroids, _ = kmeans(matrix_to_cluster, k)
             # order the centroids in an attempt to
@@ -1223,7 +1205,7 @@ class _matrix(object):
         _clustered_matrix = []
         cluster_number = 1
         for cluster in cluster_order:
-            self.group_labels.append("cluster_{}".format(cluster_number))
+            self.group_labels.append(f"cluster_{cluster_number}")
             cluster_number += 1
             cluster_ids = _cluster_ids_list[cluster]
             self.group_boundaries.append(self.group_boundaries[-1] +
@@ -1250,7 +1232,7 @@ class _matrix(object):
             np.fill_diagonal(d2, np.nan)  # This excludes the diagonal
             for idx in range(len(labels)):
                 silhouette[idx] = computeSilhouetteScore(d2, idx, labels)
-            sys.stderr.write("The average silhouette score is: {}\n".format(np.mean(silhouette)))
+            sys.stderr.write(f"The average silhouette score is: {np.mean(silhouette)}\n")
             self.silhouette = silhouette
 
     def removeempty(self):
@@ -1283,5 +1265,5 @@ class _matrix(object):
         if len(matrix_flatten) == 0:
             num_nan = len(np.flatnonzero(np.isnan(self.matrix.flatten())))
             raise ValueError("matrix only contains nans "
-                             "(total nans: {})".format(num_nan))
+                             f"(total nans: {num_nan})")
         return matrix_flatten

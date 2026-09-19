@@ -1,13 +1,16 @@
-import pyBigWig
-import numpy as np
 import os
-import sys
 import shutil
+import sys
 import warnings
 
-# deepTools packages
-import deeptools.mapReduce as mapReduce
+import numpy as np
+import pyBigWig
+
 import deeptools.utilities
+
+# deepTools packages
+from deeptools import mapReduce
+
 # debug = 0
 
 old_settings = np.seterr(all='ignore')
@@ -55,7 +58,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
         array([[1. , 1.5, 2. ],
                [1. , 1. , 2. ]])
     """
-    assert start < end, "start {} bigger that end {}".format(start, end)
+    assert start < end, f"start {start} bigger that end {end}"
 
     # array to keep the scores for the regions
     sub_score_per_bin = []
@@ -101,7 +104,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
                     # prefix with 'chr' the chromosome name
                     chrom = 'chr' + chrom
                 if chrom not in bwh.chroms():
-                    exit('Chromosome name {} not found in bigwig file\n {}\n'.format(unmod_name, bigWigFiles[idx]))
+                    exit(f'Chromosome name {unmod_name} not found in bigwig file\n {bigWigFiles[idx]}\n')
 
             weights = []
             scores = []
@@ -125,7 +128,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
             starts = ",".join(starts)
             ends = ",".join(ends)
             _file.write("\t".join(map(str, [chrom, starts, ends])) + "\t")
-            _file.write("\t".join(["{}".format(x) for x in avgReadsArray]) + "\n")
+            _file.write("\t".join([f"{x}" for x in avgReadsArray]) + "\n")
 
     if save_data:
         _file.close()
@@ -152,7 +155,7 @@ def getChromSizes(bigwigFilesList):
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:
-            sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
+            sys.stderr.write(f"{name:>15}\t{size:>10}\n")
 
     bigwigFilesList = bigwigFilesList[:]
 
@@ -180,7 +183,7 @@ def getChromSizes(bigwigFilesList):
                 print_chr_names_and_size(common_chr)
 
                 sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
-                                 "lengths from file\n{}\n".format(bw))
+                                 f"lengths from file\n{bw}\n")
                 print_chr_names_and_size(_names_and_size)
                 exit(1)
             else:
@@ -243,11 +246,11 @@ def getScorePerBin(bigWigFiles, binLength,
     # make chunkSize multiple of binLength
     chunkSize -= chunkSize % binLength
     if verbose:
-        print("step size is {}".format(stepSize))
+        print(f"step size is {stepSize}")
 
     if region:
         # in case a region is used, append the tilesize
-        region += ":{}".format(binLength)
+        region += f":{binLength}"
     # mapReduce( (staticArgs), func, chromSize, etc. )
     if out_file_for_raw_data:
         save_file = True
@@ -292,7 +295,7 @@ def getScorePerBin(bigWigFiles, binLength,
     return score_per_bin
 
 
-class Tester(object):
+class Tester:
 
     def __init__(self):
         """

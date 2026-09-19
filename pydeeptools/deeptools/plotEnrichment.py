@@ -1,17 +1,20 @@
-import sys
 import argparse
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+import sys
 
-from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
-from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen, smartLabels
+import matplotlib.pyplot as plt
+import numpy as np
+from deeptoolsintervals import GTF, Enrichment
+from matplotlib import gridspec
+
+from deeptools import (
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.bamHandler import openBam
-from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
-from deeptools import parserCommon
+from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+from deeptools.mapReduce import blSubtract, getUserRegion, mapReduce
+from deeptools.utilities import getCommonChrNames, getTLen, mungeChromosome, smartLabels
 
 
 def parse_arguments(args=None):
@@ -228,7 +231,7 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead, offset=None):
             fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
-                                            "end for read {}".format(read.query_name)
+                                            f"end for read {read.query_name}"
         blocks = [(int(fragmentStart), int(fragmentEnd))]
 
     # Handle read offsets, if needed
@@ -288,7 +291,7 @@ def getEnrichment_worker(arglist):
     """
     chrom, start, end, args, defaultFragmentLength = arglist
     if args.verbose:
-        sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
+        sys.stderr.write(f"Processing {chrom}:{start}-{end}\n")
 
     olist = []
     total = [0] * len(args.bamfiles)
@@ -362,7 +365,7 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
     if not args.colors:
         args.colors = ['#9E4A06'] * barsPerPlot
     elif len(args.colors) < barsPerPlot:
-        sys.exit("Error: {0} colors were requested, but {1} were needed!".format(len(args.colors), barsPerPlot))
+        sys.exit(f"Error: {len(args.colors)} colors were requested, but {barsPerPlot} were needed!")
 
     grids = gridspec.GridSpec(rows, cols)
     plt.rcParams['font.size'] = 10.0
@@ -450,7 +453,7 @@ def main(args=None):
     if args.smartLabels:
         args.labels = smartLabels(args.bamfiles)
     if len(args.labels) != len(args.bamfiles):
-        sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
+        sys.exit(f"Error: The number of labels ({len(args.labels)}) does not match the number of BAM files ({len(args.bamfiles)})!")
 
     if args.ggplot:
         plt.style.use('ggplot')
@@ -490,7 +493,7 @@ def main(args=None):
                              "Reads will not be extended.\n".format(int(read_len_dict['median'])))
             defaultFragmentLength = 'read length'
         elif args.extendReads > 2000:
-            sys.exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(args.extendReads))
+            sys.exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {args.extendReads} ")
         else:
             defaultFragmentLength = args.extendReads
     else:
@@ -538,5 +541,5 @@ def main(args=None):
             x = x.split('/')[-1]
             for k, v in featureCounts[i].items():
                 print(x)
-                of.write("{0}\t{1}\t{2:5.2f}\t{3}\t{4}\n".format(x, k, (100.0 * v) / totalCounts[i], v, totalCounts[i]))
+                of.write(f"{x}\t{k}\t{(100.0 * v) / totalCounts[i]:5.2f}\t{v}\t{totalCounts[i]}\n")
         of.close()

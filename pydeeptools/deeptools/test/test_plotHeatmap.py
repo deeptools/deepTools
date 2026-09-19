@@ -6,7 +6,6 @@ from matplotlib.testing.compare import compare_images
 
 import deeptools.plotHeatmap
 
-
 TEST_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_plotHeatmap")
 

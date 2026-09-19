@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import argparse
 import sys
+from importlib.metadata import version
 
-from deeptools import parserCommon, bamHandler, utilities
+from deeptools import bamHandler, parserCommon, utilities
 from deeptools.mapReduce import mapReduce
 from deeptools.utilities import smartLabels
-from importlib.metadata import version
 
 
 def parseArguments():
@@ -327,47 +327,47 @@ def main(args=None):
             of.write(args.sampleLabels[idx])
         else:
             of.write(args.bamfiles[idx])
-        of.write("\t{}\t{}\t{}".format(total[idx], mapped[idx], blacklisted[idx]))
+        of.write(f"\t{total[idx]}\t{mapped[idx]}\t{blacklisted[idx]}")
         # nFiltered
         metric = 0.0
         if totals[idx] > 0:
             metric = blacklisted[idx] + float(nFiltered[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # MAPQ
         metric = 0.0
         if totals[idx] > 0:
             metric = float(MAPQs[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # samFlagInclude
         metric = 0.0
         if totals[idx] > 0:
             metric = float(flagIncludes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # samFlagExclude
         metric = 0.0
         if totals[idx] > 0:
             metric = float(flagExcludes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # Internally determined duplicates
         metric = 0.0
         if totals[idx] > 0:
             metric = float(internalDupes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # Externally marked duplicates
         metric = 0.0
         if totals[idx] > 0:
             metric = float(externalDupes[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # Singletons
         metric = 0.0
         if totals[idx] > 0:
             metric = float(singletons[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         # filterRNAstrand
         metric = 0.0
         if totals[idx] > 0:
             metric = float(rnaStrand[idx]) / float(totals[idx]) * mapped[idx]
-        of.write("\t{}".format(min(round(metric, 1), mapped[idx])))
+        of.write(f"\t{min(round(metric, 1), mapped[idx])}")
         of.write("\n")
 
     if args.outFile is not None:

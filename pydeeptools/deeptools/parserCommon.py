@@ -1,8 +1,9 @@
 import argparse
+import multiprocessing
 import os
 from importlib.metadata import version
-import multiprocessing
 from pathlib import Path
+
 
 def check_float_0_1(value):
     v = float(value)
@@ -369,16 +370,15 @@ def numberOfProcessors(string):
             numberOfProcessors = int(string)
         except ValueError:
             raise argparse.ArgumentTypeError(
-                "{} is not a valid number of processors".format(string))
+                f"{string} is not a valid number of processors")
 
         except Exception as e:
-            raise argparse.ArgumentTypeError("the given value {} is not valid. "
-                                             "Error message: {}\nThe number of "
+            raise argparse.ArgumentTypeError(f"the given value {string} is not valid. "
+                                             f"Error message: {e}\nThe number of "
                                              "available processors in your "
-                                             "computer is {}.".format(string, e, availProc))
+                                             f"computer is {availProc}.")
 
-        if numberOfProcessors > availProc:
-            numberOfProcessors = availProc
+        numberOfProcessors = min(numberOfProcessors, availProc)
 
     return numberOfProcessors
 
@@ -397,7 +397,7 @@ def genomicRegion(string):
         region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
         raise argparse.ArgumentTypeError(
-            "{} is not a valid region".format(string))
+            f"{string} is not a valid region")
     return region
 
 
@@ -409,7 +409,7 @@ def writableFile(string):
         open(string, 'w').close()
         os.remove(string)
     except:
-        msg = "{} file can't be opened for writing".format(string)
+        msg = f"{string} file can't be opened for writing"
         raise argparse.ArgumentTypeError(msg)
     return string
 
@@ -891,7 +891,7 @@ def requiredLength(minL, maxL):
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if not minL <= len(values) <= maxL:
-                msg = 'argument "{}" requires between {} and {} arguments'.format(self.dest, minL, maxL)
+                msg = f'argument "{self.dest}" requires between {minL} and {maxL} arguments'
                 raise argparse.ArgumentTypeError(msg)
             setattr(args, self.dest, values)
     return RequiredLength

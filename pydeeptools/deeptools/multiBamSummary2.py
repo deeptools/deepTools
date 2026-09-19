@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import argparse
 import os
@@ -8,8 +7,8 @@ import sys
 from importlib.metadata import version
 
 from deeptools import parserCommon
-from deeptools.utilities import smartLabels
 from deeptools.hp import r_mbams
+from deeptools.utilities import smartLabels
 
 
 def parse_arguments(args=None):

@@ -1,7 +1,9 @@
-import deeptools.alignmentSieve2 as aln_seive
 import tempfile
 from pathlib import Path
+
 import pysam
+
+import deeptools.alignmentSieve2 as aln_seive
 
 ROOT = Path(__file__).parent / "test_data"
 BAMFILE_IN = str(ROOT / "paired_chr2L.bam")

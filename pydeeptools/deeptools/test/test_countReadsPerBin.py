@@ -1,16 +1,18 @@
 # from unittest import TestCase
 
-import deeptools.countReadsPerBin as cr
+import os.path
+
 import numpy as np
 import numpy.testing as nt
-import os.path
 import pytest
+
+import deeptools.countReadsPerBin as cr
 
 __author__ = 'Fidel'
 
 
 @pytest.mark.parametrize("bc", ["bam", 'cram'])
-class TestCountReadsPerBin():
+class TestCountReadsPerBin:
 
     def ifiles(self, ext='bam'):
         root = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"

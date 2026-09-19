@@ -1,16 +1,16 @@
-import shutil
-import os
-import time
-import sys
 import multiprocessing
+import os
+import shutil
+import sys
+import time
+
 import numpy as np
+import pyBigWig
+from deeptoolsintervals import GTF
 
 # deepTools packages
 import deeptools.utilities
-from deeptools import bamHandler
-from deeptools import mapReduce
-from deeptoolsintervals import GTF
-import pyBigWig
+from deeptools import bamHandler, mapReduce
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -28,7 +28,7 @@ def countReadsInRegions_wrapper(args):
     return CountReadsPerBin.count_reads_in_region(*args)
 
 
-class CountReadsPerBin(object):
+class CountReadsPerBin:
 
     r"""Collects coverage over multiple bam files using multiprocessing
 
@@ -206,8 +206,8 @@ class CountReadsPerBin(object):
                 else:
                     exit("*ERROR*: library is not paired-end. Please provide an extension length.")
                 if verbose:
-                    print(("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median'])))
+                    print("Fragment length based on paired en data "
+                          "estimated to be {}".format(frag_len_dict['median']))
 
             elif extendReads < read_len_dict['median']:
                 sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
@@ -215,7 +215,7 @@ class CountReadsPerBin(object):
                 self.defaultFragmentLength = 'read length'
 
             elif extendReads > 2000:
-                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(extendReads))
+                exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {extendReads} ")
             else:
                 self.defaultFragmentLength = int(extendReads)
 
@@ -284,7 +284,7 @@ class CountReadsPerBin(object):
         # number of samples is better if large
         if np.mean(chrLengths) < self.stepSize and self.bedFile is None:
             min_num_of_samples = int(genomeSize / np.mean(chrLengths))
-            raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
+            raise ValueError(f"numberOfSamples has to be bigger than {min_num_of_samples} ")
 
         max_mapped = 0
         if len(self.mappedList) > 0:
@@ -299,8 +299,7 @@ class CountReadsPerBin(object):
             chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandles)))
 
         # Ensure that chunkSize is always at least self.stepSize
-        if chunkSize < self.stepSize:
-            chunkSize = self.stepSize
+        chunkSize = max(chunkSize, self.stepSize)
 
         # Ensure that chunkSize is always at least self.binLength
         if self.binLength and chunkSize < self.binLength:
@@ -343,11 +342,11 @@ class CountReadsPerBin(object):
         [bam_h.close() for bam_h in bamFilesHandles]
 
         if self.verbose:
-            print("step size is {}".format(self.stepSize))
+            print(f"step size is {self.stepSize}")
 
         if self.region:
             # in case a region is used, append the tilesize
-            self.region += ":{}".format(self.binLength)
+            self.region += f":{self.binLength}"
 
         # Handle GTF options
         transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
@@ -392,7 +391,7 @@ class CountReadsPerBin(object):
             if self.bedFile:
                 sys.exit('\nNo coverage values could be computed.\n\n'
                          'Please check that the chromosome names in the BED file are found on the bam files.\n\n'
-                         'The valid chromosome names are:\n{}'.format(chrNames))
+                         f'The valid chromosome names are:\n{chrNames}')
             else:
                 sys.exit('\nNo coverage values could be computed.\n\nCheck that all bam files are valid and '
                          'contain mapped reads.')
@@ -513,7 +512,7 @@ class CountReadsPerBin(object):
                     starts = ",".join([str(x[0]) for x in trans])
                     ends = ",".join([str(x[1]) for x in trans])
                     _file.write("\t".join([chrom, starts, ends]) + "\t")
-                    _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
+                    _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[i, :]]) + "\n")
                 else:
                     for exon in trans:
                         for startPos in range(exon[0], exon[1], exon[2]):
@@ -521,8 +520,8 @@ class CountReadsPerBin(object):
                                 # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
                                 # Counts there are added to the bin before them, but range() will still try to include them.
                                 break
-                            _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, min(startPos + exon[2], exon[1])))
-                            _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[idx, :]]) + "\n")
+                            _file.write(f"{chrom}\t{startPos}\t{min(startPos + exon[2], exon[1])}\t")
+                            _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[idx, :]]) + "\n")
                             idx += 1
             _file.close()
 
@@ -624,7 +623,7 @@ class CountReadsPerBin(object):
             # caching seems faster. TODO: profile the function
             c = 0
             if chrom not in bamHandle.references:
-                raise NameError("chromosome {} not found in bam file".format(chrom))
+                raise NameError(f"chromosome {chrom} not found in bam file")
 
             prev_pos = set()
             lpos = None
@@ -689,10 +688,8 @@ class CountReadsPerBin(object):
                     if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
                         continue
 
-                    if fragmentStart < reg[0]:
-                        fragmentStart = reg[0]
-                    if fragmentEnd > reg[0] + len(coverages) * tileSize:
-                        fragmentEnd = reg[0] + len(coverages) * tileSize
+                    fragmentStart = max(fragmentStart, reg[0])
+                    fragmentEnd = min(fragmentEnd, reg[0] + len(coverages) * tileSize)
 
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
@@ -897,7 +894,7 @@ class CountReadsPerBin(object):
             fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
-                                            "end for read {}".format(read.query_name)
+                                            f"end for read {read.query_name}"
         return [(fragmentStart, fragmentEnd)]
 
     def getSmoothRange(self, tileIndex, tileSize, smoothRange, maxPosition):
@@ -988,7 +985,7 @@ def estimateSizeFactors(m):
     return 1. / sf
 
 
-class Tester(object):
+class Tester:
 
     def __init__(self):
         """

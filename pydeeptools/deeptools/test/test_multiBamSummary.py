@@ -1,11 +1,12 @@
-import deeptools.multiBamSummary2 as mbs
-import numpy as np
-import numpy.testing as nt
-import math
 import csv
-
+import math
 import os.path
 import tempfile
+
+import numpy as np
+import numpy.testing as nt
+
+import deeptools.multiBamSummary2 as mbs
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_mbs/"
 BAM = ROOT + "test1"

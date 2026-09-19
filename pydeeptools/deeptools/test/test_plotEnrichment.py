@@ -1,11 +1,11 @@
-import os
 import filecmp
-from matplotlib.testing.compare import compare_images
+import os
 from tempfile import NamedTemporaryFile
+
+from matplotlib.testing.compare import compare_images
 
 import deeptools.plotEnrichment
 import deeptools.utilities
-
 
 __author__ = 'Bjoern'
 

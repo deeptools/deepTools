@@ -1,11 +1,12 @@
-import deeptools.estimateReadFiltering as est
-import deeptools.alignmentSieve2 as sieve
-import os.path
-from os import unlink
 import hashlib
-import pysam
+import os.path
 import tempfile
+from os import unlink
 
+import pysam
+
+import deeptools.alignmentSieve2 as sieve
+import deeptools.estimateReadFiltering as est
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_FILTER = ROOT + "test_filtering.bam"
@@ -18,7 +19,7 @@ def test_estimate_read_filtering_minimal():
     Minimal testing
     """
     _, outfile = tempfile.mkstemp(suffix=".txt")
-    args = '-b {} -o {}'.format(BAMFILE_FILTER, outfile).split()
+    args = f'-b {BAMFILE_FILTER} -o {outfile}'.split()
     est.main(args)
 
     _foo = open(outfile, 'r')
@@ -39,7 +40,7 @@ def test_estimate_read_filtering_params():
     --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl
     """
     _, outfile = tempfile.mkstemp(suffix=".txt")
-    args = '-b {} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {} -o {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile).split()
+    args = f'-b {BAMFILE_FILTER} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {BEDFILE_FILTER} -o {outfile}'.split()
     est.main(args)
 
     _foo = open(outfile, 'r')
@@ -62,7 +63,7 @@ def test_sieve():
     _, outfile = tempfile.mkstemp(suffix=".bam")
     _, outfiltered = tempfile.mkstemp(suffix=".bam")
     _, outlog = tempfile.mkstemp(suffix=".log")
-    args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {} --filteredOutReads {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog, outfiltered).split()
+    args = f'-b {BAMFILE_FILTER} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {BEDFILE_FILTER} -o {outfile} --filterMetrics {outlog} --filteredOutReads {outfiltered}'.split()
     sieve.main(args)
 
     _foo = open(outlog, 'r')
@@ -90,7 +91,7 @@ def test_sieve_BED():
     Test alignmentSieve with the --BED option
     """
     _, outfile = tempfile.mkstemp(suffix=".bed")
-    args = '-b {} --minMappingQuality 10 --BED -o {}'.format(PAIREDBAMFILE_FILTER, outfile).split()
+    args = f'-b {PAIREDBAMFILE_FILTER} --minMappingQuality 10 --BED -o {outfile}'.split()
     sieve.main(args)
 
     _foo = open(outfile, 'r')
@@ -132,7 +133,7 @@ def test_sieve_BED_shift():
     Test alignmentSieve --BED --shift
     """
     _, outfile = tempfile.mkstemp(suffix=".bed")
-    args = '-b {} --minMappingQuality 10 --BED -o {} --shift 1 -2 3 -4'.format(PAIREDBAMFILE_FILTER, outfile).split()
+    args = f'-b {PAIREDBAMFILE_FILTER} --minMappingQuality 10 --BED -o {outfile} --shift 1 -2 3 -4'.split()
     sieve.main(args)
 
     _foo = open(outfile, 'r')

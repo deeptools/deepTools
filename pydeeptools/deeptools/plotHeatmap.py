@@ -1,21 +1,22 @@
-from __future__ import division
 
 import argparse
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib import ticker
 import copy
+import re
 import sys
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import gridspec, ticker
+
 # own modules
-from deeptools import parserCommon
-from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, justify_text
+from deeptools import (
+    heatmapper,
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.computeMatrixOperations import filterHeatmapValues
-import re
+from deeptools.heatmapper_utilities import justify_text, plot_single
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -45,7 +46,7 @@ def process_args(args=None):
     args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and args.heatmapHeight <= 100 else 10
 
     if not matplotlib.colors.is_color_like(args.missingDataColor):
-        exit("The value {0}  for --missingDataColor is not valid".format(args.missingDataColor))
+        exit(f"The value {args.missingDataColor}  for --missingDataColor is not valid")
 
     args.boxAroundHeatmaps = True if args.boxAroundHeatmaps == 'yes' else False
 
@@ -196,7 +197,7 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             lims = (lims[0], float(localYMax))
         if lims[0] >= lims[1]:
             lims = (lims[0], lims[0] + 1)
-        ax_list[sample_id].set_ylim(lims)
+        subplot.set_ylim(lims)
 
     return ax_list
 
@@ -270,9 +271,9 @@ def plotMatrix(hm, outFileName,
     if (len(zMin) > 1) & (len(zMax) > 1):
         for index, value in enumerate(zMax):
             if value <= zMin[index]:
-                sys.stderr.write("Warnirng: In bigwig {}, the given zmin ({}) is larger than "
-                                 "or equal to the given zmax ({}). Thus, it has been set "
-                                 "to None. \n".format(index + 1, zMin[index], value))
+                sys.stderr.write(f"Warnirng: In bigwig {index + 1}, the given zmin ({zMin[index]}) is larger than "
+                                 f"or equal to the given zmax ({value}). Thus, it has been set "
+                                 "to None. \n")
                 zMin[index] = None
 
     if yMin is None:
@@ -621,9 +622,9 @@ def main(args=None):
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
-        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. "
+        sys.stderr.write(f"WARNING: Group '{hm.matrix.group_labels[problem[0]]}' is too small for plotting, you might want to remove it. "
                          "There will likely be an error message from matplotlib regarding this "
-                         "below.\n".format(hm.matrix.group_labels[problem[0]]))
+                         "below.\n")
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
@@ -641,7 +642,7 @@ def main(args=None):
                 if (i > 0 and i <= hm.matrix.get_num_samples()):
                     sortUsingSamples.append(i - 1)
                 else:
-                    exit("The value {0} for --sortSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples, hm.matrix.get_num_samples()))
+                    exit(f"The value {args.sortUsingSamples} for --sortSamples is not valid. Only values from 1 to {hm.matrix.get_num_samples()} are allowed.")
             print('Samples used for ordering within each group: ', sortUsingSamples)
 
         hm.matrix.sort_groups(sort_using=args.sortUsing,

@@ -1,9 +1,11 @@
 import argparse
-import sys
 import signal
-from deeptools import parserCommon
+import sys
 from importlib.metadata import version
+
+from deeptools import parserCommon
 from deeptools.hp import r_alignmentsieve
+
 
 def parseArguments():
     parser = argparse.ArgumentParser(

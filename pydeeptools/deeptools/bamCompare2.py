@@ -1,8 +1,10 @@
 import argparse
-from deeptools import parserCommon
-from deeptools.hp import r_bamcompare
 import signal
 import sys
+
+from deeptools import parserCommon
+from deeptools.hp import r_bamcompare
+
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -149,10 +151,9 @@ def process_args(args=None):
     args = parseArguments().parse_args(args)
 
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print("Warning: the smooth length given ({}) is smaller than the bin "
-              "size ({}).\n\n No smoothing will be "
-              "done".format(args.smoothLength,
-                            args.binSize))
+        print(f"Warning: the smooth length given ({args.smoothLength}) is smaller than the bin "
+              f"size ({args.binSize}).\n\n No smoothing will be "
+              "done")
         args.smoothLength = None
 
     if not args.ignoreForNormalization:

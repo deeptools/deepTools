@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import argparse
 import os.path
@@ -275,7 +274,7 @@ def main(args=None):
         allArgs=args,
     )
 
-    sys.stderr.write("Number of bins found: {}\n".format(num_reads_per_bin.shape[0]))
+    sys.stderr.write(f"Number of bins found: {num_reads_per_bin.shape[0]}\n")
 
     if num_reads_per_bin.shape[0] < 2:
         exit(

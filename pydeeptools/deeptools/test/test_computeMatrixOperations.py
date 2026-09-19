@@ -1,11 +1,12 @@
 # from unittest import TestCase
 
-import deeptools.computeMatrixOperations as cmo
-import os
-import hashlib
 import gzip
+import hashlib
 import json
+import os
 import tempfile
+
+import deeptools.computeMatrixOperations as cmo
 
 __author__ = 'Devon'
 
@@ -18,7 +19,7 @@ def getHeader(fp):
     return json.loads(s)
 
 
-class TestComputeMatrixOperations(object):
+class TestComputeMatrixOperations:
     root = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
     matrix = root + "computeMatrixOperations.mat.gz"
     bed = root + "computeMatrixOperations.bed"
@@ -32,7 +33,7 @@ class TestComputeMatrixOperations(object):
 
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0], "body": [1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward"], "downstream": [0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10], "upstream": [0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400], "max threshold": None, "ref point": [None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "subset -m {} --sample SRR648667.forward SRR648668.forward SRR648669.forward SRR648670.forward -o {}".format(self.matrix, oname)
+        args = f"subset -m {self.matrix} --sample SRR648667.forward SRR648668.forward SRR648669.forward SRR648670.forward -o {oname}"
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -50,7 +51,7 @@ class TestComputeMatrixOperations(object):
         """
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["first", "sec ond", "3rd", "4th", "5th", "6th", "7th", "8th"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["foo bar"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "relabel -m {} -o {} --sampleLabels first sec_ond 3rd 4th 5th 6th 7th 8th --groupLabels foo_bar".format(self.matrix, oname)
+        args = f"relabel -m {self.matrix} -o {oname} --sampleLabels first sec_ond 3rd 4th 5th 6th 7th 8th --groupLabels foo_bar"
         args = args.split()
         args[7] = 'sec ond'  # split mucks up spaces
         args[-1] = 'foo bar'
@@ -67,7 +68,7 @@ class TestComputeMatrixOperations(object):
         """
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward", "SRR648667.reverse", "SRR648668.reverse", "SRR648669.reverse", "SRR648670.reverse"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 107], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "filterStrand -m {} -o {} --strand +".format(self.matrix, oname)
+        args = f"filterStrand -m {self.matrix} -o {oname} --strand +"
         args = args.split(' ')
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -79,9 +80,9 @@ class TestComputeMatrixOperations(object):
         assert f'{h}' == f'{expectedh}'
         os.remove(oname)
 
-        dCorrect = {u'verbose': True, u'scale': 1, u'skip zeros': False, u'nan after end': False, u'sort using': u'mean', u'unscaled 5 prime': [0, 0, 0, 0, 0, 0, 0, 0], u'body': [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], u'sample_labels': [u'SRR648667.forward', u'SRR648668.forward', u'SRR648669.forward', u'SRR648670.forward', u'SRR648667.reverse', u'SRR648668.reverse', u'SRR648669.reverse', u'SRR648670.reverse'], u'downstream': [0, 0, 0, 0, 0, 0, 0, 0], u'unscaled 3 prime': [0, 0, 0, 0, 0, 0, 0, 0], u'group_labels': [u'genes'], u'bin size': [10, 10, 10, 10, 10, 10, 10, 10], u'upstream': [0, 0, 0, 0, 0, 0, 0, 0], u'group_boundaries': [0, 89], u'sample_boundaries': [0, 100, 200, 300, 400, 500, 600, 700, 800], u'missing data as zero': False, u'ref point': [None, None, None, None, None, None, None, None], u'min threshold': None, u'sort regions': u'no', u'proc number': 20, u'bin avg type': u'mean', u'max threshold': None}
+        dCorrect = {'verbose': True, 'scale': 1, 'skip zeros': False, 'nan after end': False, 'sort using': 'mean', 'unscaled 5 prime': [0, 0, 0, 0, 0, 0, 0, 0], 'body': [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], 'sample_labels': ['SRR648667.forward', 'SRR648668.forward', 'SRR648669.forward', 'SRR648670.forward', 'SRR648667.reverse', 'SRR648668.reverse', 'SRR648669.reverse', 'SRR648670.reverse'], 'downstream': [0, 0, 0, 0, 0, 0, 0, 0], 'unscaled 3 prime': [0, 0, 0, 0, 0, 0, 0, 0], 'group_labels': ['genes'], 'bin size': [10, 10, 10, 10, 10, 10, 10, 10], 'upstream': [0, 0, 0, 0, 0, 0, 0, 0], 'group_boundaries': [0, 89], 'sample_boundaries': [0, 100, 200, 300, 400, 500, 600, 700, 800], 'missing data as zero': False, 'ref point': [None, None, None, None, None, None, None, None], 'min threshold': None, 'sort regions': 'no', 'proc number': 20, 'bin avg type': 'mean', 'max threshold': None}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "filterStrand -m {} -o {} --strand -".format(self.matrix, oname)
+        args = f"filterStrand -m {self.matrix} -o {oname} --strand -"
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -99,7 +100,7 @@ class TestComputeMatrixOperations(object):
         """
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward", "SRR648667.reverse", "SRR648668.reverse", "SRR648669.reverse", "SRR648670.reverse"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 392], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "rbind -m {0} {0} -o {1}".format(self.matrix, oname)
+        args = f"rbind -m {self.matrix} {self.matrix} -o {oname}"
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -117,7 +118,7 @@ class TestComputeMatrixOperations(object):
         """
         dCorrect = {"verbose": False, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0], "body": [2], "sample_labels": ["signal"], "downstream": [1], "unscaled 3 prime": [0], "group_labels": ["somegenes", "othergenes"], "bin size": [1], "upstream": [1], "group_boundaries": [0, 3, 7], "sample_boundaries": [0, 4], "max threshold": None, "ref point": [None], "min threshold": None, "sort regions": "keep", "proc number": 1, "bin avg type": "mean", "missing data as zero": True}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "rbind -m {0} {1} -o {2}".format(self.rbindMatrix1, self.rbindMatrix2, oname)
+        args = f"rbind -m {self.rbindMatrix1} {self.rbindMatrix2} -o {oname}"
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -135,7 +136,7 @@ class TestComputeMatrixOperations(object):
         """
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward", "SRR648667.reverse", "SRR648668.reverse", "SRR648669.reverse", "SRR648670.reverse", "SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward", "SRR648667.reverse", "SRR648668.reverse", "SRR648669.reverse", "SRR648670.reverse"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "cbind -m {0} {0} -o {1}".format(self.matrix, oname)
+        args = f"cbind -m {self.matrix} {self.matrix} -o {oname}"
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)
@@ -153,7 +154,7 @@ class TestComputeMatrixOperations(object):
         """
         dCorrect = {"verbose": True, "scale": 1, "skip zeros": False, "nan after end": False, "sort using": "mean", "unscaled 5 prime": [0, 0, 0, 0, 0, 0, 0, 0], "body": [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], "sample_labels": ["SRR648667.forward", "SRR648668.forward", "SRR648669.forward", "SRR648670.forward", "SRR648667.reverse", "SRR648668.reverse", "SRR648669.reverse", "SRR648670.reverse"], "downstream": [0, 0, 0, 0, 0, 0, 0, 0], "unscaled 3 prime": [0, 0, 0, 0, 0, 0, 0, 0], "group_labels": ["genes"], "bin size": [10, 10, 10, 10, 10, 10, 10, 10], "upstream": [0, 0, 0, 0, 0, 0, 0, 0], "group_boundaries": [0, 196], "sample_boundaries": [0, 100, 200, 300, 400, 500, 600, 700, 800], "max threshold": None, "ref point": [None, None, None, None, None, None, None, None], "min threshold": None, "sort regions": "no", "proc number": 20, "bin avg type": "mean", "missing data as zero": False}
         _, oname = tempfile.mkstemp(suffix=".mat.gz")
-        args = "sort -m {} -o {} -R {}".format(self.matrix, oname, self.bed)
+        args = f"sort -m {self.matrix} -o {oname} -R {self.bed}"
         args = args.split()
         cmo.main(args)
         f = gzip.GzipFile(oname)

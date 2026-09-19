@@ -1,5 +1,7 @@
 import sys
+
 import pysam
+
 from deeptools.mapReduce import mapReduce
 
 
@@ -71,15 +73,15 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
         format_options = None
     try:
         bam = pysam.Samfile(bamFile, 'rb', format_options=format_options)
-    except IOError:
-        sys.exit("The file '{}' does not exist".format(bamFile))
+    except OSError:
+        sys.exit(f"The file '{bamFile}' does not exist")
     except:
-        sys.exit("The file '{}' does not have BAM or CRAM format ".format(bamFile))
+        sys.exit(f"The file '{bamFile}' does not have BAM or CRAM format ")
 
     try:
         assert bam.check_index() is not False
     except:
-        sys.exit("'{}' does not appear to have an index. You MUST index the file first!".format(bamFile))
+        sys.exit(f"'{bamFile}' does not appear to have an index. You MUST index the file first!")
 
     if bam.is_cram and returnStats:
         mapped, unmapped, stats = getMappingStats(bam, nThreads)
@@ -93,9 +95,9 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
 
     if bam.is_bam or (bam.is_cram and returnStats):
         if mapped == 0:
-            sys.stderr.write("WARNING! '{}' does not have any mapped reads. Please "
+            sys.stderr.write(f"WARNING! '{bamFile}' does not have any mapped reads. Please "
                              "check that the file is properly indexed and "
-                             "that it contains mapped reads.\n".format(bamFile))
+                             "that it contains mapped reads.\n")
 
     if returnStats:
         return bam, mapped, unmapped, stats

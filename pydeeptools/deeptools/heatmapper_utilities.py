@@ -1,7 +1,9 @@
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
-import matplotlib.colors as pltcolors
 import textwrap
+
+import matplotlib.colors as pltcolors
+import numpy as np
+
+from deeptools import matplotlib_defaults  # noqa: F401
 
 old_settings = np.seterr(all='ignore')
 
@@ -131,9 +133,9 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
     if m == 0:
         xticks = [(k / w) for k in [0, b - 0.5 * w, b + a - w]]
-        xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
+        xtickslabel = [f'{-(float(b) / quotient):.1f}',
                        referencePointLabel,
-                       '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+                       f'{float(a) / quotient:.1f}{symbol}']
     else:
         xticks_values = [0]
         xtickslabel = []
@@ -141,7 +143,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         # only if upstream region is set, add a x tick
         if b > 0:
             xticks_values.append(b)
-            xtickslabel.append('{0:.1f}'.format(-(float(b) / quotient)))
+            xtickslabel.append(f'{-(float(b) / quotient):.1f}')
 
         xtickslabel.append(startLabel)
 
@@ -161,7 +163,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
         if a > 0:
             xticks_values.append(b + c + m + d + a - w)
-            xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+            xtickslabel.append(f'{float(a) / quotient:.1f}{symbol}')
 
         xticks = [(k / w) for k in xticks_values]
         xticks = [max(x, 0) for x in xticks]

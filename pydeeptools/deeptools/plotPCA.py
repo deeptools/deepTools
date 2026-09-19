@@ -1,9 +1,10 @@
-import sys
 import argparse
-from deeptools import matplotlib_defaults  # noqa: F401
+import sys
 from importlib.metadata import version
+
+from deeptools import matplotlib_defaults  # noqa: F401
 from deeptools.correlation import Correlation
-from deeptools.parserCommon import writableFile, expand_list
+from deeptools.parserCommon import expand_list, writableFile
 
 
 def parse_arguments(args=None):
@@ -194,8 +195,7 @@ def main(args=None):
             #of.write("#plotPCA --outFileNameData\n")
             of.write("Component\t{}\tEigenvalue\n".format("\t".join(corr.labels)))
             n = eigenvalues.shape[0]
-            for i in range(n):
-                of.write("{}\t{}\t{}\n".format(i + 1, "\t".join(["{}".format(x) for x in Wt[i, :]]), eigenvalues[i]))
+            of.writelines("{}\t{}\t{}\n".format(i + 1, "\t".join([f"{x}" for x in Wt[i, :]]), eigenvalues[i]) for i in range(n))
 
 if __name__ == "__main__":
     main()

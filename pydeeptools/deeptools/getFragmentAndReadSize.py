@@ -1,8 +1,7 @@
 import numpy as np
 
 # own tools
-from deeptools import bamHandler
-from deeptools import mapReduce
+from deeptools import bamHandler, mapReduce
 
 old_settings = np.seterr(all='ignore')
 
@@ -48,7 +47,7 @@ def getFragmentLength_worker(chrom, start, end, bamFile, distanceBetweenBins):
             reads = np.array([(abs(r.template_length), r.infer_query_length(always=False))
                               for r in bam.fetch(chrom, start, end) if not r.is_unmapped])
     else:
-        raise NameError("chromosome {} not found in bam file".format(chrom))
+        raise NameError(f"chromosome {chrom} not found in bam file")
 
     if not len(reads):
         reads = np.array([]).reshape(0, 2)

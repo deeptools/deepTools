@@ -1,7 +1,13 @@
-import deeptools.computeMatrix2 as cm
-import tempfile
 import os.path
-from .test_computeMatrix_referencepoint import _compare_mat_gz, _compare_tab_files,_compare_bed_files
+import tempfile
+
+import deeptools.computeMatrix2 as cm
+
+from .test_computeMatrix_referencepoint import (
+    _compare_bed_files,
+    _compare_mat_gz,
+    _compare_tab_files,
+)
 
 ALLOWED_DELTA = 1.0
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_computematrix/"

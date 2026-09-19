@@ -1,12 +1,14 @@
 #!/usr/bin/env python
-import deeptools.heatmapper as heatmapper
+import argparse
+import csv
+import os
+import sys
+from importlib.metadata import version
+
 import deeptoolsintervals.parse as dti
 import numpy as np
-import argparse
-import sys
-import os
-import csv
-from importlib.metadata import version
+
+from deeptools import heatmapper
 
 
 def parse_arguments():
@@ -304,11 +306,11 @@ def printInfo(matrix):
 
     print("Groups:")
     for group in matrix.matrix.group_labels:
-        print("\t{0}".format(group))
+        print(f"\t{group}")
 
     print("Samples:")
     for sample in matrix.matrix.sample_labels:
-        print("\t{0}".format(sample))
+        print(f"\t{sample}")
 
 
 def printDataRange(matrix):
@@ -320,11 +322,7 @@ def printDataRange(matrix):
         start = matrix.matrix.sample_boundaries[i]
         end = matrix.matrix.sample_boundaries[i + 1]
         sample_matrix = matrix.matrix.matrix[..., start:end]
-        print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(sample, np.amin(sample_matrix),
-                                                    np.amax(sample_matrix),
-                                                    np.ma.median(sample_matrix),
-                                                    np.percentile(sample_matrix, 10),
-                                                    np.percentile(sample_matrix, 90)))
+        print(f"{sample}\t{np.amin(sample_matrix)}\t{np.amax(sample_matrix)}\t{np.ma.median(sample_matrix)}\t{np.percentile(sample_matrix, 10)}\t{np.percentile(sample_matrix, 90)}")
 
 
 def relabelMatrix(matrix, args):
@@ -333,11 +331,11 @@ def relabelMatrix(matrix, args):
     """
     if args.groupLabels:
         if len(args.groupLabels) != len(matrix.matrix.group_labels):
-            sys.exit("You specified {} group labels, but {} are required.\n".format(len(args.groupLabels), len(matrix.matrix.group_labels)))
+            sys.exit(f"You specified {len(args.groupLabels)} group labels, but {len(matrix.matrix.group_labels)} are required.\n")
         matrix.matrix.group_labels = args.groupLabels
     if args.sampleLabels:
         if len(args.sampleLabels) != len(matrix.matrix.sample_labels):
-            sys.exit("You specified {} sample labels, but {} are required.\n".format(len(args.sampleLabels), len(matrix.matrix.sample_labels)))
+            sys.exit(f"You specified {len(args.sampleLabels)} sample labels, but {len(matrix.matrix.sample_labels)} are required.\n")
         matrix.matrix.sample_labels = args.sampleLabels
 
 
@@ -347,13 +345,13 @@ def getGroupBounds(args, matrix):
     """
     bounds = matrix.parameters['group_boundaries']
     if args.groups is None:
-        return range(0, matrix.matrix.matrix.shape[0]), np.array(bounds)
+        return range(matrix.matrix.matrix.shape[0]), np.array(bounds)
     else:
         o = list()
         obounds = [0]
         for group in args.groups:
             if group not in matrix.matrix.group_labels:
-                sys.exit("Error: '{0}' is not a valid group\n".format(group))
+                sys.exit(f"Error: '{group}' is not a valid group\n")
             idx = matrix.matrix.group_labels.index(group)
             o.extend(range(bounds[idx], bounds[idx + 1]))
             obounds.append(bounds[idx + 1] - bounds[idx])
@@ -371,7 +369,7 @@ def getSampleBounds(args, matrix):
         o = list()
         for sample in args.samples:
             if sample not in matrix.matrix.sample_labels:
-                sys.exit("Error: '{0}' is not a valid sample\n".format(sample))
+                sys.exit(f"Error: '{sample}' is not a valid sample\n")
             idx = matrix.matrix.sample_labels.index(sample)
             o.extend(range(bounds[idx], bounds[idx + 1]))
         return o
@@ -591,7 +589,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
     if len(cols) >= 6:
         name = cols[3]
     else:
-        name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
+        name = f"{cols[0]}:{cols[1]}-{cols[2]}"
     localRegions[name] = len(localRegions)
 
     for line in fp:
@@ -623,7 +621,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
         if len(cols) >= 6:
             name = cols[3]
         else:
-            name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
+            name = f"{cols[0]}:{cols[1]}-{cols[2]}"
         name = dti.findRandomLabel(localRegions, name)
         localRegions[name] = len(localRegions)
 
@@ -717,7 +715,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
         # Determine the file type and load into a list (or list of lists)
         cols = line.strip().split("\t")
         if len(cols) - subtract < 3:
-            raise RuntimeError('{0} does not seem to be a recognized file type!'.format(fname))
+            raise RuntimeError(f'{fname} does not seem to be a recognized file type!')
         elif len(cols) - subtract <= 6:
             loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup)
         elif len(cols) and dti.seemsLikeGTF(cols):
@@ -731,7 +729,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
     if verbose:
         for e in labels:
             if e not in s1:
-                sys.exit("The computeMatrix output is missing the '{}' region group. It has {} but the specified regions have {}.\n".format(e, s1, labels.keys()))
+                sys.exit(f"The computeMatrix output is missing the '{e}' region group. It has {s1} but the specified regions have {labels.keys()}.\n")
 
     # Make a dictionary out of current labels and regions
     d = dict()
@@ -767,12 +765,12 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
         for name in _:
             if name not in d[label]:
                 if verbose:
-                    sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
+                    sys.stderr.write(f"Skipping {name}, due to being absent in the computeMatrix output.\n")
                 continue
             sz += 1
             order.append(d[label][name])
         if sz == 0 and verbose:
-            sys.exit("The region group {} had no matching entries!\n".format(label))
+            sys.exit(f"The region group {label} had no matching entries!\n")
         boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
@@ -849,4 +847,4 @@ def main(args=None):
         relabelMatrix(hm, args)
         hm.save_matrix(args.outFileName)
     else:
-        sys.exit("Unknown command {0}!\n".format(args.command))
+        sys.exit(f"Unknown command {args.command}!\n")

@@ -1,14 +1,17 @@
-import sys
 import argparse
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
+import sys
+
 import matplotlib.pyplot as plt
+import numpy as np
 from scipy import interpolate
 from scipy.stats import poisson
 
 import deeptools.countReadsPerBin as countR
 import deeptools.sumCoveragePerBin as sumR
-from deeptools import parserCommon
+from deeptools import (
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.utilities import smartLabels
 
 MAXLEN = 10000000
@@ -245,7 +248,7 @@ def getSyntheticJSD(vec):
             chip[int(val)] += 1
     input = coverage * poisson.pmf(np.arange(1, MAXLEN), lamb)
     if chip[-1] > 0:
-        print("{} bins had coverage over the maximum value of {} during synthetic JSD computation".format(chip[-1], MAXLEN))
+        print(f"{chip[-1]} bins had coverage over the maximum value of {MAXLEN} during synthetic JSD computation")
 
     return getJSDcommon(chip, input)
 
@@ -291,9 +294,9 @@ def getJSD(args, idx, mat):
         if val > 0:
             input[int(val)] += 1
     if input[-1] > 0:
-        print("{} bins had coverage over the maximum value of {} in the input sample".format(input[-1], MAXLEN))
+        print(f"{input[-1]} bins had coverage over the maximum value of {MAXLEN} in the input sample")
     if chip[-1] > 0:
-        print("{} bins had coverage over the maximum value of {} in the ChIP sample".format(chip[-1], MAXLEN))
+        print(f"{chip[-1]} bins had coverage over the maximum value of {MAXLEN} in the ChIP sample")
 
     return getJSDcommon(chip, input)
 
@@ -386,11 +389,11 @@ def main(args=None):
     if num_reads_per_bin.sum() == 0:
         import sys
         sys.stderr.write(
-            "\nNo reads were found in {} regions sampled. Check that the\n"
+            f"\nNo reads were found in {num_reads_per_bin.shape[0]} regions sampled. Check that the\n"
             "min mapping quality is not overly high and that the \n"
             "chromosome names between bam files are consistent.\n"
             "For small genomes, decrease the --numberOfSamples.\n"
-            "\n".format(num_reads_per_bin.shape[0]))
+            "\n")
         exit(1)
 
     if args.skipZeros:
@@ -424,8 +427,7 @@ def main(args=None):
             of.write("#plotFingerprint --outRawCounts\n")
             of.write("'" + "'\t'".join(args.labels) + "'\n")
             fmt = "\t".join(np.repeat('%d', num_reads_per_bin.shape[1])) + "\n"
-            for row in num_reads_per_bin:
-                of.write(fmt % tuple(row))
+            of.writelines(fmt % tuple(row) for row in num_reads_per_bin)
 
     if args.outQualityMetrics is not None:
         with open(args.outQualityMetrics, "w") as of:
@@ -443,15 +445,15 @@ def main(args=None):
                 XInt = (np.argmax(counts > 0) + 1) / float(counts.shape[0])
                 elbow = (np.argmax(line - counts) + 1) / float(counts.shape[0])
                 expected = getExpected(np.mean(reads))  # A tuple of expected (AUC, XInt, elbow)
-                of.write("{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}".format(args.labels[idx], AUC, expected[0], XInt, expected[1], elbow, expected[2]))
+                of.write(f"{args.labels[idx]}\t{AUC}\t{expected[0]}\t{XInt}\t{expected[1]}\t{elbow}\t{expected[2]}")
                 if args.JSDsample:
                     JSD = getJSD(args, idx, num_reads_per_bin)
                     syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
                     CHANCE = getCHANCE(args, idx, num_reads_per_bin)
-                    of.write("\t{0}\t{1}\t{2}\t{3}\t{4}".format(JSD, syntheticJSD, CHANCE[0], CHANCE[1], CHANCE[2]))
+                    of.write(f"\t{JSD}\t{syntheticJSD}\t{CHANCE[0]}\t{CHANCE[1]}\t{CHANCE[2]}")
                 else:
                     syntheticJSD = getSyntheticJSD(num_reads_per_bin[:, idx])
-                    of.write("\t{0}".format(syntheticJSD))
+                    of.write(f"\t{syntheticJSD}")
                 of.write("\n")
 
 

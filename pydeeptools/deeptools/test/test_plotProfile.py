@@ -5,7 +5,6 @@ from matplotlib.testing.compare import compare_images
 
 import deeptools.plotProfile
 
-
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotProfile/"
 

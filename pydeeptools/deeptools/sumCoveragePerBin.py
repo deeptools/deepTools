@@ -1,10 +1,11 @@
-import numpy as np
 import multiprocessing
 import time
 
+import numpy as np
+from deeptoolsintervals import GTF
+
 from deeptools import countReadsPerBin
 from deeptools.utilities import getTLen
-from deeptoolsintervals import GTF
 
 
 class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
@@ -86,7 +87,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
             try:
                 # BAM input
                 if chrom not in bamHandle.references:
-                    raise NameError("chromosome {} not found in bam file".format(chrom))
+                    raise NameError(f"chromosome {chrom} not found in bam file")
             except:
                 # bigWig input, as used by plotFingerprint
                 if bamHandle.chroms(chrom):
@@ -96,7 +97,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                     coverages += _
                     continue
                 else:
-                    raise NameError("chromosome {} not found in bigWig file with chroms {}".format(chrom, bamHandle.chroms()))
+                    raise NameError(f"chromosome {chrom} not found in bigWig file with chroms {bamHandle.chroms()}")
 
             prev_pos = set()
             lpos = None
@@ -161,10 +162,8 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                     if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
                         continue
 
-                    if fragmentStart < reg[0]:
-                        fragmentStart = reg[0]
-                    if fragmentEnd > reg[0] + len(coverages) * tileSize:
-                        fragmentEnd = reg[0] + len(coverages) * tileSize
+                    fragmentStart = max(fragmentStart, reg[0])
+                    fragmentEnd = min(fragmentEnd, reg[0] + len(coverages) * tileSize)
 
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
@@ -180,8 +179,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                         _ = fragmentEnd - fragmentStart
                     else:
                         _ = reg[0] + (sIdx + 1) * tileSize - fragmentStart
-                    if _ > tileSize:
-                        _ = tileSize
+                    _ = min(_, tileSize)
                     coverages[sIdx] += _
                     _ = sIdx + 1
                     while _ < eIdx:
@@ -214,7 +212,7 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
         return coverages
 
 
-class Tester(object):
+class Tester:
 
     def __init__(self):
         """

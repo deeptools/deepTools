@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import argparse
 import sys
 
@@ -116,10 +115,8 @@ def main(args=None):
         elif len(scaleFactors) != nFiles:
             raise argparse.ArgumentTypeError(
                 "Format of scaleFactors is factor or factor1:factor2... as many as bigwig files. "
-                "There are {} bigwigs and {} factors."
-                "The value given ( {} ) is not valid".format(
-                    nFiles, len(scaleFactors), args.scaleFactors
-                )
+                f"There are {nFiles} bigwigs and {len(scaleFactors)} factors."
+                f"The value given ( {args.scaleFactors} ) is not valid"
             )
     else:
         scaleFactors = [1] * nFiles

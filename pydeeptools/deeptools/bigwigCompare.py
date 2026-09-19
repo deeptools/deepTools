@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import argparse
-from deeptools import parserCommon
+
+from deeptools import parserCommon, writeBedGraph_bam_and_bw
 from deeptools.getRatio import getRatio
-from deeptools import writeBedGraph_bam_and_bw
 
 debug = 0
 

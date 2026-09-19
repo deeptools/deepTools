@@ -1,9 +1,10 @@
 import argparse
 import sys
-
-from deeptools.SES_scaleFactor import estimateScaleFactor
-from deeptools.parserCommon import numberOfProcessors
 from importlib.metadata import version
+
+from deeptools.parserCommon import numberOfProcessors
+from deeptools.SES_scaleFactor import estimateScaleFactor
+
 debug = 0
 
 
@@ -105,7 +106,7 @@ def main(args=None):
             "be removed in a future release.\n"
         )
 
-    sys.stderr.write("{:,} number of samples will be computed.\n".format(args.numberOfSamples))
+    sys.stderr.write(f"{args.numberOfSamples:,} number of samples will be computed.\n")
     sizeFactorsDict = estimateScaleFactor(args.bamfiles, args.sampleWindowLength,
                                           args.numberOfSamples,
                                           args.normalizationLength,
@@ -114,4 +115,4 @@ def main(args=None):
                                           verbose=args.verbose)
 
     for k, v in sizeFactorsDict.items():
-        print("{}: {}".format(k, v))
+        print(f"{k}: {v}")

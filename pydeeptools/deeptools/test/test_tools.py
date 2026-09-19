@@ -1,5 +1,6 @@
-from subprocess import PIPE, run
 import os
+from subprocess import PIPE, run
+
 try:
     import tomllib
 except ModuleNotFoundError:

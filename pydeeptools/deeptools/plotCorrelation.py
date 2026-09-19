@@ -1,9 +1,11 @@
-import sys
 import argparse
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
-import matplotlib.pyplot as plt
+import sys
 from importlib.metadata import version
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from deeptools import matplotlib_defaults  # noqa: F401
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
 
@@ -229,7 +231,7 @@ def main(args=None):
             plt.get_cmap(args.colorMap)
         except ValueError as error:
             sys.stderr.write(
-                "A problem was found. Message: {}\n".format(error))
+                f"A problem was found. Message: {error}\n")
             exit()
 
     if args.plotFile is not None:

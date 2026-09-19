@@ -1,8 +1,9 @@
-import deeptools.bamCoverage2 as bam_cov
-import deeptools.bamCompare2 as bam_comp
 import os.path
-from os import unlink
 import tempfile
+from os import unlink
+
+import deeptools.bamCompare2 as bam_comp
+import deeptools.bamCoverage2 as bam_cov
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_A = ROOT + "testA.bam"
@@ -38,7 +39,7 @@ def test_bam_coverage_arguments():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
-        args = "--bam {} -o {} --outFileFormat bedgraph".format(fname, outfile).split()
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph".split()
         bam_cov.main(args)
 
         _foo = open(outfile, 'r')
@@ -53,7 +54,7 @@ def test_bam_coverage_extend():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
-        args = "-b {} -o {} --extendReads 100 --outFileFormat bedgraph".format(fname, outfile).split()
+        args = f"-b {fname} -o {outfile} --extendReads 100 --outFileFormat bedgraph".split()
         bam_cov.main(args)
         _foo = open(outfile, 'r')
         resp = _foo.readlines()
@@ -67,8 +68,8 @@ def test_bam_coverage_extend_and_normalizeUsingRPGC():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
-        args = "-b {} -o {} --normalizeUsing RPGC --effectiveGenomeSize 200 --extendReads 100 --verbose " \
-               "--outFileFormat bedgraph".format(fname, outfile).split()
+        args = f"-b {fname} -o {outfile} --normalizeUsing RPGC --effectiveGenomeSize 200 --extendReads 100 --verbose " \
+               "--outFileFormat bedgraph".split()
         bam_cov.main(args)
         _foo = open(outfile, 'r')
         resp = _foo.readlines()
@@ -84,7 +85,7 @@ def test_bam_coverage_skipnas():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
-        args = "--bam {} -o {} --outFileFormat bedgraph --skipNAs".format(fname, outfile).split()
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --skipNAs".split()
         bam_cov.main(args)
 
         _foo = open(outfile, 'r')
@@ -103,7 +104,7 @@ def test_bam_coverage_normalizeUsingRPKM():
     """
     _, outfile = tempfile.mkstemp(suffix=".bg")
     for fname in [BAMFILE_B]:
-        args = "--bam {} -o {} --outFileFormat bedgraph --normalizeUsing RPKM".format(fname, outfile).split()
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --normalizeUsing RPKM".split()
         bam_cov.main(args)
 
         _foo = open(outfile, 'r')
@@ -121,7 +122,7 @@ def test_bam_coverage_scaleFactor():
     """
     _, outfile = tempfile.mkstemp(suffix=".bg")
     for fname in [BAMFILE_B]:
-        args = "--bam {} -o {} --outFileFormat bedgraph --scaleFactor 2.0".format(fname, outfile).split()
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --scaleFactor 2.0".split()
         bam_cov.main(args)
 
         _foo = open(outfile, 'r')
@@ -156,15 +157,15 @@ def test_bam_compare_arguments():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_B, CRAMFILE_B]:
     for fname in [BAMFILE_B]:
-        args = "--bamfile1 {} --bamfile2 {} " \
-               "-o {} -p 1 --outFileFormat bedgraph --operation ratio".format(fname, fname, outfile).split()
+        args = f"--bamfile1 {fname} --bamfile2 {fname} " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph --operation ratio".split()
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t200\t1\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert resp == expected, f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -175,15 +176,15 @@ def test_bam_compare_diff_files():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract --verbose " \
-               "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
+        args = f"--bamfile1 {A} --bamfile2 {B} --scaleFactors 1:1 --operation subtract --verbose " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
         resp = _foo.readlines()
         _foo.close()
         expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
-        assert resp == expected, "{} != {}".format(resp, expected)
+        assert resp == expected, f"{resp} != {expected}"
         unlink(outfile)
 
 
@@ -192,15 +193,15 @@ def test_bam_compare_pseudocounts():
     Test with different pseudocounts
     """
     _, outfile = tempfile.mkstemp(suffix=".bg")
-    args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
-           "--pseudocount 1 0".format(BAMFILE_A, BAMFILE_B, outfile).split()
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --outFileFormat bedgraph --scaleFactors 1:1 -o {outfile} " \
+           "--pseudocount 1 0".split()
     bam_comp.main(args)
 
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
     _foo.close()
     expected = ['3R\t0\t50\tinf\n', '3R\t50\t100\t0\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
-    assert resp == expected, "{} != {}".format(resp, expected)
+    assert resp == expected, f"{resp} != {expected}"
     unlink(outfile)
 
 
@@ -209,8 +210,8 @@ def test_bam_compare_ZoverZ():
     Ensure --skipZeroOverZero works in bamCompare
     """
     _, outfile = tempfile.mkstemp(suffix=".bg")
-    args = "--bamfile1 {} --bamfile2 {} --outFileFormat bedgraph --scaleFactors 1:1 -o {} " \
-           "--skipZeroOverZero --verbose".format(BAMFILE_A, BAMFILE_B, outfile).split()
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --outFileFormat bedgraph --scaleFactors 1:1 -o {outfile} " \
+           "--skipZeroOverZero --verbose".split()
     bam_comp.main(args)
 
     _foo = open(outfile, 'r')
@@ -262,8 +263,8 @@ def test_bam_compare_diff_files_skipnas():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --scaleFactors 1:1 --operation subtract " \
-               "-o {} -p 1 --outFileFormat bedgraph --skipNAs".format(A, B, outfile).split()
+        args = f"--bamfile1 {A} --bamfile2 {B} --scaleFactors 1:1 --operation subtract " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph --skipNAs".split()
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -281,8 +282,8 @@ def test_bam_compare_extend():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --extend 100 --scaleFactors 1:1 --operation subtract " \
-               "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
+        args = f"--bamfile1 {A} --bamfile2 {B} --extend 100 --scaleFactors 1:1 --operation subtract " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
         bam_comp.main(args)
 
         _foo = open(outfile, 'r')
@@ -300,8 +301,8 @@ def test_bam_compare_scale_factors_ratio():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --operation ratio --ignoreForNormalization chr_cigar " \
-               "-o {} -p 1 --outFileFormat bedgraph".format(A, B, outfile).split()
+        args = f"--bamfile1 {A} --bamfile2 {B} --operation ratio --ignoreForNormalization chr_cigar " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
         bam_comp.main(args)
 
         # The scale factors are [ 1.   0.5] because BAMFILE_B has double the amount of reads (4) compared to BAMFILE_A
@@ -341,8 +342,8 @@ def test_bam_compare_scale_factors_subtract():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
     for A, B in [(BAMFILE_A, BAMFILE_B)]:
-        args = "--bamfile1 {} --bamfile2 {} --operation subtract --ignoreForNormalization chr_cigar " \
-               "-o {} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM --verbose".format(A, B, outfile).split()
+        args = f"--bamfile1 {A} --bamfile2 {B} --operation subtract --ignoreForNormalization chr_cigar " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM --verbose".split()
         bam_comp.main(args)
 
         # The scale factors are [ 1.   0.5] because BAMFILE_B has dowble the amount of reads (4) compared to BAMFILE_A
@@ -384,9 +385,9 @@ def test_bam_coverage_filter_blacklist():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for fname in [BAMFILE_FILTER1, CRAMFILE_FILTER1]:
     for fname in [BAMFILE_FILTER1]:
-        args = "--bam {} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+        args = f"--bam {fname} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {outfile} -of bedgraph --samFlagInclude 512 " \
                "--samFlagExclude 256 --minMappingQuality 5 --verbose " \
-               "--blackListFileName {}".format(fname, outfile, BEDFILE_FILTER)
+               f"--blackListFileName {BEDFILE_FILTER}"
         args = args.split()
         bam_cov.main(args)
 
@@ -426,7 +427,7 @@ def test_bam_coverage_offset1():
     _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
-        args = "--Offset 1 --bam {} -p 1 -bs 1 -o {} -of bedgraph --verbose ".format(fname, outfile)
+        args = f"--Offset 1 --bam {fname} -p 1 -bs 1 -o {outfile} -of bedgraph --verbose "
         print(args)
         args = args.split()
         bam_cov.main(args)
@@ -455,7 +456,7 @@ def test_bam_coverage_offset1_10():
     _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
-        args = "--Offset 1 10 -b {} -p 1 -bs 1 -of bedgraph -o {}".format(fname, outfile)
+        args = f"--Offset 1 10 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
         _foo = open(outfile, 'r')
@@ -483,7 +484,7 @@ def test_bam_coverage_offset_minus1():
     _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
-        args = "--Offset -1 -b {} -p 1 -bs 1 -of bedgraph -o {}".format(fname, outfile)
+        args = f"--Offset -1 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
         _foo = open(outfile, 'r')
@@ -510,7 +511,7 @@ def test_bam_coverage_offset20_minus4():
     _, outfile = tempfile.mkstemp(suffix=".bw")
     #for fname in [BAMFILE_A, CRAMFILE_A]:
     for fname in [BAMFILE_A]:
-        args = "--Offset 20 -4 -b {} -p 1 -bs 1 -of bedgraph -o {}".format(fname, outfile)
+        args = f"--Offset 20 -4 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
         args = args.split()
         bam_cov.main(args)
         _foo = open(outfile, 'r')
@@ -572,9 +573,9 @@ def test_bam_compare_filter_blacklist():
     _, outfile = tempfile.mkstemp(suffix=".bg")
     #for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2), (CRAMFILE_FILTER1, CRAMFILE_FILTER2)]:
     for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2)]:
-        args = "-b1 {} -b2 {} -p 1 -o {} -of bedgraph --samFlagInclude 512 " \
+        args = f"-b1 {A} -b2 {B} -p 1 -o {outfile} -of bedgraph --samFlagInclude 512 " \
                "--samFlagExclude 256 --minMappingQuality 5 --verbose " \
-               "--blackListFileName {}".format(A, B, outfile, BEDFILE_FILTER)
+               f"--blackListFileName {BEDFILE_FILTER}"
         print(args)
         args = args.split()
         bam_comp.main(args)

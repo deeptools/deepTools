@@ -1,20 +1,19 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import os
 import shutil
-import tempfile
-import numpy as np
 import sys
+import tempfile
+
+import numpy as np
 
 # NGS packages
 import pyBigWig
 
 # own module
-from deeptools import mapReduce
+from deeptools import bamHandler, mapReduce
 from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
-from deeptools import bamHandler
 
 old_settings = np.seterr(all='ignore')
 
@@ -55,8 +54,8 @@ def writeBedGraph_worker(
     tileSize
     """
     if start > end:
-        raise NameError("start position ({0}) bigger than "
-                        "end position ({1})".format(start, end))
+        raise NameError(f"start position ({start}) bigger than "
+                        f"end position ({end})")
 
     coverage = []
 
@@ -93,9 +92,9 @@ def writeBedGraph_worker(
                 try:
                     tileCoverage.append(coverage[index][tileIndex])
                 except IndexError:
-                    sys.exit("Chromosome {} probably not in one of the bigwig "
+                    sys.exit(f"Chromosome {chrom} probably not in one of the bigwig "
                              "files. Remove this chromosome from the bigwig file "
-                             "to continue".format(chrom))
+                             "to continue")
 
         if skipZeroOverZero and np.sum(tileCoverage) == 0:
             previousValue = None
@@ -107,11 +106,9 @@ def writeBedGraph_worker(
             writeStart = start + tileIndex * tileSize
             writeEnd = min(writeStart + tileSize, end)
             try:
-                _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
-                                                                    writeEnd, value)))
+                _file.write(toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{value:g}\n"))
             except TypeError:
-                _file.write(toBytes("{}\t{}\t{}\t{}\n".format(chrom, writeStart,
-                                                              writeEnd, value)))
+                _file.write(toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{value}\n"))
         else:
             if previousValue is None:
                 writeStart = start + tileIndex * tileSize
@@ -124,8 +121,7 @@ def writeBedGraph_worker(
             elif previousValue != value:
                 if not np.isnan(previousValue):
                     _file.write(
-                        toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
-                                                                writeEnd, previousValue)))
+                        toBytes(f"{chrom}\t{writeStart}\t{writeEnd}\t{previousValue:g}\n"))
                 previousValue = value
                 writeStart = writeEnd
                 writeEnd = min(writeStart + tileSize, end)
@@ -134,8 +130,7 @@ def writeBedGraph_worker(
         # write remaining value if not a nan
         if previousValue and writeStart != end and \
                 not np.isnan(previousValue):
-            _file.write(toBytes("{0}\t{1}\t{2}\t{3:g}\n".format(chrom, writeStart,
-                                                                end, previousValue)))
+            _file.write(toBytes(f"{chrom}\t{writeStart}\t{end}\t{previousValue:g}\n"))
 
     tempFileName = _file.name
     _file.close()
@@ -183,12 +178,10 @@ def writeBedGraph(
                     cCommon_number[chromName] += 1
                     if chromNamesAndSize[chromName] != size:
                         print("\nWARNING\n"
-                              "Chromosome {} length reported in the "
-                              "input files differ.\n{} for {}\n"
-                              "{} for {}.\n\nThe smallest "
-                              "length will be used".format(
-                                  chromName, chromNamesAndSize[chromName],
-                                  bamOrBwFileList[0][0], size, fileName))
+                              f"Chromosome {chromName} length reported in the "
+                              f"input files differ.\n{chromNamesAndSize[chromName]} for {bamOrBwFileList[0][0]}\n"
+                              f"{size} for {fileName}.\n\nThe smallest "
+                              "length will be used")
                         chromNamesAndSize[chromName] = min(
                             chromNamesAndSize[chromName], size)
                 else:
@@ -206,7 +199,7 @@ def writeBedGraph(
 
     if region:
         # in case a region is used, append the tilesize
-        region += ":{}".format(tileSize)
+        region += f":{tileSize}"
 
     res = mapReduce.mapReduce((tileSize, fragmentLength, bamOrBwFileList,
                                func, funcArgs, extendPairedEnds, smoothLength,

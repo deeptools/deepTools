@@ -1,8 +1,8 @@
-import deeptools.bigwigAverage as bwAve
-
 import os.path
-from os import unlink
 import tempfile
+from os import unlink
+
+import deeptools.bigwigAverage as bwAve
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BIGWIG_A = ROOT + "testA_skipNAs.bw"
@@ -37,7 +37,7 @@ testB_skipNas:
 
 def test_bigwigAverage():
     _, outfile = tempfile.mkstemp(suffix=".bg")
-    args = "--bigwigs {} {} -o {} --outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_B} -o {outfile} --outFileFormat bedgraph".split()
     bwAve.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
@@ -49,8 +49,8 @@ def test_bigwigAverage():
 
 def test_bigwigAverage_skipnas():
     _, outfile = tempfile.mkstemp(suffix=".bg")
-    args = "--bigwigs {} {} -o {} --skipNAs " \
-           "--outFileFormat bedgraph".format(BIGWIG_A, BIGWIG_B, outfile).split()
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_B} -o {outfile} --skipNAs " \
+           "--outFileFormat bedgraph".split()
     bwAve.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
@@ -62,7 +62,7 @@ def test_bigwigAverage_skipnas():
 
 def test_bigwigAverageWithScale():
     _, outfile = tempfile.mkstemp(suffix=".bg")
-    args = "--bigwigs {} {} -o {} --outFileFormat bedgraph --scaleFactors 1:0.5".format(BIGWIG_A, BIGWIG_B, outfile).split()
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_B} -o {outfile} --outFileFormat bedgraph --scaleFactors 1:0.5".split()
     bwAve.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.readlines()
@@ -74,7 +74,7 @@ def test_bigwigAverageWithScale():
 
 def test_bigwigAverageThree():
     _, outfile = tempfile.mkstemp(suffix=".bg")
-    args = "--bigwigs {} {} {} -o {} --outFileFormat bedgraph --scaleFactors 0.75:0.75:.75".format(BIGWIG_A, BIGWIG_A, BIGWIG_B, outfile).split()
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_A} {BIGWIG_B} -o {outfile} --outFileFormat bedgraph --scaleFactors 0.75:0.75:.75".split()
     bwAve.main(args)
     _foo = open(outfile, 'r')
     resp = _foo.readlines()

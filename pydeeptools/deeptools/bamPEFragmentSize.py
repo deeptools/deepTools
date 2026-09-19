@@ -1,11 +1,12 @@
 import argparse
 import sys
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
 from importlib.metadata import version
-import matplotlib.pyplot as plt
-from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+from deeptools import matplotlib_defaults  # noqa: F401
+from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.parserCommon import writableFile
 
 
@@ -182,12 +183,12 @@ def getFragSize(bam, args, idx, outRawFrags):
             )
         for idx, v in enumerate(cnts):
             if v > 0:
-                outRawFrags.write("{}\t{}\t{}\n".format(idx, v, label))
+                outRawFrags.write(f"{idx}\t{v}\t{label}\n")
 
     if args.samplesLabel and idx < len(args.samplesLabel):
-        print("\n\nSample label: {}".format(args.samplesLabel[idx]))
+        print(f"\n\nSample label: {args.samplesLabel[idx]}")
     else:
-        print("\n\nBAM file : {}".format(bam))
+        print(f"\n\nBAM file : {bam}")
 
     if fragment_len_dict:
         if fragment_len_dict["mean"] == 0:
@@ -407,7 +408,7 @@ def main(args=None):
             labels = list(fraglengths.keys())
 
         i = 0
-        for bam in fraglengths.keys():
+        for bam in fraglengths:
             d = fraglengths[bam]
             if d is None:
                 d = readlengths[bam]

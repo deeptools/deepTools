@@ -1,13 +1,18 @@
+import argparse
 import os
 import sys
-import argparse
-import numpy as np
-from deeptools import matplotlib_defaults  # noqa: F401
-import matplotlib.pyplot as plt
 from importlib.metadata import version
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 import deeptools.countReadsPerBin as countR
-from deeptools import parserCommon
+from deeptools import (
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.utilities import smartLabels
+
 
 def parse_arguments(args=None):
     parent_parser = parserCommon.getParentArgParse(binSize=False)
@@ -199,8 +204,7 @@ def main(args=None):
         nbins = float(num_reads_per_bin.shape[0])
         for thresh in args.coverageThresholds:
             vals = np.sum(num_reads_per_bin >= thresh, axis=0)
-            for lab, val in zip(args.labels, vals):
-                of.write("{}\t{}\t{:6.3f}\n".format(lab, thresh, 100. * val / nbins))
+            of.writelines(f"{lab}\t{thresh}\t{100. * val / nbins:6.3f}\n" for lab, val in zip(args.labels, vals))
         of.close()
 
     if args.outRawCounts:
@@ -260,21 +264,13 @@ def main(args=None):
             frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
             csum = np.bincount(col.astype(int))[::-1].cumsum()
             csum_frac = csum.astype(float)[::-1] / csum.max()
-            axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+            axs[0].plot(frac_reads_per_coverage, label=f"{args.labels[idx]}, mean={sample_mean[idx]:.1f}")
             axs[1].plot(csum_frac, label=args.labels[idx])
             # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
             # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
             # then find the fraction of bases sampled that that have the largest x
             y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac > 0.5))])
-        print("{}\t{:0.2f}\t{:0.2f}\t{}\t{}\t{}\t{}\t{}\t".format(args.labels[idx],
-                                                                  sample_mean[idx],
-                                                                  sample_std[idx],
-                                                                  sample_min[idx],
-                                                                  sample_25[idx],
-                                                                  sample_50[idx],
-                                                                  sample_75[idx],
-                                                                  sample_max[idx],
-                                                                  ))
+        print(f"{args.labels[idx]}\t{sample_mean[idx]:0.2f}\t{sample_std[idx]:0.2f}\t{sample_min[idx]}\t{sample_25[idx]}\t{sample_50[idx]}\t{sample_75[idx]}\t{sample_max[idx]}\t")
 
     if args.plotFile:
         # Don't clip plots
