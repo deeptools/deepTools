@@ -78,6 +78,12 @@ packages = ["deeptools"]
 [tool.ruff]
 target-version = "py312"
 
+[tool.ruff.lint]
+ignore = [
+    "N999", #invalid module name
+    "BLE001",  # bare excepts
+]
+
 [project.scripts]
 bamPEFragmentSize = "deeptools.bamPEFragmentSize:main"
 bigwigAverage = "deeptools.bigwigAverage:main"
@@ -126,7 +132,7 @@ OPENSSL_DIR = "$CONDA_PREFIX"
 build = "maturin develop --release"
 test = "pytest pydeeptools/deeptools/test/"
 docs = "sphinx-build -b html docs docs/_build/html -W --keep-going"
-ruff = "ruff check --ignore N999,BLE001 pydeeptools/"
+ruff = "ruff check pydeeptools/"
 planemo = "planemo test --no_dependency_resolution --galaxy_branch release_26.0 --install_galaxy galaxy/wrapper/alignmentSieve.xml galaxy/wrapper/bamCompare.xml galaxy/wrapper/bamCoverage.xml galaxy/wrapper/bamPEFragmentSize.xml galaxy/wrapper/bigwigCompare.xml galaxy/wrapper/bigwigAverage.xml galaxy/wrapper/computeMatrix.xml galaxy/wrapper/computeMatrixOperations.xml galaxy/wrapper/estimateReadFiltering.xml galaxy/wrapper/multiBamSummary.xml galaxy/wrapper/multiBigwigSummary.xml galaxy/wrapper/plotCorrelation.xml galaxy/wrapper/plotCoverage.xml galaxy/wrapper/plotEnrichment.xml galaxy/wrapper/plotFingerprint.xml galaxy/wrapper/plotHeatmap.xml galaxy/wrapper/plotPCA.xml galaxy/wrapper/plotProfiler.xml"
 
 [tool.pixi.feature.py312.dependencies]
