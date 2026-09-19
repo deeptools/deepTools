@@ -1,24 +1,21 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-import sys
-
 import argparse
-import numpy as np
+import sys
 from math import ceil
-from deeptools import matplotlib_defaults
+
 import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
+import numpy as np
 from matplotlib import colors as pltcolors
-import matplotlib.gridspec as gridspec
+from matplotlib import gridspec
+from matplotlib.font_manager import FontProperties
 
 # own modules
-from deeptools import parserCommon
-from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, getProfileTicks, justify_text
+from deeptools import (
+    heatmapper,
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.computeMatrixOperations import filterHeatmapValues
-
+from deeptools.heatmapper_utilities import getProfileTicks, justify_text, plot_single
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -51,11 +48,11 @@ def process_args(args=None):
     # Ensure that yMin/yMax are there and a list
     try:
         assert args.yMin is not None
-    except:
+    except Exception:
         args.yMin = [None]
     try:
         assert args.yMax is not None
-    except:
+    except Exception:
         args.yMax = [None]
 
     # Sometimes Galaxy sends --yMax '' and --yMin ''
@@ -87,7 +84,7 @@ def process_args(args=None):
 
     return args
 
-class Profile(object):
+class Profile:
 
     def __init__(self, hm, out_file_name,
                  plot_title='', y_axis_label='',
@@ -252,10 +249,8 @@ class Profile(object):
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
                 img = ax.hexbin(x_values.flatten(), ma.flatten(), cmap=cmap, mincnt=1)
                 _vmin, _vmax = img.get_clim()
-                if _vmin < vmin:
-                    vmin = _vmin
-                if _vmax > vmax:
-                    vmax = _vmax
+                vmin = min(vmin, _vmin)
+                vmax = max(vmax, _vmax)
 
                 if localYMin is None or self.y_min[col % len(self.y_min)] < localYMin:
                     localYMin = self.y_min[col % len(self.y_min)]
@@ -288,7 +283,7 @@ class Profile(object):
                 try:
                     # matplotlib 2.0
                     ax.set_facecolor('black')
-                except:
+                except Exception:
                     # matplotlib <2.0
                     ax.set_axis_bgcolor('black')
                 x_values = np.tile(np.arange(ma.shape[1]), (ma.shape[0], 1))
@@ -333,7 +328,6 @@ class Profile(object):
 
 
     def plot_heatmap(self):
-        label_rotation = 45
         cmap = ['RdYlBu_r']
         if self.color_list is not None:  # check the length to be equal to the numebr of plots otherwise multiply it!
             cmap = self.color_list
@@ -466,12 +460,12 @@ class Profile(object):
         if (self.numlines > 1 and len(self.color_list) < self.numlines) or\
            (self.numlines == 1 and len(self.color_list) < self.numplots):
             sys.exit("\nThe given list of colors is too small, "
-                     "at least {} colors are needed\n".format(self.numlines))
+                     f"at least {self.numlines} colors are needed\n")
         for color in self.color_list:
             if not pltcolors.is_color_like(color):
-                sys.exit("\nThe color name {} is not valid. Check "
+                sys.exit(f"\nThe color name {color} is not valid. Check "
                          "the name or try with a html hex string "
-                         "for example #eeff22".format(color))
+                         "for example #eeff22")
         first = True
         ax_list = []
         globalYmin = np.inf
@@ -553,20 +547,8 @@ class Profile(object):
 
             if first and self.y_axis_label != '':
                 ax.set_ylabel(self.y_axis_label)
-            if first and self.plot_type not in ['heatmap', 'overlapped_lines']:
-                # if self.per_group:
-                #     # ax.legend(loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0, 0),
-                #     #       ncol=2, prop={'size':4},
-                #     #       frameon=True, markerscale=0.5, borderaxespad=0.)
-                #     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), ncol=2, frameon=False, prop={'size': 5})
-
-                # else:
-                #     # ax.legend(loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.1),
-                #     #       ncol=1, prop={'size':8},
-                #     #       frameon=False, markerscale=0.5)
-                #ax.legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.1, 1.2), ncol=1, frameon=False, prop={'size': 6})
-                if len(self.y_min) == 1 and len(self.y_max) == 1:
-                    first = False
+            if first and (self.plot_type not in ['heatmap', 'overlapped_lines']) and (len(self.y_min) == 1) and (len(self.y_max) == 1):
+                first = False
             ax_list.append(ax)
 
         ax_list[-1].legend(handles, Label, loc=self.legend_location.replace('-', ' '), bbox_to_anchor=(0.5, -0.18), ncol=1, frameon=False, prop={'size': 7})
@@ -586,7 +568,7 @@ class Profile(object):
                 lims = (lims[0], float(localYMax))
             if lims[0] >= lims[1]:
                 lims = (lims[0], lims[0] + 1)
-            ax_list[sample_id].set_ylim(lims)
+            subplot.set_ylim(lims)
 
         # plt.subplots_adjust(wspace=0.05, hspace=0.3)
         plt.subplots_adjust(wspace=0.2, hspace=0.6)
@@ -613,7 +595,7 @@ def main(args=None):
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / float(len(hm.matrix.regions))
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
-        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. \n".format(hm.matrix.group_labels[problem[0]]))
+        sys.stderr.write(f"WARNING: Group '{hm.matrix.group_labels[problem[0]]}' is too small for plotting, you might want to remove it. \n")
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)

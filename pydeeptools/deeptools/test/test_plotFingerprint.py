@@ -5,7 +5,6 @@ from matplotlib.testing.compare import compare_images
 
 import deeptools.plotFingerprint
 
-
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotFingerprint/"
 
@@ -15,22 +14,21 @@ tolerance = 13
 def run_plotFingerprint(args):
     """Run plotFingerprint and return generated plot file."""
 
-    plotfile = NamedTemporaryFile(
+    with NamedTemporaryFile(
         suffix=".png",
         prefix="deeptools_testfile_",
         delete=False
-    )
+    ) as plotfile:
+        args.extend([
+            "-o",
+            plotfile.name,
+            "--plotFileFormat",
+            "png"
+        ])
 
-    args.extend([
-        "-o",
-        plotfile.name,
-        "--plotFileFormat",
-        "png"
-    ])
+        deeptools.plotFingerprint.main(args)
 
-    deeptools.plotFingerprint.main(args)
-
-    return plotfile.name
+        return plotfile.name
 
 
 def cleanup(*files):
@@ -91,50 +89,50 @@ def test_plotFingerprint_quality_metrics_and_JSD():
     Test --outQualityMetrics together with --JSDsample.
     """
 
-    plotfile = NamedTemporaryFile(
-        suffix=".png",
-        prefix="deeptools_testfile_",
-        delete=False
-    )
+    with (
+        NamedTemporaryFile(
+            suffix=".png",
+            prefix="deeptools_testfile_",
+            delete=False
+        ) as plotfile,
+        NamedTemporaryFile(
+            suffix=".tab",
+            prefix="deeptools_testfile_",
+            delete=False
+        ) as qcfile,
+    ):
+        args = (
+            f"-b {TEST_DATA}test1.bam {TEST_DATA}test2.bam "
+            f"-o {plotfile.name} "
+            "--plotFileFormat png "
+            "-l test1 test2 "
+            f"--outQualityMetrics {qcfile.name} "
+            f"--JSDsample {TEST_DATA}test1.bam"
+        ).split()
 
-    qcfile = NamedTemporaryFile(
-        suffix=".tab",
-        prefix="deeptools_testfile_",
-        delete=False
-    )
+        try:
+            deeptools.plotFingerprint.main(args)
 
-    args = (
-        f"-b {TEST_DATA}test1.bam {TEST_DATA}test2.bam "
-        f"-o {plotfile.name} "
-        "--plotFileFormat png "
-        "-l test1 test2 "
-        f"--outQualityMetrics {qcfile.name} "
-        f"--JSDsample {TEST_DATA}test1.bam"
-    ).split()
+            with open(qcfile.name) as _foo:
+                lines = [
+                    line.rstrip("\n").split("\t")
+                    for line in _foo
+                ]
 
-    try:
-        deeptools.plotFingerprint.main(args)
+            assert len(lines) == 3, f"expected 3 lines, got {len(lines)}"
 
-        with open(qcfile.name) as _foo:
-            lines = [
-                line.rstrip("\n").split("\t")
-                for line in _foo
-            ]
+            header = lines[0]
+            auc = header.index("AUC")
+            jsd = header.index("JS Distance")
 
-        assert len(lines) == 3, f"expected 3 lines, got {len(lines)}"
+            rows = {
+                row[0]: row
+                for row in lines[1:]
+            }
 
-        header = lines[0]
-        auc = header.index("AUC")
-        jsd = header.index("JS Distance")
+            assert abs(float(rows["test1"][auc]) - 0.39310288701202156) < 1e-4
+            assert abs(float(rows["test2"][auc]) - 0.3641251150405128) < 1e-4
+            assert abs(float(rows["test2"][jsd]) - 0.078613413909822) < 1e-4
 
-        rows = {
-            row[0]: row
-            for row in lines[1:]
-        }
-
-        assert abs(float(rows["test1"][auc]) - 0.39310288701202156) < 1e-4
-        assert abs(float(rows["test2"][auc]) - 0.3641251150405128) < 1e-4
-        assert abs(float(rows["test2"][jsd]) - 0.078613413909822) < 1e-4
-
-    finally:
-        cleanup(plotfile.name, qcfile.name)
+        finally:
+            cleanup(plotfile.name, qcfile.name)

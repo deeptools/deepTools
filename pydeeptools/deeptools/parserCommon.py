@@ -1,13 +1,14 @@
 import argparse
+import multiprocessing
 import os
 from importlib.metadata import version
-import multiprocessing
 from pathlib import Path
+
 
 def check_float_0_1(value):
     v = float(value)
     if v < 0.0 or v > 1.0:
-        raise argparse.ArgumentTypeError("%s is an invalid floating point value. It must be between 0.0 and 1.0" % value)
+        raise argparse.ArgumentTypeError(f"{value} is an invalid floating point value. It must be between 0.0 and 1.0")
     return v
 
 
@@ -17,8 +18,8 @@ def check_list_of_comma_values(value):
     for foo in value:
         foo = value.split(",")
         if len(foo) < 2:
-            raise argparse.ArgumentTypeError("%s is an invalid element of a list of comma separated values. "
-                                             "Only argument elements of the following form are accepted: 'foo,bar'" % foo)
+            raise argparse.ArgumentTypeError(f"{foo} is an invalid element of a list of comma separated values. "
+                                             "Only argument elements of the following form are accepted: 'foo,bar'")
     return value
 
 
@@ -369,16 +370,15 @@ def numberOfProcessors(string):
             numberOfProcessors = int(string)
         except ValueError:
             raise argparse.ArgumentTypeError(
-                "{} is not a valid number of processors".format(string))
+                f"{string} is not a valid number of processors")
 
         except Exception as e:
-            raise argparse.ArgumentTypeError("the given value {} is not valid. "
-                                             "Error message: {}\nThe number of "
+            raise argparse.ArgumentTypeError(f"the given value {string} is not valid. "
+                                             f"Error message: {e}\nThe number of "
                                              "available processors in your "
-                                             "computer is {}.".format(string, e, availProc))
+                                             f"computer is {availProc}.")
 
-        if numberOfProcessors > availProc:
-            numberOfProcessors = availProc
+        numberOfProcessors = min(numberOfProcessors, availProc)
 
     return numberOfProcessors
 
@@ -393,11 +393,11 @@ def genomicRegion(string):
     # N.B., the syntax for translate() differs between python 2 and 3
     try:
         region = region.translate(None, ",;|!{}()").replace("-", ":")
-    except:
+    except Exception:
         region = region.translate({ord(i): None for i in ",;|!{}()"})
     if len(region) == 0:
         raise argparse.ArgumentTypeError(
-            "{} is not a valid region".format(string))
+            f"{string} is not a valid region")
     return region
 
 
@@ -408,20 +408,8 @@ def writableFile(string):
     try:
         open(string, 'w').close()
         os.remove(string)
-    except:
-        msg = "{} file can't be opened for writing".format(string)
-        raise argparse.ArgumentTypeError(msg)
-    return string
-
-
-def readableFile(string):
-    """
-    Simple function that tests if a given path is readable
-    """
-    try:
-        open(string, 'r').close()
-    except OSError as e:
-        msg = "{} file can't be opened for reading: {}".format(string, e)
+    except Exception:
+        msg = f"{string} file can't be opened for writing"
         raise argparse.ArgumentTypeError(msg)
     return string
 
@@ -903,7 +891,7 @@ def requiredLength(minL, maxL):
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if not minL <= len(values) <= maxL:
-                msg = 'argument "{}" requires between {} and {} arguments'.format(self.dest, minL, maxL)
+                msg = f'argument "{self.dest}" requires between {minL} and {maxL} arguments'
                 raise argparse.ArgumentTypeError(msg)
             setattr(args, self.dest, values)
     return RequiredLength

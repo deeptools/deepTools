@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import argparse
 import sys
 
@@ -67,7 +65,7 @@ def getType(fname):
     """
     Tries to determine if a file is a wiggle, a bedgraph, or a bigWig file.
     """
-    if fname.endswith(".wig") or fname.endswith(".wiggle"):
+    if fname.endswith((".wig", ".wiggle")):
         return "wiggle"
     elif fname.lower().endswith(".bedgraph") or fname.endswith(".bdg"):
         return "bedgraph"
@@ -101,10 +99,9 @@ def average(tileCoverage, args):
 
 def main(args=None):
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        return
     args = parser.parse_args(args)
 
     nFiles = len(args.bigwigs)
@@ -116,10 +113,8 @@ def main(args=None):
         elif len(scaleFactors) != nFiles:
             raise argparse.ArgumentTypeError(
                 "Format of scaleFactors is factor or factor1:factor2... as many as bigwig files. "
-                "There are {} bigwigs and {} factors."
-                "The value given ( {} ) is not valid".format(
-                    nFiles, len(scaleFactors), args.scaleFactors
-                )
+                f"There are {nFiles} bigwigs and {len(scaleFactors)} factors."
+                f"The value given ( {args.scaleFactors} ) is not valid"
             )
     else:
         scaleFactors = [1] * nFiles

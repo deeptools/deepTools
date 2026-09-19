@@ -6,7 +6,6 @@ from matplotlib.testing.compare import compare_images
 
 import deeptools.plotHeatmap
 
-
 TEST_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_plotHeatmap")
 
@@ -19,7 +18,7 @@ tolerance = 25
 def run_plotHeatmap(args):
     """Run plotHeatmap and return generated output file."""
 
-    fd, plotfile = tempfile.mkstemp(suffix=".png")
+    _fd, plotfile = tempfile.mkstemp(suffix=".png")
     # os.close(fd)
 
     args = args + [

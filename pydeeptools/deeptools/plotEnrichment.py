@@ -1,20 +1,20 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import sys
 import argparse
-import numpy as np
-from deeptools import matplotlib_defaults
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
+import sys
 
-from deeptools.mapReduce import mapReduce, getUserRegion, blSubtract
-from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.utilities import getCommonChrNames, mungeChromosome, getTLen, smartLabels
+import matplotlib.pyplot as plt
+import numpy as np
+from deeptoolsintervals import GTF, Enrichment
+from matplotlib import gridspec
+
+from deeptools import (
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.bamHandler import openBam
-from deeptoolsintervals import Enrichment, GTF
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
-from deeptools import parserCommon
+from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+from deeptools.mapReduce import blSubtract, getUserRegion, mapReduce
+from deeptools.utilities import getCommonChrNames, getTLen, mungeChromosome, smartLabels
 
 
 def parse_arguments(args=None):
@@ -186,7 +186,7 @@ def plot_enrichment_args():
     bed12.add_argument('--keepExons',
                        help="For BED12 files, use each exon as a region, rather than columns 2/3",
                        action="store_true")
-    
+
 
     optional.add_argument('--ggplot',
                       help='Enables the ggplot theme for the plot (Default: None)',
@@ -231,7 +231,7 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead, offset=None):
             fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
-                                            "end for read {}".format(read.query_name)
+                                            f"end for read {read.query_name}"
         blocks = [(int(fragmentStart), int(fragmentEnd))]
 
     # Handle read offsets, if needed
@@ -261,7 +261,7 @@ def getBAMBlocks(read, defaultFragmentLength, centerRead, offset=None):
             stretch = stretch[::-1]
         try:
             foo = stretch[offset[0]:offset[1]]
-        except:
+        except Exception:
             return rv
 
         if len(foo) == 0:
@@ -291,20 +291,18 @@ def getEnrichment_worker(arglist):
     """
     chrom, start, end, args, defaultFragmentLength = arglist
     if args.verbose:
-        sys.stderr.write("Processing {}:{}-{}\n".format(chrom, start, end))
+        sys.stderr.write(f"Processing {chrom}:{start}-{end}\n")
 
     olist = []
     total = [0] * len(args.bamfiles)
     for idx, f in enumerate(args.bamfiles):
-        odict = dict()
+        odict = {}
         for x in gtf.features:
             odict[x] = 0
         fh = openBam(f)
 
         chrom = mungeChromosome(chrom, fh.references)
 
-        lpos = None
-        prev_pos = set()
         for read in fh.fetch(chrom, start, end):
             # Filter
             if read.pos < start:
@@ -367,10 +365,8 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
     if not args.colors:
         args.colors = ['#9E4A06'] * barsPerPlot
     elif len(args.colors) < barsPerPlot:
-        sys.exit("Error: {0} colors were requested, but {1} were needed!".format(len(args.colors), barsPerPlot))
+        sys.exit(f"Error: {len(args.colors)} colors were requested, but {barsPerPlot} were needed!")
 
-    data = []
-    
     grids = gridspec.GridSpec(rows, cols)
     plt.rcParams['font.size'] = 10.0
 
@@ -384,12 +380,12 @@ def plotEnrichment(args, featureCounts, totalCounts, features):
 
         if args.perSample:
             xlabels = [item.replace('.bam', '').replace('.bed', '') for item in features ]
-            ylabel = "% alignments in {0}".format( [ylab.split('/')[-1] for ylab in args.labels][i])
+            ylabel = "% alignments in {}".format( [ylab.split('/')[-1] for ylab in args.labels][i])
             vals = [featureCounts[i][foo] for foo in features]
             vals = 100 * np.array(vals, dtype='float64') / totalCounts[i]
         else:
             xlabels = [x.split('/')[-1] for x in args.labels]
-            ylabel = "% {0}".format(features[i].replace('.bed',''))
+            ylabel = "% {}".format(features[i].replace('.bed',''))
             vals = [foo[features[i]] for foo in featureCounts]
             vals = 100 * np.array(vals, dtype='float64') / np.array(totalCounts, dtype='float64')
 
@@ -419,7 +415,7 @@ def getChunkLength(args, chromSize):
     """
 
     if args.region:
-        chromSize, region_start, region_end, genomeChunkLength = getUserRegion(chromSize, args.region)
+        chromSize, region_start, region_end, _genomeChunkLength = getUserRegion(chromSize, args.region)
         rv = np.ceil((region_start - region_end) / float(4 * args.numberOfProcessors)).astype(int)
         return max(1, rv)
 
@@ -457,10 +453,10 @@ def main(args=None):
     if args.smartLabels:
         args.labels = smartLabels(args.bamfiles)
     if len(args.labels) != len(args.bamfiles):
-        sys.exit("Error: The number of labels ({0}) does not match the number of BAM files ({1})!".format(len(args.labels), len(args.bamfiles)))
+        sys.exit(f"Error: The number of labels ({len(args.labels)}) does not match the number of BAM files ({len(args.bamfiles)})!")
 
     if args.ggplot:
-        plt.style.use('ggplot') 
+        plt.style.use('ggplot')
 
     # Ensure that if we're given an attributeKey that it's not empty
     if args.attributeKey and args.attributeKey == "":
@@ -473,7 +469,7 @@ def main(args=None):
 
     # Get fragment size and chromosome dict
     fhs = [openBam(x) for x in args.bamfiles]
-    chromSize, non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
+    chromSize, _non_common_chr = getCommonChrNames(fhs, verbose=args.verbose)
     for fh in fhs:
         fh.close()
 
@@ -491,13 +487,13 @@ def main(args=None):
                 sys.exit("*ERROR*: library is not paired-end. Please provide an extension length.")
             if args.verbose:
                 print("Fragment length based on paired en data "
-                      "estimated to be {0}".format(frag_len_dict['median']))
+                      "estimated to be {}".format(frag_len_dict['median']))
         elif args.extendReads < read_len_dict['median']:
             sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
                              "Reads will not be extended.\n".format(int(read_len_dict['median'])))
             defaultFragmentLength = 'read length'
         elif args.extendReads > 2000:
-            sys.exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(args.extendReads))
+            sys.exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {args.extendReads} ")
         else:
             defaultFragmentLength = args.extendReads
     else:
@@ -519,7 +515,7 @@ def main(args=None):
     features = res[0][1]
     featureCounts = []
     for i in list(range(len(args.bamfiles))):
-        d = dict()
+        d = {}
         for x in features:
             d[x] = 0
         featureCounts.append(d)
@@ -539,11 +535,10 @@ def main(args=None):
 
     # Raw counts
     if args.outRawCounts:
-        of = open(args.outRawCounts, "w")
-        of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
-        for i, x in enumerate(args.labels):
-            x = x.split('/')[-1]
-            for k, v in featureCounts[i].items():
-                print(x)
-                of.write("{0}\t{1}\t{2:5.2f}\t{3}\t{4}\n".format(x, k, (100.0 * v) / totalCounts[i], v, totalCounts[i]))
-        of.close()
+        with open(args.outRawCounts, "w") as of:
+            of.write("file\tfeatureType\tpercent\tfeatureReadCount\ttotalReadCount\n")
+            for i, x in enumerate(args.labels):
+                x = x.split('/')[-1]
+                for k, v in featureCounts[i].items():
+                    print(x)
+                    of.write(f"{x}\t{k}\t{(100.0 * v) / totalCounts[i]:5.2f}\t{v}\t{totalCounts[i]}\n")

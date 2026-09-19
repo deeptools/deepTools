@@ -1,18 +1,21 @@
-import sys
-import itertools
 import copy
+import itertools
+import sys
+
+import matplotlib.colors as pltcolors
+import matplotlib.markers
+import matplotlib.mlab
+import matplotlib.pyplot as plt
+import matplotlib.ticker
 import numpy as np
 import scipy.cluster.hierarchy as sch
 import scipy.stats
-from deeptools import matplotlib_defaults
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import matplotlib.ticker
-import matplotlib.mlab
-import matplotlib.markers
-import matplotlib.colors as pltcolors
-from deeptools.utilities import toString, convertCmap
+from matplotlib import gridspec
 from scipy.linalg import svd
+
+from deeptools import matplotlib_defaults  # noqa: F401
+from deeptools.utilities import toString
+
 
 class Correlation:
     """
@@ -75,9 +78,9 @@ class Correlation:
         self.matrix = np.asarray(_ma['matrix'].tolist())
         if np.any(np.isnan(self.matrix)):
             num_nam = len(np.flatnonzero(np.isnan(self.matrix.flatten())))
-            sys.stderr.write("*Warning*. {} NaN values were found. They will be removed along with the "
+            sys.stderr.write(f"*Warning*. {num_nam} NaN values were found. They will be removed along with the "
                              "corresponding bins in other samples for the computation "
-                             "and plotting\n".format(num_nam))
+                             "and plotting\n")
 
             self.matrix = np.ma.compress_rows(np.ma.masked_invalid(self.matrix))
         # Since deeptools 4.0 the labels are encoded and would need to be decoded.
@@ -145,9 +148,7 @@ class Correlation:
             if verbose:
                 sys.stderr.write(
                     "total/filtered/left: "
-                    "{}/{}/{}\n".format(unfiltered,
-                                        unfiltered - len(to_keep),
-                                        len(to_keep)))
+                    f"{unfiltered}/{unfiltered - len(to_keep)}/{len(to_keep)}\n")
 
         return self.matrix
 
@@ -169,11 +170,9 @@ class Correlation:
         self.labels = [toString(x) for x in self.labels]
         file_handle.write("\t'" + "'\t'".join(self.labels) + "'\n")
         fmt = "\t".join(np.repeat('%.4f', self.corr_matrix.shape[1])) + "\n"
-        i = 0
-        for row in self.corr_matrix:
+        for i, row in enumerate(self.corr_matrix):
             file_handle.write(
-                "'%s'\t" % self.labels[i] + fmt % tuple(row))
-            i += 1
+                f"'{self.labels[i]}'\t" + fmt % tuple(row))
 
     def compute_correlation(self):
         """
@@ -325,7 +324,7 @@ class Correlation:
             for row in range(num_rows):
                 for col in range(num_rows):
                     axmatrix.text(row + 0.5, col + 0.5,
-                                  "{:.2f}".format(corr_matrix[row, col]),
+                                  f"{corr_matrix[row, col]:.2f}",
                                   ha='center', va='center')
 
         self.column_order = index
@@ -391,8 +390,7 @@ class Correlation:
             vector1 = self.matrix[:, row]
             vector2 = self.matrix[:, col]
 
-            ax.text(0.2, 0.8, "{}={:.2f}".format(self.corr_method,
-                                                 corr_matrix[row, col]),
+            ax.text(0.2, 0.8, f"{self.corr_method}={corr_matrix[row, col]:.2f}",
                     horizontalalignment='left',
                     transform=ax.transAxes)
             ax.get_yaxis().set_tick_params(
@@ -440,17 +438,19 @@ class Correlation:
         plt.savefig(plot_filename, format=image_format)
         plt.close()
 
-    def plot_pca(self, plot_filename=None, PCs=[1, 2], plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False, ggplot=False):
+    def plot_pca(self, plot_filename=None, PCs=None, plot_title='', image_format=None, plotWidth=12, plotHeight=10, cols=None, marks=None, add_labels=False, ggplot=False):
         """
         Plot the PCA of a matrix: each sample is plotted at its score
         (projection) onto the requested principal components.
 
         Returns the matrix of plotted values.
         """
+        if PCs is None:
+            PCs = [1, 2]
         if ggplot:
             plt.style.use('ggplot')
 
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
+        _fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(plotWidth, plotHeight), layout="constrained")
 
         m = self.matrix.astype(float, copy=True)
 
@@ -499,8 +499,8 @@ class Correlation:
                 n_bars = eigenvalues.size
             # The requested principal components must exist.
             if max(PCs) > eigenvalues.size:
-                sys.exit("Cannot plot PC{}: only {} principal component(s) are "
-                         "available. Reduce --PCs or increase --ntop.\n".format(max(PCs), eigenvalues.size))
+                sys.exit(f"Cannot plot PC{max(PCs)}: only {eigenvalues.size} principal component(s) are "
+                         "available. Reduce --PCs or increase --ntop.\n")
             markers = itertools.cycle(matplotlib.markers.MarkerStyle.filled_markers)
             if cols is not None:
                 colors = itertools.cycle(cols)
@@ -547,8 +547,8 @@ class Correlation:
                 ax1.set_title('PCA')
             else:
                 ax1.set_title(plot_title)
-            ax1.set_xlabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[0], 100.0 * pvar[PCs[0] - 1]))
-            ax1.set_ylabel('PC{} ({:4.1f}% of var. explained)'.format(PCs[1], 100.0 * pvar[PCs[1] - 1]))
+            ax1.set_xlabel(f'PC{PCs[0]} ({100.0 * pvar[PCs[0] - 1]:4.1f}% of var. explained)')
+            ax1.set_ylabel(f'PC{PCs[1]} ({100.0 * pvar[PCs[1] - 1]:4.1f}% of var. explained)')
 
             if not add_labels:
                 if n < 30:

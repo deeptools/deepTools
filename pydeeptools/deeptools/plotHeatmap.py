@@ -1,26 +1,22 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from __future__ import division
 
 import argparse
-from collections import OrderedDict
-import numpy as np
-from deeptools import matplotlib_defaults
-import matplotlib
-import matplotlib.pyplot as plt
-from matplotlib.font_manager import FontProperties
-import matplotlib.gridspec as gridspec
-from matplotlib import ticker
 import copy
+import re
 import sys
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import gridspec, ticker
+
 # own modules
-from deeptools import parserCommon
-from deeptools import heatmapper
-from deeptools.heatmapper_utilities import plot_single, justify_text
-from deeptools.utilities import convertCmap
+from deeptools import (
+    heatmapper,
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.computeMatrixOperations import filterHeatmapValues
-import textwrap, re
+from deeptools.heatmapper_utilities import justify_text, plot_single
 
 debug = 0
 old_settings = np.seterr(all='ignore')
@@ -50,9 +46,9 @@ def process_args(args=None):
     args.heatmapHeight = args.heatmapHeight if args.heatmapHeight > 3 and args.heatmapHeight <= 100 else 10
 
     if not matplotlib.colors.is_color_like(args.missingDataColor):
-        exit("The value {0}  for --missingDataColor is not valid".format(args.missingDataColor))
+        sys.exit(f"The value {args.missingDataColor}  for --missingDataColor is not valid")
 
-    args.boxAroundHeatmaps = True if args.boxAroundHeatmaps == 'yes' else False
+    args.boxAroundHeatmaps = args.boxAroundHeatmaps == 'yes'
 
     return args
 
@@ -104,9 +100,6 @@ def prepare_layout(hm_matrix, heatmapsize, showSummaryPlot, showColorbar, perGro
         # proportional to the width of heatmap
         sumplot_height = heatmapwidth
         spacer_height = heatmapwidth / 8
-        # scale height_ratios to convert from row
-        # numbers to heatmapheigt fractions
-        spacer_height = spacer_height
         height_ratio = np.concatenate([[sumplot_height, spacer_height], height_ratio])
 
     grids = gridspec.GridSpec(numrows, numcols, height_ratios=height_ratio, width_ratios=width_ratio, figure=fig)
@@ -201,13 +194,13 @@ def addProfilePlot(hm, plt, fig, grids, iterNum, iterNum2, perGroup, averageType
             lims = (lims[0], float(localYMax))
         if lims[0] >= lims[1]:
             lims = (lims[0], lims[0] + 1)
-        ax_list[sample_id].set_ylim(lims)
+        subplot.set_ylim(lims)
 
     return ax_list
 
 
 def plotMatrix(hm, outFileName,
-               colorMapDict={'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0},
+               colorMapDict=None,
                plotTitle='',
                xAxisLabel='', yAxisLabel='', regionsLabel='',
                zMin=None, zMax=None,
@@ -227,6 +220,8 @@ def plotMatrix(hm, outFileName,
                dpi=200,
                interpolation_method='auto'):
 
+    if colorMapDict is None:
+        colorMapDict = {'colorMap': ['binary'], 'missingDataColor': 'black', 'alpha': 1.0}
     hm.reference_point_label = hm.parameters['ref point']
     if reference_point_label is not None:
         hm.reference_point_label = [reference_point_label] * hm.matrix.get_num_samples()
@@ -275,9 +270,9 @@ def plotMatrix(hm, outFileName,
     if (len(zMin) > 1) & (len(zMax) > 1):
         for index, value in enumerate(zMax):
             if value <= zMin[index]:
-                sys.stderr.write("Warnirng: In bigwig {}, the given zmin ({}) is larger than "
-                                 "or equal to the given zmax ({}). Thus, it has been set "
-                                 "to None. \n".format(index + 1, zMin[index], value))
+                sys.stderr.write(f"Warnirng: In bigwig {index + 1}, the given zmin ({zMin[index]}) is larger than "
+                                 f"or equal to the given zmax ({value}). Thus, it has been set "
+                                 "to None. \n")
                 zMin[index] = None
 
     if yMin is None:
@@ -290,8 +285,6 @@ def plotMatrix(hm, outFileName,
         yMax = [yMax]
 
     plt.rcParams['font.size'] = matplotlib.rcParams['font.size']
-
-    fontP = FontProperties()
 
     showSummaryPlot = False
     showColorbar = False
@@ -608,42 +601,6 @@ def plotMatrix(hm, outFileName,
     plt.close()
 
 
-def mergeSmallGroups(matrixDict):
-    group_lengths = [len(x) for x in matrixDict.values()]
-    min_group_length = sum(group_lengths) * 0.01
-
-    to_merge = []
-    i = 0
-    _mergedHeatMapDict = OrderedDict()
-
-    for label, ma in matrixDict.items():
-        # merge small groups together
-        # otherwise visualization is impaired
-        if group_lengths[i] > min_group_length:
-            if len(to_merge):
-                to_merge.append(label)
-                new_label = " ".join(to_merge)
-                new_ma = np.concatenate([matrixDict[item]
-                                        for item in to_merge], axis=0)
-            else:
-                new_label = label
-                new_ma = matrixDict[label]
-
-            _mergedHeatMapDict[new_label] = new_ma
-            to_merge = []
-        else:
-            to_merge.append(label)
-        i += 1
-    if len(to_merge) > 1:
-        new_label = " ".join(to_merge)
-        new_ma = np.array()
-        for item in to_merge:
-            new_ma = np.concatenate([new_ma, matrixDict[item]])
-        _mergedHeatMapDict[new_label] = new_ma
-
-    return _mergedHeatMapDict
-
-
 def main(args=None):
     args = process_args(args)
     hm = heatmapper.heatmapper()
@@ -664,9 +621,9 @@ def main(args=None):
     group_len_ratio = np.diff(hm.matrix.group_boundaries) / len(hm.matrix.regions)
     if np.any(group_len_ratio < 5.0 / 1000):
         problem = np.flatnonzero(group_len_ratio < 5.0 / 1000)
-        sys.stderr.write("WARNING: Group '{}' is too small for plotting, you might want to remove it. "
+        sys.stderr.write(f"WARNING: Group '{hm.matrix.group_labels[problem[0]]}' is too small for plotting, you might want to remove it. "
                          "There will likely be an error message from matplotlib regarding this "
-                         "below.\n".format(hm.matrix.group_labels[problem[0]]))
+                         "below.\n")
 
     if args.regionsLabel:
         hm.matrix.set_group_labels(args.regionsLabel)
@@ -684,7 +641,7 @@ def main(args=None):
                 if (i > 0 and i <= hm.matrix.get_num_samples()):
                     sortUsingSamples.append(i - 1)
                 else:
-                    exit("The value {0} for --sortSamples is not valid. Only values from 1 to {1} are allowed.".format(args.sortUsingSamples, hm.matrix.get_num_samples()))
+                    sys.exit(f"The value {args.sortUsingSamples} for --sortSamples is not valid. Only values from 1 to {hm.matrix.get_num_samples()} are allowed.")
             print('Samples used for ordering within each group: ', sortUsingSamples)
 
         hm.matrix.sort_groups(sort_using=args.sortUsing,

@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 import argparse
-from deeptools import parserCommon
+
+from deeptools import parserCommon, writeBedGraph_bam_and_bw
 from deeptools.getRatio import getRatio
-from deeptools import writeBedGraph_bam_and_bw
 
 debug = 0
 
@@ -101,7 +99,7 @@ def getType(fname):
     """
     Tries to determine if a file is a wiggle, a bedgraph or a bigWig.
     """
-    if fname.endswith(".wig") or fname.endswith(".wiggle"):
+    if fname.endswith((".wig", ".wiggle")):
         return "wiggle"
     elif fname.endswith(".bedgraph"):
         return "bedgraph"

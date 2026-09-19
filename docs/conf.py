@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # deepTools documentation build configuration file, created by
 # sphinx-quickstart on Wed Mar 25 12:08:19 2015.
@@ -12,12 +11,12 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
 import os
+import sys
 import tomllib
 
 # to allow readthedocs to compile without installing some dependencies
-import mock
+from unittest import mock
 
 # MOCK_MODULES = ['numpy', 'numpy.ma', 'scipy', 'pyBigWig']
 MOCK_MODULES = ['pyBigWig']
@@ -72,9 +71,9 @@ source_suffix = {
 master_doc = 'index'
 
 # General information about the project.
-project = u'deepTools'
-author = u'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke, Devon Ryan, Fabian Kilpert, ' \
-         u'Andreas Richter, Vivek Bhardwaj, Steffen Heyne'
+project = 'deepTools'
+author = 'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke, Devon Ryan, Fabian Kilpert, ' \
+         'Andreas Richter, Vivek Bhardwaj, Steffen Heyne'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -274,8 +273,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'deepTools.tex', u'deepTools Documentation',
-     u'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke', 'manual'),
+    (master_doc, 'deepTools.tex', 'deepTools Documentation',
+     'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -304,7 +303,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'deeptools', u'deepTools Documentation',
+    (master_doc, 'deeptools', 'deepTools Documentation',
      [author], 1)
 ]
 
@@ -318,7 +317,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'deepTools', u'deepTools Documentation',
+    (master_doc, 'deepTools', 'deepTools Documentation',
      author, 'deepTools', 'One line description of project.',
      'Miscellaneous'),
 ]

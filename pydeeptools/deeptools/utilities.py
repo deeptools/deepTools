@@ -1,11 +1,13 @@
-import sys
 import os
-from deeptoolsintervals import GTF
-from deeptools.bamHandler import openBam
+import sys
+
 import matplotlib as mpl
+from deeptoolsintervals import GTF
+
+from deeptools.bamHandler import openBam
+
 mpl.use('Agg')
 import numpy as np
-
 
 debug = 0
 
@@ -61,15 +63,10 @@ def getTLen(read, notAbs=False):
     try:
         # the cigartuples property apparently didn't always exist
         for op, opLen in read.cigartuples:
-            if op == 0:
+            if op == 0 or op == 2 or op == 7 or op == 8:
                 tlen += opLen
-            elif op == 2:
-                tlen += opLen
-            elif op == 7:
-                tlen += opLen
-            elif op == 8:
-                tlen += opLen
-    except:
+    except TypeError:
+        # read.cigartuples is None for unmapped reads / reads without CIGAR info
         pass
 
     return tlen
@@ -95,13 +92,13 @@ def getCommonChrNames(bamFileHandles, verbose=True):
         try:
             # BAM file
             return [(x, y) for x, y in zip(bam_handler.references, bam_handler.lengths)]
-        except:
+        except Exception:
             return [(k, v) for k, v in bam_handler.chroms().items()]
 
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:
-            sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
+            sys.stderr.write(f"{name:>15}\t{size:>10}\n")
 
     common_chr = set(get_chrom_and_size(bamFileHandles[0]))
     non_common_chr = set()
@@ -123,9 +120,9 @@ def getCommonChrNames(bamFileHandles, verbose=True):
                 print_chr_names_and_size(common_chr)
 
                 sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
-                                 "lengths from file\n{}\n".format(bamFileHandles.name))
+                                 f"lengths from file\n{bamFileHandles.name}\n")
                 print_chr_names_and_size(_names_and_size)
-                exit(1)
+                sys.exit(1)
             else:
                 _names_and_size = _corr_names_size
 
@@ -146,36 +143,16 @@ def getCommonChrNames(bamFileHandles, verbose=True):
     return chr_sizes, non_common_chr
 
 
-def copyFileInMemory(filePath, suffix=''):
-    """
-    copies a file into the special /dev/shm device which
-    moves the file into memory.
-    This process speeds ups the multiprocessor access to such files
-    """
-
-    # fallback for windows users
-    if os.name == 'nt':
-        return filePath
-
-    memFileName = getTempFileName(suffix=suffix)
-    import shutil
-    shutil.copyfile(filePath, memFileName)
-
-    return memFileName
-
-
 def getTempFileName(suffix=''):
     """
     Return a temporary file name. The calling function is responsible for
     deleting this upon completion.
     """
     import tempfile
-    _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                            suffix=suffix,
-                                            delete=False)
-
-    memFileName = _tempFile.name
-    _tempFile.close()
+    with tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                     suffix=suffix,
+                                     delete=False) as _tempFile:
+        memFileName = _tempFile.name
     return memFileName
 
 
@@ -203,8 +180,6 @@ def toString(s):
     if isinstance(s, str):
         return s
     if isinstance(s, bytes):
-        if sys.version_info[0] == 2:
-            return str(s)
         return s.decode('ascii')
     if isinstance(s, list):
         return [toString(x) for x in s]
@@ -215,8 +190,6 @@ def toBytes(s):
     """
     Like toString, but for functions requiring bytes in python3
     """
-    if sys.version_info[0] == 2:
-        return s
     if isinstance(s, bytes):
         return s
     if isinstance(s, str):
@@ -249,17 +222,6 @@ def mungeChromosome(chrom, chromList):
     return None
 
 
-def bam_total_reads(bam_handle, chroms_to_ignore, stats):
-    """
-    Count the total number of mapped reads in a BAM file, filtering
-    the chromosome given in chroms_to_ignore list
-    """
-    if chroms_to_ignore:
-        return sum([s[0] for k, s in stats.items() if k not in chroms_to_ignore])
-    else:
-        return sum([s[0] for s in stats.values()])
-
-
 def bam_blacklisted_worker(args):
     bam, chrom, start, end = args
     fh = openBam(bam)
@@ -286,7 +248,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
     if hasOverlaps:
         sys.exit("Your blacklist file(s) has (have) regions that overlap. Proceeding with such a file would result in deepTools incorrectly calculating scaling factors. As such, you MUST fix this issue before being able to proceed.\n")
     if minOverlap < 1000:
-        sys.stderr.write("WARNING: The minimum distance between intervals in your blacklist is {}. It makes little biological sense to include small regions between two blacklisted regions. Instead, these should likely be blacklisted as well.\n".format(minOverlap))
+        sys.stderr.write(f"WARNING: The minimum distance between intervals in your blacklist is {minOverlap}. It makes little biological sense to include small regions between two blacklisted regions. Instead, these should likely be blacklisted as well.\n")
 
     regions = []
     for chrom in bl.chroms:

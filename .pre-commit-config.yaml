@@ -19,3 +19,7 @@ repos:
         language: system
         files: ^(galaxy/wrapper/deepTools_.*\.xml)$
         pass_filenames: false
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.8
+    hooks:
+      - id: ruff-check

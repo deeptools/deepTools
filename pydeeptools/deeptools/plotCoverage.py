@@ -1,16 +1,18 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+import argparse
 import os
 import sys
-import argparse
-import numpy as np
-from deeptools import matplotlib_defaults
-import matplotlib.pyplot as plt
 from importlib.metadata import version
+
+import matplotlib.pyplot as plt
+import numpy as np
+
 import deeptools.countReadsPerBin as countR
-from deeptools import parserCommon
+from deeptools import (
+    matplotlib_defaults,  # noqa: F401
+    parserCommon,
+)
 from deeptools.utilities import smartLabels
+
 
 def parse_arguments(args=None):
     parent_parser = parserCommon.getParentArgParse(binSize=False)
@@ -100,7 +102,7 @@ def required_args():
     optional.add_argument('--ggplot',
                           help='Use ggplot theme for figures',
                           action='store_true')
-    
+
     optional.add_argument('--skipZeros',
                           help='By setting this option, genomic regions '
                           'that have zero or nan values in _all_ samples '
@@ -197,28 +199,25 @@ def main(args=None):
 
     if args.outCoverageMetrics and args.coverageThresholds:
         args.coverageThresholds.sort()  # Galaxy in particular tends to give things in a weird order
-        of = open(args.outCoverageMetrics, "w")
-        of.write("Sample\tThreshold\tPercent\n")
-        nbins = float(num_reads_per_bin.shape[0])
-        for thresh in args.coverageThresholds:
-            vals = np.sum(num_reads_per_bin >= thresh, axis=0)
-            for lab, val in zip(args.labels, vals):
-                of.write("{}\t{}\t{:6.3f}\n".format(lab, thresh, 100. * val / nbins))
-        of.close()
+        with open(args.outCoverageMetrics, "w") as of:
+            of.write("Sample\tThreshold\tPercent\n")
+            nbins = float(num_reads_per_bin.shape[0])
+            for thresh in args.coverageThresholds:
+                vals = np.sum(num_reads_per_bin >= thresh, axis=0)
+                of.writelines(f"{lab}\t{thresh}\t{100. * val / nbins:6.3f}\n" for lab, val in zip(args.labels, vals))
 
     if args.outRawCounts:
         # append to the generated file the
         # labels
         header = "#plotCoverage --outRawCounts\n#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        f = open(args.outRawCounts, 'r+')
-        content = f.read()
-        f.seek(0, 0)
-        f.write(header + content)
-        f.close()
+        with open(args.outRawCounts, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header + content)
 
     if num_reads_per_bin.shape[0] < 2:
-        exit("ERROR: too few non-zero bins found.\n"
+        sys.exit("ERROR: too few non-zero bins found.\n"
              "If using --region please check that this "
              "region is covered by reads.\n")
 
@@ -229,7 +228,7 @@ def main(args=None):
         if args.ggplot:
             plt.style.use('ggplot')
 
-        fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
+        _fig, axs = plt.subplots(1, 2, figsize=(args.plotWidth, args.plotHeight))
         plt.suptitle(args.plotTitle)
 
     # plot up to two std from mean
@@ -257,28 +256,19 @@ def main(args=None):
     # the current implementation aims to find the y_value for which 50% of the reads >= x (coverage) and
     # sets that as the x_axis range.
     y_max = []
-    data = []
     # We need to manually set the line colors so they're shared between the two plots.
     for idx, col in enumerate(num_reads_per_bin.T):
         if args.plotFile:
             frac_reads_per_coverage = np.bincount(col.astype(int)).astype(float) / num_reads_per_bin.shape[0]
             csum = np.bincount(col.astype(int))[::-1].cumsum()
             csum_frac = csum.astype(float)[::-1] / csum.max()
-            axs[0].plot(frac_reads_per_coverage, label="{}, mean={:.1f}".format(args.labels[idx], sample_mean[idx]))
+            axs[0].plot(frac_reads_per_coverage, label=f"{args.labels[idx]}, mean={sample_mean[idx]:.1f}")
             axs[1].plot(csum_frac, label=args.labels[idx])
             # find the indexes (i.e. the x values) for which the cumulative distribution 'fraction of bases
             # sampled >= coverage' where fraction of bases sampled = 50%: `np.flatnonzero(csum_frac>0.5)`
             # then find the fraction of bases sampled that that have the largest x
             y_max.append(frac_reads_per_coverage[max(np.flatnonzero(csum_frac > 0.5))])
-        print("{}\t{:0.2f}\t{:0.2f}\t{}\t{}\t{}\t{}\t{}\t".format(args.labels[idx],
-                                                                  sample_mean[idx],
-                                                                  sample_std[idx],
-                                                                  sample_min[idx],
-                                                                  sample_25[idx],
-                                                                  sample_50[idx],
-                                                                  sample_75[idx],
-                                                                  sample_max[idx],
-                                                                  ))
+        print(f"{args.labels[idx]}\t{sample_mean[idx]:0.2f}\t{sample_std[idx]:0.2f}\t{sample_min[idx]}\t{sample_25[idx]}\t{sample_50[idx]}\t{sample_75[idx]}\t{sample_max[idx]}\t")
 
     if args.plotFile:
         # Don't clip plots

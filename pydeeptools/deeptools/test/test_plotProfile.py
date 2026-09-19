@@ -5,7 +5,6 @@ from matplotlib.testing.compare import compare_images
 
 import deeptools.plotProfile
 
-
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotProfile/"
 
@@ -18,22 +17,21 @@ tolerance = 40
 def run_plotProfile(args):
     """Run plotProfile and return generated plot file."""
 
-    plotfile = NamedTemporaryFile(
+    with NamedTemporaryFile(
         suffix='.png',
         prefix='deeptools_testfile_',
         delete=False
-    )
+    ) as plotfile:
+        args += [
+            "--outFileName",
+            plotfile.name,
+            "--plotFileFormat",
+            "png"
+        ]
 
-    args += [
-        "--outFileName",
-        plotfile.name,
-        "--plotFileFormat",
-        "png"
-    ]
+        deeptools.plotProfile.main(args)
 
-    deeptools.plotProfile.main(args)
-
-    return plotfile.name
+        return plotfile.name
 
 
 def cleanup(plotfile):

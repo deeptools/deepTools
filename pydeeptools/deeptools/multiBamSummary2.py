@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import argparse
 import os
 import signal
@@ -8,8 +5,8 @@ import sys
 from importlib.metadata import version
 
 from deeptools import parserCommon
-from deeptools.utilities import smartLabels
 from deeptools.hp import r_mbams
+from deeptools.utilities import smartLabels
 
 
 def parse_arguments(args=None):
@@ -226,7 +223,7 @@ def process_args(args=None):
 
     if args.labels and len(args.bamfiles) != len(args.labels):
         print("The number of labels does not match the number of bam files.")
-        exit(0)
+        sys.exit(0)
     if not args.labels:
         if args.smartLabels:
             args.labels = smartLabels(args.bamfiles)
@@ -234,7 +231,7 @@ def process_args(args=None):
             args.labels = [os.path.basename(x) for x in args.bamfiles]
     if not args.outFileName:
         print("Please provide an output file name.")
-        exit(0)
+        sys.exit(0)
     if not args.BED:
         args.BED = []
     if not args.region:

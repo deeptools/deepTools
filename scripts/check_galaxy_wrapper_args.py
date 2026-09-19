@@ -10,10 +10,10 @@ DEEPTOOLS_SRC = REPO_ROOT / "pydeeptools" / "deeptools"
 MACROS_FILE = WRAPPER_DIR / "deepTools_macros.xml"
 PYPROJECT_FILE = REPO_ROOT / "pyproject.toml"
 
-TOKEN_RE = re.compile(r'<token name="(@[A-Za-z0-9_]+@)">(.*?)</token>', re.S)
+TOKEN_RE = re.compile(r'<token name="(@[A-Za-z0-9_]+@)">(.*?)</token>', re.DOTALL)
 BINARY_TOKEN_RE = re.compile(r'<token name="@BINARY@">([^<]+)</token>')
 COMMAND_RE = re.compile(
-    r"<command[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*</command>", re.S
+    r"<command[^>]*>\s*(?:<!\[CDATA\[)?(.*?)(?:\]\]>)?\s*</command>", re.DOTALL
 )
 REAL_ATTR_FLAG_RE = re.compile(r'(?:truevalue|falsevalue)="(--?[A-Za-z][\w-]*)"')
 DOC_ATTR_FLAG_RE = re.compile(r'argument="(--?[A-Za-z][\w-]*)"')

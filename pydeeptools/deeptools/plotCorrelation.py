@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import sys
 import argparse
-import numpy as np
-from deeptools import matplotlib_defaults
-import matplotlib.pyplot as plt
+import sys
 from importlib.metadata import version
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from deeptools import matplotlib_defaults  # noqa: F401
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
 
@@ -95,7 +94,7 @@ def plot_correlation_args():
     optional.add_argument('--ggplot',
                           help='Use ggplot theme for figures',
                           action='store_true')
-    
+
     optional.add_argument('--plotFileFormat',
                           metavar='FILETYPE',
                           help='Image format type. If given, this option '
@@ -214,16 +213,15 @@ def main(args=None):
                        remove_outliers=args.removeOutliers,
                        skip_zeros=args.skipZeros)
 
-    if args.corMethod == 'pearson':
+    if (args.corMethod == 'pearson') and (len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0):
         # test if there are outliers and write a message recommending the removal
-        if len(corr.get_outlier_indices(np.asarray(corr.matrix).flatten())) > 0:
-            if args.removeOutliers:
-                sys.stderr.write("\nOutliers were detected in the data. They "
+        if args.removeOutliers:
+            sys.stderr.write("\nOutliers were detected in the data. They "
                                  "will be removed to avoid bias "
                                  "in the pearson correlation.\n")
 
-            else:
-                sys.stderr.write("\nOutliers were detected in the data. Consider "
+        else:
+            sys.stderr.write("\nOutliers were detected in the data. Consider "
                                  "using the --removeOutliers parameter to avoid a bias "
                                  "in the pearson correlation.\n")
 
@@ -232,8 +230,8 @@ def main(args=None):
             plt.get_cmap(args.colorMap)
         except ValueError as error:
             sys.stderr.write(
-                "A problem was found. Message: {}\n".format(error))
-            exit()
+                f"A problem was found. Message: {error}\n")
+            sys.exit()
 
     if args.plotFile is not None:
         if args.whatToPlot == 'scatterplot':

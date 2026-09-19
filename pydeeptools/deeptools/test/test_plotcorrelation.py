@@ -1,10 +1,10 @@
-import deeptools.plotCorrelation as pc
-
 import os.path
-from os import unlink
-from matplotlib.testing.compare import compare_images
 import tempfile
+
 import pytest
+from matplotlib.testing.compare import compare_images
+
+import deeptools.plotCorrelation as pc
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 COR_DATA_IN1 = ROOT + "multiBamSummary_result1.npz"
@@ -25,12 +25,11 @@ def test_correlation_plot_with_minimal_options():
     """
     _, out_matrix = tempfile.mkstemp(suffix=".tsv")
     _, out_png = tempfile.mkstemp(suffix=".png")
-    args = "--corData {} -p heatmap -c pearson -o {}  --outFileCorMatrix {}".format(COR_DATA_IN1, out_png, out_matrix).split()
+    args = f"--corData {COR_DATA_IN1} -p heatmap -c pearson -o {out_png}  --outFileCorMatrix {out_matrix}".split()
     pc.main(args)
 
-    _foo = open(out_matrix, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(out_matrix, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = "'bowtie2 test1.bam'\t1.0000\t1.0000\n"
     assert expected in resp, f"'{expected}' not found in '{resp}'"
 
@@ -42,7 +41,7 @@ def test_correlation_plot_scatter():
     Test command line args for correlation plot with output as scatter plot
     """
     _, out_png2 = tempfile.mkstemp(suffix=".png")
-    args = "--corData {} -p scatterplot -c pearson  -o {}".format(COR_DATA_IN1, out_png2).split()
+    args = f"--corData {COR_DATA_IN1} -p scatterplot -c pearson  -o {out_png2}".split()
     pc.main(args)
 
     res = compare_images(COR_PLOT_2, out_png2, 50)
@@ -55,12 +54,11 @@ def test_correlation_plot_with_minimal_options_ggplot():
     """
     _, out_matrix_gg = tempfile.mkstemp(suffix=".tsv")
     _, out_png_gg = tempfile.mkstemp(suffix=".png")
-    args = "--corData {} -p heatmap -c pearson -o {}  --outFileCorMatrix {} --ggplot".format(COR_DATA_IN1, out_png_gg, out_matrix_gg).split()
+    args = f"--corData {COR_DATA_IN1} -p heatmap -c pearson -o {out_png_gg}  --outFileCorMatrix {out_matrix_gg} --ggplot".split()
     pc.main(args)
 
-    _foo = open(out_matrix_gg, "r")
-    resp = _foo.readlines()[2]
-    _foo.close()
+    with open(out_matrix_gg, "r") as _foo:
+        resp = _foo.readlines()[2]
     expected = "'bowtie2 test1.bam'\t1.0000\t1.0000\n"
     assert expected in resp, f"'{expected}' not found in '{resp}'"
 
@@ -72,7 +70,7 @@ def test_correlation_plot_scatter_ggplot():
     Test command line args for correlation plot with output as scatter plot
     """
     _, out_png2_gg = tempfile.mkstemp(suffix=".png")
-    args = "--corData {} -p scatterplot -c pearson  -o {} --ggplot".format(COR_DATA_IN1, out_png2_gg).split()
+    args = f"--corData {COR_DATA_IN1} -p scatterplot -c pearson  -o {out_png2_gg} --ggplot".split()
     pc.main(args)
 
     res = compare_images(COR_PLOT_GG_2, out_png2_gg, 50)

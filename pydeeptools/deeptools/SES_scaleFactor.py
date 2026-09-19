@@ -1,12 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
+import sys
+
 import numpy as np
+
+import deeptools.countReadsPerBin as countR
 
 # own packages
 from deeptools import bamHandler
-import deeptools.countReadsPerBin as countR
 
 old_settings = np.seterr(all='ignore')
 debug = 0
@@ -15,7 +15,7 @@ debug = 0
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
                         normalizationLength,
                         avg_method='median', blackListFileName=None, numberOfProcessors=1,
-                        verbose=False, chrsToSkip=[], mappingStatsList=[]):
+                        verbose=False, chrsToSkip=None, mappingStatsList=None):
     r"""
     Subdivides the genome into chunks to be analyzed in parallel
     using several processors. The code handles the creation of
@@ -33,9 +33,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
         number of sites to sample from the genome. For more info see
         the documentation of the CountReadsPerBin class
     normalizationLength : int
-        length, in bp, to normalize the data.
-        For a value of 1, on average
-        1 read per base pair is found
+        DEPRECATED: accepted for backward compatibility but currently
+        has no effect on the computed scale factors.
     avg_method : str
         defines how the different values are to be summarized.
         The options are 'mean' and 'median'
@@ -76,6 +75,10 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     array([1. , 0.5])
     """
 
+    if mappingStatsList is None:
+        mappingStatsList = []
+    if chrsToSkip is None:
+        chrsToSkip = []
     assert len(bamFilesList) == 2, "SES scale factors are only defined for 2 files"
 
     if len(mappingStatsList) == len(bamFilesList):
@@ -101,7 +104,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     try:
         num_reads_per_bin = cr.run()
     except Exception as detail:
-        exit("*ERROR*: {}".format(detail))
+        sys.exit(f"*ERROR*: {detail}")
 
     sitesSampled = len(num_reads_per_bin)
 
@@ -167,8 +170,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
     if min(median) == 0:
         idx_zero = [ix + 1 for ix, value in enumerate(median) if value == 0]
-        exit("\n*ERROR*: The median coverage computed is zero for sample(s) #{}\n"
-             "Try selecting a larger sample size or a region with coverage\n".format(idx_zero))
+        sys.exit(f"\n*ERROR*: The median coverage computed is zero for sample(s) #{idx_zero}\n"
+             "Try selecting a larger sample size or a region with coverage\n")
 
     sizeFactor = sizeFactorsSES
     return {'size_factors': sizeFactor,
@@ -184,7 +187,7 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
             'sites_sampled': sitesSampled}
 
 
-class Tester(object):
+class Tester:
 
     def __init__(self):
         self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
