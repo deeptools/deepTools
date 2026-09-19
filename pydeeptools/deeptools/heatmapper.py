@@ -1113,7 +1113,7 @@ class _matrix:
             for x in self.regions:
                 matrix_avgs.append(np.sum([bar[1] - bar[0] for bar in x[1]]))
             matrix_avgs = np.array(matrix_avgs)
-        elif sort_using == 'mean' or sort_using == 'mean':
+        elif sort_using == 'mean':
             matrix_avgs = np.nanmean(matrix, axis=1)
         elif sort_using == 'median':
             matrix_avgs = np.nanmedian(matrix, axis=1)
