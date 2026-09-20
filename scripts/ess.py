@@ -3,6 +3,7 @@ import gzip
 import re
 import shutil
 import subprocess
+import sys
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -11,6 +12,7 @@ from pathlib import Path
 DOCS_PATH = Path(__file__).resolve().parent.parent / "docs/content/feature/effectiveGenomeSize.rst"
 CACHE_DIR = Path(__file__).resolve().parent / "genomes"
 READ_LENGTHS = [50, 75, 100, 150, 200, 250]
+REQUIRED_EXECUTABLES = ["faCount", "unique-kmers.py"]
 
 GENOME_URLS = {
     "GRCh37": "https://ftp.ebi.ac.uk/pub/ensemblorganisms/GCA/000/001/405/14/ensembl/2013_09/genome/softmasked.fa.bgz",
@@ -28,6 +30,18 @@ GENOME_URLS = {
 }
 
 TABLE_RE = re.compile(r"^\+(?:[-=]+\+)+\n(?:\|.*\|\n\+(?:[-=]+\+)+\n)+", re.MULTILINE)
+
+
+def url_exists(url: str, timeout: float = 15) -> bool:
+    for method, headers in (("HEAD", {}), ("GET", {"Range": "bytes=0-0"})):
+        try:
+            req = urllib.request.Request(url, method=method, headers=headers)
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if 200 <= resp.status < 400:
+                    return True
+        except Exception:  # noqa: S110
+            pass
+    return False
 
 
 def fetch(name: str, url: str) -> Path:
@@ -101,7 +115,24 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--threads", type=int, default=1,
                          help="number of genomes to process concurrently (default: %(default)s)")
+    parser.add_argument("--dry-run", action="store_true",
+                         help="only check that required executables are on PATH, then exit")
     args = parser.parse_args()
+
+    if args.dry_run:
+        missing_exes = [exe for exe in REQUIRED_EXECUTABLES if shutil.which(exe) is None]
+        for exe in REQUIRED_EXECUTABLES:
+            print(f"{'missing' if exe in missing_exes else 'found  '}: {exe}")
+
+        pending = [(name, url) for name, url in GENOME_URLS.items() if url]
+        broken = []
+        with ThreadPoolExecutor(max_workers=args.threads) as pool:
+            for name, url, ok in pool.map(lambda nu: (*nu, url_exists(nu[1])), pending):
+                print(f"{'found  ' if ok else 'missing'}: {name} -> {url}")
+                if not ok:
+                    broken.append(name)
+
+        sys.exit(1 if missing_exes or broken else 0)
 
     content = DOCS_PATH.read_text()
     tables = list(TABLE_RE.finditer(content))
