@@ -2,6 +2,7 @@
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <token name="@TOOL_VERSION@">4.0.0</token> <!-- x-release-please-version -->
+    <token name="@VERSION_SUFFIX@">1</token>
     <token name="@GALAXY_VERSION@">23.2</token>
     <xml name="requirements">
         <requirements>
@@ -1084,8 +1085,8 @@ is vital to you, select Yes below.">
                 <valid initial="string.digits">
                     <add value=" "/>
                 </valid>
-                <validator type="regex">^[0-9]+([ ]+[0-9]+)*$</validator>
             </sanitizer>
+            <validator type="regex">^[0-9]+([ ]+[0-9]+)*$</validator>
         </param>
     </xml>
 
