@@ -10,6 +10,7 @@ import pyBigWig
 
 # own module
 from deeptools import bamHandler, mapReduce
+from deeptools.countReadsPerBin import CountReadsPerBin
 from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
 
@@ -81,7 +82,7 @@ def writeBedGraph_worker(
             tileCoverage = []
             for index in range(len(bamOrBwFileList)):
                 if smoothLength > 0:
-                    vectorStart, vectorEnd = getSmoothRange(
+                    vectorStart, vectorEnd = CountReadsPerBin.getSmoothRange(
                         tileIndex, tileSize, smoothLength, lengthCoverage)
                     tileCoverage.append(
                         np.mean(coverage[index][vectorStart:vectorEnd]))
