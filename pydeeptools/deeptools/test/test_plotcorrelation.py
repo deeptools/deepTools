@@ -15,6 +15,14 @@ COR_PLOT_GG_1 = ROOT + "plotCorrelation_result1_ggplot.png"
 COR_PLOT_GG_2 = ROOT + "plotCorrelation_result2_ggplot.png"
 
 
+def test_correlation_labels_length_mismatch_exits():
+    _, out_png = tempfile.mkstemp(suffix=".png")
+    args = f"--corData {COR_DATA_IN1} -p heatmap -c pearson -o {out_png} " \
+           "--labels sample1 sample2 sample3".split()
+    with pytest.raises(SystemExit):
+        pc.main(args)
+
+
 @pytest.mark.filterwarnings(
     "ignore:Attempting to set identical low and high xlims:UserWarning"
 )

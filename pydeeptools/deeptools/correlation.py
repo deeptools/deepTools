@@ -38,10 +38,12 @@ class Correlation:
         self.corr_matrix = None  # correlation matrix
         self.column_order = None
         if labels is not None:
-            # test that the length of labels
-            # corresponds to the length of
-            # samples
-
+            if len(labels) != self.matrix.shape[1]:
+                sys.exit(
+                    f"\nThe number of labels provided ({len(labels)}) does not match the number "
+                    f"of samples in the matrix ({self.matrix.shape[1]}). Please provide exactly one label "
+                    "per sample.\n"
+                )
             self.labels = labels
         self.labels = [toString(x) for x in self.labels]
 
