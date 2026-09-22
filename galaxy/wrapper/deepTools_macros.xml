@@ -928,7 +928,7 @@ is vital to you, select Yes below.">
             --refPointLabel '$advancedOpt.refPointLabel'
         #end if
           #if $advancedOpt.regionsLabel:
-            --regionsLabel '$advancedOpt.regionsLabel'
+            --regionsLabel $advancedOpt.regionsLabel
         #end if
         #if $advancedOpt.yMin:
             --yMin $advancedOpt.yMin
@@ -953,7 +953,7 @@ is vital to you, select Yes below.">
             $advancedOpt.used_multiple_regions.silhouette
         #end if
         #if $advancedOpt.clusterUsingSamples:
-            --clusterUsingSamples '$advancedOpt.clusterUsingSamples'
+            --clusterUsingSamples $advancedOpt.clusterUsingSamples
         #end if
     </token>
 
@@ -1077,7 +1077,7 @@ is vital to you, select Yes below.">
             </when>
             <when value="yes"/>
         </conditional>
-        <param argument="--clusterUsingSamples" type="text"
+        <param argument="--clusterUsingSamples" type="text" optional="true"
             label="List of samples to be used for clustering"
             help="List of sample numbers (order as in matrix), which are used by --kmeans or --hclust for clustering.
             If no value is set, it uses all samples. Example: 1 3 (space separated!)">
