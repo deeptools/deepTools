@@ -373,6 +373,13 @@ pub fn read_bedfile(
                     continue;
                 }
                 end = end.min(chromlen);
+                if start >= end {
+                    println!(
+                        "Warning, region {} has a start position ({}) that is not strictly less than its end position ({}). BED start/end must be 5' -> 3' (start < end); strand belongs in a separate column (use BED6/BED12/GTF to encode strand). Skipping.",
+                        entryname, start, end
+                    );
+                    continue;
+                }
                 if names.contains_key(&entryname) {
                     let count = names
                         .get_mut(&entryname)
@@ -426,6 +433,13 @@ pub fn read_bedfile(
                     continue;
                 }
                 end = end.min(chromlen);
+                if start >= end {
+                    println!(
+                        "Warning, region {} has a start position ({}) that is not strictly less than its end position ({}). BED start/end must be 5' -> 3' (start < end); strand belongs in a separate column (use BED6/BED12/GTF to encode strand). Skipping.",
+                        entryname, start, end
+                    );
+                    continue;
+                }
                 if names.contains_key(&entryname) {
                     let count = names
                         .get_mut(&entryname)
@@ -541,6 +555,13 @@ pub fn read_bedfile(
                             )
                         })
                         .min(chromlen);
+                    if start >= end {
+                        println!(
+                            "Warning, region {} has a start position ({}) that is not strictly less than its end position ({}). BED start/end must be 5' -> 3' (start < end); strand belongs in a separate column. Skipping.",
+                            entryname, start, end
+                        );
+                        continue;
+                    }
                     regions.push(Region {
                         chrom: fields[0].to_string(),  //chrom
                         start: Revalue::U(start),      //start

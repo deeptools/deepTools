@@ -1759,7 +1759,7 @@ pub struct Gtfparse {
     pub txniddesignator: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum Revalue {
     U(u32),
     V(Vec<u32>),
