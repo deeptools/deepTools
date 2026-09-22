@@ -430,14 +430,13 @@ is vital to you, select Yes below.">
             <when value="No">
             </when>
             <when value="Yes">
-                <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &apos;sample 1&apos;; &apos;sample 2&apos;)">
+                <param argument="--labels" type="text" label="Sample Labels" help="Labels, separated by a space. If your labels themselves contain spaces then please enclose them in quotes (e.g., &quot;sample 1&quot;; &quot;sample 2&quot;)">
                     <sanitizer>
                         <valid initial="string.letters,string.digits,string.whitespace">
-                            <add value="&apos;"/>
+                            <add value="&quot;"/>
                             <add value="_"/>
                         </valid>
                     </sanitizer>
-                    <validator type="regex">[A-Za-z0-9 =-_/+]+</validator>
                 </param>
             </when>
             </conditional>
@@ -916,7 +915,7 @@ is vital to you, select Yes below.">
         #end if
         $advancedOpt.perGroup
         #if $advancedOpt.samplesLabel:
-            --samplesLabel '$advancedOpt.samplesLabel'
+            --samplesLabel $advancedOpt.samplesLabel
         #end if
         #if $advancedOpt.startLabel:
             --startLabel '$advancedOpt.startLabel'
@@ -962,12 +961,14 @@ is vital to you, select Yes below.">
         <param argument="--perGroup" type="boolean" truevalue="--perGroup" falsevalue=""
             label="Make one plot per group of regions"
             help="The default is to make one plot per bigWig file, i.e., all samples next to each other. Choosing this option will make one plot per group of regions. " />
-        <param argument="--samplesLabel" type="text"
+        <param argument="--samplesLabel" type="text" optional="true" value=""
             label="Labels for the samples (each bigwig) plotted"
             help="The default is to use the file name of the sample. The sample labels should be separated by
             spaces and quoted if a label itself contains a space, e.g., label-1 &quot;label 2&quot;">
             <sanitizer>
-                <valid initial="string.printable">
+                <valid initial="string.letters,string.digits,string.whitespace">
+                    <add value="&quot;"/>
+                    <add value="_"/>
                 </valid>
             </sanitizer>
         </param>
@@ -986,12 +987,35 @@ is vital to you, select Yes below.">
             label="Labels for the regions plotted in the heatmap"
             help="If more than one region is being plotted a list of labels separated by space is required.
                     If a label itself contains a space, then quotes are needed.
-                    For example, label_1 &quot;label 2&quot;" />
+                    For example, label_1 &quot;label 2&quot;" >
+            <sanitizer>
+                <valid initial="string.letters,string.digits,string.whitespace">
+                    <add value="&quot;"/>
+                    <add value="_"/>
+                </valid>
+            </sanitizer>
+        </param>
 
-        <param argument="--yMin" type="float" value="" optional="true"
-            label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help=""/>
-        <param argument="--yMax" type="float" value="" optional="true"
-            label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help=""/>
+        <param argument="--yMin" type="text" value="" optional="true"
+            label="Minimum value for the Y-axis of the summary plot. Leave empty for automatic values" help="">
+            <sanitizer>
+                <valid initial="string.digits">
+                    <add value=" "/>
+                    <add value="."/>
+                </valid>
+            </sanitizer>
+            <validator type="regex" message="yMin takes only integers or floats separated by spaces">^[0-9]+(\.[0-9]+)?([ ]+[0-9]+(\.[0-9]+)?)*$</validator>
+        </param>
+        <param argument="--yMax" type="text" value="" optional="true"
+            label="Maximum value for Y-axis of the summary plot. Leave empty for automatic values" help="">
+            <sanitizer>
+                <valid initial="string.digits">
+                    <add value=" "/>
+                    <add value="."/>
+                </valid>
+            </sanitizer>
+            <validator type="regex" message="yMax takes only integers or floats separated by spaces">^[0-9]+(\.[0-9]+)?([ ]+[0-9]+(\.[0-9]+)?)*$</validator>
+        </param>
         <param argument="--legendLocation" type="select" label="Legend location" help="Location for the legend in the summary plot. Note that none cannot be used in plotProfile.">
             <option value="best" selected="true">Best (automatic)</option>
             <option value="upper-right">upper-right</option>
@@ -1057,9 +1081,10 @@ is vital to you, select Yes below.">
             help="List of sample numbers (order as in matrix), which are used by --kmeans or --hclust for clustering.
             If no value is set, it uses all samples. Example: 1 3 (space separated!)">
             <sanitizer>
-                <valid initial="string.printable">
+                <valid initial="string.digits">
                     <add value=" "/>
                 </valid>
+                <validator type="regex">^[0-9]+([ ]+[0-9]+)*$</validator>
             </sanitizer>
         </param>
     </xml>
