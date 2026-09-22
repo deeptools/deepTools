@@ -231,7 +231,8 @@ def normalization_options():
 
     group.add_argument('--normalizeUsing',
                        help='Use one of the entered methods to '
-                       'normalize the number of reads per bin. By default, no normalization is performed. '
+                       'normalize the number of reads per bin.'
+                       'None = the default and equivalent to not setting this option at all. '
                        'RPKM = Reads Per Kilobase per Million mapped reads; '
                        'CPM = Counts Per Million mapped reads, same as CPM in RNA-seq; '
                        'BPM = Bins Per Million mapped reads, same as TPM in RNA-seq; '
@@ -245,7 +246,6 @@ def normalization_options():
                        'sum of all reads per bin (in millions). '
                        'RPGC (per bin) = number of reads per bin / '
                        'scaling factor for 1x average coverage. '
-                       'None = the default and equivalent to not setting this option at all. '
                        'This scaling factor, in turn, is determined from the '
                        'sequencing depth: (total number of mapped reads * fragment length) / '
                        'effective genome size.\nThe scaling factor used '
