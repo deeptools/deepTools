@@ -126,22 +126,6 @@ def test_bam_coverage_scaleFactor():
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
-
-# def test_bam_coverage_filtering():
-#     _, outfile = tempfile.mkstemp(suffix=".bg")
-#     #for fname in [BAMFILE_B, CRAMFILE_B]:
-#     for fname in [BAMFILE_B]:
-#         args = "--bam {} -o {} --outFileFormat bedgraph --ignoreDuplicates --verbose".format(fname, outfile).split()
-#         bam_cov.main(args)
-
-#         _foo = open(outfile, 'r')
-#         resp = _foo.readlines()
-#         _foo.close()
-#         expected = ['3R\t0\t50\t0\n', '3R\t50\t200\t1\n']
-#         assert resp == expected, "{} != {}".format(resp, expected)
-#         unlink(outfile)
-
-
 def test_bam_compare_arguments():
     """
     Test minimal command line args for bamCoverage. The ratio
@@ -210,38 +194,6 @@ def test_bam_compare_ZoverZ():
     expected = ['3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-0.58\n']
     assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
     unlink(outfile)
-
-
-# def test_get_num_kept_reads():
-#     """
-#     Test the scale factor functions
-#     """
-#     for fname in [BAMFILE_A, CRAMFILE_A]:
-#         args = "--bam {}  -o /tmp/test".format(fname).split()
-
-#         args = bam_cov.process_args(args)
-#         num_kept_reads, total_reads = gs.get_num_kept_reads(args, None)
-
-#         # bam file 1 has 2 reads in 3R and 2 read in chr_cigar
-#         assert num_kept_reads == 3, "num_kept_reads is wrong"
-#         assert total_reads == 3, "num total reads is wrong"
-
-#         # ignore chr_cigar to count the total number of reads
-#         args = "--bam {} --ignoreForNormalization chr_cigar  -o /tmp/test".format(fname).split()
-#         args = bam_cov.process_args(args)
-#         num_kept_reads, total_reads = gs.get_num_kept_reads(args, None)
-
-#         # the  number of kept reads should be 2 as the read on chr_cigar is skipped
-#         assert num_kept_reads == 2, "num_kept_reads is wrong ({})".format(num_kept_reads)
-
-#         # test filtering by read direction. Only forward reads are kept
-#         args = "--bam {}  -o /tmp/test --samFlagExclude 16 --ignoreForNormalization chr_cigar ".format(fname).split()
-
-#         args = bam_cov.process_args(args)
-#         num_kept_reads, total_reads = gs.get_num_kept_reads(args, None)
-
-#         # only one forward read is expected in
-#         assert num_kept_reads == 1, "num_kept_reads is wrong"
 
 
 def test_bam_compare_diff_files_skipnas():
@@ -582,6 +534,70 @@ def test_bam_compare_filter_blacklist():
             "3R\t950\t1000\t0.16\n",
             "3R\t1000\t1050\t-0.01\n",
             "3R\t1050\t1500\t0\n"
+        ]
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+def test_bam_coverage_nocollapse():
+    """
+    Test --no_collapse in bamcoverage
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b {BAMFILE_A} -of bedgraph -bs 20 --no_collapse -o {outfile}"
+    print(args)
+    args = args.split()
+    bam_cov.main(args)
+
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+        expected = [
+            "3R\t0\t20\t0\n",
+            "3R\t20\t40\t0\n",
+            "3R\t40\t60\t0\n",
+            "3R\t60\t80\t0\n",
+            "3R\t80\t100\t0\n",
+            "3R\t100\t120\t1\n",
+            "3R\t120\t140\t1\n",
+            "3R\t140\t160\t2\n",
+            "3R\t160\t180\t1\n",
+            "3R\t180\t200\t1\n",
+            "chr_cigar\t0\t20\t1\n",
+            "chr_cigar\t20\t40\t1\n",
+            "chr_cigar\t40\t60\t1\n",
+            "chr_cigar\t60\t80\t0\n",
+            "chr_cigar\t80\t100\t0\n",
+            "chr_cigar\t100\t120\t0\n",
+            "chr_cigar\t120\t140\t0\n",
+            "chr_cigar\t140\t160\t0\n",
+            "chr_cigar\t160\t180\t0\n",
+            "chr_cigar\t180\t200\t0\n",
+        ]
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+def test_bam_compare_nocollapse():
+    """
+    Test --no_collapse in bamcompare
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b1 {BAMFILE_A} -b2 {BAMFILE_B} -of bedgraph -bs 20 --no_collapse -o {outfile}"
+    print(args)
+    args = args.split()
+    bam_comp.main(args)
+
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+        expected = [
+            "3R\t0\t20\t0\n",
+            "3R\t20\t40\t0\n",
+            "3R\t40\t60\t-0.58\n",
+            "3R\t60\t80\t-0.58\n",
+            "3R\t80\t100\t-0.58\n",
+            "3R\t100\t120\t0.42\n",
+            "3R\t120\t140\t0.42\n",
+            "3R\t140\t160\t0.26\n",
+            "3R\t160\t180\t0\n",
+            "3R\t180\t200\t0\n",
         ]
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
