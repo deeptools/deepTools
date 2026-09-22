@@ -2,6 +2,8 @@ import os.path
 import tempfile
 from os import unlink
 
+import pytest
+
 import deeptools.bamCompare2 as bam_comp
 import deeptools.bamCoverage2 as bam_cov
 
@@ -144,6 +146,16 @@ def test_bam_compare_arguments():
         expected = ['3R\t0\t200\t1\n']
         assert resp == expected, f"{resp} != {expected}"
         unlink(outfile)
+
+
+def test_bam_compare_rpgc_rejected():
+    """
+    RPGC normalization in bamcompare -> failure.
+    """
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --normalizeUsing RPGC " \
+           "--effectiveGenomeSize 1000000 -o /dev/null".split()
+    with pytest.raises(SystemExit):
+        bam_comp.main(args)
 
 
 def test_bam_compare_diff_files():
