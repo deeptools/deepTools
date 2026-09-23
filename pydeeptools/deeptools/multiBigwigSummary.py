@@ -9,8 +9,6 @@ import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
 from deeptools.utilities import smartLabels
 
-old_settings = np.seterr(all="ignore")
-
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser(

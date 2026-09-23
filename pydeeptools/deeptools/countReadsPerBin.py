@@ -14,7 +14,6 @@ import deeptools.utilities
 from deeptools import bamHandler, mapReduce
 
 debug = 0
-old_settings = np.seterr(all='ignore')
 
 
 def countReadsInRegions_wrapper(args):
@@ -978,13 +977,14 @@ def estimateSizeFactors(m):
     >>> sf = estimateSizeFactors(m)
     >>> assert np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4)
     """
-    loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
-    # Mask after computing the geometric mean
-    m = np.ma.masked_where(m <= 0, m)
-    loggeomeans = np.ma.masked_where(np.isinf(loggeomeans), loggeomeans)
-    # DESeq2 ratio-based size factor
-    sf = np.exp(np.ma.median((np.log(m).T - loggeomeans).T, axis=0))
-    return 1. / sf
+    with np.errstate(divide='ignore', invalid='ignore'):
+        loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
+        # Mask after computing the geometric mean
+        m = np.ma.masked_where(m <= 0, m)
+        loggeomeans = np.ma.masked_where(np.isinf(loggeomeans), loggeomeans)
+        # DESeq2 ratio-based size factor
+        sf = np.exp(np.ma.median((np.log(m).T - loggeomeans).T, axis=0))
+        return 1. / sf
 
 
 class Tester:

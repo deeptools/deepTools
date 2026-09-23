@@ -19,7 +19,6 @@ from deeptools.computeMatrixOperations import filterHeatmapValues
 from deeptools.heatmapper_utilities import justify_text, plot_single
 
 debug = 0
-old_settings = np.seterr(all='ignore')
 plt.ioff()
 
 def parse_arguments(args=None):

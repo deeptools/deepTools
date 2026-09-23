@@ -12,10 +12,6 @@ import deeptools.utilities
 # deepTools packages
 from deeptools import mapReduce
 
-# debug = 0
-
-old_settings = np.seterr(all='ignore')
-
 
 def countReadsInRegions_wrapper(args):
     # Using arguments unpacking!
@@ -90,6 +86,7 @@ def countFragmentsInRegions_worker(chrom, start, end,
             _file_name = _file.name
         else:
             _file_name = ''
+        stack.enter_context(warnings.catch_warnings())
         warnings.simplefilter("default")
         for reg in regions_to_consider:
             avgReadsArray = []
@@ -129,8 +126,6 @@ def countFragmentsInRegions_worker(chrom, start, end,
                 ends = ",".join(ends)
                 _file.write("\t".join(map(str, [chrom, starts, ends])) + "\t")
                 _file.write("\t".join([f"{x}" for x in avgReadsArray]) + "\n")
-
-        warnings.resetwarnings()
 
     # the output is a matrix having as many rows as the variable 'row'
     # and as many columns as bigwig files. The rows correspond to
@@ -321,5 +316,3 @@ class Tester:
         self.bwFile2 = self.root + "testB.bw"
         self.bwFile_PE = self.root + "test_paired2.bw"
         self.chrom = '3R'
-        # global debug
-        # debug = 0

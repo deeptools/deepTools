@@ -9,8 +9,6 @@ from deeptools import matplotlib_defaults  # noqa: F401
 from deeptools.correlation import Correlation
 from deeptools.parserCommon import writableFile
 
-old_settings = np.seterr(all='ignore')
-
 
 def parse_arguments(args=None):
     basic_args = plot_correlation_args()

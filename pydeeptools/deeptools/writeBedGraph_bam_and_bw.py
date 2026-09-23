@@ -14,8 +14,6 @@ from deeptools.countReadsPerBin import CountReadsPerBin
 from deeptools.utilities import getCommonChrNames, toBytes
 from deeptools.writeBedGraph import *
 
-old_settings = np.seterr(all='ignore')
-
 
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
@@ -29,10 +27,11 @@ def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
         return []
     if missingDataAsZero is True:
         coverage[np.isnan(coverage)] = 0
-    # average the values per bin
-    cov = np.array(
-        [np.mean(coverage[x:x + tileSize])
-         for x in range(0, len(coverage), tileSize)])
+    # ignore "Mean of empty slice"/ all-NaN RuntimeWarning
+    with np.errstate(all='ignore'):
+        cov = np.array(
+            [np.mean(coverage[x:x + tileSize])
+             for x in range(0, len(coverage), tileSize)])
     return cov
 
 
@@ -84,8 +83,10 @@ def writeBedGraph_worker(
                 if smoothLength > 0:
                     vectorStart, vectorEnd = CountReadsPerBin.getSmoothRange(
                         tileIndex, tileSize, smoothLength, lengthCoverage)
-                    tileCoverage.append(
-                        np.mean(coverage[index][vectorStart:vectorEnd]))
+                    # ignore "Mean of empty slice"/ all-NaN RuntimeWarning
+                    with np.errstate(all='ignore'):
+                        tileCoverage.append(
+                            np.mean(coverage[index][vectorStart:vectorEnd]))
                 else:
                     try:
                         tileCoverage.append(coverage[index][tileIndex])

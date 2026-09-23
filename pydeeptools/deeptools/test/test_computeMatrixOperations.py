@@ -5,6 +5,10 @@ import hashlib
 import json
 import os
 import tempfile
+import types
+import warnings
+
+import numpy as np
 
 import deeptools.computeMatrixOperations as cmo
 
@@ -147,6 +151,27 @@ class TestComputeMatrixOperations:
         expectedh = 'e55d89704bb16a11f366663a8fd90a47'
         assert f'{h}' == f'{expectedh}'
         os.remove(oname)
+
+    def testFilterHeatmapValues(self):
+        matrix = types.SimpleNamespace(
+            matrix=np.array([
+                [1.0, 2.0],
+                [np.nan, np.nan],
+                [50.0, 60.0],
+            ]),
+            group_boundaries=[0, 3],
+            regions=["a", "b", "c"],
+        )
+        hm = types.SimpleNamespace(matrix=matrix)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            cmo.filterHeatmapValues(hm, 0, 10)
+
+        assert hm.matrix.regions == ["a", "b"]
+        assert hm.matrix.group_boundaries == [0, 2]
+        assert hm.matrix.matrix.tolist()[0] == [1.0, 2.0]
+        assert np.isnan(hm.matrix.matrix.tolist()[1]).all()
 
     def testsort(self):
         """

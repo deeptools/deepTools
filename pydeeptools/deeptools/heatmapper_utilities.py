@@ -5,8 +5,6 @@ import numpy as np
 
 from deeptools import matplotlib_defaults  # noqa: F401
 
-old_settings = np.seterr(all='ignore')
-
 
 def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
     """
@@ -61,28 +59,29 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
 
 
     """
-    summary = np.ma.__getattribute__(average_type)(ma, axis=0)
-    # only plot the average profiles without error regions
-    x = np.arange(len(summary))
-    if isinstance(color, np.ndarray):
-        color = pltcolors.to_hex(color, keep_alpha=True)
-    ax.plot(x, summary, color=color, label=label, alpha=0.9, lw=0.8)
-    if plot_type == 'fill':
-        ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
+    with np.errstate(all='ignore'):
+        summary = np.ma.__getattribute__(average_type)(ma, axis=0)
+        # only plot the average profiles without error regions
+        x = np.arange(len(summary))
+        if isinstance(color, np.ndarray):
+            color = pltcolors.to_hex(color, keep_alpha=True)
+        ax.plot(x, summary, color=color, label=label, alpha=0.9, lw=0.8)
+        if plot_type == 'fill':
+            ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
 
-    if plot_type in ['se', 'std']:
-        if plot_type == 'se':  # standard error
-            std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
-        else:
-            std = np.std(ma, axis=0)
+        if plot_type in ['se', 'std']:
+            if plot_type == 'se':  # standard error
+                std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
+            else:
+                std = np.std(ma, axis=0)
 
-        alpha = 0.2
-        # an alpha channel has to be added to the color to fill the area
-        # between the mean (or median etc.) and the std or se
-        f_color = pltcolors.colorConverter.to_rgba(color, alpha)
+            alpha = 0.2
+            # an alpha channel has to be added to the color to fill the area
+            # between the mean (or median etc.) and the std or se
+            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
 
-        ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
-        ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
+            ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
+            ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
 
     ax.set_xlim(0, max(x))
 
