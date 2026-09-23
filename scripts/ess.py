@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -30,17 +31,22 @@ GENOME_URLS = {
 }
 
 TABLE_RE = re.compile(r"^\+(?:[-=]+\+)+\n(?:\|.*\|\n\+(?:[-=]+\+)+\n)+", re.MULTILINE)
-
+RETRY_ATTEMPTS = 3
+RETRY_DELAY = 90
 
 def url_exists(url: str, timeout: float = 15) -> bool:
-    for method, headers in (("HEAD", {}), ("GET", {"Range": "bytes=0-0"})):
-        try:
-            req = urllib.request.Request(url, method=method, headers=headers)
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                if 200 <= resp.status < 400:
-                    return True
-        except Exception:  # noqa: S110
-            pass
+    for attempt in range(1, RETRY_ATTEMPTS + 1):
+        for method, headers in (("HEAD", {}), ("GET", {"Range": "bytes=0-0"})):
+            try:
+                req = urllib.request.Request(url, method=method, headers=headers)
+                with urllib.request.urlopen(req, timeout=timeout) as resp:
+                    if 200 <= resp.status < 400:
+                        return True
+            except Exception:  # noqa: S110
+                pass
+        if attempt < RETRY_ATTEMPTS:
+            print(f"  {url} unreachable (attempt {attempt}/{RETRY_ATTEMPTS}), retrying in {RETRY_DELAY}s")
+            time.sleep(RETRY_DELAY)
     return False
 
 
