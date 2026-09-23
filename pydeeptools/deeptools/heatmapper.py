@@ -1,5 +1,6 @@
 import gzip
 import sys
+import warnings
 from copy import deepcopy
 
 import numpy as np
@@ -8,8 +9,6 @@ import pyBigWig
 from deeptools import getScorePerBigWigBin, mapReduce
 from deeptools.heatmapper_utilities import getProfileTicks
 from deeptools.utilities import smartLabels, toBytes, toString
-
-old_settings = np.seterr(all='ignore')
 
 
 def chopRegions(exonsInput, left=0, right=0):
@@ -1113,16 +1112,19 @@ class _matrix:
             for x in self.regions:
                 matrix_avgs.append(np.sum([bar[1] - bar[0] for bar in x[1]]))
             matrix_avgs = np.array(matrix_avgs)
-        elif sort_using == 'mean':
-            matrix_avgs = np.nanmean(matrix, axis=1)
-        elif sort_using == 'median':
-            matrix_avgs = np.nanmedian(matrix, axis=1)
-        elif sort_using == 'max':
-            matrix_avgs = np.nanmax(matrix, axis=1)
-        elif sort_using == 'min':
-            matrix_avgs = np.nanmin(matrix, axis=1)
-        elif sort_using == 'sum':
-            matrix_avgs = np.nansum(matrix, axis=1)
+        elif sort_using in ('mean', 'median', 'max', 'min', 'sum'):
+            with warnings.catch_warnings():
+                warnings.filterwarnings('ignore', message='All-NaN (slice|axis) encountered')
+                if sort_using == 'mean':
+                    matrix_avgs = np.nanmean(matrix, axis=1)
+                elif sort_using == 'median':
+                    matrix_avgs = np.nanmedian(matrix, axis=1)
+                elif sort_using == 'max':
+                    matrix_avgs = np.nanmax(matrix, axis=1)
+                elif sort_using == 'min':
+                    matrix_avgs = np.nanmin(matrix, axis=1)
+                elif sort_using == 'sum':
+                    matrix_avgs = np.nansum(matrix, axis=1)
         else:
             sys.exit(f"{sort_using} is an unsupported sorting method")
 

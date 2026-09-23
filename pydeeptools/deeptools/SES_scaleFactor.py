@@ -1,5 +1,6 @@
 import os
 import sys
+import warnings
 
 import numpy as np
 
@@ -7,9 +8,6 @@ import deeptools.countReadsPerBin as countR
 
 # own packages
 from deeptools import bamHandler
-
-old_settings = np.seterr(all='ignore')
-debug = 0
 
 
 def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
@@ -90,7 +88,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
 
     sizeFactorBasedOnMappedReads = np.array(mappedReads, dtype='float64')
 
-    sizeFactorBasedOnMappedReads = sizeFactorBasedOnMappedReads.min() / sizeFactorBasedOnMappedReads
+    with np.errstate(divide='ignore', invalid='ignore'):
+        sizeFactorBasedOnMappedReads = sizeFactorBasedOnMappedReads.min() / sizeFactorBasedOnMappedReads
 
     cr = countR.CountReadsPerBin(bamFilesList,
                                  binLength=binLength,
@@ -123,8 +122,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     q = np.sort(num_reads_per_bin[1, :]).cumsum()
 
     # p[-1] and q[-1] are the maximum values in the  arrays.
-    # both p and q are normalized by this value
-    diff = np.abs(p / p[-1] - q / q[-1])
+    with np.errstate(divide='ignore', invalid='ignore'):
+        diff = np.abs(p / p[-1] - q / q[-1])
     # get the lowest rank for wich the difference is the maximum
     maxIndex = np.flatnonzero(diff == diff.max())[0]
     # Take a lower rank to move to a region with probably
@@ -145,7 +144,8 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
     # the maxIndex may be too close to the the signal regions
     # so i take a more conservative approach by taking a close number
 
-    sizeFactorsSES = cumSum.min() / cumSum
+    with np.errstate(divide='ignore', invalid='ignore'):
+        sizeFactorsSES = cumSum.min() / cumSum
     median = np.median(num_reads_per_bin, axis=1)
 
     # consider only those read numbers that are below the 90
@@ -174,17 +174,31 @@ def estimateScaleFactor(bamFilesList, binLength, numberOfSamples,
              "Try selecting a larger sample size or a region with coverage\n")
 
     sizeFactor = sizeFactorsSES
-    return {'size_factors': sizeFactor,
-            'size_factors_based_on_mapped_reads': sizeFactorBasedOnMappedReads,
-            'size_factors_SES': sizeFactorsSES,
-            'size_factors_based_on_mean': mean.min() / mean,
-            'size_factors_based_on_median': median.min() / median,
-            'mean': mean,
-            'meanSES': meanSES,
-            'median': median,
-            'reads_per_bin': readsPerBin,
-            'std': std,
-            'sites_sampled': sitesSampled}
+    with np.errstate(divide='ignore', invalid='ignore'):
+        result = {'size_factors': sizeFactor,
+                  'size_factors_based_on_mapped_reads': sizeFactorBasedOnMappedReads,
+                  'size_factors_SES': sizeFactorsSES,
+                  'size_factors_based_on_mean': mean.min() / mean,
+                  'size_factors_based_on_median': median.min() / median,
+                  'mean': mean,
+                  'meanSES': meanSES,
+                  'median': median,
+                  'reads_per_bin': readsPerBin,
+                  'std': std,
+                  'sites_sampled': sitesSampled}
+
+    nonfinite_keys = [
+        k for k in ('size_factors', 'size_factors_based_on_mapped_reads', 'size_factors_SES',
+                    'size_factors_based_on_mean', 'size_factors_based_on_median')
+        if not np.all(np.isfinite(result[k]))
+    ]
+    if nonfinite_keys:
+        warnings.warn(
+            f"one or more samples had zero or degenerate coverage; the following "
+            f"computed scale factors are non-finite (inf/nan): {', '.join(nonfinite_keys)}",
+            RuntimeWarning)
+
+    return result
 
 
 class Tester:
@@ -193,6 +207,4 @@ class Tester:
         self.root = os.path.dirname(os.path.abspath(__file__)) + "/test/test_data/"
         self.bamFile1 = self.root + "testA.bam"
         self.bamFile2 = self.root + "testB.bam"
-        global debug
-        debug = 0
         self.chrom = '3R'

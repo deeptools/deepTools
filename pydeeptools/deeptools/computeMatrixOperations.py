@@ -3,6 +3,7 @@ import argparse
 import csv
 import os
 import sys
+import warnings
 from importlib.metadata import version
 
 import deeptoolsintervals.parse as dti
@@ -425,8 +426,11 @@ def filterHeatmapValues(hm, minVal, maxVal):
         minVal = -np.inf
     if maxVal is None:
         maxVal = np.inf
-    np.warnings.filterwarnings('ignore')
-    for i, (x, y) in enumerate(zip(np.nanmin(hm.matrix.matrix, axis=1), np.nanmax(hm.matrix.matrix, axis=1))):
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='All-NaN (slice|axis) encountered')
+        rowMin = np.nanmin(hm.matrix.matrix, axis=1)
+        rowMax = np.nanmax(hm.matrix.matrix, axis=1)
+    for i, (x, y) in enumerate(zip(rowMin, rowMax)):
         # x/y will be nan iff a row is entirely nan. Don't filter.
         if np.isnan(x) or (x >= minVal and y <= maxVal):
             keep.append(True)

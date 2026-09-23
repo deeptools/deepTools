@@ -1,20 +1,30 @@
+import warnings
+
 import numpy as np
 
-old_settings = np.seterr(all='ignore')
+_warned_nonfinite_ratio = False
 
 
 def compute_ratio(value1, value2, args):
+    global _warned_nonfinite_ratio
     value1 = value1 + args['pseudocount'][0]
     value2 = value2 + args['pseudocount'][1]
 
-    ratio = float(value1) / value2
-    if args['valueType'] == 'log2':
-        ratio = np.log2(ratio)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        ratio = float(value1) / value2
+        if args['valueType'] == 'log2':
+            ratio = np.log2(ratio)
 
-    elif args['valueType'] == 'reciprocal_ratio':
-        # the reciprocal ratio of a/b
-        # is a/b if a/b > 1 else -1* b/a
-        ratio = ratio if ratio >= 1 else -1.0 / ratio
+        elif args['valueType'] == 'reciprocal_ratio':
+            # the reciprocal ratio of a/b
+            # is a/b if a/b > 1 else -1* b/a
+            ratio = ratio if ratio >= 1 else -1.0 / ratio
+
+    if not np.isfinite(ratio) and not _warned_nonfinite_ratio:
+        warnings.warn(
+            "at least one bin produced a non-finite ratio. This warning is only shown once per run",
+            RuntimeWarning)
+        _warned_nonfinite_ratio = True
 
     return ratio
 
