@@ -79,8 +79,12 @@ def parseArguments():
     filtering = parser.add_argument_group('Optional arguments')
 
     filtering.add_argument('--filterRNAstrand',
-                           help='Selects RNA-seq reads (single-end or paired-end) in '
-                                'the given strand. (Default: %(default)s)',
+                           help='Selects RNA-seq reads (single-end or paired-end) originating from genes '
+                                'on the given strand. This option assumes a standard dUTP-based library '
+                                'preparation (that is, --filterRNAstrand=forward keeps minus-strand reads, '
+                                'which originally came from genes on the forward strand using a dUTP-based '
+                                'method). Consider using --samFlagExclude instead for filtering by strand in '
+                                'other contexts. (Default: %(default)s)',
                            choices=['forward', 'reverse', 'None'],
                            default='None')
 

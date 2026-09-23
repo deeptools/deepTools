@@ -150,6 +150,11 @@ def getOptionalArgs():
 def process_args(args=None):
     args = parseArguments().parse_args(args)
 
+    if args.normalizeUsing == "RPGC":
+        sys.exit(
+            "RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare. "
+        )
+
     if args.smoothLength and args.smoothLength <= args.binSize:
         print(f"Warning: the smooth length given ({args.smoothLength}) is smaller than the bin "
               f"size ({args.binSize}).\n\n No smoothing will be "

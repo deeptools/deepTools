@@ -78,9 +78,9 @@ and the ``-1 4`` set would produce the following::
 
          ------------------------ fragment
 
-             --------------------- shifted fragment
+    -------------------------------- shifted fragment
 
-As can be seen, such fragments are considered to be on the ``-`` strand, so negative values then shift to the left on its frame of reference (thus, to the right relative to the ``+`` strand).
+As can be seen, such fragments are considered to be on the ``-`` strand, so negative values then shift to the left on its frame of reference (thus, to the right relative to the ``+`` strand). Note that, just like the ``-5 3`` example above, both ends of the fragment move outward (the left end shifts left by 4, the right end shifts right by 1): the sign of each value only determines its direction, not whether the two ends move toward or away from each other.
 
 .. note::
     If the ``--shift`` or ``--ATACshift`` options are used, then only properly-paired reads will be used.

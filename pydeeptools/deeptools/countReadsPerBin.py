@@ -898,7 +898,8 @@ class CountReadsPerBin:
                                             f"end for read {read.query_name}"
         return [(fragmentStart, fragmentEnd)]
 
-    def getSmoothRange(self, tileIndex, tileSize, smoothRange, maxPosition):
+    @staticmethod
+    def getSmoothRange(tileIndex, tileSize, smoothRange, maxPosition):
         """
         Given a tile index position and a tile size (length), return the a new indices
         over a larger range, called the smoothRange.
