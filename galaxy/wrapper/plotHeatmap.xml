@@ -1,4 +1,4 @@
-<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
+<tool id="deeptools_plot_heatmap" name="plotHeatmap" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@" profile="@GALAXY_VERSION@">
     <description>creates a heatmap for score distributions across genomic regions</description>
     <macros>
         <token name="@BINARY@">plotHeatmap</token>
@@ -160,8 +160,8 @@
             <param argument="--heatmapHeight" type="float" value="25" min="3" max="100"
                 label="Heatmap height in cm" help="The minimum value is 3 and the maximum is 100."/>
 
-            <param argument="--boxAroundHeatmaps" type="boolean" truevalue="--boxAroundHeatmaps" falsevalue="" checked="true"
-                label="Plot black boxes around the heatmaps" help="The default is to not plot black boxes around the heatmaps. Choosing this option will plot black boxes around the heatmaps."/>
+            <param argument="--boxAroundHeatmaps" type="boolean" truevalue="--boxAroundHeatmaps yes" falsevalue="--boxAroundHeatmaps no" checked="true"
+                label="Plot black boxes around the heatmaps" help="The default is to plot black boxes around the heatmaps."/>
 
             <param argument="--whatToShow" type="select" label="What to show"
                 help ="The default is to include a summary or profile plot on top of the heatmap and a heatmap colorbar.">
