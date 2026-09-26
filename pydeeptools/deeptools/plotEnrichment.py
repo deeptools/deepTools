@@ -14,6 +14,7 @@ from deeptools.bamHandler import openBam
 from deeptools.countReadsPerBin import CountReadsPerBin as cr
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
 from deeptools.mapReduce import blSubtract, getUserRegion, mapReduce
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import getCommonChrNames, getTLen, mungeChromosome, smartLabels
 
 
@@ -57,6 +58,7 @@ def plot_enrichment_args():
                           metavar='file1.bam file2.bam',
                           help='List of indexed bam files separated by spaces.',
                           nargs='+',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--BED',
@@ -67,6 +69,7 @@ def plot_enrichment_args():
                           'and "peak" for BED files.',
                           metavar='FILE1.bed FILE2.bed',
                           nargs='+',
+                          type=existingFile,
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')

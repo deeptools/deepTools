@@ -7,6 +7,7 @@ import numpy as np
 
 import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import smartLabels
 
 
@@ -128,6 +129,7 @@ def multiBigwigSummaryArgs(case="bins"):
         metavar="FILE1 FILE2",
         help="List of bigWig files, separated by spaces.",
         nargs="+",
+        type=existingFile,
         required=True,
     )
 
@@ -216,6 +218,7 @@ def multiBigwigSummaryArgs(case="bins"):
             help="Limits the analysis to the regions specified in this file.",
             metavar="file1.bed file2.bed",
             nargs="+",
+            type=existingFile,
             required=True,
         )
 

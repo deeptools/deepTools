@@ -5,6 +5,7 @@ from importlib.metadata import version
 
 from deeptools import parserCommon
 from deeptools.hp import r_alignmentsieve
+from deeptools.parserCommon import existingFile
 
 
 def parseArguments():
@@ -18,6 +19,7 @@ def parseArguments():
     required.add_argument('--bam', '-b',
                           metavar='FILE1',
                           help='An indexed BAM file.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--outFile', '-o',
@@ -122,6 +124,7 @@ def parseArguments():
                            metavar="BED file",
                            nargs="+",
                            default="None",
+                           type=existingFile,
                            required=False)
 
     filtering.add_argument('--ignoreDuplicates',

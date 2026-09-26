@@ -5,6 +5,7 @@ from importlib.metadata import version
 
 from deeptools import bamHandler, parserCommon, utilities
 from deeptools.mapReduce import mapReduce
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import smartLabels
 
 
@@ -40,6 +41,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                           metavar='FILE1 FILE2',
                           help='List of indexed bam files separated by spaces.',
                           nargs='+',
+                          type=existingFile,
                           required=True)
 
     general = parser.add_argument_group('General arguments')
@@ -147,6 +149,7 @@ The sum of these may be more than the total number of reads. Note that alignment
                            help="A BED or GTF file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered. Please note that you should adjust the effective genome size, if relevant.",
                            metavar="BED file",
                            nargs="+",
+                           type=existingFile,
                            required=False)
 
     return parser

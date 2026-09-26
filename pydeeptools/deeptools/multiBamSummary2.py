@@ -6,6 +6,7 @@ from importlib.metadata import version
 
 from deeptools import parserCommon
 from deeptools.hp import r_mbams
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import smartLabels
 
 
@@ -108,6 +109,7 @@ def bamcorrelate_args(case="bins"):
         metavar="FILE1 FILE2",
         help="List of indexed bam files separated by spaces.",
         nargs="+",
+        type=existingFile,
         required=True,
     )
 
@@ -189,6 +191,7 @@ def bamcorrelate_args(case="bins"):
             "the regions specified in these files.",
             metavar="FILE1.bed FILE2.bed",
             nargs="+",
+            type=existingFile,
             required=True,
         )
 

@@ -2,6 +2,7 @@ import argparse
 
 from deeptools import parserCommon, writeBedGraph_bam_and_bw
 from deeptools.getRatio import getRatio
+from deeptools.parserCommon import existingFile
 
 debug = 0
 
@@ -26,12 +27,14 @@ def parse_arguments(args=None):
                         metavar='Bigwig file',
                         help='Bigwig file 1. Usually the file for the '
                         'treatment.',
+                        type=existingFile,
                         required=True)
 
     parser.add_argument('--bigwig2', '-b2',
                         metavar='Bigwig file',
                         help='Bigwig file 2. Usually the file for the '
                         'control.',
+                        type=existingFile,
                         required=True)
 
     parser.add_argument('--scaleFactors',

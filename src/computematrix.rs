@@ -132,7 +132,7 @@ pub fn r_computematrix(
     }
 
     // If there is a blacklist, read it and build an index.
-    let blacklist_index: Option<Arc<BlacklistIndex>> = if blacklist != "none" {
+    let blacklist_index: Option<Arc<BlacklistIndex>> = if blacklist != "None" {
         let isbed = is_bed_or_gtf(blacklist);
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),

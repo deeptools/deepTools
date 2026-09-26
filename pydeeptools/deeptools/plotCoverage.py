@@ -11,6 +11,7 @@ from deeptools import (
     matplotlib_defaults,  # noqa: F401
     parserCommon,
 )
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import smartLabels
 
 
@@ -69,6 +70,7 @@ def required_args():
                           metavar='FILE1 FILE2',
                           help='List of indexed BAM files separated by spaces.',
                           nargs='+',
+                          type=existingFile,
                           required=True)
 
     optional = parser.add_argument_group('Optional arguments')
@@ -122,7 +124,8 @@ def required_args():
                           '--outRawCounts or many tens of thousands of regions, as per-base '
                           'coverage is used!',
                           metavar='FILE1.bed FILE2.bed',
-                          nargs='+')
+                          nargs='+',
+                          type=existingFile)
 
     optional.add_argument('--outRawCounts',
                           help='Save raw counts (coverages) to file.',
