@@ -9,7 +9,7 @@ If you're using the command-line version you can easily follow the given example
 
 All protocols assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_. If you need help to get started with Galaxy in general, e.g. to upload your data, see :doc:`help_galaxy_intro` and :doc:`help_galaxy_dataup`.
 
-.. tip:: If you would like to try out the protocols with **sample data**, go to `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__  --> "Shared Data"  --> "Data Libraries"  --> "deepTools Test Files". Simply select BED/BAM/bigWig files and click, "to History". You can also download the test data sets to your computer by clicking "Download" at the top.
+.. tip:: If you would like to try out the protocols with **sample data**, test data can be downloaded from `Zenodo <https://zenodo.org/records/21529137>`__.
 
 .. contents:: How to do...?
     :local:
