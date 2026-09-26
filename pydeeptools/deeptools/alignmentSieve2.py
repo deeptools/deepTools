@@ -124,6 +124,7 @@ def parseArguments():
                            metavar="BED file",
                            nargs="+",
                            default="None",
+                           type=existingFile,
                            required=False)
 
     filtering.add_argument('--ignoreDuplicates',
