@@ -14,6 +14,7 @@ from deeptools import (
     matplotlib_defaults,  # noqa: F401
     parserCommon,
 )
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import smartLabels
 
 MAXLEN = 10000000
@@ -74,6 +75,7 @@ def get_required_args():
                           metavar='bam files',
                           nargs='+',
                           help='List of indexed BAM files',
+                          type=existingFile,
                           required=True)
     return parser
 
@@ -155,7 +157,8 @@ def get_optional_args():
                           'based on code from Sitanshu Gakkhar at BCGSC. The '
                           'CHANCE implementation is based on code from Matthias '
                           'Haimel.',
-                          metavar='sample.bam')
+                          metavar='sample.bam',
+                          type=existingFile)
 
     return parser
 

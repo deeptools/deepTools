@@ -10,6 +10,7 @@ import deeptoolsintervals.parse as dti
 import numpy as np
 
 from deeptools import heatmapper
+from deeptools.parserCommon import existingFile
 
 
 def parse_arguments():
@@ -153,6 +154,7 @@ def bindArgs():
     required.add_argument('--matrixFile', '-m',
                           help='Matrix files from the computeMatrix tool.',
                           nargs='+',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--outFileName', '-o',
@@ -168,6 +170,7 @@ def infoArgs():
 
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
+                          type=existingFile,
                           required=True)
 
     return parser
@@ -259,6 +262,7 @@ def sortArgs():
 
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--outFileName', '-o',
@@ -276,7 +280,8 @@ def sortArgs():
                                'column with group labels. Note that these should be '
                                'sorted such that all group entries are together.',
                           required=True,
-                          nargs='+')
+                          nargs='+',
+                          type=existingFile)
 
     optional = parser.add_argument_group('Optional arguments')
 

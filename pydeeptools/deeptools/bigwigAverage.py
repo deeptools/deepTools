@@ -4,6 +4,7 @@ import sys
 import numpy as np
 
 from deeptools import parserCommon, writeBedGraph_bam_and_bw
+from deeptools.parserCommon import existingFile
 
 debug = 0
 
@@ -30,6 +31,7 @@ def parse_arguments(args=None):
         metavar="Bigwig files",
         help="Bigwig files separated by space.",
         nargs="+",
+        type=existingFile,
         required=True,
     )
 

@@ -8,7 +8,7 @@ import numpy as np
 
 from deeptools import matplotlib_defaults  # noqa: F401
 from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-from deeptools.parserCommon import writableFile
+from deeptools.parserCommon import existingFile, writableFile
 
 
 def parse_arguments():
@@ -30,6 +30,7 @@ def parse_arguments():
         help="List of BAM files to process",
         nargs="+",
         metavar="bam files",
+        type=existingFile,
     )
 
     parser.add_argument(
@@ -114,6 +115,7 @@ def parse_arguments():
         "-bl",
         help="A BED file containing regions that should be excluded from all analyses. Currently this works by rejecting genomic chunks that happen to overlap an entry. Consequently, for BAM files, if a read partially overlaps a blacklisted region or a fragment spans over it, then the read/fragment might still be considered.",
         metavar="BED file",
+        type=existingFile,
         required=False,
     )
     parser.add_argument(

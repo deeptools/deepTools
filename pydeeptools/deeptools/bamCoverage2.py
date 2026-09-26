@@ -4,6 +4,7 @@ import sys
 
 from deeptools import parserCommon
 from deeptools.hp import r_bamcoverage
+from deeptools.parserCommon import existingFile
 
 
 def parseArguments():
@@ -45,6 +46,7 @@ def get_required_args():
     required.add_argument('--bam', '-b',
                           help='BAM file to process',
                           metavar='BAM file',
+                          type=existingFile,
                           required=True)
 
     return parser

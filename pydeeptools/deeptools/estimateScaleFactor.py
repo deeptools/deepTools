@@ -2,7 +2,7 @@ import argparse
 import sys
 from importlib.metadata import version
 
-from deeptools.parserCommon import numberOfProcessors
+from deeptools.parserCommon import existingFile, numberOfProcessors
 from deeptools.SES_scaleFactor import estimateScaleFactor
 
 debug = 0
@@ -22,6 +22,7 @@ def parseArguments(args=None):
                         metavar='list of bam files',
                         help='List of indexed BAM files, space delineated',
                         nargs='+',
+                        type=existingFile,
                         required=True)
 
     parser.add_argument('--ignoreForNormalization', '-ignore',

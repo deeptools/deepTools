@@ -4,6 +4,7 @@ import sys
 
 from deeptools import parserCommon
 from deeptools.hp import r_bamcompare
+from deeptools.parserCommon import existingFile
 
 
 def parseArguments():
@@ -51,12 +52,14 @@ def getRequiredArgs():
                           metavar='BAM file',
                           help='Sorted BAM file 1. Usually the BAM file '
                           'for the treatment.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--bamfile2', '-b2',
                           metavar='BAM file',
                           help='Sorted BAM file 2. Usually the BAM '
                           'file for the control.',
+                          type=existingFile,
                           required=True)
 
     return parser

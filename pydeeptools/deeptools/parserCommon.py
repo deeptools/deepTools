@@ -333,6 +333,7 @@ def getParentArgParse(args=None, binSize=True, blackList=True):
                               help="A BED or GTF file (optionally gzip-compressed) containing regions that should be excluded from all analyses. Filtering is performed at base-pair resolution, so only the portion of a read/fragment that overlaps a blacklisted region is excluded. Please note that you should adjust the effective genome size, if relevant.",
                               metavar="BED file",
                               nargs="+",
+                              type=existingFile,
                               required=False)
 
     optional.add_argument('--numberOfProcessors', '-p',
@@ -414,6 +415,17 @@ def writableFile(string):
     return string
 
 
+def existingFile(string):
+    """
+    Simple function that checks if a path exists (skip URL, skip 'None' as placeholders for rust code)
+    """
+    if string == "None" or string.startswith(("http://", "https://", "ftp://")):
+        return string
+    if not Path(string).is_file():
+        raise argparse.ArgumentTypeError(f"{string} file does not exist")
+    return string
+
+
 """
 Arguments used by heatmapper and profiler
 """
@@ -424,7 +436,7 @@ def heatmapperMatrixArgs(args=None):
     required = parser.add_argument_group('Required arguments')
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
-                          type=Path,
+                          type=existingFile,
                           )
 
     required.add_argument('--outFileName', '-out', '-o',
