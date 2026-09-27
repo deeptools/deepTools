@@ -1,13 +1,13 @@
 import os
 from tempfile import NamedTemporaryFile
 
+import numpy as np
 from matplotlib.testing.compare import compare_images
 
 import deeptools.plotFingerprint
 
 TEST_DATA = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_plotFingerprint/"
-
 tolerance = 13
 
 
@@ -136,3 +136,45 @@ def test_plotFingerprint_quality_metrics_and_JSD():
 
         finally:
             cleanup(plotfile.name, qcfile.name)
+
+
+def run_plotFingerprint_extendReads(bamfiles, labels, rawfile, qcfile):
+    args = (
+        ["-b"] + [TEST_DATA + x for x in bamfiles]
+        + ["-l"] + labels
+        + ["--extendReads",
+           "--region", "chr2:4999000:5003000", "--binSize", "10", "--numberOfSamples", "400", "-p", "1",
+           "--outRawCounts", rawfile, "--outQualityMetrics", qcfile]
+    )
+    deeptools.plotFingerprint.main(args)
+
+    counts = np.loadtxt(rawfile, skiprows=2, ndmin=2)
+    raw = {label: counts[:, idx] for idx, label in enumerate(labels)}
+    with open(qcfile) as _foo:
+        lines = [line.rstrip("\n").split("\t") for line in _foo]
+    qc = {row[0]: np.array(row[1:], dtype=float) for row in lines[1:]}
+
+    return raw, qc
+
+
+def test_plotFingerprint_extendReads_single_bam(tmp_path):
+    raw, qc = run_plotFingerprint_extendReads(["test_paired2.bam"], ["test_paired2"],
+                                              str(tmp_path / "raw.txt"), str(tmp_path / "qc.txt"))
+    expected_counts = np.loadtxt(ROOT + "test_plotFingerprint_extendReads_raw.txt", skiprows=2)
+    np.testing.assert_array_equal(raw["test_paired2"], expected_counts)
+    expected_qc = [0.10334787097692963, 0.4761528725688839, 0.595, 2.0396151481800195e-14,
+                   0.745, 0.5373923764988261, 0.324362640621008]
+    np.testing.assert_allclose(qc["test_paired2"], expected_qc, rtol=1e-6, atol=1e-12)
+
+
+def test_plotFingerprint_extendReads_order_independent(tmp_path):
+    bamfiles = ["test_paired.bam", "test_paired2.bam", "test_paired2.cram"]
+    labels = ["paired", "paired2", "paired2_cram"]
+    raw1, qc1 = run_plotFingerprint_extendReads(bamfiles, labels,
+                                                str(tmp_path / "raw1.txt"), str(tmp_path / "qc1.txt"))
+    raw2, qc2 = run_plotFingerprint_extendReads(bamfiles[::-1], labels[::-1],
+                                                str(tmp_path / "raw2.txt"), str(tmp_path / "qc2.txt"))
+
+    for label in labels:
+        np.testing.assert_array_equal(raw1[label], raw2[label])
+        np.testing.assert_array_equal(qc1[label], qc2[label])

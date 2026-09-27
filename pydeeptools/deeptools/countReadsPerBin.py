@@ -1,4 +1,5 @@
 import contextlib
+import functools
 import multiprocessing
 import os
 import shutil
@@ -198,35 +199,17 @@ class CountReadsPerBin:
         self.bed_and_bin = bed_and_bin
         self.genomeChunkSize = genomeChunkSize
 
-        if extendReads and len(bamFilesList):
-            from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-            frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
-                                                                        return_lengths=False,
-                                                                        blackListFileName=blackListFileName,
-                                                                        numberOfProcessors=numberOfProcessors,
-                                                                        verbose=verbose)
-            if extendReads is True:
-                # try to guess fragment length if the bam file contains paired end reads
-                if frag_len_dict:
-                    self.defaultFragmentLength = int(frag_len_dict['median'])
-                else:
-                    sys.exit("*ERROR*: library is not paired-end. Please provide an extension length.")
-                if verbose:
-                    print("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median']))
-
-            elif extendReads < read_len_dict['median']:
-                sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
-                                 "Reads will not be extended.\n".format(int(read_len_dict['median'])))
-                self.defaultFragmentLength = 'read length'
-
-            elif extendReads > 2000:
-                sys.exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {extendReads} ")
-            else:
-                self.defaultFragmentLength = int(extendReads)
-
+        if extendReads:
+            self.defaultFragmentLengths = [self.get_default_fragment_length(fname, extendReads,
+                                                                            blackListFileName=blackListFileName,
+                                                                            numberOfProcessors=numberOfProcessors,
+                                                                            verbose=verbose)
+                                           for fname in bamFilesList]
         else:
-            self.defaultFragmentLength = 'read length'
+            self.defaultFragmentLengths = ['read length'] * len(bamFilesList)
+
+        # direct call fallback
+        self.defaultFragmentLength = self.defaultFragmentLengths[0] if self.defaultFragmentLengths else 'read length'
 
         self.numberOfProcessors = numberOfProcessors
         self.verbose = verbose
@@ -255,12 +238,8 @@ class CountReadsPerBin:
         if numberOfSamples is None and stepSize is None and bedFile is None:
             raise ValueError("either stepSize, numberOfSamples or bedFile have to be set")
 
-        if self.defaultFragmentLength != 'read length':
-            self.maxPairedFragmentLength = 4 * self.defaultFragmentLength
-        else:
-            self.maxPairedFragmentLength = 1000
-        if self.maxFragmentLength > 0:
-            self.maxPairedFragmentLength = self.maxFragmentLength
+        self.maxPairedFragmentLengths = [self.get_max_paired_fragment_length(x) for x in self.defaultFragmentLengths]
+        self.maxPairedFragmentLength = self.get_max_paired_fragment_length(self.defaultFragmentLength)
 
         if len(self.mappedList) == 0:
             try:
@@ -272,6 +251,50 @@ class CountReadsPerBin:
             except Exception:
                 self.mappedList = []
                 self.statsList = []
+
+    @staticmethod
+    def get_default_fragment_length(bamFile, extendReads, blackListFileName=None,
+                                    numberOfProcessors=1, verbose=False):
+        """
+        Returns the length to which reads of the given file are extended,
+        or 'read length' if reads are not to be extended.
+        If extendReads is True, the median fragment length of the file is used.
+        """
+        from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+        frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFile,
+                                                                    return_lengths=False,
+                                                                    blackListFileName=blackListFileName,
+                                                                    numberOfProcessors=numberOfProcessors,
+                                                                    verbose=verbose)
+        if extendReads is True:
+            # try to guess fragment length if the bam file contains paired end reads
+            if not frag_len_dict:
+                sys.exit(f"*ERROR*: library {bamFile} is not paired-end. Please provide an extension length.")
+            if verbose:
+                print(f"Fragment length of {bamFile} based on paired en data "
+                      f"estimated to be {frag_len_dict['median']}")
+            return int(frag_len_dict['median'])
+
+        if extendReads < read_len_dict['median']:
+            sys.stderr.write(f"*WARNING*: read extension is smaller than read length (read length = {int(read_len_dict['median'])}) "
+                             f"for {bamFile}. Reads will not be extended.\n")
+            return 'read length'
+
+        if extendReads > 2000:
+            sys.exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {extendReads} ")
+
+        return int(extendReads)
+
+    def get_max_paired_fragment_length(self, defaultFragmentLength):
+        """
+        Returns the maximum fragment length for which read pairs are
+        considered proper pairs, given the default fragment length of a file.
+        """
+        if self.maxFragmentLength > 0:
+            return self.maxFragmentLength
+        if defaultFragmentLength != 'read length':
+            return 4 * defaultFragmentLength
+        return 1000
 
     def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
@@ -499,9 +522,11 @@ class CountReadsPerBin:
             else:
                 _file_name = ''
 
-            for bam in bam_handles:
+            for bam_idx, bam in enumerate(bam_handles):
                 for trans in transcriptsToConsider:
-                    tcov = self.get_coverage_of_region(bam, chrom, trans)
+                    tcov = self.get_coverage_of_region(bam, chrom, trans,
+                                                       defaultFragmentLength=self.defaultFragmentLengths[bam_idx],
+                                                       maxPairedFragmentLength=self.maxPairedFragmentLengths[bam_idx])
                     if bed_regions_list is not None and not self.bed_and_bin:
                         subnum_reads_per_bin.append(np.sum(tcov))
                     else:
@@ -537,10 +562,16 @@ class CountReadsPerBin:
         return subnum_reads_per_bin, _file_name
 
     def get_coverage_of_region(self, bamHandle, chrom, regions,
-                               fragmentFromRead_func=None):
+                               fragmentFromRead_func=None,
+                               defaultFragmentLength=None,
+                               maxPairedFragmentLength=None):
         """
         Returns a numpy array that corresponds to the number of reads
         that overlap with each tile.
+
+        defaultFragmentLength and maxPairedFragmentLength are the values for
+        the file of bamHandle. If not given, self.defaultFragmentLength and
+        self.maxPairedFragmentLength are used.
 
         >>> test = Tester()
         >>> import pysam
@@ -572,8 +603,14 @@ class CountReadsPerBin:
 
 
         """
+        if defaultFragmentLength is None:
+            defaultFragmentLength = self.defaultFragmentLength
+        if maxPairedFragmentLength is None:
+            maxPairedFragmentLength = self.maxPairedFragmentLength
         if not fragmentFromRead_func:
-            fragmentFromRead_func = self.get_fragment_from_read
+            fragmentFromRead_func = functools.partial(self.get_fragment_from_read,
+                                                      defaultFragmentLength=defaultFragmentLength,
+                                                      maxPairedFragmentLength=maxPairedFragmentLength)
         nbins = len(regions)
         if len(regions[0]) == 3:
             nbins = 0
@@ -583,10 +620,10 @@ class CountReadsPerBin:
                     nbins += 1
         coverages = np.zeros(nbins, dtype='float64')
 
-        if self.defaultFragmentLength == 'read length':
+        if defaultFragmentLength == 'read length':
             extension = 0
         else:
-            extension = self.maxPairedFragmentLength
+            extension = maxPairedFragmentLength
 
         blackList = None
         if self.blackListFileName is not None:
@@ -779,7 +816,7 @@ class CountReadsPerBin:
                 return True
         return False
 
-    def get_fragment_from_read(self, read):
+    def get_fragment_from_read(self, read, defaultFragmentLength=None, maxPairedFragmentLength=None):
         """Get read start and end position of a read.
         If given, the reads are extended as follows:
         If reads are paired end, each read mate is extended to match
@@ -823,6 +860,14 @@ class CountReadsPerBin:
         ----------
         read : pysam read object
 
+        defaultFragmentLength : int or 'read length'
+            The fragment length used to extend reads of the file of `read`.
+            If None, self.defaultFragmentLength is used.
+
+        maxPairedFragmentLength : int
+            Pairs with a larger fragment length are extended as single reads.
+            If None, self.maxPairedFragmentLength is used.
+
 
         Returns
         -------
@@ -865,11 +910,16 @@ class CountReadsPerBin:
         # E.g for a cigar of 40M260N22M
         # get blocks return two elements for the first 40 matches
         # and the for the last 22 matches.
-        if self.defaultFragmentLength == 'read length':
+        if defaultFragmentLength is None:
+            defaultFragmentLength = self.defaultFragmentLength
+        if maxPairedFragmentLength is None:
+            maxPairedFragmentLength = self.maxPairedFragmentLength
+
+        if defaultFragmentLength == 'read length':
             return read.get_blocks()
 
         else:
-            if self.is_proper_pair(read, self.maxPairedFragmentLength):
+            if self.is_proper_pair(read, maxPairedFragmentLength):
                 if read.is_reverse:
                     fragmentStart = read.next_reference_start
                     fragmentEnd = read.reference_end
@@ -882,11 +932,11 @@ class CountReadsPerBin:
             # Extend using the default fragment length
             else:
                 if read.is_reverse:
-                    fragmentStart = read.reference_end - self.defaultFragmentLength
+                    fragmentStart = read.reference_end - defaultFragmentLength
                     fragmentEnd = read.reference_end
                 else:
                     fragmentStart = read.reference_start
-                    fragmentEnd = read.reference_start + self.defaultFragmentLength
+                    fragmentEnd = read.reference_start + defaultFragmentLength
 
         if self.center_read:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2

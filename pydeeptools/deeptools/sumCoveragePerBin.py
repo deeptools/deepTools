@@ -1,3 +1,4 @@
+import functools
 import multiprocessing
 import time
 
@@ -13,10 +14,16 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
     There, we need to sum the per-base coverage.
     """
     def get_coverage_of_region(self, bamHandle, chrom, regions,
-                               fragmentFromRead_func=None):
+                               fragmentFromRead_func=None,
+                               defaultFragmentLength=None,
+                               maxPairedFragmentLength=None):
         """
         Returns a numpy array that corresponds to the number of reads
         that overlap with each tile.
+
+        defaultFragmentLength and maxPairedFragmentLength are the values for
+        the file of bamHandle. If not given, self.defaultFragmentLength and
+        self.maxPairedFragmentLength are used.
 
         >>> test = Tester()
         >>> import pysam
@@ -38,8 +45,14 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
 
 
         """
+        if defaultFragmentLength is None:
+            defaultFragmentLength = self.defaultFragmentLength
+        if maxPairedFragmentLength is None:
+            maxPairedFragmentLength = self.maxPairedFragmentLength
         if not fragmentFromRead_func:
-            fragmentFromRead_func = self.get_fragment_from_read
+            fragmentFromRead_func = functools.partial(self.get_fragment_from_read,
+                                                      defaultFragmentLength=defaultFragmentLength,
+                                                      maxPairedFragmentLength=maxPairedFragmentLength)
         nbins = len(regions)
         if len(regions[0]) == 3:
             nbins = 0
@@ -47,10 +60,10 @@ class SumCoveragePerBin(countReadsPerBin.CountReadsPerBin):
                 nbins += (reg[1] - reg[0]) // reg[2]
         coverages = np.zeros(nbins, dtype='float64')
 
-        if self.defaultFragmentLength == 'read length':
+        if defaultFragmentLength == 'read length':
             extension = 0
         else:
-            extension = self.maxPairedFragmentLength
+            extension = maxPairedFragmentLength
 
         blackList = None
         if self.blackListFileName is not None:

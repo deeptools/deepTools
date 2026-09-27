@@ -33,7 +33,7 @@ authors = [
     {name="Andreas S Richter"},
     {name="Devon P Ryan"},
     {name="Pavankumar Videm"},
-    {email="bioinfo-core@ie-freiburg.mpg.de"}
+    {email="w@rddeboutte.com"}
 ]
 requires-python = ">= 3.12"
 dependencies = [
