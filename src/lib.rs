@@ -1,10 +1,10 @@
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
-mod calc;
-mod covcalc;
-mod filehandler;
-mod filtering;
-mod normalization;
+pub mod calc;
+pub mod covcalc;
+pub mod filehandler;
+pub mod filtering;
+pub mod normalization;
 
 #[cfg(feature = "python")]
 mod alignmentsieve;
