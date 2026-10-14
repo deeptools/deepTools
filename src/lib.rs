@@ -1,17 +1,26 @@
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
-mod alignmentsieve;
-mod bamcompare;
-mod bamcoverage;
 mod calc;
-mod computematrix;
 mod covcalc;
 mod filehandler;
 mod filtering;
-mod multibamsummary;
 mod normalization;
+
+#[cfg(feature = "python")]
+mod alignmentsieve;
+#[cfg(feature = "python")]
+mod bamcompare;
+#[cfg(feature = "python")]
+mod bamcoverage;
+#[cfg(feature = "python")]
+mod computematrix;
+#[cfg(feature = "python")]
+mod multibamsummary;
+
 #[cfg(test)]
 mod tests;
 
+#[cfg(feature = "python")]
 #[pymodule]
 fn hp(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(bamcoverage::r_bamcoverage, m)?)?;
