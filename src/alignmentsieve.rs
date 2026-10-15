@@ -1,6 +1,8 @@
 use crate::filehandler::{is_bed_or_gtf, read_bedfile};
 use crate::filtering::Alignmentfilters;
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
 use pyo3::types::PyList;
 use rust_htslib::bam::record::CigarString;
 use rust_htslib::bam::{self, Header, Read, Reader, Writer};
@@ -9,6 +11,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::Path;
 
+#[cfg(feature = "python")]
 #[pyfunction]
 pub fn r_alignmentsieve(
     py: Python,
@@ -194,7 +197,7 @@ pub fn r_alignmentsieve(
             }
 
             let tid = record.tid() as usize;
-            if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid]) {
+            if let Ok(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid]) {
                 if let Some(ref mut w) = obam {
                     w.write(&shifted).unwrap_or_else(|e| {
                         panic!(
@@ -489,12 +492,90 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
     read_pos
 }
 
-fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<bam::Record> {
+fn cigar_op_len(op: &bam::record::Cigar) -> u32 {
+    use bam::record::Cigar::*;
+    match *op {
+        Match(n) | Ins(n) | Del(n) | RefSkip(n) | SoftClip(n) | HardClip(n) | Pad(n) | Equal(n) | Diff(n) => n,
+    }
+}
+
+fn cigar_with_len(op: bam::record::Cigar, n: u32) -> bam::record::Cigar {
+    use bam::record::Cigar::*;
+    match op {
+        Match(_) => Match(n),
+        Ins(_) => Ins(n),
+        Del(_) => Del(n),
+        RefSkip(_) => RefSkip(n),
+        SoftClip(_) => SoftClip(n),
+        HardClip(_) => HardClip(n),
+        Pad(_) => Pad(n),
+        Equal(_) => Equal(n),
+        Diff(_) => Diff(n),
+    }
+}
+
+fn cigar_consumes_ref(op: &bam::record::Cigar) -> bool {
+    use bam::record::Cigar::*;
+    matches!(op, Match(_) | Equal(_) | Diff(_) | Del(_) | RefSkip(_))
+}
+
+/// Remove `k` reference bases from the left of a CIGAR. Query bases removed from
+/// M/=/X (and any I/S before them) become one leading soft clip, so the query-consuming
+/// length, and therefore SEQ/QUAL, is unchanged.
+fn trim_cigar_left(ops: &[bam::record::Cigar], mut k: u32) -> Vec<bam::record::Cigar> {
+    use bam::record::Cigar::*;
+    let mut q = 0u32;
+    let mut rest: Vec<bam::record::Cigar> = Vec::new();
+    for (i, op) in ops.iter().enumerate() {
+        if k == 0 {
+            rest.extend_from_slice(&ops[i..]);
+            break;
+        }
+        let n = cigar_op_len(op);
+        if !cigar_consumes_ref(op) {
+            if matches!(op, Ins(_) | SoftClip(_)) {
+                q += n;
+            }
+            continue;
+        }
+        let t = n.min(k);
+        if matches!(op, Match(_) | Equal(_) | Diff(_)) {
+            q += t;
+        }
+        k -= t;
+        if t < n {
+            rest.push(cigar_with_len(*op, n - t));
+            rest.extend_from_slice(&ops[i + 1..]);
+            break;
+        }
+    }
+    let mut out = Vec::with_capacity(rest.len() + 1);
+    if q > 0 {
+        out.push(SoftClip(q));
+    }
+    out.extend(rest);
+    out
+}
+
+/// Why `apply_shift` refused a record. Lets callers count each reason separately.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ShiftRefusal {
+    /// Record is not part of a proper pair.
+    NotProperPair,
+    /// Fewer than 4 shift values were given.
+    ShortShift,
+    /// Shift leaves less than 1 bp of span after clamping to the chromosome.
+    ZeroSpan,
+    /// Shift would move an alignment end past its original span (start left or end right).
+    LeftExtension,
+}
+
+pub fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Result<bam::Record, ShiftRefusal> {
     if !record.is_proper_pair() {
-        return None;
+        return Err(ShiftRefusal::NotProperPair);
     }
     if shift.len() < 4 {
-        return None;
+        return Err(ShiftRefusal::ShortShift);
     }
 
     let tlen = record.insert_size();
@@ -537,7 +618,7 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<ba
         end = chrom_len as i64;
     }
     if end - start < 1 {
-        return None;
+        return Err(ShiftRefusal::ZeroSpan);
     }
 
     let mut newrec = record.clone();
@@ -548,20 +629,24 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<ba
         tlen + delta_tlen
     };
 
-    // Build new CIGAR: single Match for fragment span ((0, end-start)).
-    let span = (end - start) as u32;
-    let new_cigar = CigarString(vec![bam::record::Cigar::Match(span)]);
-
-    newrec.set(record.qname(), Some(&new_cigar), &[], &[]);
-
-    // Remove all auxiliary tags
-    let tags: Vec<Vec<u8>> = newrec
-        .aux_iter()
-        .filter_map(|r| r.ok().map(|(t, _)| t.to_vec()))
-        .collect();
-    for t in &tags {
-        let _ = newrec.remove_aux(t);
+    // Keep SEQ, QUAL and aux tags. Only the alignment moves: trim reference bases
+    // from the left (shift start right) and/or the right (shift end left).
+    // Extending a read would need reference bases we do not have, so it is refused.
+    let old_start = record.pos();
+    let old_end = old_start + query_alignment_end(record);
+    let d_start = start - old_start;
+    let d_end = end - old_end;
+    if d_start < 0 || d_end > 0 {
+        return Err(ShiftRefusal::LeftExtension);
     }
+    let ops: Vec<bam::record::Cigar> = record.cigar().iter().cloned().collect();
+    let left = trim_cigar_left(&ops, d_start as u32);
+    let mut rev: Vec<bam::record::Cigar> = left.into_iter().rev().collect();
+    rev = trim_cigar_left(&rev, (-d_end) as u32);
+    let new_ops: Vec<bam::record::Cigar> = rev.into_iter().rev().collect();
+    let seq: Vec<u8> = record.seq().as_bytes();
+    let qual: Vec<u8> = record.qual().to_vec();
+    newrec.set(record.qname(), Some(&CigarString(new_ops)), &seq, &qual);
 
     newrec.set_pos(start);
     newrec.set_insert_size(new_tlen);
@@ -578,7 +663,7 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<ba
     };
     newrec.set_mpos(new_mpos);
 
-    Some(newrec)
+    Ok(newrec)
 }
 
 fn smart_label(label: &str) -> String {
@@ -594,5 +679,80 @@ fn smart_label(label: &str) -> String {
         basename.to_string()
     } else {
         without_ext.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rust_htslib::bam::record::{Aux, Cigar};
+
+    fn proper_pair(cigar: &[Cigar], pos: i64) -> bam::Record {
+        let qlen: u32 = cigar
+            .iter()
+            .map(|c| match c {
+                Cigar::Match(n) | Cigar::SoftClip(n) | Cigar::Ins(n) | Cigar::Equal(n) | Cigar::Diff(n) => *n,
+                _ => 0,
+            })
+            .sum();
+        let seq = vec![b'A'; qlen as usize];
+        let qual = vec![30u8; qlen as usize];
+        let mut r = bam::Record::new();
+        r.set(b"read1", Some(&CigarString(cigar.to_vec())), &seq, &qual);
+        r.set_pos(pos);
+        r.set_tid(0);
+        r.set_mtid(0);
+        r.set_mpos(pos + 200);
+        r.set_insert_size(300);
+        r.set_flags(0x1 | 0x2 | 0x40);
+        r.push_aux(b"CB", Aux::String("AAAC-1")).unwrap();
+        r
+    }
+
+    #[test]
+    fn shift_keeps_cell_barcode_tag() {
+        let r = proper_pair(&[Cigar::Match(50)], 1000);
+        let out = apply_shift(&r, &[4, -5, 5, -4], 1_000_000).expect("shifted");
+        assert!(out.aux(b"CB").is_ok(), "CB tag dropped by apply_shift");
+    }
+
+    #[test]
+    fn shift_keeps_soft_clip_in_cigar() {
+        let r = proper_pair(&[Cigar::SoftClip(5), Cigar::Match(50)], 1000);
+        let out = apply_shift(&r, &[4, -5, 5, -4], 1_000_000).expect("shifted");
+        assert_eq!(out.pos(), 1004);
+        assert_eq!(out.cigar().end_pos() - out.pos(), 46, "ref span must equal end - start");
+        let q: u32 = out.cigar().iter().filter(|c| !matches!(c, Cigar::Del(_) | Cigar::RefSkip(_) | Cigar::HardClip(_) | Cigar::Pad(_))).map(|c| match c { Cigar::Match(n) | Cigar::Ins(n) | Cigar::SoftClip(n) | Cigar::Equal(n) | Cigar::Diff(n) => *n, _ => 0 }).sum();
+        assert_eq!(q as usize, out.seq_len(), "CIGAR query length must equal SEQ length");
+    }
+}
+
+#[cfg(test)]
+mod refusal_tests {
+    use super::*;
+    use rust_htslib::bam::record::{Aux, Cigar, CigarString};
+
+    fn fwd_read1(pos: i64) -> bam::Record {
+        let seq = vec![b'A'; 50];
+        let qual = vec![30u8; 50];
+        let mut r = bam::Record::new();
+        r.set(b"read1", Some(&CigarString(vec![Cigar::Match(50)])), &seq, &qual);
+        r.set_pos(pos);
+        r.set_tid(0);
+        r.set_mtid(0);
+        r.set_mpos(pos + 200);
+        r.set_insert_size(300);
+        r.set_flags(0x1 | 0x2 | 0x40);
+        r.push_aux(b"CB", Aux::String("AAAC-1")).unwrap();
+        r
+    }
+
+    #[test]
+    fn forward_read1_negative_start_shift_is_left_extension() {
+        let r = fwd_read1(1000);
+        assert_eq!(
+            apply_shift(&r, &[-3, 0, 0, 0], 1_000_000).unwrap_err(),
+            ShiftRefusal::LeftExtension
+        );
     }
 }

@@ -6,8 +6,7 @@ pub mod filehandler;
 pub mod filtering;
 pub mod normalization;
 
-#[cfg(feature = "python")]
-mod alignmentsieve;
+pub mod alignmentsieve;
 #[cfg(feature = "python")]
 mod bamcompare;
 #[cfg(feature = "python")]
