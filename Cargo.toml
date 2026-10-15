@@ -7,11 +7,15 @@ rust-version = "1.87"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "hp"
-crate-type = ["cdylib"]
+crate-type = ["rlib", "cdylib"]
+
+[features]
+python = ["dep:pyo3", "pyo3/extension-module"]
+default = ["python"]
 
 [dependencies]
 openssl-sys = { version = "0.9.117", features = ["vendored"] }
-pyo3 = { version = ">= 0.28.2", features = ["extension-module"] }
+pyo3 = { version = ">= 0.28.2", optional = true }
 bigtools = { version = "0.5.8", default-features = false, features = ["read", "write"] }
 rust-htslib = "1.0.1"
 rayon = "1.12.0"
