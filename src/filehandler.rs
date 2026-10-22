@@ -1,11 +1,10 @@
 use crate::calc::{max_float, mean_float, median_float, min_float, std_float, sum_float};
 use crate::covcalc::{Bin, Gtfparse, Region, Revalue, Scalingregions};
-use crate::matrixwriter::{push_row, push_values};
+use crate::matrixwriter::{push_values, write_matrix_gz};
 use bigtools::beddata::BedParserStreamingIterator;
 use bigtools::{BigWigRead, BigWigWrite, Value};
 use flate2::Compression;
 use flate2::read::MultiGzDecoder;
-use flate2::write::GzEncoder;
 use itertools::Itertools;
 use rust_htslib::bam::{IndexedReader, Read, Reader};
 use std::collections::HashMap;
@@ -1065,29 +1064,19 @@ pub fn write_matrix(
     regions: &[Region],
     scale_regions: &Scalingregions,
 ) {
-    // Write out the matrix to a compressed file.
+    // Write out the matrix to a compressed file. Rows are formatted and
+    // compressed in parallel on the current rayon pool (see matrixwriter.rs).
     let omat = File::create(ofile)
         .unwrap_or_else(|e| panic!("Failed to create output matrix file '{}': {}", ofile, e));
-    let mut encoder = GzEncoder::new(
-        BufWriter::with_capacity(1 << 20, omat),
+    write_matrix_gz(
+        &mut BufWriter::with_capacity(1 << 20, omat),
+        header.as_bytes(),
+        mat,
+        regions,
+        scale_regions.scale,
         Compression::default(),
-    );
-    encoder
-        .write_all(header.as_bytes())
-        .unwrap_or_else(|e| panic!("Failed to write header to matrix file '{}': {}", ofile, e));
-    assert_eq!(regions.len(), mat.len());
-    let mut writerow: Vec<u8> = Vec::new();
-    for (region, row) in regions.iter().zip(mat.iter()) {
-        writerow.clear();
-        push_row(&mut writerow, region, row, scale_regions.scale);
-        encoder
-            .write_all(&writerow)
-            .unwrap_or_else(|e| panic!("Failed to write row to matrix file '{}': {}", ofile, e));
-    }
-    encoder
-        .finish()
-        .and_then(|mut w| w.flush())
-        .unwrap_or_else(|e| panic!("Failed to finish matrix file '{}': {}", ofile, e));
+    )
+    .unwrap_or_else(|e| panic!("Failed to write matrix file '{}': {}", ofile, e));
 }
 
 pub fn write_matrix_values(
