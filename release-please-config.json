@@ -11,6 +11,16 @@
         {
           "type": "generic",
           "path": "galaxy/wrapper/deepTools_macros.xml"
+        },
+        {
+          "type": "toml",
+          "path": "Cargo.toml",
+          "jsonpath": "$.package.version"
+        },
+        {
+          "type": "toml",
+          "path": "Cargo.lock",
+          "jsonpath": "$.package[?(@.name=='deeptools-core')].version"
         }
       ]
     }
