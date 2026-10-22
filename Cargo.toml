@@ -1,12 +1,12 @@
 [package]
-name = "hp"
-version = "0.1.0"
+name = "deeptools-core"
+version = "4.0.0"
 edition = "2024"
 rust-version = "1.87"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "hp"
+name = "deeptools_core"
 crate-type = ["rlib", "cdylib"]
 
 [features]
