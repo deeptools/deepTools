@@ -22,3 +22,7 @@ jobs:
               run: cargo build --verbose
             - name: cargo test
               run: cargo test --verbose
+            - name: cargo build (core only)
+              run: cargo build --verbose --no-default-features
+            - name: cargo test (core only)
+              run: cargo test --verbose --no-default-features
