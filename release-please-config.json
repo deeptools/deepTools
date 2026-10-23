@@ -20,7 +20,7 @@
         {
           "type": "toml",
           "path": "Cargo.lock",
-          "jsonpath": "$.package[?(@.name=='deeptools-core')].version"
+          "jsonpath": "$.package[?(@.name.value=='deeptools-core')].version"
         }
       ]
     }

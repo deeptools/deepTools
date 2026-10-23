@@ -644,6 +644,9 @@ pub fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Resul
     let mut rev: Vec<bam::record::Cigar> = left.into_iter().rev().collect();
     rev = trim_cigar_left(&rev, (-d_end) as u32);
     let new_ops: Vec<bam::record::Cigar> = rev.into_iter().rev().collect();
+    if !new_ops.iter().any(|op| matches!(op, bam::record::Cigar::Match(_) | bam::record::Cigar::Equal(_) | bam::record::Cigar::Diff(_))) {
+        return Err(ShiftRefusal::ZeroSpan);
+    }
     let seq: Vec<u8> = record.seq().as_bytes();
     let qual: Vec<u8> = record.qual().to_vec();
     newrec.set(record.qname(), Some(&CigarString(new_ops)), &seq, &qual);
@@ -753,6 +756,19 @@ mod refusal_tests {
         assert_eq!(
             apply_shift(&r, &[-3, 0, 0, 0], 1_000_000).unwrap_err(),
             ShiftRefusal::LeftExtension
+        );
+    }
+
+    #[test]
+    fn shift_consuming_every_aligned_base_is_zero_span() {
+        // 1M5I1M: shift start by 2 ref bases -> only soft clip would remain
+        let mut r = fwd_read1(1000);
+        let seq = vec![b'A'; 7];
+        let qual = vec![30u8; 7];
+        r.set(b"read1", Some(&CigarString(vec![Cigar::Match(1), Cigar::Ins(5), Cigar::Match(1)])), &seq, &qual);
+        assert_eq!(
+            apply_shift(&r, &[2, 0, 0, 0], 1_000_000).unwrap_err(),
+            ShiftRefusal::ZeroSpan
         );
     }
 }
