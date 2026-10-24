@@ -82,7 +82,7 @@ def parseArguments():
                          nargs='+',
                          default=[],
                          metavar='TAG',
-                         help='Copy these two-letter auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags that describe the alignment itself (%s) are rejected because shifting rewrites the CIGAR, which makes them wrong.' % ', '.join(sorted(ALIGNMENT_TAGS)))
+                         help=f"Copy these two-letter auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags that describe the alignment itself ({', '.join(sorted(ALIGNMENT_TAGS))}) are rejected because shifting rewrites the CIGAR, which makes them wrong.")
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
@@ -181,9 +181,9 @@ def main(args=None):
 
     for tag in args.keepTags:
         if len(tag) != 2:
-            sys.exit("--keepTags expects two-letter tags, got '{}'.".format(tag))
+            sys.exit(f"--keepTags expects two-letter tags, got '{tag}'.")
         if tag in ALIGNMENT_TAGS:
-            sys.exit("--keepTags: '{}' describes the original alignment and would be wrong after shifting.".format(tag))
+            sys.exit(f"--keepTags: '{tag}' describes the original alignment and would be wrong after shifting.")
     if args.keepTags and not args.shift:
         sys.exit("--keepTags only applies together with --shift or --ATACshift.")
     if args.keepTags and args.BED:
