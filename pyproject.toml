@@ -9,6 +9,7 @@ python-source = "pydeeptools"
 exclude = ["pydeeptools/deeptools/test/**/*"]
 module-name = "deeptools.hp"
 bindings = "pyo3"
+features = ["python"]
 
 [project]
 name = "deeptools"

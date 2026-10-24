@@ -11,7 +11,7 @@ crate-type = ["rlib", "cdylib"]
 
 [features]
 python = ["dep:pyo3", "pyo3/extension-module"]
-default = ["python"]
+default = []
 
 [dependencies]
 openssl-sys = { version = "0.9.117", features = ["vendored"] }
@@ -25,3 +25,4 @@ flate2 = "1.1.9"
 tempfile = "3.27.0"
 ndarray = "0.17.2"
 ndarray-npy = "0.10.0"
+thiserror = "2.0"

@@ -230,16 +230,24 @@ pub fn r_bamcoverage(
         println!("Readlen: {}, Fraglen: {}", readlen, fraglen);
     }
 
+    let norm_method: crate::normalization::Normalization = norm
+        .parse()
+        .map_err(|e: crate::normalization::NormalizationError| {
+            pyo3::exceptions::PyValueError::new_err(e.to_string())
+        })?;
+    let preset = if scalefactor != 1.0 { Some(scalefactor) } else { None };
     let sf = scale_factor(
-        norm,
+        norm_method,
         mapped,
         binsize,
         effectivegenomesize,
         readlen,
-        fraglen,
-        scalefactor,
-        &verbose,
-    );
+        preset,
+    )
+    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+    if verbose {
+        println!("Scale factor: {}", sf);
+    }
 
     // Create output stream
     let lines = bg.into_iter().flat_map(|bg| {
