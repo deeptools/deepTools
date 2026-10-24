@@ -84,3 +84,16 @@ As can be seen, such fragments are considered to be on the ``-`` strand, so nega
 
 .. note::
     If the ``--shift`` or ``--ATACshift`` options are used, then only properly-paired reads will be used.
+
+Shifted BAM output
+^^^^^^^^^^^^^^^^^^
+
+With ``--shift`` or ``--ATACshift`` and BAM output, each kept read is rewritten as a single match (``M``) covering the shifted fragment, positioned at the shifted start. SEQ and QUAL are empty and all auxiliary tags are dropped. Expanding shifts and shifts longer than the read are supported because no reference or read bases are needed.
+
+If a downstream step needs a tag such as a single-cell barcode, copy it with ``--keepTags``:
+
+.. code:: bash
+
+    $ alignmentSieve -b possorted.bam --ATACshift --keepTags CB -o shifted.bam
+
+Only the listed tags are written, with their input values. Tags that describe the original alignment (``NM``, ``MD``, ``MC``, ``SA``, ``XA``, ``CC``, ``CP``, ``CG``, ``OA``, ``OC``, ``OP``, ``TS``) are refused, because the rewritten CIGAR and moved mates would make them wrong. ``--keepTags`` needs ``--shift`` or ``--ATACshift`` and BAM output. Without it, behaviour is unchanged.

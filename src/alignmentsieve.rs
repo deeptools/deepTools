@@ -29,6 +29,7 @@ pub fn r_alignmentsieve(
     maxfraglen: u32,              // maximum fragment length.
     label: &str,                  // user defined label
     smartlabels: bool,            // derive label from filename
+    keep_tags: Vec<String>,       // 2-letter aux tags to copy onto shifted records.
 ) -> PyResult<()> {
     // Open input BAM once and stream through in order
     let mut bam = Reader::from_path(bamifile)
@@ -47,6 +48,13 @@ pub fn r_alignmentsieve(
 
     let write_filters = filtered_out_readsfile != "None";
     let readshift: Vec<i32> = shift.extract(py).expect("Failed to extract shift");
+    let keep_tags: Vec<[u8; 2]> = keep_tags
+        .iter()
+        .map(|t| match t.as_bytes() {
+            [a, b] => [*a, *b],
+            _ => panic!("--keepTags expects 2-letter tags, got '{}'", t),
+        })
+        .collect();
     // shift is of length 0, 2, or 4.
 
     // Build chrom_names and chrom_sizes from BAM header — indexed by tid for O(1) lookup, zero allocations per record.
@@ -194,7 +202,7 @@ pub fn r_alignmentsieve(
             }
 
             let tid = record.tid() as usize;
-            if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid]) {
+            if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid], &keep_tags) {
                 if let Some(ref mut w) = obam {
                     w.write(&shifted).unwrap_or_else(|e| {
                         panic!(
@@ -489,7 +497,12 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
     read_pos
 }
 
-fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<bam::Record> {
+fn apply_shift(
+    record: &bam::Record,
+    shift: &[i32],
+    chrom_len: u64,
+    keep_tags: &[[u8; 2]],
+) -> Option<bam::Record> {
     if !record.is_proper_pair() {
         return None;
     }
@@ -554,13 +567,20 @@ fn apply_shift(record: &bam::Record, shift: &[i32], chrom_len: u64) -> Option<ba
 
     newrec.set(record.qname(), Some(&new_cigar), &[], &[]);
 
-    // Remove all auxiliary tags
+    // Remove all auxiliary tags, then copy back only the ones the user asked for.
+    // The CIGAR above no longer matches the original alignment, so tags that
+    // describe it (NM, MD, MC, SA, ...) are rejected by the CLI, not handled here.
     let tags: Vec<Vec<u8>> = newrec
         .aux_iter()
         .filter_map(|r| r.ok().map(|(t, _)| t.to_vec()))
         .collect();
     for t in &tags {
         let _ = newrec.remove_aux(t);
+    }
+    for t in keep_tags {
+        if let Ok(v) = record.aux(t) {
+            let _ = newrec.push_aux(t, v);
+        }
     }
 
     newrec.set_pos(start);

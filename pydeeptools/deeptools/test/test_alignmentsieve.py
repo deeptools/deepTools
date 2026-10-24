@@ -155,3 +155,65 @@ def test_with_cram_output_with_shifts():
     aln_seive.main(args)
 
     _assert_equals(BAMFILE_OUT8, output_bam_file)
+
+
+def _bam_with_cell_barcodes(path: str) -> None:
+    """Copy the fixture, adding a CB tag derived from the read name."""
+    with pysam.AlignmentFile(BAMFILE_IN, "rb") as fin, pysam.AlignmentFile(path, "wb", template=fin) as fout:
+        for read in fin:
+            read.set_tag("CB", f"CELL{hash(read.query_name) % 7}-1")
+            fout.write(read)
+
+
+def test_alsieve_shift_drops_tags_by_default():
+    """Shifting without --keepTags drops every tag, SEQ and QUAL (unchanged behaviour)."""
+    _, inbam = tempfile.mkstemp(suffix=".bam")
+    _, outbam = tempfile.mkstemp(suffix=".bam")
+    _bam_with_cell_barcodes(inbam)
+    aln_seive.main(f"--bam {inbam} -o {outbam} --ATACshift".split())
+    with pysam.AlignmentFile(outbam, "rb") as f:
+        reads = list(f)
+    assert reads
+    assert all(not r.get_tags() for r in reads)
+
+
+def test_alsieve_keeptags_cb_matches_default_alignments():
+    """--keepTags CB keeps only CB, with the input value, and does not change positions."""
+    _, inbam = tempfile.mkstemp(suffix=".bam")
+    _, plain = tempfile.mkstemp(suffix=".bam")
+    _, kept = tempfile.mkstemp(suffix=".bam")
+    _bam_with_cell_barcodes(inbam)
+    aln_seive.main(f"--bam {inbam} -o {plain} --ATACshift".split())
+    aln_seive.main(f"--bam {inbam} -o {kept} --ATACshift --keepTags CB".split())
+    with pysam.AlignmentFile(inbam, "rb") as fi:
+        expected_cb = {(r.query_name, r.flag): r.get_tag("CB") for r in fi}
+    with pysam.AlignmentFile(plain, "rb") as fp, pysam.AlignmentFile(kept, "rb") as fk:
+        plain_reads, kept_reads = list(fp), list(fk)
+    assert len(plain_reads) == len(kept_reads) > 0
+    for p, k in zip(plain_reads, kept_reads):
+        assert (p.query_name, p.flag, p.reference_start, p.cigarstring, p.template_length) == (
+            k.query_name, k.flag, k.reference_start, k.cigarstring, k.template_length)
+        assert [t for t, _ in k.get_tags()] == ["CB"]
+        assert k.get_tag("CB") == expected_cb[(k.query_name, k.flag)]
+
+
+def test_alsieve_keeptags_rejects_alignment_tags():
+    """Tags describing the original alignment are wrong after a CIGAR rewrite and are refused."""
+    _, outbam = tempfile.mkstemp(suffix=".bam")
+    for tag in ("NM", "MD", "SA"):
+        try:
+            aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift --keepTags {tag}".split())
+        except SystemExit as e:
+            assert tag in str(e.code)
+        else:
+            raise AssertionError(f"--keepTags {tag} was accepted")
+
+
+def test_alsieve_keeptags_needs_shift_and_bam_output():
+    _, outbam = tempfile.mkstemp(suffix=".bam")
+    for extra in ("", "--ATACshift --BED"):
+        try:
+            aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --keepTags CB {extra}".split())
+        except SystemExit:
+            continue
+        raise AssertionError(f"--keepTags CB {extra!r} was accepted")

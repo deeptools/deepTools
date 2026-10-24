@@ -7,6 +7,11 @@ from deeptools import parserCommon
 from deeptools.hp import r_alignmentsieve
 from deeptools.parserCommon import existingFile
 
+# SAM tags that describe the original alignment (CIGAR, mismatches, mate or
+# supplementary/secondary alignments, junctions). Shifting rewrites the CIGAR and
+# moves mates, so these would be wrong on the output.
+ALIGNMENT_TAGS = frozenset(['NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS'])
+
 
 def parseArguments():
     parser = argparse.ArgumentParser(
@@ -72,6 +77,12 @@ def parseArguments():
     general.add_argument('--ATACshift',
                          action='store_true',
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
+
+    general.add_argument('--keepTags',
+                         nargs='+',
+                         default=[],
+                         metavar='TAG',
+                         help='Copy these two-letter auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags that describe the alignment itself (%s) are rejected because shifting rewrites the CIGAR, which makes them wrong.' % ', '.join(sorted(ALIGNMENT_TAGS)))
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
@@ -168,6 +179,16 @@ def main(args=None):
             print("Warning! The --ATACshift option is used, but a --shift option is provided as well. The latter will be ignored in favor of 4 -5 5 -4.")
         args.shift = [4, -5, 5, -4]
 
+    for tag in args.keepTags:
+        if len(tag) != 2:
+            sys.exit("--keepTags expects two-letter tags, got '{}'.".format(tag))
+        if tag in ALIGNMENT_TAGS:
+            sys.exit("--keepTags: '{}' describes the original alignment and would be wrong after shifting.".format(tag))
+    if args.keepTags and not args.shift:
+        sys.exit("--keepTags only applies together with --shift or --ATACshift.")
+    if args.keepTags and args.BED:
+        sys.exit("--keepTags only applies to BAM output, not --BED.")
+
     if args.ignoreDuplicates:
         args.samFlagExclude |= 0x400
 
@@ -197,4 +218,5 @@ def main(args=None):
         args.maxFragmentLength,
         args.label,
         args.smartLabels,
+        args.keepTags,
     )
