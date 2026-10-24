@@ -710,6 +710,44 @@ class heatmapper:
         # to split the heatmap into groups
 
         import json
+        import os
+
+        # Decompress and parse the matrix in Rust (in parallel); the values come back as float64 bytes.
+        # Anything the fast reader does not handle (file objects, ragged rows, unexpected tokens)
+        # is read with the per-line reader below.
+        try:
+            from deeptools.hp import r_read_matrix
+            try:
+                nthreads = len(os.sched_getaffinity(0))
+            except AttributeError:
+                nthreads = os.cpu_count() or 1
+            path = os.fsdecode(os.fspath(matrix_file))
+            params, metas, buf, nrows, ncols = r_read_matrix(path, min(nthreads, 16))
+        except (ImportError, TypeError, ValueError):
+            return self._read_matrix_file_legacy(matrix_file)
+        if not params or nrows == 0:
+            return self._read_matrix_file_legacy(matrix_file)
+
+        for line in params:
+            self.parameters = json.loads(line.strip()[1:].strip())
+        regions = []
+        current_group_index = 0
+        max_group_bound = self.parameters['group_boundaries'][1]
+        for chrom, start, end, name, score, strand in metas:
+            regs = [(int(x), int(y)) for x, y in zip(start.split(","), end.split(","))]
+            # get the group index
+            if len(regions) >= max_group_bound:
+                current_group_index += 1
+                max_group_bound = self.parameters['group_boundaries'][current_group_index + 1]
+            regions.append([chrom, regs, name, max_group_bound, strand, score])
+        # same array type as the per-line reader produces (MaskedArray without a mask)
+        matrix = np.ma.MaskedArray(np.frombuffer(buf, dtype=np.float64).reshape(nrows, ncols))
+        del buf
+        self._set_matrix(regions, matrix)
+
+    def _read_matrix_file_legacy(self, matrix_file):
+        # per-line reader, used for inputs the fast reader does not handle
+        import json
         regions = []
         matrix_rows = []
         current_group_index = 0
@@ -742,6 +780,9 @@ class heatmapper:
                 regions.append([chrom, regs, name, max_group_bound, strand, score])
 
         matrix = np.vstack(matrix_rows)
+        self._set_matrix(regions, matrix)
+
+    def _set_matrix(self, regions, matrix):
         self.matrix = _matrix(regions, matrix, self.parameters['group_boundaries'],
                               self.parameters['sample_boundaries'],
                               group_labels=self.parameters['group_labels'],
