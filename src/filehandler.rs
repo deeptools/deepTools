@@ -1,10 +1,10 @@
 use crate::calc::{max_float, mean_float, median_float, min_float, std_float, sum_float};
 use crate::covcalc::{Bin, Gtfparse, Region, Revalue, Scalingregions};
+use crate::matrixwriter::{push_values, write_matrix_gz};
 use bigtools::beddata::BedParserStreamingIterator;
 use bigtools::{BigWigRead, BigWigWrite, Value};
 use flate2::Compression;
 use flate2::read::MultiGzDecoder;
-use flate2::write::GzEncoder;
 use itertools::Itertools;
 use rust_htslib::bam::{IndexedReader, Read, Reader};
 use std::collections::HashMap;
@@ -1064,42 +1064,19 @@ pub fn write_matrix(
     regions: &[Region],
     scale_regions: &Scalingregions,
 ) {
-    // Write out the matrix to a compressed file.
+    // Write out the matrix to a compressed file. Rows are formatted and
+    // compressed in parallel on the current rayon pool (see matrixwriter.rs).
     let omat = File::create(ofile)
         .unwrap_or_else(|e| panic!("Failed to create output matrix file '{}': {}", ofile, e));
-    let mut encoder = GzEncoder::new(omat, Compression::default());
-    encoder
-        .write_all(header.as_bytes())
-        .unwrap_or_else(|e| panic!("Failed to write header to matrix file '{}': {}", ofile, e));
-    assert_eq!(regions.len(), mat.len());
-    for (region, row) in regions.iter().zip(mat.iter()) {
-        let mut writerow = format!(
-            "{}\t{}\t{}\t{}\t{}\t{}\t",
-            region.chrom,            // Chromosome
-            region.start.rewrites(), // Revalue for start (either u32, or Vec<u32>)
-            region.end.rewrites(),   // Revalue for end (either u32, or Vec<u32>)
-            region.name, // String field for name. Duplicates taken care of in read_bedfiles.
-            region.score, // Score field persisted from bedfile
-            region.strand, // Strand field persisted from bedfile
-        );
-        writerow.push_str(
-            &row.iter()
-                .map(|x| {
-                    if x.is_nan() {
-                        // as deepTools 3 encoded nan in matrix.
-                        "nan".to_string()
-                    } else {
-                        format!("{:.6}", scale_regions.scale * x)
-                    }
-                })
-                .collect::<Vec<String>>()
-                .join("\t"),
-        );
-        writerow.push_str("\n");
-        encoder
-            .write_all(writerow.as_bytes())
-            .unwrap_or_else(|e| panic!("Failed to write row to matrix file '{}': {}", ofile, e));
-    }
+    write_matrix_gz(
+        &mut BufWriter::with_capacity(1 << 20, omat),
+        header.as_bytes(),
+        mat,
+        regions,
+        scale_regions.scale,
+        Compression::default(),
+    )
+    .unwrap_or_else(|e| panic!("Failed to write matrix file '{}': {}", ofile, e));
 }
 
 pub fn write_matrix_values(
@@ -1161,7 +1138,7 @@ pub fn write_matrix_values(
         .unwrap_or_else(|e| panic!("Failed to flush matrix values file '{}': {}", file_name, e));
 
     // Reopen in append mode and write matrix data
-    let mut fh = std::fs::OpenOptions::new()
+    let fh = std::fs::OpenOptions::new()
         .create(false)
         .append(true)
         .open(file_name)
@@ -1171,21 +1148,17 @@ pub fn write_matrix_values(
                 file_name, e
             )
         });
+    let mut fh = BufWriter::with_capacity(1 << 20, fh);
+    let mut line: Vec<u8> = Vec::new();
     for row in mat.iter() {
-        let line = row
-            .iter()
-            .map(|x| {
-                if x.is_nan() {
-                    "nan".to_string()
-                } else {
-                    format!("{:.6}", scale_regions.scale * x)
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\t");
-        writeln!(fh, "{}", line)
+        line.clear();
+        push_values(&mut line, row, scale_regions.scale);
+        line.push(b'\n');
+        fh.write_all(&line)
             .unwrap_or_else(|e| panic!("Failed to write matrix row to '{}': {}", file_name, e));
     }
+    fh.flush()
+        .unwrap_or_else(|e| panic!("Failed to flush matrix values file '{}': {}", file_name, e));
 }
 
 pub fn write_sorted_regions_bed(
