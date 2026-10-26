@@ -27,4 +27,6 @@ jobs:
             - name: cargo test (python extension)
               run: cargo test --verbose --features python
             - name: core crate has no pyo3 dependency
-              run: "! cargo tree -e normal | grep -q pyo3"
+              run: |
+                cargo tree -e normal --prefix none > tree.txt
+                ! grep -q '^pyo3' tree.txt

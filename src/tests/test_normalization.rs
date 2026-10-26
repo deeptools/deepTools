@@ -52,6 +52,22 @@ mod scale_factor_tests {
             Ok(2.0)
         );
     }
+
+    #[test]
+    fn test_zero_mapped_reads_is_an_error() {
+        for m in [Normalization::Rpkm, Normalization::Cpm, Normalization::Bpm, Normalization::Rpgc] {
+            assert_eq!(
+                scale_factor(m, 0, 10, 10000, 20.0, None),
+                Err(NormalizationError::ZeroMappedReads)
+            );
+        }
+    }
+
+    #[test]
+    fn test_zero_mapped_reads_ok_for_none_and_preset() {
+        assert_eq!(scale_factor(Normalization::None, 0, 10, 10000, 20.0, None), Ok(1.0));
+        assert_eq!(scale_factor(Normalization::Cpm, 0, 10, 10000, 20.0, Some(3.0)), Ok(3.0));
+    }
 }
 
 mod parse_tests {
@@ -126,6 +142,22 @@ mod bamcompare_scale_factor_tests {
                 Normalization::Rpgc,
             ),
             Err(NormalizationError::MissingEffectiveGenomeSize)
+        );
+    }
+}
+
+mod bamcompare_zero_reads_tests {
+    use super::*;
+
+    #[test]
+    fn test_readcount_with_an_empty_sample_is_an_error() {
+        let samples = [
+            SampleStats { mapped: 0, readlen: 20.0 },
+            SampleStats { mapped: 2000, readlen: 20.0 },
+        ];
+        assert_eq!(
+            scale_factor_bamcompare(ScaleFactorsMethod::ReadCount, samples, 10, 10000, Normalization::None),
+            Err(NormalizationError::ZeroMappedReads)
         );
     }
 }

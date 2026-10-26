@@ -22,6 +22,9 @@ pub enum NormalizationError {
     /// RPGC divides by the effective genome size, which must be non-zero.
     #[error("RPGC normalization requires a non-zero effective genome size")]
     MissingEffectiveGenomeSize,
+    /// A sample has no mapped reads, so its scale factor is undefined.
+    #[error("cannot compute a scale factor with zero mapped reads")]
+    ZeroMappedReads,
 }
 
 /// Coverage normalization method (`--normalizeUsing`).
@@ -104,6 +107,9 @@ pub fn scale_factor(
     if let Some(sf) = preset {
         return Ok(sf);
     }
+    if mapped == 0 && method != Normalization::None {
+        return Err(NormalizationError::ZeroMappedReads);
+    }
     let mmr = mapped as f32 / 1e6;
     let bs_kb = binsize as f32 / 1000.0;
     Ok(match method {
@@ -150,6 +156,9 @@ pub fn scale_factor_bamcompare(
 ) -> Result<(f32, f32), NormalizationError> {
     match method {
         ScaleFactorsMethod::ReadCount => {
+            if samples[0].mapped == 0 || samples[1].mapped == 0 {
+                return Err(NormalizationError::ZeroMappedReads);
+            }
             let min = cmp::min(samples[0].mapped, samples[1].mapped);
             Ok((
                 min as f32 / samples[0].mapped as f32,
