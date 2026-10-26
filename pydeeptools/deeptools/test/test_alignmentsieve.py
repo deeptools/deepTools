@@ -200,7 +200,7 @@ def test_alsieve_keeptags_cb_matches_default_alignments():
 def test_alsieve_keeptags_rejects_alignment_tags():
     """Tags describing the original alignment are wrong after a CIGAR rewrite and are refused."""
     _, outbam = tempfile.mkstemp(suffix=".bam")
-    for tag in ("AS", "NM", "MD", "SA"):
+    for tag in ("AS", "NM", "MD", "SA", "BQ", "MM", "ML"):
         try:
             aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift --keepTags {tag}".split())
         except SystemExit as e:

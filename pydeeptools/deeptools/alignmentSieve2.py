@@ -9,9 +9,10 @@ from deeptools.hp import r_alignmentsieve
 from deeptools.parserCommon import existingFile
 
 # SAM tags that describe the original alignment (CIGAR, mismatches, mate or
-# supplementary/secondary alignments, junctions). Shifting rewrites the CIGAR and
-# moves mates, so these would be wrong on the output.
-ALIGNMENT_TAGS = frozenset(['AS', 'NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS'])
+# supplementary/secondary alignments, junctions) or the original SEQ/QUAL (BQ, MM, ML).
+# Shifting rewrites the CIGAR, moves mates and empties SEQ and QUAL, so these would be
+# wrong on the output.
+ALIGNMENT_TAGS = frozenset(['AS', 'NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS', 'BQ', 'MM', 'ML'])
 
 
 def parseArguments():

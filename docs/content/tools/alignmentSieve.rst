@@ -96,4 +96,4 @@ If a downstream step needs a tag such as a single-cell barcode, copy it with ``-
 
     $ alignmentSieve -b possorted.bam --ATACshift --keepTags CB -o shifted.bam
 
-Only the listed tags are written, with their input values. Each tag must be a valid SAM tag name (a letter followed by a letter or digit). Tags that describe the original alignment (``AS``, ``NM``, ``MD``, ``MC``, ``SA``, ``XA``, ``CC``, ``CP``, ``CG``, ``OA``, ``OC``, ``OP``, ``TS``) are refused, because the rewritten CIGAR and moved mates would make them wrong. ``--keepTags`` needs ``--shift`` or ``--ATACshift`` and BAM output. Without it, behaviour is unchanged.
+Only the listed tags are written, with their input values. Each tag must be a valid SAM tag name (a letter followed by a letter or digit). Tags that describe the original alignment (``AS``, ``NM``, ``MD``, ``MC``, ``SA``, ``XA``, ``CC``, ``CP``, ``CG``, ``OA``, ``OC``, ``OP``, ``TS``) or the original SEQ and QUAL (``BQ``, ``MM``, ``ML``) are refused, because the rewritten CIGAR, moved mates and empty SEQ and QUAL would make them wrong. ``--keepTags`` needs ``--shift`` or ``--ATACshift`` and BAM output. Without it, behaviour is unchanged.
