@@ -81,6 +81,7 @@ def parseArguments():
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
 
     general.add_argument('--keepTags',
+                         action='extend',
                          nargs='+',
                          default=[],
                          metavar='TAG',

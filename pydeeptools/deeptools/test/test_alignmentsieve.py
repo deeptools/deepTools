@@ -224,12 +224,27 @@ def test_alsieve_keeptags_rejects_malformed_tag_names():
 def test_alsieve_keeptags_rejects_duplicates():
     """A repeated tag would be written twice on the same record."""
     _, outbam = tempfile.mkstemp(suffix=".bam")
-    try:
-        aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift --keepTags CB CB".split())
-    except SystemExit as e:
-        assert "only once" in str(e.code)
-    else:
-        raise AssertionError("duplicate --keepTags was accepted")
+    for tags in ("--keepTags CB CB", "--keepTags CB --keepTags CB"):
+        try:
+            aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift {tags}".split())
+        except SystemExit as e:
+            assert "only once" in str(e.code)
+        else:
+            raise AssertionError(f"{tags!r} was accepted")
+
+def test_alsieve_keeptags_repeated_option_accumulates():
+    """--keepTags CB --keepTags UB keeps both tags, not just the last group."""
+    inbam = tempfile.mkstemp(suffix=".bam")[1]
+    outbam = tempfile.mkstemp(suffix=".bam")[1]
+    with pysam.AlignmentFile(BAMFILE_IN) as src, pysam.AlignmentFile(inbam, "wb", template=src) as dst:
+        for r in src:
+            r.set_tag("CB", "AAAC")
+            r.set_tag("UB", "TTTG")
+            dst.write(r)
+    aln_seive.main(f"--bam {inbam} -o {outbam} --ATACshift --keepTags CB --keepTags UB".split())
+    with pysam.AlignmentFile(outbam) as out:
+        for r in out:
+            assert sorted(t for t, _ in r.get_tags()) == ["CB", "UB"]
 
 def test_alsieve_keeptags_needs_shift_and_bam_output():
     _, outbam = tempfile.mkstemp(suffix=".bam")
