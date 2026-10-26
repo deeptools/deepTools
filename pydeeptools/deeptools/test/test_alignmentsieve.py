@@ -200,13 +200,25 @@ def test_alsieve_keeptags_cb_matches_default_alignments():
 def test_alsieve_keeptags_rejects_alignment_tags():
     """Tags describing the original alignment are wrong after a CIGAR rewrite and are refused."""
     _, outbam = tempfile.mkstemp(suffix=".bam")
-    for tag in ("NM", "MD", "SA"):
+    for tag in ("AS", "NM", "MD", "SA"):
         try:
             aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift --keepTags {tag}".split())
         except SystemExit as e:
             assert tag in str(e.code)
         else:
             raise AssertionError(f"--keepTags {tag} was accepted")
+
+
+def test_alsieve_keeptags_rejects_malformed_tag_names():
+    """Non-SAM tag names fail as a CLI error, not as a Rust panic (e.g. multi-byte characters)."""
+    _, outbam = tempfile.mkstemp(suffix=".bam")
+    for tag in ("éA", "A-", "1A", "C", "CBX"):
+        try:
+            aln_seive.main(["--bam", BAMFILE_IN, "-o", outbam, "--ATACshift", "--keepTags", tag])
+        except SystemExit as e:
+            assert "SAM tags" in str(e.code)
+        else:
+            raise AssertionError(f"--keepTags {tag!r} was accepted")
 
 
 def test_alsieve_keeptags_needs_shift_and_bam_output():

@@ -1,4 +1,5 @@
 import argparse
+import re
 import signal
 import sys
 from importlib.metadata import version
@@ -10,7 +11,7 @@ from deeptools.parserCommon import existingFile
 # SAM tags that describe the original alignment (CIGAR, mismatches, mate or
 # supplementary/secondary alignments, junctions). Shifting rewrites the CIGAR and
 # moves mates, so these would be wrong on the output.
-ALIGNMENT_TAGS = frozenset(['NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS'])
+ALIGNMENT_TAGS = frozenset(['AS', 'NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS'])
 
 
 def parseArguments():
@@ -180,8 +181,8 @@ def main(args=None):
         args.shift = [4, -5, 5, -4]
 
     for tag in args.keepTags:
-        if len(tag) != 2:
-            sys.exit(f"--keepTags expects two-letter tags, got '{tag}'.")
+        if not re.fullmatch(r'[A-Za-z][A-Za-z0-9]', tag):
+            sys.exit(f"--keepTags expects SAM tags (a letter followed by a letter or digit), got '{tag}'.")
         if tag in ALIGNMENT_TAGS:
             sys.exit(f"--keepTags: '{tag}' describes the original alignment and would be wrong after shifting.")
     if args.keepTags and not args.shift:
