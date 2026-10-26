@@ -99,6 +99,20 @@ def galaxy_tool_version() -> str:
     return match.group(1)
 
 
+def cargo_crate_version() -> str:
+    data = tomllib.loads((REPO_ROOT / "Cargo.toml").read_text())
+    return data["package"]["version"]
+
+
+def cargo_lock_crate_version() -> str:
+    name = tomllib.loads((REPO_ROOT / "Cargo.toml").read_text())["package"]["name"]
+    lock = tomllib.loads((REPO_ROOT / "Cargo.lock").read_text())
+    for package in lock["package"]:
+        if package["name"] == name:
+            return package["version"]
+    sys.exit(f"could not find crate {name!r} in Cargo.lock")
+
+
 def main() -> None:
     cargo_version = cargo_rust_version()
     mismatches: dict[str, tuple[str, str]] = {}
@@ -124,6 +138,13 @@ def main() -> None:
             pkg_version,
             galaxy_version,
         )
+
+    for label, version in (
+        ("deeptools: Cargo.toml [package] version", cargo_crate_version()),
+        ("deeptools: Cargo.lock crate version", cargo_lock_crate_version()),
+    ):
+        if version != pkg_version:
+            mismatches[label] = (pkg_version, version)
 
     if mismatches:
         print("Version mismatch detected:", file=sys.stderr)

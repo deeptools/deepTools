@@ -250,6 +250,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef8ae57c4978a2acd8b869ce6b9ca1dfe817bff704c220209fdef2c0b75a01b9"
 
 [[package]]
+name = "deeptools-core"
+version = "4.0.0"
+dependencies = [
+ "bigtools",
+ "flate2",
+ "itertools 0.15.0",
+ "ndarray",
+ "ndarray-npy",
+ "openssl-sys",
+ "pyo3",
+ "rayon",
+ "rust-htslib",
+ "tempfile",
+ "thiserror 2.0.20",
+ "tokio",
+]
+
+[[package]]
 name = "derive-new"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -472,23 +490,6 @@ name = "heck"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
-
-[[package]]
-name = "hp"
-version = "0.1.0"
-dependencies = [
- "bigtools",
- "flate2",
- "itertools 0.15.0",
- "ndarray",
- "ndarray-npy",
- "openssl-sys",
- "pyo3",
- "rayon",
- "rust-htslib",
- "tempfile",
- "tokio",
-]
 
 [[package]]
 name = "hts-sys"
