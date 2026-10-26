@@ -12,7 +12,7 @@ from deeptools.parserCommon import existingFile
 # supplementary/secondary alignments, junctions) or the original SEQ/QUAL (BQ, MM, ML).
 # Shifting rewrites the CIGAR, moves mates and empties SEQ and QUAL, so these would be
 # wrong on the output.
-ALIGNMENT_TAGS = frozenset(['AS', 'NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS', 'BQ', 'MM', 'ML'])
+ALIGNMENT_TAGS = frozenset(['AS', 'NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS', 'BQ', 'MM', 'ML', 'CM', 'PT'])
 
 
 def parseArguments():
@@ -186,6 +186,8 @@ def main(args=None):
             sys.exit(f"--keepTags expects SAM tags (a letter followed by a letter or digit), got '{tag}'.")
         if tag in ALIGNMENT_TAGS:
             sys.exit(f"--keepTags: '{tag}' describes the original alignment and would be wrong after shifting.")
+    if len(set(args.keepTags)) != len(args.keepTags):
+        sys.exit("--keepTags: each tag may be given only once.")
     if args.keepTags and not args.shift:
         sys.exit("--keepTags only applies together with --shift or --ATACshift.")
     if args.keepTags and args.BED:
