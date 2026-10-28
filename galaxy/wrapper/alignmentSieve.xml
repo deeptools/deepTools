@@ -69,6 +69,10 @@
         #elif $ATACshift:
             --ATACshift
         #end if
+        #if ($shift or $ATACshift) and $keepTags and not $BED:
+            #set tags = " ".join(["'{}'".format(x) for x in $keepTags.split(" ")])
+            --keepTags $tags
+        #end if
         #if $BED:
             --BED
             -o '$outFile'
@@ -98,6 +102,10 @@
                   take strand into consideration for strand-specific
                   protocols. Note that only properly paired reads are considered."/>
         <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq"/>
+        <param argument="--keepTags" type="text" label="Auxiliary tags to keep on shifted reads" value="" optional="true" size="30"
+            help="Space-separated two-character SAM tags (for example CB UB) copied from the input onto shifted BAM records. By default shifting drops all tags. Only used together with a shift and BAM output. Tags are copied verbatim, so tags that describe the original alignment (such as NM, MD or SA) will be stale.">
+            <validator type="regex">^[A-Za-z][A-Za-z0-9]( [A-Za-z][A-Za-z0-9])*$</validator>
+        </param>
         <param argument="filterRNAstrand" type="select" optional="true" label="Only include reads originating from fragments from the forward or reverse strand."
             help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                   Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
@@ -152,6 +160,21 @@
             <param name="minMappingQuality" value="10"/>
             <param name="shift" value="1 -2 3 -4"/>
             <output name="outFile" file="alignmentSieve3.bam" ftype="bam" lines_diff="4"/>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <param name="keepTags" value="YT XS"/>
+            <output name="outFile" file="alignmentSieve5.bam" ftype="bam" lines_diff="4"/>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="BED" value="yes"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <param name="keepTags" value="YT"/>
+            <output name="outFile" file="alignmentSieve.bed" ftype="bed"/>
         </test>
     </tests>
     <help>
