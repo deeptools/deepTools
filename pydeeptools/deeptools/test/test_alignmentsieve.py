@@ -197,16 +197,20 @@ def test_alsieve_keeptags_cb_matches_default_alignments():
         assert k.get_tag("CB") == expected_cb[(k.query_name, k.flag)]
 
 
-def test_alsieve_keeptags_rejects_alignment_tags():
-    """Tags describing the original alignment are wrong after a CIGAR rewrite and are refused."""
+def test_alsieve_keeptags_copies_alignment_tags_verbatim():
+    """Tags describing the original alignment are not refused; they are copied as-is (here an integer tag)."""
+    _, inbam = tempfile.mkstemp(suffix=".bam")
     _, outbam = tempfile.mkstemp(suffix=".bam")
-    for tag in ("AS", "NM", "MD", "SA", "BQ", "MM", "ML", "CM", "PT"):
-        try:
-            aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift --keepTags {tag}".split())
-        except SystemExit as e:
-            assert tag in str(e.code)
-        else:
-            raise AssertionError(f"--keepTags {tag} was accepted")
+    with pysam.AlignmentFile(BAMFILE_IN, "rb") as fin, pysam.AlignmentFile(inbam, "wb", template=fin) as fout:
+        for read in fin:
+            read.set_tag("NM", len(read.query_name) % 5)
+            fout.write(read)
+    aln_seive.main(f"--bam {inbam} -o {outbam} --ATACshift --keepTags NM".split())
+    with pysam.AlignmentFile(outbam, "rb") as f:
+        reads = list(f)
+    assert reads
+    for r in reads:
+        assert r.get_tags() == [("NM", len(r.query_name) % 5)]
 
 
 def test_alsieve_keeptags_rejects_malformed_tag_names():
@@ -221,16 +225,17 @@ def test_alsieve_keeptags_rejects_malformed_tag_names():
             raise AssertionError(f"--keepTags {tag!r} was accepted")
 
 
-def test_alsieve_keeptags_rejects_duplicates():
-    """A repeated tag would be written twice on the same record."""
+def test_alsieve_keeptags_deduplicates():
+    """A repeated tag is accepted and written once per record."""
+    _, inbam = tempfile.mkstemp(suffix=".bam")
     _, outbam = tempfile.mkstemp(suffix=".bam")
+    _bam_with_cell_barcodes(inbam)
     for tags in ("--keepTags CB CB", "--keepTags CB --keepTags CB"):
-        try:
-            aln_seive.main(f"--bam {BAMFILE_IN} -o {outbam} --ATACshift {tags}".split())
-        except SystemExit as e:
-            assert "only once" in str(e.code)
-        else:
-            raise AssertionError(f"{tags!r} was accepted")
+        aln_seive.main(f"--bam {inbam} -o {outbam} --ATACshift {tags}".split())
+        with pysam.AlignmentFile(outbam, "rb") as f:
+            reads = list(f)
+        assert reads
+        assert all([t for t, _ in r.get_tags()] == ["CB"] for r in reads)
 
 def test_alsieve_keeptags_repeated_option_accumulates():
     """--keepTags CB --keepTags UB keeps both tags, not just the last group."""

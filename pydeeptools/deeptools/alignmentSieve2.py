@@ -8,12 +8,6 @@ from deeptools import parserCommon
 from deeptools.hp import r_alignmentsieve
 from deeptools.parserCommon import existingFile
 
-# SAM tags that describe the original alignment (CIGAR, mismatches, mate or
-# supplementary/secondary alignments, junctions) or the original SEQ/QUAL (BQ, MM, ML).
-# Shifting rewrites the CIGAR, moves mates and empties SEQ and QUAL, so these would be
-# wrong on the output.
-ALIGNMENT_TAGS = frozenset(['AS', 'NM', 'MD', 'MC', 'SA', 'XA', 'CC', 'CP', 'CG', 'OA', 'OC', 'OP', 'TS', 'BQ', 'MM', 'ML', 'CM', 'PT'])
-
 
 def parseArguments():
     parser = argparse.ArgumentParser(
@@ -85,7 +79,7 @@ def parseArguments():
                          nargs='+',
                          default=[],
                          metavar='TAG',
-                         help=f"Copy these two-letter auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags that describe the alignment itself ({', '.join(sorted(ALIGNMENT_TAGS))}) are rejected because shifting rewrites the CIGAR, which makes them wrong.")
+                         help="Copy these two-character auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags are copied verbatim: shifting rewrites the CIGAR, positions, mate fields, SEQ and QUAL, so tags describing those (for example MD, MC, SA, MM or ML) will be stale.")
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
@@ -185,10 +179,7 @@ def main(args=None):
     for tag in args.keepTags:
         if not re.fullmatch(r'[A-Za-z][A-Za-z0-9]', tag):
             sys.exit(f"--keepTags expects SAM tags (a letter followed by a letter or digit), got '{tag}'.")
-        if tag in ALIGNMENT_TAGS:
-            sys.exit(f"--keepTags: '{tag}' describes the original alignment and would be wrong after shifting.")
-    if len(set(args.keepTags)) != len(args.keepTags):
-        sys.exit("--keepTags: each tag may be given only once.")
+    args.keepTags = list(dict.fromkeys(args.keepTags))
     if args.keepTags and not args.shift:
         sys.exit("--keepTags only applies together with --shift or --ATACshift.")
     if args.keepTags and args.BED:

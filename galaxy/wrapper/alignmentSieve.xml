@@ -103,7 +103,7 @@
                   protocols. Note that only properly paired reads are considered."/>
         <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq"/>
         <param argument="--keepTags" type="text" label="Auxiliary tags to keep on shifted reads" value="" optional="true" size="30"
-            help="Space-separated two-character SAM tags (for example CB UB) copied from the input onto shifted BAM records. By default shifting drops all tags. Only used together with a shift and BAM output. Tags that describe the original alignment (such as NM, MD or SA) are refused.">
+            help="Space-separated two-character SAM tags (for example CB UB) copied from the input onto shifted BAM records. By default shifting drops all tags. Only used together with a shift and BAM output. Tags are copied verbatim, so tags that describe the original alignment (such as NM, MD or SA) will be stale.">
             <validator type="regex">^[A-Za-z][A-Za-z0-9]( [A-Za-z][A-Za-z0-9])*$</validator>
         </param>
         <param argument="filterRNAstrand" type="select" optional="true" label="Only include reads originating from fragments from the forward or reverse strand."
