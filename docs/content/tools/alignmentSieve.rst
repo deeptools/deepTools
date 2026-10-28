@@ -88,7 +88,7 @@ As can be seen, such fragments are considered to be on the ``-`` strand, so nega
 Shifted BAM output
 ^^^^^^^^^^^^^^^^^^
 
-With ``--shift`` or ``--ATACshift`` and BAM output, each kept read is rewritten as a single match (``M``) covering the shifted fragment, positioned at the shifted start. SEQ and QUAL are empty and all auxiliary tags are dropped. Expanding shifts and shifts longer than the read are supported because no reference or read bases are needed.
+With ``--shift`` or ``--ATACshift`` and BAM output, each kept read is rewritten as a single match (``M``) covering the shifted read, positioned at the shifted start. SEQ and QUAL are empty and all auxiliary tags are dropped. Because no reference or read bases are needed, expanding shifts and shifts longer than the read do not fail: a read that would shrink below 1 bp is written as a 1 bp record, and is only dropped if it ends up outside the chromosome.
 
 If a downstream step needs a tag such as a single-cell barcode, copy it with ``--keepTags``:
 
