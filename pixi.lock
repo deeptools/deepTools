@@ -2783,7 +2783,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang13-21.1.8-default_h792aff9_7.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libcompiler-rt-21.1.8-h7148c6a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libcurl-8.21.0-hcf29cc6_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.26-h351257e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.25-hd45a770_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20260512-pl5321h373387f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libev-4.33-h280c20c_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.9.0-hd2095e1_0.conda
@@ -3013,7 +3013,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcurl-8.21.0-h8f0b9e4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcxx-23.1.4-h19cb2f5_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcxx-devel-21.1.8-h7c275be_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.26-hb7db194_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.25-h7ad9622_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20260512-pl5321hba2e2ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libev-4.33-ha3d0635_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libexpat-2.9.0-h6e061ac_0.conda
@@ -3442,7 +3442,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang13-21.1.8-default_h792aff9_7.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libcompiler-rt-21.1.8-h7148c6a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libcurl-8.21.0-hcf29cc6_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.26-h351257e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.25-hd45a770_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20260512-pl5321h373387f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libev-4.33-h280c20c_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.9.0-hd2095e1_0.conda
@@ -3666,7 +3666,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcurl-8.21.0-h8f0b9e4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcxx-23.1.4-h19cb2f5_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcxx-devel-21.1.8-h7c275be_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.26-hb7db194_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.25-h7ad9622_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20260512-pl5321hba2e2ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libev-4.33-ha3d0635_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libexpat-2.9.0-h6e061ac_0.conda
@@ -4089,7 +4089,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libclang13-21.1.8-default_h792aff9_7.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libcompiler-rt-21.1.8-h7148c6a_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libcurl-8.21.0-hcf29cc6_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.26-h351257e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.25-hd45a770_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20260512-pl5321h373387f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libev-4.33-h280c20c_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libexpat-2.9.0-hd2095e1_0.conda
@@ -4317,7 +4317,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcurl-8.21.0-h8f0b9e4_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcxx-23.1.4-h19cb2f5_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libcxx-devel-21.1.8-h7c275be_4.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.26-hb7db194_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.25-h7ad9622_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20260512-pl5321hba2e2ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libev-4.33-ha3d0635_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/libexpat-2.9.0-h6e061ac_0.conda
@@ -6113,20 +6113,6 @@ packages:
     - libdeflate >=1.25,<1.26.0a0
   size: 73710
   timestamp: 1785908694612
-- conda: https://conda.anaconda.org/conda-forge/linux-64/libdeflate-1.26-h351257e_0.conda
-  sha256: f437f68abb1fa1dededd082a0c2800bec40495e01cf9ec46f4e693e34d60b644
-  md5: d0c17fc12939a990f0865b7a14b49cfe
-  depends:
-  - __glibc >=2.17,<3.0.a0
-  - libgcc >=15
-  license: MIT
-  license_family: MIT
-  purls: []
-  run_exports:
-    weak:
-    - libdeflate >=1.26,<1.27.0a0
-  size: 74338
-  timestamp: 1787442593524
 - conda: https://conda.anaconda.org/conda-forge/linux-64/libedit-3.1.20250104-pl5321h373387f_1.conda
   sha256: 6473eb8caf2aae830f37caa93db9b26dddf7ac84b63229e8bf7fc0e5c3ab95b0
   md5: 50708d3b951d0f8e2d7f2df5b5edc040
@@ -9544,19 +9530,6 @@ packages:
     - libdeflate >=1.25,<1.26.0a0
   size: 71148
   timestamp: 1785909042684
-- conda: https://conda.anaconda.org/conda-forge/osx-64/libdeflate-1.26-hb7db194_0.conda
-  sha256: 1e3fa4641e747414de5474380c7febdd92889017e3418ade6af03ee001872320
-  md5: 56bf093bccc7c698eee1d8ffccd7aee6
-  depends:
-  - __osx >=11.0
-  license: MIT
-  license_family: MIT
-  purls: []
-  run_exports:
-    weak:
-    - libdeflate >=1.26,<1.27.0a0
-  size: 71243
-  timestamp: 1787442867547
 - conda: https://conda.anaconda.org/conda-forge/osx-64/libedit-3.1.20250104-pl5321ha958ccf_0.conda
   sha256: 6cc49785940a99e6a6b8c6edbb15f44c2dd6c789d9c283e5ee7bdfedd50b4cd6
   md5: 1f4ed31220402fcddc083b4bff406868
