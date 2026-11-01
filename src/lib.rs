@@ -7,6 +7,7 @@ mod computematrix;
 mod covcalc;
 mod filehandler;
 mod filtering;
+mod matrixreader;
 mod multibamsummary;
 mod normalization;
 #[cfg(test)]
@@ -19,5 +20,6 @@ fn hp(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(computematrix::r_computematrix, m)?)?;
     m.add_function(wrap_pyfunction!(alignmentsieve::r_alignmentsieve, m)?)?;
     m.add_function(wrap_pyfunction!(multibamsummary::r_mbams, m)?)?;
+    m.add_function(wrap_pyfunction!(matrixreader::r_read_matrix, m)?)?;
     Ok(())
 }
