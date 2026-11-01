@@ -33,6 +33,7 @@ jobs:
         name: Test on Linux
         runs-on: ubuntu-latest
         strategy:
+            fail-fast: false
             matrix:
                 pixi-env: [py312, py313, py314]
         steps:
@@ -54,6 +55,7 @@ jobs:
         name: Test on OSX
         runs-on: macOS-latest
         strategy:
+            fail-fast: false
             matrix:
                 pixi-env: [py312, py313, py314]
         steps:
