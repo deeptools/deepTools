@@ -29,7 +29,7 @@ jobs:
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
                   target: ${{ matrix.platform.target }}
-                  args: --release --out dist -i python3.12 python3.13 python3.14 python3.14t
+                  args: --release --out dist -i python3.12 python3.13 python3.14
                   manylinux: 2_28
                   before-script-linux: |
                       set -ex
@@ -86,7 +86,7 @@ jobs:
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
                   target: ${{ matrix.platform.target }}
-                  args: --release --out dist -i python3.12 python3.13 python3.14 python3.14t
+                  args: --release --out dist -i python3.12 python3.13 python3.14
                   manylinux: musllinux_1_2
                   before-script-linux: |
                       apt-get update
@@ -120,7 +120,7 @@ jobs:
               uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
               with:
                   target: ${{ matrix.platform.target }}
-                  args: --release --out dist -i python3.12 python3.13 python3.14 python3.14t
+                  args: --release --out dist -i python3.12 python3.13 python3.14
             - name: Upload wheels
               uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               with:
