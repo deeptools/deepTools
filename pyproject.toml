@@ -54,7 +54,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python :: 3.15",
     "Programming Language :: Python :: Free Threading :: 1 - Unstable"
 ]
 readme = "README.md"
@@ -144,13 +143,8 @@ python = "3.12.*"
 python = "3.13.*"
 [tool.pixi.feature.py314.dependencies]
 python = "3.14.*"
-[tool.pixi.feature.py315.dependencies]
-python = "3.15.*"
 [tool.pixi.feature.py314t.dependencies]
 python = "3.14.*"
-python-freethreading = "*"
-[tool.pixi.feature.py315t.dependencies]
-python = "3.15.*"
 python-freethreading = "*"
 [tool.pixi.feature.ess]
 platforms = ["linux-64"]
@@ -163,7 +157,5 @@ python = "3.*"
 py312 = ["py312"]
 py313 = ["py313"]
 py314 = ["py314"]
-py315 = ["py315"]
 py314t = ["py314t"]
-py315t = ["py315t"]
 ess = { features = ["ess"], no-default-feature = true }

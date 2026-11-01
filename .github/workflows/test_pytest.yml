@@ -33,8 +33,9 @@ jobs:
         name: Test on Linux
         runs-on: ubuntu-latest
         strategy:
+            fail-fast: false
             matrix:
-                pixi-env: [py312, py313, py314, py315, py314t, py315t]
+                pixi-env: [py312, py313, py314, py314t]
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
@@ -54,8 +55,9 @@ jobs:
         name: Test on OSX
         runs-on: macOS-latest
         strategy:
+            fail-fast: false
             matrix:
-                pixi-env: [py312, py313, py314, py315, py314t, py315t]
+                pixi-env: [py312, py313, py314, py314t]
         steps:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
