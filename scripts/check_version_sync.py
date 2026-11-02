@@ -113,9 +113,49 @@ def cargo_lock_crate_version() -> str:
     sys.exit(f"could not find crate {name!r} in Cargo.lock")
 
 
+def _grep(path: str, pattern: str) -> list[str]:
+    return re.findall(pattern, (REPO_ROOT / path).read_text(), re.MULTILINE)
+
+
+def python_version_mismatches() -> dict[str, tuple[object, object]]:
+    """Check every hardcoded Python version against the pyproject.toml classifiers."""
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    classifiers = project["project"]["classifiers"]
+    versions = [c.rsplit(" ", 1)[1] for c in classifiers
+                if re.fullmatch(r"Programming Language :: Python :: 3\.\d+", c)]
+    if not versions:
+        sys.exit("pyproject.toml: no 'Programming Language :: Python :: 3.X' classifiers found")
+    if any(c.startswith("Programming Language :: Python :: Free Threading") for c in classifiers):
+        versions += [f"{v}t" for v in versions if _version_tuple(v) >= (3, 14)]
+    envs = [f"py{v.replace('.', '')}" for v in versions]
+    interpreters = [f"python{v}" for v in versions]
+
+    pixi_envs = [name for name in project["tool"]["pixi"]["environments"] if name.startswith("py3")]
+    rtd = _grep(".readthedocs.yaml", r'^\s*python:\s*"([\d.]+)"')
+    checks = {
+        "pyproject.toml requires-python": (f">= {versions[0]}", project["project"]["requires-python"]),
+        "pyproject.toml pixi environments": (envs, pixi_envs),
+        "test_planemo.yml python-version (lowest)": (
+            [versions[0]],
+            _grep(".github/workflows/test_planemo.yml", r'python-version:\s*"([\d.]+)"'),
+        ),
+        ".readthedocs.yaml python (any supported)": (True, bool(rtd) and rtd[0] in versions),
+    }
+    # Files with several matrices / build steps: every one of them must match.
+    matrices = [[e.strip() for e in m.split(",")]
+                for m in _grep(".github/workflows/test_pytest.yml", r"pixi-env:\s*\[([^\]]*)\]")]
+    checks["test_pytest.yml pixi-env matrices"] = ([envs] * max(len(matrices), 1), matrices)
+    for workflow in ("wheels.yml", "wheels-preview.yml"):
+        # a wheel build without `-i` (e.g. --find-interpreter) yields an empty list
+        builds = [args.split() for args in
+                  _grep(f".github/workflows/{workflow}", r"^\s*args:\s*--release(?:.*?\s-i\s+(.*))?.*$")]
+        checks[f"{workflow} maturin -i"] = ([interpreters] * max(len(builds), 1), builds)
+    return {name: pair for name, pair in checks.items() if pair[0] != pair[1]}
+
+
 def main() -> None:
     cargo_version = cargo_rust_version()
-    mismatches: dict[str, tuple[str, str]] = {}
+    mismatches: dict[str, tuple[object, object]] = {}
 
     pixi_version = pixi_rust_version()
     if pixi_version != cargo_version:
@@ -130,6 +170,10 @@ def main() -> None:
         )
     elif rtd_version != "latest" and _version_tuple(rtd_version) < _version_tuple(cargo_version):
         mismatches["rust: .readthedocs.yaml build.tools.rust"] = (f">= {cargo_version}", rtd_version)
+
+    mismatches.update(
+        {f"python: {name}": pair for name, pair in python_version_mismatches().items()}
+    )
 
     pkg_version = deeptools_version()
     galaxy_version = galaxy_tool_version()

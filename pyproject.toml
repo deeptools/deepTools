@@ -50,7 +50,11 @@ description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
 classifiers = [
     "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Bio-Informatics"
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    # Supported Python versions:
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14"
 ]
 readme = "README.md"
 [project.optional-dependencies]
@@ -75,9 +79,6 @@ repository = "https://github.com/deeptools/deepTools"
 
 [tool.setuptools]
 packages = ["deeptools"]
-
-[tool.ruff]
-target-version = "py312"
 
 [tool.ruff.lint]
 ignore = [
