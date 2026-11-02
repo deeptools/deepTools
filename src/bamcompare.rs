@@ -206,18 +206,24 @@ pub fn r_bamcompare(
         }
         (given_sf1, given_sf2)
     } else {
+        let to_py = |e: crate::normalization::NormalizationError| {
+            pyo3::exceptions::PyValueError::new_err(e.to_string())
+        };
+        let method: crate::normalization::ScaleFactorsMethod =
+            scalefactorsmethod.parse().map_err(to_py)?;
+        let norm_method: crate::normalization::Normalization = norm.parse().map_err(to_py)?;
+        let stats = |i: usize| crate::normalization::SampleStats {
+            mapped: covcalcs[i].mapped,
+            readlen: covcalcs[i].readlen,
+        };
         let (sf1, sf2) = scale_factor_bamcompare(
-            scalefactorsmethod,
-            covcalcs[0].mapped,
-            covcalcs[1].mapped,
+            method,
+            [stats(0), stats(1)],
             binsize,
             effective_genome_size,
-            norm,
-            covcalcs[0].readlen,
-            covcalcs[1].readlen,
-            covcalcs[0].fraglen,
-            covcalcs[1].fraglen,
-        );
+            norm_method,
+        )
+        .map_err(to_py)?;
         if verbose {
             println!("scale factor1 = {}, scale factor2 = {}", sf1, sf2);
         }

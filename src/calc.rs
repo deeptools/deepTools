@@ -161,6 +161,15 @@ pub fn calc_ratio(
     }
 }
 
+/// DESeq-style median-of-ratios scale factors.
+///
+/// `array2` has one row per bin and one column per sample (raw counts).
+/// Returns one scale factor per sample column: multiply a sample's counts by
+/// its factor to make samples comparable.
+///
+/// Entries `<= 0` are ignored, and so are bins where any sample is zero
+/// (their log geometric mean is infinite). A sample with no usable bins gets
+/// a factor of `1.0`.
 pub fn deseq_scalefactors(array2: &Array2<f32>) -> Array1<f32> {
     let loggeomeans = array2.mapv(|v| v.ln()).sum_axis(Axis(1)) / array2.shape()[1] as f32;
     let masked_array = array2.mapv(|x| if x <= 0.0 { f32::NAN } else { x });

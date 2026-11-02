@@ -89,4 +89,13 @@ mod scalefactor_calculations_tests {
         let expected_sf = Array1::from_vec(vec![1.233106, 0.9864848, 0.82207066]);
         assert_eq!(sf, expected_sf);
     }
+
+    #[test]
+    fn test_deseq_scalefactors_zero_in_every_bin() {
+        // Every bin has a zero in column 0, so no bin has a usable geometric
+        // mean: nothing contributes and all factors fall back to 1.
+        let counts = Array2::from_shape_vec((2, 2), vec![0.0, 5.0, 0.0, 7.0]).unwrap();
+        let sf = deseq_scalefactors(&counts);
+        assert_eq!(sf, Array1::from_vec(vec![1.0, 1.0]));
+    }
 }
