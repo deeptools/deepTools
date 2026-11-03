@@ -295,19 +295,22 @@ pub fn r_computematrix(
                 },
             )
     });
-    matrix_dump(
-        sortregions,
-        sortusing,
-        sort_using_samples,
-        regions,
-        group_of_region,
-        matrix,
-        scale_regions,
-        ofile,
-        outfilenamematrix,
-        outfilesortedregions,
-        verbose,
-    );
+    // Run in the -p sized pool so the parallel matrix writer honours --numberOfProcessors.
+    pool.install(|| {
+        matrix_dump(
+            sortregions,
+            sortusing,
+            sort_using_samples,
+            regions,
+            group_of_region,
+            matrix,
+            scale_regions,
+            ofile,
+            outfilenamematrix,
+            outfilesortedregions,
+            verbose,
+        )
+    });
 
     Ok(())
 }
