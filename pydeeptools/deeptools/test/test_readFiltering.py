@@ -1,11 +1,12 @@
-import deeptools.estimateReadFiltering as est
-import deeptools.alignmentSieve as sieve
-import os.path
-from os import unlink
 import hashlib
-import pysam
+import os.path
 import tempfile
+from os import unlink
 
+import pysam
+
+import deeptools.alignmentSieve2 as sieve
+import deeptools.estimateReadFiltering as est
 
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
 BAMFILE_FILTER = ROOT + "test_filtering.bam"
@@ -18,12 +19,11 @@ def test_estimate_read_filtering_minimal():
     Minimal testing
     """
     _, outfile = tempfile.mkstemp(suffix=".txt")
-    args = '-b {} -o {}'.format(BAMFILE_FILTER, outfile).split()
+    args = f'-b {BAMFILE_FILTER} -o {outfile}'.split()
     est.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     expected = ['Sample\tTotal Reads\tMapped Reads\tAlignments in blacklisted regions\tEstimated mapped reads filtered\tBelow MAPQ\tMissing Flags\tExcluded Flags\tInternally-determined Duplicates\tMarked Duplicates\tSingletons\tWrong strand\n',
                 'test_filtering.bam\t193\t193\t0\t0.0\t0.0\t0.0\t0.0\t0.0\t0.0\t0.0\t0.0\n']
     # strip the path from the output
@@ -39,12 +39,11 @@ def test_estimate_read_filtering_params():
     --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl
     """
     _, outfile = tempfile.mkstemp(suffix=".txt")
-    args = '-b {} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {} -o {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile).split()
+    args = f'-b {BAMFILE_FILTER} --minMappingQuality 10 --samFlagExclude 512 --ignoreDuplicates -bl {BEDFILE_FILTER} -o {outfile}'.split()
     est.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
     # strip the path from the output
     _ = resp[1].split("\t")
     _[0] = os.path.basename(_[0])
@@ -62,12 +61,11 @@ def test_sieve():
     _, outfile = tempfile.mkstemp(suffix=".bam")
     _, outfiltered = tempfile.mkstemp(suffix=".bam")
     _, outlog = tempfile.mkstemp(suffix=".log")
-    args = '-b {} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {} -o {} --filterMetrics {} --filteredOutReads {}'.format(BAMFILE_FILTER, BEDFILE_FILTER, outfile, outlog, outfiltered).split()
+    args = f'-b {BAMFILE_FILTER} --smartLabels --minMappingQuality 10 --samFlagExclude 512 -bl {BEDFILE_FILTER} -o {outfile} --filterMetrics {outlog} --filteredOutReads {outfiltered}'.split()
     sieve.main(args)
 
-    _foo = open(outlog, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outlog, 'r') as _foo:
+        resp = _foo.readlines()
 
     expected = ['#bamFilterReads --filterMetrics\n',
                 '#File\tReads Remaining\tTotal Initial Reads\n',
@@ -80,7 +78,7 @@ def test_sieve():
     unlink(outfile)
 
     h1 = hashlib.md5(pysam.view(outfiltered).encode('utf-8')).hexdigest()
-    expectedh = 'b90befdd5f073f14acb9a38661f301ad'
+    expectedh = '98e56d349ca4231bef54fd7c97622bd2'
     assert f"{h1}" == f"{expectedh}"
     unlink(outfiltered)
 
@@ -90,12 +88,11 @@ def test_sieve_BED():
     Test alignmentSieve with the --BED option
     """
     _, outfile = tempfile.mkstemp(suffix=".bed")
-    args = '-b {} --minMappingQuality 10 --BED -o {}'.format(PAIREDBAMFILE_FILTER, outfile).split()
+    args = f'-b {PAIREDBAMFILE_FILTER} --minMappingQuality 10 --BED -o {outfile}'.split()
     sieve.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
 
     expected = ['chr2\t5000026\t5000390\n',
                 'chr2\t5000303\t5000711\n',
@@ -132,12 +129,11 @@ def test_sieve_BED_shift():
     Test alignmentSieve --BED --shift
     """
     _, outfile = tempfile.mkstemp(suffix=".bed")
-    args = '-b {} --minMappingQuality 10 --BED -o {} --shift 1 -2 3 -4'.format(PAIREDBAMFILE_FILTER, outfile).split()
+    args = f'-b {PAIREDBAMFILE_FILTER} --minMappingQuality 10 --BED -o {outfile} --shift 1 -2 3 -4'.split()
     sieve.main(args)
 
-    _foo = open(outfile, 'r')
-    resp = _foo.readlines()
-    _foo.close()
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
 
     expected = ['chr2\t5000027\t5000388\n',
                 'chr2\t5000307\t5000708\n',

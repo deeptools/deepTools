@@ -1,6 +1,7 @@
 import multiprocessing
-from deeptoolsintervals import GTF
 import random
+
+from deeptoolsintervals import GTF
 
 debug = 0
 
@@ -63,8 +64,7 @@ def mapReduce(staticArgs, func, chromSize,
     genomeChunkLength = int(genomeChunkLength)
 
     if verbose:
-        print("genome partition size for multiprocessing: {0}".format(
-            genomeChunkLength))
+        print(f"genome partition size for multiprocessing: {genomeChunkLength}")
 
     region_start = 0
     region_end = None
@@ -75,8 +75,8 @@ def mapReduce(staticArgs, func, chromSize,
     if region:
         chromSize, region_start, region_end, genomeChunkLength = getUserRegion(chromSize, region)
         if verbose:
-            print("chrom size: {0}, region start: {1}, region end: {2}, "
-                  "genome chunk length sent to each procesor: {3}".format(chromSize, region_start, region_end, genomeChunkLength))
+            print(f"chrom size: {chromSize}, region start: {region_start}, region end: {region_end}, "
+                  f"genome chunk length sent to each procesor: {genomeChunkLength}")
 
     if bedFile:
         defaultGroup = None
@@ -134,9 +134,8 @@ def mapReduce(staticArgs, func, chromSize,
 
     if len(TASKS) > 1 and numberOfProcessors > 1:
         if verbose:
-            print(("using {} processors for {} "
-                   "number of tasks".format(numberOfProcessors,
-                                            len(TASKS))))
+            print(f"using {numberOfProcessors} processors for {len(TASKS)} "
+                   "number of tasks")
         random.shuffle(TASKS)
         pool = multiprocessing.Pool(numberOfProcessors)
         res = pool.map_async(func, TASKS).get(9999999)
@@ -199,21 +198,20 @@ def getUserRegion(chrom_sizes, region_string, max_chunk_size=1e6):
         else:
             chromUse = "chr" + chrom
         if chromUse not in list(chrom_sizes.keys()):
-            raise NameError("Unknown chromosome: %s\nKnown "
-                            "chromosomes are: %s " % (chrom, list(chrom_sizes.keys())))
+            raise NameError(f"Unknown chromosome: {chrom}\nKnown "
+                            f"chromosomes are: {list(chrom_sizes.keys())} ")
         chrom = chromUse
     try:
         region_start = int(region[1])
     except IndexError:
         region_start = 0
     try:
-        region_end = int(region[2]) if int(region[2]) <= chrom_sizes[chrom] \
-            else chrom_sizes[chrom]
+        region_end = min(int(region[2]), chrom_sizes[chrom])
     except IndexError:
         region_end = chrom_sizes[chrom]
     if region_start > region_end or region_start < 0:
-        raise NameError("{} not valid. The format is chrom:start:end. "
-                        "Without comas, dashes or dots. ".format(region_string))
+        raise NameError(f"{region_string} not valid. The format is chrom:start:end. "
+                        "Without comas, dashes or dots. ")
     try:
         tilesize = int(region[3])
     except IndexError:

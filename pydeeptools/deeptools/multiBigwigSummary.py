@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import argparse
 import os.path
 import sys
@@ -10,9 +7,8 @@ import numpy as np
 
 import deeptools.getScorePerBigWigBin as score_bw
 from deeptools import parserCommon
+from deeptools.parserCommon import existingFile
 from deeptools.utilities import smartLabels
-
-old_settings = np.seterr(all="ignore")
 
 
 def parse_arguments(args=None):
@@ -99,10 +95,9 @@ A detailed sub-commands help is available by typing:
 def process_args(args=None):
 
     parser = parse_arguments()
-    if args is None:
-        if len(sys.argv) == 1:
-            parser.print_help()
-            return
+    if args is None and len(sys.argv) == 1:
+        parser.print_help()
+        return
     args = parser.parse_args(args)
 
     if not args.labels and args.smartLabels:
@@ -111,9 +106,7 @@ def process_args(args=None):
         args.labels = []
         for f in args.bwfiles:
             if (
-                f.startswith("http://")
-                or f.startswith("https://")
-                or f.startswith("ftp://")
+                f.startswith(("http://", "https://", "ftp://"))
             ):
                 args.labels.append(f.split("/")[-1])
             else:
@@ -136,6 +129,7 @@ def multiBigwigSummaryArgs(case="bins"):
         metavar="FILE1 FILE2",
         help="List of bigWig files, separated by spaces.",
         nargs="+",
+        type=existingFile,
         required=True,
     )
 
@@ -224,6 +218,7 @@ def multiBigwigSummaryArgs(case="bins"):
             help="Limits the analysis to the regions specified in this file.",
             metavar="file1.bed file2.bed",
             nargs="+",
+            type=existingFile,
             required=True,
         )
 
@@ -275,44 +270,42 @@ def main(args=None):
         allArgs=args,
     )
 
-    sys.stderr.write("Number of bins found: {}\n".format(num_reads_per_bin.shape[0]))
+    sys.stderr.write(f"Number of bins found: {num_reads_per_bin.shape[0]}\n")
 
     if num_reads_per_bin.shape[0] < 2:
-        exit(
+        sys.exit(
             "ERROR: too few non zero bins found.\n"
             "If using --region please check that this "
             "region is covered by reads.\n"
         )
 
-    f = open(args.outFileName, "wb")
-    np.savez_compressed(f, matrix=num_reads_per_bin, labels=args.labels)
-    f.close()
+    with open(args.outFileName, "wb") as f:
+        np.savez_compressed(f, matrix=num_reads_per_bin, labels=args.labels)
 
     if args.outRawCounts:
         # append to the generated file the
         # labels
         header = "#'chr'\t'start'\t'end'\t"
         header += "'" + "'\t'".join(args.labels) + "'\n"
-        f = open(args.outRawCounts, "r+")
-        content = f.read()
-        f.seek(0, 0)
-        f.write(header + content)
+        with open(args.outRawCounts, "r+") as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(header + content)
 
-        """
-        if bed_regions:
-            bed_regions.seek(0)
-            reg_list = bed_regions.readlines()
-            args.outRawCounts.write("#'chr'\t'start'\t'end'\t")
-            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-            fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
-            for idx, row in enumerate(num_reads_per_bin):
-                args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].strip().split("\t")[0:3]))
-                args.outRawCounts.write(fmt % tuple(row))
+            """
+            if bed_regions:
+                bed_regions.seek(0)
+                reg_list = bed_regions.readlines()
+                args.outRawCounts.write("#'chr'\t'start'\t'end'\t")
+                args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+                fmt = "\t".join(np.repeat('%s', num_reads_per_bin.shape[1])) + "\n"
+                for idx, row in enumerate(num_reads_per_bin):
+                    args.outRawCounts.write("{}\t{}\t{}\t".format(*reg_list[idx].strip().split("\t")[0:3]))
+                    args.outRawCounts.write(fmt % tuple(row))
 
-        else:
-            args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
-            fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
-            for row in num_reads_per_bin:
-                args.outRawCounts.write(fmt.format(*tuple(row)))
-        """
-        f.close()
+            else:
+                args.outRawCounts.write("'" + "'\t'".join(args.labels) + "'\n")
+                fmt = "\t".join(np.repeat('{}', num_reads_per_bin.shape[1])) + "\n"
+                for row in num_reads_per_bin:
+                    args.outRawCounts.write(fmt.format(*tuple(row)))
+            """

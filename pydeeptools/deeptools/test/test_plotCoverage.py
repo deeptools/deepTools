@@ -1,11 +1,11 @@
-import os
 import filecmp
-from matplotlib.testing.compare import compare_images
+import os
 from tempfile import NamedTemporaryFile
+
+from matplotlib.testing.compare import compare_images
 
 import deeptools.plotCoverage
 import deeptools.utilities
-
 
 __author__ = 'Bjoern'
 
@@ -19,32 +19,32 @@ tolerance = 13
 def run_plotCoverage(extra_args=None):
     """Run plotCoverage and return generated plot and raw count files."""
 
-    plotfile = NamedTemporaryFile(
-        suffix='.png',
-        prefix='deeptools_testfile_',
-        delete=False
-    )
+    with (
+        NamedTemporaryFile(
+            suffix='.png',
+            prefix='deeptools_testfile_',
+            delete=False
+        ) as plotfile,
+        NamedTemporaryFile(
+            suffix='.tab',
+            prefix='deeptools_testfile_',
+            delete=False
+        ) as txtfile,
+    ):
+        args = (
+            f"--bamfiles {TEST_DATA}test1.bam "
+            f"{TEST_DATA}test2.bam "
+            f"--plotFile {plotfile.name} "
+            f"--plotFileFormat png "
+            f"--outRawCounts {txtfile.name}"
+        ).split()
 
-    txtfile = NamedTemporaryFile(
-        suffix='.tab',
-        prefix='deeptools_testfile_',
-        delete=False
-    )
+        if extra_args:
+            args.extend(extra_args)
 
-    args = (
-        f"--bamfiles {TEST_DATA}test1.bam "
-        f"{TEST_DATA}test2.bam "
-        f"--plotFile {plotfile.name} "
-        f"--plotFileFormat png "
-        f"--outRawCounts {txtfile.name}"
-    ).split()
+        deeptools.plotCoverage.main(args)
 
-    if extra_args:
-        args.extend(extra_args)
-
-    deeptools.plotCoverage.main(args)
-
-    return plotfile.name, txtfile.name
+        return plotfile.name, txtfile.name
 
 
 def cleanup(*files):

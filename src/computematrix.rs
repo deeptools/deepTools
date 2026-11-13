@@ -132,7 +132,7 @@ pub fn r_computematrix(
     }
 
     // If there is a blacklist, read it and build an index.
-    let blacklist_index: Option<Arc<BlacklistIndex>> = if blacklist != "none" {
+    let blacklist_index: Option<Arc<BlacklistIndex>> = if blacklist != "None" {
         let isbed = is_bed_or_gtf(blacklist);
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
@@ -398,7 +398,7 @@ fn matrix_dump(
     sort_using_samples: Vec<u32>,
     regions: Vec<Region>,
     group_of_region: Vec<usize>,
-    matrix: Vec<Vec<f32>>,
+    mut matrix: Vec<Vec<f32>>,
     scale_regions: Scalingregions,
     ofile: &str,
     outfilenamematrix: Option<String>,
@@ -418,7 +418,12 @@ fn matrix_dump(
         );
     }
 
-    let filtered_matrix: Vec<Vec<f32>> = keep_indices.iter().map(|&i| matrix[i].clone()).collect();
+    // Each retained index occurs once, so move its row buffer instead of copying it.
+    let mut filtered_matrix: Vec<Vec<f32>> = keep_indices
+        .iter()
+        .map(|&i| std::mem::take(&mut matrix[i]))
+        .collect();
+    drop(matrix);
     let filtered_regions: Vec<Region> = keep_indices.iter().map(|&i| regions[i].clone()).collect();
     let filtered_group_of_region: Vec<usize> =
         keep_indices.iter().map(|&i| group_of_region[i]).collect();
@@ -583,7 +588,7 @@ fn matrix_dump(
 
         let sortedmatrix: Vec<Vec<f32>> = sortedix
             .iter()
-            .map(|ix| filtered_matrix[*ix].clone())
+            .map(|ix| std::mem::take(&mut filtered_matrix[*ix]))
             .collect();
         let sortedregions: Vec<Region> = sortedix
             .into_iter()

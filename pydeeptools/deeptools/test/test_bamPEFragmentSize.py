@@ -5,7 +5,6 @@ from matplotlib.testing.compare import compare_images
 
 import deeptools.bamPEFragmentSize
 
-
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data"
 
 # Headroom for anti-aliasing/text-hinting drift between matplotlib patch

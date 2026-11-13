@@ -1,12 +1,16 @@
 #!/usr/bin/env python
-import deeptools.heatmapper as heatmapper
+import argparse
+import csv
+import os
+import sys
+import warnings
+from importlib.metadata import version
+
 import deeptoolsintervals.parse as dti
 import numpy as np
-import argparse
-import sys
-import os
-import csv
-from importlib.metadata import version
+
+from deeptools import heatmapper
+from deeptools.parserCommon import existingFile
 
 
 def parse_arguments():
@@ -150,6 +154,7 @@ def bindArgs():
     required.add_argument('--matrixFile', '-m',
                           help='Matrix files from the computeMatrix tool.',
                           nargs='+',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--outFileName', '-o',
@@ -165,6 +170,7 @@ def infoArgs():
 
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
+                          type=existingFile,
                           required=True)
 
     return parser
@@ -256,6 +262,7 @@ def sortArgs():
 
     required.add_argument('--matrixFile', '-m',
                           help='Matrix file from the computeMatrix tool.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--outFileName', '-o',
@@ -273,7 +280,8 @@ def sortArgs():
                                'column with group labels. Note that these should be '
                                'sorted such that all group entries are together.',
                           required=True,
-                          nargs='+')
+                          nargs='+',
+                          type=existingFile)
 
     optional = parser.add_argument_group('Optional arguments')
 
@@ -304,11 +312,11 @@ def printInfo(matrix):
 
     print("Groups:")
     for group in matrix.matrix.group_labels:
-        print("\t{0}".format(group))
+        print(f"\t{group}")
 
     print("Samples:")
     for sample in matrix.matrix.sample_labels:
-        print("\t{0}".format(sample))
+        print(f"\t{sample}")
 
 
 def printDataRange(matrix):
@@ -320,11 +328,7 @@ def printDataRange(matrix):
         start = matrix.matrix.sample_boundaries[i]
         end = matrix.matrix.sample_boundaries[i + 1]
         sample_matrix = matrix.matrix.matrix[..., start:end]
-        print("{0}\t{1}\t{2}\t{3}\t{4}\t{5}".format(sample, np.amin(sample_matrix),
-                                                    np.amax(sample_matrix),
-                                                    np.ma.median(sample_matrix),
-                                                    np.percentile(sample_matrix, 10),
-                                                    np.percentile(sample_matrix, 90)))
+        print(f"{sample}\t{np.amin(sample_matrix)}\t{np.amax(sample_matrix)}\t{np.ma.median(sample_matrix)}\t{np.percentile(sample_matrix, 10)}\t{np.percentile(sample_matrix, 90)}")
 
 
 def relabelMatrix(matrix, args):
@@ -333,11 +337,11 @@ def relabelMatrix(matrix, args):
     """
     if args.groupLabels:
         if len(args.groupLabels) != len(matrix.matrix.group_labels):
-            sys.exit("You specified {} group labels, but {} are required.\n".format(len(args.groupLabels), len(matrix.matrix.group_labels)))
+            sys.exit(f"You specified {len(args.groupLabels)} group labels, but {len(matrix.matrix.group_labels)} are required.\n")
         matrix.matrix.group_labels = args.groupLabels
     if args.sampleLabels:
         if len(args.sampleLabels) != len(matrix.matrix.sample_labels):
-            sys.exit("You specified {} sample labels, but {} are required.\n".format(len(args.sampleLabels), len(matrix.matrix.sample_labels)))
+            sys.exit(f"You specified {len(args.sampleLabels)} sample labels, but {len(matrix.matrix.sample_labels)} are required.\n")
         matrix.matrix.sample_labels = args.sampleLabels
 
 
@@ -347,13 +351,13 @@ def getGroupBounds(args, matrix):
     """
     bounds = matrix.parameters['group_boundaries']
     if args.groups is None:
-        return range(0, matrix.matrix.matrix.shape[0]), np.array(bounds)
+        return range(matrix.matrix.matrix.shape[0]), np.array(bounds)
     else:
-        o = list()
+        o = []
         obounds = [0]
         for group in args.groups:
             if group not in matrix.matrix.group_labels:
-                sys.exit("Error: '{0}' is not a valid group\n".format(group))
+                sys.exit(f"Error: '{group}' is not a valid group\n")
             idx = matrix.matrix.group_labels.index(group)
             o.extend(range(bounds[idx], bounds[idx + 1]))
             obounds.append(bounds[idx + 1] - bounds[idx])
@@ -368,10 +372,10 @@ def getSampleBounds(args, matrix):
     if args.samples is None:
         return np.arange(0, matrix.matrix.matrix.shape[1])
     else:
-        o = list()
+        o = []
         for sample in args.samples:
             if sample not in matrix.matrix.sample_labels:
-                sys.exit("Error: '{0}' is not a valid sample\n".format(sample))
+                sys.exit(f"Error: '{sample}' is not a valid sample\n")
             idx = matrix.matrix.sample_labels.index(sample)
             o.extend(range(bounds[idx], bounds[idx + 1]))
         return o
@@ -427,8 +431,11 @@ def filterHeatmapValues(hm, minVal, maxVal):
         minVal = -np.inf
     if maxVal is None:
         maxVal = np.inf
-    np.warnings.filterwarnings('ignore')
-    for i, (x, y) in enumerate(zip(np.nanmin(hm.matrix.matrix, axis=1), np.nanmax(hm.matrix.matrix, axis=1))):
+    with warnings.catch_warnings():
+        warnings.filterwarnings('ignore', message='All-NaN (slice|axis) encountered')
+        rowMin = np.nanmin(hm.matrix.matrix, axis=1)
+        rowMax = np.nanmax(hm.matrix.matrix, axis=1)
+    for i, (x, y) in enumerate(zip(rowMin, rowMax)):
         # x/y will be nan iff a row is entirely nan. Don't filter.
         if np.isnan(x) or (x >= minVal and y <= maxVal):
             keep.append(True)
@@ -527,7 +534,7 @@ def cbindMatrices(hm, args):
 
     # Make a dict of region name:row associations
     hm.read_matrix_file(args.matrixFile[0])
-    d = dict({x: dict() for x in hm.parameters["group_labels"]})
+    d = {x: {} for x in hm.parameters["group_labels"]}
     for idx, group in enumerate(hm.parameters["group_labels"]):
         s = hm.parameters["group_boundaries"][idx]
         e = hm.parameters["group_boundaries"][idx + 1]
@@ -568,7 +575,7 @@ def cbindMatrices(hm, args):
     hm.matrix.sample_boundaries = hm.parameters['sample_boundaries']
 
 
-def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
+def loadBED(firstline, fp, fname, labelColumn, labels, regions, defaultGroup):
     """
     Given a first line, possibly a label column and a list of labels and regions, add the labels and regions in the file to them
     """
@@ -577,7 +584,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
     labelIdx = None
     localRegions = {}
 
-    cols = line.strip().split("\t")
+    cols = firstline.strip().split("\t")
     if labelColumn is not None:
         label = cols.pop(labelColumn)
         if label not in labels:
@@ -591,7 +598,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
     if len(cols) >= 6:
         name = cols[3]
     else:
-        name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
+        name = f"{cols[0]}:{cols[1]}-{cols[2]}"
     localRegions[name] = len(localRegions)
 
     for line in fp:
@@ -603,7 +610,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
                 else:
                     labels[dti.findRandomLabel(labels, os.path.basename(fname))] = len(labels)
                 regions.append(localRegions)
-                localRegions = dict()
+                localRegions = {}
             continue
         elif line.startswith("#") and labelColumn is not None:
             continue
@@ -623,7 +630,7 @@ def loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup):
         if len(cols) >= 6:
             name = cols[3]
         else:
-            name = "{0}:{1}-{2}".format(cols[0], cols[1], cols[2])
+            name = f"{cols[0]}:{cols[1]}-{cols[2]}"
         name = dti.findRandomLabel(localRegions, name)
         localRegions[name] = len(localRegions)
 
@@ -644,14 +651,14 @@ def loadGTFtranscript(cols, label, defaultGroup, transcript_id_designator):
         label = defaultGroup
 
     if transcript_id_designator not in s or s[-1] == transcript_id_designator:
-        sys.stderr.write("Warning: {0} is malformed!\n".format("\t".join(cols)))
+        sys.stderr.write("Warning: {} is malformed!\n".format("\t".join(cols)))
         return None, None
 
     name = s[s.index(transcript_id_designator) + 1].rstrip(";")
     return label, name
 
 
-def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_designator, defaultGroup):
+def loadGTF(firstline, fp, fname, labels, regions, transcriptID, transcript_id_designator, defaultGroup):
     """
     Like loadBED, but for a GTF file
 
@@ -660,13 +667,13 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
     file_label = dti.findRandomLabel(labels, os.path.basename(fname))
 
     # handle the first line
-    cols = line.split("\t")
+    cols = firstline.split("\t")
     if cols[2].lower() == transcriptID.lower():
         label, name = loadGTFtranscript(cols, file_label, defaultGroup, transcript_id_designator)
         if label is not None:
             if label not in labels:
                 labels[label] = len(labels)
-                regions.append(dict())
+                regions.append({})
             labelIdx = labels[label]
             regions[labelIdx][name] = len(regions[labelIdx])
 
@@ -683,7 +690,7 @@ def loadGTF(line, fp, fname, labels, regions, transcriptID, transcript_id_design
                     continue
                 if label not in labels:
                     labels[label] = len(labels)
-                    regions.append(dict())
+                    regions.append({})
                 labelIdx = labels[label]
                 regions[labelIdx][name] = len(regions[labelIdx])
 
@@ -693,7 +700,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
     Iterate through the files noted by regionsFileName and sort hm accordingly
     """
 
-    labels = dict()
+    labels = {}
     regions = []
     defaultGroup = None
     if len(regionsFileName) == 1:
@@ -717,7 +724,7 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
         # Determine the file type and load into a list (or list of lists)
         cols = line.strip().split("\t")
         if len(cols) - subtract < 3:
-            raise RuntimeError('{0} does not seem to be a recognized file type!'.format(fname))
+            raise RuntimeError(f'{fname} does not seem to be a recognized file type!')
         elif len(cols) - subtract <= 6:
             loadBED(line, fp, fname, labelColumn, labels, regions, defaultGroup)
         elif len(cols) and dti.seemsLikeGTF(cols):
@@ -731,18 +738,18 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
     if verbose:
         for e in labels:
             if e not in s1:
-                sys.exit("The computeMatrix output is missing the '{}' region group. It has {} but the specified regions have {}.\n".format(e, s1, labels.keys()))
+                sys.exit(f"The computeMatrix output is missing the '{e}' region group. It has {s1} but the specified regions have {labels.keys()}.\n")
 
     # Make a dictionary out of current labels and regions
-    d = dict()
+    d = {}
     pos = 0
-    groupSizes = dict()
+    groupSizes = {}
     for idx, label in enumerate(hm.parameters['group_labels']):
         s = hm.parameters['group_boundaries'][idx]
         e = hm.parameters['group_boundaries'][idx + 1]
         if label not in labels:
             continue
-        d[label] = dict()
+        d[label] = {}
         groupSize = 0
         for reg in hm.matrix.regions[s:e]:
             d[label][reg[2]] = pos
@@ -767,12 +774,12 @@ def sortMatrix(hm, regionsFileName, transcriptID, transcript_id_designator, verb
         for name in _:
             if name not in d[label]:
                 if verbose:
-                    sys.stderr.write("Skipping {}, due to being absent in the computeMatrix output.\n".format(name))
+                    sys.stderr.write(f"Skipping {name}, due to being absent in the computeMatrix output.\n")
                 continue
             sz += 1
             order.append(d[label][name])
         if sz == 0 and verbose:
-            sys.exit("The region group {} had no matching entries!\n".format(label))
+            sys.exit(f"The region group {label} had no matching entries!\n")
         boundaries.append(sz + boundaries[-1])
     hm.matrix.regions = [hm.matrix.regions[i] for i in order]
     order = np.array(order)
@@ -849,4 +856,4 @@ def main(args=None):
         relabelMatrix(hm, args)
         hm.save_matrix(args.outFileName)
     else:
-        sys.exit("Unknown command {0}!\n".format(args.command))
+        sys.exit(f"Unknown command {args.command}!\n")

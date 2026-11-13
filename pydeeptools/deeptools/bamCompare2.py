@@ -1,8 +1,11 @@
 import argparse
-from deeptools import parserCommon
-from deeptools.hp import r_bamcompare
 import signal
 import sys
+
+from deeptools import parserCommon
+from deeptools.hp import r_bamcompare
+from deeptools.parserCommon import existingFile
+
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -49,12 +52,14 @@ def getRequiredArgs():
                           metavar='BAM file',
                           help='Sorted BAM file 1. Usually the BAM file '
                           'for the treatment.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--bamfile2', '-b2',
                           metavar='BAM file',
                           help='Sorted BAM file 2. Usually the BAM '
                           'file for the control.',
+                          type=existingFile,
                           required=True)
 
     return parser
@@ -148,11 +153,15 @@ def getOptionalArgs():
 def process_args(args=None):
     args = parseArguments().parse_args(args)
 
+    if args.normalizeUsing == "RPGC":
+        sys.exit(
+            "RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare. "
+        )
+
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print("Warning: the smooth length given ({}) is smaller than the bin "
-              "size ({}).\n\n No smoothing will be "
-              "done".format(args.smoothLength,
-                            args.binSize))
+        print(f"Warning: the smooth length given ({args.smoothLength}) is smaller than the bin "
+              f"size ({args.binSize}).\n\n No smoothing will be "
+              "done")
         args.smoothLength = None
 
     if not args.ignoreForNormalization:

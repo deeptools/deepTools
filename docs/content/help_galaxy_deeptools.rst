@@ -27,8 +27,6 @@ Tools for BAM and bigWig file processing
 +------------------------+--------------------------------------------------------------------------------+
 | ``multiBigwigSummary`` | calculate score summaries for the binned genome or user-specified regions      |
 +------------------------+--------------------------------------------------------------------------------+
-| ``correctGCBias``      | obtain a BAM file with reads distributed according to the genome's GC content  |
-+------------------------+--------------------------------------------------------------------------------+
 | ``bamCoverage``        | obtain the normalized read coverage of a single BAM file                       |
 +------------------------+--------------------------------------------------------------------------------+
 | ``bamCompare``         | normalize 2 BAM files to each other (e.g. log2ratio, difference)               |
@@ -51,8 +49,6 @@ Tools for QC of NGS data
 | ``plotFingerprint``   | assess the ChIP enrichment strength                                                                   |
 +-----------------------+-------------------------------------------------------------------------------------------------------+
 | ``bamPEFragmentSize`` | obtain the average fragment length for paired-end samples                                             |
-+-----------------------+-------------------------------------------------------------------------------------------------------+
-| ``computeGCBias``     | assess the GC bias by calculating the expected and observed GC distribution of aligned reads          |
 +-----------------------+-------------------------------------------------------------------------------------------------------+
 | ``plotCoverage``      | obtain the normalized read coverage of a single BAM file                                              |
 +-----------------------+-------------------------------------------------------------------------------------------------------+

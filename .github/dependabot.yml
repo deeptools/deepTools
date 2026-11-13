@@ -8,3 +8,6 @@ updates:
           dependencies:
               patterns:
                   - "*"
+      commit-message:
+          prefix: chore
+          include: scope

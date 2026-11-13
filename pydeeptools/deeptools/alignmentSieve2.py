@@ -1,15 +1,13 @@
-#!/usr/bin/env python
 import argparse
-import pysam
-import os
-import sys
+import re
 import signal
-from deeptools import parserCommon
-from deeptools.bamHandler import openBam
-from deeptools.mapReduce import mapReduce
-from deeptools.utilities import getTLen, smartLabels, getTempFileName
+import sys
 from importlib.metadata import version
+
+from deeptools import parserCommon
 from deeptools.hp import r_alignmentsieve
+from deeptools.parserCommon import existingFile
+
 
 def parseArguments():
     parser = argparse.ArgumentParser(
@@ -22,6 +20,7 @@ def parseArguments():
     required.add_argument('--bam', '-b',
                           metavar='FILE1',
                           help='An indexed BAM file.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--outFile', '-o',
@@ -75,6 +74,13 @@ def parseArguments():
                          action='store_true',
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
 
+    general.add_argument('--keepTags',
+                         action='extend',
+                         nargs='+',
+                         default=[],
+                         metavar='TAG',
+                         help="Copy these two-character auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags are copied verbatim: shifting rewrites the CIGAR, positions, mate fields, SEQ and QUAL, so tags describing those (for example MD, MC, SA, MM or ML) will be stale.")
+
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
                         action='store_true',
@@ -83,8 +89,12 @@ def parseArguments():
     filtering = parser.add_argument_group('Optional arguments')
 
     filtering.add_argument('--filterRNAstrand',
-                           help='Selects RNA-seq reads (single-end or paired-end) in '
-                                'the given strand. (Default: %(default)s)',
+                           help='Selects RNA-seq reads (single-end or paired-end) originating from genes '
+                                'on the given strand. This option assumes a standard dUTP-based library '
+                                'preparation (that is, --filterRNAstrand=forward keeps minus-strand reads, '
+                                'which originally came from genes on the forward strand using a dUTP-based '
+                                'method). Consider using --samFlagExclude instead for filtering by strand in '
+                                'other contexts. (Default: %(default)s)',
                            choices=['forward', 'reverse', 'None'],
                            default='None')
 
@@ -122,6 +132,7 @@ def parseArguments():
                            metavar="BED file",
                            nargs="+",
                            default="None",
+                           type=existingFile,
                            required=False)
 
     filtering.add_argument('--ignoreDuplicates',
@@ -151,199 +162,6 @@ def parseArguments():
     return parser
 
 
-def shiftRead(b, chromDict, args):
-    if not b.is_proper_pair:
-        return None
-    tLen = getTLen(b, notAbs=True)
-    start = b.pos
-    end = start + b.query_alignment_end
-    if b.is_reverse and not b.is_read2:
-        end -= args.shift[2]
-        deltaTLen = args.shift[3] - args.shift[2]
-    elif b.is_reverse and b.is_read2:
-        end += args.shift[1]
-        deltaTLen = args.shift[1] - args.shift[0]
-    elif not b.is_reverse and not b.is_read2:
-        start += args.shift[0]
-        deltaTLen = args.shift[1] - args.shift[0]
-    else:
-        start -= args.shift[3]
-        deltaTLen = args.shift[3] - args.shift[2]
-
-    # Sanity check
-    if end - start < 1:
-        if b.is_reverse:
-            start = end - 1
-        else:
-            end = start + 1
-    if start < 0:
-        start = 0
-    if end > chromDict[b.reference_name]:
-        end = chromDict[b.reference_name]
-    if end - start < 1:
-        return None
-
-    # create a new read
-    b2 = pysam.AlignedSegment()
-    b2.query_name = b.query_name
-    b2.flag = b.flag
-    b2.reference_id = b.reference_id
-    b2.reference_start = start
-    b2.mapping_quality = b.mapping_quality
-    b2.cigar = ((0, end - start),)  # Returned cigar is only matches
-    if tLen < 0:
-        b2.template_length = tLen - deltaTLen
-    else:
-        b2.template_length = tLen + deltaTLen
-    b2.next_reference_id = b.next_reference_id
-    b2.next_reference_start = b.next_reference_start
-    if b.is_proper_pair:
-        if b2.is_read2 and b2.is_reverse:
-            b2.next_reference_start += args.shift[0]
-        elif not b2.is_read2 and b2.is_reverse:
-            b2.next_reference_start -= args.shift[3]
-
-    return b2
-
-
-def filterWorker(arglist):
-    chrom, start, end, args, chromDict = arglist
-    fh = openBam(args.bam)
-    mode = 'wb'
-    oname = getTempFileName(suffix='.bam')
-    if args.filteredOutReads:
-        onameFiltered = getTempFileName(suffix='.bam')
-    else:
-        onameFiltered = None
-    ofh = pysam.AlignmentFile(oname, mode=mode, template=fh)
-    if onameFiltered:
-        ofiltered = pysam.AlignmentFile(onameFiltered, mode=mode, template=fh)
-    else:
-        ofiltered = None
-
-    prev_pos = set()
-    lpos = None
-
-    nFiltered = 0
-    total = 0
-    for read in fh.fetch(chrom, start, end):
-        if read.pos < start:
-            # ensure that we never double count (in case distanceBetweenBins == 0)
-            continue
-
-        total += 1
-        if read.flag & 4:
-            # Ignore unmapped reads, they were counted already
-            nFiltered += 1
-            if ofiltered:
-                ofiltered.write(read)
-            continue
-
-        if args.minMappingQuality and read.mapq < args.minMappingQuality:
-            nFiltered += 1
-            if ofiltered:
-                ofiltered.write(read)
-            continue
-
-        if args.samFlagInclude and read.flag & args.samFlagInclude != args.samFlagInclude:
-            nFiltered += 1
-            if ofiltered:
-                ofiltered.write(read)
-            continue
-        if args.samFlagExclude and read.flag & args.samFlagExclude != 0:
-            nFiltered += 1
-            if ofiltered:
-                ofiltered.write(read)
-            continue
-
-        tLen = getTLen(read)
-        if args.minFragmentLength > 0 and tLen < args.minFragmentLength:
-            nFiltered += 1
-            if ofiltered:
-                ofiltered.write(read)
-            continue
-        if args.maxFragmentLength > 0 and tLen > args.maxFragmentLength:
-            nFiltered += 1
-            if ofiltered:
-                ofiltered.write(read)
-            continue
-
-        if args.ignoreDuplicates:
-            # Assuming more or less concordant reads, use the fragment bounds, otherwise the start positions
-            if tLen >= 0:
-                s = read.pos
-                e = s + tLen
-            else:
-                s = read.pnext
-                e = s - tLen
-            if read.reference_id != read.next_reference_id:
-                e = read.pnext
-            if lpos is not None and lpos == read.reference_start \
-                    and (s, e, read.next_reference_id, read.is_reverse) in prev_pos:
-                nFiltered += 1
-                if ofiltered:
-                    ofiltered.write(read)
-                continue
-            if lpos != read.reference_start:
-                prev_pos.clear()
-            lpos = read.reference_start
-            prev_pos.add((s, e, read.next_reference_id, read.is_reverse))
-
-        # filterRNAstrand
-        if args.filterRNAstrand:
-            if read.is_paired:
-                if args.filterRNAstrand == 'forward':
-                    if read.flag & 144 == 128 or read.flag & 96 == 64:
-                        pass
-                    else:
-                        nFiltered += 1
-                        if ofiltered:
-                            ofiltered.write(read)
-                        continue
-                elif args.filterRNAstrand == 'reverse':
-                    if read.flag & 144 == 144 or read.flag & 96 == 96:
-                        pass
-                    else:
-                        nFiltered += 1
-                        if ofiltered:
-                            ofiltered.write(read)
-                        continue
-            else:
-                if args.filterRNAstrand == 'forward':
-                    if read.flag & 16 == 16:
-                        pass
-                    else:
-                        nFiltered += 1
-                        if ofiltered:
-                            ofiltered.write(read)
-                        continue
-                elif args.filterRNAstrand == 'reverse':
-                    if read.flag & 16 == 0:
-                        pass
-                    else:
-                        nFiltered += 1
-                        if ofiltered:
-                            ofiltered.write(read)
-                        continue
-
-        if args.shift:
-            read = shiftRead(read, chromDict, args)
-            if not read:
-                continue
-
-        # Read survived filtering
-        ofh.write(read)
-
-    # The results from the workers will get sorted, so get the TID
-    tid = fh.get_tid(chrom)
-
-    ofh.close()
-    if ofiltered:
-        ofiltered.close()
-    fh.close()
-    return tid, start, total, nFiltered, oname, onameFiltered
-
-
 def main(args=None):
     args = parseArguments().parse_args(args)
     if args.shift:
@@ -357,6 +175,15 @@ def main(args=None):
         if args.shift:
             print("Warning! The --ATACshift option is used, but a --shift option is provided as well. The latter will be ignored in favor of 4 -5 5 -4.")
         args.shift = [4, -5, 5, -4]
+
+    for tag in args.keepTags:
+        if not re.fullmatch(r'[A-Za-z][A-Za-z0-9]', tag):
+            sys.exit(f"--keepTags expects SAM tags (a letter followed by a letter or digit), got '{tag}'.")
+    args.keepTags = list(dict.fromkeys(args.keepTags))
+    if args.keepTags and not args.shift:
+        sys.exit("--keepTags only applies together with --shift or --ATACshift.")
+    if args.keepTags and args.BED:
+        sys.exit("--keepTags only applies to BAM output, not --BED.")
 
     if args.ignoreDuplicates:
         args.samFlagExclude |= 0x400
@@ -387,4 +214,5 @@ def main(args=None):
         args.maxFragmentLength,
         args.label,
         args.smartLabels,
+        args.keepTags,
     )

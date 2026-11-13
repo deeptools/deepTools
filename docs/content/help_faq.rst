@@ -13,7 +13,7 @@ General FAQ
 
 How does deepTools handle data from paired-end sequencing?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Generally, all the modules working on :ref:`BAM` files (``multiBamSummary``, ``bamCoverage``, ``bamCompare``, ``plotFingerprint``, ``computeGCBias``) automatically recognize paired-end sequencing data and will use the fragment size based on the distance between read pairs.
+Generally, all the modules working on :ref:`BAM` files (``multiBamSummary``, ``bamCoverage``, ``bamCompare``, ``plotFingerprint``) automatically recognize paired-end sequencing data and will use the fragment size based on the distance between read pairs.
 You can by-pass the typical fragment handling on mate pairs with the option ``--doNotExtendPairedEnds`` (can be found under "advanced options" in Galaxy).
 
 --------------------------------------------------
@@ -26,7 +26,6 @@ The following tools currently have this option:
 
 * :doc:`tools/multiBamSummary`
 * :doc:`tools/plotFingerprint`
-* :doc:`tools/computeGCBias`, :doc:`tools/correctGCBias`
 * :doc:`tools/bamCoverage`, :doc:`tools/bamCompare`
 
 It works as follows: first, the *entire* genome represented in the :ref:`BAM <bam>` file will be regarded and sampled, *then* all the regions or sampled bins that do not overlap the region indicated by the user will be discarded.
@@ -63,21 +62,10 @@ or
 Build-in solutions
 ~~~~~~~~~~~~~~~~~~~~
 
-``computeGCBias`` and ``multiBamSummary`` offer build-in solutions so that you do not need to resort to tools outside of deepTools.
- 
+``multiBamSummary`` offers a build-in solution so that you do not need to resort to tools outside of deepTools.
+
 :doc:`tools/multiBamSummary` has two modes, ``bins`` and ``BED``.
     If you make use of the ``BED`` mode, you can supply a :ref:`BED` file of regions that you would like to limit the operation to. This will do the same thing as in the general workaround mentioned above.
-
-:doc:`tools/computeGCBias` has a ``--filterOut`` option.
-     If you to create a BED file that contains all the regions you are **not** interested in, you can then supply this file to ``computeGCBias --filterOut Regions_to_be_ignored.bed`` and those regions will subsequently be ignored.
-
-------------------------------------------------
-
-When should I exclude regions from ``computeGCBias``?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. note:: In general, we recommend to only correct for GC bias (using :doc:`tools/computeGCBias` followed by :doc:`tools/correctGCBias`) if the majority of the genome (e.g., for mouse and human genomes the region between 30-60%) is GC-biased *and* you want to compare this sample with another sample that is not GC-biased.
-
-Sometimes, a certain GC bias is expected, for example for ChIP samples of H3K4Me3 in mammalian samples where GC-rich promoters are expected to be enriched. To not confound the GC bias caused by the library preparation with the inherent, expected GC-bias, we incorporated the possibility to supply a file of regions to ``computeGCBias`` that will be excluded from the GC bias calculation. This file should typically contain those regions that one expects to be significantly enriched. This allows the tool to focus on background regions.
 
 ---------------------------------------------------
 
@@ -210,7 +198,6 @@ What do I have to pay attention to when working with a draft version of a genome
 If your genome isn't included in our standard dataset then you'll need the following:
 
 1. **Effective genome size** - this is mostly needed for :doc:`bamCoverage <tools/bamCoverage>` and :doc:`bamCompare <tools/bamCompare>`, see :ref:`below <effgenomesize>` for details
-2. **Reference genome sequence in 2bit format** - this is needed for :doc:`computeGCBias <tools/computeGCBias>`, see :ref:`2bit <2bit>` for details
 
 .. _effgenomesize:
 
@@ -297,13 +284,5 @@ As described on the `BEDtools website <https://bedtools.readthedocs.io/en/latest
 
     $ bedtools genomecov -ibam sortedBAMfile.bam -g genome.size
 
----------------------------------------------------------------------------
-
-Where can I download the 2bit genome files required for ``computeGCBias``?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The 2bit files of most genomes can be found `here <http://hgdownload.cse.ucsc.edu/gbdb/>`__.
-Search for the .2bit ending. Otherwise, **fasta files can be converted to 2bit** using the UCSC program
-faToTwoBit (available for different platforms from `UCSC here <http://hgdownload.cse.ucsc.edu/admin/exe/>`__).
 
 

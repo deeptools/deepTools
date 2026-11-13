@@ -1,12 +1,13 @@
-import math
-import deeptools.computeMatrix2 as cm
 import gzip
-import tempfile
-import os.path
 import json
-import numpy as np
-from typing import Dict, List, Any, Tuple
+import math
+import os.path
+import tempfile
+from typing import Any
 
+import numpy as np
+
+import deeptools.computeMatrix2 as cm
 
 ALLOWED_DELTA = 1.0
 ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/test_computematrix/"
@@ -22,7 +23,7 @@ BIGWIG_IN2 = ROOT + "input_computeMatrix_bw2.bw"
 BIGWIG_IN3 = ROOT + "input_computeMatrix_bw3.bw"
 BIGWIG_IN4 = ROOT + "input_computeMatrix_bw4.bw"
 
-def _parse_mat_gz(file_path: str) -> Tuple[Dict[str, Any], List[List[float]]]:
+def _parse_mat_gz(file_path: str) -> tuple[dict[str, Any], list[list[float]]]:
     """
     Parse a .mat.gz file into header and numeric data.
 
@@ -68,7 +69,7 @@ def _parse_mat_gz(file_path: str) -> Tuple[Dict[str, Any], List[List[float]]]:
 
     return header_dict, data_matrix
 
-def _compare_mat_gz(observed_file: str, expected_file: str) -> Tuple[List[str], List[str], Dict[str, List[str]]]:
+def _compare_mat_gz(observed_file: str, expected_file: str) -> tuple[list[str], list[str], dict[str, list[str]]]:
     """
     Compare two .mat.gz files for header and data equality.
     """

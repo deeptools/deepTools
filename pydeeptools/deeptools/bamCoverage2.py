@@ -1,8 +1,11 @@
 import argparse
+import signal
+import sys
+
 from deeptools import parserCommon
 from deeptools.hp import r_bamcoverage
-import sys
-import signal
+from deeptools.parserCommon import existingFile
+
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -43,6 +46,7 @@ def get_required_args():
     required.add_argument('--bam', '-b',
                           help='BAM file to process',
                           metavar='BAM file',
+                          type=existingFile,
                           required=True)
 
     return parser
@@ -115,8 +119,8 @@ def process_args(args=None):
     if not args.smoothLength:
         args.smoothLength = 0
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print("Warning: the smooth length given ({}) is smaller than the bin "
-              "size ({}).\n\n No smoothing will be done".format(args.smoothLength, args.binSize))
+        print(f"Warning: the smooth length given ({args.smoothLength}) is smaller than the bin "
+              f"size ({args.binSize}).\n\n No smoothing will be done")
         args.smoothLength = 0
 
     if not args.ignoreForNormalization:
