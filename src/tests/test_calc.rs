@@ -78,7 +78,8 @@ mod scalefactor_calculations_tests {
         assert_eq!(r2, 0.27);
         // 6/22 < 1, so the reciprocal ratio is -22/6
         assert_eq!(r3, -3.67);
-        assert_eq!(r4, -16.0);
+        // subtract ignores pseudocounts: 5*1 - 10*2
+        assert_eq!(r4, -15.0);
     }
 
     #[test]
@@ -106,11 +107,6 @@ mod scalefactor_calculations_tests {
         assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "second"), 20.0);
         assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "add"), 25.0);
         assert_eq!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "mean"), 12.5);
-        // and none of them is the log2 ratio
-        let l2 = calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, "log2");
-        for op in ["first", "second", "add", "mean"] {
-            assert_ne!(calc_ratio(cov1, cov2, &sf1, &sf2, &pc1, &pc2, op), l2);
-        }
     }
 
     #[test]

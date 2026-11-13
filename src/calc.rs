@@ -118,7 +118,7 @@ pub fn calc_ratio(
     pseudocount2: &f32,
     operation: &str,
 ) -> f32 {
-    // Pseudocounts are only used in log2 and ratio operations
+    // Pseudocounts are only used in log2, ratio and reciprocal_ratio operations
     // First scale factor is applied, then pseudocount, if applicable.
     match operation {
         "log2" => {
@@ -147,9 +147,8 @@ pub fn calc_ratio(
             }
         }
         "subtract" => {
-            let num: f32 = (cov1 * *sf1) + *pseudocount1;
-            let den: f32 = (cov2 * *sf2) + *pseudocount2;
-            let fcov: f32 = num - den;
+            // No pseudocount, as in 3.5.x (it only shifted the output by p1 - p2).
+            let fcov: f32 = (cov1 * *sf1) - (cov2 * *sf2);
             return (fcov * 100.0).round() / 100.0;
         }
         // The remaining operations output the scaled signal(s) without any
