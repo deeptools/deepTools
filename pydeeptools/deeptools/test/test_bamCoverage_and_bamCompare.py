@@ -613,3 +613,25 @@ def test_bam_compare_nocollapse():
         ]
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
+
+def test_bam_compare_operations():
+    """
+    Each --operation computes what it names (#1457). With --scaleFactors 1:1 the
+    50-bp bin signals are A: 0,0,1,1 and B: 0,1,1,2 (see read layout above).
+    """
+    expected = {
+        'first': ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n'],
+        'second': ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n'],
+        'add': ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n'],
+        'mean': ['3R\t0\t50\t0\n', '3R\t50\t100\t0.5\n', '3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n'],
+        'reciprocal_ratio': ['3R\t0\t50\t1\n', '3R\t50\t100\t-2\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1.5\n'],
+    }
+    for op, exp in expected.items():
+        _, outfile = tempfile.mkstemp(suffix=".bg")
+        args = f"-b1 {BAMFILE_A} -b2 {BAMFILE_B} --scaleFactors 1:1 --operation {op} " \
+               f"-o {outfile} -p 1 -of bedgraph".split()
+        bam_comp.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        unlink(outfile)
+        assert resp == exp, f"--operation {op}: {resp} != {exp}"
