@@ -112,9 +112,9 @@ def getOptionalArgs():
 
     optional.add_argument('--operation',
                           help='The default is to output the log2 ratio of the '
-                          'two samples. The reciprocal ratio returns the '
+                          'two samples. The reciprocal ratio returns '
                           'the negative of the inverse of the ratio '
-                          'if the ratio is less than 0. The resulting '
+                          'if the ratio is less than 1. The resulting '
                           'values are interpreted as negative fold changes. '
                           'Instead of performing a computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
@@ -126,7 +126,7 @@ def getOptionalArgs():
 
     optional.add_argument('--pseudocount',
                           help='A small number to avoid x/0. Only useful '
-                          'together with --operation log2 or --operation ratio. '
+                          'together with --operation log2, ratio or reciprocal_ratio. '
                           'You can specify different values as pseudocounts for '
                           'the numerator and the denominator by providing two '
                           'values (the first value is used as the numerator '
