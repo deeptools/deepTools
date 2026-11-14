@@ -19,11 +19,13 @@ For bug reports and feature requests please open an issue [on github](https://gi
 
 ### Citation:
 
-Ramírez F, Ryan DP, Grüning B, Bhardwaj V, Kilpert F, Richter AS, Heyne S, Dündar F, Manke T. [deepTools2: a next generation web server for deep-sequencing data analysis.](https://nar.oxfordjournals.org/content/early/2016/04/12/nar.gkw257.abstract) Nucleic Acids Research. 2016 Apr 13:gkw257.
+Deboutte W, Salatino A, Maier W, Videm P, Navandar M, Erikson G, Momin S, Caballero-Perez J, Rabbani L, Lopez-Delisle L, Grüning B, Manke T. [deepTools4: Faster, Scalable, and Modernized Genomic Data Analysis.](https://doi.org/10.64898/2026.11.11.765524) bioRxiv. 2026 Nov 13. doi:10.64898/2026.11.11.765524
+
+Ramírez F, Ryan DP, Grüning B, Bhardwaj V, Kilpert F, Richter AS, Heyne S, Dündar F, Manke T. [deepTools2: a next generation web server for deep-sequencing data analysis.](https://academic.oup.com/nar/article/44/W1/W160/2499308) NAR. 2016 Apr 13. doi:10.1093/nar/gkw257
 
 ### Documentation:
 
-Our [documentation](https://deeptools.readthedocs.io/) contains more details on the [individual tool scopes and usages](https://deeptools.readthedocs.io/en/latest/content/list_of_tools.html) and an [introduction to our deepTools Galaxy web server](https://deeptools.readthedocs.io/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](https://deeptools.readthedocs.io/en/latest/content/example_usage.html).
+Our [documentation](https://deeptools.readthedocs.io/) contains more details on the [individual tool scopes and usages](https://deeptools.readthedocs.io/en/latest/content/list_of_tools.html) and an [introduction to using deepTools in Galaxy](https://deeptools.readthedocs.io/en/latest/content/help_galaxy_intro.html) including [step-by-step protocols](https://deeptools.readthedocs.io/en/latest/content/example_usage.html).
 
 >Please see also the [FAQ](https://deeptools.readthedocs.io/en/latest/content/help_faq.html), which we update regularly.
 Our [Gallery](https://deeptools.readthedocs.io/en/latest/content/example_gallery.html) may give you some more ideas about the scope of deepTools.
@@ -33,7 +35,7 @@ Our [Gallery](https://deeptools.readthedocs.io/en/latest/content/example_gallery
 
 ### Installation
 
-deepTools are available for:
+deepTools is available for:
 
 * Command line usage (via pip / conda / github)
 * Integration into Galaxy servers (via toolshed/API/web-browser)
@@ -72,7 +74,7 @@ for providing that same toolchain yourself; see the ["Building from
 source"](https://deeptools.readthedocs.io/en/latest/content/installation.html#building-from-source)
 section of the docs.
 
-<a name="galaxy"/></a>
+<a name="galaxy"></a>
 ### Galaxy Installation
 
 deepTools can be easily integrated into [Galaxy](https://galaxyproject.org). Please see the [installation instructions in our documentation](https://deeptools.readthedocs.io/en/latest/content/installation.html#galaxy-installation) for further details.
