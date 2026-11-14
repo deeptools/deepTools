@@ -85,11 +85,7 @@ author = 'Fidel Ramírez, Friederike Dündar, Björn Grüning, Thomas Manke, Dev
 def get_version():
     with open('../pyproject.toml', 'rb') as f:
         d = tomllib.load(f)
-    try:
-        return d['project']['version']
-    except:
-        return None
-
+    return d['project']['version']
 
 version = get_version()
 # The full version, including alpha/beta/rc tags.
@@ -98,7 +94,7 @@ release = version
 # An rst epilog to apper at the end of every page
 rst_epilog = """
 +----------------------------------------------------------------+-------------------------------------------------------------+
-| `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_.     | `code @ github <https://github.com/deeptools/deepTools/>`_. |
+| `deepTools @ usegalaxy.eu <https://usegalaxy.eu/>`_.           | `code @ github <https://github.com/deeptools/deepTools/>`_. |
 +----------------------------------------------------------------+-------------------------------------------------------------+
 """
 
