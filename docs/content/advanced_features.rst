@@ -9,5 +9,4 @@ Some of the features of deepTools are not self-explanatory. Below, we provide li
  * :doc:`feature/unscaled_regions`
  * :doc:`feature/read_offsets`
  * :doc:`feature/plotFingerprint_QC_metrics`
- * :doc:`feature/plotly`
  * :doc:`feature/effectiveGenomeSize`

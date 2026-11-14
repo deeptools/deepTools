@@ -95,7 +95,7 @@ Follow the links for more information on the different tool collections mentione
 
 `samtools <http://www.htslib.org/>`__ |
 `UCSCtools <http://hgdownload.cse.ucsc.edu/admin/exe/>`__ |
-`BEDtools <http://bedtools.readthedocs.org/en/latest/>`__ |
+`BEDtools <https://bedtools.readthedocs.io/en/latest/>`__ |
 
 .. _2bit:
 

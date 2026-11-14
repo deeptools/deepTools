@@ -1,10 +1,10 @@
-<tool id="deeptools_alignmentsieve" name="alignmentsieve" version="@TOOL_VERSION@+galaxy0" profile="@GALAXY_VERSION@">
+<tool id="deeptools_alignmentsieve" name="alignmentsieve" version="@TOOL_VERSION@+galaxy@VERSION_SUFFIX@" profile="@GALAXY_VERSION@">
     <description>Filter BAM/CRAM files according to specified parameters</description>
     <macros>
         <token name="@BINARY@">alignmentSieve</token>
         <import>deepTools_macros.xml</import>
     </macros>
-    <expand macro="requirements" />
+    <expand macro="requirements"/>
     <command>
 <![CDATA[
         #import re
@@ -15,21 +15,18 @@
         #else:
             ln -s '${bamfile.metadata.cram_index}' one.bam.crai &&
         #end if
-
         @BINARY@
         @THREADS@
         -b one.bam
-
         --label '$label'
-
-        #if str($filterRNAstrand) != 'no':
+        #if $filterRNAstrand:
             --filterRNAstrand '$filterRNAstrand'
         #end if
 
         $ignoreDuplicates
 
         #if $minMappingQuality:
-            --minMappingQuality '$minMappingQuality'
+            --minMappingQuality $minMappingQuality
         #end if
 
         #if $samFlagInclude:
@@ -66,16 +63,20 @@
             --filteredOutReads '$outFileFiltered'
         #end if
 
-        #if str($shift) != "":
+        #if $shift:
             #set shifts = " ".join(["'{}'".format(x) for x in $shift.split(" ")])
             --shift $shifts
         #elif $ATACshift:
             --ATACshift
         #end if
+        #if ($shift or $ATACshift) and $keepTags and not $BED:
+            #set tags = " ".join(["'{}'".format(x) for x in $keepTags.split(" ")])
+            --keepTags $tags
+        #end if
         #if $BED:
             --BED
             -o '$outFile'
-        #elif str($shift) != "" or $ATACshift:
+        #elif $shift or $ATACshift:
             -o foo.bam &&
             samtools sort -o '$outFile' -T foo.tmp -@ "\${GALAXY_SLOTS:-4}" foo.bam &&
             rm foo.bam
@@ -86,10 +87,9 @@
     </command>
 
     <inputs>
-        <param name="bamfile" format="bam,cram" type="data" label="BAM file" />
-        <param name="BED" argument="--BED" type="boolean" label="Output in BEDPE format?"
-            help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format." />
-        <param argument="--shift" type="text" label="Amount to shift fragments" value=""
+        <param name="bamfile" format="bam,cram" type="data" label="BAM file"/>
+        <param argument="--BED" type="boolean" label="Output in BEDPE format?" help="Instead of producing BAM files, write output in BEDPE format (as defined by MACS2). Note that only reads/fragments passing filtering criterion are written in BEDPE format."/>
+        <param argument="--shift" type="text" label="Amount to shift fragments" value="" optional="true" size="30"
             help="Shift the left and right end of a fragment. A positive
                   value shift an end to the right (on the + strand) and
                   a negative value shifts a fragment to the left. Either
@@ -101,22 +101,25 @@
                   right, respectively. Consequently, it is possible to
                   take strand into consideration for strand-specific
                   protocols. Note that only properly paired reads are considered."/>
-        <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq" />
-        <param argument="filterRNAstrand" type="select" label="Only include reads originating from fragments from the forward or reverse strand."
+        <param argument="--ATACshift" type="boolean" label="Shift fragment ends as appropriate for ATAC-seq"/>
+        <param argument="--keepTags" type="text" label="Auxiliary tags to keep on shifted reads" value="" optional="true" size="30"
+            help="Space-separated two-character SAM tags (for example CB UB) copied from the input onto shifted BAM records. By default shifting drops all tags. Only used together with a shift and BAM output. Tags are copied verbatim, so tags that describe the original alignment (such as NM, MD or SA) will be stale.">
+            <validator type="regex">^[A-Za-z][A-Za-z0-9]( [A-Za-z][A-Za-z0-9])*$</validator>
+        </param>
+        <param argument="filterRNAstrand" type="select" optional="true" label="Only include reads originating from fragments from the forward or reverse strand."
             help="By default (the no option), all reads are processed, regardless of the strand they originated from. For RNAseq, it can be useful to separately create bigWig files for the forward or reverse strands.
                   Note that this tools assumes that a dUTP-based method was used, so fragments will be assigned to the reverse strand if the second read in a pair is reverse complemented.">
-            <option value="no" selected="true">no</option>
             <option value="forward">forward</option>
             <option value="reverse">reverse</option>
         </param>
 
-        <expand macro="ignoreDuplicates" />
-        <expand macro="minMappingQuality" />
-        <expand macro="samFlags" />
-        <expand macro="fragLength" />
-        <expand macro="blacklist" />
-        <param argument="--filterMetrics" type="boolean" label="Save the total number of reads seen and remaining after filtering to a text file?" help="" />
-        <param argument="--filteredOutReads" type="boolean" label="Save alignments NOT passing the filtering criteria?" help="" />
+        <expand macro="ignoreDuplicates"/>
+        <expand macro="minMappingQuality"/>
+        <expand macro="samFlags"/>
+        <expand macro="fragLength"/>
+        <expand macro="blacklist"/>
+        <param argument="--filterMetrics" type="boolean" label="Save the total number of reads seen and remaining after filtering to a text file?"/>
+        <param argument="--filteredOutReads" type="boolean" label="Save alignments NOT passing the filtering criteria?"/>
     </inputs>
     <outputs>
         <data format="tabular" name="filterMetricsFile" label="${tool.name} on ${on_string}: filtering metrics">
@@ -132,34 +135,48 @@
         </data>
     </outputs>
     <tests>
-        <test>
-            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
-            <param name="minMappingQuality" value="10" />
-            <param name="filterMetrics" value="True" />
-            <output name="outFile" file="alignmentSieve.bam" ftype="bam" lines_diff="1" />
-            <output name="filterMetricsFile" file="alignmentSieve.txt" ftype="tabular" />
+        <test expect_num_outputs="2">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="filterMetrics" value="True"/>
+            <output name="outFile" file="alignmentSieve.bam" ftype="bam" lines_diff="2"/>
+            <output name="filterMetricsFile" file="alignmentSieve.txt" ftype="tabular"/>
         </test>
-        <test>
-            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
-            <param name="minMappingQuality" value="10" />
-            <param name="BED" value="yes" />
-            <param name="shift" value="1 -2 3 -4" />
-            <output name="outFile" file="alignmentSieve.bed" ftype="bed" />
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="BED" value="yes"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <output name="outFile" file="alignmentSieve.bed" ftype="bed"/>
         </test>
-        <test>
-            <param name="bamfile" value="paired_chr2L.bam" ftype="bam" />
-            <param name="minMappingQuality" value="10" />
-            <param name="shift" value="1 -2 3 -4" />
-            <output name="outFile" file="alignmentSieve2.bam" ftype="bam" lines_diff="2" />
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <output name="outFile" file="alignmentSieve2.bam" ftype="bam" lines_diff="4"/>
         </test>
-        <test>
-            <param name="bamfile" value="paired_chr2L.cram" ftype="cram" />
-            <param name="minMappingQuality" value="10" />
-            <param name="shift" value="1 -2 3 -4" />
-            <output name="outFile" file="alignmentSieve3.bam" ftype="bam" lines_diff="2" />
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.cram" ftype="cram"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <output name="outFile" file="alignmentSieve3.bam" ftype="bam" lines_diff="4"/>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <param name="keepTags" value="YT XS"/>
+            <output name="outFile" file="alignmentSieve5.bam" ftype="bam" lines_diff="4"/>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="bamfile" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="minMappingQuality" value="10"/>
+            <param name="BED" value="yes"/>
+            <param name="shift" value="1 -2 3 -4"/>
+            <param name="keepTags" value="YT"/>
+            <output name="outFile" file="alignmentSieve.bed" ftype="bed"/>
         </test>
     </tests>
-
     <help>
 <![CDATA[
 
@@ -212,5 +229,5 @@ As can be seen, such fragments are considered to be on the ``-`` strand, so nega
 @REFERENCES@
 ]]>
     </help>
-    <expand macro="citations" />
+    <expand macro="citations"/>
 </tool>

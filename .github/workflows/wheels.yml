@@ -1,0 +1,172 @@
+name: build_wheels
+
+on:
+    push:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    linux:
+        runs-on: ${{ matrix.platform.runner }}
+        strategy:
+            matrix:
+                platform:
+                    - runner: ubuntu-22.04
+                      target: x86_64
+                    - runner: ubuntu-22.04
+                      target: aarch64
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+              with:
+                  python-version: 3.x
+            - name: Build wheels
+              uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+              with:
+                  target: ${{ matrix.platform.target }}
+                  args: --release --out dist -i python3.12 python3.13 python3.14
+                  manylinux: 2_28
+                  before-script-linux: |
+                      set -ex
+                      cat /etc/*release*
+                      if [ "${{ matrix.platform.target }}" = "x86_64" ]; then
+                        # maturin-action's manylinux switches to AlmaLinux 8
+                        dnf install -y epel-release && dnf update -y
+                        dnf install -y gcc gcc-c++ make perl curl clang xz-devel pkgconfig
+                        ## we've vendored openssl via Cargo.toml anyway, so this part is no longer used...
+                        # dnf install -y openssl-devel
+                        # export OPENSSL_INCLUDE_DIR=$(pkg-config --variable=includedir openssl)
+                        # export OPENSSL_LIB_DIR=$(pkg-config --variable=libdir openssl)
+                        # export OPENSSL_DIR="$OPENSSL_LIB_DIR/ssl"
+                      elif [ "${{ matrix.platform.target }}" = "aarch64" ]; then
+                        # cross-compiling on Ubuntu 22.04
+                        ## We're vendoring openssl because libssl-dev:aarch64 is not available!
+                        apt-get update
+                        apt-get install -y build-essential perl curl clang liblzma-dev pkg-config \
+                          gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross crossbuild-essential-arm64
+                        # export OPENSSL_LIB_DIR=/usr/lib/aarch64-linux-gnu
+                        # export OPENSSL_INCLUDE_DIR=/usr/include/aarch64-linux-gnu
+                        # export OPENSSL_DIR=/usr/lib/aarch64-linux-gnu
+                        # export OPENSSL_NO_VENDOR=1
+                      fi
+                      # export OPENSSL_NO_VENDOR=1
+                      # if [ -z "$OPENSSL_LIB_DIR" ] || [ -z "$OPENSSL_INCLUDE_DIR" ]; then
+                      #     echo "OpenSSL development files are not installed or pkg-config is not configured correctly."
+                      #     exit 1
+                      # fi
+                      # env | grep SSL  # for debugging when rust crate fails to find headers
+            - name: Upload wheels
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: wheels-linux-${{ matrix.platform.target }}
+                  path: dist
+
+    musllinux:
+        runs-on: ${{ matrix.platform.runner }}
+        strategy:
+            matrix:
+                platform:
+                    - runner: ubuntu-22.04
+                      target: x86_64
+                    - runner: ubuntu-22.04
+                      target: aarch64
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+              with:
+                  python-version: 3.x
+            - name: Build wheels
+              uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+              with:
+                  target: ${{ matrix.platform.target }}
+                  args: --release --out dist -i python3.12 python3.13 python3.14
+                  manylinux: musllinux_1_2
+                  before-script-linux: |
+                      apt-get update
+                      apt-get install -y musl-tools musl-dev
+                      if [ "${{ matrix.platform.target }}" = "aarch64" ]; then
+                        apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+                      fi
+            - name: Upload wheels
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: wheels-musllinux-${{ matrix.platform.target }}
+                  path: dist
+
+    macos:
+        runs-on: ${{ matrix.platform.runner }}
+        strategy:
+            matrix:
+                platform:
+                    - runner: macos-latest
+                      target: x86_64
+                    - runner: macos-latest
+                      target: aarch64
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+              with:
+                  python-version: 3.x
+            - name: Build wheels
+              uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+              with:
+                  target: ${{ matrix.platform.target }}
+                  args: --release --out dist -i python3.12 python3.13 python3.14
+            - name: Upload wheels
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: wheels-macos-${{ matrix.platform.target }}
+                  path: dist
+
+    sdist:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - name: Build sdist
+              uses: PyO3/maturin-action@e83996d129638aa358a18fbd1dfb82f0b0fb5d3b # v1.51.0
+              with:
+                  command: sdist
+                  args: --out dist
+            - name: Upload sdist
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              with:
+                  name: wheels-sdist
+                  path: dist
+
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
+        needs: [linux, musllinux, macos, sdist]
+        environment: pypi
+        permissions:
+            id-token: write
+            contents: write
+            attestations: write
+        steps:
+            - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+              with:
+                  pattern: wheels-*
+                  path: dist
+                  merge-multiple: true
+            - name: Generate artifact attestation
+              uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+              with:
+                  subject-path: "dist/*"
+            - name: Publish to PyPI
+              if: ${{ startsWith(github.ref, 'refs/tags/') }}
+              uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+              with:
+                  packages-dir: dist
+                  skip-existing: true

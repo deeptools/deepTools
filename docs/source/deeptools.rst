@@ -28,14 +28,6 @@ deeptools.correlation module
     :undoc-members:
     :show-inheritance:
 
-deeptools.correlation_heatmap module
-------------------------------------
-
-.. automodule:: deeptools.correlation_heatmap
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 deeptools.countReadsPerBin module
 ---------------------------------
 

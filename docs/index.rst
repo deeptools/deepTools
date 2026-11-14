@@ -9,7 +9,7 @@ efficient analysis of high-throughput sequencing data, such as ChIP-seq, RNA-seq
 
 There are 3 ways for using deepTools:
 
-* **Galaxy usage** --  our public `deepTools Galaxy server <http://deeptools.ie-freiburg.mpg.de>`_ let's you use the deepTools within the familiar Galaxy framework without the need to master the command line
+* **Galaxy usage** --  the public `usegalaxy.eu <https://usegalaxy.eu/>`_ server lets you use deepTools within the familiar Galaxy framework without the need to master the command line
 * **command line usage** -- simply download and install the tools (see :doc:`content/installation` and :doc:`content/list_of_tools`)
 * **API** -- make use of your favorite deepTools modules in your own python programs (see :doc:`content/api`)
 
@@ -20,6 +20,17 @@ currently available.
 
 If the file names in the figure mean nothing to you,
 please make sure to check our :doc:`content/help_glossary`.
+
+deepTools 4.0.0
+---------------
+As of deepTools 4.0.0, quite big changes have been made to the computation backend (which is now written in `rust <https://www.rust-lang.org/>`_).
+The main idea behind this change is to make some tools faster and more robust. 
+Useability of the tools are not affected. But note that the output (read precision) might be slightly different than before.
+
+ - :doc:`content/tools/bamCoverage`
+ - :doc:`content/tools/bamCompare`
+ - :doc:`content/tools/computeMatrix`
+ - :doc:`content/tools/multiBamSummary`
 
 
 Contents:
@@ -59,7 +70,11 @@ that fulfills the following criteria:
 .. tip:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `on github <https://github.com/deeptools/deepTools/issues>`__.
 
 
-Please cite deepTools2 as follows:
+Please cite deepTools as follows:
+
+Deboutte, Ward, Adrian Salatino, Wolfgang Maier, Pavankumar Videm, Mohit Navandar, Galina Erikson,
+Saim Momin, Juan Caballero-Perez, Leily Rabbani, Lucille Lopez-Delisle, Björn Grüning, and Thomas Manke.
+**"deepTools4: Faster, Scalable, and Modernized Genomic Data Analysis." bioRxiv (2026). doi:10.64898/2026.11.11.765524**
 
 Ramírez, Fidel, Devon P. Ryan, Björn Grüning, Vivek Bhardwaj, Fabian Kilpert, Andreas S. Richter,
 Steffen Heyne, Friederike Dündar, and Thomas Manke.

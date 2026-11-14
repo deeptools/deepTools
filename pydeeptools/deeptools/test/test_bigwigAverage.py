@@ -1,0 +1,80 @@
+import os.path
+import tempfile
+from os import unlink
+
+import deeptools.bigwigAverage as bwAve
+
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
+BIGWIG_A = ROOT + "testA_skipNAs.bw"
+BIGWIG_B = ROOT + "testB_skipNAs.bw"
+BIGWIG_C = ROOT + "test1.bw.bw"
+
+
+"""
+The distribution of reads for the bam file is:
+
+              0                              100                           200
+              |------------------------------------------------------------|
+testA.bam  3R                                ==============>
+                                                            <==============
+
+
+testB.bam  3R                 <==============               ==============>
+                                             ==============>
+                                                            ==============>
+
+The resulting bigwig files are as follows:
+
+testA_skipNas:
+    3R      100     200     1
+    chr_cigar       0       50      2
+
+testB_skipNas:
+    3R      50      150     1
+    3R      150     200     2
+"""
+
+
+def test_bigwigAverage():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_B} -o {outfile} --outFileFormat bedgraph".split()
+    bwAve.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.5\n', '3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bigwigAverage_skipnas():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_B} -o {outfile} --skipNAs " \
+           "--outFileFormat bedgraph".split()
+    bwAve.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bigwigAverageWithScale():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_B} -o {outfile} --outFileFormat bedgraph --scaleFactors 1:0.5".split()
+    bwAve.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.25\n', '3R\t100\t150\t0.75\n', '3R\t150\t200\t1\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bigwigAverageThree():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bigwigs {BIGWIG_A} {BIGWIG_A} {BIGWIG_B} -o {outfile} --outFileFormat bedgraph --scaleFactors 0.75:0.75:.75".split()
+    bwAve.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t0.25\n', '3R\t100\t150\t0.75\n', '3R\t150\t200\t1\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)

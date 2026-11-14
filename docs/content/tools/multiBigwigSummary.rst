@@ -1,3 +1,5 @@
+:orphan:
+
 multiBigwigSummary
 ==================
 
@@ -66,7 +68,7 @@ The optional output (``--outRawCounts``) is a simple tab-delimited file that can
 multiBigwigSummary in Galaxy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Below is the screenshot showing how to use multiBigwigSummary on the deeptools galaxy.
+Below is the screenshot showing how to use multiBigwigSummary in Galaxy.
 
 
 .. image:: ../../images/bigwiCorr_galaxy.png
