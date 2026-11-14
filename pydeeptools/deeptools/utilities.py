@@ -1,11 +1,13 @@
-import sys
 import os
-from deeptoolsintervals import GTF
-from deeptools.bamHandler import openBam
+import sys
+
 import matplotlib as mpl
+from deeptoolsintervals import GTF
+
+from deeptools.bamHandler import openBam
+
 mpl.use('Agg')
 import numpy as np
-
 
 debug = 0
 
@@ -61,100 +63,13 @@ def getTLen(read, notAbs=False):
     try:
         # the cigartuples property apparently didn't always exist
         for op, opLen in read.cigartuples:
-            if op == 0:
+            if op == 0 or op == 2 or op == 7 or op == 8:
                 tlen += opLen
-            elif op == 2:
-                tlen += opLen
-            elif op == 7:
-                tlen += opLen
-            elif op == 8:
-                tlen += opLen
-    except:
+    except TypeError:
+        # read.cigartuples is None for unmapped reads / reads without CIGAR info
         pass
 
     return tlen
-
-
-def getGC_content(tb, chrom, fragStart, fragEnd, fraction=True):
-    bases = tb.bases(chrom, fragStart, fragEnd, fraction=False)
-    if fragEnd > tb.chroms(chrom):
-        fragEnd = tb.chroms(chrom)
-    if sum(bases.values()) < 0.95 * (fragEnd - fragStart):
-        raise Exception("WARNING: too many NNNs present in {}:{}-{}".format(chrom, fragStart, fragEnd))
-        return None
-
-    if fraction:
-        return (bases['G'] + bases['C']) / float(fragEnd - fragStart)
-    return bases['G'] + bases['C']
-
-
-def tbitToBamChrName(tbitNames, bamNames):
-    """ checks if the chromosome names from the two-bit and bam file coincide.
-        In case they do not coincide, a fix is tried. If successful, then
-        a mapping table is returned.
-        tbitNames and bamNames should be lists
-    """
-
-    chrNameBitToBam = dict((x, x) for x in tbitNames)
-    if set(bamNames) != set(tbitNames):
-        sys.stderr.write("Bam and 2bit do not have matching "
-                         "chromosome names:\n2bit:{}\n\nbam:{}"
-                         "\n\n".format(tbitNames, bamNames))
-
-        if len(set(bamNames).intersection(set(tbitNames))) > 0:
-            sys.stderr.write("Using the following common chromosomes between "
-                             "bam chromosome names and 2bit chromosome "
-                             "names:\n")
-            for item in set(bamNames).intersection(set(tbitNames)):
-                sys.stderr.write(item + "\n")
-            chrNameBitToBam = dict([(x, x) for x in
-                                    set(bamNames).intersection(set(tbitNames))])
-        elif set(["chr" + x if x != 'dmel_mitochondrion_genome'
-                  else 'chrM' for x in bamNames]) == set(tbitNames):
-            sys.stderr.write("Adding 'chr' seems to solve the problem. "
-                             "Continuing ...")
-            chrNameBitToBam = dict([("chr" + x
-                                     if x != 'dmel_mitochondrion_genome'
-                                     else 'chrM', x) for x in bamNames])
-        elif set([x for x in tbitNames if x.count('random') == 0 and
-                 x.count('chrM') == 0]) == set(bamNames):
-            if debug:
-                print("Removing random and mitochondrial chromosomes"
-                      "fixes the problem")
-            chrNameBitToBam = dict([(x, x) for x in tbitNames
-                                    if x.count('random') == 0 and
-                                    x.count('chrM') == 0])
-        elif len(set(["chr" + x for x in bamNames if x != 'dmel_mitochondrion_genome']).intersection(set(tbitNames))) > 0:
-            bamNames2 = ["chr" + x for x in bamNames if x != 'dmel_mitochondrion_genome']
-            sys.stderr.write("Adding 'chr' seems to solve the problem for the following "
-                             "chromosomes...")
-            for item in set(bamNames2).intersection(set(tbitNames)):
-                sys.stderr.write(item + "\n")
-
-            chrNameBitToBam = {"chrM": "MT"}
-            for i in range(len(bamNames)):
-                if bamNames2[i] in tbitNames:
-                    chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
-        elif len(set([x[3:] for x in bamNames if x.startswith("chr")]).intersection(set(tbitNames))) > 0:
-            bamNames = [x for x in bamNames]
-            bamNames2 = [x[3:] for x in bamNames if x.startswith("chr")]
-            if debug:
-                sys.stderr.write("Removing 'chr' seems to solve the problem for the following "
-                                 "chromosomes...")
-                for item in set(bamNames).intersection(set(tbitNames)):
-                    sys.stderr.write(item + "\n")
-
-            chrNameBitToBam = {"MT": "chrM"}
-            for i in range(len(bamNames)):
-                if bamNames2[i] in tbitNames:
-                    chrNameBitToBam.update({bamNames2[i]: bamNames[i]})
-        else:
-            if debug:
-                print("Index and reference do not have matching ")
-                "chromosome names"
-            exit(0)
-
-    return chrNameBitToBam
 
 
 def getCommonChrNames(bamFileHandles, verbose=True):
@@ -177,13 +92,13 @@ def getCommonChrNames(bamFileHandles, verbose=True):
         try:
             # BAM file
             return [(x, y) for x, y in zip(bam_handler.references, bam_handler.lengths)]
-        except:
+        except Exception:
             return [(k, v) for k, v in bam_handler.chroms().items()]
 
     def print_chr_names_and_size(chr_set):
         sys.stderr.write("chromosome\tlength\n")
         for name, size in chr_set:
-            sys.stderr.write("{0:>15}\t{1:>10}\n".format(name, size))
+            sys.stderr.write(f"{name:>15}\t{size:>10}\n")
 
     common_chr = set(get_chrom_and_size(bamFileHandles[0]))
     non_common_chr = set()
@@ -205,9 +120,9 @@ def getCommonChrNames(bamFileHandles, verbose=True):
                 print_chr_names_and_size(common_chr)
 
                 sys.stderr.write("\nand the following is the list of the unmatched chromosome and chromosome\n"
-                                 "lengths from file\n{}\n".format(bamFileHandles.name))
+                                 f"lengths from file\n{bamFileHandles.name}\n")
                 print_chr_names_and_size(_names_and_size)
-                exit(1)
+                sys.exit(1)
             else:
                 _names_and_size = _corr_names_size
 
@@ -228,36 +143,16 @@ def getCommonChrNames(bamFileHandles, verbose=True):
     return chr_sizes, non_common_chr
 
 
-def copyFileInMemory(filePath, suffix=''):
-    """
-    copies a file into the special /dev/shm device which
-    moves the file into memory.
-    This process speeds ups the multiprocessor access to such files
-    """
-
-    # fallback for windows users
-    if os.name == 'nt':
-        return filePath
-
-    memFileName = getTempFileName(suffix=suffix)
-    import shutil
-    shutil.copyfile(filePath, memFileName)
-
-    return memFileName
-
-
 def getTempFileName(suffix=''):
     """
     Return a temporary file name. The calling function is responsible for
     deleting this upon completion.
     """
     import tempfile
-    _tempFile = tempfile.NamedTemporaryFile(prefix="_deeptools_",
-                                            suffix=suffix,
-                                            delete=False)
-
-    memFileName = _tempFile.name
-    _tempFile.close()
+    with tempfile.NamedTemporaryFile(prefix="_deeptools_",
+                                     suffix=suffix,
+                                     delete=False) as _tempFile:
+        memFileName = _tempFile.name
     return memFileName
 
 
@@ -285,8 +180,6 @@ def toString(s):
     if isinstance(s, str):
         return s
     if isinstance(s, bytes):
-        if sys.version_info[0] == 2:
-            return str(s)
         return s.decode('ascii')
     if isinstance(s, list):
         return [toString(x) for x in s]
@@ -297,8 +190,6 @@ def toBytes(s):
     """
     Like toString, but for functions requiring bytes in python3
     """
-    if sys.version_info[0] == 2:
-        return s
     if isinstance(s, bytes):
         return s
     if isinstance(s, str):
@@ -331,17 +222,6 @@ def mungeChromosome(chrom, chromList):
     return None
 
 
-def bam_total_reads(bam_handle, chroms_to_ignore, stats):
-    """
-    Count the total number of mapped reads in a BAM file, filtering
-    the chromosome given in chroms_to_ignore list
-    """
-    if chroms_to_ignore:
-        return sum([s[0] for k, s in stats.items() if k not in chroms_to_ignore])
-    else:
-        return sum([s[0] for s in stats.values()])
-
-
 def bam_blacklisted_worker(args):
     bam, chrom, start, end = args
     fh = openBam(bam)
@@ -368,7 +248,7 @@ def bam_blacklisted_reads(bam_handle, chroms_to_ignore, blackListFileName=None, 
     if hasOverlaps:
         sys.exit("Your blacklist file(s) has (have) regions that overlap. Proceeding with such a file would result in deepTools incorrectly calculating scaling factors. As such, you MUST fix this issue before being able to proceed.\n")
     if minOverlap < 1000:
-        sys.stderr.write("WARNING: The minimum distance between intervals in your blacklist is {}. It makes little biological sense to include small regions between two blacklisted regions. Instead, these should likely be blacklisted as well.\n".format(minOverlap))
+        sys.stderr.write(f"WARNING: The minimum distance between intervals in your blacklist is {minOverlap}. It makes little biological sense to include small regions between two blacklisted regions. Instead, these should likely be blacklisted as well.\n")
 
     regions = []
     for chrom in bl.chroms:

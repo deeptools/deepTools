@@ -1,9 +1,9 @@
-import numpy as np
-from deeptools import matplotlib_defaults
-import matplotlib.colors as pltcolors
 import textwrap
 
-old_settings = np.seterr(all='ignore')
+import matplotlib.colors as pltcolors
+import numpy as np
+
+from deeptools import matplotlib_defaults  # noqa: F401
 
 
 def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
@@ -59,28 +59,29 @@ def plot_single(ax, ma, average_type, color, label, plot_type='lines'):
 
 
     """
-    summary = np.ma.__getattribute__(average_type)(ma, axis=0)
-    # only plot the average profiles without error regions
-    x = np.arange(len(summary))
-    if isinstance(color, np.ndarray):
-        color = pltcolors.to_hex(color, keep_alpha=True)
-    ax.plot(x, summary, color=color, label=label, alpha=0.9, lw=0.8)
-    if plot_type == 'fill':
-        ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
+    with np.errstate(all='ignore'):
+        summary = np.ma.__getattribute__(average_type)(ma, axis=0)
+        # only plot the average profiles without error regions
+        x = np.arange(len(summary))
+        if isinstance(color, np.ndarray):
+            color = pltcolors.to_hex(color, keep_alpha=True)
+        ax.plot(x, summary, color=color, label=label, alpha=0.9, lw=0.8)
+        if plot_type == 'fill':
+            ax.fill_between(x, summary, facecolor=color, alpha=0.6, edgecolor='none')
 
-    if plot_type in ['se', 'std']:
-        if plot_type == 'se':  # standard error
-            std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
-        else:
-            std = np.std(ma, axis=0)
+        if plot_type in ['se', 'std']:
+            if plot_type == 'se':  # standard error
+                std = np.std(ma, axis=0) / np.sqrt(ma.shape[0])
+            else:
+                std = np.std(ma, axis=0)
 
-        alpha = 0.2
-        # an alpha channel has to be added to the color to fill the area
-        # between the mean (or median etc.) and the std or se
-        f_color = pltcolors.colorConverter.to_rgba(color, alpha)
+            alpha = 0.2
+            # an alpha channel has to be added to the color to fill the area
+            # between the mean (or median etc.) and the std or se
+            f_color = pltcolors.colorConverter.to_rgba(color, alpha)
 
-        ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
-        ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
+            ax.fill_between(x, summary, summary + std, facecolor=f_color, edgecolor='none')
+            ax.fill_between(x, summary, summary - std, facecolor=f_color, edgecolor='none')
 
     ax.set_xlim(0, max(x))
 
@@ -110,13 +111,13 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         c = hm.parameters['unscaled 5 prime']
         if idx is not None:
             c = c[idx]
-    except:
+    except Exception:
         c = 0
     try:
         d = hm.parameters['unscaled 3 prime']
         if idx is not None:
             d = d[idx]
-    except:
+    except Exception:
         d = 0
     m = hm.parameters['body']
     if idx is not None:
@@ -131,9 +132,9 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
     if m == 0:
         xticks = [(k / w) for k in [0, b - 0.5 * w, b + a - w]]
-        xtickslabel = ['{0:.1f}'.format(-(float(b) / quotient)),
+        xtickslabel = [f'{-(float(b) / quotient):.1f}',
                        referencePointLabel,
-                       '{0:.1f}{1}'.format(float(a) / quotient, symbol)]
+                       f'{float(a) / quotient:.1f}{symbol}']
     else:
         xticks_values = [0]
         xtickslabel = []
@@ -141,7 +142,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
         # only if upstream region is set, add a x tick
         if b > 0:
             xticks_values.append(b)
-            xtickslabel.append('{0:.1f}'.format(-(float(b) / quotient)))
+            xtickslabel.append(f'{-(float(b) / quotient):.1f}')
 
         xtickslabel.append(startLabel)
 
@@ -161,7 +162,7 @@ def getProfileTicks(hm, referencePointLabel, startLabel, endLabel, idx):
 
         if a > 0:
             xticks_values.append(b + c + m + d + a - w)
-            xtickslabel.append('{0:.1f}{1}'.format(float(a) / quotient, symbol))
+            xtickslabel.append(f'{float(a) / quotient:.1f}{symbol}')
 
         xticks = [(k / w) for k in xticks_values]
         xticks = [max(x, 0) for x in xticks]
@@ -174,17 +175,16 @@ def justify_text(text, line_width):
     Ex. If xticks label is longer, then user specify the line width for the text.
 
     """
-    words = text.split()
     lines = textwrap.wrap(text, width=line_width)
     justified_lines = []
-    
+
     for line in lines:
         words_in_line = line.split()
         if len(words_in_line) > 1:
             spaces_needed = line_width - sum(len(w) for w in words_in_line)
             space_between = spaces_needed // (len(words_in_line) - 1)
             extra_spaces = spaces_needed % (len(words_in_line) - 1)
-            
+
             justified_line = ""
             for i, word in enumerate(words_in_line):
                 justified_line += word
@@ -193,5 +193,5 @@ def justify_text(text, line_width):
             justified_lines.append(justified_line)
         else:
             justified_lines.append(line)
-    
+
     return "\n".join(justified_lines)

@@ -1,10 +1,12 @@
 import sys
+
 import pysam
+
 from deeptools.mapReduce import mapReduce
 
 
 def countReadsInInterval(args):
-    chrom, start, end, fname, toEOF = args
+    chrom, start, end, fname, _toEOF = args
 
     bam = openBam(fname)
     mapped = 0
@@ -64,22 +66,20 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
 
     Returns either the file handle or a tuple as described in returnStats
     """
-    format_options = ["required_fields=0x1FF"]
-    if sys.version_info.major >= 3:
-        format_options = [b"required_fields=0x1FF"]
+    format_options = [b"required_fields=0x1FF"]
     if not minimalDecoding:
         format_options = None
     try:
         bam = pysam.Samfile(bamFile, 'rb', format_options=format_options)
-    except IOError:
-        sys.exit("The file '{}' does not exist".format(bamFile))
-    except:
-        sys.exit("The file '{}' does not have BAM or CRAM format ".format(bamFile))
+    except OSError:
+        sys.exit(f"The file '{bamFile}' does not exist")
+    except Exception:
+        sys.exit(f"The file '{bamFile}' does not have BAM or CRAM format ")
 
     try:
         assert bam.check_index() is not False
-    except:
-        sys.exit("'{}' does not appear to have an index. You MUST index the file first!".format(bamFile))
+    except Exception:
+        sys.exit(f"'{bamFile}' does not appear to have an index. You MUST index the file first!")
 
     if bam.is_cram and returnStats:
         mapped, unmapped, stats = getMappingStats(bam, nThreads)
@@ -91,11 +91,10 @@ def openBam(bamFile, returnStats=False, nThreads=1, minimalDecoding=True):
         if returnStats:
             stats = {chrom.contig: [chrom.mapped, chrom.unmapped] for chrom in bam.get_index_statistics()}
 
-    if bam.is_bam or (bam.is_cram and returnStats):
-        if mapped == 0:
-            sys.stderr.write("WARNING! '{}' does not have any mapped reads. Please "
-                             "check that the file is properly indexed and "
-                             "that it contains mapped reads.\n".format(bamFile))
+    if (bam.is_bam or (bam.is_cram and returnStats)) and mapped == 0:
+        sys.stderr.write(f"WARNING! '{bamFile}' does not have any mapped reads. Please "
+                         "check that the file is properly indexed and "
+                         "that it contains mapped reads.\n")
 
     if returnStats:
         return bam, mapped, unmapped, stats

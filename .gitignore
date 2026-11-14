@@ -74,3 +74,6 @@ target*
 .pixi*
 
 .venv
+
+#genome folders for ESS calculation
+scripts/genomes

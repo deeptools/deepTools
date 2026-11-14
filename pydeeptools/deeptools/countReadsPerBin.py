@@ -1,19 +1,20 @@
-import shutil
-import os
-import time
-import sys
+import contextlib
+import functools
 import multiprocessing
+import os
+import shutil
+import sys
+import time
+
 import numpy as np
+import pyBigWig
+from deeptoolsintervals import GTF
 
 # deepTools packages
 import deeptools.utilities
-from deeptools import bamHandler
-from deeptools import mapReduce
-from deeptoolsintervals import GTF
-import pyBigWig
+from deeptools import bamHandler, mapReduce
 
 debug = 0
-old_settings = np.seterr(all='ignore')
 
 
 def countReadsInRegions_wrapper(args):
@@ -28,7 +29,7 @@ def countReadsInRegions_wrapper(args):
     return CountReadsPerBin.count_reads_in_region(*args)
 
 
-class CountReadsPerBin(object):
+class CountReadsPerBin:
 
     r"""Collects coverage over multiple bam files using multiprocessing
 
@@ -167,7 +168,7 @@ class CountReadsPerBin(object):
                  blackListFileName=None,
                  minMappingQuality=None,
                  ignoreDuplicates=False,
-                 chrsToSkip=[],
+                 chrsToSkip=None,
                  stepSize=None,
                  center_read=False,
                  samFlag_include=None,
@@ -179,9 +180,15 @@ class CountReadsPerBin(object):
                  maxFragmentLength=0,
                  out_file_for_raw_data=None,
                  bed_and_bin=False,
-                 statsList=[],
-                 mappedList=[]):
+                 statsList=None,
+                 mappedList=None):
 
+        if mappedList is None:
+            mappedList = []
+        if statsList is None:
+            statsList = []
+        if chrsToSkip is None:
+            chrsToSkip = []
         self.bamFilesList = bamFilesList
         self.binLength = binLength
         self.numberOfSamples = numberOfSamples
@@ -192,35 +199,17 @@ class CountReadsPerBin(object):
         self.bed_and_bin = bed_and_bin
         self.genomeChunkSize = genomeChunkSize
 
-        if extendReads and len(bamFilesList):
-            from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
-            frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFilesList[0],
-                                                                        return_lengths=False,
-                                                                        blackListFileName=blackListFileName,
-                                                                        numberOfProcessors=numberOfProcessors,
-                                                                        verbose=verbose)
-            if extendReads is True:
-                # try to guess fragment length if the bam file contains paired end reads
-                if frag_len_dict:
-                    self.defaultFragmentLength = int(frag_len_dict['median'])
-                else:
-                    exit("*ERROR*: library is not paired-end. Please provide an extension length.")
-                if verbose:
-                    print(("Fragment length based on paired en data "
-                          "estimated to be {}".format(frag_len_dict['median'])))
-
-            elif extendReads < read_len_dict['median']:
-                sys.stderr.write("*WARNING*: read extension is smaller than read length (read length = {}). "
-                                 "Reads will not be extended.\n".format(int(read_len_dict['median'])))
-                self.defaultFragmentLength = 'read length'
-
-            elif extendReads > 2000:
-                exit("*ERROR*: read extension must be smaller that 2000. Value give: {} ".format(extendReads))
-            else:
-                self.defaultFragmentLength = int(extendReads)
-
+        if extendReads:
+            self.defaultFragmentLengths = [self.get_default_fragment_length(fname, extendReads,
+                                                                            blackListFileName=blackListFileName,
+                                                                            numberOfProcessors=numberOfProcessors,
+                                                                            verbose=verbose)
+                                           for fname in bamFilesList]
         else:
-            self.defaultFragmentLength = 'read length'
+            self.defaultFragmentLengths = ['read length'] * len(bamFilesList)
+
+        # direct call fallback
+        self.defaultFragmentLength = self.defaultFragmentLengths[0] if self.defaultFragmentLengths else 'read length'
 
         self.numberOfProcessors = numberOfProcessors
         self.verbose = verbose
@@ -249,23 +238,63 @@ class CountReadsPerBin(object):
         if numberOfSamples is None and stepSize is None and bedFile is None:
             raise ValueError("either stepSize, numberOfSamples or bedFile have to be set")
 
-        if self.defaultFragmentLength != 'read length':
-            self.maxPairedFragmentLength = 4 * self.defaultFragmentLength
-        else:
-            self.maxPairedFragmentLength = 1000
-        if self.maxFragmentLength > 0:
-            self.maxPairedFragmentLength = self.maxFragmentLength
+        self.maxPairedFragmentLengths = [self.get_max_paired_fragment_length(x) for x in self.defaultFragmentLengths]
+        self.maxPairedFragmentLength = self.get_max_paired_fragment_length(self.defaultFragmentLength)
 
         if len(self.mappedList) == 0:
             try:
                 for fname in self.bamFilesList:
-                    bam, mapped, unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
+                    bam, mapped, _unmapped, stats = bamHandler.openBam(fname, returnStats=True, nThreads=self.numberOfProcessors)
                     self.mappedList.append(mapped)
                     self.statsList.append(stats)
                     bam.close()
-            except:
+            except Exception:
                 self.mappedList = []
                 self.statsList = []
+
+    @staticmethod
+    def get_default_fragment_length(bamFile, extendReads, blackListFileName=None,
+                                    numberOfProcessors=1, verbose=False):
+        """
+        Returns the length to which reads of the given file are extended,
+        or 'read length' if reads are not to be extended.
+        If extendReads is True, the median fragment length of the file is used.
+        """
+        from deeptools.getFragmentAndReadSize import get_read_and_fragment_length
+        frag_len_dict, read_len_dict = get_read_and_fragment_length(bamFile,
+                                                                    return_lengths=False,
+                                                                    blackListFileName=blackListFileName,
+                                                                    numberOfProcessors=numberOfProcessors,
+                                                                    verbose=verbose)
+        if extendReads is True:
+            # try to guess fragment length if the bam file contains paired end reads
+            if not frag_len_dict:
+                sys.exit(f"*ERROR*: library {bamFile} is not paired-end. Please provide an extension length.")
+            if verbose:
+                print(f"Fragment length of {bamFile} based on paired en data "
+                      f"estimated to be {frag_len_dict['median']}")
+            return int(frag_len_dict['median'])
+
+        if extendReads < read_len_dict['median']:
+            sys.stderr.write(f"*WARNING*: read extension is smaller than read length (read length = {int(read_len_dict['median'])}) "
+                             f"for {bamFile}. Reads will not be extended.\n")
+            return 'read length'
+
+        if extendReads > 2000:
+            sys.exit(f"*ERROR*: read extension must be smaller that 2000. Value give: {extendReads} ")
+
+        return int(extendReads)
+
+    def get_max_paired_fragment_length(self, defaultFragmentLength):
+        """
+        Returns the maximum fragment length for which read pairs are
+        considered proper pairs, given the default fragment length of a file.
+        """
+        if self.maxFragmentLength > 0:
+            return self.maxFragmentLength
+        if defaultFragmentLength != 'read length':
+            return 4 * defaultFragmentLength
+        return 1000
 
     def get_chunk_length(self, bamFilesHandles, genomeSize, chromSizes, chrLengths):
         # Try to determine an optimal fraction of the genome (chunkSize) that is sent to
@@ -278,13 +307,13 @@ class CountReadsPerBin(object):
             else:
                 # compute the step size, based on the number of samples
                 # and the length of the region studied
-                (chrom, start, end) = mapReduce.getUserRegion(chromSizes, self.region)[:3]
+                (_chrom, start, end) = mapReduce.getUserRegion(chromSizes, self.region)[:3]
                 self.stepSize = max(int(float(end - start) / self.numberOfSamples), 1)
 
         # number of samples is better if large
         if np.mean(chrLengths) < self.stepSize and self.bedFile is None:
             min_num_of_samples = int(genomeSize / np.mean(chrLengths))
-            raise ValueError("numberOfSamples has to be bigger than {} ".format(min_num_of_samples))
+            raise ValueError(f"numberOfSamples has to be bigger than {min_num_of_samples} ")
 
         max_mapped = 0
         if len(self.mappedList) > 0:
@@ -299,8 +328,7 @@ class CountReadsPerBin(object):
             chunkSize = int(self.stepSize * 1e3 / (reads_per_bp * len(bamFilesHandles)))
 
         # Ensure that chunkSize is always at least self.stepSize
-        if chunkSize < self.stepSize:
-            chunkSize = self.stepSize
+        chunkSize = max(chunkSize, self.stepSize)
 
         # Ensure that chunkSize is always at least self.binLength
         if self.binLength and chunkSize < self.binLength:
@@ -315,7 +343,7 @@ class CountReadsPerBin(object):
                 y = bamHandler.openBam(x)
             except SystemExit:
                 sys.exit(sys.exc_info()[1])
-            except:
+            except Exception:
                 y = pyBigWig.open(x)
             bamFilesHandles.append(y)
 
@@ -343,11 +371,11 @@ class CountReadsPerBin(object):
         [bam_h.close() for bam_h in bamFilesHandles]
 
         if self.verbose:
-            print("step size is {}".format(self.stepSize))
+            print(f"step size is {self.stepSize}")
 
         if self.region:
             # in case a region is used, append the tilesize
-            self.region += ":{}".format(self.binLength)
+            self.region += f":{self.binLength}"
 
         # Handle GTF options
         transcriptID, exonID, transcript_id_designator, keepExons = deeptools.utilities.gtfOptions(allArgs)
@@ -373,16 +401,13 @@ class CountReadsPerBin(object):
                                  "the chromosomes that were not common between the bigwig files\n")
 
             # concatenate intermediary bedgraph files
-            ofile = open(self.out_file_for_raw_data, "w")
-            for _values, tempFileName in imap_res:
-                if tempFileName:
-                    # concatenate all intermediate tempfiles into one
-                    _foo = open(tempFileName, 'r')
-                    shutil.copyfileobj(_foo, ofile)
-                    _foo.close()
-                    os.remove(tempFileName)
-
-            ofile.close()
+            with open(self.out_file_for_raw_data, "w") as ofile:
+                for _values, tempFileName in imap_res:
+                    if tempFileName:
+                        # concatenate all intermediate tempfiles into one
+                        with open(tempFileName, 'r') as _foo:
+                            shutil.copyfileobj(_foo, ofile)
+                        os.remove(tempFileName)
 
         try:
             num_reads_per_bin = np.concatenate([x[0] for x in imap_res], axis=0)
@@ -392,7 +417,7 @@ class CountReadsPerBin(object):
             if self.bedFile:
                 sys.exit('\nNo coverage values could be computed.\n\n'
                          'Please check that the chromosome names in the BED file are found on the bam files.\n\n'
-                         'The valid chromosome names are:\n{}'.format(chrNames))
+                         f'The valid chromosome names are:\n{chrNames}')
             else:
                 sys.exit('\nNo coverage values could be computed.\n\nCheck that all bam files are valid and '
                          'contain mapped reads.')
@@ -450,7 +475,7 @@ class CountReadsPerBin(object):
         """
 
         if start > end:
-            raise NameError("start %d bigger that end %d" % (start, end))
+            raise NameError(f"start {start} bigger that end {end}")
 
         if self.stepSize is None and bed_regions_list is None:
             raise ValueError("stepSize is not set!")
@@ -465,7 +490,7 @@ class CountReadsPerBin(object):
                 bam_handles.append(bamHandler.openBam(fname))
             except SystemExit:
                 sys.exit(sys.exc_info()[1])
-            except:
+            except Exception:
                 bam_handles.append(pyBigWig.open(fname))
 
         blackList = None
@@ -490,57 +515,63 @@ class CountReadsPerBin(object):
                         continue
                     transcriptsToConsider.append([(i, i + self.binLength)])
 
-        if self.save_data:
-            _file = open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t')
-            _file_name = _file.name
-        else:
-            _file_name = ''
+        with contextlib.ExitStack() as stack:
+            if self.save_data:
+                _file = stack.enter_context(open(deeptools.utilities.getTempFileName(suffix='.bed'), 'w+t'))
+                _file_name = _file.name
+            else:
+                _file_name = ''
 
-        for bam in bam_handles:
-            for trans in transcriptsToConsider:
-                tcov = self.get_coverage_of_region(bam, chrom, trans)
-                if bed_regions_list is not None and not self.bed_and_bin:
-                    subnum_reads_per_bin.append(np.sum(tcov))
-                else:
-                    subnum_reads_per_bin.extend(tcov)
+            for bam_idx, bam in enumerate(bam_handles):
+                for trans in transcriptsToConsider:
+                    tcov = self.get_coverage_of_region(bam, chrom, trans,
+                                                       defaultFragmentLength=self.defaultFragmentLengths[bam_idx],
+                                                       maxPairedFragmentLength=self.maxPairedFragmentLengths[bam_idx])
+                    if bed_regions_list is not None and not self.bed_and_bin:
+                        subnum_reads_per_bin.append(np.sum(tcov))
+                    else:
+                        subnum_reads_per_bin.extend(tcov)
 
-        subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(-1, len(self.bamFilesList), order='F')
+            subnum_reads_per_bin = np.concatenate([subnum_reads_per_bin]).reshape(-1, len(self.bamFilesList), order='F')
 
-        if self.save_data:
-            idx = 0
-            for i, trans in enumerate(transcriptsToConsider):
-                if len(trans[0]) != 3:
-                    starts = ",".join([str(x[0]) for x in trans])
-                    ends = ",".join([str(x[1]) for x in trans])
-                    _file.write("\t".join([chrom, starts, ends]) + "\t")
-                    _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[i, :]]) + "\n")
-                else:
-                    for exon in trans:
-                        for startPos in range(exon[0], exon[1], exon[2]):
-                            if idx >= subnum_reads_per_bin.shape[0]:
-                                # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
-                                # Counts there are added to the bin before them, but range() will still try to include them.
-                                break
-                            _file.write("{0}\t{1}\t{2}\t".format(chrom, startPos, min(startPos + exon[2], exon[1])))
-                            _file.write("\t".join(["{}".format(x) for x in subnum_reads_per_bin[idx, :]]) + "\n")
-                            idx += 1
-            _file.close()
+            if self.save_data:
+                idx = 0
+                for i, trans in enumerate(transcriptsToConsider):
+                    if len(trans[0]) != 3:
+                        starts = ",".join([str(x[0]) for x in trans])
+                        ends = ",".join([str(x[1]) for x in trans])
+                        _file.write(f'{chrom}\t{starts}\t{ends}' + "\t")
+                        _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[i, :]]) + "\n")
+                    else:
+                        for exon in trans:
+                            for startPos in range(exon[0], exon[1], exon[2]):
+                                if idx >= subnum_reads_per_bin.shape[0]:
+                                    # At the end of chromosomes (or due to blacklisted regions), there are bins smaller than the bin size
+                                    # Counts there are added to the bin before them, but range() will still try to include them.
+                                    break
+                                _file.write(f"{chrom}\t{startPos}\t{min(startPos + exon[2], exon[1])}\t")
+                                _file.write("\t".join([f"{x}" for x in subnum_reads_per_bin[idx, :]]) + "\n")
+                                idx += 1
 
         if self.verbose:
             endTime = time.time()
             rows = subnum_reads_per_bin.shape[0]
-            print("%s countReadsInRegions_worker: processing %d "
-                  "(%.1f per sec) @ %s:%s-%s" %
-                  (multiprocessing.current_process().name,
-                   rows, rows / (endTime - start_time), chrom, start, end))
+            print(f"{multiprocessing.current_process().name} countReadsInRegions_worker: processing {rows} "
+                  f"({rows / (endTime - start_time):.1f} per sec) @ {chrom}:{start}-{end}")
 
         return subnum_reads_per_bin, _file_name
 
     def get_coverage_of_region(self, bamHandle, chrom, regions,
-                               fragmentFromRead_func=None):
+                               fragmentFromRead_func=None,
+                               defaultFragmentLength=None,
+                               maxPairedFragmentLength=None):
         """
         Returns a numpy array that corresponds to the number of reads
         that overlap with each tile.
+
+        defaultFragmentLength and maxPairedFragmentLength are the values for
+        the file of bamHandle. If not given, self.defaultFragmentLength and
+        self.maxPairedFragmentLength are used.
 
         >>> test = Tester()
         >>> import pysam
@@ -572,8 +603,14 @@ class CountReadsPerBin(object):
 
 
         """
+        if defaultFragmentLength is None:
+            defaultFragmentLength = self.defaultFragmentLength
+        if maxPairedFragmentLength is None:
+            maxPairedFragmentLength = self.maxPairedFragmentLength
         if not fragmentFromRead_func:
-            fragmentFromRead_func = self.get_fragment_from_read
+            fragmentFromRead_func = functools.partial(self.get_fragment_from_read,
+                                                      defaultFragmentLength=defaultFragmentLength,
+                                                      maxPairedFragmentLength=maxPairedFragmentLength)
         nbins = len(regions)
         if len(regions[0]) == 3:
             nbins = 0
@@ -583,10 +620,10 @@ class CountReadsPerBin(object):
                     nbins += 1
         coverages = np.zeros(nbins, dtype='float64')
 
-        if self.defaultFragmentLength == 'read length':
+        if defaultFragmentLength == 'read length':
             extension = 0
         else:
-            extension = self.maxPairedFragmentLength
+            extension = maxPairedFragmentLength
 
         blackList = None
         if self.blackListFileName is not None:
@@ -624,7 +661,7 @@ class CountReadsPerBin(object):
             # caching seems faster. TODO: profile the function
             c = 0
             if chrom not in bamHandle.references:
-                raise NameError("chromosome {} not found in bam file".format(chrom))
+                raise NameError(f"chromosome {chrom} not found in bam file")
 
             prev_pos = set()
             lpos = None
@@ -689,10 +726,8 @@ class CountReadsPerBin(object):
                     if fragmentEnd <= reg[0] or fragmentStart >= reg[1]:
                         continue
 
-                    if fragmentStart < reg[0]:
-                        fragmentStart = reg[0]
-                    if fragmentEnd > reg[0] + len(coverages) * tileSize:
-                        fragmentEnd = reg[0] + len(coverages) * tileSize
+                    fragmentStart = max(fragmentStart, reg[0])
+                    fragmentEnd = min(fragmentEnd, reg[0] + len(coverages) * tileSize)
 
                     sIdx = vector_start + max((fragmentStart - reg[0]) // tileSize, 0)
                     eIdx = vector_start + min(np.ceil(float(fragmentEnd - reg[0]) / tileSize).astype('int'), nRegBins)
@@ -709,8 +744,7 @@ class CountReadsPerBin(object):
 
             if self.verbose:
                 endTime = time.time()
-                print("%s,  processing %s (%.1f per sec) reads @ %s:%s-%s" % (
-                    multiprocessing.current_process().name, c, c / (endTime - start_time), chrom, reg[0], reg[1]))
+                print(f"{multiprocessing.current_process().name},  processing {c} ({c / (endTime - start_time):.1f} per sec) reads @ {chrom}:{reg[0]}-{reg[1]}")
 
             vector_start += nRegBins
 
@@ -719,9 +753,6 @@ class CountReadsPerBin(object):
             coverages[coverages == 0] = np.nan
 
         return coverages
-
-    def getReadLength(self, read):
-        return len(read)
 
     @staticmethod
     def is_proper_pair(read, maxPairedFragmentLength):
@@ -785,7 +816,7 @@ class CountReadsPerBin(object):
                 return True
         return False
 
-    def get_fragment_from_read(self, read):
+    def get_fragment_from_read(self, read, defaultFragmentLength=None, maxPairedFragmentLength=None):
         """Get read start and end position of a read.
         If given, the reads are extended as follows:
         If reads are paired end, each read mate is extended to match
@@ -829,6 +860,14 @@ class CountReadsPerBin(object):
         ----------
         read : pysam read object
 
+        defaultFragmentLength : int or 'read length'
+            The fragment length used to extend reads of the file of `read`.
+            If None, self.defaultFragmentLength is used.
+
+        maxPairedFragmentLength : int
+            Pairs with a larger fragment length are extended as single reads.
+            If None, self.maxPairedFragmentLength is used.
+
 
         Returns
         -------
@@ -871,11 +910,16 @@ class CountReadsPerBin(object):
         # E.g for a cigar of 40M260N22M
         # get blocks return two elements for the first 40 matches
         # and the for the last 22 matches.
-        if self.defaultFragmentLength == 'read length':
+        if defaultFragmentLength is None:
+            defaultFragmentLength = self.defaultFragmentLength
+        if maxPairedFragmentLength is None:
+            maxPairedFragmentLength = self.maxPairedFragmentLength
+
+        if defaultFragmentLength == 'read length':
             return read.get_blocks()
 
         else:
-            if self.is_proper_pair(read, self.maxPairedFragmentLength):
+            if self.is_proper_pair(read, maxPairedFragmentLength):
                 if read.is_reverse:
                     fragmentStart = read.next_reference_start
                     fragmentEnd = read.reference_end
@@ -888,11 +932,11 @@ class CountReadsPerBin(object):
             # Extend using the default fragment length
             else:
                 if read.is_reverse:
-                    fragmentStart = read.reference_end - self.defaultFragmentLength
+                    fragmentStart = read.reference_end - defaultFragmentLength
                     fragmentEnd = read.reference_end
                 else:
                     fragmentStart = read.reference_start
-                    fragmentEnd = read.reference_start + self.defaultFragmentLength
+                    fragmentEnd = read.reference_start + defaultFragmentLength
 
         if self.center_read:
             fragmentCenter = fragmentEnd - (fragmentEnd - fragmentStart) / 2
@@ -900,10 +944,11 @@ class CountReadsPerBin(object):
             fragmentEnd = fragmentStart + read.infer_query_length(always=False)
 
         assert fragmentStart < fragmentEnd, "fragment start greater than fragment" \
-                                            "end for read {}".format(read.query_name)
+                                            f"end for read {read.query_name}"
         return [(fragmentStart, fragmentEnd)]
 
-    def getSmoothRange(self, tileIndex, tileSize, smoothRange, maxPosition):
+    @staticmethod
+    def getSmoothRange(tileIndex, tileSize, smoothRange, maxPosition):
         """
         Given a tile index position and a tile size (length), return the a new indices
         over a larger range, called the smoothRange.
@@ -982,16 +1027,17 @@ def estimateSizeFactors(m):
     >>> sf = estimateSizeFactors(m)
     >>> assert np.all(np.abs(sf - [1.1892, 0.8409]) < 1e-4)
     """
-    loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
-    # Mask after computing the geometric mean
-    m = np.ma.masked_where(m <= 0, m)
-    loggeomeans = np.ma.masked_where(np.isinf(loggeomeans), loggeomeans)
-    # DESeq2 ratio-based size factor
-    sf = np.exp(np.ma.median((np.log(m).T - loggeomeans).T, axis=0))
-    return 1. / sf
+    with np.errstate(divide='ignore', invalid='ignore'):
+        loggeomeans = np.sum(np.log(m), axis=1) / m.shape[1]
+        # Mask after computing the geometric mean
+        m = np.ma.masked_where(m <= 0, m)
+        loggeomeans = np.ma.masked_where(np.isinf(loggeomeans), loggeomeans)
+        # DESeq2 ratio-based size factor
+        sf = np.exp(np.ma.median((np.log(m).T - loggeomeans).T, axis=0))
+        return 1. / sf
 
 
-class Tester(object):
+class Tester:
 
     def __init__(self):
         """
@@ -1023,11 +1069,11 @@ class Tester(object):
         """
         bam = bamHandler.openBam(self.bamFile_PE)
         if readType == 'paired-reverse':
-            read = [x for x in bam.fetch('chr2', 5000081, 5000082)][0]
+            read = next(iter(bam.fetch('chr2', 5000081, 5000082)))
         elif readType == 'single-forward':
-            read = [x for x in bam.fetch('chr2', 5001491, 5001492)][0]
+            read = next(iter(bam.fetch('chr2', 5001491, 5001492)))
         elif readType == 'single-reverse':
-            read = [x for x in bam.fetch('chr2', 5001700, 5001701)][0]
+            read = next(iter(bam.fetch('chr2', 5001700, 5001701)))
         else:  # by default a forward paired read is returned
-            read = [x for x in bam.fetch('chr2', 5000027, 5000028)][0]
+            read = next(iter(bam.fetch('chr2', 5000027, 5000028)))
         return read

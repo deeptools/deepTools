@@ -9,25 +9,38 @@ jobs:
         name: Check deeptools/galaxy/Rust versions stay in sync
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                 persist-credentials: false
-            - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
               with:
                   python-version: "3.x"
             - name: Check version sync
-              run: python3 scripts/check_version_sync.py
+              run: python scripts/check_version_sync.py
+    check_galaxy_wrapper_args:
+        name: Check galaxy wrapper args against Python CLI
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+              with:
+                  python-version: "3.x"
+            - name: Check galaxy wrapper arguments
+              run: python scripts/check_galaxy_wrapper_args.py
     build-linux:
         name: Test on Linux
         runs-on: ubuntu-latest
         strategy:
+            fail-fast: false
             matrix:
                 pixi-env: [py312, py313, py314]
         steps:
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                 persist-credentials: false
-            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
               with:
                   environments: ${{ matrix.pixi-env }}
             - name: build deeptools
@@ -42,13 +55,14 @@ jobs:
         name: Test on OSX
         runs-on: macOS-latest
         strategy:
+            fail-fast: false
             matrix:
                 pixi-env: [py312, py313, py314]
         steps:
-            - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                 persist-credentials: false
-            - uses: prefix-dev/setup-pixi@d3f436a425481402e6a95a1d1fc10331c708cd9e # v0.10.2
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
               with:
                   environments: ${{ matrix.pixi-env }}
             - name: build deeptools

@@ -5,7 +5,7 @@ from importlib.metadata import version
 
 from deeptools import parserCommon
 from deeptools.hp import r_computematrix
-from deeptools.parserCommon import numberOfProcessors, writableFile
+from deeptools.parserCommon import existingFile, numberOfProcessors, writableFile
 
 
 def parse_arguments(args=None):
@@ -86,6 +86,7 @@ def computeMatrixRequiredArgs(args=None):
         "the regions to plot. If multiple bed files are given, each one is considered a "
         "group that can be plotted separately.",
         nargs="+",
+        type=existingFile,
         required=True,
     )
     required.add_argument(
@@ -99,6 +100,7 @@ def computeMatrixRequiredArgs(args=None):
         "http://genome.ucsc.edu/goldenPath/help/bigWig.html ",
         metavar="File",
         nargs="+",
+        type=existingFile,
         required=True,
     )
     return parser
@@ -369,7 +371,8 @@ def computeMatrixOptArgs(case=["scale-regions", "reference-point"][0]):
         "-bl",
         help="A BED file (optionally gzip-compressed) containing regions that should be excluded from all analyses. Filtering is performed at base-pair resolution, so only the portion of a region that overlaps a blacklisted region is excluded.",
         metavar="BED file",
-        default='none',
+        default='None',
+        type=existingFile,
         required=False,
     )
 

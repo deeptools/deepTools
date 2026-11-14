@@ -52,14 +52,7 @@ For paired-end samples, we often additionally check whether the fragment sizes a
 .. image:: ../images/test_plots/fragmentSize.png
     :width: 60%
 
-3. **GC-bias check** (:doc:`tools/computeGCBias`). Many sequencing protocols
-   require several rounds of PCR-based DNA amplification, which often introduces notable bias, due to many DNA polymerases preferentially amplifying GC-rich templates. Depending on the sample (preparation), the GC-bias can vary    significantly and we routinely check its extent. When we need to compare files with different GC biases, we use the :doc:`tools/correctGCBias` module.
-   See the paper by `Benjamini and Speed <http://nar.oxfordjournals.org/content/40/10/e72>`__ for many insights into this problem.
-   
-.. image:: ../images/test_plots/ExampleCorrectGCBias.png
-    :width: 50%
-   
-4. **Assessing the ChIP strength**. We do this quality control step to get a
+3. **Assessing the ChIP strength**. We do this quality control step to get a
    feeling for the signal-to-noise ratio in samples from ChIP-seq
    experiments. It is based on the insights published by `Diaz et
    al. <http://www.degruyter.com/view/j/sagmb.2012.11.issue-3/1544-6115.1750/1544-6115.1750.xml>`_

@@ -28,7 +28,7 @@ Usage hints
 
 .. note:: Like BAM files, bigWig files are compressed, binary files. If you would like to see the coverage values, choose the bedGraph output via ``--outFileFormat``.
 
-.. note:: As of deepTools 4.0.0, ``bamCoverage`` uses a new Rust-backed core. ``--blackListFileName`` may be gzip-compressed and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. ``--ignoreDuplicates`` has been removed; use ``--samFlagExclude`` against a BAM file with duplicates marked instead. The previous pure-Python implementation is still available as ``bamCoverage_old`` during the transition period, but will be removed in a future release.
+.. note:: As of deepTools 4.0.0, ``bamCoverage`` uses a new Rust-backed core. ``--blackListFileName`` may be gzip-compressed and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. ``--ignoreDuplicates`` has been removed; use ``--samFlagExclude`` against a BAM file with duplicates marked instead.
 
 Usage example for ChIP-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^

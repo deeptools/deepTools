@@ -1,8 +1,11 @@
 import argparse
-from deeptools import parserCommon
-from deeptools.hp import r_bamcompare
 import signal
 import sys
+
+from deeptools import parserCommon
+from deeptools.hp import r_bamcompare
+from deeptools.parserCommon import existingFile
+
 
 def parseArguments():
     parentParser = parserCommon.getParentArgParse()
@@ -49,12 +52,14 @@ def getRequiredArgs():
                           metavar='BAM file',
                           help='Sorted BAM file 1. Usually the BAM file '
                           'for the treatment.',
+                          type=existingFile,
                           required=True)
 
     required.add_argument('--bamfile2', '-b2',
                           metavar='BAM file',
                           help='Sorted BAM file 2. Usually the BAM '
                           'file for the control.',
+                          type=existingFile,
                           required=True)
 
     return parser
@@ -107,9 +112,9 @@ def getOptionalArgs():
 
     optional.add_argument('--operation',
                           help='The default is to output the log2 ratio of the '
-                          'two samples. The reciprocal ratio returns the '
+                          'two samples. The reciprocal ratio returns '
                           'the negative of the inverse of the ratio '
-                          'if the ratio is less than 0. The resulting '
+                          'if the ratio is less than 1. The resulting '
                           'values are interpreted as negative fold changes. '
                           'Instead of performing a computation using both files, the scaled signal can '
                           'alternatively be output for the first or second file using '
@@ -121,7 +126,7 @@ def getOptionalArgs():
 
     optional.add_argument('--pseudocount',
                           help='A small number to avoid x/0. Only useful '
-                          'together with --operation log2 or --operation ratio. '
+                          'together with --operation log2, ratio or reciprocal_ratio. '
                           'You can specify different values as pseudocounts for '
                           'the numerator and the denominator by providing two '
                           'values (the first value is used as the numerator '
@@ -148,11 +153,15 @@ def getOptionalArgs():
 def process_args(args=None):
     args = parseArguments().parse_args(args)
 
+    if args.normalizeUsing == "RPGC":
+        sys.exit(
+            "RPGC normalization (--normalizeUsing RPGC) is not supported with bamCompare. "
+        )
+
     if args.smoothLength and args.smoothLength <= args.binSize:
-        print("Warning: the smooth length given ({}) is smaller than the bin "
-              "size ({}).\n\n No smoothing will be "
-              "done".format(args.smoothLength,
-                            args.binSize))
+        print(f"Warning: the smooth length given ({args.smoothLength}) is smaller than the bin "
+              f"size ({args.binSize}).\n\n No smoothing will be "
+              "done")
         args.smoothLength = None
 
     if not args.ignoreForNormalization:

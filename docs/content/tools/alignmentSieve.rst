@@ -11,7 +11,7 @@ alignmentSieve
    :prog: alignmentSieve
    :nodefault:
 
-.. note:: As of deepTools 4.0.0, ``alignmentSieve`` uses a new Rust-backed core. Region files (BED/GTF) and ``--blackListFileName`` may be gzip-compressed, blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks, output order now exactly matches input order, and ``--genomeChunkLength`` has been removed. The previous pure-Python implementation is still available as ``alignmentSieve_old`` during the transition period, but will be removed in a future release.
+.. note:: As of deepTools 4.0.0, ``alignmentSieve`` uses a new Rust-backed core. Region files (BED/GTF) and ``--blackListFileName`` may be gzip-compressed, blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks, output order now exactly matches input order, and ``--genomeChunkLength`` has been removed.
 
 
 Background
@@ -78,9 +78,22 @@ and the ``-1 4`` set would produce the following::
 
          ------------------------ fragment
 
-             --------------------- shifted fragment
+    -------------------------------- shifted fragment
 
-As can be seen, such fragments are considered to be on the ``-`` strand, so negative values then shift to the left on its frame of reference (thus, to the right relative to the ``+`` strand).
+As can be seen, such fragments are considered to be on the ``-`` strand, so negative values then shift to the left on its frame of reference (thus, to the right relative to the ``+`` strand). Note that, just like the ``-5 3`` example above, both ends of the fragment move outward (the left end shifts left by 4, the right end shifts right by 1): the sign of each value only determines its direction, not whether the two ends move toward or away from each other.
 
 .. note::
     If the ``--shift`` or ``--ATACshift`` options are used, then only properly-paired reads will be used.
+
+Shifted BAM output
+^^^^^^^^^^^^^^^^^^
+
+With ``--shift`` or ``--ATACshift`` and BAM output, each kept read is rewritten as a single match (``M``) covering the shifted read, positioned at the shifted start. SEQ and QUAL are empty and all auxiliary tags are dropped. Because no reference or read bases are needed, expanding shifts and shifts longer than the read do not fail: a read that would shrink below 1 bp is written as a 1 bp record, and is only dropped if it ends up outside the chromosome.
+
+If a downstream step needs a tag such as a single-cell barcode, copy it with ``--keepTags``:
+
+.. code:: bash
+
+    $ alignmentSieve -b possorted.bam --ATACshift --keepTags CB -o shifted.bam
+
+Only the listed tags are written, with their input values; reads that lack a listed tag are written without it. Each tag must be a valid SAM tag name (a letter followed by a letter or digit). Tags are copied verbatim and not checked for meaning: the CIGAR, positions, mate fields, SEQ and QUAL are rewritten, so tags that describe them (for example ``MD``, ``NM``, ``MC``, ``SA``, ``MM`` or ``ML``) will be stale on the output. ``--keepTags`` needs ``--shift`` or ``--ATACshift`` and BAM output. Without it, behaviour is unchanged.
