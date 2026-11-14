@@ -28,12 +28,12 @@ def run_plotHeatmap(args):
 
     plt.ioff()
     deeptools.plotHeatmap.main(args)
-    
+
     return plotfile
 
 
 # def run_plotHeatmap(args, Typ):
-    
+
 #     plotfile = os.path.join(
 #         ROOT,
 #         "debug"+ Typ + ".png"
@@ -111,3 +111,27 @@ def test_plotHeatmap_ggplot():
 
     finally:
         cleanup(plotfile)
+
+def _run_silhouette(method):
+    """Run plotHeatmap with clustering + --silhouette and return the sorted-regions BED header."""
+    _fd, bedfile = tempfile.mkstemp(suffix=".bed")
+    args = (
+        f"--matrixFile {TEST_DATA}/computeMatrix_result1.gz "
+        f"{method} 2 --silhouette --outFileSortedRegions {bedfile}"
+    ).split()
+
+    plotfile = run_plotHeatmap(args)
+    try:
+        with open(bedfile) as fh:
+            return fh.readline().rstrip("\n").split("\t")
+    finally:
+        cleanup(plotfile)
+        os.remove(bedfile)
+
+
+def test_plotHeatmap_silhouette_kmeans():
+    assert _run_silhouette("--kmeans")[-1] == "silhouette"
+
+
+def test_plotHeatmap_silhouette_hclust():
+    assert _run_silhouette("--hclust")[-1] == "silhouette"
