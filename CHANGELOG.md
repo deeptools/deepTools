@@ -17,6 +17,50 @@
 * --missingDataAsZero no longer takes bases exceeding chromosome bounds as 0 values but rather purges the bins
 * large scale values precision slightly altered with new backend (f32 vs f64)
 
+## [4.1.0](https://github.com/deeptools/deepTools/compare/4.0.0...4.1.0) (2026-11-14)
+
+
+### Features
+
+* **alignmentSieve:** opt-in --keepTags for shifted BAM output ([#1494](https://github.com/deeptools/deepTools/issues/1494)) ([122334a](https://github.com/deeptools/deepTools/commit/122334abcb125982b352a6548fc59d7673866245))
+* deprecate *_old entrypoints ([#1473](https://github.com/deeptools/deepTools/issues/1473)) ([dfbf3e6](https://github.com/deeptools/deepTools/commit/dfbf3e6483ce0440003e51751b6fd37ce13339c5))
+* deprecate compute/correctGCbias ([#1471](https://github.com/deeptools/deepTools/issues/1471)) ([ec4fbc8](https://github.com/deeptools/deepTools/commit/ec4fbc8018434f2cf04353d3b58116f09175de00))
+* exit if provided number of labels doesn't match number of samples (closes [#1026](https://github.com/deeptools/deepTools/issues/1026)) ([b0a2841](https://github.com/deeptools/deepTools/commit/b0a28418afe6a6b76bff17cf580a41bc607090c5))
+* explicit check for local file existence in arg parsing ([#1481](https://github.com/deeptools/deepTools/issues/1481)) ([d9d0656](https://github.com/deeptools/deepTools/commit/d9d0656b2f6bf06ab8ed7dfe695051006c800f91))
+* explicit check for start &lt; end in bed ([b0a2841](https://github.com/deeptools/deepTools/commit/b0a28418afe6a6b76bff17cf580a41bc607090c5))
+* fingerprint --extendReads uses fragsize from respective bamfile (order independence) ([#1483](https://github.com/deeptools/deepTools/issues/1483)) ([2ec422f](https://github.com/deeptools/deepTools/commit/2ec422fd0db9c8a0322562958461f0787545ff4a))
+* PCA drop --transpose/--centerRows as scores are default now in plotPCA ([#1472](https://github.com/deeptools/deepTools/issues/1472)) ([0604617](https://github.com/deeptools/deepTools/commit/060461736e573252f2d00099481086a0279ce7e1))
+* script for ESS calculation ([#1474](https://github.com/deeptools/deepTools/issues/1474)) ([cde2aa7](https://github.com/deeptools/deepTools/commit/cde2aa7938cb4af6fe28de1504f94f6928344342))
+
+
+### Bug Fixes
+
+* --silhouette with --hclust in plotHeatmap ([#1394](https://github.com/deeptools/deepTools/issues/1394)) ([092ffc3](https://github.com/deeptools/deepTools/commit/092ffc3cfc895b8b8081a9557065d7306512fc65))
+* bamCompare operation first/second/add/mean/reciprocal_ratio ([eb4d8b6](https://github.com/deeptools/deepTools/commit/eb4d8b62480c5f40ba8c3c8a260520112dce9f4c))
+* bamCompare operation first/second/add/mean/reciprocal_ratio orientation ([#1458](https://github.com/deeptools/deepTools/issues/1458)) ([eb4d8b6](https://github.com/deeptools/deepTools/commit/eb4d8b62480c5f40ba8c3c8a260520112dce9f4c))
+* bamCoverage --MNase: three centre bases for odd fragment lengths ([#1466](https://github.com/deeptools/deepTools/issues/1466)) ([bf813b1](https://github.com/deeptools/deepTools/commit/bf813b10ac53d9a75b859601a44ae518e1ece04a))
+* do not allow RPGC in bamCompare mode anymore (closes [#1404](https://github.com/deeptools/deepTools/issues/1404)) ([b0a2841](https://github.com/deeptools/deepTools/commit/b0a28418afe6a6b76bff17cf580a41bc607090c5))
+* remove np.warnings, keep ignores in the function context instead of propagating to end of function/tool ([#1478](https://github.com/deeptools/deepTools/issues/1478)) ([2aab71a](https://github.com/deeptools/deepTools/commit/2aab71a49875ae43b05f6d508432730714e99bb9))
+
+
+### Performance Improvements
+
+* avoid chromosome-start queries with computeMatrix --nanAfterEnd ([#1489](https://github.com/deeptools/deepTools/issues/1489)) ([221428b](https://github.com/deeptools/deepTools/commit/221428b4f6360a0fb209efde1af3d47367c653ab))
+* reduce computeMatrix memory use when filtering and sorting ([#1484](https://github.com/deeptools/deepTools/issues/1484)) ([13bf814](https://github.com/deeptools/deepTools/commit/13bf814ebd8da4297940d258d669def9d44e548a))
+
+
+### Documentation
+
+* docs update, preprint citation, drop retired MPI galaxy server, contribution instruction fix ([b38b3b9](https://github.com/deeptools/deepTools/commit/b38b3b9fdd5627f64bf49dac22f2dd67a5536cf6))
+* fix visual shift under - strand for alSieve documentation (closes [#1331](https://github.com/deeptools/deepTools/issues/1331)) ([b0a2841](https://github.com/deeptools/deepTools/commit/b0a28418afe6a6b76bff17cf580a41bc607090c5))
+* include release DOI in README ([0604617](https://github.com/deeptools/deepTools/commit/060461736e573252f2d00099481086a0279ce7e1))
+* make contribution.md a bit more verbose ([0604617](https://github.com/deeptools/deepTools/commit/060461736e573252f2d00099481086a0279ce7e1))
+* make sure changelog in docs reflects changelog in repo ([#1469](https://github.com/deeptools/deepTools/issues/1469)) ([51e50dd](https://github.com/deeptools/deepTools/commit/51e50dd0543a84392ebec09ac090f95da56577fc))
+* more verbose help on filterRNAstrand (closes [#1248](https://github.com/deeptools/deepTools/issues/1248)) ([b0a2841](https://github.com/deeptools/deepTools/commit/b0a28418afe6a6b76bff17cf580a41bc607090c5))
+* normalizeUsing in parserCommon has None explained first (closes [#1311](https://github.com/deeptools/deepTools/issues/1311)) ([b0a2841](https://github.com/deeptools/deepTools/commit/b0a28418afe6a6b76bff17cf580a41bc607090c5))
+* step by step in docs points to zenodo files, osx install instructions simplified ([#1482](https://github.com/deeptools/deepTools/issues/1482)) ([1143e6d](https://github.com/deeptools/deepTools/commit/1143e6d102bac018f2b2fa3416c50a24f297981e))
+* update ess for latest assemblies in listed table ([cde2aa7](https://github.com/deeptools/deepTools/commit/cde2aa7938cb4af6fe28de1504f94f6928344342))
+
 ## 3.5.6
 * minimal supported python version raised to 3.9 (numpy >= 2 support); NaN handling switched to np.nan
 * drop conda usage in pypi/test/planemo CI in favor of pip installs; samtools now pulled from conda-forge/bioconda where still needed in CI
