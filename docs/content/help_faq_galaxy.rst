@@ -6,7 +6,7 @@ Galaxy-related FAQ
 
 I've reached my quota - what can I do to save some space?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-1. make sure that all the data sets you deleted are **permanently** eliminated from our disks: go to the history option button and select "Purge deleted data sets", then hit the "refresh" button on top of your history panel
+1. make sure that all the data sets you deleted are **permanently** eliminated from the server's disks: go to the history option button and select "Purge deleted data sets", then hit the "refresh" button on top of your history panel
 2. download all data sets for which you've completed the analysis, then remove the data sets (click on the "x" and then **make sure they're purged** (see above)).
 
 ----------------------------------------------------------------------
@@ -25,7 +25,7 @@ Once you've copied a data set from one history to another, check two things:
 How can I use a published workflow?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You **must register** if you want to use the workflows within `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`__. ("User" --> "Register" - all you have to supply is an email address). Make sure to read the Terms of Use, though!
+You need an account and must be logged in to your Galaxy server (e.g. `usegalaxy.eu <https://usegalaxy.eu/>`__) to use workflows.
 
 You can find workflows that are public or specifically shared with you by another user via "Shared Data" --> "Published Workflows". Click on the triangle next to the workflow you're interested in and select "import".
 
@@ -38,7 +38,7 @@ A green box should appear, there you select "start using this workflow", which s
 
 ----------------------------------------------------------------------
 
-I would like to use one of your workflows - not in the deepTools Galaxy, but in the local Galaxy instance provided by my institute. Is that possible?
+I would like to use one of your workflows in the local Galaxy instance provided by my institute. Is that possible?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Yes, it is possible. The only requirement is that your local Galaxy has a recent installation of deepTools.
@@ -72,7 +72,7 @@ To display data in IGV, do the following:
 2. Unpack the IGV archive and change to the extracted IGV folder
 3. Use the ``igv.bat`` (Windows), ``igv.sh`` (Linux) or ``igv.command`` (OSX) to start IGV (for more information please read the included ``readme.txt`` file or the IGV documentation).
 4. Choose the genome version of the file(s) you would like to visualize (e.g. dm3) **THIS IS THE MOST IMPORTANT STEP!** IGV will not detect the genome version automatically, i.e. if you select mm9 but your file is based on human data, it will still be displayed without an error message (but with the wrong positions, obviously!)
-5. Go to your deepTools Galaxy server (http://deeptools.ie-freiburg.mpg.de/) and navigate to your data set of choice
+5. Go to your Galaxy server (e.g. https://usegalaxy.eu/) and navigate to your data set of choice
 6. Click on your data set so that you see its details like in the screenshot below (**Keep in mind that not all datasets can be visualized in IGV or UCSC.** We recommend to use :ref:`bigwig` or :ref:`bed` files for visualization.)
 
 .. image:: ../images/Gal_FAQ_IGV_dataset.png
@@ -92,7 +92,7 @@ For more information, check out the `IGV documentation <http://www.broadinstitut
 UCSC
 ~~~~~~~~
 
-There is a direct link from within deepTools Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
+There is a direct link from within Galaxy to stream a data set to UCSC. You can find it in the data set tiles: "display at UCSC", like here:
 
 .. image:: ../images/Gal_FAQ_UCSC_dataset.png
 

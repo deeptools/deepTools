@@ -1,0 +1,8 @@
+#genes:5
+#downstream:30	upstream:30	body:0	bin size:30	unscaled 5 prime:0	unscaled 3 prime:0
+genes:5	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw2	input_computeMatrix_bw2	input_computeMatrix_bw3	input_computeMatrix_bw3
+1.604e+04	7.378e+04	1.968e+04	4.536e+04	7762	1.611e+04
+4.09e+05	3.491e+05	2.428e+05	4.978e+05	5.143e+05	3.833e+05
+5.4e+05	4.812e+05	6.707e+05	3.461e+05	9.391e+05	6.344e+05
+6.79e+05	5.934e+05	8.411e+05	2.471e+05	4.841e+05	1.312e+05
+2.422e+05	3.079e+05	3.497e+05	3.593e+05	2.978e+05	1.648e+05

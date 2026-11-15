@@ -1,0 +1,19 @@
+name: test_essenv
+on: [pull_request, workflow_dispatch]
+
+permissions:
+    contents: read
+
+jobs:
+    dry-run:
+        name: Test ess env
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+              with:
+                  environments: ess
+            - name: ess.py --dry-run
+              run: pixi run -e ess python scripts/ess.py --dry-run --threads 2

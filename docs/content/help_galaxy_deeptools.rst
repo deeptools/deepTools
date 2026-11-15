@@ -1,9 +1,9 @@
-Which tools can I find in the deepTools Galaxy?
+Which deepTools tools can I find in Galaxy?
 -----------------------------------------------
 
 As mentioned before, each Galaxy installation can be tuned to the
 individual interests.
-Our goal is to provide a Galaxy that enables you to **quality check, process and normalize and subsequently visualize your data obtained by high-throughput DNA sequencing**.
+The deepTools Galaxy tools enable you to **quality check, process and normalize and subsequently visualize your data obtained by high-throughput DNA sequencing**.
 
 .. tip:: If you do not know the difference between a BAM and a BED file, that's fine. You can read up on them in our :doc:`help_glossary`.
 
@@ -27,8 +27,6 @@ Tools for BAM and bigWig file processing
 +------------------------+--------------------------------------------------------------------------------+
 | ``multiBigwigSummary`` | calculate score summaries for the binned genome or user-specified regions      |
 +------------------------+--------------------------------------------------------------------------------+
-| ``correctGCBias``      | obtain a BAM file with reads distributed according to the genome's GC content  |
-+------------------------+--------------------------------------------------------------------------------+
 | ``bamCoverage``        | obtain the normalized read coverage of a single BAM file                       |
 +------------------------+--------------------------------------------------------------------------------+
 | ``bamCompare``         | normalize 2 BAM files to each other (e.g. log2ratio, difference)               |
@@ -51,8 +49,6 @@ Tools for QC of NGS data
 | ``plotFingerprint``   | assess the ChIP enrichment strength                                                                   |
 +-----------------------+-------------------------------------------------------------------------------------------------------+
 | ``bamPEFragmentSize`` | obtain the average fragment length for paired-end samples                                             |
-+-----------------------+-------------------------------------------------------------------------------------------------------+
-| ``computeGCBias``     | assess the GC bias by calculating the expected and observed GC distribution of aligned reads          |
 +-----------------------+-------------------------------------------------------------------------------------------------------+
 | ``plotCoverage``      | obtain the normalized read coverage of a single BAM file                                              |
 +-----------------------+-------------------------------------------------------------------------------------------------------+
@@ -121,12 +117,12 @@ The ``Summary Statistics`` can be used to calculate the sum, mean, standard devi
 
 **More help**
 
-.. hint:: If you encounter a failing data set (marked in red), please **send a bug report** via the Galaxy bug report button and we will get in touch if you indicate your email address.
+.. hint:: If you encounter a failing data set (marked in red), please **send a bug report** to the administrators of your Galaxy server via the Galaxy bug report button.
 
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| `http://wiki.galaxyproject.org/Learn <http://wiki.galaxyproject.org/Learn>`_  | Help for Galaxy usage in general                                |
+| `Galaxy Training Network <https://training.galaxyproject.org/>`_              | Help for Galaxy usage in general                                |
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
-| `deepTools Galaxy FAQs <Galaxy-related-FAQs>`_                                | Frequently encountered issues with our specific Galaxy instance |
+| :doc:`help_faq_galaxy`                                                        | Frequently encountered issues with deepTools in Galaxy          |
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+
 | `Biostars <http://biostars.org>`__                                            | For issues not addressed in the FAQs                            |
 +-------------------------------------------------------------------------------+-----------------------------------------------------------------+

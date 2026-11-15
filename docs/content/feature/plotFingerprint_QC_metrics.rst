@@ -1,3 +1,5 @@
+:orphan:
+
 plotFingerprint QC metrics
 ==========================
 

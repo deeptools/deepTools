@@ -1,0 +1,75 @@
+name: tests_pytest
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+    contents: read
+
+jobs:
+    check_versions_matches:
+        name: Check deeptools/galaxy/Rust versions stay in sync
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+              with:
+                  python-version: "3.x"
+            - name: Check version sync
+              run: python scripts/check_version_sync.py
+    check_galaxy_wrapper_args:
+        name: Check galaxy wrapper args against Python CLI
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+              with:
+                  python-version: "3.x"
+            - name: Check galaxy wrapper arguments
+              run: python scripts/check_galaxy_wrapper_args.py
+    build-linux:
+        name: Test on Linux
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                pixi-env: [py312, py313, py314]
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+              with:
+                  environments: ${{ matrix.pixi-env }}
+            - name: build deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} build
+            - name: test deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} test -v
+            - name: build wheel
+              run: pixi run -e ${{ matrix.pixi-env }} python -m build
+            - name: test wheel
+              run: pixi run -e ${{ matrix.pixi-env }} bash -c "pip install dist/*.whl"
+    build-osx:
+        name: Test on OSX
+        runs-on: macOS-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                pixi-env: [py312, py313, py314]
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                persist-credentials: false
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+              with:
+                  environments: ${{ matrix.pixi-env }}
+            - name: build deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} build
+            - name: test deeptools
+              run: pixi run -e ${{ matrix.pixi-env }} test -v
+            - name: build wheel
+              run: pixi run -e ${{ matrix.pixi-env }} python -m build
+            - name: test wheel
+              run: pixi run -e ${{ matrix.pixi-env }} bash -c "pip install dist/*.whl"

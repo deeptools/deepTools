@@ -1,8 +1,0 @@
-include *.txt
-include README.md
-exclude examples/*
-exclude deepTools.egg-info/*
-include scripts/*
-exclude deeptools/test/*
-exclude galaxy/*
-exclude gallery/*

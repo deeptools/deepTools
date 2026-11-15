@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.11.0
+    hooks:
+      - id: zizmor
+  - repo: local
+    hooks:
+      - id: check-version-sync
+        name: check Rust, Python and deeptools versions to stay in sync
+        entry: python scripts/check_version_sync.py
+        language: system
+        files: ^(Cargo\.toml|pyproject\.toml|\.readthedocs\.yaml|galaxy/wrapper/deepTools_macros\.xml|\.github/workflows/(test_pytest|test_planemo|wheels|wheels-preview)\.yml|scripts/check_version_sync\.py)$
+        pass_filenames: false
+  - repo: local
+    hooks:
+      - id: check-galaxy-wrapper-args
+        name: check galaxy wrapper args against Python CLI
+        entry: python scripts/check_galaxy_wrapper_args.py
+        language: system
+        files: ^(galaxy/wrapper/deepTools_.*\.xml)$
+        pass_filenames: false
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.8
+    hooks:
+      - id: ruff-check

@@ -1,0 +1,7 @@
+file	featureType	percent	featureReadCount	totalReadCount
+test1	gene	100.00	144	144
+test1	transcript	100.00	144	144
+test1	exon	34.72	50	144
+test2	gene	100.00	193	193
+test2	transcript	100.00	193	193
+test2	exon	41.45	80	193

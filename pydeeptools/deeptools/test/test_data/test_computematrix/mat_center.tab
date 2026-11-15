@@ -1,0 +1,11 @@
+#genes:8
+#downstream:210	upstream:210	body:0	bin size:30	unscaled 5 prime:0	unscaled 3 prime:0
+genes:8	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1	input_computeMatrix_bw1
+8.233e+05	8.233e+05	6.79e+05	6.415e+05	5.934e+05	5.186e+05	4.277e+05	3.635e+05	3.582e+05	5.079e+05	4.918e+05	4.277e+05	4.705e+05	5.507e+05
+6.415e+05	6.79e+05	8.233e+05	8.233e+05	6.362e+05	4.33e+05	5.293e+05	5.613e+05	4.651e+05	3.154e+05	3.261e+05	4.17e+05	5.293e+05	5.613e+05
+2.518e+05	3.443e+05	3.86e+05	3.55e+05	3.117e+05	2.203e+05	1.866e+05	1.46e+05	1.262e+05	1.684e+05	1.492e+05	1.219e+05	2.344e+04	nan
+5.801e+05	6.063e+05	5.416e+05	6.228e+05	5.875e+05	5.667e+05	5.196e+05	4.854e+05	3.555e+05	3.09e+05	3.801e+05	5.426e+05	5.646e+05	4.534e+05
+nan	nan	3.029e+04	1.379e+05	1.572e+05	1.55e+05	1.315e+05	1.486e+05	1.946e+05	2.31e+05	3.144e+05	3.764e+05	3.7e+05	3.389e+05
+3.4e+05	3.732e+05	3.721e+05	3.138e+05	2.288e+05	1.93e+05	1.481e+05	1.304e+05	1.577e+05	1.556e+05	1.347e+05	2.925e+04	nan	nan
+4.651e+05	5.613e+05	5.293e+05	4.33e+05	6.362e+05	8.233e+05	8.233e+05	6.79e+05	6.415e+05	5.934e+05	5.186e+05	4.277e+05	3.635e+05	3.582e+05
+5.72e+05	6.095e+05	5.4e+05	6.308e+05	5.827e+05	5.667e+05	5.132e+05	4.758e+05	3.475e+05	2.994e+05	4.01e+05	5.507e+05	5.613e+05	4.437e+05

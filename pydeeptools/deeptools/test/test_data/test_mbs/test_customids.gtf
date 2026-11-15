@@ -1,0 +1,9 @@
+3R	deepTools	gene	1	1000	.	.	0	gene_id "example";
+3R	deepTools	mRNA	1	1000	.	+	0	gene_id "example"; ID "first";
+3R	deepTools	CDS	1	50	.	+	0	gene_id "example"; ID "first";
+3R	deepTools	CDS	400	510	.	+	0	gene_id "example"; ID "first";
+3R	deepTools	CDS	980	1000	.	+	0	gene_id "example"; ID "first";
+3R	deepTools	mRNA	100	1100	.	-	0	gene_id "example"; ID "second";
+3R	deepTools	CDS	100	150	.	-	0	gene_id "example"; ID "second";
+3R	deepTools	CDS	500	610	.	-	0	gene_id "example"; ID "second";
+3R	deepTools	CDS	1080	1100	.	-	0	gene_id "example"; ID "second";

@@ -1,0 +1,658 @@
+import os.path
+import tempfile
+from os import unlink
+
+import pytest
+
+import deeptools.bamCompare2 as bam_comp
+import deeptools.bamCoverage2 as bam_cov
+
+ROOT = os.path.dirname(os.path.abspath(__file__)) + "/test_data/"
+BAMFILE_A = ROOT + "testA.bam"
+BAMFILE_B = ROOT + "testB.bam"
+BAMFILE_FILTER1 = ROOT + "test_filtering.bam"
+BAMFILE_FILTER2 = ROOT + "test_filtering2.bam"
+CRAMFILE_A = ROOT + "testA.cram"
+CRAMFILE_B = ROOT + "testB.cram"
+CRAMFILE_FILTER1 = ROOT + "test_filtering.cram"
+CRAMFILE_FILTER2 = ROOT + "test_filtering2.cram"
+BEDFILE_FILTER = ROOT + "test_filtering.blacklist.bed"
+
+
+"""
+The distribution of reads for the bam file is:
+
+              0                              100                           200
+              |------------------------------------------------------------|
+testA.bam  3R                                ==============>
+                                                            <==============
+
+
+testB.bam  3R                 <==============               ==============>
+                                             ==============>
+                                                            ==============>
+        """
+
+
+def test_bam_coverage_arguments():
+    """
+    Test minimal command line args for bamCoverage
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for fname in [BAMFILE_B, CRAMFILE_B]:
+    for fname in [BAMFILE_B]:
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph".split()
+        bam_cov.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_extend():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for fname in [BAMFILE_B, CRAMFILE_B]:
+    for fname in [BAMFILE_B]:
+        args = f"-b {fname} -o {outfile} --extendReads 100 --outFileFormat bedgraph".split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t150\t1\n', '3R\t150\t200\t3\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_extend_and_normalizeUsingRPGC():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for fname in [BAMFILE_B, CRAMFILE_B]:
+    for fname in [BAMFILE_B]:
+        args = f"-b {fname} -o {outfile} --normalizeUsing RPGC --effectiveGenomeSize 200 --extendReads 100 --verbose " \
+               "--outFileFormat bedgraph".split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        # the scale factor should be 0.5, thus the result is similar to
+        # that of the previous test divided by 0.5
+        expected = ['3R\t0\t150\t0.5\n', '3R\t150\t200\t1.5\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_skipnas():
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for fname in [BAMFILE_B, CRAMFILE_B]:
+    for fname in [BAMFILE_B]:
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --skipNAs".split()
+        bam_cov.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t50\t150\t1\n', '3R\t150\t200\t2\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_normalizeUsingRPKM():
+    """
+    Test --normalizeUsing RPKM. testB.bam has 4 reads (2 bp genome coverage per
+    read), so each covered read contributes 1e9 / (binLength_kb * totalReads)
+    reads-per-kilobase-per-million.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    for fname in [BAMFILE_B]:
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --normalizeUsing RPKM".split()
+        bam_cov.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t5000000\n', '3R\t150\t200\t10000000\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_scaleFactor():
+    """
+    Test --scaleFactor. A manual scale factor is applied directly to the raw
+    coverage (and takes precedence over --normalizeUsing).
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    for fname in [BAMFILE_B]:
+        args = f"--bam {fname} -o {outfile} --outFileFormat bedgraph --scaleFactor 2.0".split()
+        bam_cov.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t150\t2\n', '3R\t150\t200\t4\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+def test_bam_compare_arguments():
+    """
+    Test minimal command line args for bamCoverage. The ratio
+    between the same file is taken, therefore, the expected value
+    is 1.0 for all bins.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for fname in [BAMFILE_B, CRAMFILE_B]:
+    for fname in [BAMFILE_B]:
+        args = f"--bamfile1 {fname} --bamfile2 {fname} " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph --operation ratio".split()
+        bam_comp.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t200\t1\n']
+        assert resp == expected, f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_compare_rpgc_rejected():
+    """
+    RPGC normalization in bamcompare -> failure.
+    """
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --normalizeUsing RPGC " \
+           "--effectiveGenomeSize 1000000 -o /dev/null".split()
+    with pytest.raises(SystemExit):
+        bam_comp.main(args)
+
+
+def test_bam_compare_diff_files():
+    """
+    Test with two different files
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
+    for A, B in [(BAMFILE_A, BAMFILE_B)]:
+        args = f"--bamfile1 {A} --bamfile2 {B} --scaleFactors 1:1 --operation subtract --verbose " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
+        bam_comp.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
+        assert resp == expected, f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_compare_pseudocounts():
+    """
+    Test with different pseudocounts
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --outFileFormat bedgraph --scaleFactors 1:1 -o {outfile} " \
+           "--pseudocount 1 0".split()
+    bam_comp.main(args)
+
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t0\t50\tinf\n', '3R\t50\t100\t0\n', '3R\t100\t150\t1\n', '3R\t150\t200\t0\n']
+    assert resp == expected, f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bam_compare_ZoverZ():
+    """
+    Ensure --skipZeroOverZero works in bamCompare
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"--bamfile1 {BAMFILE_A} --bamfile2 {BAMFILE_B} --outFileFormat bedgraph --scaleFactors 1:1 -o {outfile} " \
+           "--skipZeroOverZero --verbose".split()
+    bam_comp.main(args)
+
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['3R\t50\t100\t-1\n', '3R\t100\t150\t0\n', '3R\t150\t200\t-0.58\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bam_compare_diff_files_skipnas():
+    """
+    Test skipnas
+    Compared to the previous tests, any region that do not have coverage (in either of the bam files)
+    is not included in the bedgraph file.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
+    for A, B in [(BAMFILE_A, BAMFILE_B)]:
+        args = f"--bamfile1 {A} --bamfile2 {B} --scaleFactors 1:1 --operation subtract " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph --skipNAs".split()
+        bam_comp.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t100\t150\t0\n', '3R\t150\t200\t-1\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_compare_extend():
+    """
+    Test read extension
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
+    for A, B in [(BAMFILE_A, BAMFILE_B)]:
+        args = f"--bamfile1 {A} --bamfile2 {B} --extend 100 --scaleFactors 1:1 --operation subtract " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
+        bam_comp.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = ['3R\t0\t100\t-1\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_compare_scale_factors_ratio():
+    """
+    Test scale factor
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
+    for A, B in [(BAMFILE_A, BAMFILE_B)]:
+        args = f"--bamfile1 {A} --bamfile2 {B} --operation ratio --ignoreForNormalization chr_cigar " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph".split()
+        bam_comp.main(args)
+
+        # The scale factors are [ 1.   0.5] because BAMFILE_B has double the amount of reads (4) compared to BAMFILE_A
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        """
+        The distribution of reads for the bam file is:
+
+                      0                              100                           200
+                      |------------------------------------------------------------|
+        testA.bam  3R                                ==============>
+                                                                    <==============
+
+
+        testB.bam  3R                 <==============               ==============>
+                                                     ==============>
+                                                                    ==============>
+
+        ------------------------------------------------------------------------------
+
+        ratio:             0      (0+1)/(1*0.5+1)=0.67             (1+1)/(1+2*0.5)=1
+        (scale factors [1,0.5])                   (1+1)/(1+1*0.5)=1.33
+        """
+
+        expected = ['3R\t0\t50\t1\n', '3R\t50\t100\t0.67\n', '3R\t100\t150\t1.33\n', '3R\t150\t200\t1\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_compare_scale_factors_subtract():
+    """
+    Test scale factor
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for A, B in [(BAMFILE_A, BAMFILE_B), (CRAMFILE_A, CRAMFILE_B)]:
+    for A, B in [(BAMFILE_A, BAMFILE_B)]:
+        args = f"--bamfile1 {A} --bamfile2 {B} --operation subtract --ignoreForNormalization chr_cigar " \
+               f"-o {outfile} -p 1 --outFileFormat bedgraph --scaleFactorsMethod None --normalizeUsing CPM --verbose".split()
+        bam_comp.main(args)
+
+        # The scale factors are [ 1.   0.5] because BAMFILE_B has dowble the amount of reads (4) compared to BAMFILE_A
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        """
+        The distribution of reads for the bam file is:
+
+                      0                              100                           200
+                      |------------------------------------------------------------|
+        testA.bam  3R                                ==============>
+                                                                    <==============
+
+
+        testB.bam  3R                 <==============               ==============>
+                                                     ==============>
+                                                                    ==============>
+
+        ------------------------------------------------------------------------------
+
+        subtract: After applying CPM normalization, the scale factors are [500000,250000]
+
+        after applying factors:    0         -25k              25k              0
+
+        """
+
+        expected = ['3R\t0\t50\t0\n', '3R\t50\t100\t-250000\n', '3R\t100\t150\t250000\n', '3R\t150\t200\t0\n']
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_filter_blacklist():
+    """
+    Test --samFlagInclude --samFlagExclude --minMappingQuality and --blackListFileName
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for fname in [BAMFILE_FILTER1, CRAMFILE_FILTER1]:
+    for fname in [BAMFILE_FILTER1]:
+        args = f"--bam {fname} --normalizeUsing RPGC --effectiveGenomeSize 1400 -p 1 -o {outfile} -of bedgraph --samFlagInclude 512 " \
+               "--samFlagExclude 256 --minMappingQuality 5 --verbose " \
+               f"--blackListFileName {BEDFILE_FILTER}"
+        args = args.split()
+        bam_cov.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        expected = [
+            "3R\t0\t100\t0\n",
+            "3R\t100\t150\t1.75\n",
+            "3R\t150\t200\t5.84\n",
+            "3R\t200\t250\t6.04\n",
+            "3R\t250\t300\t3.7\n",
+            "3R\t300\t400\t2.53\n",
+            "3R\t400\t450\t4.28\n",
+            "3R\t450\t500\t4.48\n",
+            "3R\t500\t550\t2.14\n",
+            "3R\t550\t600\t2.92\n",
+            "3R\t600\t650\t5.45\n",
+            "3R\t650\t750\t3.89\n",
+            "3R\t750\t800\t2.73\n",
+            "3R\t800\t900\t0\n",
+            "3R\t900\t950\t0.58\n",
+            "3R\t950\t1000\t1.36\n",
+            "3R\t1000\t1050\t0.78\n",
+            "3R\t1050\t1500\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_offset1():
+    """
+    Test -bs 1 --Offset 1
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bw")
+    #for fname in [BAMFILE_A, CRAMFILE_A]:
+    for fname in [BAMFILE_A]:
+        args = f"--Offset 1 --bam {fname} -p 1 -bs 1 -o {outfile} -of bedgraph --verbose "
+        print(args)
+        args = args.split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        expected = [
+            "3R\t0\t100\t0\n",
+            "3R\t100\t101\t1\n",
+            "3R\t101\t199\t0\n",
+            "3R\t199\t200\t1\n",
+            "chr_cigar\t0\t10\t0\n",
+            "chr_cigar\t10\t11\t1\n",
+            "chr_cigar\t11\t200\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_offset1_10():
+    """
+    Test -bs 1 --Offset 1 10
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bw")
+    #for fname in [BAMFILE_A, CRAMFILE_A]:
+    for fname in [BAMFILE_A]:
+        args = f"--Offset 1 10 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
+        args = args.split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        expected = [
+            "3R\t0\t100\t0\n",
+            "3R\t100\t110\t1\n",
+            "3R\t110\t190\t0\n",
+            "3R\t190\t200\t1\n",
+            "chr_cigar\t0\t10\t0\n",
+            "chr_cigar\t10\t20\t1\n",
+            "chr_cigar\t20\t200\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_offset_minus1():
+    """
+    Test -bs 1 --Offset -1
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bw")
+    #for fname in [BAMFILE_A, CRAMFILE_A]:
+    for fname in [BAMFILE_A]:
+        args = f"--Offset -1 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
+        args = args.split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        expected = [
+            "3R\t0\t149\t0\n",
+            "3R\t149\t151\t1\n",
+            "3R\t151\t200\t0\n",
+            "chr_cigar\t0\t49\t0\n",
+            "chr_cigar\t49\t50\t1\n",
+            "chr_cigar\t50\t200\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_offset20_minus4():
+    """
+    Test -bs 1 --Offset 20 -4
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bw")
+    #for fname in [BAMFILE_A, CRAMFILE_A]:
+    for fname in [BAMFILE_A]:
+        args = f"--Offset 20 -4 -b {fname} -p 1 -bs 1 -of bedgraph -o {outfile}"
+        args = args.split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        expected = [
+            "3R\t0\t119\t0\n",
+            "3R\t119\t147\t1\n",
+            "3R\t147\t153\t0\n",
+            "3R\t153\t181\t1\n",
+            "3R\t181\t200\t0\n",
+            "chr_cigar\t0\t29\t0\n",
+            "chr_cigar\t29\t30\t1\n",
+            "chr_cigar\t30\t40\t0\n",
+            "chr_cigar\t40\t47\t1\n",
+            "chr_cigar\t47\t200\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+
+def test_bam_coverage_smooth():
+    """
+    Test bamcoverage with smoothing
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bw")
+    #for fname in [BAMFILE_A, CRAMFILE_A]:
+    for fname in [BAMFILE_A]:
+        args = f" -b {fname} -p 1 -bs 5 --smoothLength 10 -of bedgraph -o {outfile}"
+        args = args.split()
+        bam_cov.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+
+        expected = [
+            "3R\t0\t100\t0\n",
+            "3R\t100\t105\t0.5\n",
+            "3R\t105\t200\t1\n",
+            "chr_cigar\t0\t10\t0\n",
+            "chr_cigar\t10\t15\t0.5\n",
+            "chr_cigar\t15\t30\t1\n",
+            "chr_cigar\t30\t35\t0.5\n",
+            "chr_cigar\t35\t40\t0\n",
+            "chr_cigar\t40\t45\t0.5\n",
+            "chr_cigar\t45\t50\t1\n",
+            "chr_cigar\t50\t55\t0.5\n",
+            "chr_cigar\t55\t200\t0\n"
+        ]
+
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_compare_filter_blacklist():
+    """
+    Test --samFlagInclude --samFlagExclude --minMappingQuality --ignoreDuplicates and --blackListFileName
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    #for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2), (CRAMFILE_FILTER1, CRAMFILE_FILTER2)]:
+    for A, B in [(BAMFILE_FILTER1, BAMFILE_FILTER2)]:
+        args = f"-b1 {A} -b2 {B} -p 1 -o {outfile} -of bedgraph --samFlagInclude 512 " \
+               "--samFlagExclude 256 --minMappingQuality 5 --verbose " \
+               f"--blackListFileName {BEDFILE_FILTER}"
+        print(args)
+        args = args.split()
+        bam_comp.main(args)
+
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        expected = [
+            "3R\t0\t100\t0\n",
+            "3R\t100\t150\t-0.13\n",
+            "3R\t150\t200\t-0.1\n",
+            "3R\t200\t250\t0.03\n",
+            "3R\t250\t300\t0.21\n",
+            "3R\t300\t350\t0.09\n",
+            "3R\t350\t400\t-0.1\n",
+            "3R\t400\t450\t-0.01\n",
+            "3R\t450\t500\t0.05\n",
+            "3R\t500\t550\t0.11\n",
+            "3R\t550\t600\t0.08\n",
+            "3R\t600\t700\t-0.01\n",
+            "3R\t700\t750\t-0.13\n",
+            "3R\t750\t800\t-0.18\n",
+            "3R\t800\t900\t0\n",
+            "3R\t900\t950\t0.32\n",
+            "3R\t950\t1000\t0.16\n",
+            "3R\t1000\t1050\t-0.01\n",
+            "3R\t1050\t1500\t0\n"
+        ]
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+
+def test_bam_coverage_MNase_odd_fragment_length():
+    """
+    --MNase counts the two central bases of an even-length fragment and the
+    three central bases of an odd-length one. test_paired2.bam has proper
+    pairs of template length 147 (x2, start 5000384), 166 (start 5001010)
+    and 154 (x2, start 5001115) inside the default 130-200 window.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = "--bam {} -o {} --MNase --binSize 1 --outFileFormat bedgraph --region chr2:5000000:5002000".format(
+        ROOT + "test_paired2.bam", outfile).split()
+    bam_cov.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['chr2\t5000000\t5000456\t0\n', 'chr2\t5000456\t5000459\t2\n', 'chr2\t5000459\t5001092\t0\n',
+                'chr2\t5001092\t5001094\t1\n', 'chr2\t5001094\t5001191\t0\n', 'chr2\t5001191\t5001193\t2\n',
+                'chr2\t5001193\t5002000\t0\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
+def test_bam_coverage_nocollapse():
+    """
+    Test --no_collapse in bamcoverage
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b {BAMFILE_A} -of bedgraph -bs 20 --no_collapse -o {outfile}"
+    print(args)
+    args = args.split()
+    bam_cov.main(args)
+
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+        expected = [
+            "3R\t0\t20\t0\n",
+            "3R\t20\t40\t0\n",
+            "3R\t40\t60\t0\n",
+            "3R\t60\t80\t0\n",
+            "3R\t80\t100\t0\n",
+            "3R\t100\t120\t1\n",
+            "3R\t120\t140\t1\n",
+            "3R\t140\t160\t2\n",
+            "3R\t160\t180\t1\n",
+            "3R\t180\t200\t1\n",
+            "chr_cigar\t0\t20\t1\n",
+            "chr_cigar\t20\t40\t1\n",
+            "chr_cigar\t40\t60\t1\n",
+            "chr_cigar\t60\t80\t0\n",
+            "chr_cigar\t80\t100\t0\n",
+            "chr_cigar\t100\t120\t0\n",
+            "chr_cigar\t120\t140\t0\n",
+            "chr_cigar\t140\t160\t0\n",
+            "chr_cigar\t160\t180\t0\n",
+            "chr_cigar\t180\t200\t0\n",
+        ]
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+def test_bam_compare_nocollapse():
+    """
+    Test --no_collapse in bamcompare
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = f"-b1 {BAMFILE_A} -b2 {BAMFILE_B} -of bedgraph -bs 20 --no_collapse -o {outfile}"
+    print(args)
+    args = args.split()
+    bam_comp.main(args)
+
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+        expected = [
+            "3R\t0\t20\t0\n",
+            "3R\t20\t40\t0\n",
+            "3R\t40\t60\t-0.58\n",
+            "3R\t60\t80\t-0.58\n",
+            "3R\t80\t100\t-0.58\n",
+            "3R\t100\t120\t0.42\n",
+            "3R\t120\t140\t0.42\n",
+            "3R\t140\t160\t0.26\n",
+            "3R\t160\t180\t0\n",
+            "3R\t180\t200\t0\n",
+        ]
+        assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+        unlink(outfile)
+
+def test_bam_compare_operations():
+    """
+    Each --operation computes what it names (#1457). With --scaleFactors 1:1 the
+    50-bp bin signals are A: 0,0,1,1 and B: 0,1,1,2 (see read layout above).
+    """
+    expected = {
+        'first': ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n'],
+        'second': ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n'],
+        'add': ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n'],
+        'mean': ['3R\t0\t50\t0\n', '3R\t50\t100\t0.5\n', '3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n'],
+        'reciprocal_ratio': ['3R\t0\t50\t1\n', '3R\t50\t100\t-2\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1.5\n'],
+    }
+    for op, exp in expected.items():
+        _, outfile = tempfile.mkstemp(suffix=".bg")
+        args = f"-b1 {BAMFILE_A} -b2 {BAMFILE_B} --scaleFactors 1:1 --operation {op} " \
+               f"-o {outfile} -p 1 -of bedgraph".split()
+        bam_comp.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        unlink(outfile)
+        assert resp == exp, f"--operation {op}: {resp} != {exp}"
