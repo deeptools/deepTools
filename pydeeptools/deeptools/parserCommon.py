@@ -23,6 +23,16 @@ def check_list_of_comma_values(value):
     return value
 
 
+def check_color(value):
+    """Validate that a string is a recognized matplotlib color (named or hex)."""
+    from matplotlib.colors import is_color_like
+    if not is_color_like(value):
+        raise argparse.ArgumentTypeError(
+            f"'{value}' is not a valid matplotlib color. Use a named color "
+            "(e.g. 'red') or a hex value (e.g. '#ff0000').")
+    return value
+
+
 def output(args=None):
     parser = argparse.ArgumentParser(add_help=False)
     group = parser.add_argument_group('Output')
@@ -724,6 +734,16 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             'between the colors.',
             type=int,
             default=256)
+
+        optional.add_argument(
+            '--colors',
+            help='Colors for the profile lines in the summary plot shown above the heatmap. '
+                 'Only applies when --whatToShow includes the plot. One color per group '
+                 '(or per sample when --perGroup is set). Colors are recycled if fewer are '
+                 'given than the number of lines. Accepts named matplotlib colors (e.g. red, blue) '
+                 'and hex values (e.g. #ff0000). Example: --colors red blue green',
+            type=check_color,
+            nargs='+')
 
         optional.add_argument('--zMin', '-min',
                               default=None,

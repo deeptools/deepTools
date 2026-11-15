@@ -2,6 +2,7 @@ import os
 import tempfile
 
 import matplotlib.pyplot as plt
+import pytest
 from matplotlib.testing.compare import compare_images
 
 import deeptools.plotHeatmap
@@ -135,3 +136,31 @@ def test_plotHeatmap_silhouette_kmeans():
 
 def test_plotHeatmap_silhouette_hclust():
     assert _run_silhouette("--hclust")[-1] == "silhouette"
+
+
+def test_plotHeatmap_colors():
+    """--colors sets the profile line colors (recycled) and produces a plot."""
+    args = (
+        f"--matrixFile {TEST_DATA}/computeMatrix_result1.gz "
+        "--colors red #00ff00"
+    ).split()
+    plotfile = run_plotHeatmap(args)
+    try:
+        assert os.path.getsize(plotfile) > 0
+    finally:
+        cleanup(plotfile)
+
+
+def test_plotHeatmap_colors_invalid():
+    """An invalid --colors value is rejected by argparse."""
+    _fd, plotfile = tempfile.mkstemp(suffix=".png")
+    os.close(_fd)
+    args = (
+        f"--matrixFile {TEST_DATA}/computeMatrix_result1.gz "
+        f"--colors notacolor --outFileName {plotfile}"
+    ).split()
+    try:
+        with pytest.raises(SystemExit):
+            deeptools.plotHeatmap.main(args)
+    finally:
+        cleanup(plotfile)
