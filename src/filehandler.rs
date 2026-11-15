@@ -705,8 +705,11 @@ pub fn bwintervals(
         let mut bwval: Vec<f32> = Vec::new();
         // get 'min and max' to query
         // at some point this should become an impl but man am I tired.
+        // (0, 0) Conbins are placeholders for invalid bins (off-chromosome or after the
+        // region end with --nanAfterEnd); they must not widen the query interval.
         let (min, max) = sls
             .iter()
+            .filter(|bin| !matches!(bin, Bin::Conbin(0, 0)))
             .flat_map(|bin| match bin {
                 Bin::Conbin(a, b) => vec![*a, *b],
                 Bin::PaddedConbin(a, b, _) => vec![*a, *b],
@@ -722,6 +725,8 @@ pub fn bwintervals(
             .fold((u32::MAX, u32::MIN), |(min, max), x| {
                 (min.min(x), max.max(x))
             });
+        // Every bin is a placeholder: nothing to query.
+        let (min, max) = if min > max { (0, 0) } else { (min, max) };
         let binvals = reader
             .get_interval(&region.chrom, min as u32, max as u32)
             .unwrap_or_else(|e| {

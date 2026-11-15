@@ -7,7 +7,7 @@ If you're using the command-line version you can easily follow the given example
 .. note:: For support or questions please post to `Biostars <http://biostars.org>`__. For bug reports and feature requests please open an issue `<on github <http://github.com/deeptools/deeptools>`__.
 
 
-All protocols assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `deepTools Galaxy <http://deeptools.ie-freiburg.mpg.de>`_. If you need help to get started with Galaxy in general, e.g. to upload your data, see :doc:`help_galaxy_intro` and :doc:`help_galaxy_dataup`.
+All protocols assume that you have uploaded your files into a Galaxy instance with a deepTools installation, e.g., `usegalaxy.eu <https://usegalaxy.eu/>`_. If you need help to get started with Galaxy in general, e.g. to upload your data, see :doc:`help_galaxy_intro` and :doc:`help_galaxy_dataup`.
 
 .. tip:: If you would like to try out the protocols with **sample data**, test data can be downloaded from `Zenodo <https://zenodo.org/records/21529137>`__.
 
@@ -70,7 +70,7 @@ How can I compare the ChIP strength for different ChIP experiments?
 
 .. image:: ../images/GalHow_plotFingerprint.png
 
-.. tip:: For more details on the interpretation of the plot, see :doc:`tools/plotFingerprint` or select the tool within the deepTools Galaxy and scroll down for more information.
+.. tip:: For more details on the interpretation of the plot, see :doc:`tools/plotFingerprint` or select the tool within Galaxy and scroll down for more information.
 
 -----------------------------------------
 

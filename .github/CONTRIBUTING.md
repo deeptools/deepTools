@@ -26,8 +26,8 @@ for contributing to the repository :**
 Releases are managed by [release-please](https://github.com/googleapis/release-please),
 which computes version bumps and changelog entries from
 [Conventional Commits](https://www.conventionalcommits.org/). PRs are squash-merged with
-the commit message set to the PR title + the branch's individual commit messages, so
-**the PR title itself must follow the Conventional Commits format** — that's the line
+the commit message set to the PR title + the PR description, so
+**the PR title itself must follow the Conventional Commits format**. That's the line
 release-please actually parses:
 
 ```

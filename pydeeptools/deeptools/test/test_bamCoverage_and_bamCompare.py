@@ -550,6 +550,27 @@ def test_bam_compare_filter_blacklist():
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
 
+
+def test_bam_coverage_MNase_odd_fragment_length():
+    """
+    --MNase counts the two central bases of an even-length fragment and the
+    three central bases of an odd-length one. test_paired2.bam has proper
+    pairs of template length 147 (x2, start 5000384), 166 (start 5001010)
+    and 154 (x2, start 5001115) inside the default 130-200 window.
+    """
+    _, outfile = tempfile.mkstemp(suffix=".bg")
+    args = "--bam {} -o {} --MNase --binSize 1 --outFileFormat bedgraph --region chr2:5000000:5002000".format(
+        ROOT + "test_paired2.bam", outfile).split()
+    bam_cov.main(args)
+    with open(outfile, 'r') as _foo:
+        resp = _foo.readlines()
+    expected = ['chr2\t5000000\t5000456\t0\n', 'chr2\t5000456\t5000459\t2\n', 'chr2\t5000459\t5001092\t0\n',
+                'chr2\t5001092\t5001094\t1\n', 'chr2\t5001094\t5001191\t0\n', 'chr2\t5001191\t5001193\t2\n',
+                'chr2\t5001193\t5002000\t0\n']
+    assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
+    unlink(outfile)
+
+
 def test_bam_coverage_nocollapse():
     """
     Test --no_collapse in bamcoverage
@@ -613,3 +634,25 @@ def test_bam_compare_nocollapse():
         ]
         assert f"{resp}" == f"{expected}", f"{resp} != {expected}"
         unlink(outfile)
+
+def test_bam_compare_operations():
+    """
+    Each --operation computes what it names (#1457). With --scaleFactors 1:1 the
+    50-bp bin signals are A: 0,0,1,1 and B: 0,1,1,2 (see read layout above).
+    """
+    expected = {
+        'first': ['3R\t0\t100\t0\n', '3R\t100\t200\t1\n'],
+        'second': ['3R\t0\t50\t0\n', '3R\t50\t150\t1\n', '3R\t150\t200\t2\n'],
+        'add': ['3R\t0\t50\t0\n', '3R\t50\t100\t1\n', '3R\t100\t150\t2\n', '3R\t150\t200\t3\n'],
+        'mean': ['3R\t0\t50\t0\n', '3R\t50\t100\t0.5\n', '3R\t100\t150\t1\n', '3R\t150\t200\t1.5\n'],
+        'reciprocal_ratio': ['3R\t0\t50\t1\n', '3R\t50\t100\t-2\n', '3R\t100\t150\t1\n', '3R\t150\t200\t-1.5\n'],
+    }
+    for op, exp in expected.items():
+        _, outfile = tempfile.mkstemp(suffix=".bg")
+        args = f"-b1 {BAMFILE_A} -b2 {BAMFILE_B} --scaleFactors 1:1 --operation {op} " \
+               f"-o {outfile} -p 1 -of bedgraph".split()
+        bam_comp.main(args)
+        with open(outfile, 'r') as _foo:
+            resp = _foo.readlines()
+        unlink(outfile)
+        assert resp == exp, f"--operation {op}: {resp} != {exp}"

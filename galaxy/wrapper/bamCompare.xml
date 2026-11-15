@@ -102,7 +102,7 @@
                 label="How to compare the two files"
                 help="The default is to output the log2ratio between the two samples.
                 The reciprocal ratio returns the negative of the inverse of the ratio if
-                the ratio is less than 0. The resulting values are interpreted as negative
+                the ratio is less than 1. The resulting values are interpreted as negative
                 fold changes. To output the scaled values from the first or second BAM file,
                 select 'first' or 'second'.">
                 <option value="log2" selected="true">Compute log2 of the number of reads ratio</option>

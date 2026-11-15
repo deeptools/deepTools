@@ -352,13 +352,23 @@ def plotMatrix(hm, outFileName,
         fig
     )
 
-    # color map for the summary plot (profile) on top of the heatmap
-    cmap_plot = plt.get_cmap('gnuplot')
+    # colors for the profile lines in the summary plot above the heatmap
     numgroups = hm.matrix.get_num_groups()
-    if perGroup:
-        color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
+    if colorMapDict.get('colors'):
+        # user-supplied colors: one per group (or per sample when perGroup),
+        # recycled with modulo if fewer colors are given than lines
+        user_colors = colorMapDict['colors']
+        if perGroup:
+            n_lines = hm.matrix.get_num_samples()
+        else:
+            n_lines = numgroups
+        color_list = [user_colors[i % len(user_colors)] for i in range(n_lines)]
     else:
-        color_list = cmap_plot(np.arange(numgroups) / numgroups)
+        cmap_plot = plt.get_cmap('gnuplot')
+        if perGroup:
+            color_list = cmap_plot(np.arange(hm.matrix.get_num_samples()) / hm.matrix.get_num_samples())
+        else:
+            color_list = cmap_plot(np.arange(numgroups) / numgroups)
     alpha = colorMapDict['alpha']
 
     # check if matrix is reference-point based using the upstream >0 value
@@ -651,7 +661,7 @@ def main(args=None):
         if args.kmeans is not None:
             hm.matrix.computeSilhouette(args.kmeans)
         elif args.hclust is not None:
-            hm.matrix.computeSilhouette(args.args.hclust)
+            hm.matrix.computeSilhouette(args.hclust)
 
     if args.outFileNameMatrix:
         hm.save_matrix(args.outFileNameMatrix)
@@ -669,7 +679,8 @@ def main(args=None):
                      'colorList': args.colorList,
                      'colorNumber': args.colorNumber,
                      'missingDataColor': args.missingDataColor,
-                     'alpha': args.alpha}
+                     'alpha': args.alpha,
+                     'colors': args.colors}
 
     plotMatrix(hm,
                args.outFileName,

@@ -1,4 +1,5 @@
 import argparse
+import re
 import signal
 import sys
 from importlib.metadata import version
@@ -72,6 +73,13 @@ def parseArguments():
     general.add_argument('--ATACshift',
                          action='store_true',
                          help='Shift the produced BAM file or BEDPE regions as commonly done for ATAC-seq. This is equivalent to --shift 4 -5 5 -4.')
+
+    general.add_argument('--keepTags',
+                         action='extend',
+                         nargs='+',
+                         default=[],
+                         metavar='TAG',
+                         help="Copy these two-character auxiliary tags (for example CB for a cell barcode) from the input onto shifted BAM records. By default shifting drops all tags, SEQ and QUAL. Only has an effect together with --shift or --ATACshift and BAM output. Tags are copied verbatim: shifting rewrites the CIGAR, positions, mate fields, SEQ and QUAL, so tags describing those (for example MD, MC, SA, MM or ML) will be stale.")
 
     output = parser.add_argument_group('Output arguments')
     output.add_argument('--BED',
@@ -168,6 +176,15 @@ def main(args=None):
             print("Warning! The --ATACshift option is used, but a --shift option is provided as well. The latter will be ignored in favor of 4 -5 5 -4.")
         args.shift = [4, -5, 5, -4]
 
+    for tag in args.keepTags:
+        if not re.fullmatch(r'[A-Za-z][A-Za-z0-9]', tag):
+            sys.exit(f"--keepTags expects SAM tags (a letter followed by a letter or digit), got '{tag}'.")
+    args.keepTags = list(dict.fromkeys(args.keepTags))
+    if args.keepTags and not args.shift:
+        sys.exit("--keepTags only applies together with --shift or --ATACshift.")
+    if args.keepTags and args.BED:
+        sys.exit("--keepTags only applies to BAM output, not --BED.")
+
     if args.ignoreDuplicates:
         args.samFlagExclude |= 0x400
 
@@ -197,4 +214,5 @@ def main(args=None):
         args.maxFragmentLength,
         args.label,
         args.smartLabels,
+        args.keepTags,
     )
