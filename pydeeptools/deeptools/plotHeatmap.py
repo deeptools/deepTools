@@ -354,10 +354,10 @@ def plotMatrix(hm, outFileName,
 
     # colors for the profile lines in the summary plot above the heatmap
     numgroups = hm.matrix.get_num_groups()
-    if colorMapDict.get('plotColors'):
+    if colorMapDict.get('colors'):
         # user-supplied colors: one per group (or per sample when perGroup),
         # recycled with modulo if fewer colors are given than lines
-        user_colors = colorMapDict['plotColors']
+        user_colors = colorMapDict['colors']
         if perGroup:
             n_lines = hm.matrix.get_num_samples()
         else:
@@ -680,7 +680,7 @@ def main(args=None):
                      'colorNumber': args.colorNumber,
                      'missingDataColor': args.missingDataColor,
                      'alpha': args.alpha,
-                     'plotColors': args.plotColors}
+                     'colors': args.colors}
 
     plotMatrix(hm,
                args.outFileName,

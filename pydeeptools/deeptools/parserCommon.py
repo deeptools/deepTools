@@ -736,13 +736,12 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
             default=256)
 
         optional.add_argument(
-            '--plotColors',
+            '--colors',
             help='Colors for the profile lines in the summary plot shown above the heatmap. '
-                 'Only applies when --whatToShow is set to "plot, heatmap and colorbar" or '
-                 '"plot and heatmap". One color per group (or per sample when --perGroup is set) '
-                 'can be specified. Colors are recycled if fewer are given than the number of lines. '
-                 'Accepts named matplotlib colors (e.g. red, blue) and hex values (e.g. #ff0000). '
-                 'Example: --plotColors red blue green',
+                 'Only applies when --whatToShow includes the plot. One color per group '
+                 '(or per sample when --perGroup is set). Colors are recycled if fewer are '
+                 'given than the number of lines. Accepts named matplotlib colors (e.g. red, blue) '
+                 'and hex values (e.g. #ff0000). Example: --colors red blue green',
             type=check_color,
             nargs='+')
 
