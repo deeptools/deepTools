@@ -6,10 +6,10 @@ repos:
   - repo: local
     hooks:
       - id: check-version-sync
-        name: check Rust versions (docs - toml) and deeptools versions (toml - galaxy) to stay in sync
+        name: check Rust, Python and deeptools versions to stay in sync
         entry: python scripts/check_version_sync.py
         language: system
-        files: ^(Cargo\.toml|pyproject\.toml|\.readthedocs\.yaml|galaxy/wrapper/deepTools_macros\.xml)$
+        files: ^(Cargo\.toml|pyproject\.toml|\.readthedocs\.yaml|galaxy/wrapper/deepTools_macros\.xml|\.github/workflows/(test_pytest|test_planemo|wheels|wheels-preview)\.yml|scripts/check_version_sync\.py)$
         pass_filenames: false
   - repo: local
     hooks:

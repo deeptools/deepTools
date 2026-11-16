@@ -1102,13 +1102,14 @@ This tool is developed by the `Bioinformatics and Deep-Sequencing Unit`_ at the 
 
 .. _Biostars: http://biostars.org
 .. _on github: http://github.com
-.. _Bioinformatics and Deep-Sequencing Unit: http://www.ie-freiburg.mpg.de/bioinformaticsfac
-.. _Max Planck Institute for Immunobiology and Epigenetics: http://www3.ie-freiburg.mpg.de
+.. _Bioinformatics and Deep-Sequencing Unit: https://www.ie-freiburg.mpg.de/bioinformatics
+.. _Max Planck Institute for Immunobiology and Epigenetics: https://www.ie-freiburg.mpg.de/
 .. _help site: https://deeptools.readthedocs.org/
 
     </token>
     <xml name="citations">
         <citations>
+            <citation type="doi">10.64898/2026.11.11.765524</citation>
             <citation type="doi">10.1093/nar/gkw257</citation>
             <yield/>
         </citations>

@@ -7,7 +7,9 @@ mod computematrix;
 mod covcalc;
 mod filehandler;
 mod filtering;
+mod fixedfmt;
 mod matrixreader;
+mod matrixwriter;
 mod multibamsummary;
 mod normalization;
 #[cfg(test)]
