@@ -54,12 +54,11 @@ mod scale_factor_tests {
     }
 
     #[test]
-    fn test_zero_mapped_reads_is_an_error() {
+    fn test_zero_mapped_reads_gives_non_finite() {
+        // Same as previous releases: no error, the scale factor is inf.
         for m in [Normalization::Rpkm, Normalization::Cpm, Normalization::Bpm, Normalization::Rpgc] {
-            assert_eq!(
-                scale_factor(m, 0, 10, 10000, 20.0, None),
-                Err(NormalizationError::ZeroMappedReads)
-            );
+            let sf = scale_factor(m, 0, 10, 10000, 20.0, None).unwrap();
+            assert!(!sf.is_finite(), "{:?} with zero mapped reads gave {}", m, sf);
         }
     }
 
@@ -150,14 +149,16 @@ mod bamcompare_zero_reads_tests {
     use super::*;
 
     #[test]
-    fn test_readcount_with_an_empty_sample_is_an_error() {
+    fn test_readcount_with_an_empty_sample() {
+        // Same as previous releases: 0/0 for the empty sample, 0/2000 for the other.
         let samples = [
             SampleStats { mapped: 0, readlen: 20.0 },
             SampleStats { mapped: 2000, readlen: 20.0 },
         ];
-        assert_eq!(
-            scale_factor_bamcompare(ScaleFactorsMethod::ReadCount, samples, 10, 10000, Normalization::None),
-            Err(NormalizationError::ZeroMappedReads)
-        );
+        let (sf1, sf2) =
+            scale_factor_bamcompare(ScaleFactorsMethod::ReadCount, samples, 10, 10000, Normalization::None)
+                .unwrap();
+        assert!(sf1.is_nan(), "expected NaN, got {}", sf1);
+        assert_eq!(sf2, 0.0);
     }
 }

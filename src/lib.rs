@@ -1,11 +1,4 @@
-//! The `python` feature (on by default) builds the Python extension. With
-//! `default-features = false` the crate has no dependency on `pyo3`.
-//!
-//! # Public API
-//!
-//! * [`normalization`]: scale factors (`RPKM`, `CPM`, `BPM`, `RPGC`, read
-//!   count scaling between two samples).
-//! * [`deseq_scalefactors`]: DESeq-style median-of-ratios scale factors.
+//! deepTools core. The `python` feature (default) builds the Python extension.
 #![warn(missing_docs)]
 
 #[cfg(feature = "python")]

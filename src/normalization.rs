@@ -1,51 +1,44 @@
-//! Scale factor calculation for coverage normalization.
-//!
-//! All functions are pure: no I/O, no printing, no panics on bad input. Invalid
-//! input is reported through [`NormalizationError`].
+//! Scale factors for coverage normalization.
 
 use std::cmp;
 use std::str::FromStr;
 
-/// Errors returned by the scale factor functions.
+/// Errors from the scale factor functions.
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum NormalizationError {
-    /// A method name that is not one of the accepted values.
+    /// Unknown method name.
     #[error("unknown {kind} '{value}', expected one of: {expected}")]
     UnknownMethod {
-        /// What was being parsed (e.g. `normalization method`).
+        /// What was parsed.
         kind: &'static str,
-        /// The rejected input.
+        /// Rejected input.
         value: String,
-        /// Comma separated list of accepted values.
+        /// Accepted values.
         expected: &'static str,
     },
-    /// RPGC divides by the effective genome size, which must be non-zero.
+    /// RPGC without an effective genome size.
     #[error("RPGC normalization requires a non-zero effective genome size")]
     MissingEffectiveGenomeSize,
-    /// A sample has no mapped reads, so its scale factor is undefined.
-    #[error("cannot compute a scale factor with zero mapped reads")]
-    ZeroMappedReads,
 }
 
-/// Coverage normalization method (`--normalizeUsing`).
+/// Normalization method (`--normalizeUsing`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Normalization {
-    /// Reads per kilobase per million mapped reads.
+    /// Reads per kilobase per million.
     Rpkm,
-    /// Counts per million mapped reads.
+    /// Counts per million.
     Cpm,
-    /// Bins per million mapped reads.
+    /// Bins per million.
     Bpm,
-    /// Reads per genomic content (1x coverage).
+    /// Reads per genomic content (1x).
     Rpgc,
-    /// No normalization; scale factor is 1.
+    /// No normalization.
     None,
 }
 
 impl FromStr for Normalization {
     type Err = NormalizationError;
 
-    /// Accepts `RPKM`, `CPM`, `BPM`, `RPGC` and `None` (case-sensitive).
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "RPKM" => Ok(Self::Rpkm),
@@ -62,19 +55,18 @@ impl FromStr for Normalization {
     }
 }
 
-/// How two samples are scaled against each other (`--scaleFactorsMethod`).
+/// Scaling between two samples (`--scaleFactorsMethod`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScaleFactorsMethod {
-    /// Scale the larger sample down to the read count of the smaller one.
+    /// Scale the larger sample down to the smaller.
     ReadCount,
-    /// Scale each sample independently with a [`Normalization`] method.
+    /// Normalize each sample on its own.
     None,
 }
 
 impl FromStr for ScaleFactorsMethod {
     type Err = NormalizationError;
 
-    /// Accepts `readCount` and `None` (case-sensitive).
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "readCount" => Ok(Self::ReadCount),
@@ -88,14 +80,7 @@ impl FromStr for ScaleFactorsMethod {
     }
 }
 
-/// Scale factor for one sample.
-///
-/// * `mapped`: number of mapped reads.
-/// * `binsize`: bin size in bp.
-/// * `effective_genome_size`: only used (and required non-zero) for RPGC.
-/// * `readlen`: median read length in bp, only used for RPGC.
-/// * `preset`: user supplied scale factor. When `Some`, it is returned as is
-///   and `method` is ignored.
+/// Scale factor for one sample; `preset` (`--scaleFactor`) overrides `method`. Zero mapped reads gives `inf`.
 pub fn scale_factor(
     method: Normalization,
     mapped: u32,
@@ -106,9 +91,6 @@ pub fn scale_factor(
 ) -> Result<f32, NormalizationError> {
     if let Some(sf) = preset {
         return Ok(sf);
-    }
-    if mapped == 0 && method != Normalization::None {
-        return Err(NormalizationError::ZeroMappedReads);
     }
     let mmr = mapped as f32 / 1e6;
     let bs_kb = binsize as f32 / 1000.0;
@@ -133,20 +115,16 @@ pub fn scale_factor(
     })
 }
 
-/// Per-sample read statistics used by [`scale_factor_bamcompare`].
+/// Read statistics of one sample.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SampleStats {
-    /// Number of mapped reads.
+    /// Mapped reads.
     pub mapped: u32,
-    /// Median read length in bp.
+    /// Median read length.
     pub readlen: f32,
 }
 
-/// Scale factors `(first, second)` for a pair of samples.
-///
-/// With [`ScaleFactorsMethod::ReadCount`] the sample with more reads is scaled
-/// down to the read count of the other. With [`ScaleFactorsMethod::None`] each
-/// sample is scaled independently using `norm`.
+/// Scale factors for a pair of samples. An empty sample gives `NaN` with `ReadCount`.
 pub fn scale_factor_bamcompare(
     method: ScaleFactorsMethod,
     samples: [SampleStats; 2],
@@ -156,9 +134,6 @@ pub fn scale_factor_bamcompare(
 ) -> Result<(f32, f32), NormalizationError> {
     match method {
         ScaleFactorsMethod::ReadCount => {
-            if samples[0].mapped == 0 || samples[1].mapped == 0 {
-                return Err(NormalizationError::ZeroMappedReads);
-            }
             let min = cmp::min(samples[0].mapped, samples[1].mapped);
             Ok((
                 min as f32 / samples[0].mapped as f32,
