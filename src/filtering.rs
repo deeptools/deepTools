@@ -293,10 +293,12 @@ impl Alignmentfilters {
                 let recpos: u32 = rec.pos() as u32;
                 let frag_start = recpos - 1 + rinsertsize / 2;
 
+                // Even fragment length: the two central bases; odd: the central
+                // base and its two neighbours (three bases, as documented).
                 if rinsertsize % 2 == 0 {
                     return Some((frag_start..frag_start + 2).collect());
                 } else {
-                    return Some((frag_start..frag_start + 4).collect());
+                    return Some((frag_start..frag_start + 3).collect());
                 }
             }
             return None;

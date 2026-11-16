@@ -23,6 +23,10 @@ mod covcalc;
 mod filehandler;
 #[cfg(feature = "python")]
 mod filtering;
+#[cfg(feature = "python")]
+mod fixedfmt;
+#[cfg(feature = "python")]
+mod matrixwriter;
 pub mod normalization;
 
 pub use calc::deseq_scalefactors;
@@ -35,6 +39,8 @@ mod bamcompare;
 mod bamcoverage;
 #[cfg(feature = "python")]
 mod computematrix;
+#[cfg(feature = "python")]
+mod matrixreader;
 #[cfg(feature = "python")]
 mod multibamsummary;
 
@@ -49,5 +55,6 @@ fn hp(_py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(computematrix::r_computematrix, m)?)?;
     m.add_function(wrap_pyfunction!(alignmentsieve::r_alignmentsieve, m)?)?;
     m.add_function(wrap_pyfunction!(multibamsummary::r_mbams, m)?)?;
+    m.add_function(wrap_pyfunction!(matrixreader::r_read_matrix, m)?)?;
     Ok(())
 }

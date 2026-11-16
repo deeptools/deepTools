@@ -254,6 +254,7 @@ name = "deeptools-core"
 version = "4.0.0"
 dependencies = [
  "bigtools",
+ "crc32fast",
  "flate2",
  "itertools 0.15.0",
  "ndarray",

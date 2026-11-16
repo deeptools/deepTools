@@ -10,6 +10,7 @@
     <command>
 <![CDATA[
         @BINARY@
+            @THREADS@
             --matrixFile "$matrixFile"
             --outFileName "$outFileName"
 
