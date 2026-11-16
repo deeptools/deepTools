@@ -19,7 +19,7 @@ python = [
     "dep:openssl-sys", "dep:bigtools", "dep:rust-htslib", "dep:rayon", "dep:tokio",
     "dep:itertools", "dep:flate2", "dep:crc32fast", "dep:tempfile", "dep:ndarray-npy",
 ]
-default = []
+default = ["python"]
 
 [dependencies]
 openssl-sys = { version = "0.9.117", features = ["vendored"], optional = true }

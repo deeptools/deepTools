@@ -1,16 +1,11 @@
-//! Core of deepTools: pure-Rust building blocks for coverage normalization.
-//!
-//! The crate has no dependency on `pyo3` unless the `python` feature is
-//! enabled; that feature only exists to build the Python extension.
+//! The `python` feature (on by default) builds the Python extension. With
+//! `default-features = false` the crate has no dependency on `pyo3`.
 //!
 //! # Public API
 //!
 //! * [`normalization`]: scale factors (`RPKM`, `CPM`, `BPM`, `RPGC`, read
 //!   count scaling between two samples).
 //! * [`deseq_scalefactors`]: DESeq-style median-of-ratios scale factors.
-//!
-//! Everything else is an implementation detail of the Python extension and
-//! may change without notice.
 #![warn(missing_docs)]
 
 #[cfg(feature = "python")]

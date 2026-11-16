@@ -19,14 +19,18 @@ jobs:
                 persist-credentials: false
             - run: rustup update stable && rustup default stable
             - name: cargo build (core only)
-              run: cargo build --verbose
+              run: cargo build --locked --verbose --no-default-features
+              env:
+                  RUSTFLAGS: "-D warnings"
             - name: cargo test (core only)
-              run: cargo test --verbose
+              run: cargo test --locked --verbose --no-default-features
+              env:
+                  RUSTFLAGS: "-D warnings"
             - name: cargo build (python extension)
-              run: cargo build --verbose --features python
+              run: cargo build --locked --verbose
             - name: cargo test (python extension)
-              run: cargo test --verbose --features python
+              run: cargo test --locked --verbose
             - name: core crate has no pyo3 dependency
               run: |
-                cargo tree -e normal --prefix none > tree.txt
+                cargo tree -e normal --prefix none --no-default-features > tree.txt
                 ! grep -q '^pyo3' tree.txt
