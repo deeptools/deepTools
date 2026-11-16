@@ -558,6 +558,14 @@ def heatmapperOptionalArgs(mode=['heatmap', 'profile'][0]):
                           help="show this help message and exit")
     optional.add_argument('--version', action='version',
                           version='%(prog)s {}'.format(version('deeptools')))
+    optional.add_argument('--numberOfProcessors', '-p',
+                          help='Number of processors to use for reading the matrix. Type "max/2" to '
+                          'use half the maximum number of processors or "max" '
+                          'to use all available processors. (Default: %(default)s)',
+                          metavar="INT",
+                          type=numberOfProcessors,
+                          default=1,
+                          required=False)
     if mode == 'profile':
         optional.add_argument(
             '--averageType',

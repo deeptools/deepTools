@@ -578,7 +578,7 @@ class Profile:
 def main(args=None):
     args = process_args(args)
     hm = heatmapper.heatmapper()
-    hm.read_matrix_file(args.matrixFile)
+    hm.read_matrix_file(args.matrixFile, numberOfProcessors=args.numberOfProcessors)
 
     if hm.parameters['min threshold'] is not None or hm.parameters['max threshold'] is not None:
         filterHeatmapValues(hm, hm.parameters['min threshold'], hm.parameters['max threshold'])
