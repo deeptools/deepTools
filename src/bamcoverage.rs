@@ -71,6 +71,15 @@ pub fn r_bamcoverage(
         .map_err(|e: crate::normalization::NormalizationError| {
             pyo3::exceptions::PyValueError::new_err(e.to_string())
         })?;
+    // A preset scale factor (--scaleFactor) does not need the effective genome size.
+    if norm_method == crate::normalization::Normalization::Rpgc
+        && effectivegenomesize == 0
+        && scalefactor == 1.0
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            crate::normalization::NormalizationError::MissingEffectiveGenomeSize.to_string(),
+        ));
+    }
     if norm_method != crate::normalization::Normalization::None && scalefactor != 1.0 {
         println!(
             "Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used",
