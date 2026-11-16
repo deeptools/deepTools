@@ -22,7 +22,7 @@ def _matrix_files():
 MATRIX_FILES = _matrix_files()
 
 
-def _read_fast(path, monkeypatch):
+def _read_fast(path, monkeypatch, numberOfProcessors=1):
     # make sure the Rust reader is used and does not fall back to the per-line reader
     def no_fallback(self, matrix_file):
         raise AssertionError(f"fell back to the per-line reader for {matrix_file}")
@@ -30,7 +30,7 @@ def _read_fast(path, monkeypatch):
     hm = heatmapper.heatmapper()
     with monkeypatch.context() as m:
         m.setattr(heatmapper.heatmapper, "_read_matrix_file_legacy", no_fallback)
-        hm.read_matrix_file(path)
+        hm.read_matrix_file(path, numberOfProcessors=numberOfProcessors)
     return hm
 
 
@@ -64,9 +64,10 @@ def test_found_matrix_files():
     assert len(MATRIX_FILES) > 50
 
 
+@pytest.mark.parametrize("nproc", [1, 4])
 @pytest.mark.parametrize("path", MATRIX_FILES, ids=lambda p: os.path.relpath(p, ROOT))
-def test_read_matrix_file_matches_legacy(path, monkeypatch):
-    assert_same_heatmapper(_read_fast(path, monkeypatch), _read_legacy(path))
+def test_read_matrix_file_matches_legacy(path, nproc, monkeypatch):
+    assert_same_heatmapper(_read_fast(path, monkeypatch, numberOfProcessors=nproc), _read_legacy(path))
 
 
 def test_read_matrix_file_fallback(tmp_path):

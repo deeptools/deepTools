@@ -702,7 +702,7 @@ class heatmapper:
         else:
             return avg
 
-    def read_matrix_file(self, matrix_file):
+    def read_matrix_file(self, matrix_file, numberOfProcessors=1):
         # reads a bed file containing the position
         # of genomic intervals
         # In case a hash sign '#' is found in the
@@ -717,12 +717,8 @@ class heatmapper:
         # is read with the per-line reader below.
         try:
             from deeptools.hp import r_read_matrix
-            try:
-                nthreads = len(os.sched_getaffinity(0))
-            except AttributeError:
-                nthreads = os.cpu_count() or 1
             path = os.fsdecode(os.fspath(matrix_file))
-            params, metas, buf, nrows, ncols = r_read_matrix(path, min(nthreads, 16))
+            params, metas, buf, nrows, ncols = r_read_matrix(path, max(1, numberOfProcessors))
         except (ImportError, TypeError, ValueError):
             return self._read_matrix_file_legacy(matrix_file)
         if not params or nrows == 0:
