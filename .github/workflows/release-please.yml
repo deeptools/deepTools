@@ -31,7 +31,8 @@ jobs:
                   TAG: ${{ steps.release.outputs.tag_name }}
               run: |
                   prev=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 2 --json tagName --jq '.[1].tagName')
-                  users=$(gh api "repos/$GITHUB_REPOSITORY/compare/$prev...$TAG" --paginate --jq '.commits[].author.login // empty' \
-                          | grep -v '\[bot\]$' | sort -u | sed 's/^/@/' | paste -sd' ')
+                  logins=$(gh api "repos/$GITHUB_REPOSITORY/compare/$prev...$TAG" --paginate --jq '.commits[].author.login // empty')
+                  users=$(printf '%s\n' "$logins" | grep -v -e '^$' -e '\[bot\]$' | sort -u | sed 's/^/@/' | paste -sd' ')
+                  if [ -z "$users" ]; then echo "no human contributors found, leaving the release notes as they are"; exit 0; fi
                   body=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
                   printf '%s\n\n## Contributors\n\n%s\n' "$body" "$users" | gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file -
