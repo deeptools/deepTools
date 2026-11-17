@@ -1,4 +1,4 @@
-use crate::fixedfmt::push_f32_fixed6;
+use crate::matrix::fixedfmt::push_f32_fixed6;
 
 fn reference(v: f32) -> String {
     format!("{:.6}", v)
