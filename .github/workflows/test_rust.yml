@@ -32,5 +32,5 @@ jobs:
               run: cargo test --locked --verbose
             - name: core crate has no pyo3 dependency
               run: |
-                cargo tree -e normal --prefix none --no-default-features > tree.txt
+                cargo tree -e normal,build --prefix none --no-default-features > tree.txt
                 ! grep -q '^pyo3' tree.txt
