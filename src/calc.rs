@@ -176,6 +176,7 @@ pub fn calc_ratio(
     }
 }
 
+/// DESeq median-of-ratios scale factors, one per column (bins x samples).
 pub fn deseq_scalefactors(array2: &Array2<f32>) -> Array1<f32> {
     let loggeomeans = array2.mapv(|v| v.ln()).sum_axis(Axis(1)) / array2.shape()[1] as f32;
     let masked_array = array2.mapv(|x| if x <= 0.0 { f32::NAN } else { x });

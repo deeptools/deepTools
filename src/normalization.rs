@@ -1,97 +1,150 @@
-use std::cmp;
+//! Scale factors for coverage normalization.
 
+use std::cmp;
+use std::str::FromStr;
+
+/// Errors from the scale factor functions.
+#[derive(Debug, Clone, PartialEq, thiserror::Error)]
+pub enum NormalizationError {
+    /// Unknown method name.
+    #[error("unknown {kind} '{value}', expected one of: {expected}")]
+    UnknownMethod {
+        /// What was parsed.
+        kind: &'static str,
+        /// Rejected input.
+        value: String,
+        /// Accepted values.
+        expected: &'static str,
+    },
+    /// RPGC without an effective genome size.
+    #[error("RPGC normalization requires a non-zero effective genome size")]
+    MissingEffectiveGenomeSize,
+}
+
+/// Normalization method (`--normalizeUsing`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Normalization {
+    /// Reads per kilobase per million.
+    Rpkm,
+    /// Counts per million.
+    Cpm,
+    /// Bins per million.
+    Bpm,
+    /// Reads per genomic content (1x).
+    Rpgc,
+    /// No normalization.
+    None,
+}
+
+impl FromStr for Normalization {
+    type Err = NormalizationError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "RPKM" => Ok(Self::Rpkm),
+            "CPM" => Ok(Self::Cpm),
+            "BPM" => Ok(Self::Bpm),
+            "RPGC" => Ok(Self::Rpgc),
+            "None" => Ok(Self::None),
+            _ => Err(NormalizationError::UnknownMethod {
+                kind: "normalization method",
+                value: s.to_string(),
+                expected: "RPKM, CPM, BPM, RPGC, None",
+            }),
+        }
+    }
+}
+
+/// Scaling between two samples (`--scaleFactorsMethod`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ScaleFactorsMethod {
+    /// Scale the larger sample down to the smaller.
+    ReadCount,
+    /// Normalize each sample on its own.
+    None,
+}
+
+impl FromStr for ScaleFactorsMethod {
+    type Err = NormalizationError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "readCount" => Ok(Self::ReadCount),
+            "None" => Ok(Self::None),
+            _ => Err(NormalizationError::UnknownMethod {
+                kind: "scale factors method",
+                value: s.to_string(),
+                expected: "readCount, None",
+            }),
+        }
+    }
+}
+
+/// Scale factor for one sample; `preset` (`--scaleFactor`) overrides `method`. Zero mapped reads gives `inf`.
 pub fn scale_factor(
-    norm_method: &str,
+    method: Normalization,
     mapped: u32,
     binsize: u32,
     effective_genome_size: u64,
     readlen: f32,
-    _fraglen: f32,
-    scalefactor: f32,
-    verbose: &bool
-) -> f32 {
-    if scalefactor != 1.0 {
-        return scalefactor;
+    preset: Option<f32>,
+) -> Result<f32, NormalizationError> {
+    if let Some(sf) = preset {
+        return Ok(sf);
     }
-    let mut scale_factor = 1.0;
-
-    match norm_method {
-        "RPKM" => {
-            // RPKM = # reads per tile / total reads (millions) * tile length (kb)
-            let mmr = mapped as f32 / 1e6;
-            let bs_kb = binsize as f32 / 1000.0;
-            scale_factor *= 1.0 / (mmr * bs_kb);
+    let mmr = mapped as f32 / 1e6;
+    let bs_kb = binsize as f32 / 1000.0;
+    Ok(match method {
+        // reads per tile / total reads (millions) / tile length (kb)
+        Normalization::Rpkm => 1.0 / (mmr * bs_kb),
+        // reads per tile / total reads (millions)
+        Normalization::Cpm => 1.0 / mmr,
+        // bins per million mapped reads
+        Normalization::Bpm => {
+            let tmp = (mapped as f32 / bs_kb) / 1e6;
+            1.0 / (tmp * bs_kb)
         }
-        "CPM" => {
-            // CPM = # reads per tile / total reads (millions)
-            let mmr = mapped as f32 / 1e6;
-            scale_factor *= 1.0 / mmr;
+        // 1x coverage: mapped reads * read length / effective genome size
+        Normalization::Rpgc => {
+            if effective_genome_size == 0 {
+                return Err(NormalizationError::MissingEffectiveGenomeSize);
+            }
+            1.0 / ((mapped as f32 * readlen) / effective_genome_size as f32)
         }
-        "BPM" => {
-            // BPM = bins per million mapped reads
-            let bs_kb: f32 = binsize as f32 / 1000.0;
-            let tmp_scalefactor = (mapped as f32 / bs_kb) / 1e6;
-            scale_factor *= 1.0 / (tmp_scalefactor * bs_kb);
-        }
-        "RPGC" => {
-            // RPGC = mapped reads * fragment length / effective genome size
-            let tmp_scalefactor = (mapped as f32 * readlen as f32) / effective_genome_size as f32;
-            println!("Tmp scale factor: {}", tmp_scalefactor);
-            scale_factor *= 1.0 / tmp_scalefactor;
-        }
-        _ => {}
-    };
-    if *verbose {
-        println!("Scale factor: {}", scale_factor);
-    }
-    return scale_factor;
+        Normalization::None => 1.0,
+    })
 }
 
+/// Read statistics of one sample.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SampleStats {
+    /// Mapped reads.
+    pub mapped: u32,
+    /// Median read length.
+    pub readlen: f32,
+}
+
+/// Scale factors for a pair of samples. An empty sample gives `NaN` with `ReadCount`.
 pub fn scale_factor_bamcompare(
-    norm_method: &str,
-    mapped_bam1: u32,
-    mapped_bam2: u32,
+    method: ScaleFactorsMethod,
+    samples: [SampleStats; 2],
     binsize: u32,
     effective_genome_size: u64,
-    norm: &str,
-    readlen_bam1: f32,
-    readlen_bam2: f32,
-    fraglen_bam1: f32,
-    fraglen_bam2: f32,
-) -> (f32, f32) {
-    return match norm_method {
-        "readCount" => {
-            let min = cmp::min(mapped_bam1, mapped_bam2);
-            let scale_factor1 = min as f32 / mapped_bam1 as f32;
-            let scale_factor2 = min as f32 / mapped_bam2 as f32;
-            (scale_factor1, scale_factor2)
+    norm: Normalization,
+) -> Result<(f32, f32), NormalizationError> {
+    match method {
+        ScaleFactorsMethod::ReadCount => {
+            let min = cmp::min(samples[0].mapped, samples[1].mapped);
+            Ok((
+                min as f32 / samples[0].mapped as f32,
+                min as f32 / samples[1].mapped as f32,
+            ))
         }
-        "None" => {
-            // Default to scale factor calculation with 'norm'.
-            let scale_factor1 = scale_factor(
-                norm,
-                mapped_bam1,
-                binsize,
-                effective_genome_size,
-                readlen_bam1,
-                fraglen_bam1,
-                1.0,
-                &false
-            );
-            let scale_factor2 = scale_factor(
-                norm,
-                mapped_bam2,
-                binsize,
-                effective_genome_size,
-                readlen_bam2,
-                fraglen_bam2,
-                1.0,
-                &false
-            );
-            (scale_factor1, scale_factor2)
-        }
-        _ => {
-            panic!("ScaleFactorsMethod should either be 'readCount' or 'None'.");
+        ScaleFactorsMethod::None => {
+            let sf = |s: SampleStats| {
+                scale_factor(norm, s.mapped, binsize, effective_genome_size, s.readlen, None)
+            };
+            Ok((sf(samples[0])?, sf(samples[1])?))
         }
     }
 }

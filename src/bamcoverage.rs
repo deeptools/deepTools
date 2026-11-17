@@ -66,10 +66,21 @@ pub fn r_bamcoverage(
     if mnase && !ispe {
         panic!("Error: MNase-seq requires paired-end data.");
     }
-    if norm == "RPGC" && effectivegenomesize == 0 {
-        panic!("Error: Effective genome size is required for RPGC normalization.");
+    let norm_method: crate::normalization::Normalization = norm
+        .parse()
+        .map_err(|e: crate::normalization::NormalizationError| {
+            pyo3::exceptions::PyValueError::new_err(e.to_string())
+        })?;
+    // A preset scale factor (--scaleFactor) does not need the effective genome size.
+    if norm_method == crate::normalization::Normalization::Rpgc
+        && effectivegenomesize == 0
+        && scalefactor == 1.0
+    {
+        return Err(pyo3::exceptions::PyValueError::new_err(
+            crate::normalization::NormalizationError::MissingEffectiveGenomeSize.to_string(),
+        ));
     }
-    if norm != "None" && scalefactor != 1.0 {
+    if norm_method != crate::normalization::Normalization::None && scalefactor != 1.0 {
         println!(
             "Warning: You have set a normalization option ({}), but also a scale factor. Only the scale factor will be used",
             norm
@@ -230,16 +241,19 @@ pub fn r_bamcoverage(
         println!("Readlen: {}, Fraglen: {}", readlen, fraglen);
     }
 
+    let preset = if scalefactor != 1.0 { Some(scalefactor) } else { None };
     let sf = scale_factor(
-        norm,
+        norm_method,
         mapped,
         binsize,
         effectivegenomesize,
         readlen,
-        fraglen,
-        scalefactor,
-        &verbose,
-    );
+        preset,
+    )
+    .map_err(|e| pyo3::exceptions::PyValueError::new_err(e.to_string()))?;
+    if verbose {
+        println!("Scale factor: {}", sf);
+    }
 
     // Create output stream
     let lines = bg.into_iter().flat_map(|bg| {
