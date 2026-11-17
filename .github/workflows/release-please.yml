@@ -19,7 +19,19 @@ jobs:
                   app-id: ${{ vars.RELEASE_PLEASE_APP_ID }}
                   private-key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
             - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+              id: release
               with:
                   token: ${{ steps.app-token.outputs.token }}
                   config-file: release-please-config.json
                   manifest-file: .release-please-manifest.json
+            - name: List contributors in the GitHub release
+              if: ${{ steps.release.outputs.release_created }}
+              env:
+                  GH_TOKEN: ${{ steps.app-token.outputs.token }}
+                  TAG: ${{ steps.release.outputs.tag_name }}
+              run: |
+                  prev=$(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --limit 2 --json tagName --jq '.[1].tagName')
+                  users=$(gh api "repos/$GITHUB_REPOSITORY/compare/$prev...$TAG" --paginate --jq '.commits[].author.login // empty' \
+                          | grep -v '\[bot\]$' | sort -u | sed 's/^/@/' | paste -sd' ')
+                  body=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body --jq .body)
+                  printf '%s\n\n## Contributors\n\n%s\n' "$body" "$users" | gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --notes-file -
