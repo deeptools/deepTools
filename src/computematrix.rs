@@ -1,10 +1,11 @@
 use crate::calc::{max_float, mean_float, median_float, min_float, sum_float};
 use crate::covcalc::{Bin, Gtfparse, Region, Scalingregions};
 use crate::filehandler::{
-    bwintervals, chrombounds_from_bw, header_matrix, is_bed_or_gtf, read_bedfile, read_gtffile,
-    write_matrix,
+    bwintervals, chrombounds_from_bw, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
 use crate::filtering::BlacklistIndex;
+use crate::matrix::header::header_matrix;
+use crate::matrix::writer::{write_matrix, write_matrix_values, write_sorted_regions_bed};
 use itertools::Itertools;
 use pyo3::prelude::*;
 use pyo3::types::PyList;
@@ -611,7 +612,7 @@ fn matrix_dump(
         );
 
         if let Some(ref matrix_file) = outfilenamematrix {
-            crate::filehandler::write_matrix_values(
+            write_matrix_values(
                 matrix_file,
                 &sortedmatrix,
                 &scale_regions,
@@ -620,7 +621,7 @@ fn matrix_dump(
         }
 
         if let Some(ref bed_file) = outfilesortedregions {
-            crate::filehandler::write_sorted_regions_bed(
+            write_sorted_regions_bed(
                 bed_file,
                 &sortedregions,
                 &scale_regions,
@@ -642,7 +643,7 @@ fn matrix_dump(
         );
 
         if let Some(ref matrix_file) = outfilenamematrix {
-            crate::filehandler::write_matrix_values(
+            write_matrix_values(
                 matrix_file,
                 &filtered_matrix,
                 &scale_regions,
@@ -651,7 +652,7 @@ fn matrix_dump(
         }
 
         if let Some(ref bed_file) = outfilesortedregions {
-            crate::filehandler::write_sorted_regions_bed(
+            write_sorted_regions_bed(
                 bed_file,
                 &filtered_regions,
                 &scale_regions,

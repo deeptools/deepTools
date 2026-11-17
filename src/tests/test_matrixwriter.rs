@@ -1,5 +1,5 @@
 use crate::covcalc::{Region, Revalue};
-use crate::matrixwriter::write_matrix_gz;
+use crate::matrix::writer::write_matrix_gz;
 use crate::tests::test_fixedfmt::Rng;
 use flate2::Compression;
 use flate2::read::GzDecoder;
