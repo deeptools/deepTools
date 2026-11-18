@@ -113,6 +113,33 @@ def test_plotHeatmap_ggplot():
     finally:
         cleanup(plotfile)
 
+def test_plotHeatmap_clustering_preserves_missing_signal(tmp_path):
+    import gzip
+
+    import numpy as np
+
+    matrix = os.path.join(TEST_DATA, "computeMatrixOperations.mat.gz")
+    saved = tmp_path / "clustered.gz"
+    deeptools.plotHeatmap.main([
+        "-m", matrix, "-out", str(tmp_path / "heatmap.png"), "--hclust", "2",
+        "--outFileNameMatrix", str(saved),
+    ])
+
+    def read_rows(path):
+        with gzip.open(path, "rt") as handle:
+            next(handle)
+            rows = (line.rstrip("\n").split("\t") for line in handle)
+            return {tuple(row[:4]): np.array(row[6:], dtype=float) for row in rows}
+
+    original = read_rows(matrix)
+    clustered = read_rows(saved)
+    assert len(original) == 196
+    assert sum(np.isnan(row).sum() for row in original.values()) == 4822
+    assert clustered.keys() == original.keys()
+    for region, values in original.items():
+        np.testing.assert_array_equal(clustered[region], values)
+
+
 def _run_silhouette(method):
     """Run plotHeatmap with clustering + --silhouette and return the sorted-regions BED header."""
     _fd, bedfile = tempfile.mkstemp(suffix=".bed")

@@ -1203,10 +1203,10 @@ class _matrix:
                                       self.sample_boundaries[idx + 1])
 
             matrix_to_cluster = matrix_to_cluster[:, samples_cols]
-        if np.any(np.isnan(matrix_to_cluster)):
-            # replace nans for 0 otherwise kmeans produces a weird behaviour
+        missing = np.isnan(matrix_to_cluster)
+        if missing.any():
             sys.stderr.write("*Warning* For clustering nan values have to be replaced by zeros \n")
-            matrix_to_cluster[np.isnan(matrix_to_cluster)] = 0
+            matrix_to_cluster = np.where(missing, 0, matrix_to_cluster)
 
         if method == 'kmeans':
             from scipy.cluster.vq import kmeans, vq
@@ -1265,7 +1265,11 @@ class _matrix:
             groupSizes = np.subtract(self.group_boundaries[1:], self.group_boundaries[:-1])
             labels = np.repeat(np.arange(k), groupSizes)
 
-            d = pdist(self.matrix)
+            matrix = np.asarray(self.matrix)
+            missing = np.isnan(matrix)
+            if missing.any():
+                matrix = np.where(missing, 0, matrix)
+            d = pdist(matrix)
             d2 = squareform(d)
             np.fill_diagonal(d2, np.nan)  # This excludes the diagonal
             for idx in range(len(labels)):
