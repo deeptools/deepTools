@@ -65,17 +65,11 @@ pub fn header_matrix(
         "\"missing data as zero\":{},",
         scale_regions.missingdata_as_zero
     ));
-    // Unimplemented arguments, but they need to be present in header for now anyway.
-    let minthresh_str = if scale_regions.minthresh != 0.0 {
-        format!("{}", scale_regions.minthresh)
-    } else {
-        "null".to_string()
+    let threshold_json = |threshold: Option<f32>| {
+        threshold.map_or_else(|| "null".to_string(), |value| value.to_string())
     };
-    let maxthresh_str = if scale_regions.maxthresh != 0.0 {
-        format!("{}", scale_regions.maxthresh)
-    } else {
-        "null".to_string()
-    };
+    let minthresh_str = threshold_json(scale_regions.minthresh);
+    let maxthresh_str = threshold_json(scale_regions.maxthresh);
     headstr.push_str(
         &format!("\"min threshold\":{},\"max threshold\":{},\"scale\":{},\"skip zeros\":{},\"nan after end\":{},", minthresh_str, maxthresh_str, scale_regions.scale, scale_regions.skipzero, scale_regions.nan_after_end)
     );
