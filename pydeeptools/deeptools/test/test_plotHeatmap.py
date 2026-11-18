@@ -2,9 +2,11 @@ import os
 import tempfile
 
 import matplotlib.pyplot as plt
+import pyBigWig
 import pytest
 from matplotlib.testing.compare import compare_images
 
+import deeptools.computeMatrix2
 import deeptools.plotHeatmap
 
 TEST_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_data")
@@ -164,3 +166,29 @@ def test_plotHeatmap_colors_invalid():
             deeptools.plotHeatmap.main(args)
     finally:
         cleanup(plotfile)
+
+
+def test_plotHeatmap_silhouette_two_regions_and_singleton(tmp_path):
+    track = tmp_path / "signal.bw"
+    with pyBigWig.open(str(track), "w") as bw:
+        bw.addHeader([("chr1", 100)])
+        bw.addEntries(["chr1"] * 3, [0, 30, 60],
+                      ends=[20, 50, 80], values=[1.0, 2.0, 10.0])
+    regions = tmp_path / "regions.bed"
+    regions.write_text("chr1\t0\t20\tlow\t0\t+\nchr1\t30\t50\tmid\t0\t+\nchr1\t60\t80\thigh\t0\t+\n")
+    matrix = tmp_path / "matrix.gz"
+    deeptools.computeMatrix2.main([
+        "reference-point", "-S", str(track), "-R", str(regions), "-b", "0",
+        "-a", "20", "-bs", "10", "-o", str(matrix),
+    ])
+    sorted_regions = tmp_path / "sorted.bed"
+    deeptools.plotHeatmap.main([
+        "-m", str(matrix), "-out", str(tmp_path / "heatmap.png"), "--hclust", "2",
+        "--silhouette", "--outFileSortedRegions", str(sorted_regions),
+    ])
+
+    rows = [line.split("\t") for line in sorted_regions.read_text().splitlines()[1:]]
+    groups = {row[3]: row[-2] for row in rows}
+    assert groups["low"] == groups["mid"] != groups["high"]
+    scores = {row[3]: float(row[-1]) for row in rows}
+    assert scores == pytest.approx({"low": 8 / 9, "mid": 7 / 8, "high": 0.0})
