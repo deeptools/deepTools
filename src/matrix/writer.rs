@@ -17,7 +17,6 @@ use super::fixedfmt::push_f32_fixed6;
 use crate::covcalc::{Region, Revalue, Scalingregions};
 use flate2::{Compress, Compression, FlushCompress, Status};
 use rayon::prelude::*;
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 
@@ -206,7 +205,7 @@ pub fn write_matrix_values(
     file_name: &str,
     mat: &[Vec<f32>],
     scale_regions: &Scalingregions,
-    regionsizes: &HashMap<String, u32>,
+    regionsizes: &[u32],
 ) {
     use std::io::Write;
     let mut fh = File::create(file_name)
@@ -216,7 +215,8 @@ pub fn write_matrix_values(
     let info: Vec<String> = scale_regions
         .regionlabels
         .iter()
-        .map(|label| format!("{}:{}", label, regionsizes.get(label).unwrap_or(&0)))
+        .zip(regionsizes)
+        .map(|(label, size)| format!("{}:{}", label, size))
         .collect();
     fh.write_all(format!("#{}\n", info.join("\t")).as_bytes())
         .unwrap_or_else(|e| {
@@ -288,7 +288,7 @@ pub fn write_sorted_regions_bed(
     file_name: &str,
     regions: &[Region],
     scale_regions: &Scalingregions,
-    regionsizes: &HashMap<String, u32>,
+    regionsizes: &[u32],
 ) {
     use std::io::Write;
     let mut fh = File::create(file_name).unwrap_or_else(|e| {
@@ -307,8 +307,8 @@ pub fn write_sorted_regions_bed(
     // Build group boundaries from regionsizes (cumulative region counts per group label)
     let mut group_boundaries: Vec<u32> = vec![0];
     let mut cumsum: u32 = 0;
-    for label in &scale_regions.regionlabels {
-        cumsum += *regionsizes.get(label).unwrap_or(&0);
+    for size in regionsizes {
+        cumsum += size;
         group_boundaries.push(cumsum);
     }
     for (idx, region) in regions.iter().enumerate() {
