@@ -23,6 +23,46 @@ BIGWIG_IN2 = ROOT + "input_computeMatrix_bw2.bw"
 BIGWIG_IN3 = ROOT + "input_computeMatrix_bw3.bw"
 BIGWIG_IN4 = ROOT + "input_computeMatrix_bw4.bw"
 
+def test_computeMatrix_groups_files_with_the_same_basename(tmp_path):
+    import pyBigWig
+
+    track = tmp_path / "signal.bw"
+    with pyBigWig.open(str(track), "w") as bw:
+        bw.addHeader([("chr1", 100)])
+        bw.addEntries(["chr1"] * 3, [0, 20, 40],
+                      ends=[10, 30, 50], values=[1.0, 3.0, 2.0])
+
+    first = tmp_path / "condition_a" / "peaks.bed"
+    second = tmp_path / "condition_b" / "peaks.bed"
+    first.parent.mkdir()
+    second.parent.mkdir()
+    first.write_text("chr1\t0\t10\tpeak_a\t0\t+\n")
+    second.write_text("chr1\t20\t30\tpeak_b1\t0\t+\nchr1\t40\t50\tpeak_b2\t0\t+\n")
+    expected = {
+        "keep": [("peak_a", 1.0), ("peak_b1", 3.0), ("peak_b2", 2.0)],
+        "ascend": [("peak_a", 1.0), ("peak_b2", 2.0), ("peak_b1", 3.0)],
+    }
+    for sort, names_and_values in expected.items():
+        matrix = tmp_path / f"{sort}.gz"
+        table = tmp_path / f"{sort}.tab"
+        bed = tmp_path / f"{sort}.bed"
+        cm.main([
+            "reference-point", "-S", str(track), "-R", str(first), str(second),
+            "-b", "0", "-a", "10", "-bs", "10", "--sortRegions", sort, "-o", str(matrix),
+            "--outFileNameMatrix", str(table), "--outFileSortedRegions", str(bed),
+        ])
+        with gzip.open(matrix, "rt") as handle:
+            header = json.loads(next(handle)[1:])
+            rows = [line.split("\t") for line in handle]
+        assert header["group_labels"] == ["peaks", "peaks"]
+        assert header["group_boundaries"] == [0, 1, 3]
+        assert [(row[3], float(row[6])) for row in rows] == names_and_values
+        assert table.read_text().splitlines()[0] == "#peaks:1\tpeaks:2"
+        assert [line.split("\t")[3] for line in bed.read_text().splitlines()[1:]] == [
+            name for name, _ in names_and_values
+        ]
+
+
 def _parse_mat_gz(file_path: str) -> tuple[dict[str, Any], list[list[float]]]:
     """
     Parse a .mat.gz file into header and numeric data.

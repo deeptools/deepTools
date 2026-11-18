@@ -217,9 +217,6 @@ pub fn r_computematrix(
     // Parse regions from bed files. Note that we retain the name of the bed file (in case there are more then 1)
     // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
     let mut regions: Vec<Region> = Vec::new();
-    let mut regionsizes: HashMap<String, u32> = HashMap::new();
-    let mut regionslices: Vec<(usize, usize)> = Vec::new();
-    let mut cursor: usize = 0;
 
     // Pre-allocate capacity for regions to avoid multiple reallocations
     let total_regions_estimate = region_files
@@ -249,19 +246,11 @@ pub fn r_computematrix(
         })
         .collect();
 
-    // Merge regions and region sizes
-    // Track which group (region file) each region belongs to, by index.
-    let mut group_of_region: Vec<usize> = Vec::with_capacity(cursor);
-    for (group_idx, (reg, regsize)) in region_data.into_iter().enumerate() {
-        let n = reg.len();
-        regions.extend(reg);
-        regionsizes.insert(regsize.0.clone(), regsize.1);
-
-        if n > 0 {
-            regionslices.push((cursor, cursor + n - 1));
-            group_of_region.extend(std::iter::repeat(group_idx).take(n));
-            cursor += n;
-        }
+    // Track which input file each row belongs to, even when file stems match.
+    let mut group_of_region = Vec::with_capacity(total_regions_estimate);
+    for (group_idx, (rows, _)) in region_data.into_iter().enumerate() {
+        group_of_region.extend(std::iter::repeat_n(group_idx, rows.len()));
+        regions.extend(rows);
     }
 
     // Define slop regions, which contain the actual 'bins' to query the bigwig files.
@@ -362,38 +351,23 @@ fn should_skip_row(row: &[f32], scale_regions: &Scalingregions) -> bool {
 
 fn recompute_regionsizes(
     group_of_region: &[usize],
-    scale_regions: &Scalingregions,
-) -> (HashMap<String, u32>, Vec<(usize, usize)>) {
-    let mut filtered_regionsizes: HashMap<String, u32> = HashMap::new();
-    for label in &scale_regions.regionlabels {
-        filtered_regionsizes.insert(label.clone(), 0);
-    }
+    group_count: usize,
+) -> (Vec<u32>, Vec<(usize, usize)>) {
+    let mut sizes = vec![0; group_count];
     for &group_idx in group_of_region {
-        *filtered_regionsizes
-            .get_mut(&scale_regions.regionlabels[group_idx])
-            .unwrap_or_else(|| {
-                panic!(
-                    "Region group label '{}' not found in filtered_regionsizes map",
-                    scale_regions.regionlabels[group_idx]
-                )
-            }) += 1;
+        sizes[group_idx] += 1;
     }
 
-    // Build filtered regionslices in label order, matching the sorting logic expectations.
-    let mut slices: Vec<(usize, usize)> = Vec::new();
-    let mut cursor = 0usize;
-    for label in &scale_regions.regionlabels {
-        let count = *filtered_regionsizes
-            .get(label)
-            .unwrap_or_else(|| panic!("Region label '{}' not found in filtered_regionsizes map", label))
-            as usize;
+    let mut slices = Vec::new();
+    let mut cursor = 0;
+    for &size in &sizes {
+        let count = size as usize;
         if count > 0 {
             slices.push((cursor, cursor + count - 1));
             cursor += count;
         }
     }
-
-    (filtered_regionsizes, slices)
+    (sizes, slices)
 }
 
 fn matrix_dump(
@@ -432,7 +406,7 @@ fn matrix_dump(
     let filtered_group_of_region: Vec<usize> =
         keep_indices.iter().map(|&i| group_of_region[i]).collect();
     let (filtered_regionsizes, filtered_regionslices) =
-        recompute_regionsizes(&filtered_group_of_region, &scale_regions);
+        recompute_regionsizes(&filtered_group_of_region, scale_regions.regionlabels.len());
 
     if sortregions != "keep" {
         if verbose {

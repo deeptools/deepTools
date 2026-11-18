@@ -2,11 +2,10 @@
 
 use crate::covcalc::Scalingregions;
 use itertools::Itertools;
-use std::collections::HashMap;
 
 pub fn header_matrix(
     scale_regions: &Scalingregions,
-    regionsizes: &HashMap<String, u32>,
+    regionsizes: &[u32],
     sortregions: &str,
     sortusing: &str,
 ) -> String {
@@ -115,13 +114,8 @@ pub fn header_matrix(
     let mut groupbounds: Vec<u32> = Vec::new();
     groupbounds.push(0);
     let mut cumsum: u32 = 0;
-    for regionlabel in scale_regions.regionlabels.iter() {
-        cumsum += regionsizes.get(regionlabel).unwrap_or_else(|| {
-            panic!(
-                "Region label '{}' not found in regionsizes map",
-                regionlabel
-            )
-        });
+    for size in regionsizes {
+        cumsum += size;
         groupbounds.push(cumsum);
     }
     let groupbounds = format!(
