@@ -18,20 +18,27 @@ from deeptools.writeBedGraph import *
 def getCoverageFromBigwig(bigwigHandle, chrom, start, end, tileSize,
                           missingDataAsZero=False):
     try:
-        coverage = np.asarray(bigwigHandle.values(chrom, start, end))
+        if pyBigWig.numpy:
+            values = bigwigHandle.values(chrom, start, end, numpy=True)
+        else:
+            values = bigwigHandle.values(chrom, start, end)
     except RuntimeError:
         # this error happens when chromosome
         # is not into the bigwig file
         return []
-    if coverage is None:
+    if values is None:
         return []
-    if missingDataAsZero is True:
+
+    # The list returned by pyBigWig was converted to float64 before binning.
+    coverage = np.asarray(values, dtype=np.float64)
+    if missingDataAsZero:
         coverage[np.isnan(coverage)] = 0
-    # ignore "Mean of empty slice"/ all-NaN RuntimeWarning
+
+    full_length = len(coverage) - len(coverage) % tileSize
     with np.errstate(all='ignore'):
-        cov = np.array(
-            [np.mean(coverage[x:x + tileSize])
-             for x in range(0, len(coverage), tileSize)])
+        cov = coverage[:full_length].reshape(-1, tileSize).mean(axis=1)
+        if full_length < len(coverage):
+            cov = np.append(cov, coverage[full_length:].mean())
     return cov
 
 
