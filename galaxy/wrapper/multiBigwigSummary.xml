@@ -7,6 +7,7 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
+        #import shlex
         #set files=[]
         #set labels=[]
 
@@ -19,7 +20,7 @@
         @MULTISUMMARY_COMMON_PARAMS@
 
         #if $chromosomesToSkip.strip() != '':
-            --chromosomesToSkip '$chromosomesToSkip'
+            --chromosomesToSkip #echo ' '.join(shlex.quote(x) for x in str($chromosomesToSkip).split())#
         #end if
         
         #if $advancedOpt.showAdvancedOpt == "yes":
@@ -75,13 +76,17 @@
             <param name="mode|modeOpt" value="bins" />
             <param name="mode|binSize" value="10" />
             <param name="outRawCounts" value="True" />
-            <param name="chromosomesToSkip" value="chr1 chr3" />
+            <param name="chromosomesToSkip" value="ch1 ch3" />
             <output name="outFileRawCounts" >
                 <assert_contents>
-                    <not_has_text text="chr1" />
-                    <not_has_text text="chr3" />
+                    <not_has_text text="ch1" />
+                    <not_has_text text="ch3" />
+                    <has_text text="ch2" />
                 </assert_contents>
             </output>
+            <assert_command>
+                <has_text text="--chromosomesToSkip ch1 ch3"/>
+            </assert_command>
         </test>
     </tests>
     <help>

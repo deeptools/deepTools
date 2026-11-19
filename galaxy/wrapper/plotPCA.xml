@@ -7,6 +7,7 @@
     <expand macro="requirements"/>
     <command>
 <![CDATA[
+        #import shlex
         @BINARY@
             --corData '$corData'
             --plotTitle '$plotTitle'
@@ -20,11 +21,11 @@
                 $advancedOpt.log2
                 --PCs $advancedOpt.PCs
                 --ntop $advancedOpt.ntop
-                #if $advancedOpt.colors:
-                    --colors '$advancedOpt.colors'
+                #if str($advancedOpt.colors).strip():
+                    --colors #echo ' '.join(shlex.quote(x) for x in shlex.split(str($advancedOpt.colors)))#
                 #end if
-                #if $advancedOpt.markers:
-                    --markers '$advancedOpt.markers'
+                #if str($advancedOpt.markers).strip():
+                    --markers #echo ' '.join(shlex.quote(x) for x in shlex.split(str($advancedOpt.markers)))#
                 #end if
                 $advancedOpt.addLabels
                 $advancedOpt.ggplot
@@ -48,9 +49,17 @@
                 help="Use only the top N most variable rows in the original matrix. Specifying 0 will result in all rows being used. The default is 1000." />
             <param argument="--log2" type="boolean" truevalue="--log2" falsevalue="" label="log2 transform data" help="log2 transform the datapoints prior to computing the PCA. Note that 0.01 is added to all values to prevent 0 values from becoming -infinity. Using this option with input that contains negative values will result in an error." />
             <param argument="--colors" type="text" label="Symbol colors" value="" optional="true"
-                help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. The color names should be space separated. For example, --colors 'red blue green'. If not specified, the symbols will be given automatic colors." />
+                help="A list of colors for the symbols. Color names and html hex string (e.g., #eeff22) are accepted. Separate colors by spaces, for example: red blue #eeff22. If not specified, the symbols will be given automatic colors.">
+                <sanitizer>
+                    <valid initial="string.printable"/>
+                </sanitizer>
+            </param>
             <param argument="--markers" type="text" label="Custom markers" value="" optional="true"
-                help="A list of markers for the symbols. (e.g., '&lt;','&gt;','o') are accepted. The marker values should be space separated. For example, 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes." />
+                help="A list of markers for the symbols. (e.g., '&lt;','&gt;','o') are accepted. The marker values should be space separated. For example, 's' 'o' 's' 'o'. If not specified, the symbols will be given automatic shapes.">
+                <sanitizer>
+                    <valid initial="string.printable"/>
+                </sanitizer>
+            </param>
             <param argument="--addLabels" type="boolean" label="Add Labels to the plot"
                 help="If specified, the labels will be added next to points also legend is omitted."
                 truevalue="--addLabels" falsevalue="" />
@@ -64,6 +73,24 @@
         </data>
     </outputs>
     <tests>
+        <test expect_num_outputs="1">
+            <param name="corData" value="multiBamSummary_pca.npz" ftype="deeptools_coverage_matrix"/>
+            <param name="outFileFormat" value="png"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="colors" value="#ff0000 blue green"/>
+                <param name="markers" value="'&lt;' '&gt;' o"/>
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--colors '#ff0000' blue green"/>
+                <has_text text="--markers '&lt;' '&gt;' o"/>
+            </assert_command>
+        </test>
         <test expect_num_outputs="1">
             <param name="corData" value="multiBamSummary_pca.npz" ftype="deeptools_coverage_matrix" />
             <param name="plotTitle" value="Test Plot" />

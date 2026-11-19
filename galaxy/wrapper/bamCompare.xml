@@ -7,6 +7,7 @@
     <expand macro="requirements"/>
     <command>
 <![CDATA[
+        #import shlex
         ln -s '$bamFile1' one.bam &&
         #if $bamFile1.ext == 'bam':
             ln -s '${bamFile1.metadata.bam_index}' one.bam.bai &&
@@ -61,8 +62,8 @@
                 $advancedOpt.skipNAs
                 $advancedOpt.skipZeroOverZero
 
-                #if $advancedOpt.ignoreForNormalization:
-                    --ignoreForNormalization '$advancedOpt.ignoreForNormalization'
+                #if str($advancedOpt.ignoreForNormalization).strip():
+                    --ignoreForNormalization #echo ' '.join(shlex.quote(x) for x in str($advancedOpt.ignoreForNormalization).split())#
                 #end if
 
                 @blacklist@
@@ -147,7 +148,7 @@
                 help="Sometimes it makes sense to exclude certain regions when calculating the scaling factor.
                     For example, if you know of copy number variations between samples then you may want to exclude these.
                     Another typical example is the difference in chromosome X copies between males and females in many species.
-                    Example inputs are chrX,chrY,chr3 or chr10:12220-128932"/>
+                    Separate chromosome names by spaces, for example: chrX chrY chr3"/>
             <expand macro="blacklist"/>
         </expand>
     </inputs>
@@ -160,6 +161,23 @@
         </data>
     </outputs>
     <tests>
+        <test expect_num_outputs="1">
+            <param name="bamFile1" value="testA.bam" ftype="bam"/>
+            <param name="bamFile2" value="testA.bam" ftype="bam"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="ignoreForNormalization" value="chrX chrY"/>
+            </conditional>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_text text="3R"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--ignoreForNormalization chrX chrY"/>
+            </assert_command>
+        </test>
         <test expect_num_outputs="1">
             <param name="bamFile1" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="bamFile2" value="bowtie2 test1.bam" ftype="bam"/>

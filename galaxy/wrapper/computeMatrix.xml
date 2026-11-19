@@ -7,6 +7,7 @@
     <expand macro="requirements"/>
     <command>
 <![CDATA[
+        #import shlex
         @multiple_input_bigwigs@
 
         #set bed_files=[]
@@ -59,7 +60,7 @@
                 --sortRegions '$advancedOpt.sortRegions'
                 --sortUsing '$advancedOpt.sortUsing'
                 #if str($advancedOpt.sortUsingSamples).strip() != "":
-                    --sortUsingSamples '$advancedOpt.sortUsingSamples'
+                    --sortUsingSamples #echo ' '.join(shlex.quote(x) for x in str($advancedOpt.sortUsingSamples).split())#
                 #end if                
                 --averageTypeBins '$advancedOpt.averageTypeBins'
                 $advancedOpt.skipZeros
@@ -215,6 +216,34 @@
         <expand macro="output_save_matrix_values"/>
     </outputs>
     <tests>
+        <test expect_num_outputs="1">
+            <repeat name="regionsFiles">
+                <param name="regionsFile" value="computeMatrix2.bed" ftype="bed"/>
+            </repeat>
+            <conditional name="multibigwig_conditional">
+                <param name="orderMatters" value="No"/>
+                <param name="bigwigfiles" value="computeMatrix2.bw,computeMatrix2.bw" ftype="bigwig"/>
+            </conditional>
+            <conditional name="mode">
+                <param name="mode_select" value="reference-point"/>
+                <param name="beforeRegionStartLength" value="10"/>
+                <param name="afterRegionStartLength" value="10"/>
+            </conditional>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="sortRegions" value="ascend"/>
+                <param name="sortUsingSamples" value="1 2"/>
+            </conditional>
+            <output name="outFileName" ftype="deeptools_compute_matrix_archive" decompress="true">
+                <assert_contents>
+                    <has_n_lines n="7"/>
+                    <has_text_matching expression="&quot;sample_boundaries&quot;:\s*\[0,\s*2,\s*4\]"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--sortUsingSamples 1 2"/>
+            </assert_command>
+        </test>
         <test expect_num_outputs="1">
             <param name="regionsFiles_0|regionsFile" value="computeMatrix1.bed" ftype="bed"/>
             <param name="multibigwig_conditional|orderMatters" value="No" />

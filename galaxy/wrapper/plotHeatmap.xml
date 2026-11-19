@@ -7,6 +7,7 @@
     <expand macro="requirements"/>
     <command>
 <![CDATA[
+        #import shlex
         @BINARY@
             @THREADS@
             --matrixFile '$matrixFile'
@@ -63,8 +64,8 @@
                 #end if
 
                 --alpha $advancedOpt.alpha
-                #if $advancedOpt.colorList:
-                    --colorList '$advancedOpt.colorList'
+                #if str($advancedOpt.colorList).strip():
+                    --colorList #echo ' '.join(shlex.quote(x) for x in str($advancedOpt.colorList).split())#
                 #end if
                 #if str($advancedOpt.colors).strip() != "":
                     --colors #echo ' '.join( ["'%s'" % $color for $color in $advancedOpt.colors.split()] )#
@@ -77,8 +78,8 @@
                     --zMax $advancedOpt.zMax
                 #end if
 
-                #if $advancedOpt.sortUsingSamples:
-                    --sortUsingSamples '$advancedOpt.sortUsingSamples'
+                #if str($advancedOpt.sortUsingSamples).strip():
+                    --sortUsingSamples #echo ' '.join(shlex.quote(x) for x in str($advancedOpt.sortUsingSamples).split())#
                 #end if
 
                 --xAxisLabel '$advancedOpt.xAxisLabel'
@@ -152,7 +153,11 @@
                 label="List of colors for each heatmap. Separate lists by spaces and the colors in the list by comas"
                 help="The color of the heatmaps can be specified as a list of colors separated by comas with
                 not space in between. For example: white,blue white,green will set a color map from white
-                to blue for the first heatmap and for white to green for the next heatmap."/>
+                to blue for the first heatmap and for white to green for the next heatmap.">
+                <sanitizer>
+                    <valid initial="string.printable"/>
+                </sanitizer>
+            </param>
             <param argument="--colors" type="text" value="" optional="true"
                 label="List of colors for the profile lines in the summary plot"
                 help="One color per group (or per sample with --perGroup); recycled if fewer are given.
@@ -190,6 +195,23 @@
         <expand macro="output_save_matrix_values" />
     </outputs>
     <tests>
+        <test expect_num_outputs="1">
+            <param name="matrixFile" value="computeMatrixOperations_multivalue.mat.gz" ftype="deeptools_compute_matrix_archive"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="sortUsingSamples" value="1 2"/>
+                <param name="colorList" value="#ffffff,#0000ff white,green"/>
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--sortUsingSamples 1 2"/>
+                <has_text text="--colorList '#ffffff,#0000ff' white,green"/>
+            </assert_command>
+        </test>
         <test expect_num_outputs="1">
             <param name="matrixFile" value="computeMatrix_result1.gz" ftype="deeptools_compute_matrix_archive" />
             <output name="outFileName" file="heatmapper_result1.png" ftype="png" compare="image_diff" eps="0.1" />

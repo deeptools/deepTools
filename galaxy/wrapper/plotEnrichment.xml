@@ -7,6 +7,7 @@
     <expand macro="requirements" />
     <command>
 <![CDATA[
+        #import shlex
         @multiple_input_bams@
         @BINARY@
             @THREADS@
@@ -33,8 +34,8 @@
                     --attributeKey '$advancedOpt.attributeKey'
                 #end if
 
-                #if $advancedOpt.labels:
-                    --labels '$advancedOpt.labels'
+                #if str($advancedOpt.labels).strip():
+                    --labels #echo ' '.join(shlex.quote(x) for x in shlex.split(str($advancedOpt.labels)))#
                 #end if
 
                 #if $advancedOpt.plotTitle:
@@ -59,8 +60,8 @@
 
                 @ADVANCED_OPTS_READ_PROCESSING@
 
-                #if $advancedOpt.Offset:
-                    --Offset '$advancedOpt.Offset'
+                #if str($advancedOpt.Offset).strip():
+                    --Offset #echo ' '.join(shlex.quote(x) for x in str($advancedOpt.Offset).split())#
                 #end if
 
                 @blacklist@
@@ -162,6 +163,35 @@
         </data>
     </outputs>
     <tests>
+        <test expect_num_outputs="2">
+            <conditional name="multibam_conditional">
+                <param name="orderMatters" value="No"/>
+                <param name="bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam"/>
+            </conditional>
+            <param name="BED" value="multiBamSummary_regions.bed" ftype="bed"/>
+            <param name="outRawCounts" value="true"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="labels" value="&quot;sample one&quot; sample_two"/>
+                <param name="Offset" value="5 -1"/>
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100"/>
+                </assert_contents>
+            </output>
+            <output name="outFileRawCounts" ftype="tabular">
+                <assert_contents>
+                    <has_n_lines n="3"/>
+                    <has_text text="sample one"/>
+                    <has_text text="sample_two"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--labels 'sample one' sample_two"/>
+                <has_text text="--Offset 5 -1"/>
+            </assert_command>
+        </test>
         <test expect_num_outputs="2">
             <!-- Default settings must use BED dataset names without accessing advanced-only parameters. -->
             <param name="multibam_conditional|orderMatters" value="No" />
