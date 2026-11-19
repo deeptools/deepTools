@@ -163,6 +163,49 @@
     </outputs>
     <tests>
         <test expect_num_outputs="2">
+            <!-- Default settings must use BED dataset names without accessing advanced-only parameters. -->
+            <param name="multibam_conditional|orderMatters" value="No" />
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam" />
+            <param name="BED" value="multiBamSummary_regions.bed" ftype="bed" />
+            <param name="outRawCounts" value="true" />
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="no" />
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100" />
+                </assert_contents>
+            </output>
+            <output name="outFileRawCounts" ftype="tabular">
+                <assert_contents>
+                    <has_n_lines n="2" />
+                    <has_text text="multiBamSummary_regions.bed" />
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="2">
+            <!-- An empty custom label must still fall back to the BED dataset name. -->
+            <param name="multibam_conditional|orderMatters" value="No" />
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam" />
+            <param name="BED" value="multiBamSummary_regions.bed" ftype="bed" />
+            <param name="outRawCounts" value="true" />
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes" />
+                <param name="regionLabels" value="" />
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100" />
+                </assert_contents>
+            </output>
+            <output name="outFileRawCounts" ftype="tabular">
+                <assert_contents>
+                    <has_n_lines n="2" />
+                    <has_text text="multiBamSummary_regions.bed" />
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="2">
             <param name="multibam_conditional|orderMatters" value="No" />
             <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <param name="BED" value="multiBamSummary_regions.bed,multiBamSummary_regions.bed" ftype="bed" />

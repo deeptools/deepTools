@@ -554,7 +554,7 @@ is vital to you, select Yes below.">
         #if len($files) > 0:
             --BED #echo ' '.join($files)#
             --regionLabels
-            #if $advancedOpt.regionLabels:
+            #if $advancedOpt.showAdvancedOpt == "yes" and $advancedOpt.regionLabels:
                 $advancedOpt.regionLabels
             #else:
                 #echo ' '.join($labels)#
