@@ -73,14 +73,14 @@
             </change_format>
         </data>
         <data name="table" format="tabular" label="${tool.name} on ${on_string}: Read/Fragment metrics in tabular format">
-            <filter>table is True</filter>
+            <filter>advancedOpt['showAdvancedOpt'] == 'yes' and advancedOpt['table'] is True</filter>
         </data>
         <data name="fragLengths" format="tabular" label="${tool.name} on ${on_string}: Raw Read/Fragment lengths occurrences">
-            <filter>outRawFragmentLengths is True</filter>
+            <filter>advancedOpt['showAdvancedOpt'] == 'yes' and advancedOpt['outRawFragmentLengths'] is True</filter>
         </data>
     </outputs>
     <tests>
-        <test expect_num_outputs="4">
+        <test expect_num_outputs="2">
             <param name="multibam_conditional|orderMatters" value="No" />
             <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
             <param name="histogram" value="True"/>
@@ -96,6 +96,80 @@
             <param name="advancedOpt|outRawFragmentLengths" value="yes"/>
             <output name="table" file="bamPEFragmentSize_table1.txt" ftype="tabular"/>
             <output name="fragLengths" file="bamPEFragmentSize_lengths1.txt" ftype="tabular"/>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="multibam_conditional|orderMatters" value="No"/>
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="no"/>
+            </conditional>
+            <output name="outfile" ftype="txt">
+                <assert_contents>
+                    <has_text text="Fragment lengths:"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <not_has_text text="--table"/>
+                <not_has_text text="--outRawFragmentLengths"/>
+            </assert_command>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="multibam_conditional|orderMatters" value="No"/>
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="table" value="false"/>
+                <param name="outRawFragmentLengths" value="false"/>
+            </conditional>
+            <output name="outfile" ftype="txt">
+                <assert_contents>
+                    <has_text text="Fragment lengths:"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <not_has_text text="--table"/>
+                <not_has_text text="--outRawFragmentLengths"/>
+            </assert_command>
+        </test>
+        <test expect_num_outputs="2">
+            <param name="multibam_conditional|orderMatters" value="No"/>
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="table" value="true"/>
+                <param name="outRawFragmentLengths" value="false"/>
+            </conditional>
+            <output name="table" ftype="tabular">
+                <assert_contents>
+                    <has_n_lines n="2"/>
+                    <has_text text="Frag. Sampled"/>
+                    <has_text text="bowtie2 test1.bam"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--table"/>
+                <not_has_text text="--outRawFragmentLengths"/>
+            </assert_command>
+        </test>
+        <test expect_num_outputs="2">
+            <param name="multibam_conditional|orderMatters" value="No"/>
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="table" value="false"/>
+                <param name="outRawFragmentLengths" value="true"/>
+            </conditional>
+            <output name="fragLengths" ftype="tabular">
+                <assert_contents>
+                    <has_text text="#bamPEFragmentSize"/>
+                    <has_line_matching expression="Size\tOccurrences\tSample"/>
+                    <has_text text="bowtie2 test1.bam"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <not_has_text text="--table"/>
+                <has_text text="--outRawFragmentLengths"/>
+            </assert_command>
         </test>
     </tests>
     <help>
