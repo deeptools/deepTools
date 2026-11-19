@@ -2,12 +2,12 @@
 
     <token name="@THREADS@">--numberOfProcessors "\${GALAXY_SLOTS:-4}"</token>
     <token name="@TOOL_VERSION@">4.1.0</token> <!-- x-release-please-version -->
-    <token name="@VERSION_SUFFIX@">1</token>
+    <token name="@VERSION_SUFFIX@">0</token>
     <token name="@GALAXY_VERSION@">23.2</token>
     <xml name="requirements">
         <requirements>
             <requirement type="package" version="@TOOL_VERSION@">deeptools</requirement>
-            <requirement type="package" version="1.24">samtools</requirement>
+            <requirement type="package" version="1.25">samtools</requirement>
         </requirements>
         <expand macro="stdio"/>
         <version_command>@BINARY@ --version</version_command>
@@ -554,7 +554,7 @@ is vital to you, select Yes below.">
         #if len($files) > 0:
             --BED #echo ' '.join($files)#
             --regionLabels
-            #if $advancedOpt.regionLabels:
+            #if $advancedOpt.showAdvancedOpt == "yes" and $advancedOpt.regionLabels:
                 $advancedOpt.regionLabels
             #else:
                 #echo ' '.join($labels)#

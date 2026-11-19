@@ -17,7 +17,7 @@
 
             --operation $comparison.comparison_select
 
-            #if $comparison.comparison_select in ['ratio','log2']:
+            #if $comparison.comparison_select in ['ratio','log2','reciprocal_ratio']:
                 --pseudocount $comparison.pseudocount
             #end if
 
@@ -127,7 +127,52 @@
             <param name="comparison|comparison_select" value="ratio"/>
             <output name="outFileName" file="bigwigCompare_result3.bg" sort="true" ftype="bedgraph"/>
         </test>
-        
+        <test expect_num_outputs="1">
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <conditional name="comparison">
+                <param name="comparison_select" value="reciprocal_ratio"/>
+                <param name="pseudocount" value="10"/>
+            </conditional>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="binSize" value="25"/>
+                <param name="scaleFactor1" value="2"/>
+                <param name="scaleFactor2" value="1"/>
+            </conditional>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_line_matching expression="ch1\t0\t100\t1"/>
+                    <has_line_matching expression="ch1\t100\t125\t1\.16667"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--pseudocount 10"/>
+            </assert_command>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="bigwigFile1" value="test.bw" ftype="bigwig"/>
+            <param name="bigwigFile2" value="test.bw" ftype="bigwig"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <conditional name="comparison">
+                <param name="comparison_select" value="reciprocal_ratio"/>
+                <param name="pseudocount" value="1 2"/>
+            </conditional>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="binSize" value="25"/>
+            </conditional>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_line_matching expression="ch1\t0\t100\t-2"/>
+                    <has_line_matching expression="ch1\t100\t125\t-1\.33333"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <has_text text="--pseudocount 1 2"/>
+            </assert_command>
+        </test>
     </tests>
     <help>
 <![CDATA[
