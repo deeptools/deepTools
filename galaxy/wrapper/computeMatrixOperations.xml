@@ -38,10 +38,10 @@
         #else if $submodule.command == "filterValues":
             filterValues
             -m '$submodule.matrixFile'
-            #if $submodule.min:
+            #if str($submodule.min).strip() != '':
                 --min $submodule.min
             #end if
-            #if $submodule.max:
+            #if str($submodule.max).strip() != '':
                 --max $submodule.max
             #end if
         #else if $submodule.command == "rbind":
@@ -204,6 +204,65 @@
                 <assert_contents>
                     <has_line_matching expression="Samples\tMin\tMax\tMedian\t10th\t90th"/>
                     <has_line_matching expression="bamCoverage_result4_bw_0\t1122690.0\t5292690.0\t1884522.5\t1419407.0\t4410575.0"/>
+                </assert_contents>
+            </output>
+        </test>
+        <!-- Zero is an inclusive bound for filterValues, not an omitted value. -->
+        <test expect_num_outputs="1">
+            <conditional name="submodule">
+                <param name="command" value="filterValues"/>
+                <param name="matrixFile" value="computeMatrixOperations_filterValues.mat.gz" ftype="deeptools_compute_matrix_archive"/>
+                <param name="min" value="0"/>
+            </conditional>
+            <output name="outFileName" ftype="deeptools_compute_matrix_archive" decompress="true">
+                <assert_contents>
+                    <has_n_lines n="4"/>
+                    <has_line_matching expression="chr1\t200\t220\tzero\t.*"/>
+                    <has_line_matching expression="chr1\t300\t320\tpositive\t.*"/>
+                    <has_line_matching expression="chr1\t400\t420\thigher\t.*"/>
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="1">
+            <conditional name="submodule">
+                <param name="command" value="filterValues"/>
+                <param name="matrixFile" value="computeMatrixOperations_filterValues.mat.gz" ftype="deeptools_compute_matrix_archive"/>
+                <param name="max" value="0"/>
+            </conditional>
+            <output name="outFileName" ftype="deeptools_compute_matrix_archive" decompress="true">
+                <assert_contents>
+                    <has_n_lines n="3"/>
+                    <has_line_matching expression="chr1\t100\t120\tnegative\t.*"/>
+                    <has_line_matching expression="chr1\t200\t220\tzero\t.*"/>
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="1">
+            <conditional name="submodule">
+                <param name="command" value="filterValues"/>
+                <param name="matrixFile" value="computeMatrixOperations_filterValues.mat.gz" ftype="deeptools_compute_matrix_archive"/>
+                <param name="min" value="0"/>
+                <param name="max" value="0"/>
+            </conditional>
+            <output name="outFileName" ftype="deeptools_compute_matrix_archive" decompress="true">
+                <assert_contents>
+                    <has_n_lines n="2"/>
+                    <has_line_matching expression="chr1\t200\t220\tzero\t.*"/>
+                </assert_contents>
+            </output>
+        </test>
+        <test expect_num_outputs="1">
+            <conditional name="submodule">
+                <param name="command" value="filterValues"/>
+                <param name="matrixFile" value="computeMatrixOperations_filterValues.mat.gz" ftype="deeptools_compute_matrix_archive"/>
+            </conditional>
+            <output name="outFileName" ftype="deeptools_compute_matrix_archive" decompress="true">
+                <assert_contents>
+                    <has_n_lines n="5"/>
+                    <has_line_matching expression="chr1\t100\t120\tnegative\t.*"/>
+                    <has_line_matching expression="chr1\t200\t220\tzero\t.*"/>
+                    <has_line_matching expression="chr1\t300\t320\tpositive\t.*"/>
+                    <has_line_matching expression="chr1\t400\t420\thigher\t.*"/>
                 </assert_contents>
             </output>
         </test>
