@@ -53,6 +53,7 @@
 
                 @ADVANCED_OPTS_READ_PROCESSING@
                 $advancedOpt.skipNAs
+                $advancedOpt.MNase
 
                 #if str($advancedOpt.ignoreForNormalization).strip() != '':
                     --ignoreForNormalization $advancedOpt.ignoreForNormalization
@@ -112,7 +113,7 @@
             <expand macro="skipNAs"/>
             <expand macro="read_processing_options"/>
 
-            <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue=""
+            <param argument="--MNase" type="boolean" truevalue="--MNase" falsevalue="" checked="false"
                 label="Determine nucleosome positions from MNase-seq data"
                 help="Only the 3 nucleotides at the center of each fragment are counted. The fragment ends are defined by the two mate reads. *NOTE*: Requires paired-end data. By default, only fragments between 130 and 200 bases will be used, though this can be changed with the --minFragmentLength and --maxFragmentLength options."/>
 
@@ -149,6 +150,26 @@
         </data>
     </outputs>
     <tests>
+        <!-- MNase is a flag: enabling it must produce fragment-center signal, not ordinary coverage. -->
+        <test expect_num_outputs="1">
+            <param name="bamInput" value="paired_chr2L.bam" ftype="bam"/>
+            <param name="outFileFormat" value="bedgraph"/>
+            <param name="binSize" value="1"/>
+            <param name="region" value="chr2L:0:1000"/>
+            <conditional name="scaling">
+                <param name="type" value="no"/>
+            </conditional>
+            <conditional name="advancedOpt">
+                <param name="showAdvancedOpt" value="yes"/>
+                <param name="MNase" value="true"/>
+            </conditional>
+            <output name="outFileName" ftype="bedgraph">
+                <assert_contents>
+                    <has_line_matching expression="chr2L\t0\t134\t0"/>
+                    <has_line_matching expression="chr2L\t134\t136\t1"/>
+                </assert_contents>
+            </output>
+        </test>
         <!-- Test minimal arguments for bamCoverage-->
         <test expect_num_outputs="1">
             <param name="bamInput" value="testA.bam" ftype="bam"/>
