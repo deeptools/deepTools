@@ -1,14 +1,25 @@
+#[cfg(feature = "python")]
 use crate::filehandler::{is_bed_or_gtf, read_bedfile};
+#[cfg(feature = "python")]
 use crate::filtering::Alignmentfilters;
+#[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
 use pyo3::types::PyList;
+use rust_htslib::bam;
 use rust_htslib::bam::record::CigarString;
-use rust_htslib::bam::{self, Header, Read, Reader, Writer};
+#[cfg(feature = "python")]
+use rust_htslib::bam::{Header, Read, Reader, Writer};
+#[cfg(feature = "python")]
 use std::collections::HashMap;
+#[cfg(feature = "python")]
 use std::fs::File;
+#[cfg(feature = "python")]
 use std::io::{BufWriter, Write};
+#[cfg(feature = "python")]
 use std::path::Path;
 
+#[cfg(feature = "python")]
 #[pyfunction]
 pub fn r_alignmentsieve(
     py: Python,
@@ -202,7 +213,7 @@ pub fn r_alignmentsieve(
             }
 
             let tid = record.tid() as usize;
-            if let Some(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid], &keep_tags) {
+            if let Ok(shifted) = apply_shift(&record, &readshift, chrom_sizes[tid], &keep_tags) {
                 if let Some(ref mut w) = obam {
                     w.write(&shifted).unwrap_or_else(|e| {
                         panic!(
@@ -335,6 +346,7 @@ pub fn r_alignmentsieve(
 
 /// Determines whether a record should be filtered out.
 /// true -> record should be filtered out.
+#[cfg(feature = "python")]
 fn filter_record(
     record: &bam::Record,
     chrom_names: &[String],
@@ -432,6 +444,7 @@ fn filter_record(
 }
 
 /// Writes a single fragment as a BEDPE line (chrom\tstart\tend) if tlen > 0.
+#[cfg(feature = "python")]
 fn write_bed_line(record: &bam::Record, chrom: &str, chrom_len: u64, bw: &mut BufWriter<File>) {
     let tlen: i64 = {
         let ins = record.insert_size();
@@ -497,17 +510,34 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
     read_pos
 }
 
-fn apply_shift(
+/// Why [`apply_shift`] refused a record. Lets callers count each reason separately.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ShiftRefusal {
+    /// Record is not part of a proper pair.
+    NotProperPair,
+    /// Fewer than 4 shift values were given.
+    ShortShift,
+    /// Shift leaves less than 1 bp of span after clamping to the chromosome.
+    ZeroSpan,
+}
+
+/// Shift a proper-paired alignment by `shift` (`[fwd read1, rev read1, fwd read2, rev read2]` offsets,
+/// as in `alignmentSieve --shift` with 4 values), clamped to `[0, chrom_len]`.
+///
+/// The CIGAR becomes a single match over the shifted span and SEQ/QUAL are dropped.
+/// All aux tags are removed except those listed in `keep_tags`, which are copied verbatim
+/// (tags describing the original alignment, such as NM, MD, MC or SA, are stale afterwards).
+pub fn apply_shift(
     record: &bam::Record,
     shift: &[i32],
     chrom_len: u64,
     keep_tags: &[[u8; 2]],
-) -> Option<bam::Record> {
+) -> Result<bam::Record, ShiftRefusal> {
     if !record.is_proper_pair() {
-        return None;
+        return Err(ShiftRefusal::NotProperPair);
     }
     if shift.len() < 4 {
-        return None;
+        return Err(ShiftRefusal::ShortShift);
     }
 
     let tlen = record.insert_size();
@@ -550,7 +580,7 @@ fn apply_shift(
         end = chrom_len as i64;
     }
     if end - start < 1 {
-        return None;
+        return Err(ShiftRefusal::ZeroSpan);
     }
 
     let mut newrec = record.clone();
@@ -598,9 +628,10 @@ fn apply_shift(
     };
     newrec.set_mpos(new_mpos);
 
-    Some(newrec)
+    Ok(newrec)
 }
 
+#[cfg(feature = "python")]
 fn smart_label(label: &str) -> String {
     let basename = Path::new(label)
         .file_name()
@@ -614,5 +645,39 @@ fn smart_label(label: &str) -> String {
         basename.to_string()
     } else {
         without_ext.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rust_htslib::bam::record::{Aux, Cigar};
+
+    fn pair(flags: u16) -> bam::Record {
+        let mut r = bam::Record::new();
+        r.set(b"r", Some(&CigarString(vec![Cigar::Match(50)])), &[b'A'; 50], &[30; 50]);
+        r.set_pos(100);
+        r.set_tid(0);
+        r.set_mtid(0);
+        r.set_mpos(300);
+        r.set_insert_size(250);
+        r.set_flags(flags);
+        r.push_aux(b"CB", Aux::String("AAAC-1")).unwrap();
+        r.push_aux(b"NM", Aux::U8(0)).unwrap();
+        r
+    }
+
+    #[test]
+    fn shift_refusals() {
+        assert_eq!(apply_shift(&pair(0x1 | 0x40), &[4, -4, 4, -4], 1000, &[]).unwrap_err(), ShiftRefusal::NotProperPair);
+        assert_eq!(apply_shift(&pair(0x1 | 0x2 | 0x40), &[4, -4], 1000, &[]).unwrap_err(), ShiftRefusal::ShortShift);
+    }
+
+    #[test]
+    fn shift_moves_start_and_keeps_only_requested_tags() {
+        let out = apply_shift(&pair(0x1 | 0x2 | 0x40), &[4, -4, 4, -4], 1000, &[*b"CB"]).unwrap();
+        assert_eq!(out.pos(), 104);
+        assert!(out.aux(b"CB").is_ok());
+        assert!(out.aux(b"NM").is_err());
     }
 }

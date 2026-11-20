@@ -5,20 +5,28 @@
 use pyo3::prelude::*;
 #[cfg_attr(not(feature = "python"), allow(dead_code))]
 mod calc;
-#[cfg(feature = "python")]
-mod covcalc;
-#[cfg(feature = "python")]
-mod filehandler;
-#[cfg(feature = "python")]
-mod filtering;
+/// Region parsing and per-bin BAM pileup.
+#[cfg(feature = "io")]
+#[allow(missing_docs)]
+pub mod covcalc;
+/// BAM, BED, GTF and bigWig readers and writers.
+#[cfg(feature = "io")]
+#[allow(missing_docs)]
+pub mod filehandler;
+/// Per-alignment filters (MAPQ, flags, fragment length, blacklist, extension).
+#[cfg(feature = "io")]
+#[allow(missing_docs)]
+pub mod filtering;
 #[cfg(feature = "python")]
 mod matrix;
 pub mod normalization;
 
 pub use calc::deseq_scalefactors;
 
-#[cfg(feature = "python")]
-mod alignmentsieve;
+/// Fragment shifting of BAM records (`apply_shift`). The python command lives here too.
+#[cfg(feature = "io")]
+#[allow(missing_docs)]
+pub mod alignmentsieve;
 #[cfg(feature = "python")]
 mod bamcompare;
 #[cfg(feature = "python")]

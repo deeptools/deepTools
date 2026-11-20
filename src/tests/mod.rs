@@ -1,9 +1,9 @@
 pub mod test_calc;
-#[cfg(feature = "python")]
+#[cfg(feature = "io")]
 pub mod test_covcalc;
-#[cfg(feature = "python")]
+#[cfg(feature = "io")]
 pub mod test_filehandler;
-#[cfg(feature = "python")]
+#[cfg(feature = "io")]
 pub mod test_filtering;
 #[cfg(feature = "python")]
 pub mod test_fixedfmt;

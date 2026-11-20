@@ -14,10 +14,14 @@ name = "deeptools_core"
 crate-type = ["rlib", "cdylib"]
 
 [features]
-python = [
-    "dep:pyo3", "pyo3/extension-module",
+# BAM/bigWig/BED I/O: covcalc, filehandler, filtering, alignmentsieve::apply_shift.
+io = [
     "dep:openssl-sys", "dep:bigtools", "dep:rust-htslib", "dep:rayon", "dep:tokio",
-    "dep:itertools", "dep:flate2", "dep:crc32fast", "dep:tempfile", "dep:ndarray-npy",
+    "dep:flate2", "dep:tempfile",
+]
+python = [
+    "io", "dep:pyo3", "pyo3/extension-module",
+    "dep:itertools", "dep:crc32fast", "dep:ndarray-npy",
 ]
 default = ["python"]
 
