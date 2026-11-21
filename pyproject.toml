@@ -110,7 +110,7 @@ multiBamSummary = "deeptools.multiBamSummary2:main"
 
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
-platforms = ["linux-64", "osx-arm64", "osx-64"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
 [tool.pixi.dependencies]
 libclang = "<22"
 clangdev = "<22"
@@ -150,7 +150,7 @@ ucsc-facount = "*"
 khmer = "*"
 python = "3.*"
 [tool.pixi.feature.recipe]
-platforms = ["linux-64", "osx-arm64"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
 [tool.pixi.feature.recipe.dependencies]
 python = "3.13.*"
 conda-build = "*"
@@ -158,7 +158,8 @@ conda-forge-pinning = "*"
 pyyaml = "*"
 [tool.pixi.feature.recipe.tasks]
 recipe-check = "python scripts/check_bioconda_recipe.py"
-recipe-build = { cmd = "conda build --override-channels -c conda-forge -c bioconda -m $CONDA_PREFIX/conda_build_config.yaml", env = { CONDA_CHANNEL_PRIORITY = "strict" } }
+recipe-fetch = { cmd = "mkdir -p .recipe && curl -fsSL $URL/meta.yaml -o .recipe/meta.yaml && curl -fsSL $URL/conda_build_config.yaml -o .recipe/conda_build_config.yaml", env = { URL = "https://raw.githubusercontent.com/bioconda/bioconda-recipes/master/recipes/deeptools" } }
+recipe-build = { cmd = "conda build --override-channels -c conda-forge -c bioconda -m $CONDA_PREFIX/conda_build_config.yaml {{ recipe }}", args = [{ arg = "recipe", default = ".recipe" }], depends-on = ["recipe-fetch"], env = { CONDA_CHANNEL_PRIORITY = "strict" } }
 
 [tool.pixi.environments]
 py312 = ["py312"]
