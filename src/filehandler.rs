@@ -774,7 +774,7 @@ pub fn bwintervals(
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
                         } else {
-                            bwval.push(std::f32::NAN);
+                            bwval.push(f32::NAN);
                         }
                     } else {
                         let mut vals: Vec<f32> = Vec::new();
@@ -783,7 +783,7 @@ pub fn bwintervals(
                             if scale_regions.missingdata_as_zero {
                                 bwval.push(0.0);
                             } else {
-                                bwval.push(std::f32::NAN);
+                                bwval.push(f32::NAN);
                             }
                         } else {
                             let valrefs: Vec<&f32> = vals.iter().collect();
@@ -810,7 +810,7 @@ pub fn bwintervals(
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
                         } else {
-                            bwval.push(std::f32::NAN);
+                            bwval.push(f32::NAN);
                         }
                     } else {
                         let valrefs: Vec<&f32> = vals.iter().collect();
@@ -841,7 +841,7 @@ pub fn bwintervals(
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
                         } else {
-                            bwval.push(std::f32::NAN);
+                            bwval.push(f32::NAN);
                         }
                     } else {
                         let valrefs: Vec<&f32> = vals.iter().collect();
@@ -874,7 +874,7 @@ pub fn bwintervals(
                         if scale_regions.missingdata_as_zero {
                             bwval.push(0.0);
                         } else {
-                            bwval.push(std::f32::NAN);
+                            bwval.push(f32::NAN);
                         }
                     } else {
                         let valrefs: Vec<&f32> = vals.iter().collect();

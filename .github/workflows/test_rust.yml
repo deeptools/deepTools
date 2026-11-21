@@ -30,6 +30,10 @@ jobs:
               run: cargo test --locked --verbose --no-default-features
               env:
                   RUSTFLAGS: "-D warnings"
+            - name: cargo test (io, no python)
+              run: cargo test --locked --verbose --no-default-features --features io
+              env:
+                  RUSTFLAGS: "-D warnings"
             - name: cargo build (python extension)
               run: cargo build --locked --verbose
             - name: cargo test (python extension)
