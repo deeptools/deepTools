@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import sys
 import tomllib
 import urllib.request
 from pathlib import Path
@@ -81,7 +82,7 @@ def main() -> None:
 
     in_actions = os.environ.get("GITHUB_ACTIONS") == "true"
     for item in drift:
-        print(f"::warning title=bioconda recipe drift::{item}" if in_actions else f"drift: {item}")
+        print(f"::error title=bioconda recipe drift::{item}" if in_actions else f"drift: {item}")
     if not drift:
         print("no drift between the bioconda recipe and pyproject.toml")
 
@@ -89,6 +90,7 @@ def main() -> None:
         lines = [f"- {item}" for item in drift] or ["No drift."]
         with open(summary, "a") as handle:
             handle.write("## bioconda recipe drift\n\n" + "\n".join(lines) + "\n")
+    sys.exit(1 if drift else 0)
 
 
 if __name__ == "__main__":
