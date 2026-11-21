@@ -152,9 +152,7 @@ python = "3.*"
 [tool.pixi.feature.recipe]
 platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
 [tool.pixi.feature.recipe.dependencies]
-python = "3.13.*"
-conda-build = "*"
-conda-forge-pinning = "*"
+bioconda-utils = "*"
 pyyaml = "*"
 [tool.pixi.feature.recipe.tasks]
 recipe-check = "python scripts/check_bioconda_recipe.py"
