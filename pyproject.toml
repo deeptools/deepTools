@@ -149,9 +149,20 @@ platforms = ["linux-64"]
 ucsc-facount = "*"
 khmer = "*"
 python = "3.*"
+[tool.pixi.feature.recipe]
+platforms = ["linux-64", "osx-arm64"]
+[tool.pixi.feature.recipe.dependencies]
+python = "3.13.*"
+conda-build = "*"
+conda-forge-pinning = "*"
+pyyaml = "*"
+[tool.pixi.feature.recipe.tasks]
+recipe-check = "python scripts/check_bioconda_recipe.py"
+recipe-build = { cmd = "conda build --override-channels -c conda-forge -c bioconda -m $CONDA_PREFIX/conda_build_config.yaml", env = { CONDA_CHANNEL_PRIORITY = "strict" } }
 
 [tool.pixi.environments]
 py312 = ["py312"]
 py313 = ["py313"]
 py314 = ["py314"]
 ess = { features = ["ess"], no-default-feature = true }
+recipe = { features = ["recipe"], no-default-feature = true }
