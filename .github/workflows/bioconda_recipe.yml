@@ -1,0 +1,123 @@
+name: bioconda_recipe_check
+
+on:
+    push:
+        paths:
+            - pyproject.toml
+            - scripts/check_bioconda_recipe.py
+            - .github/workflows/bioconda_recipe.yml
+    pull_request:
+        paths:
+            - pyproject.toml
+            - scripts/check_bioconda_recipe.py
+            - .github/workflows/bioconda_recipe.yml
+    release:
+        types: [published]
+    workflow_dispatch:
+        inputs:
+            recipe_repo:
+                description: "Repo to take recipe from"
+                required: false
+                default: bioconda/bioconda-recipes
+            recipe_ref:
+                description: "Branch/tag/sha of that repo"
+                required: false
+                default: master
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+    drift:
+        name: Check recipe drift
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  repository: ${{ inputs.recipe_repo || 'bioconda/bioconda-recipes' }}
+                  ref: ${{ inputs.recipe_ref || 'master' }}
+                  path: bioconda-recipes
+                  sparse-checkout: recipes/deeptools
+                  filter: blob:none
+                  persist-credentials: false
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+              with:
+                  environments: recipe
+            - name: Compare recipe with pyproject.toml
+              run: pixi run -e recipe recipe-check --recipe bioconda-recipes/recipes/deeptools
+
+    build:
+        name: Build recipe (${{ matrix.os }})
+        #if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-26-intel]
+        steps:
+            - name: Resolve release tag
+              id: tag
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RELEASE_TAG: ${{ github.event.release.tag_name }}
+              run: |
+                  tag=${RELEASE_TAG:-$(gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName)}
+                  [[ "$tag" =~ ^[0-9][0-9.]*$ ]] || { echo "::error::unexpected tag: $tag"; exit 1; }
+                  echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  ref: ${{ steps.tag.outputs.tag }}
+                  path: release
+                  persist-credentials: false
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  repository: ${{ inputs.recipe_repo || 'bioconda/bioconda-recipes' }}
+                  ref: ${{ inputs.recipe_ref || 'master' }}
+                  path: bioconda-recipes
+                  sparse-checkout: recipes/deeptools
+                  filter: blob:none
+                  persist-credentials: false
+            - uses: prefix-dev/setup-pixi@9936258fee697aff89b3fed6ca1f80a382ef694e # v0.11.3
+              with:
+                  environments: recipe
+            - name: Bump recipe to the release, as bioconda's autobump would
+              env:
+                  TAG: ${{ steps.tag.outputs.tag }}
+              run: |
+                  meta=bioconda-recipes/recipes/deeptools/meta.yaml
+                  current=$(sed -nE 's/.*set version = "([^"]+)".*/\1/p' "$meta")
+                  if [ "$current" != "$TAG" ]; then
+                      sha=$(curl -fsSL "https://github.com/deeptools/deepTools/archive/refs/tags/$TAG.tar.gz" | shasum -a 256 | cut -d' ' -f1)
+                      sed -i.bak -E -e "s/(set version = \")[^\"]+/\1$TAG/" -e "s/(sha256: ).*/\1$sha/" "$meta"
+                      rm "$meta.bak"
+                      echo "bumped recipe $current -> $TAG"
+                  fi
+            - name: Build recipe
+              env:
+                  CONDA_BLD_PATH: ${{ runner.temp }}/out
+              run: pixi run -e recipe recipe-build bioconda-recipes/recipes/deeptools
+            - name: Run every command from the built package
+              env:
+                  TAG: ${{ steps.tag.outputs.tag }}
+              run: |
+                  pixi run -e recipe conda create --yes --quiet --prefix "$RUNNER_TEMP/env" \
+                      --strict-channel-priority --override-channels -c "file://$RUNNER_TEMP/out" -c conda-forge -c bioconda "deeptools=$TAG"
+                  commands=$(pixi run -e recipe python -c 'import tomllib; print(*tomllib.load(open("release/pyproject.toml", "rb"))["project"]["scripts"])')
+                  failed=""
+                  for cmd in $commands; do
+                      "$RUNNER_TEMP/env/bin/$cmd" --version > /dev/null || failed="$failed $cmd"
+                  done
+                  if [ -n "$failed" ]; then
+                      echo "::error::commands failing in the built package:$failed"
+                      exit 1
+                  fi

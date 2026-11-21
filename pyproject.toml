@@ -43,8 +43,7 @@ dependencies = [
     "matplotlib >= 3.10",
     "pysam >= 0.23",
     "pyBigWig >= 0.3",
-    "deeptoolsintervals >= 0.1",
-    "maturin"
+    "deeptoolsintervals >= 0.1"
 ]
 description = "Useful tools for exploring deep sequencing data."
 license = {file = "LICENSE.txt"}
@@ -110,7 +109,7 @@ multiBamSummary = "deeptools.multiBamSummary2:main"
 
 [tool.pixi.workspace]
 channels = ["conda-forge", "bioconda"]
-platforms = ["linux-64", "osx-arm64", "osx-64"]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
 [tool.pixi.dependencies]
 libclang = "<22"
 clangdev = "<22"
@@ -149,9 +148,19 @@ platforms = ["linux-64"]
 ucsc-facount = "*"
 khmer = "*"
 python = "3.*"
+[tool.pixi.feature.recipe]
+platforms = ["linux-64", "linux-aarch64", "osx-arm64", "osx-64"]
+[tool.pixi.feature.recipe.dependencies]
+bioconda-utils = "*"
+pyyaml = "*"
+[tool.pixi.feature.recipe.tasks]
+recipe-check = "python scripts/check_bioconda_recipe.py"
+recipe-fetch = { cmd = "mkdir -p .recipe && curl -fsSL $URL/meta.yaml -o .recipe/meta.yaml && curl -fsSL $URL/conda_build_config.yaml -o .recipe/conda_build_config.yaml", env = { URL = "https://raw.githubusercontent.com/bioconda/bioconda-recipes/master/recipes/deeptools" } }
+recipe-build = { cmd = "conda build --override-channels -c conda-forge -c bioconda -m $CONDA_PREFIX/conda_build_config.yaml {{ recipe }}", args = [{ arg = "recipe", default = ".recipe" }], depends-on = ["recipe-fetch"], env = { CONDA_CHANNEL_PRIORITY = "strict" } }
 
 [tool.pixi.environments]
 py312 = ["py312"]
 py313 = ["py313"]
 py314 = ["py314"]
 ess = { features = ["ess"], no-default-feature = true }
+recipe = { features = ["recipe"], no-default-feature = true }

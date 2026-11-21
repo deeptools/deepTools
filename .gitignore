@@ -77,3 +77,6 @@ target*
 
 #genome folders for ESS calculation
 scripts/genomes
+
+# bioconda recipe fetched by `pixi run -e recipe recipe-build`
+.recipe/
