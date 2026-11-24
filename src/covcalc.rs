@@ -222,6 +222,7 @@ pub fn bam_pileup<'a>(
     u32,           // unmapped reads
     Vec<u32>,      // read lengths
     Vec<u32>,      // fragment lengths
+    u64,           // sum of the raw per-bin counts (excluding ignorechr), the BPM denominator
 ) {
     let mut bs = *provbs;
     let mut binsize = &bs;
@@ -233,6 +234,7 @@ pub fn bam_pileup<'a>(
     let mut unmapped_reads: u32 = 0;
     let mut readlens: Vec<u32> = Vec::new();
     let mut fraglens: Vec<u32> = Vec::new();
+    let mut bin_sum: u64 = 0;
 
     // Create the output vector
     let bg = Builder::new()
@@ -506,6 +508,12 @@ pub fn bam_pileup<'a>(
             }
         }
 
+        // Sum the raw counts for BPM while the bins are in memory, before smoothing or
+        // collapsing equal neighbours. Integer addition keeps the total independent of nproc.
+        if !ignorechr.contains(&region.0) {
+            bin_sum += counts.iter().map(|&c| c as u64).sum::<u64>();
+        }
+
         // Convert integer counts to f32, then apply smoothing if requested
         let fcounts: Vec<f32> = counts.into_iter().map(|c| c as f32).collect();
         let smoothed = if smoothlength > 0 && fcounts.len() > 1 {
@@ -602,7 +610,14 @@ pub fn bam_pileup<'a>(
     let bgpath = bg.into_temp_path();
     let tmpvec = vec![bgpath];
 
-    return (tmpvec, mapped_reads, unmapped_reads, readlens, fraglens);
+    return (
+        tmpvec,
+        mapped_reads,
+        unmapped_reads,
+        readlens,
+        fraglens,
+        bin_sum,
+    );
 }
 
 #[derive(Clone, Debug)]

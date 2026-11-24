@@ -145,7 +145,7 @@ pub fn r_bamcompare(
         bamfiles
             .par_iter()
             .map(|(bamfile, ispe, alfilter)| {
-                let (bg, mapped, unmapped, readlen, fraglen) = regionblocks
+                let (bg, mapped, unmapped, readlen, fraglen, bin_sum) = regionblocks
                     .par_iter()
                     .map(|i| {
                         bam_pileup(
@@ -154,15 +154,16 @@ pub fn r_bamcompare(
                         )
                     })
                     .reduce(
-                        || (vec![], 0, 0, vec![], vec![]),
-                        |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen),
-                         (bg, mapped, unmapped, readlen, fraglen)| {
+                        || (vec![], 0, 0, vec![], vec![], 0),
+                        |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen, mut _bin_sum),
+                         (bg, mapped, unmapped, readlen, fraglen, bin_sum)| {
                             _bg.extend(bg);
                             _readlen.extend(readlen);
                             _fraglen.extend(fraglen);
                             _mapped += mapped;
                             _unmapped += unmapped;
-                            (_bg, _mapped, _unmapped, _readlen, _fraglen)
+                            _bin_sum += bin_sum;
+                            (_bg, _mapped, _unmapped, _readlen, _fraglen, _bin_sum)
                         },
                     );
                 ParsedBamFile {
@@ -173,30 +174,33 @@ pub fn r_bamcompare(
                     unmapped: unmapped,
                     readlen: median(readlen),
                     fraglen: median(fraglen),
+                    bin_sum: bin_sum,
                 }
             })
             .collect()
     });
     // Print out some stats if verbose
     if verbose {
-        println!("bamfile\tPE\tmapped\tunmapped\tmed_readlen\tmed_fraglen");
+        println!("bamfile\tPE\tmapped\tunmapped\tmed_readlen\tmed_fraglen\tbinned_counts");
         println!(
-            "{}\t{}\t{}\t{}\t{}\t{}",
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
             covcalcs[0].bamfile,
             covcalcs[0].ispe,
             covcalcs[0].mapped,
             covcalcs[0].unmapped,
             covcalcs[0].readlen,
-            covcalcs[0].fraglen
+            covcalcs[0].fraglen,
+            covcalcs[0].bin_sum
         );
         println!(
-            "{}\t{}\t{}\t{}\t{}\t{}",
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}",
             covcalcs[1].bamfile,
             covcalcs[1].ispe,
             covcalcs[1].mapped,
             covcalcs[1].unmapped,
             covcalcs[1].readlen,
-            covcalcs[1].fraglen
+            covcalcs[1].fraglen,
+            covcalcs[1].bin_sum
         );
     }
     // Calculate scale factors.
@@ -413,4 +417,6 @@ pub struct ParsedBamFile<'a> {
     pub unmapped: u32,
     pub readlen: f32,
     pub fraglen: f32,
+    /// Sum of the raw per-bin counts (excluding ignored chromosomes).
+    pub bin_sum: u64,
 }

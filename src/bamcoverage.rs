@@ -191,7 +191,7 @@ pub fn r_bamcoverage(
                 nproc, e
             )
         });
-    let (bg, mapped, _unmapped, readlen, fraglen) = pool.install(|| {
+    let (bg, mapped, _unmapped, readlen, fraglen, bin_sum) = pool.install(|| {
         regionblocks
             .par_iter()
             .map(|i| {
@@ -210,16 +210,24 @@ pub fn r_bamcoverage(
                 )
             })
             .reduce(
-                || (vec![], 0, 0, vec![], vec![]),
-                |(mut _bg, mut _mapped, mut _unmapped, mut _readlen, mut _fraglen),
-                 (bg, mapped, unmapped, readlen, fraglen)| {
+                || (vec![], 0, 0, vec![], vec![], 0),
+                |(
+                    mut _bg,
+                    mut _mapped,
+                    mut _unmapped,
+                    mut _readlen,
+                    mut _fraglen,
+                    mut _bin_sum,
+                ),
+                 (bg, mapped, unmapped, readlen, fraglen, bin_sum)| {
                     _bg.extend(bg);
                     _readlen.extend(readlen);
                     _fraglen.extend(fraglen);
                     _mapped += mapped;
                     _unmapped += unmapped;
+                    _bin_sum += bin_sum;
 
-                    (_bg, _mapped, _unmapped, _readlen, _fraglen)
+                    (_bg, _mapped, _unmapped, _readlen, _fraglen, _bin_sum)
                 },
             )
     });
@@ -237,7 +245,10 @@ pub fn r_bamcoverage(
     let fraglen = median(fraglen);
     if verbose {
         println!("Read stats with ignorechr: {:?}", ignorechr);
-        println!("Mapped: {} Unmapped: {}", mapped, _unmapped);
+        println!(
+            "Mapped: {} Unmapped: {} Binned counts: {}",
+            mapped, _unmapped, bin_sum
+        );
         println!("Readlen: {}, Fraglen: {}", readlen, fraglen);
     }
 
