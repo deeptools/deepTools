@@ -88,6 +88,16 @@ pub struct Alignmentfilters {
     pub filter: bool,
     pub manipulate: bool,
 }
+
+/// No filtering and no manipulation. Equivalent to `new` with every argument `None`.
+impl Default for Alignmentfilters {
+    fn default() -> Self {
+        Self::new(
+            None, None, None, None, None, None, None, None, None, None, None, None,
+        )
+    }
+}
+
 impl Alignmentfilters {
     pub fn new(
         blacklist: Option<Vec<Region>>,

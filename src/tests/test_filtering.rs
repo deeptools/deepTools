@@ -291,3 +291,15 @@ mod mnase_centre_tests {
         assert_eq!(af.manipulate_record(&rec), Some(vec![1064, 1065, 1066]));
     }
 }
+
+#[test]
+fn test_default_matches_new_with_all_none() {
+    let d = Alignmentfilters::default();
+    let n = Alignmentfilters::new(
+        None, None, None, None, None, None, None, None, None, None, None, None,
+    );
+    assert!(!d.filter && !d.manipulate);
+    assert_eq!(d.filterrnastrand, n.filterrnastrand);
+    assert_eq!(d.minmappingquality, n.minmappingquality);
+    assert_eq!(d.extendreadslen, n.extendreadslen);
+}
