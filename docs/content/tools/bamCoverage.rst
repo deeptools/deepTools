@@ -30,6 +30,8 @@ Usage hints
 
 .. note:: As of deepTools 4.0.0, ``bamCoverage`` uses a new Rust-backed core. ``--blackListFileName`` may be gzip-compressed and blacklist filtering is done at base-pair resolution rather than by rejecting whole genomic chunks. ``--ignoreDuplicates`` has been removed; use ``--samFlagExclude`` against a BAM file with duplicates marked instead.
 
+.. note:: ``--normalizeUsing BPM`` divides each bin by the sum of the counts over all bins (in millions), excluding ``--ignoreForNormalization`` chromosomes, so a BPM track sums to 10\ :sup:`6`. Up to deepTools 4.1.0, BPM was computed from the number of mapped reads and was therefore identical to CPM.
+
 Usage example for ChIP-seq
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
