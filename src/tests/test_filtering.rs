@@ -291,3 +291,70 @@ mod mnase_centre_tests {
         assert_eq!(af.manipulate_record(&rec), Some(vec![1064, 1065, 1066]));
     }
 }
+
+mod tag_whitelist_tests {
+    use crate::filtering::Alignmentfilters;
+    use rust_htslib::bam::{
+        self,
+        record::{Aux, Cigar, CigarString},
+    };
+    use std::collections::HashSet;
+
+    fn rec_with_cb(cb: Option<&str>) -> bam::Record {
+        let mut r = bam::Record::new();
+        let cigar = CigarString(vec![Cigar::Match(10)]);
+        r.set(b"q", Some(&cigar), &[b'A'; 10], &[30u8; 10]);
+        r.set_pos(100);
+        r.set_tid(0);
+        r.set_flags(0);
+        if let Some(cb) = cb {
+            r.push_aux(b"CB", Aux::String(cb)).unwrap();
+        }
+        r
+    }
+
+    fn filters(values: &[&str]) -> Alignmentfilters {
+        let set: HashSet<String> = values.iter().map(|v| v.to_string()).collect();
+        Alignmentfilters::new(
+            None, None, None, None, None, None, None, None, None, None, None, None,
+        )
+        .with_tag_whitelist(*b"CB", set)
+    }
+
+    #[test]
+    fn test_tag_whitelist_enables_filter() {
+        assert!(filters(&["AAAC-1"]).filter);
+    }
+
+    #[test]
+    fn test_tag_whitelist_keeps_listed_value() {
+        let af = filters(&["AAAC-1", "GGGT-1"]);
+        assert!(!af.filter_record(&rec_with_cb(Some("GGGT-1")), "chr1"));
+    }
+
+    #[test]
+    fn test_tag_whitelist_skips_unlisted_value() {
+        let af = filters(&["AAAC-1"]);
+        assert!(af.filter_record(&rec_with_cb(Some("TTTT-1")), "chr1"));
+    }
+
+    #[test]
+    fn test_tag_whitelist_skips_record_without_the_tag() {
+        let af = filters(&["AAAC-1"]);
+        assert!(af.filter_record(&rec_with_cb(None), "chr1"));
+    }
+
+    #[test]
+    fn test_tag_whitelist_skips_non_string_tag() {
+        let af = filters(&["5"]);
+        let mut r = rec_with_cb(None);
+        r.push_aux(b"CB", Aux::U8(5)).unwrap();
+        assert!(af.filter_record(&r, "chr1"));
+    }
+
+    #[test]
+    fn test_empty_whitelist_skips_everything() {
+        let af = filters(&[]);
+        assert!(af.filter_record(&rec_with_cb(Some("AAAC-1")), "chr1"));
+    }
+}

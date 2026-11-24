@@ -2,8 +2,8 @@ use crate::calc::median;
 use crate::covcalc::Region;
 use rayon::ThreadPoolBuilder;
 use rayon::prelude::*;
-use rust_htslib::bam::{IndexedReader, Read, Record, ext::BamRecordExtensions};
-use std::collections::HashMap;
+use rust_htslib::bam::{IndexedReader, Read, Record, ext::BamRecordExtensions, record::Aux};
+use std::collections::{HashMap, HashSet};
 
 #[derive(Clone)]
 pub struct BlacklistIndex {
@@ -86,6 +86,7 @@ pub struct Alignmentfilters {
     pub extendreads_auto: bool,
     pub centerreads: bool,
     pub filter: bool,
+    pub tag_whitelist: Option<([u8; 2], HashSet<String>)>,
     pub manipulate: bool,
 }
 impl Alignmentfilters {
@@ -159,8 +160,18 @@ impl Alignmentfilters {
             extendreads_auto: _extend_auto,
             centerreads: _center,
             filter: filter,
+            tag_whitelist: None,
             manipulate: manipulate,
         }
+    }
+
+    /// Keep only records whose string aux `tag` (e.g. `CB`) has a value in `values`. Records that
+    /// lack the tag, or carry it with a non-string type, are skipped. An empty set skips every
+    /// record.
+    pub fn with_tag_whitelist(mut self, tag: [u8; 2], values: HashSet<String>) -> Self {
+        self.tag_whitelist = Some((tag, values));
+        self.filter = true;
+        self
     }
 
     pub fn set_extendreadslen(&mut self, bamfile: &str, nproc: usize, regions: &Vec<Region>) {
@@ -271,6 +282,12 @@ impl Alignmentfilters {
                             self.filterrnastrand
                         )
                     }
+                }
+            }
+            if let Some((tag, values)) = &self.tag_whitelist {
+                match rec.aux(tag) {
+                    Ok(Aux::String(v)) if values.contains(v) => {}
+                    _ => return true,
                 }
             }
             if self.blacklist.is_some() {
