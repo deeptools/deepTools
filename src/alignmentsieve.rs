@@ -497,6 +497,22 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
     read_pos
 }
 
+/// Copy of `record` with a single `read_len` M CIGAR at `new_start`. SEQ, QUAL and aux tags are
+/// kept; the previous CIGAR is discarded.
+#[allow(dead_code)] // public helper for downstream crates; unused inside this crate
+pub fn with_position(record: &bam::Record, new_start: i64, read_len: u32) -> bam::Record {
+    let mut out = record.clone();
+    let cigar = CigarString(vec![bam::record::Cigar::Match(read_len)]);
+    out.set(
+        record.qname(),
+        Some(&cigar),
+        &record.seq().as_bytes(),
+        record.qual(),
+    );
+    out.set_pos(new_start);
+    out
+}
+
 fn apply_shift(
     record: &bam::Record,
     shift: &[i32],

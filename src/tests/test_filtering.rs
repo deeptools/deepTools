@@ -1,5 +1,10 @@
+use crate::alignmentsieve::with_position;
 use crate::covcalc::{Region, Revalue};
-use crate::filtering::{Alignmentfilters, BlacklistIndex};
+use crate::filtering::{Alignmentfilters, BlacklistIndex, center_window, fragment_window};
+use rust_htslib::bam::{
+    self,
+    record::{Aux, Cigar, CigarString},
+};
 
 fn region(chrom: &str, start: u32, end: u32) -> Region {
     Region {
@@ -290,4 +295,89 @@ mod mnase_centre_tests {
         let rec = proper_pair_forward_read(1000, 131);
         assert_eq!(af.manipulate_record(&rec), Some(vec![1064, 1065, 1066]));
     }
+}
+
+fn bam_rec(paired: bool, proper: bool, rev: bool, pos: i64, tlen: i64, mpos: i64) -> bam::Record {
+    let mut r = bam::Record::new();
+    let cigar = CigarString(vec![Cigar::Match(50)]);
+    r.set(b"q", Some(&cigar), &vec![b'A'; 50], &vec![30u8; 50]);
+    r.set_pos(pos);
+    r.set_tid(0);
+    let mut flags = 0u16;
+    if paired {
+        flags |= 0x1;
+    }
+    if proper {
+        flags |= 0x2;
+    }
+    if rev {
+        flags |= 0x10;
+    }
+    r.set_flags(flags);
+    r.set_insert_size(tlen);
+    r.set_mpos(mpos);
+    r
+}
+
+#[test]
+fn test_fragment_window_single_end() {
+    let fwd = bam_rec(false, false, false, 1000, 0, -1);
+    assert_eq!(fragment_window(&fwd, 200), (1000, 1200));
+    let rev = bam_rec(false, false, true, 1000, 0, -1);
+    assert_eq!(fragment_window(&rev, 200), (850, 1050));
+    assert_eq!(fragment_window(&rev, 50), (1000, 1050));
+}
+
+#[test]
+fn test_fragment_window_proper_pair_ignores_ext_len() {
+    let fwd = bam_rec(true, true, false, 1000, 300, 1250);
+    assert_eq!(fragment_window(&fwd, 50), (1000, 1300));
+    // Reverse mate: tlen is negative, window runs from the mate start to this read's end.
+    let rev = bam_rec(true, true, true, 1250, -300, 1000);
+    assert_eq!(fragment_window(&rev, 50), (1000, 1300));
+}
+
+#[test]
+fn test_fragment_window_paired_but_not_proper_is_treated_as_single_end() {
+    // Same rule as Alignmentfilters::rec_extension (is_proper_pair).
+    let fwd = bam_rec(true, false, false, 1000, 300, 1250);
+    assert_eq!(fragment_window(&fwd, 200), (1000, 1200));
+}
+
+#[test]
+fn test_center_window_centres_a_read_in_the_fragment() {
+    assert_eq!(center_window(1000, 1300, 50), (1125, 1175));
+    // Odd lengths truncate toward zero, matching rec_extension.
+    assert_eq!(center_window(1000, 1301, 50), (1125, 1175));
+}
+
+#[test]
+fn test_center_window_leaves_empty_window_alone() {
+    assert_eq!(center_window(1000, 1000, 50), (1000, 1000));
+}
+
+#[test]
+fn test_with_position_moves_read_keeps_seq_qual_and_tags() {
+    let mut r = bam_rec(false, false, false, 1000, 0, -1);
+    r.push_aux(b"CB", Aux::String("AAAC-1")).unwrap();
+    let moved = with_position(&r, 2000, 50);
+    assert_eq!(moved.pos(), 2000);
+    assert_eq!(moved.cigar().end_pos(), 2050);
+    assert_eq!(moved.seq().as_bytes(), r.seq().as_bytes());
+    assert_eq!(moved.qual(), r.qual());
+    match moved.aux(b"CB") {
+        Ok(Aux::String(s)) => assert_eq!(s, "AAAC-1"),
+        other => panic!("CB tag lost or changed: {other:?}"),
+    }
+}
+
+#[test]
+fn test_with_position_replaces_complex_cigar_with_single_match() {
+    let mut r = bam::Record::new();
+    let cigar = CigarString(vec![Cigar::Match(20), Cigar::Del(5), Cigar::Match(30)]);
+    r.set(b"q", Some(&cigar), &vec![b'A'; 50], &vec![30u8; 50]);
+    r.set_pos(100);
+    let moved = with_position(&r, 500, 50);
+    assert_eq!(moved.cigar().end_pos(), 550);
+    assert_eq!(moved.cigar().len(), 1);
 }

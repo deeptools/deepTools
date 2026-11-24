@@ -449,7 +449,6 @@ impl Alignmentfilters {
 
     pub fn rec_extension(&self, rec: &Record) -> Vec<u32> {
         let read_len: i64 = rec.seq_len_from_cigar(false) as i64;
-        let is_pe = rec.is_proper_pair();
 
         if !self.extendreads_auto && (self.extendreadslen as i64) <= read_len {
             let mut blockvec: Vec<u32> = Vec::new();
@@ -459,32 +458,10 @@ impl Alignmentfilters {
             return blockvec;
         }
 
-        let (mut fragment_start, mut fragment_end): (i64, i64) = if is_pe {
-            if rec.is_reverse() {
-                (rec.mpos(), rec.reference_end())
-            } else {
-                (
-                    rec.reference_start(),
-                    rec.reference_start() + rec.insert_size().abs(),
-                )
-            }
-        } else if rec.is_reverse() {
-            (
-                rec.reference_end() - self.extendreadslen as i64,
-                rec.reference_end(),
-            )
-        } else {
-            (
-                rec.reference_start(),
-                rec.reference_start() + self.extendreadslen as i64,
-            )
-        };
+        let (mut fragment_start, mut fragment_end) = fragment_window(rec, self.extendreadslen);
 
-        if self.centerreads && fragment_end > fragment_start {
-            let fragment_center =
-                fragment_end as f64 - (fragment_end - fragment_start) as f64 / 2.0;
-            fragment_start = (fragment_center - read_len as f64 / 2.0).trunc() as i64;
-            fragment_end = fragment_start + read_len;
+        if self.centerreads {
+            (fragment_start, fragment_end) = center_window(fragment_start, fragment_end, read_len);
         }
 
         (fragment_start.max(0) as u32..fragment_end.max(0) as u32).collect()
@@ -505,4 +482,40 @@ impl Alignmentfilters {
         }
         false
     }
+}
+
+/// Fragment interval `[start, end)` implied by a record's coordinates.
+///
+/// Proper pair, forward: from the read start for `|TLEN|` bases. Proper pair, reverse: from the
+/// mate start to this read's reference end. Anything else is treated as single-end: `ext_len`
+/// bases measured from the 5' end. Mirrors the window `Alignmentfilters::rec_extension` uses.
+pub fn fragment_window(rec: &Record, ext_len: u32) -> (i64, i64) {
+    if rec.is_proper_pair() {
+        if rec.is_reverse() {
+            (rec.mpos(), rec.reference_end())
+        } else {
+            (
+                rec.reference_start(),
+                rec.reference_start() + rec.insert_size().abs(),
+            )
+        }
+    } else if rec.is_reverse() {
+        (rec.reference_end() - ext_len as i64, rec.reference_end())
+    } else {
+        (
+            rec.reference_start(),
+            rec.reference_start() + ext_len as i64,
+        )
+    }
+}
+
+/// Window of `read_len` bases centred in `[start, end)`. An empty or inverted window is returned
+/// unchanged. The start is truncated toward zero, matching `Alignmentfilters::rec_extension`.
+pub fn center_window(start: i64, end: i64, read_len: i64) -> (i64, i64) {
+    if end <= start {
+        return (start, end);
+    }
+    let center = end as f64 - (end - start) as f64 / 2.0;
+    let new_start = (center - read_len as f64 / 2.0).trunc() as i64;
+    (new_start, new_start + read_len)
 }
