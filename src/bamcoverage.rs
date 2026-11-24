@@ -256,6 +256,7 @@ pub fn r_bamcoverage(
     let sf = scale_factor(
         norm_method,
         mapped,
+        bin_sum,
         binsize,
         effectivegenomesize,
         readlen,

@@ -4,7 +4,8 @@ mod scale_factor_tests {
     use super::*;
 
     fn sf(method: Normalization, preset: Option<f32>) -> Result<f32, NormalizationError> {
-        scale_factor(method, 1000, 10, 10000, 20.0, preset)
+        // 1000 mapped reads; 4000 counts summed over bins of 10 bp (e.g. reads spanning ~4 bins)
+        scale_factor(method, 1000, 4000, 10, 10000, 20.0, preset)
     }
 
     #[test]
@@ -19,7 +20,34 @@ mod scale_factor_tests {
 
     #[test]
     fn test_scale_factor_bpm() {
-        assert_eq!(sf(Normalization::Bpm, None).unwrap(), 999.99994);
+        // 1e6 / sum of binned counts, not 1e6 / mapped reads (which is CPM).
+        assert_eq!(sf(Normalization::Bpm, None).unwrap(), 250.0);
+    }
+
+    #[test]
+    fn test_scale_factor_bpm_ignores_mapped_and_binsize() {
+        for (mapped, binsize) in [(1000, 10), (5, 10), (1000, 1), (1000, 50_000)] {
+            assert_eq!(
+                scale_factor(Normalization::Bpm, mapped, 4000, binsize, 10000, 20.0, None),
+                Ok(250.0)
+            );
+        }
+    }
+
+    #[test]
+    fn test_scale_factor_bpm_large_bin_sum() {
+        // Above u32::MAX, e.g. 100M fragments of 200 bp at --binSize 1.
+        let sf = scale_factor(
+            Normalization::Bpm,
+            100_000_000,
+            20_000_000_000,
+            1,
+            0,
+            0.0,
+            None,
+        )
+        .unwrap();
+        assert_eq!(sf, 5e-5);
     }
 
     #[test]
@@ -40,7 +68,7 @@ mod scale_factor_tests {
     #[test]
     fn test_rpgc_needs_genome_size() {
         assert_eq!(
-            scale_factor(Normalization::Rpgc, 1000, 10, 0, 20.0, None),
+            scale_factor(Normalization::Rpgc, 1000, 4000, 10, 0, 20.0, None),
             Err(NormalizationError::MissingEffectiveGenomeSize)
         );
     }
@@ -48,7 +76,7 @@ mod scale_factor_tests {
     #[test]
     fn test_preset_skips_rpgc_genome_size_check() {
         assert_eq!(
-            scale_factor(Normalization::Rpgc, 1000, 10, 0, 20.0, Some(2.0)),
+            scale_factor(Normalization::Rpgc, 1000, 4000, 10, 0, 20.0, Some(2.0)),
             Ok(2.0)
         );
     }
@@ -57,15 +85,15 @@ mod scale_factor_tests {
     fn test_zero_mapped_reads_gives_non_finite() {
         // Same as previous releases: no error, the scale factor is inf.
         for m in [Normalization::Rpkm, Normalization::Cpm, Normalization::Bpm, Normalization::Rpgc] {
-            let sf = scale_factor(m, 0, 10, 10000, 20.0, None).unwrap();
+            let sf = scale_factor(m, 0, 0, 10, 10000, 20.0, None).unwrap();
             assert!(!sf.is_finite(), "{:?} with zero mapped reads gave {}", m, sf);
         }
     }
 
     #[test]
     fn test_zero_mapped_reads_ok_for_none_and_preset() {
-        assert_eq!(scale_factor(Normalization::None, 0, 10, 10000, 20.0, None), Ok(1.0));
-        assert_eq!(scale_factor(Normalization::Cpm, 0, 10, 10000, 20.0, Some(3.0)), Ok(3.0));
+        assert_eq!(scale_factor(Normalization::None, 0, 0, 10, 10000, 20.0, None), Ok(1.0));
+        assert_eq!(scale_factor(Normalization::Cpm, 0, 0, 10, 10000, 20.0, Some(3.0)), Ok(3.0));
     }
 }
 
@@ -97,8 +125,8 @@ mod bamcompare_scale_factor_tests {
 
     fn samples() -> [SampleStats; 2] {
         [
-            SampleStats { mapped: 1000, readlen: 20.0 },
-            SampleStats { mapped: 2000, readlen: 20.0 },
+            SampleStats { mapped: 1000, readlen: 20.0, bin_sum: 4000 },
+            SampleStats { mapped: 2000, readlen: 20.0, bin_sum: 2000 },
         ]
     }
 
@@ -131,6 +159,20 @@ mod bamcompare_scale_factor_tests {
     }
 
     #[test]
+    fn test_bamcompare_independent_bpm() {
+        let (sf1, sf2) = scale_factor_bamcompare(
+            ScaleFactorsMethod::None,
+            samples(),
+            10,
+            10000,
+            Normalization::Bpm,
+        )
+        .unwrap();
+        assert_eq!(sf1, 250.0);
+        assert_eq!(sf2, 500.0);
+    }
+
+    #[test]
     fn test_bamcompare_rpgc_needs_genome_size() {
         assert_eq!(
             scale_factor_bamcompare(
@@ -152,8 +194,8 @@ mod bamcompare_zero_reads_tests {
     fn test_readcount_with_an_empty_sample() {
         // Same as previous releases: 0/0 for the empty sample, 0/2000 for the other.
         let samples = [
-            SampleStats { mapped: 0, readlen: 20.0 },
-            SampleStats { mapped: 2000, readlen: 20.0 },
+            SampleStats { mapped: 0, readlen: 20.0, bin_sum: 0 },
+            SampleStats { mapped: 2000, readlen: 20.0, bin_sum: 2000 },
         ];
         let (sf1, sf2) =
             scale_factor_bamcompare(ScaleFactorsMethod::ReadCount, samples, 10, 10000, Normalization::None)

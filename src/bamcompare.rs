@@ -219,6 +219,7 @@ pub fn r_bamcompare(
         let stats = |i: usize| crate::normalization::SampleStats {
             mapped: covcalcs[i].mapped,
             readlen: covcalcs[i].readlen,
+            bin_sum: covcalcs[i].bin_sum,
         };
         let (sf1, sf2) = scale_factor_bamcompare(
             method,
