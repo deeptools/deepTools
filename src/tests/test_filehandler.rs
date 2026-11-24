@@ -1,5 +1,6 @@
 use crate::covcalc::Revalue;
-use crate::filehandler::read_bedfile;
+use crate::filehandler::{read_bedfile, write_covfile};
+use bigtools::{BigWigRead, Value};
 use std::collections::HashMap;
 use std::io::Write;
 use tempfile::NamedTempFile;
@@ -57,4 +58,47 @@ fn test_read_bedfile_skips_start_eq_end() {
 
     assert_eq!(entries, 1);
     assert_eq!(regions.len(), 1);
+}
+
+fn chrom_ordered_lines(order: &[&str]) -> Vec<(String, Value)> {
+    order
+        .iter()
+        .map(|c| {
+            (
+                c.to_string(),
+                Value {
+                    start: 0,
+                    end: 100,
+                    value: 1.0,
+                },
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn test_write_covfile_bigwig_with_non_lexicographic_chrom_order() {
+    // BAM headers list chromosomes as chr1, chr2, chr10; bigWig input must be sorted by name.
+    let sizes: HashMap<String, u32> = [("chr1", 1000), ("chr2", 1000), ("chr10", 1000)]
+        .iter()
+        .map(|(c, l)| (c.to_string(), *l))
+        .collect();
+    let out = NamedTempFile::new().expect("temp bigwig");
+    let path = out.path().to_string_lossy().into_owned();
+
+    write_covfile(
+        chrom_ordered_lines(&["chr1", "chr2", "chr10"]).into_iter(),
+        &path,
+        "bigwig",
+        sizes,
+    );
+
+    let mut bw = BigWigRead::open_file(&path).expect("bigwig must be readable");
+    for chrom in ["chr1", "chr2", "chr10"] {
+        let n = bw
+            .get_interval(chrom, 0, 1000)
+            .unwrap_or_else(|e| panic!("{chrom}: {e}"))
+            .count();
+        assert_eq!(n, 1, "{chrom} lost its interval");
+    }
 }

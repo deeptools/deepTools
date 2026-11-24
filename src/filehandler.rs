@@ -47,7 +47,7 @@ where
             .unwrap_or_else(|e| panic!("Failed to write bedgraph line to '{}': {}", ofile, e));
         }
     } else {
-        let vals = BedParserStreamingIterator::wrap_infallible_iter(lines, false);
+        let vals = BedParserStreamingIterator::wrap_infallible_iter(lines, true);
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(1)
             .build()
