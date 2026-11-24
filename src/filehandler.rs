@@ -4,7 +4,7 @@ use bigtools::beddata::BedParserStreamingIterator;
 use bigtools::{BigWigRead, BigWigWrite, Value};
 use flate2::read::MultiGzDecoder;
 use rust_htslib::bam::{IndexedReader, Read, Reader};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::{BufReader, BufWriter, Write};
@@ -313,16 +313,60 @@ pub fn read_gtffile(
     return (regions, (filename, entries));
 }
 
+/// Read a BED file and print one summary warning when regions were dropped because their
+/// chromosome is missing from `chroms`. See [`read_bedfile_skipped`] for the raw counts.
 pub fn read_bedfile(
     bed_file: &String,
     metagene: bool,
     chroms: &HashMap<String, u32>,
 ) -> (Vec<Region>, (String, u32)) {
+    let (regions, meta, unknown) = read_bedfile_skipped(bed_file, metagene, chroms);
+    if let Some(msg) = unknown_chrom_warning(bed_file, chroms, &unknown) {
+        println!("{}", msg);
+    }
+    (regions, meta)
+}
+
+/// Summary of regions dropped for an unknown chromosome, or `None` if nothing was dropped.
+/// An empty `chroms` map is called out explicitly: it drops every region.
+pub fn unknown_chrom_warning(
+    bed_file: &str,
+    chroms: &HashMap<String, u32>,
+    unknown: &BTreeMap<String, u32>,
+) -> Option<String> {
+    if unknown.is_empty() {
+        return None;
+    }
+    let total: u32 = unknown.values().sum();
+    if chroms.is_empty() {
+        return Some(format!(
+            "Warning: no chromosome sizes were provided, so all {} region(s) in {} were skipped.",
+            total, bed_file
+        ));
+    }
+    let list = unknown
+        .iter()
+        .map(|(c, n)| format!("{} ({})", c, n))
+        .collect::<Vec<_>>()
+        .join(", ");
+    Some(format!(
+        "Warning: skipped {} region(s) in {} on chromosome(s) not found in the bigwig/bam files: {}.",
+        total, bed_file, list
+    ))
+}
+
+/// Like [`read_bedfile`], also returning the number of skipped regions per unknown chromosome.
+pub fn read_bedfile_skipped(
+    bed_file: &String,
+    metagene: bool,
+    chroms: &HashMap<String, u32>,
+) -> (Vec<Region>, (String, u32), BTreeMap<String, u32>) {
     // read a provided bed_file into a vec of Region
     // Additional return is the filename and the number of entries (for sorting later on if needed).
 
     let mut regions: Vec<Region> = Vec::new();
     let mut names: HashMap<String, u32> = HashMap::new();
+    let mut unknown: BTreeMap<String, u32> = BTreeMap::new();
     let mut nonbed12: bool = false;
     let mut entries: u32 = 0;
 
@@ -346,10 +390,7 @@ pub fn read_bedfile(
                 let chromlen = match chroms.get(chrom) {
                     Some(len) => *len,
                     None => {
-                        println!(
-                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                            chrom, entryname
-                        );
+                        *unknown.entry(chrom.to_string()).or_insert(0) += 1;
                         continue;
                     }
                 };
@@ -406,10 +447,7 @@ pub fn read_bedfile(
                 let chromlen = match chroms.get(chrom) {
                     Some(len) => *len,
                     None => {
-                        println!(
-                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                            chrom, entryname
-                        );
+                        *unknown.entry(chrom.to_string()).or_insert(0) += 1;
                         continue;
                     }
                 };
@@ -463,10 +501,7 @@ pub fn read_bedfile(
                 let chromlen = match chroms.get(chrom) {
                     Some(len) => *len,
                     None => {
-                        println!(
-                            "Warning, region {} not found in at least one of the bigwig/bam files. Skipping {}.",
-                            chrom, entryname
-                        );
+                        *unknown.entry(chrom.to_string()).or_insert(0) += 1;
                         continue;
                     }
                 };
@@ -591,7 +626,7 @@ pub fn read_bedfile(
             "Warning: Metagene analysis is requested, but not all bedfiles and/or bedfile entries are in BED12 format. Proceed at your own risk."
         );
     }
-    return (regions, (filename, entries));
+    return (regions, (filename, entries), unknown);
 }
 
 pub fn chrombounds_from_bw(bwfile: &str) -> HashMap<String, u32> {
