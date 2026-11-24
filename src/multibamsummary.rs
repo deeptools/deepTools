@@ -4,7 +4,7 @@ use crate::covcalc::{
     TempZip, bam_pileup, filter_regions_by_supregion, parse_regions, region_divider,
 };
 use crate::filehandler::{
-    bam_ispaired, chrombounds_from_bam, is_bed_or_gtf, read_bedfile, read_gtffile,
+    FileHandlerError, bam_ispaired, chrombounds_from_bam, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
 use crate::filtering::Alignmentfilters;
 use itertools::multiunzip;
@@ -96,16 +96,19 @@ pub fn r_mbams(
         // Parse regions from bed files. Note that we retain the name of the bed file (in case there are more then 1)
         // Additionaly, score and strand are also retained, if it's a 3-column bed file we just fill in '.'
         let mut regionsizes: HashMap<String, u32> = HashMap::new();
-        bedfiles.iter()
+        bedfiles
+            .iter()
             .map(|r| {
-                let ftype = is_bed_or_gtf(r);
+                let ftype = is_bed_or_gtf(r)?;
 
                 match ftype.as_str() {
-                    "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
+                    "gtf" => Ok(read_gtffile(r, &gtfparse, chromsizes.keys().collect())),
                     "bed" => read_bedfile(r, metagene, &chromsizes),
                     _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
                 }
             })
+            .collect::<Result<Vec<_>, FileHandlerError>>()?
+            .into_iter()
             .for_each(|(reg, regsize)| {
                 regions.extend(reg);
                 regionsizes.insert(regsize.0, regsize.1);
@@ -128,11 +131,11 @@ pub fn r_mbams(
         // If there is a blacklist, read it.
         if blacklist != "None" {
             // Check if it's a bed or gtf file
-            let isbed = is_bed_or_gtf(blacklist);
+            let isbed = is_bed_or_gtf(blacklist)?;
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes)?;
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),
@@ -151,11 +154,11 @@ pub fn r_mbams(
         // If there is a blacklist, read it.
         if blacklist != "None" {
             // Check if it's a bed or gtf file
-            let isbed = is_bed_or_gtf(blacklist);
+            let isbed = is_bed_or_gtf(blacklist)?;
             match isbed.as_str() {
                 "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
                 "bed" => {
-                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes);
+                    let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes)?;
                     blacklistregions = Some(bls);
                 }
                 _ => panic!("Error: Cannot determine filetype of blacklist file."),

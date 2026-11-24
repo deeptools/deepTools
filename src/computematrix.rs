@@ -1,7 +1,7 @@
 use crate::calc::{max_float, mean_float, median_float, min_float, sum_float};
 use crate::covcalc::{Bin, Gtfparse, Region, Scalingregions};
 use crate::filehandler::{
-    bwintervals, chrombounds_from_bw, is_bed_or_gtf, read_bedfile, read_gtffile,
+    FileHandlerError, bwintervals, chrombounds_from_bw, is_bed_or_gtf, read_bedfile, read_gtffile,
 };
 use crate::filtering::BlacklistIndex;
 use crate::matrix::header::header_matrix;
@@ -134,12 +134,11 @@ pub fn r_computematrix(
 
     // If there is a blacklist, read it and build an index.
     let blacklist_index: Option<Arc<BlacklistIndex>> = if blacklist != "None" {
-        let isbed = is_bed_or_gtf(blacklist);
+        let isbed = is_bed_or_gtf(blacklist)?;
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) =
-                    read_bedfile(&blacklist.to_string(), false, &chromsizes);
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chromsizes)?;
                 let idx = BlacklistIndex::from_regions(&bls);
                 Some(Arc::new(idx))
             }
@@ -225,29 +224,32 @@ pub fn r_computematrix(
     let total_regions_estimate = region_files
         .iter()
         .map(|r| {
-            let ftype = is_bed_or_gtf(r);
-            match ftype.as_str() {
+            let ftype = is_bed_or_gtf(r)?;
+            Ok(match ftype.as_str() {
                 "gtf" => 1000, // rough estimate for GTF files
                 "bed" => 1000, // rough estimate for BED files
                 _ => 0,
-            }
+            })
         })
+        .collect::<Result<Vec<usize>, FileHandlerError>>()?
+        .into_iter()
         .sum::<usize>();
 
     regions.reserve(total_regions_estimate);
 
     // Collect region data in parallel and then merge
-    let region_data: Vec<(Vec<Region>, (String, u32))> = region_files.par_iter()
+    let region_data: Vec<(Vec<Region>, (String, u32))> = region_files
+        .par_iter()
         .map(|r| {
-            let ftype = is_bed_or_gtf(r);
+            let ftype = is_bed_or_gtf(r)?;
 
             match ftype.as_str() {
-                "gtf" => read_gtffile(r, &gtfparse, chromsizes.keys().collect()),
+                "gtf" => Ok(read_gtffile(r, &gtfparse, chromsizes.keys().collect())),
                 "bed" => read_bedfile(r, metagene, &chromsizes),
                 _ => panic!("Only .bed and .gtf files are allowed (as determined by the number of columns). File = {}", ftype),
             }
         })
-        .collect();
+        .collect::<Result<Vec<_>, FileHandlerError>>()?;
 
     // Merge regions and region sizes
     // Track which group (region file) each region belongs to, by index.

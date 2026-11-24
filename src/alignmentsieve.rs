@@ -83,7 +83,7 @@ pub fn r_alignmentsieve(
 
     // Load blacklist regions if provided
     let blacklist_regions = if blacklist != "None" {
-        let isbed = is_bed_or_gtf(blacklist);
+        let isbed = is_bed_or_gtf(blacklist)?;
         let chrom_bounds: HashMap<String, u32> = chrom_names
             .iter()
             .cloned()
@@ -92,7 +92,7 @@ pub fn r_alignmentsieve(
         match isbed.as_str() {
             "gtf" => panic!("Error: Please provide a bed file for the blacklist."),
             "bed" => {
-                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chrom_bounds);
+                let (bls, _) = read_bedfile(&blacklist.to_string(), false, &chrom_bounds)?;
                 Some(bls)
             }
             _ => panic!("Error: Cannot determine filetype of blacklist file."),
