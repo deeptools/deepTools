@@ -360,7 +360,7 @@ fn test_center_window_leaves_empty_window_alone() {
 fn test_with_position_moves_read_keeps_seq_qual_and_tags() {
     let mut r = bam_rec(false, false, false, 1000, 0, -1);
     r.push_aux(b"CB", Aux::String("AAAC-1")).unwrap();
-    let moved = with_position(&r, 2000, 50);
+    let moved = with_position(&r, 2000, 50).expect("read_len matches SEQ");
     assert_eq!(moved.pos(), 2000);
     assert_eq!(moved.cigar().end_pos(), 2050);
     assert_eq!(moved.seq().as_bytes(), r.seq().as_bytes());
@@ -377,7 +377,14 @@ fn test_with_position_replaces_complex_cigar_with_single_match() {
     let cigar = CigarString(vec![Cigar::Match(20), Cigar::Del(5), Cigar::Match(30)]);
     r.set(b"q", Some(&cigar), &vec![b'A'; 50], &vec![30u8; 50]);
     r.set_pos(100);
-    let moved = with_position(&r, 500, 50);
+    let moved = with_position(&r, 500, 50).expect("read_len matches SEQ");
     assert_eq!(moved.cigar().end_pos(), 550);
     assert_eq!(moved.cigar().len(), 1);
+}
+
+#[test]
+fn test_with_position_rejects_read_len_not_matching_seq() {
+    let r = bam_rec(false, false, false, 1000, 0, -1);
+    assert!(with_position(&r, 2000, 49).is_none());
+    assert!(with_position(&r, 2000, 51).is_none());
 }

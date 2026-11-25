@@ -499,8 +499,14 @@ fn query_alignment_end(record: &bam::Record) -> i64 {
 
 /// Copy of `record` with a single `read_len` M CIGAR at `new_start`. SEQ, QUAL and aux tags are
 /// kept; the previous CIGAR is discarded.
+///
+/// Returns `None` when `read_len` differs from the record's SEQ length: a CIGAR whose query
+/// length does not match SEQ is an invalid BAM record.
 #[allow(dead_code)] // public helper for downstream crates; unused inside this crate
-pub fn with_position(record: &bam::Record, new_start: i64, read_len: u32) -> bam::Record {
+pub fn with_position(record: &bam::Record, new_start: i64, read_len: u32) -> Option<bam::Record> {
+    if record.seq_len() != read_len as usize {
+        return None;
+    }
     let mut out = record.clone();
     let cigar = CigarString(vec![bam::record::Cigar::Match(read_len)]);
     out.set(
@@ -510,7 +516,7 @@ pub fn with_position(record: &bam::Record, new_start: i64, read_len: u32) -> bam
         record.qual(),
     );
     out.set_pos(new_start);
-    out
+    Some(out)
 }
 
 fn apply_shift(
