@@ -95,10 +95,14 @@ fn test_write_covfile_bigwig_with_non_lexicographic_chrom_order() {
 
     let mut bw = BigWigRead::open_file(&path).expect("bigwig must be readable");
     for chrom in ["chr1", "chr2", "chr10"] {
-        let n = bw
+        let intervals: Vec<Value> = bw
             .get_interval(chrom, 0, 1000)
             .unwrap_or_else(|e| panic!("{chrom}: {e}"))
-            .count();
-        assert_eq!(n, 1, "{chrom} lost its interval");
+            .collect::<Result<_, _>>()
+            .unwrap_or_else(|e| panic!("{chrom}: unreadable interval block: {e}"));
+        assert_eq!(intervals.len(), 1, "{chrom} lost its interval");
+        assert_eq!(intervals[0].start, 0, "{chrom} start");
+        assert_eq!(intervals[0].end, 100, "{chrom} end");
+        assert_eq!(intervals[0].value, 1.0, "{chrom} value");
     }
 }
