@@ -34,7 +34,7 @@
                 #end if
             #end if
 
-            #if $coverageOpt.showCoverageOpt == "yes":
+            #if $coverageOpt.showCoverageOpt == "yes" and $coverageOpt.outCoverageMetrics:
                 --outCoverageMetrics '$outFileCoverageMetrics'
                 #for $t in $coverageOpt.thresholds:
                     -ct $t.coverageThreshold
@@ -101,11 +101,11 @@
             <filter>outRawCounts is True</filter>
         </data>
         <data format="tabular" name="outFileCoverageMetrics" label="${tool.name} on ${on_string}: Threshold Metrics">
-            <filter>coverageOpt.outCoverageMetrics is True</filter>
+            <filter>coverageOpt['showCoverageOpt'] == 'yes' and coverageOpt['outCoverageMetrics'] is True</filter>
         </data>
     </outputs>
     <tests>
-        <test expect_num_outputs="3">
+        <test expect_num_outputs="2">
             <param name="multibam_conditional|orderMatters" value="No" />
             <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam,bowtie2 test1.bam" ftype="bam" />
             <!--param name="outFileFormat" value="png" /-->
@@ -121,12 +121,48 @@
             <param name="advancedOpt|showAdvancedOpt" value="yes" />
             <param name="advancedOpt|plotTitle" value="Test Title from Galaxy" />
             <param name="coverageOpt|showCoverageOpt" value="yes" />
+            <param name="coverageOpt|outCoverageMetrics" value="true" />
             <param name="coverageOpt|thresholds_0|coverageThreshold" value="0" />
             <param name="coverageOpt|thresholds_1|coverageThreshold" value="5" />
             <param name="coverageOpt|thresholds_2|coverageThreshold" value="10" />
             <param name="coverageOpt|thresholds_3|coverageThreshold" value="20" />
             <output name="outFileName" file="plotCoverage_result1.png" ftype="png" compare="image_diff" eps="0.1" />
             <output name="outFileCoverageMetrics" file="plotCoverage.metrics" ftype="tabular" />
+        </test>
+        <test expect_num_outputs="1">
+            <param name="multibam_conditional|orderMatters" value="No"/>
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <conditional name="coverageOpt">
+                <param name="showCoverageOpt" value="no"/>
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <not_has_text text="--outCoverageMetrics"/>
+            </assert_command>
+        </test>
+        <test expect_num_outputs="1">
+            <param name="multibam_conditional|orderMatters" value="No"/>
+            <param name="multibam_conditional|bamfiles" value="bowtie2 test1.bam" ftype="bam"/>
+            <conditional name="coverageOpt">
+                <param name="showCoverageOpt" value="yes"/>
+                <param name="outCoverageMetrics" value="false"/>
+                <repeat name="thresholds">
+                    <param name="coverageThreshold" value="5"/>
+                </repeat>
+            </conditional>
+            <output name="outFileName" ftype="png">
+                <assert_contents>
+                    <has_size min="100"/>
+                </assert_contents>
+            </output>
+            <assert_command>
+                <not_has_text text="--outCoverageMetrics"/>
+                <not_has_text text="-ct"/>
+            </assert_command>
         </test>
     </tests>
     <help>
