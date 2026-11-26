@@ -212,6 +212,14 @@ class Correlation:
 
         if self.corr_method == 'pearson':
             self.corr_matrix = np.ma.corrcoef(self.matrix.T, allow_masked=True)
+            return self.corr_matrix
+
+        if (num_samples > 2 and self.matrix.shape[0] > 1 and
+                not np.any(np.all(self.matrix == self.matrix[0, :], axis=0))):
+            # Rank each sample once.
+            corr_matrix = scipy.stats.spearmanr(self.matrix, axis=0)[0]
+            # Preserve exact symmetry
+            self.corr_matrix = np.triu(corr_matrix) + np.triu(corr_matrix, 1).T
 
         else:
             corr_matrix = np.zeros((num_samples, num_samples), dtype='float')
