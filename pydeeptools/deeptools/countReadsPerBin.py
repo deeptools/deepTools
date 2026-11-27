@@ -85,7 +85,7 @@ class CountReadsPerBin:
         Whether read duplicates (same start, end position. If paired-end, same start-end for mates) are
         to be excluded. Default: false
 
-    chrToSkip: list
+    chrsToSkip: list
         List with names of chromosomes that do not want to be included in the coverage computation.
         This is useful to remove unwanted chromosomes (e.g. 'random' or 'Het').
 
